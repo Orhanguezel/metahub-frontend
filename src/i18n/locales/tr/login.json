@@ -1,0 +1,22 @@
+{
+    "email": "E-posta",
+    "emailPlaceholder": "E-posta adresinizi girin",
+    "password": "Şifre",
+    "passwordPlaceholder": "Şifrenizi girin",
+    "remember": "Beni hatırla",
+    "forgotPassword": "Şifremi unuttum",
+    "submit": "Giriş Yap",
+    "loading": "Giriş yapılıyor...",
+    "noAccount": "Hesabınız yok mu?",
+    "registerNow": "Şimdi kayıt ol",
+    "success": "Başarıyla giriş yapıldı.",
+    "welcome": "Hoş geldiniz",
+    "errors": {
+      "email": "E-posta gereklidir.",
+      "emailInvalid": "Geçerli bir e-posta adresi girin.",
+      "password": "Şifre gereklidir.",
+      "passwordLength": "Şifre en az 8 karakter olmalıdır.",
+      "default": "Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin."
+    }
+  }
+  

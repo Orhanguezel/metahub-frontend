@@ -1,0 +1,18 @@
+{
+  "notifications": {
+    "title": "Notification Preferences",
+    "email": "Receive email notifications",
+    "sms": "Receive SMS notifications",
+    "push": "Receive push notifications",
+    "save": "Save Preferences"
+  },
+  "social": {
+    "title": "Sosyal Medya Bağlantıları",
+    "save": "Kaydet",
+    "errors": {
+      "instagram": "Geçerli bir Instagram URL girin.",
+      "facebook": "Geçerli bir Facebook URL girin.",
+      "twitter": "Geçerli bir Twitter URL girin."
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "notifications": {
+    "title": "Notification Preferences",
+    "email": "Receive email notifications",
+    "sms": "Receive SMS notifications",
+    "push": "Receive push notifications",
+    "save": "Save Preferences"
+  },
+  "social": {
+    "title": "Social Media Links",
+    "save": "Save Links",
+    "errors": {
+      "instagram": "Please enter a valid Instagram URL.",
+      "facebook": "Please enter a valid Facebook URL.",
+      "twitter": "Please enter a valid Twitter URL."
+    }
+  },
+ "address": {
+    "title": "Address",
+    "street": "Street",
+    "houseNumber": "House Number",
+    "city": "City",
+    "zipCode": "Zip Code",
+    "add": "Add Address",
+    "remove": "Remove",
+    "save": "Save",
+    "success": "Address updated successfully.",
+    "error": "An error occurred while saving address.",
+    "errors": {
+      "street": "Street is required.",
+      "houseNumber": "House number is required.",
+      "city": "City is required.",
+      "zipCode": "Zip code is required.",
+      "min": "At least one address is required.",
+      "required": "Addresses are required."
+    }
+  },
+  "payment": {
+    "title": "Payment Details",
+    "cardNumber": "Card Number",
+    "expiry": "Expiry Date (MM/YY)",
+    "cvc": "CVC",
+    "save": "Save Payment",
+    "success": "Payment information updated successfully.",
+    "error": "An error occurred while saving payment info.",
+    "errors": {
+      "cardNumber": "Card number is required.",
+      "cardNumberFormat": "Please enter a valid 16-digit card number.",
+      "expiry": "Expiry date is required.",
+      "expiryFormat": "Please use MM/YY format.",
+      "cvc": "CVC is required.",
+      "cvcFormat": "Enter a valid 3 or 4 digit CVC."
+    }
+  },
+  "delete": {
+    "title": "Delete Account",
+    "warning": "This action is irreversible. Please type 'delete' to confirm.",
+    "confirmation": "Type 'delete' to confirm",
+    "confirmationError": "You must type 'delete' to confirm.",
+    "password": "Enter your password",
+    "button": "Delete my account",
+    "loading": "Deleting...",
+    "success": "Your account has been deleted.",
+    "error": "An error occurred while deleting your account."
+  },
+ "form": {
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "save": "Save Profile",
+    "success": "Profile updated successfully.",
+    "error": "An error occurred while updating profile.",
+    "errors": {
+      "name": "Name is required.",
+      "email": "Email is required.",
+      "emailInvalid": "Please enter a valid email address."
+    }
+  }
+}

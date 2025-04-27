@@ -1,0 +1,14 @@
+{
+    "title": "Kontakt",
+    "mainOffice": {
+      "title": "Hauptadresse",
+      "address": "Oruçreis Mah. Tekstilkent Sit. A17 Blok No:41, 34235 Esenler/ISTANBUL - TÜRKEI",
+      "phoneLabel": "Telefon"
+    },
+    "factory": {
+      "title": "Fabrikadresse",
+      "address": "Saray Mah. Gimat Cad. No:6A, 06980 Kahramankazan/ANKARA - TÜRKEI",
+      "phoneLabel": "Telefon"
+    }
+  }
+  

@@ -1,0 +1,31 @@
+{
+  "username": "Kullanıcı Adı",
+  "email": "E-posta",
+  "password": "Şifre",
+  "confirmPassword": "Şifreyi Onayla",
+  "placeholders": {
+    "username": "Kullanıcı adınızı girin",
+    "email": "E-posta adresinizi girin",
+    "password": "Şifrenizi girin",
+    "confirmPassword": "Şifrenizi tekrar girin"
+  },
+  "errors": {
+    "username": "Kullanıcı adı gerekli.",
+    "email": "E-posta gerekli.",
+    "emailInvalid": "Geçerli bir e-posta girin.",
+    "password": "Şifre gerekli.",
+    "passwordLength": "Şifre en az 8 karakter olmalıdır.",
+    "weakPassword": "Şifreniz zayıf. Daha güçlü bir şifre seçin.",
+    "confirmPassword": "Şifreler eşleşmiyor."
+  },
+  "agree": "Kayıt olarak",
+  "terms": "Kullanım Şartları",
+  "and": "ve",
+  "privacy": "Gizlilik Politikası'nı",
+  "submit": "Kayıt Ol",
+  "loading": "Kaydediliyor...",
+  "haveAccount": "Zaten hesabınız var mı?",
+  "loginNow": "Giriş Yap",
+  "error": "Kayıt sırasında bir hata oluştu."
+}
+

@@ -1,0 +1,10 @@
+{
+    "notifications": {
+      "title": "Notification Preferences",
+      "email": "Receive email notifications",
+      "sms": "Receive SMS notifications",
+      "push": "Receive push notifications",
+      "save": "Save Preferences"
+    }
+  }
+  
