@@ -43,7 +43,10 @@ export interface AdminModule {
   history?: HistoryEntry[];
   language?: string;
   updatedBy?: UpdatedBy;
+  statsKey?: string; 
+  showInDashboard?: boolean; 
 }
+
 
 interface AdminState {
   modules: AdminModule[];

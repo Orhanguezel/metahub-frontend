@@ -1,10 +1,19 @@
-"use client";
+'use client';
 
-import React from "react";
-import AdminChatPage from "@/components/admin/chat/AdminChatPage";
+import DynamicAdminPageBuilder from "@/components/shared/DynamicAdminPageBuilder";
+import { useGetAdminModules } from "@/hooks/adminHooks";
+import { useTranslation } from "react-i18next";
 
-const ChatPage = () => {
-  return <AdminChatPage />;
-};
+export default function ChatPage() {
+  const { t } = useTranslation("admin-chat");
+  const { data, isLoading, error } = useGetAdminModules();
 
-export default ChatPage;
+  if (isLoading) return <div>{t("loading", "Yükleniyor...")}</div>;
+  if (error) return <div>{t("error", "Modüller yüklenirken hata oluştu.")}</div>;
+
+  return (
+    <main>
+      <DynamicAdminPageBuilder modules={data?.modules || []} />
+    </main>
+  );
+}

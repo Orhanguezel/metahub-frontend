@@ -6,4 +6,3 @@ import NewsListSection from "@/components/visitor/news/NewsListSection";
 export default function NewsListPage() {
   return <NewsListSection />;
 }
-

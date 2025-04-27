@@ -5,7 +5,7 @@ import React from "react";
 import Sidebar from "@/components/shared/Sidebar";
 import Header from "./components/Header";
 import styled from "styled-components";
-import ToastProvider from "@/app/providers/ToastProvider";
+import ToastProvider from "@/providers/ToastProvider";
 
 const Wrapper = styled.div`
   display: flex;

@@ -1,42 +1,41 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import styled from "styled-components";
+import DynamicAdminPageBuilder from "@/components/shared/DynamicAdminPageBuilder";
+import { useAppSelector } from "@/store/hooks";
 import { useTranslation } from "react-i18next";
-import UserTableFilters from "@/components/admin/users/table/UserTableFilters";
-import UserTable from "@/components/admin/users/table/UserTable";
+import { useMemo } from "react";
 
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-`;
+export default function DashboardPage() {
+  const { t } = useTranslation("admin-dashboard");
 
-const Title = styled.h2`
-  text-align: center;
-  margin-bottom: 2rem;
-  color: ${({ theme }) => theme.primary};
-`;
+  const modules = useAppSelector((state) => state.admin.modules);
+  const loading = useAppSelector((state) => state.admin.loading);
+  const error = useAppSelector((state) => state.admin.error);
 
-export interface UserFilterState {
-  query: string;
-  role: string;
-  isActive: string;
-}
+  const mappedModules = useMemo(() => {
+    return modules.map((mod) => ({
+      id: mod.name,
+      order: 0, 
+      visible: mod.visibleInSidebar ?? true,
+      props: {
+        label: mod.label,
+        icon: mod.icon,
+        enabled: mod.enabled,
+      },
+    }));
+  }, [modules]);
 
-export default function UsersPage() {
-  const { t } = useTranslation("admin");
-  const [filters, setFilters] = useState<UserFilterState>({
-    query: "",
-    role: "",
-    isActive: "",
-  });
+  if (loading) return <div>{t("loading", "Yükleniyor...")}</div>;
+  if (error) return <div>{t("error", "Modüller yüklenirken hata oluştu.")}</div>;
 
   return (
-    <Container>
-      <Title>{t("users.title") || "👤 Benutzerverwaltung"}</Title>
-      <UserTableFilters onFilterChange={setFilters} />
-      <UserTable filters={filters} />
-    </Container>
+    <main>
+      <DynamicAdminPageBuilder modules={mappedModules} />
+    </main>
   );
 }
+
+
+
+
+

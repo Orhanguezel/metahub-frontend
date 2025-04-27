@@ -44,7 +44,7 @@ import {
   DropdownItem,
 } from "./NavbarStyles";
 
-import { ThemeContext } from "@/app/providers/ThemeProviderWrapper";
+import { ThemeContext } from "@/providers/ThemeProviderWrapper";
 import { useAppSelector } from "@/store/hooks";
 
 export default function Navbar() {
@@ -61,11 +61,9 @@ export default function Navbar() {
   const { t, i18n } = useTranslation("navbar");
   const { toggle, isDark } = useContext(ThemeContext);
 
-
   useEffect(() => {
     setHasMounted(true);
   }, []);
-
 
   useEffect(() => {
     if (!hasMounted) return;
@@ -91,18 +89,14 @@ export default function Navbar() {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [hasMounted]);
-
 
   if (!hasMounted) return null;
 
   const handleLangChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     i18n.changeLanguage(e.target.value);
   };
-
-
 
   const logoSrc = isDark ? "/navbar/logo-dark.png" : "/navbar/logo-light.png";
 
@@ -188,7 +182,13 @@ export default function Navbar() {
             transition={{ duration: 0.3 }}
           >
             <LogoWrapper href="/">
-              <LogoImage src={logoSrc} alt="Logo" width={40} height={40} priority/>
+              <LogoImage
+                src={logoSrc}
+                alt="Logo"
+                width={40}
+                height={40}
+                priority
+              />
               <LogoTextWrapper>
                 <LogoText>Ensotek</LogoText>
                 <LogoText2>Kühlturmsysteme</LogoText2>
@@ -240,7 +240,13 @@ export default function Navbar() {
 
         <CenterSection>
           <LogoWrapper href="/">
-            <LogoImage src={logoSrc} alt="Logo" width={60} height={60} priority />
+            <LogoImage
+              src={logoSrc}
+              alt="Logo"
+              width={60}
+              height={60}
+              priority
+            />
             <LogoTextWrapper>
               <LogoText>Ensotek</LogoText>
               <LogoText2>Kühlturmsysteme</LogoText2>

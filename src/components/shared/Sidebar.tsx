@@ -2,18 +2,20 @@
 
 import styled from "styled-components";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useDispatch } from "react-redux";
+import { useSidebarModules } from "@/hooks/useSidebarModules";
 import { logoutUser } from "@/store/user/authSlice";
 import { AppDispatch } from "@/store";
-import { sidebarModules } from "@/store/dashboard/sidebarConfig"; // burada tanımlı
 import { FaHome, FaSignOutAlt } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 
 export default function Sidebar() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+  const pathname = usePathname();
   const { t } = useTranslation();
+  const { sidebarModules, isLoading } = useSidebarModules();
 
   const handleLogout = async () => {
     const result = await dispatch(logoutUser());
@@ -24,18 +26,25 @@ export default function Sidebar() {
 
   return (
     <SidebarWrapper>
-      <MenuLink href="/admin">
+      {/* Dashboard Ana Link */}
+      <MenuLink href="/admin" $active={pathname === "/admin"}>
         <FaHome />
         {t("sidebar.dashboard", "Dashboard")}
       </MenuLink>
 
-      {sidebarModules.map(({ key, path, labelKey, icon: Icon }) => (
-        <MenuLink key={key} href={path}>
-          <Icon />
-          {t(labelKey)}
-        </MenuLink>
-      ))}
+      {/* Modüller */}
+      {isLoading ? (
+        <LoadingText>{t("sidebar.loading", "Menü yükleniyor...")}</LoadingText>
+      ) : (
+        sidebarModules.map(({ key, path, label, Icon }) => (
+          <MenuLink key={key} href={path} $active={pathname.startsWith(path)}>
+            <Icon />
+            {label}
+          </MenuLink>
+        ))
+      )}
 
+      {/* Logout */}
       <LogoutButton onClick={handleLogout}>
         <FaSignOutAlt />
         {t("sidebar.logout", "Çıkış Yap")}
@@ -44,7 +53,7 @@ export default function Sidebar() {
   );
 }
 
-
+// Styled Components
 
 const SidebarWrapper = styled.aside`
   width: 240px;
@@ -57,7 +66,7 @@ const SidebarWrapper = styled.aside`
   border-right: 1px solid ${({ theme }) => theme.border || "#eee"};
 `;
 
-const MenuLink = styled(Link)`
+const MenuLink = styled(Link)<{ $active?: boolean }>`
   display: flex;
   align-items: center;
   gap: 0.7rem;
@@ -66,9 +75,14 @@ const MenuLink = styled(Link)`
   border-radius: 6px;
   text-decoration: none;
   color: ${({ theme }) => theme.text};
+  background: ${({ $active, theme }) => ($active ? theme.backgroundAlt : "transparent")};
+  font-weight: ${({ $active }) => ($active ? "600" : "400")};
+  transition: all 0.3s ease;
 
   &:hover {
-    background: ${({ theme }) => theme.backgroundAlt || "#f4f4f4"};
+    background: ${({ theme }) => theme.hoverBackground || "#f5f5f5"};
+    font-weight: 500;
+    color: ${({ theme }) => theme.primary || "#0070f3"};
   }
 `;
 
@@ -85,6 +99,13 @@ const LogoutButton = styled.button`
   margin-top: auto;
 
   &:hover {
-    background: rgba(255, 0, 0, 0.05);
+    background: ${({ theme }) => theme.backgroundAlt || "#f4f4f4"};
+    color: ${({ theme }) => theme.dangerHover || "darkred"};
   }
+`;
+
+const LoadingText = styled.div`
+  font-size: 0.9rem;
+  color: ${({ theme }) => theme.textLight || "#999"};
+  padding-left: 1rem;
 `;

@@ -1,32 +1,19 @@
-"use client";
+'use client';
 
-import React from "react";
-import styled from "styled-components";
-import NewsList from "@/components/admin/news/NewsList";
-import NewsMultiForm from "@/components/admin/news/NewsMultiForm";
+import DynamicAdminPageBuilder from "@/components/shared/DynamicAdminPageBuilder";
+import { useGetAdminModules } from "@/hooks/adminHooks";
 import { useTranslation } from "react-i18next";
 
-export default function AdminNewsPage() {
-  const { t } = useTranslation("admin");
+export default function NewsPage() {
+  const { t } = useTranslation("admin-news");
+  const { data, isLoading, error } = useGetAdminModules();
+
+  if (isLoading) return <div>{t("loading", "Yükleniyor...")}</div>;
+  if (error) return <div>{t("error", "Modüller yüklenirken hata oluştu.")}</div>;
 
   return (
-    <Wrapper>
-      <h2>{t("news.title") || "Haberler"}</h2>
-
-      <NewsMultiFormWrapper>
-        <NewsMultiForm />
-      </NewsMultiFormWrapper>
-
-      <NewsList />
-    </Wrapper>
+    <main>
+      <DynamicAdminPageBuilder modules={data?.modules || []} />
+    </main>
   );
 }
-
-// Styled Components
-const Wrapper = styled.div`
-  padding: 2rem;
-`;
-
-const NewsMultiFormWrapper = styled.div`
-  margin-bottom: 3rem;
-`;
