@@ -1,7 +1,9 @@
-// src/store/dashboardSlice.ts
+"use client";
+
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 
+// ✅ Tipler
 interface DailyOverview {
   date: string;
   newUsers: number;
@@ -29,48 +31,64 @@ export interface DashboardStats {
   payments: number;
   services: number;
   emails: number;
-  dailyOverview?: DailyOverview; 
-  mostSoldProduct?: string;  
+  dailyOverview?: DailyOverview;
+  mostSoldProduct?: string;
+}
+
+export interface AnalyticsItem {
+  name: string;
+  label: {
+    tr?: string;
+    en?: string;
+    de?: string;
+  };
+  icon: string;
+  count: number;
+  statsKey?: string;
+  showInDashboard?: boolean;
+  order?: number;
 }
 
 interface DashboardState {
   stats: DashboardStats | null;
+  analytics: AnalyticsItem[];
   loading: boolean;
   error: string | null;
-  successMessage: string | null;
 }
 
+// ✅ Başlangıç Değeri
 const initialState: DashboardState = {
   stats: null,
+  analytics: [],
   loading: false,
   error: null,
-  successMessage: null,
 };
 
-// ✅ Dashboard verilerini getir
+// ✅ Dashboard istatistiklerini getir (/dashboard)
 export const getDashboardStats = createAsyncThunk(
   "dashboard/getStats",
   async (_, thunkAPI) =>
     await apiCall("get", "/dashboard", null, thunkAPI.rejectWithValue)
 );
 
-// Slice
+// ✅ Slice
 const dashboardSlice = createSlice({
   name: "dashboard",
   initialState,
   reducers: {
     clearDashboardMessages: (state) => {
       state.error = null;
-      state.successMessage = null;
     },
     resetDashboardStats: (state) => {
       state.stats = null;
+      state.analytics = [];
       state.loading = false;
       state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
+      // 📊 Dashboard genel istatistikleri
       .addCase(getDashboardStats.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -80,7 +98,6 @@ const dashboardSlice = createSlice({
         (state, action: PayloadAction<{ success: boolean; message: string; stats: DashboardStats }>) => {
           state.loading = false;
           state.stats = action.payload.stats;
-          state.successMessage = action.payload.message;
         }
       )
       .addCase(getDashboardStats.rejected, (state, action: PayloadAction<any>) => {
@@ -90,5 +107,6 @@ const dashboardSlice = createSlice({
   },
 });
 
+// ✅ Exportlar
 export const { clearDashboardMessages, resetDashboardStats } = dashboardSlice.actions;
 export default dashboardSlice.reducer;

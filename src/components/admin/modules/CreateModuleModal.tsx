@@ -8,16 +8,30 @@ import { createAdminModule, fetchAdminModules } from "@/store/adminSlice";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 
+// --- Types
 interface Props {
   onClose: () => void;
 }
 
+interface FormState {
+  name: string;
+  icon: string;
+  roles: string[];
+  language: "en" | "tr" | "de";
+  visibleInSidebar: boolean;
+  useAnalytics: boolean;
+  enabled: boolean;
+  showInDashboard: boolean;
+  order: number;
+}
+
+// --- Component
 const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { selectedProject } = useAppSelector((state) => state.admin);
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     name: "",
     icon: "box",
     roles: ["admin"],
@@ -25,18 +39,23 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
     visibleInSidebar: true,
     useAnalytics: false,
     enabled: true,
+    showInDashboard: true,
+    order: 0,
   });
 
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target as HTMLInputElement;
-    if (type === "checkbox") {
-      const checked = (e.target as HTMLInputElement).checked;
-      setForm((prev) => ({ ...prev, [name]: checked }));
-    } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
-    }
+    const { name, value, type, checked } = e.target as HTMLInputElement;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox"
+        ? checked
+        : type === "number"
+        ? parseInt(value) || 0
+        : value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,7 +69,6 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
     try {
       await dispatch(createAdminModule(form)).unwrap();
       await dispatch(fetchAdminModules(selectedProject));
-
       toast.success(t("admin.modules.success.created", "Modül başarıyla oluşturuldu. Aktif etmek için .env dosyasını kontrol edin."));
       onClose();
     } catch (err: any) {
@@ -66,12 +84,12 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
             <XCircle size={18} />
             {t("close", "Kapat")}
           </CloseButton>
-          <h3>{t("admin.modules.create", "Yeni Modül Ekle")}</h3>
+          <ModalTitle>{t("admin.modules.create", "Yeni Modül Ekle")}</ModalTitle>
         </Header>
 
         {error && <ErrorText>{error}</ErrorText>}
 
-        <form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit}>
           <InputGroup>
             <label>{t("admin.modules.name", "Modül İsmi")} *</label>
             <input
@@ -104,40 +122,39 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
             </select>
           </InputGroup>
 
+          <InputGroup>
+            <label>{t("admin.modules.order", "Sıralama (Order)")}</label>
+            <input
+              type="number"
+              name="order"
+              value={form.order}
+              onChange={handleChange}
+            />
+          </InputGroup>
+
           <CheckboxGroup>
-            <label>
-              <input
-                type="checkbox"
-                name="visibleInSidebar"
-                checked={form.visibleInSidebar}
-                onChange={handleChange}
-              />
-              {t("admin.modules.visibleInSidebar", "Sidebar'da Göster")}
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                name="useAnalytics"
-                checked={form.useAnalytics}
-                onChange={handleChange}
-              />
-              {t("admin.modules.useAnalytics", "Analytics Aktif")}
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                name="enabled"
-                checked={form.enabled}
-                onChange={handleChange}
-              />
-              {t("admin.modules.enabled", "Aktif")}
-            </label>
+            {[
+              { name: "visibleInSidebar", label: t("admin.modules.visibleInSidebar", "Sidebar'da Göster") },
+              { name: "useAnalytics", label: t("admin.modules.useAnalytics", "Analytics Aktif") },
+              { name: "enabled", label: t("admin.modules.enabled", "Aktif") },
+              { name: "showInDashboard", label: t("admin.modules.showInDashboard", "Dashboard'da Göster") },
+            ].map((item) => (
+              <label key={item.name}>
+                <input
+                  type="checkbox"
+                  name={item.name}
+                  checked={(form as any)[item.name]}
+                  onChange={handleChange}
+                />
+                {item.label}
+              </label>
+            ))}
           </CheckboxGroup>
 
           <SubmitButton type="submit">
             {t("admin.modules.createSubmit", "Oluştur")}
           </SubmitButton>
-        </form>
+        </Form>
       </Modal>
     </Overlay>
   );
@@ -145,8 +162,7 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
 
 export default CreateModuleModal;
 
-
-// ✅ Stil bileşenleri
+// --- Styled Components ---
 
 const Overlay = styled.div`
   position: fixed;
@@ -169,6 +185,14 @@ const Modal = styled.div`
 
 const Header = styled.div`
   margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const ModalTitle = styled.h3`
+  margin: 0;
+  font-size: 1.2rem;
 `;
 
 const CloseButton = styled.button`
@@ -182,10 +206,19 @@ const CloseButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.4rem;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 `;
 
 const InputGroup = styled.div`
-  margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
@@ -202,7 +235,6 @@ const CheckboxGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-top: 1rem;
 `;
 
 const SubmitButton = styled.button`
@@ -212,8 +244,8 @@ const SubmitButton = styled.button`
   color: white;
   border: none;
   border-radius: 8px;
+  font-size: 1rem;
   cursor: pointer;
-  margin-top: 1rem;
 
   &:hover {
     opacity: 0.9;
@@ -223,5 +255,5 @@ const SubmitButton = styled.button`
 const ErrorText = styled.p`
   color: red;
   font-size: 0.9rem;
-  margin-bottom: 1rem;
 `;
+

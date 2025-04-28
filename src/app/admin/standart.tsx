@@ -5,7 +5,7 @@ import DynamicAdminPageBuilder from "@/components/shared/DynamicAdminPageBuilder
 import Loading from "@/components/shared/Loading";
 import ErrorMessage from "@/components/shared/ErrorMessage";
 
-export default function AdminSettingsPage() {
+export default function SomeAdminPage() {
   const { data, isLoading, error } = useGetAdminModules();
 
   if (isLoading) return <Loading />;
@@ -17,4 +17,3 @@ export default function AdminSettingsPage() {
     </main>
   );
 }
-

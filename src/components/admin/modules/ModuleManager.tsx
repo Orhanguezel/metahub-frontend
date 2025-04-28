@@ -78,9 +78,15 @@ const ModuleManager = () => {
   const lang = (i18n.language || "en") as SupportedLang;
 
   const filteredModules = Array.isArray(modules)
-    ? modules.filter((m) =>
-        (m.label?.[lang] || "").toLowerCase().includes(search.toLowerCase())
-      )
+    ? modules
+        .filter((m) => {
+          const labelText = (m.label?.[lang] || "").toLowerCase();
+          const nameText = (m.name || "").toLowerCase();
+          const searchText = search.toLowerCase();
+          return labelText.includes(searchText) || nameText.includes(searchText);
+        })
+        .slice()
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     : [];
 
   return (
@@ -120,16 +126,23 @@ const ModuleManager = () => {
       {successMessage && <SuccessText>{successMessage}</SuccessText>}
 
       <Grid>
-        {filteredModules.map((mod) => (
-          <ModuleCard
-            key={mod.name || mod.updatedAt || Math.random().toString()}
-            module={mod}
-            onClick={() =>
-              dispatch(fetchModuleDetail({ name: mod.name, project: selectedProject }))
-            }
-            onDelete={handleDelete}
-          />
-        ))}
+        {filteredModules.length > 0 ? (
+          filteredModules.map((mod) => (
+            <ModuleCard
+              key={mod.name}
+              module={mod}
+              search={search}
+              onClick={() =>
+                dispatch(fetchModuleDetail({ name: mod.name, project: selectedProject }))
+              }
+              onDelete={handleDelete}
+            />
+          ))
+        ) : (
+          <EmptyResult>
+            {t("admin.modules.noModulesFound", "Hiç modül bulunamadı.")}
+          </EmptyResult>
+        )}
       </Grid>
 
       {selectedModule && (
@@ -156,9 +169,7 @@ const ModuleManager = () => {
 
 export default ModuleManager;
 
-//
-// ✅ Styled Components
-//
+// --- Styled Components ---
 
 const Container = styled.div`
   padding: 2rem;
@@ -207,4 +218,12 @@ const ErrorText = styled.p`
 
 const SuccessText = styled.p`
   color: green;
+`;
+
+const EmptyResult = styled.div`
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 1rem;
+  color: ${({ theme }) => theme.textSecondary};
+  padding: 2rem 0;
 `;

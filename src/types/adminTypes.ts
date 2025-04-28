@@ -19,6 +19,7 @@ export interface Label {
     version: string;
     createdAt: string;
     updatedAt: string;
+    order: number;
     statsKey?: string;         
     showInDashboard?: boolean; 
   }

@@ -8,7 +8,6 @@ import { AdminModule, updateAdminModule, fetchAdminModules } from "@/store/admin
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { toast } from "react-toastify";
 
-
 interface Props {
   module: AdminModule;
   onClose: () => void;
@@ -26,14 +25,17 @@ const EditModuleModal: React.FC<Props> = ({ module, onClose }) => {
     visibleInSidebar: module.visibleInSidebar ?? true,
     useAnalytics: module.useAnalytics ?? false,
     enabled: module.enabled ?? true,
+    showInDashboard: module.showInDashboard ?? true,
+    order: module.order ?? 0,
   });
-  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
       setForm((prev) => ({ ...prev, [name]: checked }));
+    } else if (type === "number") {
+      setForm((prev) => ({ ...prev, [name]: parseInt(value) || 0 }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
@@ -59,19 +61,20 @@ const EditModuleModal: React.FC<Props> = ({ module, onClose }) => {
             visibleInSidebar: form.visibleInSidebar,
             useAnalytics: form.useAnalytics,
             enabled: form.enabled,
+            showInDashboard: form.showInDashboard,
+            order: form.order,
           },
         })
       ).unwrap();
-  
+
       await dispatch(fetchAdminModules(selectedProject));
-      toast.success(t("admin.modules.updateSuccess", "Modül başarıyla güncellendi!")); 
+      toast.success(t("admin.modules.updateSuccess", "Modül başarıyla güncellendi!"));
       onClose();
     } catch (err) {
       console.error("Update error:", err);
-      toast.error(t("admin.modules.updateError", "Güncelleme sırasında bir hata oluştu.")); 
+      toast.error(t("admin.modules.updateError", "Güncelleme sırasında bir hata oluştu."));
     }
   };
-  
 
   return (
     <Overlay>
@@ -84,46 +87,35 @@ const EditModuleModal: React.FC<Props> = ({ module, onClose }) => {
         </Header>
 
         <form onSubmit={handleSubmit}>
+          {/* Label inputs */}
           <InputGroup>
             <label>Label (TR)</label>
-            <input
-              value={form.label.tr}
-              onChange={(e) => handleLabelChange("tr", e.target.value)}
-            />
+            <input value={form.label.tr} onChange={(e) => handleLabelChange("tr", e.target.value)} />
           </InputGroup>
-
           <InputGroup>
             <label>Label (EN)</label>
-            <input
-              value={form.label.en}
-              onChange={(e) => handleLabelChange("en", e.target.value)}
-            />
+            <input value={form.label.en} onChange={(e) => handleLabelChange("en", e.target.value)} />
           </InputGroup>
-
           <InputGroup>
             <label>Label (DE)</label>
-            <input
-              value={form.label.de}
-              onChange={(e) => handleLabelChange("de", e.target.value)}
-            />
+            <input value={form.label.de} onChange={(e) => handleLabelChange("de", e.target.value)} />
           </InputGroup>
 
+          {/* Other inputs */}
           <InputGroup>
             <label>Icon</label>
-            <input
-              name="icon"
-              value={form.icon}
-              onChange={handleChange}
-            />
+            <input name="icon" value={form.icon} onChange={handleChange} />
           </InputGroup>
 
           <InputGroup>
             <label>Roles (virgülle ayır)</label>
-            <input
-              name="roles"
-              value={form.roles}
-              onChange={handleChange}
-            />
+            <input name="roles" value={form.roles} onChange={handleChange} />
+          </InputGroup>
+
+          {/* New fields */}
+          <InputGroup>
+            <label>Order (Sıralama)</label>
+            <input type="number" name="order" value={form.order} onChange={handleChange} />
           </InputGroup>
 
           <CheckboxGroup>
@@ -155,6 +147,16 @@ const EditModuleModal: React.FC<Props> = ({ module, onClose }) => {
                 onChange={handleChange}
               />
               {t("admin.modules.enabled", "Modül aktif")}
+            </label>
+
+            <label>
+              <input
+                type="checkbox"
+                name="showInDashboard"
+                checked={form.showInDashboard}
+                onChange={handleChange}
+              />
+              {t("admin.modules.showInDashboard", "Dashboard'da göster")}
             </label>
           </CheckboxGroup>
 

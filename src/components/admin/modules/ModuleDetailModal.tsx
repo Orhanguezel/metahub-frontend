@@ -21,9 +21,11 @@ const ModuleDetailModal: React.FC<Props> = ({ module, onClose }) => {
   const moduleLabel = module.label?.[currentLang] || module.name;
 
   const handleEditSuccess = () => {
-    toast.success(t("admin.modules.updateSuccess", "Modül başarıyla güncellendi!"));
+    toast.success(
+      t("admin.modules.updateSuccess", "Modül başarıyla güncellendi!")
+    );
     setEditModalOpen(false);
-    onClose(); // Düzenlemeden sonra kapatalım ki liste tazelensin
+    onClose();
   };
 
   return (
@@ -44,46 +46,60 @@ const ModuleDetailModal: React.FC<Props> = ({ module, onClose }) => {
             </ButtonGroup>
           </Header>
 
-          <DetailItem>
-            <strong>{t("version", "Sürüm")}:</strong> {module.version}
-          </DetailItem>
-          <DetailItem>
-            <strong>{t("createdAt", "Oluşturuldu")}:</strong>{" "}
-            {new Date(module.createdAt).toLocaleString()}
-          </DetailItem>
-          <DetailItem>
-            <strong>{t("updatedAt", "Güncellendi")}:</strong>{" "}
-            {new Date(module.updatedAt).toLocaleString()}
-          </DetailItem>
+          <Content>
+            <DetailItem>
+              <strong>{t("createdAt", "Oluşturuldu")}:</strong>{" "}
+              {module?.createdAt && typeof module.createdAt === "string"
+                ? new window.Date(module.createdAt).toLocaleString()
+                : "-"}
+            </DetailItem>
 
-          {module.history && module.history.length > 0 && (
-            <>
-              <SectionTitle>{t("history", "Versiyon Geçmişi")}</SectionTitle>
-              <HistoryList>
-                {module.history.map((h, i) => (
-                  <li key={i}>
-                    <strong>{h.version}</strong> — {h.by} (
-                    {new Date(h.date).toLocaleDateString()})
-                    {h.note && <NoteText>{h.note}</NoteText>}
-                  </li>
-                ))}
-              </HistoryList>
-            </>
-          )}
+            <DetailItem>
+              <strong>{t("updatedAt", "Güncellendi")}:</strong>{" "}
+              {module?.updatedAt && typeof module.updatedAt === "string"
+                ? new window.Date(module.updatedAt).toLocaleString()
+                : "-"}
+            </DetailItem>
+
+            {module.history && module.history.length > 0 && (
+              <>
+                <SectionTitle>{t("history", "Versiyon Geçmişi")}</SectionTitle>
+                <HistoryList>
+                  {module.history.map((h, i) => (
+                    <HistoryItem key={i}>
+                      <VersionLine>
+                        <Version>
+                          <strong>{h.version}</strong>
+                        </Version>
+                        <Author>{h.by}</Author>
+                        <HistoryDate>
+                          (
+                          {h.date
+                            ? new window.Date(h.date).toLocaleDateString()
+                            : "-"}
+                          )
+                        </HistoryDate>
+                      </VersionLine>
+                      {h.note && <NoteText>{h.note}</NoteText>}
+                    </HistoryItem>
+                  ))}
+                </HistoryList>
+              </>
+            )}
+          </Content>
         </Modal>
       </Overlay>
 
       {isEditModalOpen && (
-        <EditModuleModal
-          module={module}
-          onClose={handleEditSuccess}
-        />
+        <EditModuleModal module={module} onClose={handleEditSuccess} />
       )}
     </>
   );
 };
 
 export default ModuleDetailModal;
+
+// --- Styled Components ---
 
 const Overlay = styled.div`
   position: fixed;
@@ -112,11 +128,6 @@ const Header = styled.div`
   align-items: center;
 `;
 
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`;
-
 const Title = styled.h3`
   font-size: 1.2rem;
   margin: 0;
@@ -125,6 +136,11 @@ const Title = styled.h3`
 const ModuleName = styled.span`
   font-size: 0.9rem;
   color: ${({ theme }) => theme.textSecondary};
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 0.5rem;
 `;
 
 const EditButton = styled.button`
@@ -153,26 +169,60 @@ const CloseButton = styled.button`
   }
 `;
 
+const Content = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+`;
+
 const DetailItem = styled.p`
-  margin-bottom: 0.5rem;
+  margin: 0;
 `;
 
 const SectionTitle = styled.h4`
-  margin-top: 1.5rem;
+  margin-top: 2rem;
   margin-bottom: 1rem;
   font-size: 1.1rem;
+  border-bottom: 1px solid ${({ theme }) => theme.border};
+  padding-bottom: 0.3rem;
 `;
 
 const HistoryList = styled.ul`
   padding-left: 1.2rem;
-  font-size: 0.9rem;
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 1rem;
+`;
+
+const HistoryItem = styled.li`
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+`;
+
+const VersionLine = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+`;
+
+const Version = styled.span`
+  font-weight: bold;
+`;
+
+const Author = styled.span`
+  color: ${({ theme }) => theme.primary};
 `;
 
 const NoteText = styled.div`
+  font-size: 0.85rem;
+  opacity: 0.8;
+  padding-left: 1.2rem;
+  border-left: 2px solid ${({ theme }) => theme.primary};
+`;
+
+const HistoryDate = styled.span`
   font-size: 0.8rem;
   opacity: 0.7;
-  margin-top: 0.2rem;
 `;

@@ -4,6 +4,7 @@ import React from "react";
 import styled from "styled-components";
 import { Check, X, Globe, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import * as MdIcons from "react-icons/md"; // Material Design iconları
 
 interface RouteMeta {
   method: string;
@@ -30,15 +31,39 @@ interface ModuleCardProps {
     updatedAt?: string;
     routes?: RouteMeta[];
   };
+  search?: string; // 🔥 Yeni: Arama kelimesi props olarak alınacak
   onClick?: () => void;
-  onDelete?: (name: string) => void; // ✅ Silme fonksiyonu
+  onDelete?: (name: string) => void;
 }
 
-const ModuleCard: React.FC<ModuleCardProps> = ({ module, onClick, onDelete }) => {
+const dynamicIcon = (iconName?: string) => {
+  if (iconName && MdIcons[iconName as keyof typeof MdIcons]) {
+    return MdIcons[iconName as keyof typeof MdIcons];
+  }
+  return MdIcons.MdSettings;
+};
+
+const highlightMatch = (text: string, search: string) => {
+  if (!search) return text;
+  const regex = new RegExp(`(${search})`, "gi");
+  const parts = text.split(regex);
+
+  return parts.map((part, i) =>
+    part.toLowerCase() === search.toLowerCase() ? (
+      <Highlight key={i}>{part}</Highlight>
+    ) : (
+      <React.Fragment key={i}>{part}</React.Fragment>
+    )
+  );
+};
+
+const ModuleCard: React.FC<ModuleCardProps> = ({ module, search = "", onClick, onDelete }) => {
   const { i18n, t } = useTranslation();
   const currentLang = (i18n.language || "en") as keyof Label;
   const moduleLabel = module.label?.[currentLang] || module.name;
   const swaggerLink = `/api-docs/#/${module.name}`;
+
+  const IconComponent = dynamicIcon(module.icon);
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -50,11 +75,15 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onClick, onDelete }) =>
   return (
     <Card onClick={onClick}>
       <CardHeader>
-        <Icon>{module.icon || "📦"}</Icon>
+        <IconWrapper>
+          <IconComponent />
+        </IconWrapper>
+
         <ModuleInfo>
-          <LabelText>{moduleLabel}</LabelText>
-          <NameText>{module.name}</NameText>
+          <LabelText>{highlightMatch(moduleLabel, search)}</LabelText>
+          <NameText>{highlightMatch(module.name, search)}</NameText>
         </ModuleInfo>
+
         <Actions>
           <TrashButton onClick={handleDeleteClick} title={t("admin.modules.delete", "Modülü Sil")}>
             <Trash2 size={18} />
@@ -120,9 +149,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onClick, onDelete }) =>
 
 export default ModuleCard;
 
-//
-// ✅ Stil Bileşenleri
-//
+// --- Styled Components
 
 const Card = styled.div`
   background: ${({ theme }) => theme.cardBackground};
@@ -141,8 +168,9 @@ const CardHeader = styled.div`
   gap: 0.8rem;
 `;
 
-const Icon = styled.div`
-  font-size: 1.8rem;
+const IconWrapper = styled.div`
+  font-size: 2rem;
+  color: ${({ theme }) => theme.primary};
 `;
 
 const ModuleInfo = styled.div`
@@ -174,6 +202,20 @@ const LabelText = styled.h3`
 const NameText = styled.small`
   color: ${({ theme }) => theme.textSecondary};
   font-size: 0.8rem;
+`;
+
+const Highlight = styled.span`
+  background-color: yellow;
+  color: black;
+  font-weight: bold;
+  border-radius: 4px;
+  padding: 0 2px;
+  animation: highlightFlash 0.8s ease-in-out;
+
+  @keyframes highlightFlash {
+    from { background-color: transparent; }
+    to { background-color: yellow; }
+  }
 `;
 
 const Divider = styled.hr`

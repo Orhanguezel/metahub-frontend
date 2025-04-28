@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -18,12 +18,21 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  // Escape tuşuna basınca modalı kapatalım
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCancel();
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [onCancel]);
+
   return (
     <Overlay>
       <Modal>
         <Header>
           <Title>{t("admin.modules.deleteTitle", "Modülü Sil")}</Title>
-          <CloseButton onClick={onCancel} title={t("close", "Kapat")}>
+          <CloseButton onClick={onCancel} aria-label={t("close", "Kapat")}>
             <XCircle size={22} />
           </CloseButton>
         </Header>
@@ -35,7 +44,12 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
               "Bu modülü kalıcı olarak silmek istediğinize emin misiniz?"
             )}
           </WarningText>
-          <ModuleName>{moduleName}</ModuleName>
+
+          {moduleName && (
+            <ModuleName>
+              {moduleName}
+            </ModuleName>
+          )}
         </Content>
 
         <ButtonGroup>
@@ -53,9 +67,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
 
 export default ConfirmDeleteModal;
 
-//
-// ✅ Styled Components
-//
+// --- Styled Components ---
 
 const Overlay = styled.div`
   position: fixed;
@@ -65,16 +77,16 @@ const Overlay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 10000;
 `;
 
 const Modal = styled.div`
   background: ${({ theme }) => theme.background};
   padding: 2rem;
-  border-radius: 12px;
   width: 95%;
   max-width: 420px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
 `;
 
 const Header = styled.div`
@@ -93,7 +105,9 @@ const CloseButton = styled.button`
   border: none;
   color: ${({ theme }) => theme.textSecondary};
   cursor: pointer;
+  padding: 0.2rem;
   transition: color 0.2s;
+
   &:hover {
     color: ${({ theme }) => theme.text};
   }
@@ -101,20 +115,20 @@ const CloseButton = styled.button`
 
 const Content = styled.div`
   margin-top: 1.5rem;
+  text-align: center;
 `;
 
 const WarningText = styled.p`
-  font-size: 0.95rem;
-  margin-bottom: 1rem;
+  font-size: 1rem;
   color: ${({ theme }) => theme.text};
-  text-align: center;
+  margin-bottom: 1rem;
 `;
 
 const ModuleName = styled.div`
   font-weight: bold;
   font-size: 1.3rem;
-  text-align: center;
   color: ${({ theme }) => theme.primary};
+  margin-top: 0.5rem;
 `;
 
 const ButtonGroup = styled.div`
@@ -126,25 +140,31 @@ const ButtonGroup = styled.div`
 
 const CancelButton = styled.button`
   background: ${({ theme }) => theme.gray};
-  color: white;
+  color:${({ theme }) => theme.text};
   padding: 0.6rem 1.2rem;
   border: none;
   border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
-  font-weight: 500;
+  transition: background 0.2s;
+
   &:hover {
     opacity: 0.9;
+    background: ${({ theme }) => theme.primary};
+    color: ${({ theme }) => theme.danger};
   }
 `;
 
 const ConfirmButton = styled.button`
   background: ${({ theme }) => theme.danger};
-  color: white;
+  color: ${({ theme }) => theme.text};
   padding: 0.6rem 1.2rem;
   border: none;
   border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
-  font-weight: 500;
+  transition: background 0.2s;
+
   &:hover {
     opacity: 0.9;
   }

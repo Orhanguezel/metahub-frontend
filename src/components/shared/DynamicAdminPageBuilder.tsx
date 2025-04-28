@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import styled from "styled-components";
 import { MdSettings } from "react-icons/md";
+import * as Icons from "react-icons/md";
 
 interface DynamicAdminPageBuilderProps {
   modules: {
@@ -13,6 +14,7 @@ interface DynamicAdminPageBuilderProps {
       label?: string;
       icon?: string;
       enabled?: boolean;
+      count?: number; // ✅ Buraya eklendi
     };
   }[];
 }
@@ -39,18 +41,22 @@ export default function DynamicAdminPageBuilder({ modules }: DynamicAdminPageBui
       {sortedModules.map((mod) => {
         const label = mod.props?.label || mod.id;
         const enabled = mod.props?.enabled !== false;
-        const IconComponent = MdSettings; // Şu anlık default ikon koyduk, sonra dinamik yaparız.
+        const count = mod.props?.count ?? 0; 
+        const iconName = mod.props?.icon;
+        const IconComponent = (iconName && Icons[iconName as keyof typeof Icons]) || MdSettings;
 
         return (
           <Card
             key={mod.id}
             $enabled={enabled}
             onClick={() => enabled && router.push(`/admin/${mod.id}`)}
+            title={`${label} - ${count} kayıt`}
           >
             <IconWrapper>
               <IconComponent />
             </IconWrapper>
             <Label>{label}</Label>
+            <Count>{count}</Count> {/* ✅ Burada gösteriyoruz */}
           </Card>
         );
       })}
@@ -97,6 +103,12 @@ const Label = styled.div`
   font-size: 1rem;
   font-weight: 500;
   color: ${({ theme }) => theme.text};
+`;
+
+const Count = styled.div`
+  font-size: 0.9rem;
+  color: ${({ theme }) => theme.textSecondary};
+  margin-top: 0.5rem;
 `;
 
 const SkeletonBox = styled.div`

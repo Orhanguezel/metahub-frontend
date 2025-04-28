@@ -1,36 +1,45 @@
-import { useAppSelector } from "@/store/hooks";
+// src/hooks/useDashboardCards.ts
+"use client";
+
 import { useTranslation } from "react-i18next";
-import * as MdIcons from "react-icons/md";
+import { useAppSelector } from "@/store/hooks";
+import * as Icons from "react-icons/md";
 import { useMemo } from "react";
+import type { ModuleAnalyticsItem } from "@/store/adminSlice"; 
 
 export const useDashboardCards = () => {
   const { i18n } = useTranslation();
   const modules = useAppSelector((state) => state.admin.modules);
-  const stats = useAppSelector((state) => state.dashboard.stats);
-
-  const lang = i18n.language as "tr" | "en" | "de";
+  const analytics = useAppSelector((state) => state.admin.moduleAnalytics);
+  const lang = (i18n.language || "en") as "tr" | "en" | "de";
 
   const dashboardCards = useMemo(() => {
+    if (!modules.length) return [];
+
     return modules
-      .filter((mod) => mod.enabled)
-      .map((mod) => ({
-        key: mod.name,
-        label: mod.label?.[lang] || mod.name,
-        value:
-          (mod.statsKey && stats?.[mod.statsKey as keyof typeof stats]) ||
-          (stats?.[mod.name as keyof typeof stats]) ||
-          "-",
-        path: `/admin/${mod.name}`,
-        icon: getDynamicIcon(mod.icon),
-      }));
-  }, [modules, stats, lang]);
+      .filter((mod) => mod.enabled && mod.showInDashboard !== false)
+      .map((mod) => {
+        const foundStat = analytics.find((item: ModuleAnalyticsItem) => item.name === mod.name);
+
+        return {
+          key: mod.name,
+          label: mod.label?.[lang] || mod.name,
+          value: foundStat?.count ?? 0,
+          path: `/admin/${mod.name}`,
+          icon: dynamicIcon(mod.icon),
+          statsKey: mod.statsKey,
+  
+        };
+      });
+  }, [modules, analytics, lang]);
 
   return dashboardCards;
 };
 
-// 🔥 İkon bulma fonksiyonu
-const getDynamicIcon = (iconName?: string) => {
-  if (!iconName) return MdIcons.MdSettings;
-  const IconComponent = (MdIcons as Record<string, any>)[iconName];
-  return IconComponent || MdIcons.MdSettings;
+// 🎯 Dinamik ikon çözümü
+const dynamicIcon = (iconName?: string) => {
+  if (iconName && Icons[iconName as keyof typeof Icons]) {
+    return Icons[iconName as keyof typeof Icons];
+  }
+  return Icons["MdSettings"]; // 🔥 Default icon
 };
