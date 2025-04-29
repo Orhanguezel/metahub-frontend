@@ -18,6 +18,16 @@ export default function AdminSettingsPage({ settings }: AdminSettingsPageProps) 
   const [selectedSetting, setSelectedSetting] = useState<Setting | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // ✅ available_themes bilgisini ayıkla
+  const availableThemesSetting = settings.find((s) => s.key === "available_themes");
+  const [availableThemes, setAvailableThemes] = useState<string[]>(
+    Array.isArray(availableThemesSetting?.value)
+      ? availableThemesSetting.value
+      : typeof availableThemesSetting?.value === "string"
+      ? availableThemesSetting.value.split(",").map((v) => v.trim())
+      : []
+  );
+
   const handleCreate = () => {
     setSelectedSetting(null);
     setIsModalOpen(true);
@@ -37,9 +47,7 @@ export default function AdminSettingsPage({ settings }: AdminSettingsPageProps) 
     <Wrapper>
       <TopBar>
         <Title>{t("title", "Settings")}</Title>
-        <AddButton onClick={handleCreate}>
-          ➕ {t("addSetting", "Add Setting")}
-        </AddButton>
+        <AddButton onClick={handleCreate}>➕ {t("addSetting", "Add Setting")}</AddButton>
       </TopBar>
 
       {settings.length === 0 ? (
@@ -49,11 +57,17 @@ export default function AdminSettingsPage({ settings }: AdminSettingsPageProps) 
       )}
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <AdminSettingsForm editingSetting={selectedSetting} onSave={handleCloseModal} />
+        <AdminSettingsForm
+          editingSetting={selectedSetting}
+          availableThemes={availableThemes}
+          onAvailableThemesUpdate={setAvailableThemes}
+          onSave={handleCloseModal}
+        />
       </Modal>
     </Wrapper>
   );
 }
+
 
 // 🎨 Styled Components (full theme uyumlu!)
 const Wrapper = styled.div`

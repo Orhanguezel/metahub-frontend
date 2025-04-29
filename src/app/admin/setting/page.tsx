@@ -42,10 +42,11 @@ export default function AdminSettingRoutePage() {
 
   // 🔁 Projeler geldikten sonra selectedProject ayarla
   useEffect(() => {
-    if (availableProjects.length > 0 && !selectedProject) {
+    if (Array.isArray(availableProjects) && availableProjects.length > 0 && !selectedProject) {
       dispatch(setSelectedProject(availableProjects[0]));
     }
   }, [availableProjects, selectedProject, dispatch]);
+  
 
   // 🔁 Seçili proje varsa modülleri çek
   useEffect(() => {

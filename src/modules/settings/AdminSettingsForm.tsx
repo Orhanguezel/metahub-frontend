@@ -1,31 +1,38 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useAppDispatch } from "@/store/hooks";
-import { upsertSetting } from "@/store/settingSlice";
-import { Setting } from "@/store/settingSlice";
-import { useTranslation } from "react-i18next";
 import styled from "styled-components";
+import { useTranslation } from "react-i18next";
+import { useAppDispatch } from "@/store/hooks";
+import { Setting, upsertSetting } from "@/store/settingSlice";
 import { toast } from "react-toastify";
+import AdminSiteTemplateSelector from "./AdminSiteTemplateSelector";
 
 interface AdminSettingsFormProps {
   editingSetting: Setting | null;
+  availableThemes: string[];
   onSave: () => void;
+  onAvailableThemesUpdate: (newThemes: string[]) => void;
 }
 
-export default function AdminSettingsForm({ editingSetting, onSave }: AdminSettingsFormProps) {
+export default function AdminSettingsForm({
+  editingSetting,
+  availableThemes,
+  onSave,
+  onAvailableThemesUpdate,
+}: AdminSettingsFormProps) {
   const dispatch = useAppDispatch();
   const { t } = useTranslation("admin-settings");
 
   const [key, setKey] = useState("");
-  const [value, setValue] = useState<string | { tr: string; en: string; de: string }>("");
+  const [value, setValue] = useState<string | string[] | { tr: string; en: string; de: string }>("");
   const [isMultiLang, setIsMultiLang] = useState(false);
 
   useEffect(() => {
     if (editingSetting) {
       setKey(editingSetting.key);
       setValue(editingSetting.value);
-      setIsMultiLang(typeof editingSetting.value === "object"); // mevcut kayıt çok dilli mi?
+      setIsMultiLang(typeof editingSetting.value === "object" && !Array.isArray(editingSetting.value));
     } else {
       setKey("");
       setValue("");
@@ -33,32 +40,118 @@ export default function AdminSettingsForm({ editingSetting, onSave }: AdminSetti
     }
   }, [editingSetting]);
 
+  const handleMultiLangToggle = () => {
+    setIsMultiLang((prev) => !prev);
+    setValue(!isMultiLang ? { tr: "", en: "", de: "" } : "");
+  };
+
+  const handleDeleteTheme = (themeToDelete: string) => {
+    const updatedThemes = availableThemes.filter((theme) => theme !== themeToDelete);
+    onAvailableThemesUpdate(updatedThemes);
+
+    if (key === "site_template" && value === themeToDelete) {
+      setValue("");
+    }
+
+    dispatch(upsertSetting({ key: "available_themes", value: updatedThemes }));
+  };
+
+  const handleAddTheme = (newTheme: string) => {
+    const trimmed = newTheme.trim();
+    if (!trimmed || availableThemes.includes(trimmed)) return;
+
+    const updatedThemes = [...availableThemes, trimmed];
+    onAvailableThemesUpdate(updatedThemes);
+    dispatch(upsertSetting({ key: "available_themes", value: updatedThemes }));
+
+    if (key === "site_template") setValue(trimmed);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
-    const normalizedValue =
-      typeof value === "string"
-        ? { tr: value, en: value, de: value }
-        : value;
-  
+
+    let normalizedValue = value;
+
+    if (!isMultiLang && typeof value === "string" && !["site_template", "available_themes"].includes(key)) {
+      normalizedValue = { tr: value, en: value, de: value };
+    }
+
+    if (key === "available_themes" && typeof value === "string") {
+      normalizedValue = value
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean);
+    }
+
+    if (key === "site_template" && typeof value === "string" && !availableThemes.includes(value)) {
+      toast.error(t("invalidTheme", "Invalid theme selected."));
+      return;
+    }
+
     try {
       await dispatch(upsertSetting({ key, value: normalizedValue })).unwrap();
       toast.success(t("settingSaved", "Setting saved successfully."));
       onSave();
     } catch (error: any) {
-      console.error("❌ Save Setting Error:", error);
-      if (error?.response?.status === 422) {
-        toast.error(t("keyAlreadyExists", "This key already exists."));
-      } else {
-        toast.error(error?.message || t("saveError", "An error occurred while saving."));
-      }
+      toast.error(error?.message || t("saveError", "An error occurred while saving."));
     }
   };
-  
 
-  const handleMultiLangToggle = () => {
-    setIsMultiLang(!isMultiLang);
-    setValue(!isMultiLang ? { tr: "", en: "", de: "" } : ""); // Tür değişimi yap
+  const renderValueInput = () => {
+    if (key === "available_themes") {
+      return (
+        <>
+          <Label>{t("themeList", "Theme List (comma separated)")}</Label>
+          <Input
+            type="text"
+            value={Array.isArray(value) ? value.join(", ") : (value as string)}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="classic, modern, minimal"
+          />
+        </>
+      );
+    }
+
+    if (key === "site_template") {
+      return (
+        <>
+          <Label>{t("selectTheme", "Select Theme")}</Label>
+          <AdminSiteTemplateSelector
+            availableThemes={availableThemes}
+            selectedTheme={value as string}
+            onChange={setValue}
+            onAddTheme={handleAddTheme}
+            onDeleteTheme={handleDeleteTheme}
+          />
+        </>
+      );
+    }
+
+    if (isMultiLang) {
+      const val = value as { tr: string; en: string; de: string };
+      return (
+        <>
+          <Label>{t("valueTr", "Value (Turkish)")}</Label>
+          <Input value={val.tr || ""} onChange={(e) => setValue({ ...val, tr: e.target.value })} />
+          <Label>{t("valueEn", "Value (English)")}</Label>
+          <Input value={val.en || ""} onChange={(e) => setValue({ ...val, en: e.target.value })} />
+          <Label>{t("valueDe", "Value (German)")}</Label>
+          <Input value={val.de || ""} onChange={(e) => setValue({ ...val, de: e.target.value })} />
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Label>{t("value", "Value")}</Label>
+        <Input
+          type="text"
+          value={value as string}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={t("valuePlaceholder", "Enter value")}
+        />
+      </>
+    );
   };
 
   return (
@@ -73,62 +166,21 @@ export default function AdminSettingsForm({ editingSetting, onSave }: AdminSetti
         disabled={!!editingSetting}
       />
 
-      <CheckboxWrapper>
-        <input
-          type="checkbox"
-          checked={isMultiLang}
-          onChange={handleMultiLangToggle}
-          id="multiLang"
-        />
-        <label htmlFor="multiLang">{t("multiLanguage", "Multi-Language?")}</label>
-      </CheckboxWrapper>
-
-      {isMultiLang ? (
-        <>
-          <Label>{t("valueTr", "Value (Turkish)")}</Label>
-          <Input
-            type="text"
-            value={(value as any).tr}
-            onChange={(e) => setValue((prev) => ({ ...(prev as any), tr: e.target.value }))}
-            placeholder={t("valueTrPlaceholder", "Enter Turkish value")}
-            required
-          />
-
-          <Label>{t("valueEn", "Value (English)")}</Label>
-          <Input
-            type="text"
-            value={(value as any).en}
-            onChange={(e) => setValue((prev) => ({ ...(prev as any), en: e.target.value }))}
-            placeholder={t("valueEnPlaceholder", "Enter English value")}
-            required
-          />
-
-          <Label>{t("valueDe", "Value (German)")}</Label>
-          <Input
-            type="text"
-            value={(value as any).de}
-            onChange={(e) => setValue((prev) => ({ ...(prev as any), de: e.target.value }))}
-            placeholder={t("valueDePlaceholder", "Enter German value")}
-            required
-          />
-        </>
-      ) : (
-        <>
-          <Label>{t("value", "Value")}</Label>
-          <Input
-            type="text"
-            value={value as string}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder={t("valuePlaceholder", "Enter value")}
-            required
-          />
-        </>
+      {key !== "available_themes" && key !== "site_template" && (
+        <CheckboxWrapper>
+          <input type="checkbox" checked={isMultiLang} onChange={handleMultiLangToggle} id="multiLang" />
+          <label htmlFor="multiLang">{t("multiLanguage", "Multi-Language?")}</label>
+        </CheckboxWrapper>
       )}
+
+      {renderValueInput()}
 
       <SaveButton type="submit">{t("save", "Save")}</SaveButton>
     </FormWrapper>
   );
 }
+
+
 
 // 🎨 Styled Components
 const FormWrapper = styled.form`
@@ -151,25 +203,6 @@ const Input = styled.input`
   background: ${({ theme }) => theme.inputs.background};
   color: ${({ theme }) => theme.inputs.text};
   font-size: ${({ theme }) => theme.fontSizes.md};
-  transition: border ${({ theme }) => theme.transition.fast};
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
-    outline: none;
-  }
-`;
-
-const CheckboxWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  margin: ${({ theme }) => theme.spacing.sm} 0;
-
-  label {
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-    color: ${({ theme }) => theme.colors.textSecondary};
-    cursor: pointer;
-  }
 `;
 
 const SaveButton = styled.button`
@@ -182,9 +215,11 @@ const SaveButton = styled.button`
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   font-size: ${({ theme }) => theme.fontSizes.md};
   cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.fast};
+`;
 
-  &:hover {
-    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
-  }
+const CheckboxWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin: ${({ theme }) => theme.spacing.sm} 0;
 `;

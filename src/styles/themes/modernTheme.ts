@@ -31,6 +31,7 @@ const modernTheme = {
     success: "#22c55e",
     warning: "#facc15",
     danger: "#ef4444",
+    error: "#ef4444",
     info: "#0ea5e9",
     muted: "#9ca3af",
     disabled: "#e5e7eb",

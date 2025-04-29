@@ -5,7 +5,7 @@ import apiCall from "@/lib/apiCall";
 export interface Setting {
   _id?: string;
   key: string;
-  value: string | { tr: string; en: string; de: string };
+  value: string | string[] | { tr: string; en: string; de: string };
 }
 
 // 🎯 State Tipi
@@ -42,14 +42,32 @@ export const fetchSettings = createAsyncThunk(
 
 export const upsertSetting = createAsyncThunk(
   "setting/upsertSetting",
-  async (data: { key: string; value: string | { tr: string; en: string; de: string } }, thunkAPI) => {
+  async (
+    data: { key: string; value: string | string[] | { tr: string; en: string; de: string } },
+    thunkAPI
+  ) => {
     try {
-      const normalizedValue =
-        typeof data.value === "string"
-          ? { tr: data.value, en: data.value, de: data.value }
-          : data.value;
+      let normalizedValue = data.value;
 
-      const response = await apiCall("post", "/setting", { key: data.key, value: normalizedValue }, thunkAPI.rejectWithValue);
+      // Eğer çok dilli değilse ve key 'site_template' değilse, value'yu tüm dillere uygula
+      if (
+        typeof data.value === "string" &&
+        data.key !== "site_template" &&
+        !["tr", "en", "de"].every((lang) => (data.value as any)?.[lang])
+      ) {
+        normalizedValue = {
+          tr: data.value,
+          en: data.value,
+          de: data.value,
+        };
+      }
+
+      const response = await apiCall(
+        "post",
+        "/setting",
+        { key: data.key, value: normalizedValue },
+        thunkAPI.rejectWithValue
+      );
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error);
@@ -81,7 +99,7 @@ const settingSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Settings
+      // ✅ Fetch
       .addCase(fetchSettings.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -93,10 +111,10 @@ const settingSlice = createSlice({
       })
       .addCase(fetchSettings.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || "Failed to fetch settings.";
+        state.error = (action.payload as any)?.message || "Failed to fetch settings.";
       })
 
-      // Upsert Setting
+      // ✅ Upsert
       .addCase(upsertSetting.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -114,15 +132,11 @@ const settingSlice = createSlice({
       })
       .addCase(upsertSetting.rejected, (state, action) => {
         state.loading = false;
-        const errorMessage = (action.payload as any)?.message || "Failed to save setting.";
-        if ((action.payload as any)?.status === 422) {
-          state.error = "A setting with this key already exists.";
-        } else {
-          state.error = errorMessage;
-        }
+        const payload = action.payload as any;
+        state.error = payload?.message || "Failed to save setting.";
       })
 
-      // Delete Setting
+      // ✅ Delete
       .addCase(deleteSetting.pending, (state) => {
         state.loading = true;
         state.error = null;

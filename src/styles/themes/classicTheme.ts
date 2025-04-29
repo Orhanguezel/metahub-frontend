@@ -33,6 +33,7 @@ const classicTheme = {
     success: "#28a745", // 🆕
     warning: "#ffc107", // 🆕
     danger: "#dc3545",  // 🆕
+    error: "#dc3545",   // 🆕
     info: "#17a2b8",    // 🆕
     muted: "#6c757d",   // 🆕
     disabled: "#d6d6d6" // 🆕
