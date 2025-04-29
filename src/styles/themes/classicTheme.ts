@@ -1,5 +1,5 @@
-// classicTheme.ts
 // src/styles/themes/classicTheme.ts
+
 import { sharedTheme } from "@/styles/sharedTheme";
 
 const classicTheme = {
@@ -12,15 +12,17 @@ const classicTheme = {
     sectionBackground: "#ffffff",
     inputBackground: "#ffffff",
     text: "#000000",
-    textAlt: "#000000",
-    textSecondary: "#666",
+    textAlt: "#222222",
+    textSecondary: "#666666",
+    textPrimary: "#000000", // 🆕 Ekledik
     primary: "#486289",
-    primaryHover: "#555",
+    primaryLight: "#e8edf5", // 🆕 Ekledik
+    primaryHover: "#365075",
     primaryDark: "#222",
     accent: "#007BFF",
-    secondary: "#888",
-    border: "#ccc",
-    cardBackground: "#fff",
+    secondary: "#888888",
+    border: "#cccccc",
+    cardBackground: "#ffffff",
     buttonBackground: "#486289",
     buttonText: "#ffffff",
     link: "#007BFF",
@@ -28,26 +30,41 @@ const classicTheme = {
     hoverBackground: "#eaeaea",
     whiteColor: "#ffffff",
     darkColor: "#000000",
+    success: "#28a745", // 🆕
+    warning: "#ffc107", // 🆕
+    danger: "#dc3545",  // 🆕
+    info: "#17a2b8",    // 🆕
+    muted: "#6c757d",   // 🆕
+    disabled: "#d6d6d6" // 🆕
   },
   buttons: {
     primary: {
       background: "#486289",
       backgroundHover: "#365075",
       text: "#ffffff",
+      textHover: "#ffffff",
+    },
+    secondary: {
+      background: "#f0f0f0",
+      backgroundHover: "#e0e0e0",
+      text: "#333333",
+      textHover: "#111111",
     },
     danger: {
       background: "#e00",
       backgroundHover: "#c00",
-      text: "#fff",
+      text: "#ffffff",
+      textHover: "#ffffff",
     },
   },
   inputs: {
-    background: "#fff",
-    border: "#ccc",
-    text: "#000",
+    background: "#ffffff",
+    border: "#cccccc",
+    text: "#000000",
+    placeholder: "#888888", // 🆕
   },
   cards: {
-    background: "#fff",
+    background: "#ffffff",
     hoverBackground: "#f0f0f0",
   },
 };

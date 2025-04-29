@@ -21,7 +21,7 @@ import commentsReducer from "./commentsSlice";
 
 import notificationReducer from "./notificationSlice";
 import feedbackReducer from "./feedbackSlice";
-import settingsReducer from "./settingsSlice";
+import settingReducer from "./settingSlice";
 import contactReducer from "./contactMessageSlice";
 import emailReducer from "./emailSlice";
 import galleryReducer from "./gallerySlice";
@@ -58,7 +58,7 @@ export const store = configureStore({
     // ⚙️ Sistem modülleri
     notifications: notificationReducer,
     feedback: feedbackReducer,
-    settings: settingsReducer,
+    setting: settingReducer,
     contactMessage: contactReducer,
     email: emailReducer,
     gallery: galleryReducer,

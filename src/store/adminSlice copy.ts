@@ -75,7 +75,7 @@ interface AdminState {
   successMessage: string | null;
   selectedProject: string;
   availableProjects: string[];
-  fetchedAvailableProjects: boolean; // ✨ EKLENDİ
+
 }
 
 // ✅ Başlangıç State
@@ -88,10 +88,11 @@ const initialState: AdminState = {
   successMessage: null,
   selectedProject: "",
   availableProjects: [],
-  fetchedAvailableProjects: false, // ✨ EKLENDİ
 };
 
 // ✅ Thunklar
+
+// 📁 Proje listesi
 export const fetchAvailableProjects = createAsyncThunk<string[]>(
   "admin/fetchAvailableProjects",
   async (_, thunkAPI) => {
@@ -100,36 +101,42 @@ export const fetchAvailableProjects = createAsyncThunk<string[]>(
   }
 );
 
+// 📄 Modül listesi
 export const fetchAdminModules = createAsyncThunk<{ data: AdminModule[] }, string>(
   "admin/fetchAdminModules",
   async (project, thunkAPI) =>
     await apiCall("get", `/admin/modules?project=${project}`, null, thunkAPI.rejectWithValue, { withCredentials: true })
 );
 
+// 📄 Tekil modül detayı
 export const fetchModuleDetail = createAsyncThunk<{ data: AdminModule }, { name: string; project: string }>(
   "admin/fetchModuleDetail",
   async ({ name, project }, thunkAPI) =>
     await apiCall("get", `/admin/module/${name}?project=${project}`, null, thunkAPI.rejectWithValue, { withCredentials: true })
 );
 
+// 📈 Tüm modüllerin analytics verisi
 export const fetchAllModulesAnalytics = createAsyncThunk<{ data: ModuleAnalyticsItem[] }>(
   "admin/fetchAllModulesAnalytics",
   async (_, thunkAPI) =>
     await apiCall("get", "/admin/modules/analytics", null, thunkAPI.rejectWithValue, { withCredentials: true })
 );
 
+// ➕ Yeni modül oluştur
 export const createAdminModule = createAsyncThunk<AdminModule, Partial<AdminModule>>(
   "admin/createAdminModule",
   async (payload, thunkAPI) =>
     await apiCall("post", "/admin/modules", payload, thunkAPI.rejectWithValue, { withCredentials: true })
 );
 
+// ✏️ Modül güncelle
 export const updateAdminModule = createAsyncThunk<AdminModule, { name: string; updates: Partial<AdminModule> }>(
   "admin/updateAdminModule",
   async ({ name, updates }, thunkAPI) =>
     await apiCall("patch", `/admin/module/${name}`, updates, thunkAPI.rejectWithValue, { withCredentials: true })
 );
 
+// ❌ Modül sil
 export const deleteAdminModule = createAsyncThunk<string, string>(
   "admin/deleteAdminModule",
   async (name, thunkAPI) =>
@@ -156,7 +163,6 @@ const adminSlice = createSlice({
     builder
       .addCase(fetchAvailableProjects.fulfilled, (state, action) => {
         state.availableProjects = action.payload;
-        state.fetchedAvailableProjects = true; // ✨ EKLENDİ
         state.loading = false;
       })
       .addCase(fetchAdminModules.fulfilled, (state, action) => {
@@ -196,6 +202,21 @@ const adminSlice = createSlice({
         state.loading = false;
         toast.success(`Modül "${deletedModuleName}" başarıyla silindi.`);
       })
+      .addMatcher(
+        (action): action is PayloadAction<any> =>
+          action.type.startsWith("admin/") && action.type.endsWith("/rejected"),
+        (state, action) => {
+          const payload = action.payload;
+          state.error =
+            typeof payload === "string"
+              ? payload
+              : typeof payload === "object" && payload !== null && "message" in payload
+              ? (payload as any).message
+              : "Bir hata oluştu.";
+          state.loading = false;
+        }
+      )
+      
       .addMatcher(
         (action): action is PayloadAction<any> =>
           action.type.startsWith("admin/") && action.type.endsWith("/pending"),

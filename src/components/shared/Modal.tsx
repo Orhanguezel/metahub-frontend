@@ -1,0 +1,77 @@
+"use client";
+
+import React from "react";
+import styled from "styled-components";
+import { X } from "lucide-react"; // ✅ Basit bir kapatma ikonu
+
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}
+
+export default function Modal({ isOpen, onClose, children }: ModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <Overlay onClick={onClose}>
+      <Content onClick={(e) => e.stopPropagation()}>
+        <CloseButton onClick={onClose}>
+          <X size={20} />
+        </CloseButton>
+        {children}
+      </Content>
+    </Overlay>
+  );
+}
+
+// 🎨 Styled Components
+const Overlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: ${({ theme }) => theme.zIndex.modal};
+`;
+
+const Content = styled.div`
+  background: ${({ theme }) => theme.cards.background};
+  padding: ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: ${({ theme }) => theme.shadows.lg};
+  animation: fadeIn ${({ theme }) => theme.transition.normal};
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: ${({ theme }) => theme.spacing.sm};
+  right: ${({ theme }) => theme.spacing.sm};
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  cursor: pointer;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  transition: color ${({ theme }) => theme.transition.fast};
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;

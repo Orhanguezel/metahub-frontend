@@ -1,11 +1,11 @@
 "use client";
 
 import { ThemeProvider } from "styled-components";
-import { useEffect, useState, createContext, useContext, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useAppSelector } from "@/store/hooks";
 import { usePathname } from "next/navigation";
-import { themes, ThemeName } from "@/styles/themes"; // 🎯 Temalar ve tip
-import React from "react";
+import { themes } from "@/styles/themes";
+import { ThemeName } from "@/styles/themes";
 
 interface ThemeContextType {
   toggle: () => void;
@@ -17,19 +17,19 @@ export const ThemeContext = createContext<ThemeContextType>({
   isDark: false,
 });
 
-export default function ThemeProviderWrapper({ children }: { children: ReactNode }) {
+export default function ThemeProviderWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { settings } = useAppSelector((state) => state.settings);
-
+  const settings = useAppSelector((state) => state.setting.settings); // ✅ Doğrusu bu!
   const [isDark, setIsDark] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Admin path'lerini kontrol et
-  const isAdminPath = ["/admin", "/dashboard", "/panel"].some((path) => pathname.startsWith(path));
+  // 🎯 Admin path kontrolü
+  const isAdminPath = pathname.startsWith("/admin");
 
-  // Kullanıcının Dark/Light tercihini değiştiren fonksiyon
+  // 🌗 Toggle dark/light mode
   const toggle = () => setIsDark((prev) => !prev);
 
+  // 🧠 İlk yüklemede dark-light ayarı yap
   useEffect(() => {
     if (isAdminPath) {
       setIsDark(true);
@@ -40,27 +40,18 @@ export default function ThemeProviderWrapper({ children }: { children: ReactNode
     setMounted(true);
   }, [pathname]);
 
-  if (!mounted) return null; // SSR için önlem
+  if (!mounted) return null; // SSR uyumu için
 
-  // ➡️ Seçili Template (site_template setting'den)
-  const templateSetting = settings.find((s) => s.key === "site_template");
+  // 🛠️ Temayı settings'ten seçelim
+  const templateSetting = settings.find((s) => s.key === "theme_mode");
   const selectedTemplate = (templateSetting?.value || "classic") as ThemeName;
 
-  // ➡️ Temayı seçelim
   const templateTheme = themes[selectedTemplate] || themes["classic"];
 
-  // ➡️ Dark Mode aktifse bazı alanları override edelim
   const finalTheme = {
     ...templateTheme,
-    colors: {
-      ...templateTheme.colors,
-      background: isDark ? "#121212" : templateTheme.colors.background,
-      backgroundSecondary: isDark ? "#1E1E1E" : templateTheme.colors.backgroundSecondary,
-      text: isDark ? "#ffffff" : templateTheme.colors.text,
-      textSecondary: isDark ? "#aaaaaa" : templateTheme.colors.textSecondary,
-      cardBackground: isDark ? "#1E1E1E" : templateTheme.colors.cardBackground,
-      inputBackground: isDark ? "#333333" : templateTheme.colors.inputBackground,
-    },
+    background: isDark ? "#121212" : templateTheme.background,
+    text: isDark ? "#ffffff" : templateTheme.text,
   };
 
   return (
@@ -72,5 +63,5 @@ export default function ThemeProviderWrapper({ children }: { children: ReactNode
   );
 }
 
-// 🎯 Kullanmak isteyenler için küçük hook
+// 🎯 ThemeContext Hook
 export const useThemeContext = () => useContext(ThemeContext);

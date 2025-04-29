@@ -1,10 +1,13 @@
 // src/styles/styled.d.ts
 import "styled-components";
-import { defaultTheme } from "./themes/defaultTheme";
+import { themes } from "./themes";
 
-type ThemeType = typeof defaultTheme;
+// Otomatik theme tipi çıkarımı:
+type Theme = typeof themes.classic;
+
 
 declare module "styled-components" {
-  export interface DefaultTheme extends ThemeType {}
+  export interface DefaultTheme extends Theme {}
 }
+
 
