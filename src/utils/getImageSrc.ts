@@ -60,22 +60,30 @@ const defaultImageMap: Record<ImageType, string> = {
   misc: "default.png",
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5015";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5015";
+const PROJECT_ENV = process.env.NEXT_PUBLIC_APP_ENV || "metahub";
 
-export function getImageSrc(imagePath?: string, type: ImageType = "profile"): string {
-  const fallbackType: ImageType = type || "profile";
+export function getImageSrc(
+  imagePath?: string,
+  type: ImageType = "profile"
+): string {
+  
+  const folder = folderMap[type];
+  const defaultImage = defaultImageMap[type];
 
-  const folder = folderMap[fallbackType];
-  const defaultImage = defaultImageMap[fallbackType];
-
-  if (!imagePath || imagePath.trim() === "") {
-    return `${BASE_URL}/uploads/${defaultImage}`;
+  if (!folder || !defaultImage) {
+    console.warn(`Unknown image type: ${type}, falling back to misc/default.`);
+    return `${BASE_URL}/uploads/${PROJECT_ENV}/misc/default.png`;
   }
 
-  if (imagePath.startsWith("blob:") || imagePath.startsWith("data:")) return imagePath;
+  if (!imagePath || imagePath.trim() === "") {
+    return `${BASE_URL}/uploads/${PROJECT_ENV}/${defaultImage}`;
+  }
+
+  if (imagePath.startsWith("blob:") || imagePath.startsWith("data:"))
+    return imagePath;
   if (imagePath.startsWith("http")) return imagePath;
 
-  return `${BASE_URL}/uploads/${folder}/${imagePath}`;
+  return `${BASE_URL}/uploads/${PROJECT_ENV}/${folder}/${imagePath}`;
 }
-
-

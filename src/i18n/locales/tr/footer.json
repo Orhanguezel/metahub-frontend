@@ -1,22 +1,8 @@
 {
-  "aboutTitle": "Hakkımızda",
   "aboutUs": "Hakkımızda",
-  "vision": "Vizyon ve Misyon",
-  "history": "Tarihçemiz",
-  "references": "Referanslar",
+  "ourServices": "Hizmetlerimiz",
   "contact": "İletişim",
-
-  "contactTitle": "İletişim Bilgileri",
-  "welcomeMessage": "Mesajınızı bekliyoruz!",
-  "center": "Merkez",
-  "factory": "Fabrika",
-  "phone": "Telefon",
-
-  "servicesTitle": "Hizmetlerimiz",
-  "products": "Ürünler",
-  "materials": "Kule Malzemeleri",
-  "articles": "Makaleler",
-  "getOffer": "Teklif Al",
-
-  "rights": "Tüm hakları saklıdır"
+  "email": "E-Posta",
+  "phone": "Telefon"
 }
+

@@ -1,35 +1,37 @@
+---
+
+# 🎨 **Metahub – Tema Sistemi Dokümantasyonu (v2.0)**
 
 ---
 
-# 🎨 **Metahub - Tema Sistemi Açıklaması**
+## 🎯 **Amaç**
+
+- Her proje için farklı **görsel tema** (örnek: `classic`, `modern`, `minimal`, `futuristic`) desteği sağlamak.
+- Admin panelinde tanımlanan `site_template` değeri üzerinden tema **otomatik yüklensin**.
+- Ziyaretçiler sadece **light / dark mode** arasında geçiş yapabilsin.
+- Tüm renkler, yazı tipleri, butonlar, inputlar **tema dosyasından** gelsin.
+- Yeni tema eklemek sadece bir **dosya oluşturmak ve import etmek kadar** kolay olsun.
 
 ---
 
-## 🎯 **Genel Hedef:**
+## 🧱 **Yapılandırma**
 
-- **Her proje için** farklı görsel **tema** desteği sağlamak. (örnek: Classic, Modern, Minimal, Futuristic gibi)
-- Admin panelinde seçilen **"site_template"** ayarına göre frontend teması **otomatik** değişsin.
-- Kullanıcı (visitor) sadece **dark / light mode** seçebilsin.
-- Ana renkler, fontlar, butonlar, inputlar **temaya göre** gelsin.
-- Yeni bir tema eklemek **çok kolay** olsun: sadece bir dosya eklemek ve listeye import etmek yeterli.
+### `src/styles/themes/` klasörü:
+
+Her tema ayrı bir dosyada tanımlanır:
+
+```txt
+classicTheme.ts
+modernTheme.ts
+minimalTheme.ts
+futuristicTheme.ts
+```
 
 ---
 
-## 🏗️ **Tema Sistemi Yapısı**
+## 🗂️ `themes/index.ts`
 
-### 1. `src/styles/themes/` klasörü
-
-- Her tema kendi ayrı dosyasında tanımlı:
-  - `classicTheme.ts`
-  - `modernTheme.ts`
-  - `minimalTheme.ts`
-  - `futuristicTheme.ts`
-- İçeriklerinde:  
-  ➔ Renkler, fontlar, buton stilleri, input tasarımı, kart (card) görünümleri gibi alanlar mevcut.
-
-### 2. `themes/index.ts`
-
-```tsx
+```ts
 import classicTheme from "./classicTheme";
 import modernTheme from "./modernTheme";
 import minimalTheme from "./minimalTheme";
@@ -45,32 +47,50 @@ export const themes = {
 export type ThemeName = keyof typeof themes;
 ```
 
-- Yeni bir tema eklersen (örneğin: `businessTheme.ts`) buraya sadece bir `import` ve ekleme yapıyorsun.
+✅ Yeni bir tema eklemek için:
 
-### 3. `ThemeProviderWrapper`
-
-```tsx
-import { themes } from "@/styles/themes";
-import { useAppSelector } from "@/store/hooks";
-
-const templateSetting = settings.find((s) => s.key === "site_template");
-const selectedTemplate = templateSetting?.value?.toLowerCase() || "classic";
-const templateTheme = themes[selectedTemplate] || themes["classic"];
-```
-
-- **Seçilen tema**, backend'deki Settings'den (`site_template`) alınır.
-- Kullanıcı dark-light arasında geçiş yapabilir ama **seçilen temanın** içinde kalır.
+1. `newTheme.ts` dosyasını oluştur  
+2. `themes/index.ts` içine import et  
+3. `themes` nesnesine ekle  
+4. `site_template` key’i ile admin panelden tanımla → otomatik çalışır
 
 ---
 
-## 🌗 **Light / Dark Mode Yapısı**
+## 🧠 `ThemeProviderWrapper.tsx`
 
-- Tema rengi (`classic`, `modern` vs.) **backend ayarı** ile belirlenir.
-- Light / Dark modu kullanıcı tarayıcı ayarına göre veya kendi seçimine göre çalışır:
-  - `prefers-color-scheme: dark` dinlenir.
-  - Veya kullanıcı bir toggle butonuyla `isDark` state'ini değiştirir.
+```tsx
+const selectedTemplate = settings.find((s) => s.key === "site_template")?.value || "classic";
+const templateTheme = themes[selectedTemplate as ThemeName] || themes["classic"];
+```
 
-**Kod örneği:**
+💡 Seçilen tema `styled-components`'a `ThemeProvider` ile aktarılır.  
+Bu sayede her component içinden `theme.colors.primary` gibi değerler alınabilir.
+
+---
+
+## 🌗 **Dark / Light Mod Desteği**
+
+```tsx
+const [isDark, setIsDark] = useState(() => {
+  return localStorage.getItem("theme_mode") === "dark" || window.matchMedia("(prefers-color-scheme: dark)").matches;
+});
+```
+
+Ziyaretçi `toggle` ile değiştirebilir:
+
+```tsx
+const toggle = () => {
+  setIsDark((prev) => {
+    const next = !prev;
+    localStorage.setItem("theme_mode", next ? "dark" : "light");
+    return next;
+  });
+};
+```
+
+---
+
+## 🎨 **finalTheme – Uygulanan Tema**
 
 ```tsx
 const finalTheme = {
@@ -80,48 +100,79 @@ const finalTheme = {
 };
 ```
 
----
-
-## 🔥 **Tema Dosyalarında Ortak Yapı**
-
-Her tema dosyası şunları içerir:
-
-| Alan             | Açıklama                           |
-|------------------|-------------------------------------|
-| colors           | Tüm arkaplanlar, yazılar, butonlar   |
-| buttons          | Buton arkaplanları, hover renkleri   |
-| inputs           | Input alanı arka plan ve borderlar   |
-| cards            | Kart arkaplan ve hover renkleri      |
-| fonts, fontSizes | Font aileleri ve büyüklükleri         |
-| layout           | Header yüksekliği, container genişliği |
+💡 `styled.d.ts` içinde `DefaultTheme` tipi tanımlıdır, bu sayede tip hataları oluşmaz.
 
 ---
 
-## 🚀 **Tema Ekleme Süreci**
+## 📦 Tema Dosyası Yapısı
 
-1. `src/styles/themes/` klasörüne yeni bir dosya (`newTheme.ts`) ekle.
-2. `themes/index.ts` dosyasına import edip `themes` nesnesine ekle.
-3. Admin panelden **site_template** ayarına bu yeni temanın adını kaydet.
-4. Frontend otomatik o temayı kullanacak!
+Her tema dosyası aşağıdaki alanları içermelidir:
+
+```ts
+export const classicTheme: DefaultTheme = {
+  templateName: "classic",
+  colors: {
+    background: "#ffffff",
+    text: "#111111",
+    primary: "#0057A0",
+    secondary: "#eee",
+    ...
+  },
+  buttons: {
+    primary: {
+      background: "#0057A0",
+      text: "#ffffff",
+      hover: "#004080",
+    },
+  },
+  inputs: { ... },
+  fontSizes: { sm: "14px", md: "16px", lg: "20px" },
+  radii: { sm: "4px", md: "8px" },
+  ...
+};
+```
 
 ---
 
-# 🧠 **Özet**
+## ⚙️ Ayarların Alındığı Settings
 
-| | |
-|:---|:---|
-| Tema seçimi | Admin panelde Settings üzerinden yapılır |
-| Tema yapısı | Renkler, fontlar, butonlar vs. tamamen değiştirilebilir |
-| Kullanıcı seçimi | Sadece Light / Dark Mode arasında seçim yapabilir |
-| Tema eklemek | Yeni dosya + import = Hazır |
-
----
-
-# 📈 **Avantajlar**
-
-- Çok esnek ve geliştirici dostu.
-- Yeni projelerde sadece tema dosyası değiştirerek bambaşka görünümler elde edebilirsin.
-- Kullanıcı deneyimi artırılır: hem tema, hem dark-light uyumu aktif.
+| Anahtar (key)     | Açıklama                             | Tür       | Örnek             |
+|-------------------|--------------------------------------|-----------|-------------------|
+| `site_template`   | Temanın adı                          | string    | `"classic"`       |
+| `theme_mode`      | Ziyaretçi için ilk açılış modu       | string    | `"dark"`, `"light"` |
+| `available_themes`| Admin panelde seçilebilecek temalar | string[]  | `["classic", "modern"]` |
 
 ---
 
+## 🧪 Kullanım Örnekleri
+
+```tsx
+// Temadan gelen renk
+color: ${({ theme }) => theme.colors.primary};
+
+// Buton arkaplanı
+background: ${({ theme }) => theme.buttons.primary.background};
+```
+
+---
+
+## ✅ Geliştirici Notları
+
+| Özellik | Açıklama |
+|--------|----------|
+| Yeni tema eklemek | `themes/index.ts` dosyasına eklenir, otomatik çalışır |
+| Dark-Light desteği | Ziyaretçi tarafından localStorage içinde tutulur |
+| Admin kontrolü      | Yalnızca `site_template` backend'den belirlenir |
+| Çoklu tema desteği  | Tüm stiller `theme` objesinden gelir |
+
+---
+
+## 📌 Sonuç
+
+- 🎯 Geliştirici olarak UI katmanını tek dosyada tanımlayabilirsin
+- 💡 Ziyaretçi deneyimini artırmak için dark/light geçişi hazır
+- ⚙️ Projeler arasında aynı kod altyapısıyla farklı tema görünümü sağlanır
+
+---
+
+İstersen sonraki adımda Navbar ya da Visitor Panel için tema geçiş efektlerini de tanımlarız. Hazır mısın?

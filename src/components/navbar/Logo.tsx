@@ -29,11 +29,10 @@ export function Logo({ logoSrc, width = 60, height = 60 }: LogoProps) {
     </LogoWrapper>
   );
 }
-
 const LogoWrapper = styled(Link)`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: ${({ theme }) => theme.spacing.xs};
   text-decoration: none;
 `;
 
@@ -49,13 +48,15 @@ const LogoTextWrapper = styled.div`
 `;
 
 const LogoText = styled.span`
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: ${({ theme }) => theme.primary};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  color: ${({ theme }) => theme.colors.primary};
+  font-family: ${({ theme }) => theme.fonts.heading};
 `;
 
 const LogoText2 = styled.span`
-  font-size: 0.85rem;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   font-style: italic;
-  color: ${({ theme }) => theme.textSecondary};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-family: ${({ theme }) => theme.fonts.body};
 `;

@@ -82,33 +82,37 @@ const AvatarDropdown = styled(motion.div)`
   position: absolute;
   top: 120%;
   right: 0;
-  background: ${({ theme }) => theme.cardBackground};
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 8px;
-  box-shadow: ${({ theme }) => theme.shadows.medium};
-  padding: 0.5rem 0;
-  z-index: 10;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border: ${({ theme }) => `${theme.borders.thin} ${theme.colors.border}`};
+  border-radius: ${({ theme }) => theme.radii.md};
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  padding: ${({ theme }) => theme.spacing.sm} 0;
+  z-index: ${({ theme }) => theme.zIndex.dropdown};
   min-width: 150px;
 `;
 
 const DropdownItem = styled.a`
   display: block;
-  padding: 0.6rem 1rem;
-  font-size: 0.9rem;
-  color: ${({ theme }) => theme.text};
-  transition: 0.2s;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.text};
+  transition: ${({ theme }) => theme.transition.fast};
 
   &:hover {
-    background: ${({ theme }) => theme.hoverBackground};
+    background: ${({ theme }) => theme.colors.hoverBackground};
+    color: ${({ theme }) => theme.colors.primary};
   }
 `;
 
 const MenuLink = styled(Link)`
   text-decoration: none;
-  color: inherit;
-  font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  transition: ${({ theme }) => theme.transition.fast};
 
   &:hover {
-    color: ${({ theme }) => theme.primary || "rebeccapurple"};
+    color: ${({ theme }) => theme.colors.primary};
   }
 `;
+

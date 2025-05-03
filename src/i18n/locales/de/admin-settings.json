@@ -1,0 +1,12 @@
+{
+    "pleaseSelectFile": "Bitte wählen Sie eine Bilddatei aus.",
+    "imageUpdated": "Bild erfolgreich aktualisiert.",
+    "imageUploaded": "Bild erfolgreich hochgeladen.",
+    "saveError": "Beim Speichern ist ein Fehler aufgetreten.",
+    "keyRequired": "Der Schlüssel ist erforderlich.",
+    "noFields": "Bitte fügen Sie mindestens ein Feld hinzu.",
+    "invalidTheme": "Ungültiges Theme ausgewählt.",
+    "settingSaved": "Einstellung erfolgreich gespeichert.",
+    "save": "Speichern"
+  }
+  

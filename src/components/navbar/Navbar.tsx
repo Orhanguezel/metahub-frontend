@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { FaMoon, FaSun, FaBars, FaTimes } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import { AnimatePresence } from "framer-motion";
 import { useAppSelector } from "@/store/hooks";
-import { ThemeContext } from "@/providers/ThemeProviderWrapper";
+import { useThemeContext } from "@/providers/ThemeProviderWrapper";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import { TopBar } from "./TopBar";
@@ -17,7 +17,8 @@ import { AvatarMenu } from "./AvatarMenu";
 export default function Navbar() {
   const { profile: user } = useAppSelector((state) => state.account);
   const isAuthenticated = !!user;
-  const { toggle, isDark } = useContext(ThemeContext);
+  const { toggle, isDark } = useThemeContext();
+
   const { i18n } = useTranslation("navbar");
 
   const [hasMounted, setHasMounted] = useState(false);
@@ -133,27 +134,27 @@ export default function Navbar() {
     </>
   );
 }
-
 const NavbarWrapper = styled.nav`
   display: flex;
   flex-direction: column;
-  background: ${({ theme }) => theme.backgroundSecondary};
-  color: ${({ theme }) => theme.text};
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-  z-index: 100;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  color: ${({ theme }) => theme.colors.text};
+  border-top: ${({ theme }) => `${theme.borders.thin} ${theme.colors.border}`};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  z-index: ${({ theme }) => theme.zIndex.dropdown};
 `;
 
 const MobileMenu = styled(motion.div)`
   display: flex;
   flex-direction: column;
-  background: ${({ theme }) => theme.background};
-  padding: 1rem 0;
+  background: ${({ theme }) => theme.colors.background};
+  padding: ${({ theme }) => theme.spacing.md} 0;
   position: fixed;
   top: 100px;
   left: 0;
   width: 100%;
-  z-index: 998;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  z-index: ${({ theme }) => theme.zIndex.modal};
+  box-shadow: ${({ theme }) => theme.shadows.md};
 
   @media (min-width: 769px) {
     display: none;
@@ -164,44 +165,66 @@ const CenterSection = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 1rem;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
 `;
 
 const RightControls = styled.div`
   display: flex;
-  gap: 0.8rem;
+  gap: ${({ theme }) => theme.spacing.sm};
   align-items: center;
 `;
 
 const LangSelect = styled.select`
-  background: none;
-  border: 1px solid rebeccapurple;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  color: rebeccapurple;
+  background: ${({ theme }) => theme.inputs.background};
+  border: ${({ theme }) => `${theme.borders.thin} ${theme.colors.border}`};
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.text};
   cursor: pointer;
+  transition: ${({ theme }) => theme.transition.fast};
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
 
   option {
-    color: black;
+    color: ${({ theme }) => theme.colors.text};
+    background: ${({ theme }) => theme.colors.background};
   }
 `;
 
 const ThemeToggle = styled.button`
-  background: none;
+  background: ${({ theme }) => theme.buttons.primary.background};
   border: none;
-  font-size: 1.2rem;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
   cursor: pointer;
-  color: rebeccapurple;
+  color: ${({ theme }) => theme.buttons.primary.text};
+  padding: ${({ theme }) => theme.spacing.xs};
+  border-radius: ${({ theme }) => theme.radii.md};
+  transition: ${({ theme }) => theme.transition.fast};
+
+  &:hover {
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+    color: ${({ theme }) => theme.buttons.primary.textHover};
+  }
 `;
 
 const Hamburger = styled.button`
   display: none;
-  background: none;
+  background: ${({ theme }) => theme.buttons.secondary.background};
   border: none;
-  font-size: 1.5rem;
+  font-size: ${({ theme }) => theme.fontSizes.xl};
   cursor: pointer;
-  color: rebeccapurple;
+  color: ${({ theme }) => theme.buttons.secondary.text};
+  padding: ${({ theme }) => theme.spacing.xs};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  transition: ${({ theme }) => theme.transition.fast};
+
+  &:hover {
+    background: ${({ theme }) => theme.buttons.secondary.backgroundHover};
+    color: ${({ theme }) => theme.buttons.secondary.textHover};
+  }
 
   @media (max-width: 768px) {
     display: block;
@@ -211,7 +234,7 @@ const Hamburger = styled.button`
 const DesktopMenu = styled.ul`
   display: flex;
   list-style: none;
-  gap: 2rem;
+  gap: ${({ theme }) => theme.spacing.lg};
 
   @media (max-width: 768px) {
     display: none;
@@ -221,9 +244,9 @@ const DesktopMenu = styled.ul`
 const MenuBar = styled.div`
   display: flex;
   justify-content: center;
-  padding: 0.6rem 0;
-  border-top: 1px solid ${({ theme }) => theme.border || "#ddd"};
-  background: ${({ theme }) => theme.backgroundSecondary};
+  padding: ${({ theme }) => theme.spacing.sm} 0;
+  border-top: ${({ theme }) => `${theme.borders.thin} ${theme.colors.border}`};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
 
   @media (max-width: 768px) {
     display: none;
@@ -235,11 +258,11 @@ const StickyMenu = styled(motion.div)`
   top: 0;
   left: 0;
   width: 100%;
-  background: ${({ theme }) => theme.backgroundSecondary};
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  padding: 0.4rem 2rem;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.lg};
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 999;
+  z-index: ${({ theme }) => theme.zIndex.dropdown};
 `;

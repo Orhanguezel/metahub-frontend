@@ -1,0 +1,11 @@
+{
+  "pleaseSelectFile": "Please select an image file.",
+  "imageUpdated": "Image updated successfully.",
+  "imageUploaded": "Image uploaded successfully.",
+  "saveError": "An error occurred while saving.",
+  "keyRequired": "Key is required.",
+  "noFields": "Please add at least one field.",
+  "invalidTheme": "Invalid theme selected.",
+  "settingSaved": "Setting saved successfully.",
+  "save": "Save"
+}

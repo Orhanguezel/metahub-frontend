@@ -1,3 +1,5 @@
+// src/styles/themes/index.ts
+
 import classicTheme from "./classicTheme";
 import modernTheme from "./modernTheme";
 import minimalTheme from "./minimalTheme";

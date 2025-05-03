@@ -7,7 +7,7 @@ import I18nProvider from "@/providers//I18nProvider";
 import ThemeProviderWrapper from "@/providers/ThemeProviderWrapper";
 import ReduxProvider from "@/providers/ReduxProvider";
 import Navbar from "@/components/navbar/Navbar";
-import FooterSection from "@/components/shared/FooterSection";
+import FooterSection from "@/components/footer/FooterSection";
 import { fetchCurrentUser } from "@/store/user/accountSlice";
 import type { AppDispatch } from "@/store";
 import { setAuthUser } from "@/store/user/authSlice";

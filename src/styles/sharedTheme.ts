@@ -1,4 +1,4 @@
-// src/styles/themes/sharedTheme.ts
+// src/styles/sharedTheme.ts
 
 export const sharedTheme = {
   fonts: {

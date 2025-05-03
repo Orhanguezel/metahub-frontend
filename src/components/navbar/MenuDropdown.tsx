@@ -41,8 +41,8 @@ interface MenuDropdownProps {
   children: React.ReactNode;
   isMobile?: boolean;
   onClose?: () => void;
+  
 }
-
 const Wrapper = styled.div<{ isMobile?: boolean }>`
   position: relative;
   display: ${({ isMobile }) => (isMobile ? "block" : "inline-block")};
@@ -51,38 +51,49 @@ const Wrapper = styled.div<{ isMobile?: boolean }>`
 const Toggle = styled.button<{ isMobile?: boolean }>`
   background: none;
   border: none;
-  color: inherit;
+  color: ${({ theme }) => theme.colors.text};
   font: inherit;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: ${({ isMobile }) => (isMobile ? "12px 0" : "0")};
+  gap: ${({ theme }) => theme.spacing.xs};
+  padding: ${({ isMobile, theme }) =>
+    isMobile ? `${theme.spacing.sm} 0` : "0"};
   width: ${({ isMobile }) => (isMobile ? "100%" : "auto")};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  transition: ${({ theme }) => theme.transition.fast};
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primary};
+  }
 `;
 
 const Dropdown = styled.div<{ isMobile?: boolean }>`
   display: flex;
   flex-direction: column;
   position: ${({ isMobile }) => (isMobile ? "static" : "absolute")};
-  background: ${({ theme }) => theme.background};
+  background: ${({ theme }) => theme.colors.background};
   top: 100%;
   left: 0;
-  z-index: 1000;
-  padding: 0.5rem 0;
-  border-radius: 0.5rem;
-  box-shadow: ${({ isMobile }) =>
-    isMobile ? "none" : "0 8px 20px rgba(0, 0, 0, 0.1)"};
+  z-index: ${({ theme }) => theme.zIndex.dropdown};
+  padding: ${({ theme }) => theme.spacing.sm} 0;
+  border-radius: ${({ theme }) => theme.radii.md};
+  box-shadow: ${({ isMobile, theme }) =>
+    isMobile ? "none" : theme.shadows.lg};
+  border: ${({ isMobile, theme }) =>
+    isMobile ? "none" : `${theme.borders.thin} ${theme.colors.border}`};
 `;
 
 const DropdownLink = styled(Link)<{ isMobile?: boolean }>`
-  padding: 10px 16px;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
   white-space: nowrap;
   text-decoration: none;
-  color: ${({ theme }) => theme.text};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  transition: ${({ theme }) => theme.transition.fast};
 
   &:hover {
-    background: ${({ theme }) => theme.backgroundSecondary};
+    background: ${({ theme }) => theme.colors.backgroundSecondary};
+    color: ${({ theme }) => theme.colors.primary};
   }
 `;
-

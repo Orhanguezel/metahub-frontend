@@ -1,5 +1,3 @@
-Mükemmel! 👏  
-Şimdi istediğin şekilde **senin verdiğin modül listesine özel** hızlı bir **"Modül Adı → İkon Adı"** tablosu hazırladım:  
 
 ---
 
@@ -56,10 +54,3 @@ Mükemmel! 👏
 - Frontend otomatik dinamik `react-icons/md` içinden çekip gösterecek. ✅
 
 ---
-
-# 🔥 İstersen:
-
-İstersen bu listeyi **JSON** veya **Excel/CSV** formatında da verebilirim, daha kolay kopyalarsın.
-
-İster misin? 🎯  
-✅ İstersen saniyesinde hazırlarım! 🚀

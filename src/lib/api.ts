@@ -12,9 +12,6 @@ if (!API_BASE_URL) {
 const API = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true, 
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 // Global response interceptor

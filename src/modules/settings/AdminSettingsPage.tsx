@@ -9,17 +9,19 @@ import Modal from "@/components/shared/Modal";
 import styled from "styled-components";
 
 interface AdminSettingsPageProps {
-  settings: Setting[];
+  settings?: Setting[];
 }
 
-export default function AdminSettingsPage({ settings }: AdminSettingsPageProps) {
+export default function AdminSettingsPage({ settings = [] }: AdminSettingsPageProps) {
   const { t } = useTranslation("admin-settings");
 
   const [selectedSetting, setSelectedSetting] = useState<Setting | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
 
   // ✅ available_themes bilgisini ayıkla
   const availableThemesSetting = settings.find((s) => s.key === "available_themes");
+
   const [availableThemes, setAvailableThemes] = useState<string[]>(
     Array.isArray(availableThemesSetting?.value)
       ? availableThemesSetting.value
@@ -50,7 +52,7 @@ export default function AdminSettingsPage({ settings }: AdminSettingsPageProps) 
         <AddButton onClick={handleCreate}>➕ {t("addSetting", "Add Setting")}</AddButton>
       </TopBar>
 
-      {settings.length === 0 ? (
+      {!Array.isArray(settings) || settings.length === 0 ? (
         <EmptyMessage>{t("noSettings", "No settings found.")}</EmptyMessage>
       ) : (
         <AdminSettingsList settings={settings} onEdit={handleEdit} />
@@ -67,7 +69,6 @@ export default function AdminSettingsPage({ settings }: AdminSettingsPageProps) 
     </Wrapper>
   );
 }
-
 
 // 🎨 Styled Components (full theme uyumlu!)
 const Wrapper = styled.div`
