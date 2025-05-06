@@ -2,8 +2,7 @@
 import axios from "axios";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-console.log("👉 API_BASE_URL:", API_BASE_URL); 
-
+console.log("👉 API_BASE_URL:", API_BASE_URL);
 
 if (!API_BASE_URL) {
   console.warn("Environment variable 'NEXT_PUBLIC_API_URL' is not defined. Check your .env.local file!");
@@ -11,10 +10,27 @@ if (!API_BASE_URL) {
 
 const API = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true, 
+  withCredentials: true,
 });
 
-// Global response interceptor
+// 🔑 API Key'i buraya kaydediyoruz (başta null)
+let apiKey: string | null = null;
+
+// 🔐 Setter fonksiyonu: Settings üzerinden bunu çağıracağız
+export const setApiKey = (key: string) => {
+  apiKey = key;
+  console.log("✅ API key set edildi:", key);
+};
+
+// 🛡️ Tüm isteklerde otomatik header'a ekleme
+API.interceptors.request.use((config) => {
+  if (apiKey) {
+    config.headers["X-API-KEY"] = apiKey;
+  }
+  return config;
+});
+
+// 🔄 Global response interceptor (senin mevcut yapın aynı kaldı)
 API.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -28,7 +44,5 @@ API.interceptors.response.use(
   }
 );
 
-
 export default API;
-
 

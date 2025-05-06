@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { loginUser, clearAuthMessages } from "@/store/user/authSlice";
 import { fetchCurrentUser } from "@/store/user/accountSlice";
-import { AppDispatch } from "@/store";
+import { AppDispatch, RootState } from "@/store";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import Link from "next/link";
 import {
   Form,
   FormGroup,
@@ -25,14 +26,12 @@ import {
   SwitchTabLink,
 } from "./LoginForm.styled";
 
-export default function LoginForm({
-  switchTab,
-}: {
-  switchTab: (tab: string) => void;
-}) {
+export default function LoginForm() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const { t } = useTranslation("login");
+
+  const settings = useSelector((state: RootState) => state.setting.settings);
 
   const [form, setForm] = useState({
     email: "",
@@ -83,10 +82,23 @@ export default function LoginForm({
 
     try {
       setLoading(true);
-      await dispatch(loginUser({ email: form.email, password: form.password })).unwrap();
-      await dispatch(fetchCurrentUser()).unwrap();
+      await dispatch(
+        loginUser({ email: form.email, password: form.password })
+      ).unwrap();
+      const userRes = await dispatch(fetchCurrentUser()).unwrap();
+
       toast.success(t("success"));
-      router.push("/admin"); // ✅ Doğrudan yönlendir
+
+      // ✅ Admin mi ve API Key var mı kontrol et
+      const apiKeySetting = settings.find((s) => s.key === "api_key");
+      const apiKey = apiKeySetting?.value;
+      const isAdmin = userRes?.role === "admin";
+
+      if (isAdmin && apiKey) {
+        toast.info(`✅ Admin API key yüklendi: ${apiKey}`);
+      }
+
+      router.push("/admin");
     } catch (err: any) {
       toast.error(err?.message || t("errors.default"));
     } finally {
@@ -100,7 +112,9 @@ export default function LoginForm({
       <FormGroup>
         <label htmlFor="email">{t("email")}</label>
         <InputWrapper $hasError={!!errors.email}>
-          <Icon><FaEnvelope /></Icon>
+          <Icon>
+            <FaEnvelope />
+          </Icon>
           <Input
             id="email"
             name="email"
@@ -114,11 +128,12 @@ export default function LoginForm({
         </InputWrapper>
         {errors.email && <ErrorMessage>{errors.email}</ErrorMessage>}
       </FormGroup>
-
       <FormGroup>
         <label htmlFor="password">{t("password")}</label>
         <InputWrapper $hasError={!!errors.password}>
-          <Icon><FaLock /></Icon>
+          <Icon>
+            <FaLock />
+          </Icon>
           <Input
             id="password"
             name="password"
@@ -138,7 +153,6 @@ export default function LoginForm({
         </InputWrapper>
         {errors.password && <ErrorMessage>{errors.password}</ErrorMessage>}
       </FormGroup>
-
       <FormOptions>
         <RememberMe>
           <input
@@ -154,16 +168,14 @@ export default function LoginForm({
           {t("forgotPassword")}
         </ForgotPassword>
       </FormOptions>
-
       <SubmitButton type="submit" disabled={loading}>
         {loading ? t("loading") : t("submit")}
       </SubmitButton>
-
       <AltAction>
         {t("noAccount")}{" "}
-        <SwitchTabLink type="button" onClick={() => switchTab("register")}>
-          {t("registerNow")}
-        </SwitchTabLink>
+        <Link href="/register" passHref>
+          <SwitchTabLink as="a">{t("registerNow")}</SwitchTabLink>
+        </Link>
       </AltAction>
     </Form>
   );

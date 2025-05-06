@@ -14,16 +14,14 @@ interface Props {
 }
 
 const ModuleDetailModal: React.FC<Props> = ({ module, onClose }) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation("adminModules");
   const [isEditModalOpen, setEditModalOpen] = useState(false);
 
   const currentLang = (i18n.language || "en") as keyof AdminModule["label"];
   const moduleLabel = module.label?.[currentLang] || module.name;
 
   const handleEditSuccess = () => {
-    toast.success(
-      t("admin.modules.updateSuccess", "Modül başarıyla güncellendi!")
-    );
+    toast.success(t("updateSuccess", "Module updated successfully!"));
     setEditModalOpen(false);
     onClose();
   };
@@ -48,22 +46,22 @@ const ModuleDetailModal: React.FC<Props> = ({ module, onClose }) => {
 
           <Content>
             <DetailItem>
-              <strong>{t("createdAt", "Oluşturuldu")}:</strong>{" "}
-              {module?.createdAt && typeof module.createdAt === "string"
-                ? new window.Date(module.createdAt).toLocaleString()
+              <strong>{t("createdAt", "Created At")}:</strong>{" "}
+              {module?.createdAt
+                ? new Date(module.createdAt).toLocaleString()
                 : "-"}
             </DetailItem>
 
             <DetailItem>
-              <strong>{t("updatedAt", "Güncellendi")}:</strong>{" "}
-              {module?.updatedAt && typeof module.updatedAt === "string"
-                ? new window.Date(module.updatedAt).toLocaleString()
+              <strong>{t("updatedAt", "Updated At")}:</strong>{" "}
+              {module?.updatedAt
+                ? new Date(module.updatedAt).toLocaleString()
                 : "-"}
             </DetailItem>
 
             {module.history && module.history.length > 0 && (
               <>
-                <SectionTitle>{t("history", "Versiyon Geçmişi")}</SectionTitle>
+                <SectionTitle>{t("history", "Version History")}</SectionTitle>
                 <HistoryList>
                   {module.history.map((h, i) => (
                     <HistoryItem key={i}>
@@ -73,11 +71,9 @@ const ModuleDetailModal: React.FC<Props> = ({ module, onClose }) => {
                         </Version>
                         <Author>{h.by}</Author>
                         <HistoryDate>
-                          (
-                          {h.date
-                            ? new window.Date(h.date).toLocaleDateString()
-                            : "-"}
-                          )
+                          ({h.date
+                            ? new Date(h.date).toLocaleDateString()
+                            : "-"})
                         </HistoryDate>
                       </VersionLine>
                       {h.note && <NoteText>{h.note}</NoteText>}
@@ -106,123 +102,126 @@ const Overlay = styled.div`
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(3px);
-  z-index: 9999;
+  z-index: ${({ theme }) => theme.zIndex.modal};
   display: flex;
   justify-content: center;
   align-items: center;
 `;
 
 const Modal = styled.div`
-  background: ${({ theme }) => theme.background};
-  padding: 2rem;
+  background: ${({ theme }) => theme.colors.background};
+  padding: ${({ theme }) => theme.spacing.lg};
   max-width: 600px;
   width: 95%;
-  border-radius: 10px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  border-radius: ${({ theme }) => theme.radii.md};
+  box-shadow: ${({ theme }) => theme.shadows.lg};
 `;
 
 const Header = styled.div`
-  margin-bottom: 1.5rem;
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
 
 const Title = styled.h3`
-  font-size: 1.2rem;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
   margin: 0;
 `;
 
 const ModuleName = styled.span`
-  font-size: 0.9rem;
-  color: ${({ theme }) => theme.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const ButtonGroup = styled.div`
   display: flex;
-  gap: 0.5rem;
+  gap: ${({ theme }) => theme.spacing.xs};
 `;
 
 const EditButton = styled.button`
-  background: ${({ theme }) => theme.warning};
-  color: white;
+  background: ${({ theme }) => theme.colors.warning};
+  color: ${({ theme }) => theme.colors.whiteColor};
   border: none;
-  border-radius: 6px;
+  border-radius: ${({ theme }) => theme.radii.sm};
   padding: 0.3rem 0.6rem;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity ${({ theme }) => theme.transition.fast};
+
   &:hover {
-    opacity: 0.8;
+    opacity: ${({ theme }) => theme.opacity.hover};
   }
 `;
 
 const CloseButton = styled.button`
-  background: ${({ theme }) => theme.danger};
-  color: white;
+  background: ${({ theme }) => theme.colors.danger};
+  color: ${({ theme }) => theme.colors.whiteColor};
   border: none;
-  border-radius: 6px;
+  border-radius: ${({ theme }) => theme.radii.sm};
   padding: 0.3rem 0.6rem;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity ${({ theme }) => theme.transition.fast};
+
   &:hover {
-    opacity: 0.8;
+    opacity: ${({ theme }) => theme.opacity.hover};
   }
 `;
 
 const Content = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: ${({ theme }) => theme.spacing.sm};
 `;
 
 const DetailItem = styled.p`
   margin: 0;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
 const SectionTitle = styled.h4`
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  border-bottom: 1px solid ${({ theme }) => theme.border};
-  padding-bottom: 0.3rem;
+  margin-top: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  padding-bottom: ${({ theme }) => theme.spacing.xs};
 `;
 
 const HistoryList = styled.ul`
-  padding-left: 1.2rem;
+  padding-left: ${({ theme }) => theme.spacing.md};
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: ${({ theme }) => theme.spacing.md};
 `;
 
 const HistoryItem = styled.li`
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: ${({ theme }) => theme.spacing.xs};
 `;
 
 const VersionLine = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.95rem;
+  gap: ${({ theme }) => theme.spacing.xs};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
 const Version = styled.span`
-  font-weight: bold;
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 `;
 
 const Author = styled.span`
-  color: ${({ theme }) => theme.primary};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const NoteText = styled.div`
-  font-size: 0.85rem;
-  opacity: 0.8;
-  padding-left: 1.2rem;
-  border-left: 2px solid ${({ theme }) => theme.primary};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  opacity: 0.85;
+  padding-left: ${({ theme }) => theme.spacing.md};
+  border-left: ${({ theme }) => theme.borders.thick} ${({ theme }) => theme.colors.primary};
 `;
 
 const HistoryDate = styled.span`
-  font-size: 0.8rem;
+  font-size: ${({ theme }) => theme.fontSizes.xs};
   opacity: 0.7;
 `;

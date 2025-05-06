@@ -3,17 +3,20 @@
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { getImageSrc } from "@/utils/getImageSrc";
+import type { ImageType } from "@/types/image"; // ✅ Tip eklendi
 
 interface Props {
   max?: number;
   defaultImages?: string[];
   onChange?: (files: File[], removedImages: string[]) => void;
+  folder?: ImageType; // ✅ Artık string değil, ImageType tipi
 }
 
 const ImageUploadWithPreview: React.FC<Props> = ({
   max = 5,
   defaultImages = [],
   onChange,
+  folder = "blog", // ✅ Default olarak blog
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [files, setFiles] = useState<File[]>([]);
@@ -29,7 +32,7 @@ const ImageUploadWithPreview: React.FC<Props> = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newFiles = Array.from(e.target.files || []);
-    const total = files.length + newFiles.length;
+    const total = files.length + existingImages.length + newFiles.length;
     if (total > max) return;
 
     const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
@@ -53,7 +56,7 @@ const ImageUploadWithPreview: React.FC<Props> = ({
 
   return (
     <Wrapper>
-      <input
+      <FileInput
         ref={fileInputRef}
         type="file"
         accept="image/*"
@@ -73,7 +76,7 @@ const ImageUploadWithPreview: React.FC<Props> = ({
         {existingImages.map((url, i) => (
           <PreviewBox key={`existing-${i}`}>
             <RemoveBtn onClick={() => removeExistingImage(url)}>×</RemoveBtn>
-            <ImagePreview src={getImageSrc(url, "blog")} alt={`image-${i}`} />
+            <ImagePreview src={getImageSrc(url, folder)} alt={`image-${i}`} />
           </PreviewBox>
         ))}
 
@@ -90,48 +93,75 @@ const ImageUploadWithPreview: React.FC<Props> = ({
 
 export default ImageUploadWithPreview;
 
+// 🎨 Styled Components
+
 const Wrapper = styled.div`
-  margin-top: 1rem;
+  margin-top: ${({ theme }) => theme.spacing.md};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
 `;
 
+const FileInput = styled.input``;
+
 const UploadButton = styled.button<{ disabled?: boolean }>`
-  background: ${({ theme, disabled }) => (disabled ? "#aaa" : theme.primary)};
-  color: white;
-  padding: 8px 16px;
+  background: ${({ theme, disabled }) =>
+    disabled ? theme.colors.disabled : theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
   border: none;
-  border-radius: 6px;
+  border-radius: ${({ theme }) => theme.radii.sm};
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
-  margin-bottom: 1rem;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  transition: ${({ theme }) => theme.transition.normal};
+
+  &:hover {
+    background: ${({ theme, disabled }) =>
+      disabled ? theme.colors.disabled : theme.buttons.primary.backgroundHover};
+  }
 `;
 
 const PreviewGrid = styled.div`
   display: flex;
-  gap: 10px;
+  gap: ${({ theme }) => theme.spacing.sm};
   flex-wrap: wrap;
 `;
 
 const PreviewBox = styled.div`
   position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  overflow: hidden;
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
 `;
 
 const RemoveBtn = styled.button`
   position: absolute;
   top: 4px;
   right: 4px;
-  background: red;
-  color: white;
+  background: ${({ theme }) => theme.buttons.danger.background};
+  color: ${({ theme }) => theme.buttons.danger.text};
   border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
+  border-radius: ${({ theme }) => theme.radii.circle};
+  width: 24px;
+  height: 24px;
   font-weight: bold;
   cursor: pointer;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: ${({ theme }) => theme.zIndex.dropdown};
+
+  &:hover {
+    background: ${({ theme }) => theme.buttons.danger.backgroundHover};
+  }
 `;
 
 const ImagePreview = styled.img`
-  width: 100px;
-  height: auto;
-  border-radius: 6px;
-  border: 1px solid ${({ theme }) => theme.border};
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 `;
-

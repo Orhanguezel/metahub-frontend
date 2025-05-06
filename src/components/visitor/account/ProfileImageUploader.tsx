@@ -29,10 +29,10 @@ export default function ProfileImageUploader({ imageUrl }: Props) {
     setLoading(true);
     try {
       await dispatch(updateProfileImage(file)).unwrap();
-      toast.success(t("form.success"));
+      toast.success(t("form.imageSuccess"));
       setFile(null);
     } catch (err: any) {
-      toast.error(err?.message || t("form.error"));
+      toast.error(err?.message || t("form.imageError"));
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,7 @@ export default function ProfileImageUploader({ imageUrl }: Props) {
   return (
     <Wrapper>
       <Image src={getImageSrc(imageUrl)} alt="Profile" />
-      <Input type="file" onChange={handleChange} />
+      <FileInput type="file" onChange={handleChange} />
       <Button onClick={handleUpload} disabled={!file || loading}>
         {loading ? t("form.loading") : t("form.upload")}
       </Button>
@@ -49,35 +49,56 @@ export default function ProfileImageUploader({ imageUrl }: Props) {
   );
 }
 
+// 🎨 styled-components
+
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  padding: ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
 `;
 
 const Image = styled.img`
-  max-width: 120px;
-  border-radius: 50%;
-  margin-bottom: 1rem;
-  border: 2px solid ${({ theme }) => theme.border || "#ccc"};
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: ${({ theme }) => theme.radii.circle};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  transition: ${({ theme }) => theme.transition.normal};
+
+  &:hover {
+    opacity: ${({ theme }) => theme.opacity.hover};
+  }
 `;
 
-const Input = styled.input`
-  padding: 0.5rem 0;
+const FileInput = styled.input`
+  width: 100%;
+  padding: ${({ theme }) => theme.spacing.sm} 0;
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
 const Button = styled.button`
-  padding: 0.6rem 1.2rem;
-  background: ${({ theme }) => theme.primary};
-  color: white;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.lg};
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.whiteColor};
   border: none;
-  border-radius: 6px;
-  font-weight: 600;
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   cursor: pointer;
+  transition: ${({ theme }) => theme.transition.normal};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryHover};
+  }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: ${({ theme }) => theme.opacity.disabled};
     cursor: not-allowed;
   }
 `;

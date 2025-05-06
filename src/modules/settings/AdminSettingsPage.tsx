@@ -12,15 +12,18 @@ interface AdminSettingsPageProps {
   settings?: Setting[];
 }
 
-export default function AdminSettingsPage({ settings = [] }: AdminSettingsPageProps) {
-  const { t } = useTranslation("admin-settings");
+export default function AdminSettingsPage({
+  settings = [],
+}: AdminSettingsPageProps) {
+  const { t } = useTranslation("adminSettings");
 
   const [selectedSetting, setSelectedSetting] = useState<Setting | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
 
   // ✅ available_themes bilgisini ayıkla
-  const availableThemesSetting = settings.find((s) => s.key === "available_themes");
+  const availableThemesSetting = settings.find(
+    (s) => s.key === "available_themes"
+  );
 
   const [availableThemes, setAvailableThemes] = useState<string[]>(
     Array.isArray(availableThemesSetting?.value)
@@ -49,7 +52,9 @@ export default function AdminSettingsPage({ settings = [] }: AdminSettingsPagePr
     <Wrapper>
       <TopBar>
         <Title>{t("title", "Settings")}</Title>
-        <AddButton onClick={handleCreate}>➕ {t("addSetting", "Add Setting")}</AddButton>
+        <AddButton onClick={handleCreate}>
+          ➕ {t("addSetting", "Add Setting")}
+        </AddButton>
       </TopBar>
 
       {!Array.isArray(settings) || settings.length === 0 ? (
@@ -66,6 +71,7 @@ export default function AdminSettingsPage({ settings = [] }: AdminSettingsPagePr
           onSave={handleCloseModal}
         />
       </Modal>
+  
     </Wrapper>
   );
 }

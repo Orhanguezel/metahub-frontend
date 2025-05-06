@@ -1,0 +1,52 @@
+{
+  "deleteTitle": "Modul löschen",
+  "deleteWarning": "Sind Sie sicher, dass Sie dieses Modul dauerhaft löschen möchten?",
+  "close": "Schließen",
+  "cancel": "Abbrechen",
+  "confirmDelete": "Dauerhaft löschen",
+  "create": "Neues Modul hinzufügen",
+  "name": "Modulname",
+  "icon": "Icon",
+  "language": "Sprache",
+  "order": "Reihenfolge",
+  "visibleInSidebar": "In der Seitenleiste anzeigen",
+  "useAnalytics": "Analytics aktivieren",
+  "enabled": "Aktiviert",
+  "showInDashboard": "Im Dashboard anzeigen",
+  "createSubmit": "Erstellen",
+  "errors": {
+    "nameRequired": "Der Modulname darf nicht leer sein.",
+    "createFailed": "Das Modul konnte nicht erstellt werden."
+  },
+  "success": {
+    "created": "Modul wurde erfolgreich erstellt. Überprüfen Sie Ihre .env-Datei, um es zu aktivieren."
+  },
+  "editTitle": "Modul bearbeiten",
+  "label": {
+    "tr": "Beschriftung (Türkisch)",
+    "en": "Beschriftung (Englisch)",
+    "de": "Beschriftung (Deutsch)"
+  },
+  "labelPlaceholder": {
+    "tr": "Beschriftung eingeben (Türkisch)",
+    "en": "Beschriftung eingeben (Englisch)",
+    "de": "Beschriftung eingeben (Deutsch)"
+  },
+  "iconPlaceholder": "Symbolname eingeben",
+  "roles": "Rollen (mit Komma trennen)",
+  "save": "Speichern",
+  "updateSuccess": "Modul erfolgreich aktualisiert!",
+  "updateError": "Beim Aktualisieren ist ein Fehler aufgetreten.",
+  "createdAt": "Erstellt am",
+  "updatedAt": "Aktualisiert am",
+  "more": "mehr",
+  "swagger": "Swagger",
+  "history": "Versionsverlauf",
+  "title": "Modulverwaltung",
+  "createNew": "Neues Modul hinzufügen",
+  "project": "Projekt auswählen:",
+  "noProjects": "Keine Projekte gefunden",
+  "search": "Module suchen...",
+  "loading": "Wird geladen...",
+  "noModulesFound": "Keine Module gefunden."
+}

@@ -53,7 +53,7 @@ export default function FooterSocialLinks({ links }: FooterSocialLinksProps) {
 
         if (!icon) return null; // desteklenmeyen sosyal medya varsa geç
 
-        console.log("🌀 Rendering icon:", normalizedKey, "➡️", url);
+
 
         return (
           <SocialLink

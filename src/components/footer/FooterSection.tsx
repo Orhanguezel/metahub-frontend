@@ -9,7 +9,7 @@ import FooterSocialLinks from "@/components/footer/FooterSocialLinks";
 import FooterCopyright from "@/components/footer/FooterCopyright";
 import { useTranslation } from "react-i18next";
 import { getImageSrc } from "@/utils/getImageSrc";
-import { useMemo, useEffect } from "react";
+import { useMemo } from "react";
 import Loading from "@/components/shared/Loading";
 import { SocialLinks } from "@/types/SocialLinks";
 
@@ -45,10 +45,7 @@ export default function FooterSection() {
     return undefined;
   };
 
-  // ✅ Debug: Settings durumu
-  useEffect(() => {
-    console.log("✅ [FooterSection] Settings loaded:", settings);
-  }, [settings]);
+ 
 
   // ✅ Logo
   const logoRaw = settings.find((s) => s.key === "footer_logo")?.value;

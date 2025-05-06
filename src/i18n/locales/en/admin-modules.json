@@ -1,0 +1,53 @@
+{
+  "deleteTitle": "Delete Module",
+  "deleteWarning": "Are you sure you want to permanently delete this module?",
+  "close": "Close",
+  "cancel": "Cancel",
+  "confirmDelete": "Delete Permanently",
+  "create": "Add New Module",
+  "name": "Module Name",
+  "icon": "Icon",
+  "language": "Language",
+  "order": "Order",
+  "visibleInSidebar": "Show in Sidebar",
+  "useAnalytics": "Enable Analytics",
+  "enabled": "Enabled",
+  "showInDashboard": "Show on Dashboard",
+  "createSubmit": "Create",
+  "errors": {
+    "nameRequired": "Module name is required.",
+    "createFailed": "Module creation failed."
+  },
+  "success": {
+    "created": "Module created successfully. Check your .env file to activate it."
+  },
+  "editTitle": "Edit Module",
+  "label": {
+    "tr": "Label (Turkish)",
+    "en": "Label (English)",
+    "de": "Label (German)"
+  },
+  "labelPlaceholder": {
+    "tr": "Enter label (Turkish)",
+    "en": "Enter label (English)",
+    "de": "Enter label (German)"
+  },
+  "iconPlaceholder": "Enter icon name",
+  "roles": "Roles (comma separated)",
+  "save": "Save",
+  "updateSuccess": "Module updated successfully!",
+  "updateError": "An error occurred during update.",
+  "delete": "Delete Module",
+  "createdAt": "Created At",
+  "updatedAt": "Updated At",
+  "more": "more",
+  "swagger": "Swagger",
+  "history": "Version History",
+  "title": "Module Management",
+  "createNew": "Add New Module",
+  "project": "Select Project:",
+  "noProjects": "No projects found",
+  "search": "Search modules...",
+  "loading": "Loading...",
+  "noModulesFound": "No modules found."
+}

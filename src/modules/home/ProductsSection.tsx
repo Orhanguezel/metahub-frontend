@@ -10,67 +10,99 @@ import { addToCart } from "@/store/cartSlice";
 import { useEffect, useState } from "react";
 
 const Section = styled(motion.section)`
-  padding: 4rem 2rem;
-  background: ${({ theme }) => theme.backgroundAlt || "#f8f8fc"};
+  padding: ${({ theme }) => theme.spacing["2xl"]} ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   text-align: center;
-  color: ${({ theme }) => theme.text};
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const Title = styled.h2`
-  font-size: 1.8rem;
-  margin-bottom: 2rem;
+  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
 `;
 
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 2rem;
+  gap: ${({ theme }) => theme.spacing.lg};
 `;
 
 const Card = styled(motion.div)`
-  background: ${({ theme }) => theme.cardBackground || "#fff"};
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: ${({ theme }) => theme.spacing.md};
+  box-shadow: ${({ theme }) => theme.shadows.light};
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: transform ${({ theme }) => theme.transition.fast};
+
+  &:hover {
+    transform: translateY(-5px);
+  }
 `;
 
 const ProductImage = styled(Image)`
-  border-radius: 8px;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  object-fit: cover;
+  width: 100%;
+  height: auto;
+  max-height: 200px;
 `;
 
 const Name = styled.h4`
-  font-size: 1rem;
-  margin: 0.5rem 0;
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  margin: ${({ theme }) => theme.spacing.sm} 0;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const Price = styled.p`
-  font-weight: bold;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const Button = styled.button`
-  background: ${({ theme }) => theme.primary || "rebeccapurple"};
-  color: white;
-  padding: 8px 14px;
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.buttonText};
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.md};
   border: none;
-  border-radius: 6px;
-  margin-top: 0.5rem;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  margin-top: ${({ theme }) => theme.spacing.sm};
   cursor: pointer;
-  transition: background 0.3s ease;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  transition: background ${({ theme }) => theme.transition.fast}, transform 0.2s ease;
 
   &:hover {
-    background: ${({ theme }) => theme.primaryDark || "indigo"};
+    background: ${({ theme }) => theme.colors.primaryHover};
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:focus {
+    outline: 2px solid ${({ theme }) => theme.colors.primaryTransparent};
+    outline-offset: 2px;
   }
 `;
 
 const SeeAll = styled(Link)`
   display: inline-block;
-  margin-top: 2rem;
-  color: ${({ theme }) => theme.primary || "rebeccapurple"};
-  font-weight: 500;
+  margin-top: ${({ theme }) => theme.spacing.xl};
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
   text-decoration: none;
+  transition: color ${({ theme }) => theme.transition.fast};
 
   &:hover {
     text-decoration: underline;

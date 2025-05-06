@@ -18,19 +18,23 @@ export default function ForgotPasswordPage() {
 
 const Wrapper = styled.div`
   max-width: 400px;
-  margin: 3rem auto;
-  padding: 2rem;
-  background: ${({ theme }) => theme.backgroundSecondary};
-  border-radius: 12px;
-  box-shadow: ${({ theme }) => theme.shadows.light};
+  margin: ${({ theme }) => theme.spacing.lg} auto;
+  padding: ${({ theme }) => theme.spacing.lg};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border-radius: ${({ theme }) => theme.radii.md};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  color: ${({ theme }) => theme.colors.text};
 
   h2 {
-    margin-bottom: 1rem;
-    color: ${({ theme }) => theme.text};
+    margin-bottom: ${({ theme }) => theme.spacing.md};
+    color: ${({ theme }) => theme.colors.text};
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
   }
 
   p {
-    margin-bottom: 1.5rem;
-    color: ${({ theme }) => theme.textSecondary};
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
+    color: ${({ theme }) => theme.colors.textSecondary};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
   }
 `;

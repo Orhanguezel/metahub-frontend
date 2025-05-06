@@ -20,7 +20,7 @@ import ConfirmDeleteModal from "@/components/admin/modules/ConfirmDeleteModal";
 
 const ModuleManager = () => {
   const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation("adminModules");
 
   const {
     modules,
@@ -92,13 +92,13 @@ const ModuleManager = () => {
   return (
     <Container>
       <Header>
-        <h2>{t("admin.modules.title", "Modül Yönetimi")}</h2>
+        <Title>{t("title", "Module Management")}</Title>
         <ButtonGroup>
-          <button onClick={() => setCreateModalOpen(true)}>
-            ➕ {t("admin.modules.createNew", "Yeni Modül Ekle")}
-          </button>
+          <AddButton onClick={() => setCreateModalOpen(true)}>
+            ➕ {t("createNew", "Add New Module")}
+          </AddButton>
           <ProjectSelector>
-            <label>{t("admin.modules.project", "Proje Seç:")}</label>
+            <label>{t("project", "Select Project:")}</label>
             <select value={selectedProject} onChange={handleProjectChange}>
               {availableProjects.length > 0 ? (
                 availableProjects.map((proj) => (
@@ -107,7 +107,7 @@ const ModuleManager = () => {
                   </option>
                 ))
               ) : (
-                <option disabled>{t("admin.modules.noProjects", "Proje bulunamadı")}</option>
+                <option disabled>{t("noProjects", "No projects found")}</option>
               )}
             </select>
           </ProjectSelector>
@@ -116,12 +116,12 @@ const ModuleManager = () => {
 
       <SearchInput
         type="text"
-        placeholder={t("admin.modules.search", "Modül ara...")}
+        placeholder={t("search", "Search modules...")}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      {loading && <p>{t("admin.loading", "Yükleniyor...")}</p>}
+      {loading && <InfoText>{t("loading", "Loading...")}</InfoText>}
       {error && <ErrorText>{error}</ErrorText>}
       {successMessage && <SuccessText>{successMessage}</SuccessText>}
 
@@ -140,7 +140,7 @@ const ModuleManager = () => {
           ))
         ) : (
           <EmptyResult>
-            {t("admin.modules.noModulesFound", "Hiç modül bulunamadı.")}
+            {t("noModulesFound", "No modules found.")}
           </EmptyResult>
         )}
       </Grid>
@@ -172,58 +172,101 @@ export default ModuleManager;
 // --- Styled Components ---
 
 const Container = styled.div`
-  padding: 2rem;
+  padding: ${({ theme }) => theme.spacing.lg};
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const Title = styled.h2`
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  color: ${({ theme }) => theme.colors.text};
+  margin: 0;
 `;
 
 const ButtonGroup = styled.div`
   display: flex;
-  gap: 1rem;
+  gap: ${({ theme }) => theme.spacing.md};
   align-items: center;
 `;
 
+const AddButton = styled.button`
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  cursor: pointer;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  transition: background ${({ theme }) => theme.transition.fast};
+
+  &:hover {
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+  }
+`;
+
 const ProjectSelector = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+
+  label {
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    color: ${({ theme }) => theme.colors.textSecondary};
+  }
+
   select {
-    padding: 0.5rem;
-    border-radius: 6px;
-    border: 1px solid ${({ theme }) => theme.border};
+    padding: ${({ theme }) => theme.spacing.sm};
+    border-radius: ${({ theme }) => theme.radii.sm};
+    border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    background: ${({ theme }) => theme.inputs.background};
+    color: ${({ theme }) => theme.inputs.text};
   }
 `;
 
 const SearchInput = styled.input`
-  margin-top: 1rem;
-  padding: 0.5rem;
+  margin-top: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.sm};
   width: 100%;
   max-width: 400px;
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 6px;
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  background: ${({ theme }) => theme.inputs.background};
+  color: ${({ theme }) => theme.inputs.text};
 `;
 
 const Grid = styled.div`
-  margin-top: 2rem;
+  margin-top: ${({ theme }) => theme.spacing.lg};
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+  gap: ${({ theme }) => theme.spacing.lg};
+`;
+
+const InfoText = styled.p`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const ErrorText = styled.p`
-  color: red;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.danger};
 `;
 
 const SuccessText = styled.p`
-  color: green;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.success};
 `;
 
 const EmptyResult = styled.div`
   grid-column: 1 / -1;
   text-align: center;
-  font-size: 1rem;
-  color: ${({ theme }) => theme.textSecondary};
-  padding: 2rem 0;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  padding: ${({ theme }) => theme.spacing.xl} 0;
 `;

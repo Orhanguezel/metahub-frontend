@@ -1,27 +1,39 @@
 "use client";
-
+import type { ReactNode } from "react";
 import { SocialLinks as SocialLinksWrapper } from "./NavbarStyles";
-import { FaInstagram, FaTiktok, FaPinterestP } from "react-icons/fa";
+import { useAppSelector } from "@/store/hooks";
+import { FaInstagram, FaTiktok, FaPinterestP, FaFacebook, FaLinkedin, FaTwitter } from "react-icons/fa";
 
-const SOCIAL_LINKS = [
-  { href: "https://instagram.com", icon: <FaInstagram /> },
-  { href: "https://tiktok.com", icon: <FaTiktok /> },
-  { href: "https://pinterest.com", icon: <FaPinterestP /> },
-];
+// 🔑 Desteklenen ikonlar (string -> gerçek ikon)
+const ICON_MAP: Record<string, ReactNode> = {
+  FaInstagram: <FaInstagram />,
+  FaTiktok: <FaTiktok />,
+  FaPinterestP: <FaPinterestP />,
+  FaFacebook: <FaFacebook />,
+  FaLinkedin: <FaLinkedin />,
+  FaTwitter: <FaTwitter />,
+};
 
 export function SocialLinks() {
+  const settings = useAppSelector((state) => state.setting.settings) || [];
+  const socialLinksSetting = settings.find((s) => s.key === "navbar_social_links");
+  const socialLinks = socialLinksSetting?.value && typeof socialLinksSetting.value === "object"
+    ? socialLinksSetting.value
+    : {};
+
   return (
     <SocialLinksWrapper>
-      {SOCIAL_LINKS.map((item, index) => (
-        <a
-          key={index}
-          href={item.href}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {item.icon}
-        </a>
-      ))}
+      {Object.entries(socialLinks).map(([key, { url, icon }]: any) => {
+        if (!url || !icon) return null;
+        const IconComponent = ICON_MAP[icon] || null;
+        if (!IconComponent) return null;
+
+        return (
+          <a key={key} href={url} target="_blank" rel="noopener noreferrer">
+            {IconComponent}
+          </a>
+        );
+      })}
     </SocialLinksWrapper>
   );
 }

@@ -54,20 +54,20 @@ const initialState: AccountState = {
 };
 
 export const fetchCurrentUser = createAsyncThunk("account/fetchCurrentUser", async (_, thunkAPI) => {
-  return await apiCall("get", "users/account/me", null, thunkAPI.rejectWithValue);
+  return await apiCall("get", "/users/account/me", null, thunkAPI.rejectWithValue);
 });
 
 export const updateMyProfile = createAsyncThunk(
   "account/updateMyProfile",
   async (data: { name?: string; email?: string; phone?: string; language?: string }, thunkAPI) => {
-    return await apiCall("put", "users/account/me/update", data, thunkAPI.rejectWithValue);
+    return await apiCall("put", "/users/account/me/update", data, thunkAPI.rejectWithValue);
   }
 );
 
 export const updateMyPassword = createAsyncThunk(
   "account/updateMyPassword",
   async (data: { currentPassword: string; newPassword: string }, thunkAPI) => {
-    return await apiCall("put", "users/account/me/password", data, thunkAPI.rejectWithValue);
+    return await apiCall("put", "/users/account/me/password", data, thunkAPI.rejectWithValue);
   }
 );
 
@@ -79,7 +79,7 @@ export const updateProfileImage = createAsyncThunk(
 
     return await apiCall(
       "put",
-      "users/account/me/profile-image",
+      "/users/account/me/profile-image",
       formData,
       thunkAPI.rejectWithValue,
       {
@@ -109,29 +109,35 @@ export const updateSocialMediaLinks = createAsyncThunk(
   }
 );
 
+export const updateProfileImages = createAsyncThunk(
+  "users/account/profile-image",
+  async (file: File, thunkAPI) => {
+    const formData = new FormData();
+    formData.append("profileImage", file); 
 
-export const updateAddress = createAsyncThunk(
-  "account/updateAddress",
-  async (addresses: Address[], thunkAPI) => {
-    return await apiCall("put", "/users/account/me/addresses", { addresses }, thunkAPI.rejectWithValue);
+    return await apiCall(
+      "put",
+      "/users/account/me/profile-image",
+      formData,
+      thunkAPI.rejectWithValue,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
   }
 );
 
-
-
-export const updatePayment = createAsyncThunk(
-  "account/updatePayment",
-  async (payment: Payment, thunkAPI) => {
-    return await apiCall("put", "/users/account/me", { payment }, thunkAPI.rejectWithValue);
-  }
-);
 
 export const deleteUserAccount = createAsyncThunk(
   "account/deleteUserAccount",
   async (payload: { password: string }, thunkAPI) => {
-    return await apiCall("delete", "users/auth/delete", payload, thunkAPI.rejectWithValue);
+    return await apiCall("post", "/users/account/me/delete", payload, thunkAPI.rejectWithValue);
   }
 );
+
+
 
 const accountSlice = createSlice({
   name: "account",
@@ -198,26 +204,6 @@ const accountSlice = createSlice({
         state.successMessage = action.payload.message;
       })
       .addCase(updateSocialMediaLinks.rejected, failed)
-
-      .addCase(updateAddress.pending, loading)
-      .addCase(updateAddress.fulfilled, (state, action) => {
-        state.loading = false;
-        if (state.profile) {
-          state.profile.addresses = action.payload.addresses;
-        }
-        state.successMessage = action.payload.message;
-      })
-      .addCase(updateAddress.rejected, failed)
-
-      .addCase(updatePayment.pending, loading)
-      .addCase(updatePayment.fulfilled, (state, action) => {
-        state.loading = false;
-        if (state.profile) {
-          state.profile.payment = action.payload.payment;
-        }
-        state.successMessage = action.payload.message;
-      })
-      .addCase(updatePayment.rejected, failed)
 
       .addCase(updateProfileImage.pending, loading)
       .addCase(updateProfileImage.fulfilled, (state, action: PayloadAction<{ profileImage: string; profileImageUrl: string }>) => {

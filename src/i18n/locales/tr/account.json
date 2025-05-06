@@ -1,18 +1,75 @@
 {
+  "address": {
+    "title": "Adresim",
+    "street": "Sokak",
+    "houseNumber": "Kapı Numarası",
+    "city": "Şehir",
+    "zipCode": "Posta Kodu",
+    "add": "Ekle",
+    "saving": "Kaydediliyor...",
+    "update": "Güncelle",
+    "remove": "Sil",
+    "success": "Adres başarıyla kaydedildi.",
+    "deleted": "Adres başarıyla silindi.",
+    "error": "Bir hata oluştu.",
+    "errors": {
+      "street": "Sokak zorunludur.",
+      "houseNumber": "Kapı numarası zorunludur.",
+      "city": "Şehir zorunludur.",
+      "zipCode": "Posta kodu zorunludur."
+    }
+  },
+  "delete": {
+    "title": "Hesabı Sil",
+    "warning": "Bu işlem geri alınamaz. Hesabınızı kalıcı olarak silmek için aşağıdan onaylayın.",
+    "loggedInAs": "Giriş yapılan hesap:",
+    "password": "Şifreniz",
+    "confirmation": "Onaylamak için 'delete' yazın",
+    "button": "Hesabı Sil",
+    "loading": "Siliniyor...",
+    "success": "Hesabınız başarıyla silindi.",
+    "error": "Hesap silinirken bir hata oluştu.",
+    "confirmationError": "Lütfen onaylamak için 'delete' yazın."
+  },
   "notifications": {
-    "title": "Notification Preferences",
-    "email": "Receive email notifications",
-    "sms": "Receive SMS notifications",
-    "push": "Receive push notifications",
-    "save": "Save Preferences"
+    "title": "Bildirim Ayarları",
+    "email": "E-posta bildirimleri almak istiyorum",
+    "sms": "SMS bildirimleri almak istiyorum",
+    "save": "Ayarları Kaydet",
+    "saving": "Kaydediliyor...",
+    "success": "Bildirim ayarlarınız güncellendi.",
+    "error": "Bildirim ayarlarınız güncellenirken bir hata oluştu."
+  },
+  "form": {
+    "title": "Profil Bilgileri",
+    "name": "Ad",
+    "email": "E-posta",
+    "phone": "Telefon (opsiyonel)",
+    "save": "Değişiklikleri Kaydet",
+    "saving": "Kaydediliyor...",
+    "success": "Profil başarıyla güncellendi.",
+    "error": "Profil güncellenirken bir hata oluştu.",
+    "upload": "Yükle",
+    "loading": "Yükleniyor...",
+    "imageSuccess": "Profil resmi başarıyla güncellendi.",
+    "imageError": "Profil resmi güncellenirken bir hata oluştu.",
+    "errors": {
+      "name": "Ad alanı zorunludur.",
+      "email": "E-posta alanı zorunludur.",
+      "emailInvalid": "Geçerli bir e-posta adresi girin."
+    }
   },
   "social": {
     "title": "Sosyal Medya Bağlantıları",
     "save": "Kaydet",
+    "saving": "Kaydediliyor...",
+    "success": "Sosyal medya bağlantıları başarıyla güncellendi.",
+    "error": "Sosyal medya bağlantıları güncellenirken bir hata oluştu.",
     "errors": {
-      "instagram": "Geçerli bir Instagram URL girin.",
-      "facebook": "Geçerli bir Facebook URL girin.",
-      "twitter": "Geçerli bir Twitter URL girin."
+      "instagramInvalid": "Lütfen geçerli bir Instagram URL'si girin.",
+      "facebookInvalid": "Lütfen geçerli bir Facebook URL'si girin.",
+      "twitterInvalid": "Lütfen geçerli bir Twitter URL'si girin."
     }
   }
 }
+

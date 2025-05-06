@@ -15,7 +15,7 @@ interface Props {
 
 const EditModuleModal: React.FC<Props> = ({ module, onClose }) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation();
+  const { t } = useTranslation("adminModules");
   const { selectedProject } = useAppSelector((state) => state.admin);
 
   const [form, setForm] = useState({
@@ -68,11 +68,11 @@ const EditModuleModal: React.FC<Props> = ({ module, onClose }) => {
       ).unwrap();
 
       await dispatch(fetchAdminModules(selectedProject));
-      toast.success(t("admin.modules.updateSuccess", "Modül başarıyla güncellendi!"));
+      toast.success(t("updateSuccess", "Module updated successfully!"));
       onClose();
     } catch (err) {
       console.error("Update error:", err);
-      toast.error(t("admin.modules.updateError", "Güncelleme sırasında bir hata oluştu."));
+      toast.error(t("updateError", "An error occurred during update."));
     }
   };
 
@@ -80,88 +80,76 @@ const EditModuleModal: React.FC<Props> = ({ module, onClose }) => {
     <Overlay>
       <Modal>
         <Header>
-          <Title>{t("admin.modules.editTitle", "Modül Düzenle")}</Title>
-          <CloseButton onClick={onClose}>
+          <Title>{t("editTitle", "Edit Module")}</Title>
+          <CloseButton onClick={onClose} aria-label={t("close", "Close")}>
             <XCircle size={22} />
           </CloseButton>
         </Header>
 
         <form onSubmit={handleSubmit}>
           {/* Label inputs */}
-          <InputGroup>
-            <label>Label (TR)</label>
-            <input value={form.label.tr} onChange={(e) => handleLabelChange("tr", e.target.value)} />
-          </InputGroup>
-          <InputGroup>
-            <label>Label (EN)</label>
-            <input value={form.label.en} onChange={(e) => handleLabelChange("en", e.target.value)} />
-          </InputGroup>
-          <InputGroup>
-            <label>Label (DE)</label>
-            <input value={form.label.de} onChange={(e) => handleLabelChange("de", e.target.value)} />
-          </InputGroup>
-
-          {/* Other inputs */}
-          <InputGroup>
-            <label>Icon</label>
-            <input name="icon" value={form.icon} onChange={handleChange} />
-          </InputGroup>
+          {["tr", "en", "de"].map((lang) => (
+            <InputGroup key={lang}>
+              <label>{t(`label.${lang}`, `Label (${lang.toUpperCase()})`)}</label>
+              <input
+                value={(form.label as any)[lang]}
+                onChange={(e) => handleLabelChange(lang as "tr" | "en" | "de", e.target.value)}
+                placeholder={t(`labelPlaceholder.${lang}`, `Enter label (${lang.toUpperCase()})`)}
+              />
+            </InputGroup>
+          ))}
 
           <InputGroup>
-            <label>Roles (virgülle ayır)</label>
-            <input name="roles" value={form.roles} onChange={handleChange} />
+            <label>{t("icon", "Icon")}</label>
+            <input
+              name="icon"
+              value={form.icon}
+              onChange={handleChange}
+              placeholder={t("iconPlaceholder", "Enter icon name")}
+            />
           </InputGroup>
 
-          {/* New fields */}
           <InputGroup>
-            <label>Order (Sıralama)</label>
-            <input type="number" name="order" value={form.order} onChange={handleChange} />
+            <label>{t("roles", "Roles (comma separated)")}</label>
+            <input
+              name="roles"
+              value={form.roles}
+              onChange={handleChange}
+              placeholder="admin, editor"
+            />
+          </InputGroup>
+
+          <InputGroup>
+            <label>{t("order", "Order")}</label>
+            <input
+              type="number"
+              name="order"
+              value={form.order}
+              onChange={handleChange}
+            />
           </InputGroup>
 
           <CheckboxGroup>
-            <label>
-              <input
-                type="checkbox"
-                name="visibleInSidebar"
-                checked={form.visibleInSidebar}
-                onChange={handleChange}
-              />
-              {t("admin.modules.visibleInSidebar", "Sidebar'da göster")}
-            </label>
-
-            <label>
-              <input
-                type="checkbox"
-                name="useAnalytics"
-                checked={form.useAnalytics}
-                onChange={handleChange}
-              />
-              {t("admin.modules.useAnalytics", "Analytics aktif")}
-            </label>
-
-            <label>
-              <input
-                type="checkbox"
-                name="enabled"
-                checked={form.enabled}
-                onChange={handleChange}
-              />
-              {t("admin.modules.enabled", "Modül aktif")}
-            </label>
-
-            <label>
-              <input
-                type="checkbox"
-                name="showInDashboard"
-                checked={form.showInDashboard}
-                onChange={handleChange}
-              />
-              {t("admin.modules.showInDashboard", "Dashboard'da göster")}
-            </label>
+            {[
+              { name: "visibleInSidebar", label: t("visibleInSidebar", "Show in Sidebar") },
+              { name: "useAnalytics", label: t("useAnalytics", "Enable Analytics") },
+              { name: "enabled", label: t("enabled", "Enabled") },
+              { name: "showInDashboard", label: t("showInDashboard", "Show on Dashboard") },
+            ].map((item) => (
+              <label key={item.name}>
+                <input
+                  type="checkbox"
+                  name={item.name}
+                  checked={(form as any)[item.name]}
+                  onChange={handleChange}
+                />
+                {item.label}
+              </label>
+            ))}
           </CheckboxGroup>
 
           <SubmitButton type="submit">
-            {t("save", "Kaydet")}
+            {t("save", "Save")}
           </SubmitButton>
         </form>
       </Modal>
@@ -171,73 +159,90 @@ const EditModuleModal: React.FC<Props> = ({ module, onClose }) => {
 
 export default EditModuleModal;
 
+// --- Styled Components ---
+
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.45);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: ${({ theme }) => theme.zIndex.modal};
 `;
 
 const Modal = styled.div`
-  background: ${({ theme }) => theme.background};
-  padding: 2rem;
-  border-radius: 10px;
+  background: ${({ theme }) => theme.colors.background};
+  padding: ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.md};
   width: 95%;
   max-width: 500px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  box-shadow: ${({ theme }) => theme.shadows.lg};
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: ${({ theme }) => theme.spacing.md};
 `;
 
 const Title = styled.h3`
   margin: 0;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
 const CloseButton = styled.button`
   background: none;
   border: none;
   cursor: pointer;
-  color: ${({ theme }) => theme.danger};
+  color: ${({ theme }) => theme.colors.danger};
+  transition: color ${({ theme }) => theme.transition.fast};
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.error};
+  }
 `;
 
 const InputGroup = styled.div`
-  margin-bottom: 1rem;
+  margin-bottom: ${({ theme }) => theme.spacing.md};
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: ${({ theme }) => theme.spacing.xs};
 
   input, select {
-    padding: 0.5rem;
-    border-radius: 6px;
-    border: 1px solid ${({ theme }) => theme.border};
+    padding: ${({ theme }) => theme.spacing.sm};
+    border-radius: ${({ theme }) => theme.radii.sm};
+    border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    background: ${({ theme }) => theme.inputs.background};
+    color: ${({ theme }) => theme.inputs.text};
   }
 `;
 
 const CheckboxGroup = styled.div`
-  margin-top: 1rem;
+  margin-top: ${({ theme }) => theme.spacing.md};
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: ${({ theme }) => theme.spacing.sm};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
 const SubmitButton = styled.button`
   width: 100%;
-  padding: 0.7rem;
-  margin-top: 1.5rem;
-  background: ${({ theme }) => theme.primary};
-  color: white;
+  padding: ${({ theme }) => theme.spacing.sm};
+  margin-top: ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
   border: none;
-  border-radius: 8px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   cursor: pointer;
+  transition: background ${({ theme }) => theme.transition.fast};
 
   &:hover {
-    opacity: 0.9;
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
   }
 `;

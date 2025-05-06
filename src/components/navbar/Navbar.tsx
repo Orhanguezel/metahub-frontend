@@ -47,8 +47,6 @@ export default function Navbar() {
     i18n.changeLanguage(e.target.value);
   };
 
-  const logoSrc = isDark ? "/navbar/logo-dark.png" : "/navbar/logo-light.png";
-
   return (
     <>
       <AnimatePresence>
@@ -59,7 +57,8 @@ export default function Navbar() {
             exit={{ y: -50, opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Logo logoSrc={logoSrc} width={40} height={40} />
+            {/* ✅ Dinamik logo */}
+            <Logo width={40} height={40} />
             <DesktopMenu>
               <NavbarLinks />
             </DesktopMenu>
@@ -86,7 +85,8 @@ export default function Navbar() {
         <TopBar />
 
         <CenterSection>
-          <Logo logoSrc={logoSrc} />
+          {/* ✅ Dinamik logo */}
+          <Logo />
 
           <RightControls>
             <ThemeToggle onClick={toggle}>
@@ -134,6 +134,9 @@ export default function Navbar() {
     </>
   );
 }
+
+
+
 const NavbarWrapper = styled.nav`
   display: flex;
   flex-direction: column;
@@ -180,7 +183,7 @@ const LangSelect = styled.select`
   padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
   border-radius: ${({ theme }) => theme.radii.sm};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.text};
+  color: ${({ theme }) => theme.inputs.text};  // Daha garanti için inputs.text
   cursor: pointer;
   transition: ${({ theme }) => theme.transition.fast};
 
@@ -189,10 +192,11 @@ const LangSelect = styled.select`
   }
 
   option {
-    color: ${({ theme }) => theme.colors.text};
-    background: ${({ theme }) => theme.colors.background};
+    color: ${({ theme }) => theme.inputs.text};  // 👈 Yazı rengi net
+    background: ${({ theme }) => theme.inputs.background};  // 👈 Arka plan net
   }
 `;
+
 
 const ThemeToggle = styled.button`
   background: ${({ theme }) => theme.buttons.primary.background};

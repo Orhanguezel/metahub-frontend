@@ -1,6 +1,4 @@
-// src/components/shared/Skeleton.tsx
-
-'use client';
+"use client";
 
 import styled, { keyframes } from "styled-components";
 
@@ -11,11 +9,12 @@ const pulse = keyframes`
 `;
 
 const SkeletonBox = styled.div`
-  background: ${({ theme }) => theme.skeletonBackground || "#e0e0e0"};
-  border-radius: 8px;
-  animation: ${pulse} 1.5s infinite;
+  background: ${({ theme }) => theme.colors.skeletonBackground};
+  border-radius: ${({ theme }) => theme.radii.md};
+  animation: ${pulse} ${({ theme }) => theme.transition.slow} infinite;
   width: 100%;
   height: 150px;
+  box-shadow: ${({ theme }) => theme.shadows.sm};
 `;
 
 export default SkeletonBox;

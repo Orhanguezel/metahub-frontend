@@ -10,18 +10,25 @@ declare module "styled-components" {
       backgroundAlt: string;
       sectionBackground: string;
       inputBackground: string;
+      overlayStart: string;
+      overlayEnd: string;
       text: string;
       textAlt: string;
       textSecondary: string;
       textPrimary: string;
+      textMuted: string;
       primary: string;
       primaryLight: string;
       primaryHover: string;
       primaryDark: string;
+      primaryTransparent: string;
+      skeletonBackground: string;
+      overlayBackground: string;
       accent: string;
       secondary: string;
       border: string;
       cardBackground: string;
+      card: string;
       buttonBackground: string;
       buttonText: string;
       link: string;
@@ -32,10 +39,12 @@ declare module "styled-components" {
       success: string;
       warning: string;
       danger: string;
+      dangerHover: string;
       error: string;
       info: string;
       muted: string;
       disabled: string;
+      placeholder: string;
     };
     buttons: {
       primary: {

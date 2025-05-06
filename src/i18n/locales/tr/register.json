@@ -9,23 +9,23 @@
     "password": "Şifrenizi girin",
     "confirmPassword": "Şifrenizi tekrar girin"
   },
-  "errors": {
-    "username": "Kullanıcı adı gerekli.",
-    "email": "E-posta gerekli.",
-    "emailInvalid": "Geçerli bir e-posta girin.",
-    "password": "Şifre gerekli.",
-    "passwordLength": "Şifre en az 8 karakter olmalıdır.",
-    "weakPassword": "Şifreniz zayıf. Daha güçlü bir şifre seçin.",
-    "confirmPassword": "Şifreler eşleşmiyor."
-  },
-  "agree": "Kayıt olarak",
+  "agree": "Şartları kabul ediyorum",
   "terms": "Kullanım Şartları",
   "and": "ve",
-  "privacy": "Gizlilik Politikası'nı",
+  "privacy": "Gizlilik Politikası",
+  "loading": "Kayıt olunuyor...",
   "submit": "Kayıt Ol",
-  "loading": "Kaydediliyor...",
-  "haveAccount": "Zaten hesabınız var mı?",
-  "loginNow": "Giriş Yap",
-  "error": "Kayıt sırasında bir hata oluştu."
+  "haveAccount": "Zaten bir hesabınız var mı?",
+  "loginNow": "Şimdi giriş yapın",
+  "errors": {
+    "username": "Kullanıcı adı zorunludur.",
+    "email": "E-posta zorunludur.",
+    "emailInvalid": "Geçerli bir e-posta adresi girin.",
+    "password": "Şifre zorunludur.",
+    "passwordLength": "Şifre en az 8 karakter olmalıdır.",
+    "weakPassword": "Şifreniz çok zayıf.",
+    "confirmPassword": "Şifreler eşleşmiyor."
+  },
+  "error": "Bir hata oluştu. Lütfen tekrar deneyin."
 }
 

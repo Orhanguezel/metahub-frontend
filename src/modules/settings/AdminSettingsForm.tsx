@@ -13,19 +13,7 @@ import {
 import { toast } from "react-toastify";
 import KeyInputSection from "@/modules/settings/KeyInputSection";
 import ValueInputSection from "@/modules/settings/ValueInputSection";
-
-
-type BaseSettingValue = string | string[] | null;
-type MultiLangValue = { tr: string; en: string; de: string };
-type NestedMultiLangLinkValue = Record<
-  string,
-  { label: { tr: string; en: string; de: string }; url: string }
->;
-
-type SettingValue =
-  | BaseSettingValue
-  | MultiLangValue
-  | NestedMultiLangLinkValue;
+import { getImageSrc } from "@/utils/getImageSrc";
 
 interface AdminSettingsFormProps {
   editingSetting: Setting | null;
@@ -41,20 +29,23 @@ export default function AdminSettingsForm({
   onAvailableThemesUpdate,
 }: AdminSettingsFormProps) {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("admin-settings");
+  const { t } = useTranslation("adminSettings");
 
   const [key, setKey] = useState("");
-  const [value, setValue] = useState<SettingValue>({});
-  const [isNestedObject, setIsNestedObject] = useState<boolean>(false);
-  const [isMultiLang, setIsMultiLang] = useState<boolean>(false);
-  const [isImage, setIsImage] = useState<boolean>(false);
+  const [value, setValue] = useState<any>(editingSetting?.value ?? "");
+  const [isNestedObject, setIsNestedObject] = useState(false);
+  const [isMultiLang, setIsMultiLang] = useState(false);
+  const [isImage, setIsImage] = useState(false);
   const [file, setFile] = useState<File | null>(null);
 
-  // ✅ Fill initial data
+  // 🟢 Navbar logosu için özel state
+  const [lightFile, setLightFile] = useState<File | null>(null);
+  const [darkFile, setDarkFile] = useState<File | null>(null);
+
   useEffect(() => {
     if (editingSetting) {
       setKey(editingSetting.key || "");
-      setValue((editingSetting.value as SettingValue) ?? null);
+      setValue(editingSetting.value ?? "");
 
       const isObj =
         editingSetting.value &&
@@ -74,6 +65,8 @@ export default function AdminSettingsForm({
       setIsNestedObject(isNested);
       setIsImage(false);
       setFile(null);
+      setLightFile(null);
+      setDarkFile(null);
     } else {
       setKey("");
       setValue(null);
@@ -81,23 +74,58 @@ export default function AdminSettingsForm({
       setIsNestedObject(false);
       setIsImage(false);
       setFile(null);
+      setLightFile(null);
+      setDarkFile(null);
     }
   }, [editingSetting]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
+    // 🟢 navbar_logos özel işlem
+    if (key === "navbar_logos") {
+      if (!lightFile && !darkFile) {
+        toast.error(
+          t("pleaseSelectFile", "Please select at least one logo file.")
+        );
+        return;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append("name", "Navbar Logo");
+        if (lightFile) formData.append("lightFile", lightFile);
+        if (darkFile) formData.append("darkFile", darkFile);
+
+        await dispatch(
+          upsertSettingImage({
+            key: "navbar_logos",
+            file: lightFile || darkFile!, // en az 1 dosya zorunlu olduğu için
+          })
+        ).unwrap();
+
+        toast.success(t("settingSaved", "Navbar logos updated successfully."));
+        onSave();
+      } catch (error: any) {
+        toast.error(
+          error?.message || t("saveError", "An error occurred while saving.")
+        );
+      }
+      return;
+    }
+
+    // 🟢 Normal image dosyası için
     if (isImage) {
       if (!file) {
         toast.error(t("pleaseSelectFile", "Please select an image file."));
         return;
       }
-  
+
       try {
         const action = editingSetting
           ? updateSettingImage({ key, file })
           : upsertSettingImage({ key, file });
-  
+
         await dispatch(action).unwrap();
         toast.success(
           editingSetting
@@ -112,37 +140,35 @@ export default function AdminSettingsForm({
       }
       return;
     }
-  
+
+    // 🟢 Diğer normal ayarlar için
     if (!key.trim()) {
       toast.error(t("keyRequired", "Key is required."));
       return;
     }
-  
+
     let normalizedValue: any = value;
 
-// ✅ Nested object gönderiyorsak ama boşsa hata verelim
-if (isNestedObject) {
-  if (!value || Object.keys(value).length === 0) {
-    toast.error(t("noFields", "Please add at least one field."));
-    return;
-  }
-  // burada olduğu gibi gönderiyoruz
-} else if (
-  !isMultiLang &&
-  typeof value === "string" &&
-  !["site_template", "available_themes"].includes(key)
-) {
-  normalizedValue = { tr: value, en: value, de: value };
-}
+    if (isNestedObject) {
+      if (!value || Object.keys(value).length === 0) {
+        toast.error(t("noFields", "Please add at least one field."));
+        return;
+      }
+    } else if (
+      !isMultiLang &&
+      typeof value === "string" &&
+      !["site_template", "available_themes"].includes(key)
+    ) {
+      normalizedValue = { tr: value, en: value, de: value };
+    }
 
-  
     if (key === "available_themes" && typeof value === "string") {
       normalizedValue = value
         .split(",")
         .map((v) => v.trim())
         .filter(Boolean);
     }
-  
+
     if (
       key === "site_template" &&
       typeof value === "string" &&
@@ -151,7 +177,7 @@ if (isNestedObject) {
       toast.error(t("invalidTheme", "Invalid theme selected."));
       return;
     }
-  
+
     try {
       await dispatch(upsertSetting({ key, value: normalizedValue })).unwrap();
       toast.success(t("settingSaved", "Setting saved successfully."));
@@ -162,7 +188,13 @@ if (isNestedObject) {
       );
     }
   };
-  
+
+  // ✅ Navbar logosu için mevcut logo önizleme
+  const isNavbarLogos =
+    key === "navbar_logos" &&
+    typeof value === "object" &&
+    value !== null &&
+    ("light" in value || "dark" in value);
 
   return (
     <FormWrapper onSubmit={handleSubmit}>
@@ -173,24 +205,76 @@ if (isNestedObject) {
         setIsMultiLang={setIsMultiLang}
         isImage={isImage}
         setIsImage={setIsImage}
-        isNestedObject={isNestedObject}                 // ✅ EKLENDİ
-        setIsNestedObject={setIsNestedObject}           // ✅ EKLENDİ
+        isNestedObject={isNestedObject}
+        setIsNestedObject={setIsNestedObject}
         isEditing={!!editingSetting}
       />
 
-      <ValueInputSection
-        keyValue={key}
-        value={value}
-        setValue={setValue}
-        availableThemes={availableThemes}
-        onAvailableThemesUpdate={onAvailableThemesUpdate}
-        dispatch={dispatch}
-        isMultiLang={isMultiLang}
-        isNestedObject={isNestedObject}
-        isImage={isImage}
-        file={file}
-        setFile={setFile}
-      />
+      {key === "navbar_logos" ? (
+        <LogoInputGroup>
+          <div>
+            <Label>Light Logo *</Label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) =>
+                setLightFile(e.target.files ? e.target.files[0] : null)
+              }
+            />
+          </div>
+          <div>
+            <Label>Dark Logo</Label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) =>
+                setDarkFile(e.target.files ? e.target.files[0] : null)
+              }
+            />
+          </div>
+        </LogoInputGroup>
+      ) : (
+        <ValueInputSection
+          keyValue={key}
+          value={value}
+          setValue={setValue}
+          availableThemes={availableThemes}
+          onAvailableThemesUpdate={onAvailableThemesUpdate}
+          dispatch={dispatch}
+          isMultiLang={isMultiLang}
+          isNestedObject={isNestedObject}
+          isImage={isImage}
+          file={file}
+          setFile={setFile}
+        />
+      )}
+
+      {isNavbarLogos && (
+        <LogoPreviewWrapper>
+          <div>
+            <strong>Light:</strong>
+            {value.light ? (
+              <img
+                src={getImageSrc(value.light, "setting")}
+                alt="Light Logo"
+              />
+            ) : (
+              <span> No light logo. </span>
+            )}
+          </div>
+          <div>
+            <strong>Dark:</strong>
+            {value.dark ? (
+              <img
+                src={getImageSrc(value.dark, "setting")}
+                alt="Dark Logo"
+              />
+            ) : (
+              <span> No dark logo. </span>
+            )}
+          </div>
+        </LogoPreviewWrapper>
+      )}
 
       <SaveButton type="submit">{t("save", "Save")}</SaveButton>
     </FormWrapper>
@@ -214,4 +298,30 @@ const SaveButton = styled.button`
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   font-size: ${({ theme }) => theme.fontSizes.md};
   cursor: pointer;
+`;
+
+const LogoInputGroup = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.md};
+  flex-direction: column;
+`;
+
+const Label = styled.label`
+  display: block;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  margin-bottom: 0.3rem;
+`;
+
+const LogoPreviewWrapper = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.md};
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.lg};
+
+  img {
+    max-width: 180px;
+    display: block;
+    border-radius: ${({ theme }) => theme.radii.sm};
+    box-shadow: ${({ theme }) => theme.shadows.sm};
+  }
 `;

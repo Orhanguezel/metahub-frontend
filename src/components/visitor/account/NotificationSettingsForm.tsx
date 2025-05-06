@@ -59,52 +59,83 @@ const NotificationSettingsForm = ({ profile }: Props) => {
   };
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit)}>
-      <h3>{t("notifications.title")}</h3>
+    <Wrapper>
+      <Title>{t("notifications.title")}</Title>
 
-      <Label>
-        <Checkbox type="checkbox" {...register("emailNotifications")} />
-        {t("notifications.email")}
-      </Label>
+      <Form onSubmit={handleSubmit(onSubmit)}>
+        <Label>
+          <Checkbox type="checkbox" {...register("emailNotifications")} />
+          {t("notifications.email")}
+        </Label>
 
-      <Label>
-        <Checkbox type="checkbox" {...register("smsNotifications")} />
-        {t("notifications.sms")}
-      </Label>
+        <Label>
+          <Checkbox type="checkbox" {...register("smsNotifications")} />
+          {t("notifications.sms")}
+        </Label>
 
-      <SubmitButton type="submit" disabled={isSubmitting}>
-        {t("notifications.save")}
-      </SubmitButton>
-    </Form>
+        <SubmitButton type="submit" disabled={isSubmitting}>
+          {isSubmitting ? t("notifications.saving") : t("notifications.save")}
+        </SubmitButton>
+      </Form>
+    </Wrapper>
   );
 };
 
 export default NotificationSettingsForm;
 
-const Form = styled.form`
+// 🎨 Styled Components
+
+const Wrapper = styled.div`
   margin-top: 2rem;
+  padding: 2rem;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  max-width: 500px;
+  margin-inline: auto;
+`;
+
+const Title = styled.h3`
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  margin-bottom: 1rem;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
 `;
 
 const Label = styled.label`
-  font-weight: 500;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: ${({ theme }) => theme.spacing.sm};
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const Checkbox = styled.input`
   transform: scale(1.2);
+  accent-color: ${({ theme }) => theme.colors.primary}; // ✅ Renk uyumu için
 `;
 
 const SubmitButton = styled.button`
-  padding: 0.6rem 1.2rem;
-  background: ${({ theme }) => theme.primary};
-  color: white;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.lg};
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.whiteColor};
   border: none;
-  border-radius: 6px;
-  font-weight: bold;
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
   cursor: pointer;
+  transition: ${({ theme }) => theme.transition.normal};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryHover};
+  }
+
+  &:disabled {
+    opacity: ${({ theme }) => theme.opacity.disabled};
+    cursor: not-allowed;
+  }
 `;

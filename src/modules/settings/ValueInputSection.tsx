@@ -36,7 +36,7 @@ export default function ValueInputSection({
   file,
   setFile,
 }: Props) {
-  const { t } = useTranslation("admin-settings");
+  const { t } = useTranslation("adminSettings");
 
   if (isImage) {
     return (
@@ -129,16 +129,17 @@ export default function ValueInputSection({
         : {};
 
     return (
-      <NestedValueEditor
-        value={nestedValue}
-        setValue={(v) => setValue(v)}
-      />
+      <NestedValueEditor value={nestedValue} setValue={(v) => setValue(v)} />
     );
   }
 
   // ✅ Multi Lang klasik hali
   if (isMultiLang) {
-    let val: { tr: string; en: string; de: string } = { tr: "", en: "", de: "" };
+    let val: { tr: string; en: string; de: string } = {
+      tr: "",
+      en: "",
+      de: "",
+    };
 
     if (typeof value === "object" && value !== null) {
       val = {
@@ -179,7 +180,7 @@ export default function ValueInputSection({
       <Input
         type="text"
         value={typeof value === "string" ? value : ""}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => setValue(e.target.value ?? "")}
         placeholder={t("valuePlaceholder", "Enter value")}
       />
     </>

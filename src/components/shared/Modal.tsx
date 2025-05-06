@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { X } from "lucide-react"; // ✅ Basit bir kapatma ikonu
 
 interface ModalProps {
@@ -16,7 +16,7 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
   return (
     <Overlay onClick={onClose}>
       <Content onClick={(e) => e.stopPropagation()}>
-        <CloseButton onClick={onClose}>
+        <CloseButton onClick={onClose} aria-label="Close modal">
           <X size={20} />
         </CloseButton>
         {children}
@@ -25,41 +25,44 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
   );
 }
 
-// 🎨 Styled Components
+// 🎨 Animasyon (tema içinden süre çekildi)
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+`;
+
+// Overlay katmanı
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: ${({ theme }) => theme.colors.overlayBackground || "rgba(0, 0, 0, 0.6)"};
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: ${({ theme }) => theme.zIndex.modal};
 `;
 
+// İçerik kutusu
 const Content = styled.div`
-  background: ${({ theme }) => theme.cards.background};
+  background: ${({ theme }) => theme.colors.cardBackground};
   padding: ${({ theme }) => theme.spacing.lg};
   border-radius: ${({ theme }) => theme.radii.lg};
   width: 90%;
   max-width: 500px;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow: auto;
   position: relative;
   box-shadow: ${({ theme }) => theme.shadows.lg};
-  animation: fadeIn ${({ theme }) => theme.transition.normal};
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
+  animation: ${fadeIn} ${({ theme }) => theme.transition.normal};
 `;
 
+// Kapatma butonu
 const CloseButton = styled.button`
   position: absolute;
   top: ${({ theme }) => theme.spacing.sm};

@@ -7,60 +7,76 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 const Section = styled(motion.section)`
-  padding: 4rem 2rem;
-  background: ${({ theme }) => theme.background};
-  color: ${({ theme }) => theme.text};
+  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
   text-align: center;
 `;
 
 const Title = styled.h2`
-  font-size: 1.8rem;
-  margin-bottom: 2rem;
+  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: ${({ theme }) => theme.spacing.lg};
 `;
 
 const Card = styled(motion.div)`
-  background: ${({ theme }) => theme.cardBackground || "#f9f9f9"};
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.04);
+  background: ${({ theme }) => theme.colors.cardBackground};
+  padding: ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.md};
+  box-shadow: ${({ theme }) => theme.shadows.md};
   text-align: left;
+  transition: transform ${({ theme }) => theme.transition.fast};
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: ${({ theme }) => theme.shadows.lg};
+  }
 `;
 
 const BlogTitle = styled.h3`
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 `;
 
 const Excerpt = styled.p`
-  font-size: 0.95rem;
-  color: ${({ theme }) => theme.textSecondary || "#555"};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const ReadMore = styled(Link)`
   display: inline-block;
-  margin-top: 0.75rem;
-  font-weight: 500;
-  color: ${({ theme }) => theme.primary || "rebeccapurple"};
+  margin-top: ${({ theme }) => theme.spacing.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  transition: color ${({ theme }) => theme.transition.fast};
 
   &:hover {
     text-decoration: underline;
+    color: ${({ theme }) => theme.colors.primaryHover};
   }
 `;
 
 const SeeAll = styled(Link)`
   display: inline-block;
-  margin-top: 2rem;
-  color: ${({ theme }) => theme.primary || "rebeccapurple"};
-  font-weight: 500;
+  margin-top: ${({ theme }) => theme.spacing.xl};
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  transition: color ${({ theme }) => theme.transition.fast};
 
   &:hover {
     text-decoration: underline;
+    color: ${({ theme }) => theme.colors.primaryHover};
   }
 `;
 

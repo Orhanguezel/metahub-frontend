@@ -27,7 +27,7 @@ interface FormState {
 
 // --- Component
 const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation("adminModules");
   const dispatch = useAppDispatch();
   const { selectedProject } = useAppSelector((state) => state.admin);
 
@@ -62,17 +62,17 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
     e.preventDefault();
 
     if (!form.name.trim()) {
-      setError(t("admin.modules.errors.nameRequired", "Modül ismi boş olamaz."));
+      setError(t("errors.nameRequired", "Module name is required."));
       return;
     }
 
     try {
       await dispatch(createAdminModule(form)).unwrap();
       await dispatch(fetchAdminModules(selectedProject));
-      toast.success(t("admin.modules.success.created", "Modül başarıyla oluşturuldu. Aktif etmek için .env dosyasını kontrol edin."));
+      toast.success(t("success.created", "Module created successfully. Check your .env file to activate it."));
       onClose();
     } catch (err: any) {
-      setError(err?.message || t("admin.modules.errors.createFailed", "Modül oluşturulamadı."));
+      setError(err?.message || t("errors.createFailed", "Module creation failed."));
     }
   };
 
@@ -80,18 +80,17 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
     <Overlay>
       <Modal>
         <Header>
-          <CloseButton onClick={onClose}>
-            <XCircle size={18} />
-            {t("close", "Kapat")}
+          <ModalTitle>{t("create", "Add New Module")}</ModalTitle>
+          <CloseButton onClick={onClose} aria-label={t("close", "Close")}>
+            <XCircle size={20} />
           </CloseButton>
-          <ModalTitle>{t("admin.modules.create", "Yeni Modül Ekle")}</ModalTitle>
         </Header>
 
         {error && <ErrorText>{error}</ErrorText>}
 
         <Form onSubmit={handleSubmit}>
           <InputGroup>
-            <label>{t("admin.modules.name", "Modül İsmi")} *</label>
+            <label>{t("name", "Module Name")} *</label>
             <input
               name="name"
               value={form.name}
@@ -101,7 +100,7 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
           </InputGroup>
 
           <InputGroup>
-            <label>{t("admin.modules.icon", "İkon")}</label>
+            <label>{t("icon", "Icon")}</label>
             <input
               name="icon"
               value={form.icon}
@@ -110,7 +109,7 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
           </InputGroup>
 
           <InputGroup>
-            <label>{t("admin.modules.language", "Dil")}</label>
+            <label>{t("language", "Language")}</label>
             <select
               name="language"
               value={form.language}
@@ -123,7 +122,7 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
           </InputGroup>
 
           <InputGroup>
-            <label>{t("admin.modules.order", "Sıralama (Order)")}</label>
+            <label>{t("order", "Order")}</label>
             <input
               type="number"
               name="order"
@@ -134,10 +133,10 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
 
           <CheckboxGroup>
             {[
-              { name: "visibleInSidebar", label: t("admin.modules.visibleInSidebar", "Sidebar'da Göster") },
-              { name: "useAnalytics", label: t("admin.modules.useAnalytics", "Analytics Aktif") },
-              { name: "enabled", label: t("admin.modules.enabled", "Aktif") },
-              { name: "showInDashboard", label: t("admin.modules.showInDashboard", "Dashboard'da Göster") },
+              { name: "visibleInSidebar", label: t("visibleInSidebar", "Show in Sidebar") },
+              { name: "useAnalytics", label: t("useAnalytics", "Enable Analytics") },
+              { name: "enabled", label: t("enabled", "Enabled") },
+              { name: "showInDashboard", label: t("showInDashboard", "Show on Dashboard") },
             ].map((item) => (
               <label key={item.name}>
                 <input
@@ -152,7 +151,7 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
           </CheckboxGroup>
 
           <SubmitButton type="submit">
-            {t("admin.modules.createSubmit", "Oluştur")}
+            {t("createSubmit", "Create")}
           </SubmitButton>
         </Form>
       </Modal>
@@ -169,22 +168,23 @@ const Overlay = styled.div`
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(3px);
-  z-index: 9999;
+  z-index: ${({ theme }) => theme.zIndex.modal};
   display: flex;
   justify-content: center;
   align-items: center;
 `;
 
 const Modal = styled.div`
-  background: ${({ theme }) => theme.background};
-  padding: 2rem;
+  background: ${({ theme }) => theme.colors.background};
+  padding: ${({ theme }) => theme.spacing.lg};
   max-width: 500px;
   width: 95%;
-  border-radius: 10px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  box-shadow: ${({ theme }) => theme.shadows.md};
 `;
 
 const Header = styled.div`
-  margin-bottom: 1rem;
+  margin-bottom: ${({ theme }) => theme.spacing.md};
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -192,68 +192,80 @@ const Header = styled.div`
 
 const ModalTitle = styled.h3`
   margin: 0;
-  font-size: 1.2rem;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const CloseButton = styled.button`
-  background: ${({ theme }) => theme.danger};
-  color: white;
+  background: none;
   border: none;
-  border-radius: 6px;
-  padding: 0.3rem 0.8rem;
-  font-size: 0.85rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
   cursor: pointer;
+  padding: ${({ theme }) => theme.spacing.xs};
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  transition: color ${({ theme }) => theme.transition.fast};
 
   &:hover {
-    opacity: 0.9;
+    color: ${({ theme }) => theme.colors.danger};
   }
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: ${({ theme }) => theme.spacing.md};
 `;
 
 const InputGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: ${({ theme }) => theme.spacing.xs};
 
   input,
   select {
-    padding: 0.5rem;
-    border-radius: 6px;
-    border: 1px solid ${({ theme }) => theme.border};
+    padding: ${({ theme }) => theme.spacing.sm};
+    border-radius: ${({ theme }) => theme.radii.sm};
+    border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+    background: ${({ theme }) => theme.inputs.background};
+    color: ${({ theme }) => theme.inputs.text};
+    font-size: ${({ theme }) => theme.fontSizes.md};
   }
 `;
 
 const CheckboxGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: ${({ theme }) => theme.spacing.xs};
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing.sm};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    color: ${({ theme }) => theme.colors.text};
+  }
 `;
 
 const SubmitButton = styled.button`
   width: 100%;
-  padding: 0.7rem;
-  background: ${({ theme }) => theme.primary};
-  color: white;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.whiteColor};
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   cursor: pointer;
+  transition: all ${({ theme }) => theme.transition.fast};
 
   &:hover {
-    opacity: 0.9;
+    background: ${({ theme }) => theme.colors.primaryHover};
   }
 `;
 
 const ErrorText = styled.p`
-  color: red;
-  font-size: 0.9rem;
+  color: ${({ theme }) => theme.colors.danger};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  margin: 0;
 `;
-

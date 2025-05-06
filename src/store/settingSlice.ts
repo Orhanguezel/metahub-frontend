@@ -15,7 +15,8 @@ export type SettingValue =
   | string[]
   | MultiLangValue
   | Record<string, MultiLangValue>
-  | Record<string, NestedLinkItem>;
+  | Record<string, NestedLinkItem>
+  | { light?: string; dark?: string }; // ✅ navbar_logos için object tipi
 
 export interface Setting {
   _id?: string;
@@ -63,18 +64,14 @@ export const fetchSettings = createAsyncThunk(
 // ✅ Upsert (JSON)
 export const upsertSetting = createAsyncThunk(
   "setting/upsertSetting",
-  async (
-    data: { key: string; value: SettingValue },
-    thunkAPI
-  ) => {
+  async (data: { key: string; value: SettingValue }, thunkAPI) => {
     try {
       let normalizedValue = data.value;
 
-      // 🔑 SADECE düz string ise normalize et (nested'a karışma)
+      // 🔑 SADECE düz string ise normalize et (navbar_logos dahil değil)
       if (
         typeof data.value === "string" &&
-        data.key !== "site_template" &&
-        data.key !== "footer_contact"
+        !["site_template", "footer_contact", "navbar_logos"].includes(data.key)
       ) {
         normalizedValue = {
           tr: data.value,
@@ -95,7 +92,6 @@ export const upsertSetting = createAsyncThunk(
     }
   }
 );
-
 
 // ✅ Delete
 export const deleteSetting = createAsyncThunk(

@@ -10,10 +10,23 @@ import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { toast } from "react-toastify";
 
+// ✅ Zod şeması (i18n destekli)
 const socialLinksSchema = z.object({
-  instagram: z.string().url("Invalid Instagram URL").nullable().or(z.literal("")),
-  facebook: z.string().url("Invalid Facebook URL").nullable().or(z.literal("")),
-  twitter: z.string().url("Invalid Twitter URL").nullable().or(z.literal("")),
+  instagram: z
+    .string()
+    .url({ message: "social.errors.instagramInvalid" })
+    .nullable()
+    .or(z.literal("")),
+  facebook: z
+    .string()
+    .url({ message: "social.errors.facebookInvalid" })
+    .nullable()
+    .or(z.literal("")),
+  twitter: z
+    .string()
+    .url({ message: "social.errors.twitterInvalid" })
+    .nullable()
+    .or(z.literal("")),
 });
 
 type SocialLinksFormData = z.infer<typeof socialLinksSchema>;
@@ -48,13 +61,13 @@ const SocialLinksForm: React.FC<{ profile: any }> = ({ profile }) => {
 
   const onSubmit = async (data: SocialLinksFormData) => {
     if (!profile?._id) return;
-  
+
     const sanitizedData = {
       instagram: data.instagram || undefined,
       facebook: data.facebook || undefined,
       twitter: data.twitter || undefined,
     };
-  
+
     try {
       await dispatch(updateSocialMediaLinks(sanitizedData)).unwrap();
       toast.success(t("social.success"));
@@ -62,32 +75,31 @@ const SocialLinksForm: React.FC<{ profile: any }> = ({ profile }) => {
       toast.error(err?.message || t("social.error"));
     }
   };
-  
 
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
-      <h3>{t("social.title")}</h3>
+      <Title>{t("social.title")}</Title>
 
       <InputGroup>
         <Label htmlFor="instagram">Instagram</Label>
-        <Input id="instagram" {...register("instagram")} />
-        {errors.instagram && <Error>{errors.instagram.message}</Error>}
+        <Input id="instagram" {...register("instagram")} placeholder="https://instagram.com/yourprofile" />
+        {errors.instagram && <Error>{t(errors.instagram.message as string)}</Error>}
       </InputGroup>
 
       <InputGroup>
         <Label htmlFor="facebook">Facebook</Label>
-        <Input id="facebook" {...register("facebook")} />
-        {errors.facebook && <Error>{errors.facebook.message}</Error>}
+        <Input id="facebook" {...register("facebook")} placeholder="https://facebook.com/yourprofile" />
+        {errors.facebook && <Error>{t(errors.facebook.message as string)}</Error>}
       </InputGroup>
 
       <InputGroup>
         <Label htmlFor="twitter">X / Twitter</Label>
-        <Input id="twitter" {...register("twitter")} />
-        {errors.twitter && <Error>{errors.twitter.message}</Error>}
+        <Input id="twitter" {...register("twitter")} placeholder="https://twitter.com/yourprofile" />
+        {errors.twitter && <Error>{t(errors.twitter.message as string)}</Error>}
       </InputGroup>
 
       <Button type="submit" disabled={isSubmitting}>
-        {t("social.save")}
+        {isSubmitting ? t("social.saving") : t("social.save")}
       </Button>
     </Form>
   );
@@ -95,43 +107,71 @@ const SocialLinksForm: React.FC<{ profile: any }> = ({ profile }) => {
 
 export default SocialLinksForm;
 
+// 🎨 Styled Components
 
-
-// --- Styled Components ---
 const Form = styled.form`
-  margin-top: 2rem;
+  margin-top: ${({ theme }) => theme.spacing.lg};
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: ${({ theme }) => theme.spacing.lg};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  padding: ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+`;
+
+const Title = styled.h3`
+  font-size: ${({ theme }) => theme.fontSizes.xl};
+  color: ${({ theme }) => theme.colors.text};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
 `;
 
 const InputGroup = styled.div`
   display: flex;
   flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
 `;
 
 const Label = styled.label`
-  font-weight: 500;
-  margin-bottom: 0.3rem;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const Input = styled.input`
-  padding: 0.6rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  padding: ${({ theme }) => theme.spacing.sm};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  color: ${({ theme }) => theme.colors.text};
+  background: ${({ theme }) => theme.colors.inputBackground};
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.placeholder};
+  }
 `;
 
-const Error = styled.div`
-  font-size: 0.85rem;
-  color: ${({ theme }) => theme.danger || "red"};
+const Error = styled.p`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.danger};
+  margin: 0;
 `;
 
 const Button = styled.button`
-  padding: 0.6rem 1.2rem;
-  background: ${({ theme }) => theme.primary};
-  color: white;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.lg};
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.whiteColor};
   border: none;
-  border-radius: 6px;
-  font-weight: bold;
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   cursor: pointer;
+  transition: ${({ theme }) => theme.transition.normal};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryHover};
+  }
+
+  &:disabled {
+    opacity: ${({ theme }) => theme.opacity.disabled};
+    cursor: not-allowed;
+  }
 `;

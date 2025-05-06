@@ -1,39 +1,30 @@
 "use client";
 
 import { MenuItem, MenuItem1, MenuLink } from "./NavbarStyles";
-import { MAIN_NAV_LINKS, SPECIAL_NAV_LINK } from "./navigationLinks";
 import { useTranslation } from "react-i18next";
-import { MenuDropdown, DropdownLink } from "./MenuDropdown";
+import { useAppSelector } from "@/store/hooks";
+import { SPECIAL_NAV_LINK } from "./navigationLinks";
 
 export function NavbarLinks() {
-  const { t } = useTranslation("navbar");
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language;
+
+  const { settings = [] } = useAppSelector((state) => state.setting || {});
+  const navbarLinksSetting = settings.find((s) => s.key === "navbar_main_links");
+
+  const links: any = navbarLinksSetting?.value || {};
 
   return (
     <>
-      {MAIN_NAV_LINKS.map((item) => {
-        if (item.type === "link") {
-          return (
-            <MenuItem key={item.href}>
-              <MenuLink href={item.href}>{t(item.labelKey)}</MenuLink>
-            </MenuItem>
-          );
-        }
+      {Object.entries(links).map(([key, link]: any) => {
+        const label = link.label?.[currentLang] || key;
+        const url = link.url || "#";
 
-        if (item.type === "dropdown") {
-          return (
-            <MenuItem key={item.key}>
-              <MenuDropdown label={t(item.labelKey)}>
-                {item.children.map((child) => (
-                  <DropdownLink key={child.href} href={child.href}>
-                    {t(child.labelKey)}
-                  </DropdownLink>
-                ))}
-              </MenuDropdown>
-            </MenuItem>
-          );
-        }
-
-        return null;
+        return (
+          <MenuItem key={key}>
+            <MenuLink href={url}>{label}</MenuLink>
+          </MenuItem>
+        );
       })}
 
       <MenuItem1>

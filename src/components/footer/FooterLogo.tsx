@@ -1,34 +1,43 @@
+"use client";
+
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useAppSelector } from "@/store/hooks";
+import { getImageSrc } from "@/utils/getImageSrc";
+import { useThemeContext } from "@/providers/ThemeProviderWrapper";
 
+export default function FooterLogo() {
+  const { settings } = useAppSelector((state) => state.setting);
+  const { mode: themeMode } = useThemeContext();
 
-interface FooterLogoProps {
-  logo?: string;
-}
+  const footerLogos = settings.find((s) => s.key === "footer_logos");
 
-export default function FooterLogo({ logo }: FooterLogoProps) {
-  const defaultLogo = "/navbar/logo-light.png";
-  const [imgSrc, setImgSrc] = useState(logo || defaultLogo);
+  let logoSrc = "";
+  if (footerLogos?.value && typeof footerLogos.value === "object") {
+    const val = footerLogos.value as { light?: string; dark?: string };
+    logoSrc =
+      themeMode === "dark"
+        ? val.dark
+          ? getImageSrc(val.dark, "setting")
+          : val.light
+          ? getImageSrc(val.light, "setting")
+          : ""
+        : val.light
+        ? getImageSrc(val.light, "setting")
+        : val.dark
+        ? getImageSrc(val.dark, "setting")
+        : "";
+  }
 
-
-  useEffect(() => {
-    setImgSrc(logo || defaultLogo);
-  }, [logo]);
-
-  if (!imgSrc) return null;
+  if (!logoSrc) return null;
 
   return (
     <LogoWrapper>
-      <LogoImg
-        src={imgSrc}
-        alt="Footer Logo"
-        onError={() => setImgSrc(defaultLogo)}
-      />
+      <LogoImg src={logoSrc} alt="Footer Logo" />
     </LogoWrapper>
   );
 }
 
-
+// 🎨 Styled Components
 const LogoWrapper = styled.div`
   margin: ${({ theme }) => theme.spacing.md} 0;
 `;

@@ -17,7 +17,7 @@ export default function AdminAvailableThemesManager({
   onThemesChange,
 }: AdminAvailableThemesManagerProps) {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("admin-settings");
+  const { t } = useTranslation("adminSettings");
   const [newTheme, setNewTheme] = useState("");
 
   const handleAddTheme = async () => {

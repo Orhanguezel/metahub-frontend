@@ -2,6 +2,6 @@
 import { useTranslation } from "react-i18next";
 
 export default function Loading() {
-  const { t } = useTranslation("admin-settings");
+  const { t } = useTranslation("adminSettings");
   return <div>{t("loading", "Yükleniyor...")}</div>;
 }

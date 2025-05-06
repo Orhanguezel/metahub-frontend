@@ -6,48 +6,58 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 const Section = styled(motion.section)`
-  padding: 4rem 2rem;
-  background: ${({ theme }) => theme.backgroundAlt || "#f1f1f5"};
-  color: ${({ theme }) => theme.text};
+  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
   text-align: center;
 `;
 
 const Title = styled.h2`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  margin-bottom: 2rem;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const ContactGrid = styled.div`
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-around;
-  gap: 2rem;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing.lg};
 `;
 
 const ContactCard = styled.div`
+  flex: 1 1 320px;
   max-width: 500px;
   text-align: left;
-  background: ${({ theme }) => theme.cardBackground};
-  padding: 1.5rem;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  padding: ${({ theme }) => theme.spacing.lg};
   border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.light};
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  transition: transform ${({ theme }) => theme.transition.fast};
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: ${({ theme }) => theme.shadows.lg};
+  }
 `;
 
 const CardTitle = styled.h4`
-  margin-bottom: 1rem;
+  margin-bottom: ${({ theme }) => theme.spacing.md};
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  color: ${({ theme }) => theme.primary};
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 `;
 
 const CardText = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   line-height: 1.6;
-  color: ${({ theme }) => theme.textSecondary};
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const MapWrapper = styled.div`
-  margin-top: 1rem;
+  margin-top: ${({ theme }) => theme.spacing.md};
+
   iframe {
     width: 100%;
     height: 250px;

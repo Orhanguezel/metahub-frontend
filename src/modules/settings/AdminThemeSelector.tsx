@@ -5,6 +5,7 @@ import { useAppDispatch } from "@/store/hooks";
 import { upsertSetting } from "@/store/settingSlice";
 import styled from "styled-components";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 export interface AdminThemeSelectorProps {
   availableThemes: string[];
@@ -20,18 +21,20 @@ export default function AdminThemeSelector({
   onAvailableThemesUpdate,
 }: AdminThemeSelectorProps) {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation("adminSettings");
   const [newThemeName, setNewThemeName] = useState("");
 
   const handleAddTheme = async () => {
     const trimmed = newThemeName.trim();
 
     if (!trimmed) {
-      toast.warning("Theme name cannot be empty.");
+      toast.warning(t("themeNameEmpty", "Theme name cannot be empty."));
       return;
     }
 
     if (availableThemes.includes(trimmed)) {
-      toast.info("Theme already exists.");
+      toast.info(t("themeAlreadyExists", "Theme already exists."));
+      setNewThemeName("");
       return;
     }
 
@@ -41,16 +44,18 @@ export default function AdminThemeSelector({
       await dispatch(
         upsertSetting({
           key: "available_themes",
-          value: updatedThemes, // ✅ artık array olarak gönderiyoruz
+          value: updatedThemes,
         })
       ).unwrap();
 
       onAvailableThemesUpdate(updatedThemes);
-      toast.success("Theme added successfully.");
+      toast.success(t("themeAdded", "Theme added successfully."));
       setNewThemeName("");
     } catch (error: any) {
       console.error("❌ Error adding theme:", error);
-      toast.error(error?.message || "Failed to add theme.");
+      toast.error(
+        error?.message || t("themeAddError", "Failed to add theme.")
+      );
     }
   };
 
@@ -63,7 +68,7 @@ export default function AdminThemeSelector({
 
   return (
     <Wrapper>
-      <SectionTitle>Available Themes</SectionTitle>
+      <SectionTitle>{t("availableThemes", "Available Themes")}</SectionTitle>
 
       <ThemeList>
         {(availableThemes || []).map((theme) => (
@@ -87,17 +92,15 @@ export default function AdminThemeSelector({
           value={newThemeName}
           onChange={(e) => setNewThemeName(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="New theme name..."
+          placeholder={t("newThemePlaceholder", "New theme name...")}
         />
         <AddButton type="button" onClick={handleAddTheme}>
-          ➕ Add
+          ➕ {t("add", "Add")}
         </AddButton>
       </AddThemeSection>
     </Wrapper>
   );
 }
-
-
 
 // 🎨 Styled Components
 const Wrapper = styled.div`

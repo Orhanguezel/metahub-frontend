@@ -1,17 +1,5 @@
 {
-  "dashboard": "Dashboard",
-  "users": "Kullanıcılar",
-  "newUsers": "Yeni Kullanıcılar",
-  "revenue": "Gelir",
-  "products": "Ürünler",
-  "orders": "Siparişler",
-  "services": "Hizmetler",
-  "emails": "E-postalar",
-  "blogs": "Bloglar",
-  "gallery": "Galeri",
-  "contactMessages": "Mesajlar",
-  "feedbacks": "Geri Bildirim",
-  "notifications": "Bildirimler",
-  "settings": "Ayarlar",
+  "dashboard": "Gösterge Paneli",
+  "loading": "Menü yükleniyor...",
   "logout": "Çıkış Yap"
 }

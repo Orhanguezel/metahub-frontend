@@ -8,112 +8,140 @@ import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
-  interface Props {
-    profile: { email?: string; name?: string } | null;
-  }
-  
-  const DeleteAccountSection = ({ profile }: Props) => {
-    const { t } = useTranslation("account");
-    const dispatch = useAppDispatch();
-    const router = useRouter();
-  
-    const [confirmation, setConfirmation] = useState("");
-    const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
-  
-    const handleDelete = async () => {
-      if (confirmation.toLowerCase() !== "delete") {
-        toast.error(t("delete.confirmationError"));
-        return;
-      }
-  
-      setLoading(true);
-      try {
-        await dispatch(deleteUserAccount({ password })).unwrap();
-        toast.success(t("delete.success"));
-        router.push("/login");
-      } catch (err: any) {
-        toast.error(err?.message || t("delete.error"));
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    return (
-      <Wrapper>
-        <Title>{t("delete.title")}</Title>
-        <p>{t("delete.warning")}</p>
-  
-        {profile?.email && (
-          <strong style={{ marginBottom: "0.5rem", display: "block" }}>
-            {t("delete.loggedInAs")} {profile.email}
-          </strong>
-        )}
-  
-        <input
-          type="password"
-          placeholder={t("delete.password")}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-  
-        <input
-          type="text"
-          placeholder={t("delete.confirmation")}
-          value={confirmation}
-          onChange={(e) => setConfirmation(e.target.value)}
-        />
-  
-        <button onClick={handleDelete} disabled={loading}>
-          {loading ? t("delete.loading") : t("delete.button")}
-        </button>
-      </Wrapper>
-    );
+interface Props {
+  profile: { email?: string; name?: string } | null;
+}
+
+const DeleteAccountSection = ({ profile }: Props) => {
+  const { t } = useTranslation("account");
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+
+  const [confirmation, setConfirmation] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleDelete = async () => {
+    if (confirmation.trim().toLowerCase() !== "delete") {
+      toast.error(t("delete.confirmationError"));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await dispatch(deleteUserAccount({ password })).unwrap();
+      toast.success(t("delete.success"));
+      router.push("/login");
+    } catch (err: any) {
+      toast.error(err?.message || t("delete.error"));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  export default DeleteAccountSection;
-  
+  return (
+    <Wrapper>
+      <Title>{t("delete.title")}</Title>
+      <Description>{t("delete.warning")}</Description>
+
+      {profile?.email && (
+        <UserInfo>
+          {t("delete.loggedInAs")} <strong>{profile.email}</strong>
+        </UserInfo>
+      )}
+
+      <Input
+        type="password"
+        placeholder={t("delete.password")}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+
+      <Input
+        type="text"
+        placeholder={t("delete.confirmation")}
+        value={confirmation}
+        onChange={(e) => setConfirmation(e.target.value)}
+      />
+
+      <Button onClick={handleDelete} disabled={loading}>
+        {loading ? t("delete.loading") : t("delete.button")}
+      </Button>
+    </Wrapper>
+  );
+};
+
+export default DeleteAccountSection;
+
+// 🎨 Styled Components
 
 const Wrapper = styled.div`
-  margin-top: 3rem;
-  background: ${({ theme }) => theme.backgroundSecondary};
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: ${({ theme }) => theme.shadows.light};
+  margin-top: ${({ theme }) => theme.spacing.xl};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  padding: ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
   max-width: 500px;
   margin-inline: auto;
-
-  input {
-    display: block;
-    margin-top: 1rem;
-    width: 100%;
-    padding: 0.75rem;
-    border-radius: 6px;
-    border: 1px solid ${({ theme }) => theme.border};
-  }
-
-  button {
-    margin-top: 1.5rem;
-    padding: 0.75rem 1.5rem;
-    background: ${({ theme }) => theme.danger};
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-
-    &:hover {
-      background: ${({ theme }) => theme.dangerHover};
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
 `;
 
 const Title = styled.h3`
-  color: ${({ theme }) => theme.danger};
-  margin-bottom: 0.75rem;
+  color: ${({ theme }) => theme.colors.danger};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+`;
+
+const Description = styled.p`
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  line-height: ${({ theme }) => theme.lineHeights.normal};
+`;
+
+const UserInfo = styled.p`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textAlt};
+  margin: 0;
+
+  strong {
+    color: ${({ theme }) => theme.colors.primary};
+    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  }
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: ${({ theme }) => theme.spacing.sm};
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.inputBackground};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.placeholder};
+  }
+`;
+
+const Button = styled.button`
+  margin-top: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.lg};
+  background: ${({ theme }) => theme.colors.danger};
+  color: ${({ theme }) => theme.colors.whiteColor};
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  cursor: pointer;
+  transition: background ${({ theme }) => theme.transition.normal};
+
+  &:hover {
+    opacity: ${({ theme }) => theme.opacity.hover};
+  }
+
+  &:disabled {
+    opacity: ${({ theme }) => theme.opacity.disabled};
+    cursor: not-allowed;
+  }
 `;

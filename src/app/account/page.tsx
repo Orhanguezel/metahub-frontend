@@ -10,7 +10,6 @@ import ProfileForm from "@/components/visitor/account/ProfileForm";
 import ProfileImageUploader from "@/components/visitor/account/ProfileImageUploader";
 import AddressForm from "@/components/visitor/account/AddressForm";
 import NotificationSettingsForm from "@/components/visitor/account/NotificationSettingsForm";
-import PaymentForm from "@/components/visitor/account/PaymentForm";
 import SocialLinksForm from "@/components/visitor/account/SocialLinksForm";
 import DeleteAccountSection from "@/components/visitor/account/DeleteAccountSection";
 import ChangePasswordForm from "@/components/auth/ChangePasswordForm";
@@ -22,7 +21,7 @@ export default function AccountPage() {
   const { profile, loading, error, successMessage } = useAppSelector(
     (state) => state.account
   );
-  const { t } = useTranslation("account");
+  const { t } = useTranslation("accountPage");
 
   useEffect(() => {
     dispatch(fetchCurrentUser());
@@ -33,52 +32,46 @@ export default function AccountPage() {
 
   return (
     <Container>
-      <Title>{t("account.title")}</Title>
+      <Title>{t("title")}</Title>
 
       {error && <Message>{error}</Message>}
       {successMessage && <Message success>{successMessage}</Message>}
-      {loading && <p>{t("account.loading")}</p>}
+      {loading && <p>{t("loading")}</p>}
 
       {profile && (
         <>
           <Section>
-            <SectionTitle>{t("account.profileImage")}</SectionTitle>
+            <SectionTitle>{t("profileImage")}</SectionTitle>
             <ProfileImageUploader imageUrl={profile?.profileImage} />
-
           </Section>
 
           <Section>
-            <SectionTitle>{t("account.personalInfo")}</SectionTitle>
+            <SectionTitle>{t("personalInfo")}</SectionTitle>
             <ProfileForm profile={profile} />
           </Section>
 
           <Section>
-            <SectionTitle>{t("account.address")}</SectionTitle>
-            <AddressForm profile={profile} />
+            <SectionTitle>{t("address")}</SectionTitle>
+            <AddressForm />
           </Section>
 
           <Section>
-            <SectionTitle>{t("account.notifications")}</SectionTitle>
+            <SectionTitle>{t("notifications")}</SectionTitle>
             <NotificationSettingsForm profile={profile} />
           </Section>
 
           <Section>
-            <SectionTitle>{t("account.payment")}</SectionTitle>
-            <PaymentForm profile={profile} />
-          </Section>
-
-          <Section>
-            <SectionTitle>{t("account.social")}</SectionTitle>
+            <SectionTitle>{t("social")}</SectionTitle>
             <SocialLinksForm profile={profile} />
           </Section>
 
           <Section>
-            <SectionTitle>{t("account.password")}</SectionTitle>
+            <SectionTitle>{t("password")}</SectionTitle>
             <ChangePasswordForm />
           </Section>
 
           <Section>
-            <SectionTitle>{t("account.deleteAccount")}</SectionTitle>
+            <SectionTitle>{t("deleteAccount")}</SectionTitle>
             <DeleteAccountSection profile={profile} />
           </Section>
         </>
@@ -88,35 +81,38 @@ export default function AccountPage() {
 }
 
 const Container = styled.div`
-  padding: 2rem;
+  padding: ${({ theme }) => theme.spacing.lg};
   max-width: 900px;
   margin: 0 auto;
 `;
 
 const Title = styled.h2`
-  font-size: 1.8rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
+  font-size: ${({ theme }) => theme.fontSizes.xl};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const Message = styled.p.withConfig({
   shouldForwardProp: (prop) => prop !== "success",
 })<{ success?: boolean }>`
-  color: ${({ success }) => (success ? "green" : "red")};
-
-  font-size: 0.95rem;
-  margin-bottom: 1rem;
+  color: ${({ success, theme }) =>
+    success ? theme.colors.success : theme.colors.danger};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
 `;
 
 const Section = styled.section`
-  margin: 2rem 0;
-  padding: 1.5rem;
-  border-radius: 12px;
-  background: ${({ theme }) => theme.backgroundSecondary};
-  box-shadow: ${({ theme }) => theme.shadows.light};
+  margin: ${({ theme }) => theme.spacing.xl} 0;
+  padding: ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radii.md};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
 `;
 
 const SectionTitle = styled.h3`
-  font-size: 1.4rem;
-  margin-bottom: 1rem;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 `;

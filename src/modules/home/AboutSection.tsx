@@ -7,30 +7,39 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 const Section = styled(motion.section)`
-  padding: 4rem 2rem;
+  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.md};
   text-align: center;
-  background: ${({ theme }) => theme.sectionBackground || "#f9f9f9"};
-  color: ${({ theme }) => theme.text};
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
+  border-top: ${({ theme }) => `${theme.borders.thin} ${theme.colors.border}`};
 `;
 
 const Heading = styled.h2`
-  font-size: 1.8rem;
-  margin-bottom: 0.5rem;
+  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const Paragraph = styled.p`
-  font-size: 1rem;
-  margin-bottom: 1rem;
-  color: ${({ theme }) => theme.textSecondary || "#555"};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 `;
 
 const DetailLink = styled(Link)`
-  font-weight: bold;
-  color: ${({ theme }) => theme.primary || "rebeccapurple"};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  color: ${({ theme }) => theme.colors.primary};
   text-decoration: none;
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  transition: color ${({ theme }) => theme.transition.fast};
 
   &:hover {
     text-decoration: underline;
+    color: ${({ theme }) => theme.colors.primaryHover};
   }
 `;
 

@@ -8,14 +8,15 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 const Hero = styled(motion.section)`
-  padding: 6rem 2rem;
   position: relative;
-  color: ${({ theme }) => theme.text};
-  background: url("/hero.jpg") center/cover no-repeat;
+  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.md};
   text-align: center;
+  background: url("/hero.jpg") center/cover no-repeat;
+  color: ${({ theme }) => theme.colors.text};
+  overflow: hidden;
 
   @media (max-width: 768px) {
-    padding: 4rem 1.5rem;
+    padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.sm};
     background-position: center;
   }
 `;
@@ -29,7 +30,11 @@ const BackgroundImage = styled(Image)`
 const Overlay = styled.div`
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.95));
+  background: linear-gradient(
+    180deg,
+    ${({ theme }) => theme.colors.overlayStart },
+    ${({ theme }) => theme.colors.overlayEnd }
+  );
   z-index: 1;
 `;
 
@@ -41,38 +46,44 @@ const Content = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 2.8rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
+  font-size: ${({ theme }) => theme.fontSizes["3xl"]};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+  color: ${({ theme }) => theme.colors.primary};
 
   @media (max-width: 768px) {
-    font-size: 2rem;
+    font-size: ${({ theme }) => theme.fontSizes["xl"]};
   }
 `;
 
 const Subtitle = styled.p`
-  font-size: 1.2rem;
-  color: ${({ theme }) => theme.textSecondary || "#555"};
-  margin-bottom: 2rem;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
 
   @media (max-width: 768px) {
-    font-size: 1rem;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
   }
 `;
 
 const CTAButton = styled.button`
-  padding: 12px 24px;
-  background-color: ${({ theme }) => theme.primary || "rebeccapurple"};
-  color: ${({ theme }) => theme.buttonText || "#fff"};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.lg};
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.buttonText};
   border: none;
-  border-radius: 8px;
+  border-radius: ${({ theme }) => theme.radii.md};
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: background-color 0.3s ease;
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  transition: background-color ${({ theme }) => theme.transition.fast}, transform 0.2s ease;
 
   &:hover {
-    background-color: ${({ theme }) => theme.primaryHover || "indigo"};
+    background-color: ${({ theme }) => theme.colors.primaryHover};
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -81,8 +92,7 @@ export default function HeroSection() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // 🔒 SSR/CSR uyumu için
-    setMounted(true);
+    setMounted(true); // SSR/CSR uyumu
   }, []);
 
   if (!mounted) return null;
@@ -94,7 +104,7 @@ export default function HeroSection() {
       transition={{ duration: 0.6 }}
     >
       <BackgroundImage
-        src="/hero.jpg" 
+        src="/hero.jpg"
         alt="Hero Background"
         fill
         priority

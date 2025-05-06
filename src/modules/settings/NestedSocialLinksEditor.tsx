@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function NestedSocialLinksEditor({ value, setValue }: Props) {
-  const { t } = useTranslation("admin-settings");
+  const { t } = useTranslation("adminSettings");
 
   const handleAddField = () => {
     const newKey = prompt(t("enterSocialName", "Enter social platform name (e.g., facebook)"));

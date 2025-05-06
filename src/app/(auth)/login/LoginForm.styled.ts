@@ -5,9 +5,9 @@ export const Form = styled.form`
   max-width: 480px;
   margin: 3rem auto;
   padding: 2rem;
-  background-color: ${({ theme }) => theme.cardBackground};
+  background-color: ${({ theme }) => theme.colors.backgroundSecondary};
   border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.light};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
 `;
 
 export const FormGroup = styled.div`
@@ -18,7 +18,7 @@ export const FormGroup = styled.div`
     margin-bottom: 0.5rem;
     font-weight: ${({ theme }) => theme.fontWeights.semiBold};
     font-size: ${({ theme }) => theme.fontSizes.sm};
-    color: ${({ theme }) => theme.text};
+    color: ${({ theme }) => theme.colors.text};
   }
 `;
 
@@ -29,23 +29,28 @@ export const InputWrapper = styled.div<{ $hasError?: boolean }>`
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   width: 100%;
-  border: 1px solid ${({ $hasError, theme }) => ($hasError ? theme.danger : theme.border)};
+  border: 1px solid
+    ${({ $hasError, theme }) =>
+      $hasError ? theme.colors.danger : theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.sm};
-  background-color: ${({ theme }) => theme.inputBackground};
-  border-bottom: 2px solid ${({ $hasError, theme }) => ($hasError ? theme.danger : theme.primaryTransparent)};
-  transition: ${({ theme }) => theme.transition.normal};
+  background-color: ${({ theme }) => theme.colors.inputBackground};
+  border-bottom: 2px solid
+    ${({ $hasError, theme }) =>
+      $hasError ? theme.colors.danger : theme.colors.primaryTransparent};
+  transition: ${({ theme }) => theme.transition.fast};
 
   &:focus-within {
-    border-color: ${({ $hasError, theme }) => ($hasError ? theme.danger : theme.primary)};
-    box-shadow: 0 0 0 3px ${({ theme }) => theme.primaryTransparent};
-    border-bottom-color: ${({ theme }) => theme.primaryHover};
+    border-color: ${({ $hasError, theme }) =>
+      $hasError ? theme.colors.danger : theme.colors.primary};
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primaryTransparent};
+    border-bottom-color: ${({ theme }) => theme.colors.primaryHover};
   }
 `;
 
 export const Icon = styled.div`
   margin-left: 0.5rem;
-  color: ${({ theme }) => theme.text};
-  opacity: 0.5;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  opacity: 0.6;
 `;
 
 export const Input = styled.input`
@@ -53,11 +58,11 @@ export const Input = styled.input`
   border: none;
   background: transparent;
   font-size: ${({ theme }) => theme.fontSizes.base};
-  color: ${({ theme }) => theme.text};
+  color: ${({ theme }) => theme.colors.text};
   font-family: inherit;
 
   &::placeholder {
-    color: ${({ theme }) => theme.muted};
+    color: ${({ theme }) => theme.colors.muted};
     font-style: italic;
     font-size: ${({ theme }) => theme.fontSizes.sm};
   }
@@ -71,18 +76,18 @@ export const TogglePassword = styled.button`
   background: none;
   border: none;
   cursor: pointer;
-  color: ${({ theme }) => theme.textSecondary};
-  transition: ${({ theme }) => theme.transition.normal};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  transition: ${({ theme }) => theme.transition.fast};
 
   &:hover {
-    color: ${({ theme }) => theme.primaryHover};
+    color: ${({ theme }) => theme.colors.primaryHover};
   }
 `;
 
 export const ErrorMessage = styled.div`
   margin-top: 0.5rem;
   font-size: ${({ theme }) => theme.fontSizes.xs};
-  color: ${({ theme }) => theme.danger};
+  color: ${({ theme }) => theme.colors.danger};
 `;
 
 export const FormOptions = styled.div`
@@ -107,15 +112,15 @@ export const RememberMe = styled.div`
   input {
     width: 1.1rem;
     height: 1.1rem;
-    border: 1px solid ${({ theme }) => theme.border};
+    border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: 4px;
     appearance: none;
     cursor: pointer;
     position: relative;
 
     &:checked {
-      background-color: ${({ theme }) => theme.primary};
-      border-color: ${({ theme }) => theme.primaryHover};
+      background-color: ${({ theme }) => theme.colors.primary};
+      border-color: ${({ theme }) => theme.colors.primaryHover};
 
       &::after {
         content: "";
@@ -132,17 +137,18 @@ export const RememberMe = styled.div`
 
     &:focus {
       outline: none;
-      box-shadow: 0 0 0 3px ${({ theme }) => theme.primaryTransparent};
+      box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primaryTransparent};
     }
   }
 
   label {
     cursor: pointer;
+    color: ${({ theme }) => theme.colors.text};
   }
 `;
 
 export const ForgotPassword = styled.a`
-  color: ${({ theme }) => theme.primaryHover};
+  color: ${({ theme }) => theme.colors.primaryHover};
   text-decoration: none;
   transition: ${({ theme }) => theme.transition.fast};
 
@@ -151,17 +157,19 @@ export const ForgotPassword = styled.a`
   }
 `;
 
+
+
 export const SubmitButton = styled.button`
   width: 100%;
   padding: 1rem;
-  background-color: ${({ theme }) => theme.primary};
-  color: ${({ theme }) => theme.buttonText};
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.buttonText};
   border: none;
   border-radius: ${({ theme }) => theme.radii.sm};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   font-size: ${({ theme }) => theme.fontSizes.base};
   cursor: pointer;
-  transition: ${({ theme }) => theme.transition.normal};
+  transition: ${({ theme }) => theme.transition.fast};
   position: relative;
   overflow: hidden;
 
@@ -172,12 +180,17 @@ export const SubmitButton = styled.button`
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
     transition: left 0.5s ease;
   }
 
   &:hover {
-    background-color: ${({ theme }) => theme.primaryHover};
+    background-color: ${({ theme }) => theme.colors.primaryHover};
     transform: translateY(-2px);
 
     &::before {
@@ -199,14 +212,15 @@ export const AltAction = styled.div`
   text-align: center;
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px dashed ${({ theme }) => theme.border};
+  border-top: 1px dashed ${({ theme }) => theme.colors.border};
   font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 export const SwitchTabLink = styled.button`
   background: none;
   border: none;
-  color: ${({ theme }) => theme.primaryHover};
+  color: ${({ theme }) => theme.colors.primaryHover};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   cursor: pointer;
   transition: ${({ theme }) => theme.transition.fast};
@@ -219,7 +233,7 @@ export const SwitchTabLink = styled.button`
 export const Terms = styled.div`
   margin-bottom: 1.5rem;
   font-size: ${({ theme }) => theme.fontSizes.xs};
-  color: ${({ theme }) => theme.muted};
+  color: ${({ theme }) => theme.colors.muted};
   text-align: center;
 `;
 
@@ -228,5 +242,5 @@ export const Label = styled.label`
   margin-bottom: 0.5rem;
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.text};
+  color: ${({ theme }) => theme.colors.text};
 `;

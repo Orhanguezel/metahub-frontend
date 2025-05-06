@@ -14,7 +14,7 @@ interface Props {
 }
 
 export default function NestedValueEditor({ value, setValue }: Props) {
-  const { t } = useTranslation("admin-settings");
+  const { t } = useTranslation("adminSettings");
 
   const handleAddField = () => {
     const newKey = prompt(t("enterFieldName", "Enter field name"));

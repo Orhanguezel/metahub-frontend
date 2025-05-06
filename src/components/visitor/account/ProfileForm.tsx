@@ -10,15 +10,6 @@ import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import styled from "styled-components";
 
-// ✅ Zod şeması
-const profileSchema = z.object({
-  name: z.string().min(1, "Name is required."),
-  email: z.string().email("Invalid email.").min(1, "Email is required."),
-  phone: z.string().optional(),
-});
-
-type ProfileFormData = z.infer<typeof profileSchema>;
-
 interface Props {
   profile: {
     _id: string;
@@ -31,6 +22,18 @@ interface Props {
 export default function ProfileForm({ profile }: Props) {
   const dispatch = useAppDispatch();
   const { t } = useTranslation("account");
+
+  // ✅ Zod şeması i18n ile
+  const profileSchema = z.object({
+    name: z.string().min(1, { message: t("form.errors.name") }),
+    email: z
+      .string()
+      .min(1, { message: t("form.errors.email") })
+      .email({ message: t("form.errors.emailInvalid") }),
+    phone: z.string().optional(),
+  });
+
+  type ProfileFormData = z.infer<typeof profileSchema>;
 
   const {
     register,
@@ -66,56 +69,94 @@ export default function ProfileForm({ profile }: Props) {
   };
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit)}>
-      <label>{t("form.name")}</label>
-      <input {...register("name")} />
-      {errors.name && <Error>{errors.name.message}</Error>}
+    <Wrapper>
+      <Title>{t("form.title")}</Title>
 
-      <label>{t("form.email")}</label>
-      <input type="email" {...register("email")} />
-      {errors.email && <Error>{errors.email.message}</Error>}
+      <Form onSubmit={handleSubmit(onSubmit)}>
+        <Label>{t("form.name")}</Label>
+        <Input {...register("name")} />
+        {errors.name && <Error>{errors.name.message}</Error>}
 
-      <label>{t("form.phone")}</label>
-      <input {...register("phone")} />
-      {errors.phone && <Error>{errors.phone.message}</Error>}
+        <Label>{t("form.email")}</Label>
+        <Input type="email" {...register("email")} />
+        {errors.email && <Error>{errors.email.message}</Error>}
 
-      <button type="submit" disabled={isSubmitting}>
-        {t("form.save")}
-      </button>
-    </Form>
+        <Label>{t("form.phone")}</Label>
+        <Input {...register("phone")} />
+        {errors.phone && <Error>{errors.phone.message}</Error>}
+
+        <SubmitButton type="submit" disabled={isSubmitting}>
+          {isSubmitting ? t("form.saving") : t("form.save")}
+        </SubmitButton>
+      </Form>
+    </Wrapper>
   );
 }
 
-// 💅 styled-components
+// 🎨 styled-components
+
+const Wrapper = styled.div`
+  margin-top: 2rem;
+  padding: 2rem;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  max-width: 500px;
+  margin-inline: auto;
+`;
+
+const Title = styled.h3`
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  margin-bottom: 1.5rem;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.2rem;
+`;
 
-  input {
-    padding: 0.75rem;
-    border-radius: 6px;
-    border: 1px solid ${({ theme }) => theme.border || "#ccc"};
-  }
+const Label = styled.label`
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.textAlt};
+`;
 
-  button {
-    padding: 0.75rem;
-    background-color: ${({ theme }) => theme.primary};
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
+const Input = styled.input`
+  padding: 0.75rem;
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.inputBackground};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 1rem;
 
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.placeholder};
   }
 `;
 
 const Error = styled.p`
-  color: ${({ theme }) => theme.danger || "red"};
+  color: ${({ theme }) => theme.colors.danger};
   font-size: 0.85rem;
   margin: 0;
+`;
+
+const SubmitButton = styled.button`
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.lg};
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.whiteColor};
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  cursor: pointer;
+  transition: ${({ theme }) => theme.transition.normal};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryHover};
+  }
+
+  &:disabled {
+    opacity: ${({ theme }) => theme.opacity.disabled};
+    cursor: not-allowed;
+  }
 `;

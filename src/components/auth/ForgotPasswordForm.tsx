@@ -40,7 +40,7 @@ export default function ForgotPasswordForm() {
     }
 
     try {
-      await dispatch(forgotPassword(email)).unwrap();
+      await dispatch(forgotPassword({ email })).unwrap(); // ✅ Burayı düzelttik
     } catch (err: any) {
       toast.error(err?.message || t("errors.default"));
     }
@@ -48,7 +48,7 @@ export default function ForgotPasswordForm() {
 
   return (
     <Form onSubmit={handleSubmit}>
-      <input
+      <Input
         type="email"
         placeholder={t("placeholder")}
         value={email}
@@ -60,9 +60,9 @@ export default function ForgotPasswordForm() {
       />
       {errorText && <Error>{errorText}</Error>}
 
-      <button type="submit" disabled={loading}>
+      <SubmitButton type="submit" disabled={loading}>
         {loading ? t("loading") : t("submit")}
-      </button>
+      </SubmitButton>
     </Form>
   );
 }
@@ -70,38 +70,46 @@ export default function ForgotPasswordForm() {
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
 
-  input {
-    padding: 0.75rem;
-    border-radius: 6px;
-    border: 1px solid ${({ theme }) => theme.border};
-    background: ${({ theme }) => theme.inputBackground};
-    color: ${({ theme }) => theme.text};
+const Input = styled.input`
+  padding: ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.inputBackground};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  transition: border 0.3s;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+const SubmitButton = styled.button`
+  padding: ${({ theme }) => theme.spacing.md};
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: white;
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.md};
+  cursor: pointer;
+  font-weight: 600;
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  transition: 0.3s;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.primaryHover};
   }
 
-  button {
-    padding: 0.75rem;
-    background-color: ${({ theme }) => theme.primary};
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: 0.3s;
-
-    &:hover {
-      background-color: ${({ theme }) => theme.primaryHover};
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 `;
 
 const Error = styled.div`
-  font-size: 0.75rem;
-  color: ${({ theme }) => theme.danger};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.danger};
 `;

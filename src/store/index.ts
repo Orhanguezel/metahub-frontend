@@ -4,6 +4,7 @@ import authReducer from "./user/authSlice";
 import userCrudReducer from "./user/userCrudSlice";
 import userStatusReducer from "./user/userStatusSlice";
 import accountReducer from "./user/accountSlice";
+import addressSlice from "./user/addressSlice";
 import adminReducer from "./adminSlice";
 
 import cartReducer from "./cartSlice";
@@ -38,6 +39,7 @@ export const store = configureStore({
     account: accountReducer,
     userCrud: userCrudReducer,
     userStatus: userStatusReducer,
+    address: addressSlice,
     admin: adminReducer,
 
     // 🛒 Ürün & Sipariş

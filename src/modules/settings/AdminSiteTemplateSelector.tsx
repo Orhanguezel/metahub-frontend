@@ -19,7 +19,7 @@ export default function AdminSiteTemplateSelector({
   onAddTheme,
   onDeleteTheme,
 }: AdminSiteTemplateSelectorProps) {
-  const { t } = useTranslation("admin-settings");
+  const { t } = useTranslation("adminSettings");
   const [newTheme, setNewTheme] = useState("");
 
   const handleAddTheme = () => {

@@ -8,53 +8,62 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 const Section = styled(motion.section)`
-  padding: 4rem 2rem;
-  background: ${({ theme }) => theme.background};
+  padding: ${({ theme }) => theme.spacing["2xl"]} ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.background};
   text-align: center;
-  color: ${({ theme }) => theme.text};
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const Title = styled.h2`
-  font-size: 1.8rem;
-  margin-bottom: 2rem;
+  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
 `;
 
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
+  gap: ${({ theme }) => theme.spacing.lg};
 `;
 
 const Card = styled(motion.div)`
-  background: ${({ theme }) => theme.cardBackground || "#f9f9f9"};
-  padding: 1rem;
-  border-radius: 12px;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+  background: ${({ theme }) => theme.colors.cardBackground};
+  padding: ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radii.md};
+  box-shadow: ${({ theme }) => theme.shadows.light};
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: transform ${({ theme }) => theme.transition.fast};
+
+  &:hover {
+    transform: translateY(-4px);
+  }
 `;
 
 const ImageWrapper = styled.div`
   width: 100%;
-  height: 140px;
+  height: 160px;
   position: relative;
-  border-radius: 10px;
+  border-radius: ${({ theme }) => theme.radii.sm};
   overflow: hidden;
-  margin-bottom: 1rem;
+  margin-bottom: ${({ theme }) => theme.spacing.md};
 `;
 
 const Label = styled.p`
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  color: ${({ theme }) => theme.colors.text};
+  text-align: center;
 `;
 
 const SeeAll = styled(Link)`
   display: inline-block;
-  margin-top: 2rem;
-  color: ${({ theme }) => theme.primary || "rebeccapurple"};
-  font-weight: 500;
+  margin-top: ${({ theme }) => theme.spacing.xl};
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
   text-decoration: none;
+  transition: color ${({ theme }) => theme.transition.fast};
 
   &:hover {
     text-decoration: underline;

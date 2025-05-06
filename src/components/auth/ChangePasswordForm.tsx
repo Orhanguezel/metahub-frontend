@@ -10,7 +10,7 @@ import styled from "styled-components";
 
 export default function ChangePasswordForm() {
   const dispatch = useDispatch<AppDispatch>();
-  const { t } = useTranslation("changePassword");
+  const { t } = useTranslation("changePasswordForm");
   const { loading, error, successMessage } = useSelector(
     (state: RootState) => state.auth
   );
@@ -51,7 +51,7 @@ export default function ChangePasswordForm() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: "" });
+    setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,9 +77,9 @@ export default function ChangePasswordForm() {
 
   return (
     <Wrapper>
-      <h2>{t("title")}</h2>
+      <Title>{t("title")}</Title>
       <Form onSubmit={handleSubmit}>
-        <input
+        <Input
           type="password"
           name="currentPassword"
           placeholder={t("placeholders.current")}
@@ -88,7 +88,7 @@ export default function ChangePasswordForm() {
         />
         {errors.currentPassword && <Error>{errors.currentPassword}</Error>}
 
-        <input
+        <Input
           type="password"
           name="newPassword"
           placeholder={t("placeholders.new")}
@@ -97,7 +97,7 @@ export default function ChangePasswordForm() {
         />
         {errors.newPassword && <Error>{errors.newPassword}</Error>}
 
-        <input
+        <Input
           type="password"
           name="confirmPassword"
           placeholder={t("placeholders.confirm")}
@@ -106,9 +106,9 @@ export default function ChangePasswordForm() {
         />
         {errors.confirmPassword && <Error>{errors.confirmPassword}</Error>}
 
-        <button type="submit" disabled={loading}>
+        <Button type="submit" disabled={loading}>
           {loading ? t("loading") : t("submit")}
-        </button>
+        </Button>
       </Form>
     </Wrapper>
   );
@@ -118,45 +118,57 @@ const Wrapper = styled.div`
   max-width: 400px;
   margin: 2rem auto;
   padding: 2rem;
-  background: ${({ theme }) => theme.backgroundSecondary};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
   border-radius: 12px;
   box-shadow: ${({ theme }) => theme.shadows.light};
+`;
+
+const Title = styled.h2`
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: ${({ theme }) => theme.colors.text};
+  text-align: center;
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+`;
 
-  input {
-    padding: 0.75rem;
-    border-radius: 6px;
-    border: 1px solid ${({ theme }) => theme.border};
+const Input = styled.input`
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.inputBackground};
+  color: ${({ theme }) => theme.colors.text};
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.placeholder};
+  }
+`;
+
+const Button = styled.button`
+  padding: 0.75rem;
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.primaryHover};
   }
 
-  button {
-    padding: 0.75rem;
-    background-color: ${({ theme }) => theme.primary};
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.3s;
-
-    &:hover {
-      background-color: ${({ theme }) => theme.primaryHover};
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 `;
 
 const Error = styled.div`
   font-size: 0.75rem;
-  color: ${({ theme }) => theme.danger};
+  color: ${({ theme }) => theme.colors.danger};
 `;
-

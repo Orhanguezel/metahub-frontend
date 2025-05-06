@@ -4,7 +4,7 @@ import React from "react";
 import styled from "styled-components";
 import { Check, X, Globe, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import * as MdIcons from "react-icons/md"; // Material Design iconları
+import * as MdIcons from "react-icons/md";
 
 interface RouteMeta {
   method: string;
@@ -31,7 +31,7 @@ interface ModuleCardProps {
     updatedAt?: string;
     routes?: RouteMeta[];
   };
-  search?: string; // 🔥 Yeni: Arama kelimesi props olarak alınacak
+  search?: string;
   onClick?: () => void;
   onDelete?: (name: string) => void;
 }
@@ -58,7 +58,7 @@ const highlightMatch = (text: string, search: string) => {
 };
 
 const ModuleCard: React.FC<ModuleCardProps> = ({ module, search = "", onClick, onDelete }) => {
-  const { i18n, t } = useTranslation();
+  const { i18n, t } = useTranslation("adminModules");
   const currentLang = (i18n.language || "en") as keyof Label;
   const moduleLabel = module.label?.[currentLang] || module.name;
   const swaggerLink = `/api-docs/#/${module.name}`;
@@ -85,7 +85,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, search = "", onClick, o
         </ModuleInfo>
 
         <Actions>
-          <TrashButton onClick={handleDeleteClick} title={t("admin.modules.delete", "Modülü Sil")}>
+          <TrashButton onClick={handleDeleteClick} title={t("delete", "Delete Module")}>
             <Trash2 size={18} />
           </TrashButton>
         </Actions>
@@ -95,23 +95,23 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, search = "", onClick, o
 
       <StatusGroup>
         <StatusItem>
-          <span>{t("admin.modules.enabled", "Aktif")}</span>
+          <span>{t("enabled", "Enabled")}</span>
           {module.enabled ? <Check color="green" /> : <X color="red" />}
         </StatusItem>
         <StatusItem>
-          <span>{t("admin.modules.sidebar", "Sidebar")}</span>
+          <span>{t("visibleInSidebar", "Sidebar")}</span>
           {module.visibleInSidebar ? <Check color="green" /> : <X color="gray" />}
         </StatusItem>
         <StatusItem>
-          <span>{t("admin.modules.analytics", "Analytics")}</span>
+          <span>{t("useAnalytics", "Analytics")}</span>
           {module.useAnalytics ? <Check color="blue" /> : <X color="gray" />}
         </StatusItem>
       </StatusGroup>
 
       <MetaInfo>
-        <small>{t("createdAt", "Oluşturuldu")}:</small>
+        <small>{t("createdAt", "Created at")}:</small>
         <TimeText>{new Date(module.createdAt || "").toLocaleString()}</TimeText>
-        <small>{t("updatedAt", "Güncellendi")}:</small>
+        <small>{t("updatedAt", "Updated at")}:</small>
         <TimeText>{new Date(module.updatedAt || "").toLocaleString()}</TimeText>
       </MetaInfo>
 
@@ -126,7 +126,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, search = "", onClick, o
               </li>
             ))}
             {module.routes.length > 5 && (
-              <li className="more">+{module.routes.length - 5} more</li>
+              <li className="more">+{module.routes.length - 5} {t("more", "more")}</li>
             )}
           </RouteList>
         </>
@@ -140,7 +140,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, search = "", onClick, o
           onClick={(e) => e.stopPropagation()}
         >
           <Globe size={16} />
-          Swagger
+          {t("swagger", "Swagger")}
         </SwaggerLink>
       </CardFooter>
     </Card>
@@ -149,28 +149,34 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, search = "", onClick, o
 
 export default ModuleCard;
 
-// --- Styled Components
+// 🎨 Styled Components
 
 const Card = styled.div`
-  background: ${({ theme }) => theme.cardBackground};
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 10px;
-  padding: 1.2rem;
+  background: ${({ theme }) => theme.cards.background};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: ${({ theme }) => theme.spacing.md};
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: ${({ theme }) => theme.spacing.sm};
+  transition: box-shadow ${({ theme }) => theme.transition.fast};
+
+  &:hover {
+    box-shadow: ${({ theme }) => theme.shadows.md};
+    cursor: pointer;
+  }
 `;
 
 const CardHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.8rem;
+  gap: ${({ theme }) => theme.spacing.sm};
 `;
 
 const IconWrapper = styled.div`
   font-size: 2rem;
-  color: ${({ theme }) => theme.primary};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const ModuleInfo = styled.div`
@@ -179,7 +185,7 @@ const ModuleInfo = styled.div`
 
 const Actions = styled.div`
   display: flex;
-  gap: 0.5rem;
+  gap: ${({ theme }) => theme.spacing.xs};
 `;
 
 const TrashButton = styled.button`
@@ -187,87 +193,89 @@ const TrashButton = styled.button`
   border: none;
   cursor: pointer;
   padding: 0;
-  color: ${({ theme }) => theme.danger};
-  transition: opacity 0.2s;
+  color: ${({ theme }) => theme.colors.danger};
+  transition: opacity ${({ theme }) => theme.transition.fast};
+
   &:hover {
     opacity: 0.7;
   }
 `;
 
 const LabelText = styled.h3`
-  font-size: 1rem;
+  font-size: ${({ theme }) => theme.fontSizes.md};
   margin: 0;
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 `;
 
 const NameText = styled.small`
-  color: ${({ theme }) => theme.textSecondary};
-  font-size: 0.8rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
 const Highlight = styled.span`
-  background-color: yellow;
-  color: black;
-  font-weight: bold;
-  border-radius: 4px;
+  background-color: ${({ theme }) => theme.colors.warning};
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  border-radius: ${({ theme }) => theme.radii.sm};
   padding: 0 2px;
   animation: highlightFlash 0.8s ease-in-out;
 
   @keyframes highlightFlash {
     from { background-color: transparent; }
-    to { background-color: yellow; }
+    to { background-color: ${({ theme }) => theme.colors.warning}; }
   }
 `;
 
 const Divider = styled.hr`
   border: none;
-  border-top: 1px solid ${({ theme }) => theme.border};
+  border-top: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   margin: 0.3rem 0;
 `;
 
 const StatusGroup = styled.div`
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
 const StatusItem = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: ${({ theme }) => theme.spacing.xs};
 `;
 
 const MetaInfo = styled.div`
-  font-size: 0.75rem;
-  color: ${({ theme }) => theme.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.textSecondary};
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
 `;
 
 const TimeText = styled.span`
-  font-size: 0.75rem;
-  color: ${({ theme }) => theme.text};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const RouteList = styled.ul`
-  font-size: 0.8rem;
-  padding-left: 1rem;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  padding-left: ${({ theme }) => theme.spacing.md};
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
 
   li {
     display: flex;
-    gap: 0.5rem;
+    gap: ${({ theme }) => theme.spacing.xs};
 
     code {
-      font-weight: bold;
-      color: ${({ theme }) => theme.primary};
+      font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+      color: ${({ theme }) => theme.colors.primary};
     }
 
     &.more {
       font-style: italic;
-      opacity: 0.6;
+      opacity: 0.7;
     }
   }
 `;
@@ -280,13 +288,14 @@ const CardFooter = styled.div`
 const SwaggerLink = styled.a`
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  color: ${({ theme }) => theme.link};
-  font-size: 0.85rem;
+  gap: ${({ theme }) => theme.spacing.xs};
+  color: ${({ theme }) => theme.colors.link};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color ${({ theme }) => theme.transition.fast};
 
   &:hover {
     text-decoration: underline;
+    color: ${({ theme }) => theme.colors.linkHover};
   }
 `;

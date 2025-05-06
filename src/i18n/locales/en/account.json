@@ -1,79 +1,75 @@
 {
-  "notifications": {
-    "title": "Notification Preferences",
-    "email": "Receive email notifications",
-    "sms": "Receive SMS notifications",
-    "push": "Receive push notifications",
-    "save": "Save Preferences"
-  },
-  "social": {
-    "title": "Social Media Links",
-    "save": "Save Links",
-    "errors": {
-      "instagram": "Please enter a valid Instagram URL.",
-      "facebook": "Please enter a valid Facebook URL.",
-      "twitter": "Please enter a valid Twitter URL."
-    }
-  },
- "address": {
-    "title": "Address",
+  "address": {
+    "title": "My Address",
     "street": "Street",
     "houseNumber": "House Number",
     "city": "City",
     "zipCode": "Zip Code",
-    "add": "Add Address",
+    "add": "Add",
+    "saving": "Saving...",
+    "update": "Update",
     "remove": "Remove",
-    "save": "Save",
-    "success": "Address updated successfully.",
-    "error": "An error occurred while saving address.",
+    "success": "Address saved successfully.",
+    "deleted": "Address deleted successfully.",
+    "error": "An error occurred.",
     "errors": {
       "street": "Street is required.",
       "houseNumber": "House number is required.",
       "city": "City is required.",
-      "zipCode": "Zip code is required.",
-      "min": "At least one address is required.",
-      "required": "Addresses are required."
-    }
-  },
-  "payment": {
-    "title": "Payment Details",
-    "cardNumber": "Card Number",
-    "expiry": "Expiry Date (MM/YY)",
-    "cvc": "CVC",
-    "save": "Save Payment",
-    "success": "Payment information updated successfully.",
-    "error": "An error occurred while saving payment info.",
-    "errors": {
-      "cardNumber": "Card number is required.",
-      "cardNumberFormat": "Please enter a valid 16-digit card number.",
-      "expiry": "Expiry date is required.",
-      "expiryFormat": "Please use MM/YY format.",
-      "cvc": "CVC is required.",
-      "cvcFormat": "Enter a valid 3 or 4 digit CVC."
+      "zipCode": "Zip code is required."
     }
   },
   "delete": {
     "title": "Delete Account",
-    "warning": "This action is irreversible. Please type 'delete' to confirm.",
+    "warning": "This action is irreversible. Please confirm below to permanently delete your account.",
+    "loggedInAs": "Logged in as:",
+    "password": "Your password",
     "confirmation": "Type 'delete' to confirm",
-    "confirmationError": "You must type 'delete' to confirm.",
-    "password": "Enter your password",
-    "button": "Delete my account",
+    "button": "Delete Account",
     "loading": "Deleting...",
     "success": "Your account has been deleted.",
-    "error": "An error occurred while deleting your account."
+    "error": "Something went wrong while deleting your account.",
+    "confirmationError": "Please type 'delete' to confirm."
   },
- "form": {
+  "notifications": {
+    "title": "Notification Settings",
+    "email": "Receive email notifications",
+    "sms": "Receive SMS notifications",
+    "save": "Save Settings",
+    "saving": "Saving...",
+    "success": "Your notification settings have been updated.",
+    "error": "An error occurred while updating your notification settings."
+  },
+  "form": {
+    "title": "Profile Information",
     "name": "Name",
     "email": "Email",
-    "phone": "Phone",
-    "save": "Save Profile",
+    "phone": "Phone (optional)",
+    "save": "Save Changes",
+    "saving": "Saving...",
     "success": "Profile updated successfully.",
-    "error": "An error occurred while updating profile.",
+    "error": "An error occurred while updating the profile.",
+    "upload": "Upload",
+    "loading": "Uploading...",
+    "imageSuccess": "Profile image updated successfully.",
+    "imageError": "An error occurred while updating the profile image.",
     "errors": {
       "name": "Name is required.",
       "email": "Email is required.",
       "emailInvalid": "Please enter a valid email address."
     }
+  },
+  "social": {
+    "title": "Social Media Links",
+    "save": "Save",
+    "saving": "Saving...",
+    "success": "Social media links updated successfully.",
+    "error": "An error occurred while updating social media links.",
+    "errors": {
+      "instagramInvalid": "Please enter a valid Instagram URL.",
+      "facebookInvalid": "Please enter a valid Facebook URL.",
+      "twitterInvalid": "Please enter a valid Twitter URL."
+    }
   }
 }
+

@@ -1,3 +1,4 @@
+// src/lib/apiCall.ts
 import API from "./api";
 
 const apiCall = async (
@@ -29,7 +30,6 @@ const apiCall = async (
 
     console.log(`✅ API Response [${method.toUpperCase()} ${url}]:`, response.data);
     return response.data;
-
   } catch (error: any) {
     const status = error?.response?.status || "Unknown";
     const errorData = error?.response?.data ?? {};
