@@ -23,7 +23,7 @@ export default function AdminSettingsList({
   onEdit,
 }: AdminSettingsListProps) {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("adminSettings");
+  const { t } = useTranslation("settings");
 
   const availableThemes = React.useMemo(() => {
     const themeSetting = settings.find((s) => s.key === "available_themes");
@@ -59,9 +59,38 @@ export default function AdminSettingsList({
   const isLogoKey = (key: string) =>
     ["navbar_logos", "footer_logos"].includes(key);
 
+  // --- GÜNCEL: LOGO DEĞERİNİ CLOUDINARY DESTEKLİ OKU ---
+  const renderLogo = (val: any) => {
+    // Eğer obje ve içinde light/dark varsa
+    const lightLogoUrl =
+      val?.light?.url ||
+      (typeof val?.light === "string" && getImageSrc(val.light, "setting"));
+    const darkLogoUrl =
+      val?.dark?.url ||
+      (typeof val?.dark === "string" && getImageSrc(val.dark, "setting"));
+
+    return (
+      <LogoGroup>
+        {lightLogoUrl && (
+          <LogoPreview>
+            <span>Light</span>
+            <img src={lightLogoUrl} alt="Light Logo" />
+          </LogoPreview>
+        )}
+        {darkLogoUrl && (
+          <LogoPreview>
+            <span>Dark</span>
+            <img src={darkLogoUrl} alt="Dark Logo" />
+          </LogoPreview>
+        )}
+      </LogoGroup>
+    );
+  };
+
   const renderValue = (setting: Setting) => {
     const val = setting.value;
 
+    // Tema seçici
     if (setting.key === "site_template" && typeof val === "string") {
       return (
         <Select value={val} onChange={handleThemeChange}>
@@ -74,39 +103,31 @@ export default function AdminSettingsList({
       );
     }
 
+    // LOGO key
     if (isLogoKey(setting.key) && typeof val === "object" && val !== null) {
-      const logos = val as { light?: string; dark?: string };
-      return (
-        <LogoGroup>
-          {logos.light && (
-            <LogoPreview>
-              <span>Light</span>
-              <img src={getImageSrc(logos.light, "setting")} alt="Light Logo" />
-            </LogoPreview>
-          )}
-          {logos.dark && (
-            <LogoPreview>
-              <span>Dark</span>
-              <img src={getImageSrc(logos.dark, "setting")} alt="Dark Logo" />
-            </LogoPreview>
-          )}
-        </LogoGroup>
-      );
+      return renderLogo(val);
     }
 
+    // String
     if (typeof val === "string") return <SingleValue>{val}</SingleValue>;
+    // Array
     if (Array.isArray(val)) return <SingleValue>{val.join(", ")}</SingleValue>;
 
+    // MultiLang veya nested object
     if (typeof val === "object" && val !== null) {
+      // Çoklu dil
       if ("tr" in val || "en" in val || "de" in val) {
         const langVal = val as MultiLangValue;
         return (
-          <div>{`${langVal.tr || "-"} / ${langVal.en || "-"} / ${
-            langVal.de || "-"
-          }`}</div>
+          <div>
+            {`${langVal.tr || "-"} / ${langVal.en || "-"} / ${
+              langVal.de || "-"
+            }`}
+          </div>
         );
       }
 
+      // NestedLinkItem
       if ("label" in val && "url" in val) {
         const nestedVal = val as NestedLinkItem;
         return (
@@ -119,11 +140,15 @@ export default function AdminSettingsList({
         );
       }
 
+      // Herhangi başka bir object
       return (
         <NestedList>
           {Object.entries(val).map(([fieldKey, fieldVal]) => (
             <NestedItem key={fieldKey}>
-              <strong>{fieldKey}:</strong> {JSON.stringify(fieldVal)}
+              <strong>{fieldKey}:</strong>{" "}
+              {typeof fieldVal === "object"
+                ? JSON.stringify(fieldVal)
+                : String(fieldVal)}
             </NestedItem>
           ))}
         </NestedList>

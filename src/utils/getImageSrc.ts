@@ -81,10 +81,12 @@ export function getImageSrc(
     return `${BASE_URL}/uploads/${PROJECT_ENV}/misc/default.png`;
   }
 
-  if (!imagePath || imagePath.trim() === "") {
+  // ⛔️ Önce string mi diye kontrol et
+  if (typeof imagePath !== "string" || imagePath.trim() === "") {
     return `${BASE_URL}/uploads/${PROJECT_ENV}/${defaultImage}`;
   }
 
+  // Cloudinary ya da http ile başlıyorsa
   if (imagePath.startsWith("http")) {
     if (imagePath.includes("cloudinary.com")) {
       return imagePath;
@@ -103,7 +105,6 @@ export function getImageSrc(
     }
   }
 
+  // Dosya yolu ise
   return `${BASE_URL}/uploads/${PROJECT_ENV}/${folder}/${imagePath}`;
 }
-
-

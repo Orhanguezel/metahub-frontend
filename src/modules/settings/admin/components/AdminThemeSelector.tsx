@@ -21,25 +21,25 @@ export default function AdminThemeSelector({
   onAvailableThemesUpdate,
 }: AdminThemeSelectorProps) {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("adminSettings");
+  const { t } = useTranslation("settings");
   const [newThemeName, setNewThemeName] = useState("");
+
+  const themeExists = (name: string) =>
+    availableThemes.some((t) => t.toLowerCase() === name.toLowerCase());
 
   const handleAddTheme = async () => {
     const trimmed = newThemeName.trim();
-
     if (!trimmed) {
       toast.warning(t("themeNameEmpty", "Theme name cannot be empty."));
       return;
     }
-
-    if (availableThemes.includes(trimmed)) {
+    if (themeExists(trimmed)) {
       toast.info(t("themeAlreadyExists", "Theme already exists."));
       setNewThemeName("");
       return;
     }
 
     const updatedThemes = [...availableThemes, trimmed];
-
     try {
       await dispatch(
         upsertSetting({
@@ -69,6 +69,9 @@ export default function AdminThemeSelector({
       <SectionTitle>{t("availableThemes", "Available Themes")}</SectionTitle>
 
       <ThemeList>
+        {availableThemes.length === 0 && (
+          <NoThemeText>⚠️ {t("noThemes", "No themes available yet.")}</NoThemeText>
+        )}
         {availableThemes.map((theme) => (
           <ThemeItem key={theme}>
             <Radio
@@ -92,7 +95,13 @@ export default function AdminThemeSelector({
           onKeyDown={handleKeyDown}
           placeholder={t("newThemePlaceholder", "New theme name...")}
         />
-        <AddButton type="button" onClick={handleAddTheme}>
+        <AddButton
+          type="button"
+          onClick={handleAddTheme}
+          disabled={
+            !newThemeName.trim() || themeExists(newThemeName.trim())
+          }
+        >
           ➕ {t("add", "Add")}
         </AddButton>
       </AddThemeSection>
@@ -131,6 +140,12 @@ const ThemeItem = styled.div`
   &:hover {
     background: ${({ theme }) => theme.colors.hoverBackground};
   }
+`;
+
+const NoThemeText = styled.div`
+  color: ${({ theme }) => theme.colors.warning};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  padding-left: 4px;
 `;
 
 const Radio = styled.input`
@@ -175,7 +190,12 @@ const AddButton = styled.button`
   cursor: pointer;
   transition: background ${({ theme }) => theme.transition.fast};
 
-  &:hover {
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
   }
 `;

@@ -19,20 +19,22 @@ export default function AdminSiteTemplateSelector({
   onAddTheme,
   onDeleteTheme,
 }: AdminSiteTemplateSelectorProps) {
-  const { t } = useTranslation("adminSettings");
+  const { t } = useTranslation("settings");
   const [newTheme, setNewTheme] = useState("");
 
+  // Tema ekleme fonksiyonu
   const handleAddTheme = () => {
     const trimmed = newTheme.trim();
     if (!trimmed) return;
-    if (availableThemes.includes(trimmed)) {
-      setNewTheme(""); 
+    if (availableThemes.some((th) => th.toLowerCase() === trimmed.toLowerCase())) {
+      setNewTheme("");
       return;
     }
     onAddTheme(trimmed);
     setNewTheme("");
   };
 
+  // Tema silme fonksiyonu
   const handleDelete = (theme: string) => {
     const confirmDelete = window.confirm(
       t("confirmDeleteTheme", `Are you sure you want to delete the theme '${theme}'?`)
@@ -82,7 +84,7 @@ export default function AdminSiteTemplateSelector({
             }
           }}
         />
-        <AddButton type="button" onClick={handleAddTheme}>
+        <AddButton type="button" onClick={handleAddTheme} disabled={!newTheme.trim()}>
           ➕ {t("add", "Add")}
         </AddButton>
       </AddSection>
@@ -161,8 +163,11 @@ const AddButton = styled.button`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   cursor: pointer;
   transition: background ${({ theme }) => theme.transition.fast};
-
-  &:hover {
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  &:hover:not(:disabled) {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
   }
 `;

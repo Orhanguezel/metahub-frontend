@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 
@@ -13,32 +13,32 @@ interface Props {
 }
 
 export default function NestedSocialLinksEditor({ value, setValue }: Props) {
-  const { t } = useTranslation("adminSettings");
+  const { t } = useTranslation("settings");
+  const [newField, setNewField] = useState("");
 
+  // Alan ekleme fonksiyonu
   const handleAddField = () => {
-    const newKey = prompt(
-      t("enterSocialName", "Enter social platform name (e.g., facebook)")
-    );
-    if (!newKey) return;
-    if (value[newKey]) {
+    const trimmed = newField.trim();
+    if (!trimmed) return;
+    if (value[trimmed]) {
       alert(t("fieldExists", "This field already exists."));
       return;
     }
     setValue({
       ...value,
-      [newKey]: {
-        url: "",
-        icon: "",
-      },
+      [trimmed]: { url: "", icon: "" },
     });
+    setNewField("");
   };
 
+  // Alan silme fonksiyonu
   const handleRemoveField = (fieldKey: string) => {
     const updated = { ...value };
     delete updated[fieldKey];
     setValue(updated);
   };
 
+  // Alan güncelleme fonksiyonu
   const handleChange = (
     fieldKey: string,
     field: keyof SocialLinkItem,
@@ -55,9 +55,18 @@ export default function NestedSocialLinksEditor({ value, setValue }: Props) {
 
   return (
     <Wrapper>
-      <AddButton type="button" onClick={handleAddField}>
-        ➕ {t("addSocial", "Add Social Link")}
-      </AddButton>
+      <AddFieldRow>
+        <NewFieldInput
+          type="text"
+          value={newField}
+          placeholder={t("enterSocialName", "Platform name (e.g. facebook)")}
+          onChange={(e) => setNewField(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleAddField()}
+        />
+        <AddFieldButton type="button" onClick={handleAddField}>
+          ➕ {t("addSocial", "Add Social Link")}
+        </AddFieldButton>
+      </AddFieldRow>
 
       {Object.keys(value).length === 0 && (
         <EmptyMessage>
@@ -71,6 +80,7 @@ export default function NestedSocialLinksEditor({ value, setValue }: Props) {
             <FieldTitle>{fieldKey}</FieldTitle>
             <RemoveButton
               type="button"
+              title={t("removeField", "Remove field")}
               onClick={() => handleRemoveField(fieldKey)}
             >
               ❌
@@ -93,7 +103,7 @@ export default function NestedSocialLinksEditor({ value, setValue }: Props) {
               type="text"
               value={icon}
               onChange={(e) => handleChange(fieldKey, "icon", e.target.value)}
-              placeholder={t("iconPlaceholder", "e.g., facebook, twitter")}
+              placeholder={t("iconPlaceholder", "e.g. facebook, twitter")}
             />
           </InputGroup>
         </FieldBlock>
@@ -109,17 +119,32 @@ const Wrapper = styled.div`
   gap: ${({ theme }) => theme.spacing.md};
 `;
 
-const AddButton = styled.button`
+const AddFieldRow = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.sm};
+  align-items: center;
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+`;
+
+const NewFieldInput = styled.input`
+  flex: 1;
+  padding: ${({ theme }) => theme.spacing.sm};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  background: ${({ theme }) => theme.inputs.background};
+  color: ${({ theme }) => theme.inputs.text};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+`;
+
+const AddFieldButton = styled.button`
   padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
   background: ${({ theme }) => theme.buttons.primary.background};
   color: ${({ theme }) => theme.buttons.primary.text};
   border: none;
   border-radius: ${({ theme }) => theme.radii.sm};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   cursor: pointer;
   transition: background ${({ theme }) => theme.transition.fast};
-
   &:hover {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
   }
@@ -136,6 +161,7 @@ const FieldBlock = styled.div`
   padding: ${({ theme }) => theme.spacing.sm};
   border-radius: ${({ theme }) => theme.radii.sm};
   background: ${({ theme }) => theme.colors.backgroundAlt};
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
 `;
 
 const FieldHeader = styled.div`
@@ -157,7 +183,6 @@ const RemoveButton = styled.button`
   font-size: 1.2rem;
   cursor: pointer;
   transition: opacity ${({ theme }) => theme.transition.fast};
-
   &:hover {
     opacity: 0.7;
   }

@@ -37,38 +37,52 @@ export default function FooterCopyright({
 
   return (
     <Copyright>
-      © {new Date().getFullYear()} {finalCompanyName}
-      {finalRightsText && `. ${finalRightsText}`}
+      <span>
+        &copy; {new Date().getFullYear()} <strong>{finalCompanyName}</strong>
+        {finalRightsText && <>. {finalRightsText}</>}
+      </span>
       <br />
-      <a
+      <DesignLink
         href="https://www.guezelwebdesign.com"
         target="_blank"
         rel="noopener noreferrer"
       >
         Designed by OG
-      </a>
+      </DesignLink>
     </Copyright>
   );
 }
 
-const Copyright = styled.p`
-  margin-top: ${({ theme }) => theme.spacing.md};
+const Copyright = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.lg};
   font-size: ${({ theme }) => theme.fontSizes.xs};
   color: ${({ theme }) => theme.colors.textSecondary};
   line-height: ${({ theme }) => theme.lineHeights.normal};
+  text-align: center;
+  opacity: 0.88;
+  letter-spacing: 0.02em;
 
-  a {
-    color: ${({ theme }) => theme.colors.textSecondary};
-    text-decoration: none;
-    transition: color ${({ theme }) => theme.transition.fast};
-
-    &:hover {
-      color: ${({ theme }) => theme.colors.primary};
-    }
+  strong {
+    color: ${({ theme }) => theme.colors.primary};
+    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+    letter-spacing: 0.04em;
   }
+`;
 
-  ${({ theme }) => theme.media.small} {
-    text-align: center;
-    margin-top: ${({ theme }) => theme.spacing.sm};
+const DesignLink = styled.a`
+  color: ${({ theme }) => theme.colors.textSecondary};
+  text-decoration: none;
+  margin-top: 4px;
+  display: inline-block;
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  opacity: 0.8;
+  transition: color ${({ theme }) => theme.transition.fast};
+
+  &:hover,
+  &:focus {
+    color: ${({ theme }) => theme.colors.primary};
+    opacity: 1;
+    text-decoration: underline;
+    outline: none;
   }
 `;

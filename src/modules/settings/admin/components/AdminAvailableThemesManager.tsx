@@ -17,20 +17,22 @@ export default function AdminAvailableThemesManager({
   onThemesChange,
 }: AdminAvailableThemesManagerProps) {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("adminSettings");
+  const { t } = useTranslation("settings");
   const [newTheme, setNewTheme] = useState("");
 
+  // Yardımcı: theme adı normalize (küçük harf, boşluk kırpma)
+  const normalizeTheme = (theme: string) => theme.trim().toLowerCase();
+
   const handleAddTheme = async () => {
-    const trimmed = newTheme.trim();
+    const trimmed = normalizeTheme(newTheme);
     if (!trimmed) {
       toast.error(t("themeNameRequired", "Theme name cannot be empty."));
       return;
     }
-    if (availableThemes.includes(trimmed)) {
+    if (availableThemes.map(normalizeTheme).includes(trimmed)) {
       toast.error(t("themeAlreadyExists", "This theme already exists."));
       return;
     }
-
     const updatedThemes = [...availableThemes, trimmed];
 
     try {
@@ -48,9 +50,8 @@ export default function AdminAvailableThemesManager({
 
   const handleDeleteTheme = async (themeToDelete: string) => {
     const updatedThemes = availableThemes.filter(
-      (theme) => theme !== themeToDelete
+      (theme) => normalizeTheme(theme) !== normalizeTheme(themeToDelete)
     );
-
     try {
       await dispatch(
         upsertSetting({ key: "available_themes", value: updatedThemes })
@@ -75,6 +76,7 @@ export default function AdminAvailableThemesManager({
               <DeleteButton
                 type="button"
                 onClick={() => handleDeleteTheme(theme)}
+                title={t("delete", "Delete")}
               >
                 ❌
               </DeleteButton>
@@ -91,6 +93,12 @@ export default function AdminAvailableThemesManager({
           placeholder={t("enterNewTheme", "Enter new theme...")}
           value={newTheme}
           onChange={(e) => setNewTheme(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleAddTheme();
+            }
+          }}
         />
         <AddButton type="button" onClick={handleAddTheme}>
           ➕ {t("addTheme", "Add Theme")}
@@ -121,8 +129,7 @@ const ThemeItem = styled.div`
   align-items: center;
   padding: ${({ theme }) => theme.spacing.sm};
   background: ${({ theme }) => theme.colors.cardBackground};
-  border: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.sm};
   font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
@@ -146,8 +153,7 @@ const Input = styled.input`
   flex: 1 1 200px;
   padding: ${({ theme }) => theme.spacing.sm};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  border: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.sm};
   background: ${({ theme }) => theme.inputs.background};
   color: ${({ theme }) => theme.inputs.text};

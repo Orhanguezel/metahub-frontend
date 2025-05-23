@@ -6,12 +6,13 @@ export { default as Sidebar } from "./admin/components/Sidebar";
 
 
 // Public Components
-export { default as FooterContact } from "./public/components/footer/FooterContact";
+
 export { default as FooterCopyright } from "./public/components/footer/FooterCopyright";
 export { default as FooterLinks } from "./public/components/footer/FooterLinks";
 export { default as FooterLogo } from "./public/components/footer/FooterLogo";
 export { default as FooterSection } from "./public/components/footer/FooterSection";
 export { default as FooterSocialLinks } from "./public/components/footer/FooterSocialLinks";
+export { default as FooterCompanyInfo } from "./public/components/footer/FooterCompanyInfo";
 export { default as AvatarMenu } from "./public/components/navbar/AvatarMenu";
 export { default as Logo } from "./public/components/navbar/Logo";
 //export { default as MenuDropdown } from "./public/components/navbar/MenuDropdown";

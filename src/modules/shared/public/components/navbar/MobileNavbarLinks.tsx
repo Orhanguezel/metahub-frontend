@@ -1,6 +1,6 @@
 "use client";
-
-import { MobileMenuLink } from "./NavbarStyles";
+import styled from "styled-components";
+import Link from "next/link";
 import { AUTH_LINKS } from "./navigationLinks";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/store/hooks";
@@ -52,3 +52,19 @@ export default function MobileNavbarLinks({ onClose }: Props) {
     </>
   );
 }
+
+const MobileMenuLink = styled(Link)`
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  text-decoration: none;
+  color: ${({ theme }) => theme.colors.text};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  border-bottom: ${({ theme }) => `${theme.borders.thin} ${theme.colors.border}`};
+  display: block;
+  width: 100%;
+  transition: all 0.3s ease;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primary};
+    background-color: ${({ theme }) => theme.colors.backgroundAlt};
+  }
+`;

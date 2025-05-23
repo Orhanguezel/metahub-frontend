@@ -27,7 +27,7 @@ export default function KeyInputSection({
   setIsNestedObject,
   isEditing,
 }: Props) {
-  const { t } = useTranslation("adminSettings");
+  const { t } = useTranslation("settings");
 
   const handleNestedChange = () => {
     const newVal = !isNestedObject;

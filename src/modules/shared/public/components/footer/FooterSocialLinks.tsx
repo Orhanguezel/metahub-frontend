@@ -14,14 +14,13 @@ import {
   FaWhatsapp,
 } from "react-icons/fa6";
 import React from "react";
-
 import { SocialLinks } from "@/types/SocialLinks";
 
 interface FooterSocialLinksProps {
   links?: SocialLinks;
 }
 
-// 🔥 İkonlar map'i
+// İkon haritası
 const iconMap: { [key: string]: React.ReactNode } = {
   facebook: <FaFacebookF />,
   instagram: <FaInstagram />,
@@ -46,14 +45,12 @@ export default function FooterSocialLinks({ links }: FooterSocialLinksProps) {
   if (activeLinks.length === 0) return null;
 
   return (
-    <SocialMedia>
+    <SocialMedia aria-label="Social Media Links">
       {activeLinks.map(([key, url]) => {
         const normalizedKey = key.trim().toLowerCase();
         const icon = iconMap[normalizedKey];
 
-        if (!icon) return null; // desteklenmeyen sosyal medya varsa geç
-
-
+        if (!icon) return null;
 
         return (
           <SocialLink
@@ -61,7 +58,8 @@ export default function FooterSocialLinks({ links }: FooterSocialLinksProps) {
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={normalizedKey}
+            aria-label={normalizedKey.charAt(0).toUpperCase() + normalizedKey.slice(1)}
+            tabIndex={0}
           >
             {icon}
           </SocialLink>
@@ -77,7 +75,7 @@ const SocialMedia = styled.div`
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacing.md};
 
   ${({ theme }) => theme.media.small} {
     margin-top: ${({ theme }) => theme.spacing.md};
@@ -85,14 +83,20 @@ const SocialMedia = styled.div`
 `;
 
 const SocialLink = styled.a`
-  font-size: 1.5rem;
+  font-size: 1.7rem;
   color: ${({ theme }) => theme.colors.textSecondary};
-  transition: color ${({ theme }) => theme.transition.fast};
+  transition: color ${({ theme }) => theme.transition.fast}, transform 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
+  padding: 6px;
+  outline: none;
 
-  &:hover {
+  &:hover,
+  &:focus-visible {
     color: ${({ theme }) => theme.colors.primary};
+    background: ${({ theme }) => theme.colors.backgroundSecondary};
+    transform: translateY(-2px) scale(1.08);
   }
 `;

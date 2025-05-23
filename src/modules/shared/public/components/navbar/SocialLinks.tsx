@@ -1,6 +1,6 @@
 "use client";
+import styled from "styled-components";
 import type { ReactNode } from "react";
-import { SocialLinks as SocialLinksWrapper } from "./NavbarStyles";
 import { useAppSelector } from "@/store/hooks";
 import { FaInstagram, FaTiktok, FaPinterestP, FaFacebook, FaLinkedin, FaTwitter } from "react-icons/fa";
 
@@ -37,3 +37,16 @@ export default function SocialLinks() {
     </SocialLinksWrapper>
   );
 }
+
+const SocialLinksWrapper = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.sm};
+  a {
+    color: inherit;
+    font-size: ${({ theme }) => theme.fontSizes.md};
+
+    &:hover {
+      color: ${({ theme }) => theme.colors.primaryHover || "#d9a441"};
+    }
+  }
+`;

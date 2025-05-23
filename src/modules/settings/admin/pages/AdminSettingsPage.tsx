@@ -1,6 +1,8 @@
+// src/modules/settings/admin/pages/AdminSettingsPage.tsx
+
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import {
@@ -12,7 +14,7 @@ import { Modal } from "@/shared";
 import styled from "styled-components";
 
 export default function AdminSettingsPage() {
-  const { t } = useTranslation("adminSettings");
+  const { t } = useTranslation("settings");
   const dispatch = useAppDispatch();
   const { settings, loading, error } = useAppSelector((state) => state.setting);
 
@@ -23,19 +25,23 @@ export default function AdminSettingsPage() {
     }
   }, [dispatch, settings]);
 
-  // Diğer UI state’ler
-  const [selectedSetting, setSelectedSetting] = useState<Setting | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Modal ve seçili ayar state
+  const [selectedSetting, setSelectedSetting] = React.useState<Setting | null>(null);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
+  // Her zaman güncel availableThemes hesaplama
   const availableThemesSetting = settings.find((s) => s.key === "available_themes");
-  const [availableThemes, setAvailableThemes] = useState<string[]>(
-    Array.isArray(availableThemesSetting?.value)
-      ? availableThemesSetting.value
-      : typeof availableThemesSetting?.value === "string"
-      ? availableThemesSetting.value.split(",").map((v) => v.trim())
-      : []
-  );
+  const getAvailableThemes = useCallback((): string[] => {
+    if (Array.isArray(availableThemesSetting?.value)) {
+      return availableThemesSetting.value as string[];
+    }
+    if (typeof availableThemesSetting?.value === "string") {
+      return availableThemesSetting.value.split(",").map((v) => v.trim());
+    }
+    return [];
+  }, [availableThemesSetting]);
 
+  // Modal Açma-Kapama
   const handleCreate = () => {
     setSelectedSetting(null);
     setIsModalOpen(true);
@@ -49,6 +55,8 @@ export default function AdminSettingsPage() {
   const handleCloseModal = () => {
     setSelectedSetting(null);
     setIsModalOpen(false);
+    // Modal kapandıktan sonra ayarları tazele
+    setTimeout(() => dispatch(fetchSettings()), 500);
   };
 
   return (
@@ -72,15 +80,14 @@ export default function AdminSettingsPage() {
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
         <AdminSettingsForm
           editingSetting={selectedSetting}
-          availableThemes={availableThemes}
-          onAvailableThemesUpdate={setAvailableThemes}
+          availableThemes={getAvailableThemes()}
+          onAvailableThemesUpdate={() => dispatch(fetchSettings())}
           onSave={handleCloseModal}
         />
       </Modal>
     </Wrapper>
   );
 }
-
 
 // 🎨 Styled Components
 const Wrapper = styled.div`

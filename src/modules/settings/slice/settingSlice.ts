@@ -1,29 +1,39 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 
-// 🎯 Tipler
+// 🎯 Çeviri tipi
 export interface MultiLangValue {
   tr?: string;
   en?: string;
   de?: string;
 }
 
-export type NestedLinkItem = { label: MultiLangValue; url: string };
+// 🎯 Logo tipi (artık value: { light: {url: string}, dark: {url: string} })
+export type LogoSettingValue = {
+  light?: { url: string };
+  dark?: { url: string };
+};
 
+// 🎯 Ayar value tiplerinin tümünü kapsayan union type
 export type SettingValue =
   | string
   | string[]
   | MultiLangValue
   | Record<string, MultiLangValue>
-  | Record<string, NestedLinkItem>
-  | { light?: string; dark?: string };
+  | Record<string, any>
+  | LogoSettingValue;
 
+// 🎯 Setting dokümanı
 export interface Setting {
   _id?: string;
   key: string;
   value: SettingValue;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
+// 🎯 Redux state tipi
 interface SettingState {
   settings: Setting[];
   loading: boolean;
@@ -40,7 +50,7 @@ const initialState: SettingState = {
   fetchedSettings: false,
 };
 
-// ✅ Fetch
+// ✅ Fetch All
 export const fetchSettings = createAsyncThunk(
   "setting/fetchSettings",
   async (_, thunkAPI) => {
@@ -51,6 +61,7 @@ export const fetchSettings = createAsyncThunk(
         null,
         thunkAPI.rejectWithValue
       );
+      // Response data: { success: true, data: [...] }
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error);
@@ -58,21 +69,16 @@ export const fetchSettings = createAsyncThunk(
   }
 );
 
-// ✅ Upsert (JSON)
+// ✅ Upsert (text, json vs.)
 export const upsertSetting = createAsyncThunk(
   "setting/upsertSetting",
   async (data: { key: string; value: SettingValue }, thunkAPI) => {
     try {
       let normalizedValue = data.value;
-
+      // Sadece düz string ise ve logo değilse, çoklu dil objesine çevir
       if (
         typeof data.value === "string" &&
-        ![
-          "site_template",
-          "available_themes",
-          "navbar_logos",
-          "footer_logos",
-        ].includes(data.key)
+        !["site_template", "available_themes", "navbar_logos", "footer_logos"].includes(data.key)
       ) {
         normalizedValue = { tr: data.value, en: data.value, de: data.value };
       }
@@ -90,7 +96,7 @@ export const upsertSetting = createAsyncThunk(
   }
 );
 
-// ✅ Delete
+// ✅ Delete by Key
 export const deleteSetting = createAsyncThunk(
   "setting/deleteSetting",
   async (key: string, thunkAPI) => {
@@ -108,11 +114,11 @@ export const deleteSetting = createAsyncThunk(
   }
 );
 
-// ✅ Upload: POST / PUT /setting/upload/:key
+// ✅ Logo upload (POST)
 export const upsertSettingImage = createAsyncThunk(
   "setting/upsertSettingImage",
   async (
-    data: { key: string; file?: File; lightFile?: File; darkFile?: File },
+    data: { key: string; lightFile?: File; darkFile?: File },
     thunkAPI
   ) => {
     try {
@@ -120,10 +126,7 @@ export const upsertSettingImage = createAsyncThunk(
       if (["navbar_logos", "footer_logos"].includes(data.key)) {
         if (data.lightFile) formData.append("lightFile", data.lightFile);
         if (data.darkFile) formData.append("darkFile", data.darkFile);
-      } else if (data.file) {
-        formData.append("file", data.file);
       }
-
       const response = await apiCall(
         "post",
         `/setting/upload/${data.key}`,
@@ -138,22 +141,19 @@ export const upsertSettingImage = createAsyncThunk(
   }
 );
 
+// ✅ Logo update (PUT)
 export const updateSettingImage = createAsyncThunk(
   "setting/updateSettingImage",
   async (
-    data: { key: string; file?: File; lightFile?: File; darkFile?: File },
+    data: { key: string; lightFile?: File; darkFile?: File },
     thunkAPI
   ) => {
     try {
       const formData = new FormData();
-
       if (["navbar_logos", "footer_logos"].includes(data.key)) {
         if (data.lightFile) formData.append("lightFile", data.lightFile);
         if (data.darkFile) formData.append("darkFile", data.darkFile);
-      } else if (data.file) {
-        formData.append("file", data.file);
       }
-
       const response = await apiCall(
         "put",
         `/setting/upload/${data.key}`,
@@ -183,56 +183,39 @@ const settingSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        fetchSettings.fulfilled,
-        (state, action: PayloadAction<Setting[]>) => {
-          state.loading = false;
-          state.settings = action.payload; // Buraya sadece array gelsin!
-          state.fetchedSettings = true;
-        }
-      )
-
+      .addCase(fetchSettings.fulfilled, (state, action: PayloadAction<Setting[]>) => {
+        state.loading = false;
+        state.settings = action.payload;
+        state.fetchedSettings = true;
+      })
       .addCase(fetchSettings.rejected, (state, action) => {
         state.loading = false;
         state.error =
           (action.payload as any)?.message || "Failed to fetch settings.";
       })
 
-      .addCase(
-        upsertSetting.fulfilled,
-        (state, action: PayloadAction<Setting>) => {
-          state.loading = false;
-          state.successMessage = "Setting saved successfully.";
-          updateOrInsert(state, action.payload);
-        }
-      )
-      .addCase(
-        upsertSettingImage.fulfilled,
-        (state, action: PayloadAction<Setting>) => {
-          state.loading = false;
-          state.successMessage = "Image uploaded successfully.";
-          updateOrInsert(state, action.payload);
-        }
-      )
-      .addCase(
-        updateSettingImage.fulfilled,
-        (state, action: PayloadAction<Setting>) => {
-          state.loading = false;
-          state.successMessage = "Image updated successfully.";
-          updateOrInsert(state, action.payload);
-        }
-      )
-      .addCase(
-        deleteSetting.fulfilled,
-        (state, action: PayloadAction<string>) => {
-          state.loading = false;
-          state.successMessage = "Setting deleted successfully.";
-          state.settings = state.settings.filter(
-            (s) => s.key !== action.payload
-          );
-        }
-      )
+      .addCase(upsertSetting.fulfilled, (state, action: PayloadAction<Setting>) => {
+        state.loading = false;
+        state.successMessage = "Setting saved successfully.";
+        updateOrInsert(state, action.payload);
+      })
+      .addCase(upsertSettingImage.fulfilled, (state, action: PayloadAction<Setting>) => {
+        state.loading = false;
+        state.successMessage = "Image uploaded successfully.";
+        updateOrInsert(state, action.payload);
+      })
+      .addCase(updateSettingImage.fulfilled, (state, action: PayloadAction<Setting>) => {
+        state.loading = false;
+        state.successMessage = "Image updated successfully.";
+        updateOrInsert(state, action.payload);
+      })
+      .addCase(deleteSetting.fulfilled, (state, action: PayloadAction<string>) => {
+        state.loading = false;
+        state.successMessage = "Setting deleted successfully.";
+        state.settings = state.settings.filter((s) => s.key !== action.payload);
+      })
 
+      // Error matcher
       .addMatcher(
         (action): action is PayloadAction<{ message?: string }> =>
           action.type.endsWith("/rejected"),
@@ -241,11 +224,7 @@ const settingSlice = createSlice({
           const payload = action.payload;
           if (typeof payload === "string") {
             state.error = payload;
-          } else if (
-            payload &&
-            typeof payload === "object" &&
-            "message" in payload
-          ) {
+          } else if (payload && typeof payload === "object" && "message" in payload) {
             state.error = payload.message || "Operation failed.";
           } else {
             state.error = "Operation failed.";
@@ -255,6 +234,7 @@ const settingSlice = createSlice({
   },
 });
 
+// 🔄 Update or insert by key
 function updateOrInsert(state: SettingState, updated: Setting) {
   const index = state.settings.findIndex((s) => s.key === updated.key);
   if (index !== -1) {

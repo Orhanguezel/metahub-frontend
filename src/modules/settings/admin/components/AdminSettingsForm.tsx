@@ -11,9 +11,17 @@ import {
   updateSettingImage,
 } from "@/modules/settings/slice/settingSlice";
 import { toast } from "react-toastify";
-import KeyInputSection from "@/modules/settings/admin/components/KeyInputSection";
-import ValueInputSection from "@/modules/settings/admin/components/ValueInputSection";
-import { getImageSrc } from "@/utils/getImageSrc";
+import { KeyInputSection, ValueInputSection } from "@/modules/settings";
+
+const LANGS = ["tr", "en", "de"];
+
+// 👇 Cloudinary veya localde url key'i olup olmadığını kontrol eden yardımcı
+const extractLogoUrl = (logoObj: any) =>
+  typeof logoObj === "string"
+    ? logoObj
+    : logoObj?.url
+    ? logoObj.url
+    : undefined;
 
 interface AdminSettingsFormProps {
   editingSetting: Setting | null;
@@ -29,60 +37,75 @@ export default function AdminSettingsForm({
   onAvailableThemesUpdate,
 }: AdminSettingsFormProps) {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("adminSettings");
+  const { t } = useTranslation("settings");
 
+  // STATE
   const [key, setKey] = useState("");
   const [value, setValue] = useState<any>(editingSetting?.value ?? "");
   const [isNestedObject, setIsNestedObject] = useState(false);
   const [isMultiLang, setIsMultiLang] = useState(false);
   const [isImage, setIsImage] = useState(false);
+
+  // LOGO STATE
   const [file, setFile] = useState<File | null>(null);
   const [lightFile, setLightFile] = useState<File | null>(null);
   const [darkFile, setDarkFile] = useState<File | null>(null);
 
+  // --- Type Detection for Edit Mode
   useEffect(() => {
-    if (editingSetting) {
-      setKey(editingSetting.key || "");
-      setValue(editingSetting.value ?? "");
+  if (editingSetting) {
+    setKey(editingSetting.key || "");
+    setValue(editingSetting.value ?? "");
 
-      const isObj =
-        editingSetting.value &&
-        typeof editingSetting.value === "object" &&
-        !Array.isArray(editingSetting.value);
+    const v = editingSetting.value;
+    const isObj = v && typeof v === "object" && !Array.isArray(v);
 
-      const isNested =
-        !!isObj &&
-        Object.values(editingSetting.value || {}).some(
-          (v) =>
-            typeof v === "object" &&
-            v !== null &&
-            ("tr" in v || "en" in v || "de" in v)
-        );
+    const isReallyNested: boolean =
+      !!isObj &&
+      Object.values(v).length > 0 &&
+      Object.values(v).every(
+        (sub: any) =>
+          typeof sub === "object" &&
+          sub !== null &&
+          LANGS.every((lng) => lng in sub)
+      );
 
-      setIsMultiLang(Boolean(isObj) && !isNested);
-      setIsNestedObject(isNested);
-      setIsImage(false);
-      setFile(null);
-      setLightFile(null);
-      setDarkFile(null);
-    } else {
-      setKey("");
-      setValue(null);
-      setIsMultiLang(false);
-      setIsNestedObject(false);
-      setIsImage(false);
-      setFile(null);
-      setLightFile(null);
-      setDarkFile(null);
-    }
-  }, [editingSetting]);
+    const isReallyMultiLang: boolean =
+      !!isObj &&
+      !isReallyNested &&
+      LANGS.every((lng) => lng in v);
+
+    setIsNestedObject(isReallyNested);
+    setIsMultiLang(isReallyMultiLang);
+    setIsImage(false);
+    setFile(null);
+    setLightFile(null);
+    setDarkFile(null);
+  } else {
+    setKey("");
+    setValue("");
+    setIsMultiLang(false);
+    setIsNestedObject(false);
+    setIsImage(false);
+    setFile(null);
+    setLightFile(null);
+    setDarkFile(null);
+  }
+}, [editingSetting]);
+
 
   const isLogoUpload = key === "navbar_logos" || key === "footer_logos";
 
+  // 👇 LOGO PREVIEW
+  const lightLogoUrl = extractLogoUrl(value?.light);
+  const darkLogoUrl = extractLogoUrl(value?.dark);
+
+  // SUBMIT LOGIC
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
+      // LOGO YÜKLEME (light/dark)
       if (isLogoUpload) {
         if (!lightFile && !darkFile) {
           toast.error(
@@ -102,14 +125,15 @@ export default function AdminSettingsForm({
         return;
       }
 
+      // TEKİL IMAGE
       if (isImage) {
         if (!file) {
           toast.error(t("pleaseSelectFile", "Please select an image file."));
           return;
         }
         const action = editingSetting
-          ? updateSettingImage({ key, file })
-          : upsertSettingImage({ key, file });
+          ? updateSettingImage({ key, darkFile: file })
+          : upsertSettingImage({ key, darkFile: file });
         await dispatch(action).unwrap();
         toast.success(
           editingSetting
@@ -120,6 +144,7 @@ export default function AdminSettingsForm({
         return;
       }
 
+      // STANDART ALANLAR (text, array, multi-lang)
       if (!key.trim()) {
         toast.error(t("keyRequired", "Key is required."));
         return;
@@ -130,7 +155,9 @@ export default function AdminSettingsForm({
       if (isNestedObject && (!value || Object.keys(value).length === 0)) {
         toast.error(t("noFields", "Please add at least one field."));
         return;
-      } else if (
+      }
+
+      if (
         !isMultiLang &&
         typeof value === "string" &&
         !["site_template", "available_themes"].includes(key)
@@ -178,10 +205,11 @@ export default function AdminSettingsForm({
         isEditing={!!editingSetting}
       />
 
+      {/* LOGO YÜKLEME: footer_logos / navbar_logos */}
       {isLogoUpload ? (
         <LogoInputGroup>
           <div>
-            <Label>Light Logo *</Label>
+            <Label>{t("lightLogo", "Light Logo")} *</Label>
             <input
               type="file"
               accept="image/*"
@@ -189,9 +217,12 @@ export default function AdminSettingsForm({
                 setLightFile(e.target.files ? e.target.files[0] : null)
               }
             />
+            {lightLogoUrl && (
+              <LogoPreviewImg src={lightLogoUrl} alt="Light Logo" />
+            )}
           </div>
           <div>
-            <Label>Dark Logo</Label>
+            <Label>{t("darkLogo", "Dark Logo")}</Label>
             <input
               type="file"
               accept="image/*"
@@ -199,6 +230,9 @@ export default function AdminSettingsForm({
                 setDarkFile(e.target.files ? e.target.files[0] : null)
               }
             />
+            {darkLogoUrl && (
+              <LogoPreviewImg src={darkLogoUrl} alt="Dark Logo" />
+            )}
           </div>
         </LogoInputGroup>
       ) : (
@@ -215,27 +249,6 @@ export default function AdminSettingsForm({
           file={file}
           setFile={setFile}
         />
-      )}
-
-      {isLogoUpload && value && typeof value === "object" && (
-        <LogoPreviewWrapper>
-          <div>
-            <strong>Light:</strong>
-            {value.light ? (
-              <img src={getImageSrc(value.light, "setting")} alt="Light Logo" />
-            ) : (
-              <span>No light logo.</span>
-            )}
-          </div>
-          <div>
-            <strong>Dark:</strong>
-            {value.dark ? (
-              <img src={getImageSrc(value.dark, "setting")} alt="Dark Logo" />
-            ) : (
-              <span>No dark logo.</span>
-            )}
-          </div>
-        </LogoPreviewWrapper>
       )}
 
       <SaveButton type="submit">{t("save", "Save")}</SaveButton>
@@ -264,7 +277,6 @@ const SaveButton = styled.button`
   font-size: ${({ theme }) => theme.fontSizes.md};
   cursor: pointer;
   transition: background ${({ theme }) => theme.transition.normal};
-
   &:hover {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
   }
@@ -274,11 +286,9 @@ const LogoInputGroup = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: ${({ theme }) => theme.spacing.md};
-
   > div {
     flex: 1 1 200px;
   }
-
   input {
     width: 100%;
   }
@@ -291,22 +301,12 @@ const Label = styled.label`
   margin-bottom: ${({ theme }) => theme.spacing.xs};
 `;
 
-const LogoPreviewWrapper = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.md};
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.md};
-
-  div {
-    flex: 1 1 200px;
-    text-align: center;
-  }
-
-  img {
-    max-width: 100%;
-    height: auto;
-    border-radius: ${({ theme }) => theme.radii.sm};
-    box-shadow: ${({ theme }) => theme.shadows.sm};
-    margin-top: ${({ theme }) => theme.spacing.xs};
-  }
+const LogoPreviewImg = styled.img`
+  margin-top: ${({ theme }) => theme.spacing.xs};
+  max-width: 120px;
+  max-height: 80px;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  object-fit: contain;
 `;

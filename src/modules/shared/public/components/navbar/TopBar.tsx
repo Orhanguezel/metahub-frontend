@@ -1,6 +1,5 @@
 "use client";
-
-import { TopBar as TopBarWrapper, Phone } from "./NavbarStyles";
+import styled from "styled-components";
 import { SocialLinks } from "@/modules/shared";
 import { FaPhone } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
@@ -30,3 +29,20 @@ export default function TopBar() {
     </TopBarWrapper>
   );
 }
+
+const TopBarWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.lg};
+  background: ${({ theme }) => theme.colors.backgroundAlt || "#fdfaf4"};
+  color: ${({ theme }) => theme.colors.primary || "#8b5e3c"};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+`;
+
+const Phone = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+`;

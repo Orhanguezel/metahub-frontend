@@ -10,15 +10,13 @@ export interface LinkItem {
 
 interface FooterLinksProps {
   title: string;
-  links: LinkItem[]; // Artık optional değil → null check'e gerek kalmaz
+  links: LinkItem[];
 }
 
 export default function FooterLinks({ title, links }: FooterLinksProps) {
-  // Filtre: Eksik label veya href varsa gösterme.
   const validLinks = links.filter(
     (item) => item.label?.trim() && item.href?.trim()
   );
-
   if (validLinks.length === 0) return null;
 
   return (
@@ -27,7 +25,9 @@ export default function FooterLinks({ title, links }: FooterLinksProps) {
       <FooterList>
         {validLinks.map((item, idx) => (
           <FooterListItem key={idx}>
-            <StyledLink href={item.href}>{item.label}</StyledLink>
+            <StyledLink href={item.href}>
+              {item.label}
+            </StyledLink>
           </FooterListItem>
         ))}
       </FooterList>
@@ -35,21 +35,20 @@ export default function FooterLinks({ title, links }: FooterLinksProps) {
   );
 }
 
-// 🎨 Styled Components
+// 🎨 Styled Components (firma adıyla aynı başlık ve text formatı!)
+
+const FooterTitle = styled.h3`
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  letter-spacing: 0.5px;
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
+`;
+
 const FooterBlock = styled.div`
   margin: ${({ theme }) => theme.spacing.md};
   max-width: 300px;
-
-  ${({ theme }) => theme.media.small} {
-    text-align: center;
-  }
-`;
-
-const FooterTitle = styled.h3`
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  font-size: ${({ theme }) => theme.fontSizes.md};
+  text-align: center;
 `;
 
 const FooterList = styled.ul`
@@ -60,15 +59,29 @@ const FooterList = styled.ul`
 
 const FooterListItem = styled.li`
   margin-bottom: ${({ theme }) => theme.spacing.xs};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: 400;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 `;
 
 const StyledLink = styled(Link)`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: 400;
   text-decoration: none;
   transition: color ${({ theme }) => theme.transition.fast};
+  display: inline-block;
+  padding: 2px 0;
+  border-bottom: 1px solid transparent;
 
-  &:hover {
+  &:hover,
+  &:focus {
     color: ${({ theme }) => theme.colors.primary};
+    border-bottom: 1px solid ${({ theme }) => theme.colors.primary};
+    outline: none;
   }
 `;

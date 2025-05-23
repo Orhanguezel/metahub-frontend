@@ -1,31 +1,28 @@
-// components/visitor/shared/navbar/MenuDropdown.tsx
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { FaChevronDown } from "react-icons/fa";
 import styled from "styled-components";
 
-
-
-export const MenuDropdown = ({ label, children, isMobile = false, onClose }: MenuDropdownProps) => {
-  const [open, setOpen] = useState(false);
-
-  const handleToggle = () => setOpen((prev) => !prev);
-  const handleClose = () => {
-    if (onClose) onClose();
-    setOpen(false);
-  };
-
+export const MenuDropdown = ({
+  label,
+  children,
+  isMobile = false,
+  open,
+  onToggle,
+  onClose,
+}: MenuDropdownProps) => {
+  // Artık local state yok!
   return (
-    <Wrapper isMobile={isMobile} onMouseLeave={() => !isMobile && setOpen(false)}>
-      <Toggle isMobile={isMobile} onClick={handleToggle}>
+    <Wrapper isMobile={isMobile}>
+      <Toggle isMobile={isMobile} onClick={onToggle}>
         {label} <FaChevronDown size={12} />
       </Toggle>
       {open && (
         <Dropdown isMobile={isMobile}>
           {React.Children.map(children, (child: any) =>
-            React.cloneElement(child, { onClick: handleClose })
+            React.cloneElement(child, { onClick: onClose })
           )}
         </Dropdown>
       )}
@@ -35,14 +32,15 @@ export const MenuDropdown = ({ label, children, isMobile = false, onClose }: Men
 
 export { DropdownLink };
 
-
 interface MenuDropdownProps {
   label: string;
   children: React.ReactNode;
   isMobile?: boolean;
+  open?: boolean;               // Ekledik!
+  onToggle?: () => void;        // Ekledik!
   onClose?: () => void;
-  
 }
+
 const Wrapper = styled.div<{ isMobile?: boolean }>`
   position: relative;
   display: ${({ isMobile }) => (isMobile ? "block" : "inline-block")};
@@ -62,7 +60,6 @@ const Toggle = styled.button<{ isMobile?: boolean }>`
   width: ${({ isMobile }) => (isMobile ? "100%" : "auto")};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   transition: ${({ theme }) => theme.transition.fast};
-
   &:hover {
     color: ${({ theme }) => theme.colors.primary};
   }
@@ -91,7 +88,6 @@ const DropdownLink = styled(Link)<{ isMobile?: boolean }>`
   color: ${({ theme }) => theme.colors.text};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   transition: ${({ theme }) => theme.transition.fast};
-
   &:hover {
     background: ${({ theme }) => theme.colors.backgroundSecondary};
     color: ${({ theme }) => theme.colors.primary};

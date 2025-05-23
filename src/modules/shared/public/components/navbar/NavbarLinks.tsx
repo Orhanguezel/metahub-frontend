@@ -1,6 +1,6 @@
 "use client";
-
-import { MenuItem, MenuItem1, MenuLink } from "./NavbarStyles";
+import styled from "styled-components";
+import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/store/hooks";
 import { SPECIAL_NAV_LINK } from "./navigationLinks";
@@ -37,3 +37,51 @@ export default function NavbarLinks() {
     </>
   );
 }
+
+const MenuItem = styled.li`
+  list-style: none;
+  position: relative;
+  cursor: pointer;
+`;
+
+const MenuItem1 = styled.li`
+  list-style: none;
+  display: flex;
+  align-items: center;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.xs};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+`;
+
+const MenuLink = styled(Link)`
+  color: ${({ theme }) => theme.colors.text};
+  text-decoration: none;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  padding: 1rem 0.6rem;
+  display: inline-block;
+  font-family: ${({ theme }) => theme.fonts.body};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  position: relative;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primary};
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 1rem;
+    left: 0.6rem;
+    width: calc(100% - 1.2rem);
+    height: 2px;
+    background-color: ${({ theme }) => theme.colors.primary};
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover::after {
+    transform: scaleX(1);
+  }
+`;

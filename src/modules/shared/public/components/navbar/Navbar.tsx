@@ -1,26 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaMoon, FaSun, FaBars } from "react-icons/fa";
+import { FaMoon, FaSun, FaBars, FaTimes } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useAppSelector } from "@/store/hooks";
 import { useThemeContext } from "@/providers/ThemeProviderWrapper";
 import styled from "styled-components";
-import { motion } from "framer-motion";
-import { TopBar } from "@/modules/shared";
-import { Logo } from "@/modules/shared";
-import { NavbarLinks } from "@/modules/shared";
-import { MobileNavbarLinks } from "@/modules/shared";
-import { AvatarMenu } from "@/modules/shared";
+import {
+  TopBar,
+  Logo,
+  NavbarLinks,
+  MobileNavbarLinks,
+  AvatarMenu,
+} from "@/modules/shared";
 import { getImageSrc } from "@/utils/getImageSrc";
 
-type NavbarProps = {
-  onToggleSidebar?: () => void;
-  onClose?: () => void;
-};
-
-export default function Navbar({ onToggleSidebar }: NavbarProps) {
+export default function Navbar() {
   const { profile: user } = useAppSelector((state) => state.account);
   const isAuthenticated = !!user;
   const { toggle, isDark } = useThemeContext();
@@ -32,7 +28,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const resolvedProfileImage =
-    user?.profileImage && user.profileImage.trim() !== ""
+    user?.profileImage?.trim()
       ? getImageSrc(user.profileImage, "profile")
       : "/default-avatar.png";
 
@@ -42,14 +38,14 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
 
   useEffect(() => {
     if (!hasMounted) return;
-    const handleScroll = () => {
-      setShowStickyMenu(window.scrollY > 120);
-    };
+    const handleScroll = () => setShowStickyMenu(window.scrollY > 120);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [hasMounted]);
 
   if (!hasMounted) return null;
+
+  const handleHamburgerClick = () => setMobileOpen((prev) => !prev);
 
   const handleLangChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     i18n.changeLanguage(e.target.value);
@@ -57,6 +53,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
 
   return (
     <>
+      {/* Sticky Navbar */}
       <AnimatePresence>
         {showStickyMenu && (
           <StickyMenu
@@ -70,31 +67,38 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
               <NavbarLinks />
             </DesktopMenu>
             <RightControls>
-              <ThemeToggle onClick={toggle}>
+              <ThemeToggle onClick={toggle} title={isDark ? "Light mode" : "Dark mode"}>
                 {isDark ? <FaSun /> : <FaMoon />}
               </ThemeToggle>
-              <LangSelect value={i18n.language} onChange={handleLangChange}>
+              <LangSelect value={i18n.language} onChange={handleLangChange} aria-label="Language">
                 <option value="de">DE</option>
                 <option value="en">EN</option>
                 <option value="tr">TR</option>
               </LangSelect>
-              <Hamburger onClick={onToggleSidebar}>
-                <FaBars />
+              <AvatarMenu
+                isAuthenticated={isAuthenticated}
+                profileImage={resolvedProfileImage}
+                showDropdown={showDropdown}
+                setShowDropdown={setShowDropdown}
+              />
+              <Hamburger onClick={handleHamburgerClick} aria-label="Mobile menu">
+                {mobileOpen ? <FaTimes /> : <FaBars />}
               </Hamburger>
             </RightControls>
           </StickyMenu>
         )}
       </AnimatePresence>
 
+      {/* Main Navbar */}
       <NavbarWrapper>
         <TopBar />
         <CenterSection>
           <Logo />
           <RightControls>
-            <ThemeToggle onClick={toggle}>
+            <ThemeToggle onClick={toggle} title={isDark ? "Light mode" : "Dark mode"}>
               {isDark ? <FaSun /> : <FaMoon />}
             </ThemeToggle>
-            <LangSelect value={i18n.language} onChange={handleLangChange}>
+            <LangSelect value={i18n.language} onChange={handleLangChange} aria-label="Language">
               <option value="de">DE</option>
               <option value="en">EN</option>
               <option value="tr">TR</option>
@@ -105,8 +109,8 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
               showDropdown={showDropdown}
               setShowDropdown={setShowDropdown}
             />
-            <Hamburger onClick={() => setMobileOpen((prev) => !prev)}>
-              <FaBars />
+            <Hamburger onClick={handleHamburgerClick} aria-label="Mobile menu">
+              {mobileOpen ? <FaTimes /> : <FaBars />}
             </Hamburger>
           </RightControls>
         </CenterSection>
@@ -132,8 +136,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
   );
 }
 
-
-
+// 🎨 Styled Components
 const NavbarWrapper = styled.nav`
   display: flex;
   flex-direction: column;
@@ -207,7 +210,6 @@ const ThemeToggle = styled.button`
 `;
 
 const Hamburger = styled.button`
-  display: none;
   background: ${({ theme }) => theme.buttons.secondary.background};
   border: none;
   font-size: ${({ theme }) => theme.fontSizes.xl};
@@ -216,12 +218,9 @@ const Hamburger = styled.button`
   padding: ${({ theme }) => theme.spacing.xs};
   border-radius: ${({ theme }) => theme.radii.sm};
   transition: ${({ theme }) => theme.transition.fast};
-  &:hover {
-    background: ${({ theme }) => theme.buttons.secondary.backgroundHover};
-    color: ${({ theme }) => theme.buttons.secondary.textHover};
-  }
+  display: none; // <--- Default HIDDEN!
   @media (max-width: 768px) {
-    display: block;
+    display: block; // <--- Only SHOW on mobile
   }
 `;
 
@@ -230,7 +229,7 @@ const DesktopMenu = styled.ul`
   list-style: none;
   gap: ${({ theme }) => theme.spacing.lg};
   @media (max-width: 768px) {
-    display: none;
+    display: none; // <--- Hide links on mobile
   }
 `;
 
@@ -258,3 +257,4 @@ const StickyMenu = styled(motion.div)<{ isAdmin?: boolean }>`
   justify-content: space-between;
   z-index: ${({ theme }) => theme.zIndex.dropdown};
 `;
+
