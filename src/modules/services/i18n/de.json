@@ -1,0 +1,100 @@
+{
+ "page": {
+    "title": "Unsere Aktivitäten",
+    "all": "Alle Aktivitäten ansehen →",
+    "noCategory": "Keine Kategorie gefunden.",
+    "error": "Ein Fehler ist aufgetreten.",
+    "notFound": "Aktivitäten nicht gefunden.",
+    "defaultTitle": "Aktivitäten Titel",
+    "services": {
+      "title": "Dienstleistungen",
+      "all": "Alle Dienstleistungen ansehen →",
+      "readMore": "Mehr erfahren",
+      "noServices": "Keine Dienstleistungen gefunden.",
+      "noTitle": "Kein Titel",
+      "noSummary": "Keine Zusammenfassung verfügbar.",
+      "tags": "Stichwörter",
+      "price": "Preis",
+      "duration": "Dauer",
+      "other": "Andere Dienstleistungen"
+    },
+    "readMore": "Mehr erfahren",
+    "tags": "Stichwörter",
+    "price": "Preis",
+    "duration": "Dauer",
+    "noServices": "Keine Dienstleistungen gefunden.",
+    "noTitle": "Kein Titel",
+    "noSummary": "Keine Zusammenfassung verfügbar.",
+    "other": "Andere Dienstleistungen"
+  },
+  "admin": {
+    "tabs": {
+      "services": "Dienstleistungen",
+      "create": "Neue Dienstleistung",
+      "categories": "Kategorien"
+    },
+    "services": {
+      "empty": "Keine Dienstleistungen verfügbar.",
+      "no_images": "Keine Bilder",
+      "tags": "Stichwörter",
+      "publish_status": "Veröffentlichungsstatus",
+      "price": "Preis",
+      "duration": "Dauer",
+      "publish": "Veröffentlichen",
+      "unpublish": "Zurückziehen",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "title": "Titel",
+      "summary": "Zusammenfassung",
+      "content": "Inhalt",
+      "category": "Kategorie",
+      "select_category": "Kategorie auswählen",
+      "image": "Bild",
+      "new_category": "Neue Kategorie",
+      "edit_category": "Kategorie bearbeiten",
+      "category_name": "Kategoriename",
+      "description_optional": "Beschreibung (optional)",
+      "category_description_placeholder": "Worum geht es in dieser Kategorie?",
+      "save": "Speichern"
+    },
+    "categories": {
+      "title": "Dienstleistungskategorien",
+      "add": "Kategorie hinzufügen",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "empty": "Keine Kategorien gefunden."
+    },
+    "language": {
+      "en": "Englisch",
+      "tr": "Türkisch",
+      "de": "Deutsch"
+    },
+    "slug": "Slug",
+    "actions": "Aktionen",
+    "yes": "Ja",
+    "no": "Nein",
+    "none": "Keine",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "create": "Erstellen",
+    "update": "Aktualisieren",
+    "cancel": "Abbrechen",
+    "loading": "Wird geladen...",
+    "success": "Erfolgreich gespeichert.",
+    "error": "Ein Fehler ist aufgetreten.",
+    "confirm": {
+      "delete_Services": "Möchten Sie diese Dienstleistung wirklich löschen?",
+      "delete": "Sind Sie sicher, dass Sie löschen möchten?"
+    }
+  },
+  "services": {
+    "create": "Neue Dienstleistung erstellen",
+    "no_images": "Keine Bilder",
+    "notFound": "Keine Dienstleistung gefunden.",
+    "error": "Beim Laden der Dienstleistungen ist ein Fehler aufgetreten."
+  },
+  "seo": {
+    "title": "Unsere Dienstleistungen | Ensotek",
+    "description": "Entdecken Sie die von Ensotek angebotenen Dienstleistungen und erfahren Sie mehr über maßgeschneiderte Lösungen für Ihre Projekte."
+  }
+}

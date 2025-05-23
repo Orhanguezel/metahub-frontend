@@ -1,0 +1,114 @@
+{
+  "page": {
+    "title": "Hesabım",
+    "loading": "Veriler yükleniyor...",
+    "profileImage": "Profil Resmi",
+    "personalInfo": "Kişisel Bilgiler",
+    "address": "Adres",
+    "notifications": "Bildirimler",
+    "social": "Sosyal Ağlar",
+    "password": "Şifre Değiştir",
+    "deleteAccount": "Hesabı Sil"
+  },
+  "address": {
+    "title": "Adresim",
+    "street": "Sokak",
+    "houseNumber": "Bina No",
+    "city": "Şehir",
+    "zipCode": "Posta Kodu",
+    "add": "Ekle",
+    "saving": "Kaydediliyor...",
+    "update": "Güncelle",
+    "remove": "Kaldır",
+    "success": "Adres başarıyla kaydedildi.",
+    "deleted": "Adres başarıyla silindi.",
+    "error": "Bir hata oluştu.",
+    "errors": {
+      "street": "Sokak gerekli.",
+      "houseNumber": "Bina numarası gerekli.",
+      "city": "Şehir gerekli.",
+      "zipCode": "Posta kodu gerekli."
+    }
+  },
+  "delete": {
+    "title": "Hesabı Sil",
+    "warning": "Bu işlem geri alınamaz. Hesabınızı kalıcı olarak silmek için lütfen aşağıda onay verin.",
+    "loggedInAs": "Giriş yapılan kullanıcı:",
+    "password": "Şifreniz",
+    "confirmation": "Onay için 'delete' yazın",
+    "button": "Hesabı Sil",
+    "loading": "Siliniyor...",
+    "success": "Hesabınız başarıyla silindi.",
+    "error": "Hesabınızı silerken bir hata oluştu.",
+    "confirmationError": "Lütfen onay için 'delete' yazın."
+  },
+  "notifications": {
+    "title": "Bildirim Ayarları",
+    "email": "E-posta bildirimleri al",
+    "sms": "SMS bildirimleri al",
+    "save": "Ayarları Kaydet",
+    "saving": "Kaydediliyor...",
+    "success": "Bildirim ayarlarınız güncellendi.",
+    "error": "Bildirim ayarlarını güncellerken bir hata oluştu."
+  },
+  "payment": {
+    "title": "Ödeme Bilgileri",
+    "cardNumber": "Kart Numarası",
+    "expiry": "Son Kullanma Tarihi (AA/YY)",
+    "cvc": "CVC",
+    "save": "Ödeme Bilgisini Kaydet",
+    "saving": "Kaydediliyor...",
+    "success": "Ödeme bilgileriniz güncellendi.",
+    "error": "Ödeme bilgileri güncellenirken bir hata oluştu.",
+    "errors": {
+      "cardNumber": "Kart numarası gerekli.",
+      "cardNumberFormat": "Kart numarası 16 haneli olmalıdır.",
+      "expiry": "Son kullanma tarihi gerekli.",
+      "expiryFormat": "Tarih AA/YY formatında olmalıdır.",
+      "cvc": "CVC gerekli.",
+      "cvcFormat": "CVC 3 veya 4 haneli olmalıdır."
+    }
+  },
+  "form": {
+    "title": "Profil Bilgileri",
+    "name": "Ad Soyad",
+    "email": "E-posta",
+    "phone": "Telefon (opsiyonel)",
+    "save": "Değişiklikleri Kaydet",
+    "saving": "Kaydediliyor...",
+    "success": "Profil başarıyla güncellendi.",
+    "error": "Profil güncellenirken bir hata oluştu.",
+    "upload": "Yükle",
+    "loading": "Yükleniyor...",
+    "imageSuccess": "Profil resmi başarıyla güncellendi.",
+    "imageError": "Profil resmi güncellenirken bir hata oluştu.",
+    "errors": {
+      "name": "Ad soyad gerekli.",
+      "email": "E-posta gerekli.",
+      "emailInvalid": "Lütfen geçerli bir e-posta adresi girin."
+    }
+  },
+  "social": {
+    "title": "Sosyal Medya Linkleri",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor...",
+    "success": "Sosyal medya linkleri başarıyla güncellendi.",
+    "error": "Sosyal medya linkleri güncellenirken bir hata oluştu.",
+    "errors": {
+      "instagramInvalid": "Lütfen geçerli bir Instagram URL'si girin.",
+      "facebookInvalid": "Lütfen geçerli bir Facebook URL'si girin.",
+      "twitterInvalid": "Lütfen geçerli bir Twitter URL'si girin."
+    }
+  },
+  "seo": {
+    "title": "Hesabım",
+    "description": "Hesap bilgilerinizi, bildirim ayarlarınızı ve ödeme bilgilerinizi yönetin."
+  },
+  "actions": {
+    "save": "Değişiklikleri Kaydet",
+    "cancel": "İptal"
+  },
+  "loading": {
+    "text": "Yükleniyor..."
+  }
+}

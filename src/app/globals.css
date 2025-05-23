@@ -1,41 +1,10 @@
 :root {
-  /* Ana Renkler */
-  --primary: #486289;
-  --primary-hover: #3b5478;
-  --secondary-color: rgb(60, 60, 60);
-  --tertiary-color: #ff4500;
-  --tertiary-color2: #86A12B;
-  --highlight-color: #ffcc00;
-  --accent-color: #007BFF;
-  --muted-color: #777;
 
-  /* Yazılar */
-  --text: #3c3c3c;
-  --text-secondary: #777;
-  --text-light: #ffffff;
-  --text-dark: #000;
-  --text-accent: #b42056;
-
-  /* Arka Planlar */
-  --background: #f5f5f5;
-  --background-secondary: #EAEDF2;
-  --background-accent: #3C92B0;
-  --background-dark: #333;
-  --card-bg: #ffffff;
-  --border-color: #ccc;
 
   /* Yazı Tipi */
   --font-family: 'Rubik', sans-serif;
   --font-family-alt: 'Open Sans', sans-serif;
-  --font-size-base: 16px;
-  --font-size-lg: 18px;
-  --font-size-sm: 14px;
 
-  /* Buton */
-  --button-background: #004479;
-  --button-hover: #003460;
-  --button-text: #ffffff;
-  --button-radius: 5px;
 
   --transition-speed: 0.3s ease;
 }

@@ -1,0 +1,65 @@
+{
+  "title": "Galeri",
+  "form": {
+    "title": "Yeni Galeri Öğesi",
+    "category": "Kategori",
+    "type": "Tür (Resim/Video)",
+    "title_tr": "Başlık (TR)",
+    "title_en": "Başlık (EN)",
+    "title_de": "Başlık (DE)",
+    "desc_tr": "Açıklama (TR)",
+    "desc_en": "Açıklama (EN)",
+    "desc_de": "Açıklama (DE)",
+    "order": "Sıra",
+    "submit": "Kaydet",
+    "loading": "Yükleniyor...",
+    "selectCategory": "Kategori seçin",
+    "all": "Tümü",
+    "save": "Kaydet",
+    "search": "Ara"
+  },
+  "upload": {
+    "success": "Dosyalar başarıyla yüklendi.",
+    "error": "Yükleme sırasında bir hata oluştu veya dosya zaten mevcut."
+  },
+  "errors": {
+    "requiredFields": "Lütfen tüm alanları doldurun ve en az bir dosya seçin.",
+    "singleImageLimit": "Bu kategori için yalnızca bir resim yüklenebilir."
+  },
+  "delete": {
+    "confirm": "Bu öğeyi silmek istediğinizden emin misiniz?",
+    "button": "Sil",
+    "selected": "Seçilenleri sil"
+  },
+  "empty": "Henüz galeri öğesi yok.",
+  "stats": {
+    "title": "Galeri İstatistikleri",
+    "total": "Toplam",
+    "published": "Yayınlandı",
+    "archived": "Arşivlendi",
+    "active": "Aktif",
+    "inactive": "Pasif",
+    "images": "Resimler",
+    "videos": "Videolar"
+  },
+  "toolbar": {
+    "searchPlaceholder": "Galeride ara...",
+    "searchButton": "Ara",
+    "clearButton": "Sıfırla"
+  },
+  "detail": {
+    "button": "Detaylar"
+  },
+  "edit": {
+    "button": "Düzenle"
+  },
+  "update": {
+    "success": "Başarıyla güncellendi."
+  },
+  "success": "Başarıyla kaydedildi.",
+  "tab": {
+    "list": "Liste",
+    "add": "Ekle",
+    "stats": "İstatistikler"
+  }
+}

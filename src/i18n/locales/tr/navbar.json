@@ -6,5 +6,6 @@
   "contact": "İletişim",
   "login": "Giriş Yap",
   "register": "Kayıt Ol",
-  "account": "Hesabım"
+  "account": "Hesabım",
+  "logout": "Çıkış Yap"
 }

@@ -1,0 +1,14 @@
+
+  {
+  "yourName": "Ihr Name",
+  "yourEmail": "Ihre E-Mail-Adresse",
+  "writeComment": "Schreiben Sie Ihren Kommentar",
+  "submit": "Absenden",
+  "rating": "Bewertung",
+  "captchaError": "reCAPTCHA-Überprüfung fehlgeschlagen.",
+  "loading": "Lädt...",
+  "noComments": "Noch keine Kommentare.",
+  "noText": "Kein Kommentartext verfügbar.",
+  "reply": "Antworten",
+  "replySaved": "Antwort gespeichert."
+}

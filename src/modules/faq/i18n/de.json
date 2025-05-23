@@ -1,0 +1,54 @@
+{
+  "publicFaq": {
+    "title": "Häufig gestellte Fragen",
+    "noFaqs": "Derzeit sind keine FAQs verfügbar.",
+    "askTitle": "Stelle eine Frage",
+    "askRequired": "Bitte gib eine Frage ein.",
+    "askPlaceholder": "z. B. Wie funktioniert das System?",
+    "askButton": "Fragen",
+    "answerTitle": "Antwort",
+    "question": "Deine Frage"
+  },
+  "adminFaq": {
+    "title": "FAQ-Verwaltung",
+    "create": "Neu erstellen",
+    "listEmpty": "Keine FAQs gefunden.",
+    "actions": "Aktionen",
+    "form": {
+      "required": "Bitte fülle alle Felder in allen Sprachen aus.",
+      "title": "Neue FAQ hinzufügen",
+      "titleEdit": "FAQ bearbeiten",
+      "question": "Frage",
+      "answer": "Antwort",
+      "category": "Kategorie",
+      "categoryPlaceholder": "z. B. Versand, Rückgabe",
+      "submit": "Erstellen",
+      "success": "FAQ wurde erfolgreich erstellt.",
+      "updated": "FAQ wurde erfolgreich aktualisiert.",
+      "error": "Vorgang fehlgeschlagen."
+    },
+    "ask": {
+      "title": "Stelle eine Frage",
+      "placeholder": "z. B. Wie funktioniert das System?",
+      "submit": "Fragen",
+      "answerTitle": "Antwort"
+    },
+    "messages": {
+      "created": "FAQ wurde erfolgreich erstellt.",
+      "error": "Fehler beim Erstellen der FAQ."
+    },
+    "titleMulti": "Neue FAQ (Mehrsprachig)"
+  },
+  "common": {
+    "loading": "Lade...",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "update": "Aktualisieren",
+    "create": "Erstellen"
+  },
+  "confirm": {
+    "delete": "Möchten Sie diese FAQ wirklich löschen?"
+  }
+}

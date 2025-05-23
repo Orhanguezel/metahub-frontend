@@ -1,0 +1,70 @@
+{
+  "page": {
+    "allArticles": "Alle Artikel",
+    "noArticles": "Keine Artikel gefunden.",
+    "untitled": "Ohne Titel",
+    "noSummary": "Keine Zusammenfassung verfügbar.",
+    "author": "Autor",
+    "tags": "Stichworte",
+    "unknown": "Unbekannt",
+    "readMore": "Weiterlesen →",
+    "other": "Weitere Artikel"
+  },
+  "admin": {
+    "tabs": {
+      "articles": "Artikel",
+      "create": "Neuer Artikel",
+      "categories": "Kategorien"
+    },
+    "articles": {
+      "create": "Neuen Artikel erstellen",
+      "edit": "Artikel bearbeiten",
+      "title": "Titel",
+      "summary": "Zusammenfassung",
+      "content": "Inhalt",
+      "author": "Autor",
+      "tags": "Stichwörter",
+      "image": "Bild",
+      "category": "Kategorie",
+      "select_category": "Kategorie auswählen",
+      "publish_status": "Veröffentlichungsstatus",
+      "publish": "Veröffentlichen",
+      "unpublish": "Veröffentlichung aufheben",
+      "no_images": "Keine Bilder",
+      "empty": "Keine Artikel verfügbar."
+    },
+    "categories": {
+      "title": "Artikelkategorien",
+      "add": "Kategorie hinzufügen",
+      "edit": "Kategorie bearbeiten",
+      "create": "Neue Kategorie",
+      "confirm_delete": "Sind Sie sicher, dass Sie diese Kategorie löschen möchten?",
+      "description": "Beschreibung (optional)",
+      "description_placeholder": "Worum geht es in dieser Kategorie?",
+      "name_placeholder": "Kategoriename"
+    },
+    "languages": {
+      "tr": "Türkisch",
+      "en": "Englisch",
+      "de": "Deutsch"
+    },
+    "confirm": {
+      "delete_articles": "Sind Sie sicher, dass Sie diesen Artikel löschen möchten?"
+    },
+    "saving": "Speichern...",
+    "save": "Speichern",
+    "update": "Aktualisieren",
+    "create": "Erstellen",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "yes": "Ja",
+    "no": "Nein",
+    "unknown": "Unbekannt",
+    "none": "Keine"
+  },
+  "seo": {
+    "title": "SEO-Titel",
+    "description": "SEO-Beschreibung"
+  }
+}

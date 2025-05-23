@@ -1,0 +1,33 @@
+{
+  "title": "Firma Bilgileri",
+  "companyInfo": "Firma Bilgileri",
+  "companyName": "Firma Adı",
+  "email": "E-posta",
+  "phone": "Telefon",
+  "taxNumber": "Vergi Numarası",
+  "handelsregisterNumber": "Ticaret Sicil No",
+  "address": "Adres",
+  "street": "Sokak",
+  "city": "Şehir",
+  "postalCode": "Posta Kodu",
+  "country": "Ülke",
+  "bankDetails": "Banka Bilgileri",
+  "bankName": "Banka Adı",
+  "iban": "IBAN",
+  "swiftCode": "SWIFT Kodu",
+  "socialMedia": "Sosyal Medya Hesapları",
+  "logoUpload": "Logo Yükle",
+  "save": "Kaydet",
+  "saving": "Kaydediliyor...",
+  "required": "Bu alan zorunludur.",
+  "invalidUrl": "Geçersiz URL",
+  "allRightsReserved": "Tüm hakları saklıdır.",
+  "facebook": "Facebook",
+  "instagram": "Instagram",
+  "twitter": "Twitter",
+  "linkedin": "LinkedIn",
+  "youtube": "YouTube"
+}
+
+
+  

@@ -11,6 +11,7 @@ const orangeTheme = {
     backgroundAlt: "#FFF7ED",
     sectionBackground: "#F8FAFC",
     inputBackground: "#FFFFFF",
+    footerBackground: "#F8FAFC",
     overlayStart: "rgba(255, 255, 255, 0.3)",
     overlayEnd: "rgba(255, 255, 255, 0.95)",
     text: "#0F172A",
@@ -46,6 +47,9 @@ const orangeTheme = {
     muted: "#6C757D",
     disabled: "#D6D6D6",
     placeholder: "#94A3B8",
+    skeleton: "#E5E7EB",
+    tableHeader: "#F0F0F0",
+    tagBackground: "#F0F0F0",
   },
   buttons: {
     primary: {

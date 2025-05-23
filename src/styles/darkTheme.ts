@@ -10,6 +10,7 @@ export const darkTheme = {
     backgroundAlt: "#111111",
     sectionBackground: "#111111",
     inputBackground: "#1a1a1a",
+    footerBackground: "#111111",
     overlayStart: "rgba(0, 0, 0, 0.5)",
     overlayEnd: "rgba(0, 0, 0, 0.95)",
     text: "#ededed",
@@ -45,6 +46,9 @@ export const darkTheme = {
     muted: "#6c757d",
     disabled: "#444444",
     placeholder: "#888888",
+    skeleton: "#444444",
+    tableHeader: "#222222",
+    tagBackground: "#222222",
   },
   buttons: {
     primary: {

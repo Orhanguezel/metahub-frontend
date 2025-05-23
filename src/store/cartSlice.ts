@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { IProduct } from "@/types/product";
+import type { IProduct } from "@/modules/product/types/product";
 
 interface CartItem {
   product: IProduct;
@@ -48,19 +48,34 @@ export const addToCart = createAsyncThunk(
 export const increaseQuantity = createAsyncThunk(
   "cart/increaseQuantity",
   async (productId: string, thunkAPI) =>
-    await apiCall("put", `/cart/increase/${productId}`, null, thunkAPI.rejectWithValue)
+    await apiCall(
+      "put",
+      `/cart/increase/${productId}`,
+      null,
+      thunkAPI.rejectWithValue
+    )
 );
 
 export const decreaseQuantity = createAsyncThunk(
   "cart/decreaseQuantity",
   async (productId: string, thunkAPI) =>
-    await apiCall("put", `/cart/decrease/${productId}`, null, thunkAPI.rejectWithValue)
+    await apiCall(
+      "put",
+      `/cart/decrease/${productId}`,
+      null,
+      thunkAPI.rejectWithValue
+    )
 );
 
 export const removeFromCart = createAsyncThunk(
   "cart/removeFromCart",
   async (productId: string, thunkAPI) =>
-    await apiCall("delete", `/cart/remove/${productId}`, null, thunkAPI.rejectWithValue)
+    await apiCall(
+      "delete",
+      `/cart/remove/${productId}`,
+      null,
+      thunkAPI.rejectWithValue
+    )
 );
 
 export const clearCart = createAsyncThunk(

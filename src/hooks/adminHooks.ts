@@ -1,57 +1,98 @@
-// src/hooks/adminHooks.ts
-
-import { useMemo } from "react";
-import { useAppSelector } from "@/store/hooks";
+import { useMemo, useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  fetchAvailableProjects,
+  fetchAdminModules,
+  setSelectedProject,
+} from "@/modules/adminmodules/slice/adminModuleSlice";
 import * as MdIcons from "react-icons/md";
 
-/* --- Sidebar için Hook --- */
-export const useAdminSidebarModules = () => {
-  const modules = useAppSelector((state) => state.admin.modules);
-  const isLoading = useAppSelector((state) => state.admin.loading);
-  const error = useAppSelector((state) => state.admin.error);
+/* ---------------------------------------
+ ✅ Admin Sayfa Başlatıcı (Router için)
+---------------------------------------- */
+export const useAdminPageInit = () => {
+  const dispatch = useAppDispatch();
+  const {
+    availableProjects,
+    selectedProject,
+    loading,
+    error,
+    fetchedAvailableProjects,
+  } = useAppSelector((state) => state.admin);
 
-  const sidebarModules = useMemo(() => {
-    if (!modules?.length) return [];
-    return modules
-      .filter((mod) => mod.enabled && mod.visibleInSidebar) // sadece aktif ve sidebar görünürlüğü olanlar
-      .map((mod) => ({
-        key: mod.name,
-        path: mod.name === "dashboard" ? "/admin" : `/admin/${mod.name}`,
-        label: mod.label, // zaten çoklu dil label'ı geliyor
-        icon: getDynamicIcon(mod.icon),
-      }));
-  }, [modules]);
+  useEffect(() => {
+    if (!fetchedAvailableProjects) {
+      dispatch(fetchAvailableProjects());
+    }
+  }, [dispatch, fetchedAvailableProjects]);
 
-  return { sidebarModules, isLoading, error };
+  useEffect(() => {
+    if (availableProjects.length > 0 && !selectedProject) {
+      dispatch(setSelectedProject(availableProjects[0]));
+    }
+  }, [availableProjects, selectedProject, dispatch]);
+
+  useEffect(() => {
+    if (selectedProject) {
+      dispatch(fetchAdminModules(selectedProject));
+    }
+  }, [selectedProject, dispatch]);
+
+  return { loading, error };
 };
 
-/* --- Admin Page Builder için Hook --- */
+/* ---------------------------------------
+ ✅ Sidebar Modülleri
+---------------------------------------- */
+export const useAdminSidebarModules = () => {
+  const { modules, loading, error } = useAppSelector((state) => state.admin);
+
+  const sidebarModules = useMemo(() => {
+    return (
+      modules
+        ?.filter((mod) => mod.enabled && mod.visibleInSidebar)
+        .map((mod) => ({
+          key: mod.name,
+          path: mod.name === "dashboard" ? "/admin" : `/admin/${mod.name}`,
+          label: mod.label, // Çok dilli destekli label zaten backend'den geliyor
+          icon: getDynamicIcon(mod.icon),
+        })) || []
+    );
+  }, [modules]);
+
+  return { sidebarModules, loading, error };
+};
+
+/* ---------------------------------------
+ ✅ Admin Page Builder Modülleri
+---------------------------------------- */
 export const useGetAdminModules = () => {
-  const modules = useAppSelector((state) => state.admin.modules);
-  const isLoading = useAppSelector((state) => state.admin.loading);
-  const error = useAppSelector((state) => state.admin.error);
+  const { modules, loading, error } = useAppSelector((state) => state.admin);
 
   const transformedModules = useMemo(() => {
-    if (!modules?.length) return [];
-    return modules.map((mod) => ({
-      id: mod.name,
-      visible: mod.enabled !== false,
-      props: {
-        label: mod.label,
-        icon: mod.icon,
-        enabled: mod.enabled,
-      },
-    }));
+    return (
+      modules?.map((mod) => ({
+        id: mod.name,
+        visible: mod.enabled !== false,
+        props: {
+          label: mod.label,
+          icon: mod.icon,
+          enabled: mod.enabled,
+        },
+      })) || []
+    );
   }, [modules]);
 
   return {
     data: { modules: transformedModules },
-    isLoading,
+    isLoading: loading,
     error,
   };
 };
 
-/* --- Dinamik İkon --- */
+/* ---------------------------------------
+ 🎨 Dinamik İkon
+---------------------------------------- */
 const getDynamicIcon = (iconName?: string) => {
   if (!iconName) return MdIcons.MdSettings;
   const IconComponent = (MdIcons as Record<string, any>)[iconName];

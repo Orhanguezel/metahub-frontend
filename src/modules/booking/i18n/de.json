@@ -1,0 +1,48 @@
+{
+  "page": {
+    "title": "Termin Buchen",
+    "description": "Füllen Sie das Formular aus, um einen Termin zu vereinbaren."
+  },
+  "form": {
+    "name": "Name",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "serviceType": "Service-Typ",
+    "note": "Notiz",
+    "date": "Datum",
+    "time": "Uhrzeit",
+    "submit": "Termin Buchen",
+    "required": "Bitte füllen Sie alle Pflichtfelder aus.",
+    "success": "Ihr Termin wurde erfolgreich gebucht!",
+    "error": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+  },
+  "admin": {
+    "title": "Buchungen Verwalten",
+    "noBookings": "Keine Buchungen gefunden.",
+    "confirmDelete": "Sind Sie sicher, dass Sie diese Buchung löschen möchten?",
+    "columns": {
+      "name": "Name",
+      "email": "E-Mail",
+      "service": "Service",
+      "datetime": "Datum / Uhrzeit",
+      "status": "Status",
+      "actions": "Aktionen"
+    },
+    "modal": {
+      "title": "Buchungsstatus aktualisieren",
+      "select": "Status auswählen"
+    },
+    "status": {
+      "pending": "Ausstehend",
+      "confirmed": "Bestätigt",
+      "cancelled": "Storniert"
+    }
+  },
+  "common": {
+    "loading": "Lädt...",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "update": "Aktualisieren",
+    "cancel": "Abbrechen"
+  }
+}

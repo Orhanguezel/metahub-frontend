@@ -1,0 +1,68 @@
+{
+  "admin": {
+    "tabs": {
+      "activity": "Activities",
+      "create": "New Activity",
+      "categories": "Categories"
+    },
+    "activity": {
+      "title": "Title",
+      "summary": "Summary",
+      "content": "Content",
+      "tags": "Tags",
+      "category": "Category",
+      "select_category": "Select Category",
+      "image": "Image",
+      "publish_status": "Published",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "readMore": "Read more",
+      "all": "All Activities",
+      "create": "Create",
+      "edit": "Edit Activity",
+      "update": "Update",
+      "cancel": "Cancel",
+      "empty": "No activities available.",
+      "no_images": "No images",
+      "edit_category": "Edit Category",
+      "new_category": "New Category",
+      "category_name": "Category Name ({{lng}})",
+      "description_optional": "Description (optional)",
+      "category_description_placeholder": "What is this category about?",
+      "success_create": "Activity created successfully.",
+      "success_update": "Activity updated successfully.",
+      "success_delete": "Activity deleted successfully.",
+      "success_publish": "Activity published successfully.",
+      "success_unpublish": "Activity unpublished successfully."
+    },
+    "categories": {
+      "title": "Activity Categories",
+      "add": "Add Category",
+      "empty": "No categories found."
+    },
+    "confirm": {
+      "delete": "Are you sure you want to delete this category?",
+      "delete_Activity": "Are you sure you want to delete this activity?"
+    },
+    "language": {
+      "en": "English",
+      "tr": "Turkish",
+      "de": "German"
+    },
+    "actions": "Actions",
+    "loading": "Loading..."
+  },
+  "page": {
+    "empty": "No activities found.",
+    "all": "All Activities",
+    "noTitle": "No Title",
+    "noSummary": "No summary available.",
+    "tags": "Tags",
+    "readMore": "Read more →"
+  },
+  "seo": {
+    "title": "Activities",
+    "description": "Activities page to manage your events and announcements.",
+    "keywords": "Activities, events, keywords"
+  }
+}

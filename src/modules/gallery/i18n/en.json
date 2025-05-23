@@ -1,0 +1,65 @@
+{
+  "title": "Gallery",
+  "form": {
+    "title": "New Gallery Item",
+    "category": "Category",
+    "type": "Type (Image/Video)",
+    "title_tr": "Title (TR)",
+    "title_en": "Title (EN)",
+    "title_de": "Title (DE)",
+    "desc_tr": "Description (TR)",
+    "desc_en": "Description (EN)",
+    "desc_de": "Description (DE)",
+    "order": "Order",
+    "submit": "Save",
+    "loading": "Loading...",
+    "selectCategory": "Select Category",
+    "all": "All",
+    "save": "Save",
+    "search": "Search"
+  },
+  "upload": {
+    "success": "Files uploaded successfully.",
+    "error": "An error occurred during upload or file already exists."
+  },
+  "errors": {
+    "requiredFields": "Please fill in all fields and select at least one file.",
+    "singleImageLimit": "Only one image is allowed for this category."
+  },
+  "delete": {
+    "confirm": "Are you sure you want to delete this item?",
+    "button": "Delete",
+    "selected": "Delete selected"
+  },
+  "empty": "No gallery items yet.",
+  "stats": {
+    "title": "Gallery Statistics",
+    "total": "Total",
+    "published": "Published",
+    "archived": "Archived",
+    "active": "Active",
+    "inactive": "Inactive",
+    "images": "Images",
+    "videos": "Videos"
+  },
+  "toolbar": {
+    "searchPlaceholder": "Search gallery...",
+    "searchButton": "Search",
+    "clearButton": "Reset"
+  },
+  "detail": {
+    "button": "Details"
+  },
+  "edit": {
+    "button": "Edit"
+  },
+  "update": {
+    "success": "Successfully updated."
+  },
+  "success": "Successfully saved.",
+  "tab": {
+    "list": "List",
+    "add": "Add",
+    "stats": "Stats"
+  }
+}

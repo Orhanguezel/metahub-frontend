@@ -1,0 +1,70 @@
+{
+  "page": {
+    "allArticles": "Tüm Haberler",
+    "noArticles": "Herhangi bir haber bulunamadı.",
+    "untitled": "Başlıksız",
+    "noSummary": "Özet bulunamadı.",
+    "author": "Yazar",
+    "tags": "Etiketler",
+    "unknown": "Bilinmiyor",
+    "readMore": "Devamını Oku →",
+    "other": "Diğer Haberler"
+  },
+  "admin": {
+    "tabs": {
+      "articles": "Makaleler",
+      "create": "Yeni Makale",
+      "categories": "Kategoriler"
+    },
+    "articles": {
+      "create": "Yeni Makale Ekle",
+      "edit": "Makaleyi Düzenle",
+      "title": "Başlık",
+      "summary": "Özet",
+      "content": "İçerik",
+      "author": "Yazar",
+      "tags": "Etiketler",
+      "image": "Görsel",
+      "category": "Kategori",
+      "select_category": "Kategori Seçin",
+      "publish_status": "Yayın Durumu",
+      "publish": "Yayınla",
+      "unpublish": "Yayından Kaldır",
+      "no_images": "Görsel Yok",
+      "empty": "Henüz makale bulunmamaktadır."
+    },
+    "categories": {
+      "title": "Makale Kategorileri",
+      "add": "Yeni Kategori",
+      "edit": "Kategoriyi Düzenle",
+      "create": "Yeni Kategori",
+      "confirm_delete": "Bu kategoriyi silmek istediğinize emin misiniz?",
+      "description": "Açıklama (opsiyonel)",
+      "description_placeholder": "Bu kategori neyle ilgili?",
+      "name_placeholder": "Kategori adı"
+    },
+    "languages": {
+      "tr": "Türkçe",
+      "en": "İngilizce",
+      "de": "Almanca"
+    },
+    "confirm": {
+      "delete_articles": "Makaleyi silmek istediğinizden emin misiniz?"
+    },
+    "saving": "Kaydediliyor...",
+    "save": "Kaydet",
+    "update": "Güncelle",
+    "create": "Ekle",
+    "cancel": "İptal",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "yes": "Evet",
+    "no": "Hayır",
+    "unknown": "Bilinmiyor",
+    "none": "Yok"
+  },
+  "seo": {
+    "title": "Ensotek - Makaleler",
+    "description": "Ensotek, en son haberler ve makaleler için güvenilir bir kaynaktır. En güncel bilgileri almak için bizi takip edin."
+  }
+}

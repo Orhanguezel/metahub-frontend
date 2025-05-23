@@ -9,6 +9,7 @@ const futuristicTheme = {
     backgroundAlt: "#1A1A1A",
     sectionBackground: "#1A1A1A",
     inputBackground: "#333333", // 🆕 Eklendi
+    footerBackground: "#1A1A1A",
     overlayStart: "rgba(0, 0, 0, 0.8)",
     overlayEnd: "rgba(0, 0, 0, 0.95)",
     text: "#E0E0E0",
@@ -21,7 +22,7 @@ const futuristicTheme = {
     primaryHover: "#00cccc",
     primaryDark: "#007777",
     primaryTransparent: "rgba(0, 255, 247, 0.1)",
-    skeletonBackground: "#444444", // 🆕
+    skeleton: "#444444", // 🆕
     overlayBackground: "rgba(0, 0, 0, 0.5)", // 🆕
     accent: "#7D00FF",
     secondary: "#888",
@@ -44,6 +45,9 @@ const futuristicTheme = {
     muted: "#6c757d",   // 🆕 Eklendi
     disabled: "#555555",
     placeholder: "#888888", // 🆕 Eklendi
+    tableHeader: "#444444", // 🆕 Eklendi
+    tagBackground: "#444444", // 🆕 Eklendi
+    skeletonBackground: "#444444", // 🆕 Eklendi
   },
   buttons: {
     primary: {

@@ -1,0 +1,13 @@
+{
+  "yourName": "Your Name",
+  "yourEmail": "Your Email",
+  "writeComment": "Write your comment",
+  "submit": "Submit",
+  "rating": "Rating",
+  "captchaError": "reCAPTCHA validation failed.",
+  "loading": "Loading...",
+  "noComments": "No comments yet.",
+  "noText": "No comment text available.",
+  "reply": "Reply",
+  "replySaved": "Reply saved."
+}

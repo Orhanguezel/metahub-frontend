@@ -5,6 +5,8 @@ import modernTheme from "./modernTheme";
 import minimalTheme from "./minimalTheme";
 import futuristicTheme from "./futuristicTheme";
 import orangeTheme from "./orangeTheme";
+import ensotekTheme from "./ensotekTheme"; 
+
 
 // Yeni tema ekledikçe buraya import edip ekleyeceğiz.
 
@@ -14,6 +16,7 @@ export const themes = {
   minimal: minimalTheme,
   futuristic: futuristicTheme,
   orange: orangeTheme,
+  ensotek: ensotekTheme,
 };
 
 // 🎯 Type export (İleride lazım olacak!)

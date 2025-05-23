@@ -7,7 +7,7 @@ const folderMap: Record<ImageType, string> = {
   blog: "blog-images",
   news: "news-images",
   article: "article-images",
-  reference: "reference-images",
+  references: "references-images",
   library: "library-images",
   comment: "comment-images",
   feedback: "feedback-images",
@@ -27,6 +27,9 @@ const folderMap: Record<ImageType, string> = {
   coupon: "coupon-banners",
   customProduct: "custom-product-images",
   emailAttachment: "email-attachments",
+  about: "about-images",
+  activity: "activity-images",
+  company: "company-images",
   misc: "misc",
 };
 
@@ -37,7 +40,7 @@ const defaultImageMap: Record<ImageType, string> = {
   blog: "blog.png",
   news: "news.png",
   article: "article.png",
-  reference: "reference.png",
+  references: "references.png",
   library: "library.png",
   comment: "comment.png",
   feedback: "feedback.png",
@@ -57,23 +60,24 @@ const defaultImageMap: Record<ImageType, string> = {
   coupon: "coupon.png",
   customProduct: "custom-product.png",
   emailAttachment: "email-attachment.png",
+  about: "about.png",
+  activity: "activity.png",
+  company: "company.png",
   misc: "default.png",
 };
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5015";
-const PROJECT_ENV = process.env.NEXT_PUBLIC_APP_ENV || "metahub";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5014";
+const PROJECT_ENV = process.env.NEXT_PUBLIC_APP_ENV || "ensotek";
 
 export function getImageSrc(
   imagePath?: string,
   type: ImageType = "profile"
 ): string {
-  
   const folder = folderMap[type];
   const defaultImage = defaultImageMap[type];
 
   if (!folder || !defaultImage) {
-    console.warn(`Unknown image type: ${type}, falling back to misc/default.`);
     return `${BASE_URL}/uploads/${PROJECT_ENV}/misc/default.png`;
   }
 
@@ -81,9 +85,25 @@ export function getImageSrc(
     return `${BASE_URL}/uploads/${PROJECT_ENV}/${defaultImage}`;
   }
 
-  if (imagePath.startsWith("blob:") || imagePath.startsWith("data:"))
-    return imagePath;
-  if (imagePath.startsWith("http")) return imagePath;
+  if (imagePath.startsWith("http")) {
+    if (imagePath.includes("cloudinary.com")) {
+      return imagePath;
+    }
+    try {
+      const url = new URL(imagePath);
+      const parts = url.pathname.split("/");
+      if (parts[2] !== PROJECT_ENV) {
+        parts[2] = PROJECT_ENV;
+        const newPath = parts.join("/");
+        return `${url.origin}${newPath}`;
+      }
+      return imagePath;
+    } catch {
+      return `${BASE_URL}/uploads/${PROJECT_ENV}/${folder}/${defaultImage}`;
+    }
+  }
 
   return `${BASE_URL}/uploads/${PROJECT_ENV}/${folder}/${imagePath}`;
 }
+
+

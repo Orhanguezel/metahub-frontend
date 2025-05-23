@@ -1,0 +1,69 @@
+{
+  "admin": {
+    "tabs": {
+      "about": "Über Uns Bereiche",
+      "create": "Neuer Bereich",
+      "categories": "Kategorien"
+    },
+    "about": {
+      "title": "Titel",
+      "shortDescription": "Kurzbeschreibung",
+      "detailedDescription": "Detaillierte Beschreibung",
+      "tags": "Stichworte",
+      "category": "Kategorie",
+      "select_category": "Kategorie auswählen",
+      "image": "Bild",
+      "publish_status": "Veröffentlicht",
+      "publish": "Veröffentlichen",
+      "unpublish": "Zurückziehen",
+      "readMore": "Mehr erfahren",
+      "all": "Alle Über Uns Bereiche",
+      "create": "Erstellen",
+      "edit": "Bereich bearbeiten",
+      "update": "Aktualisieren",
+      "cancel": "Abbrechen",
+      "empty": "Keine Inhalte vorhanden.",
+      "no_image": "Kein Bild verfügbar",
+      "edit_category": "Kategorie bearbeiten",
+      "new_category": "Neue Kategorie",
+      "category_name": "Kategoriename ({{lng}})",
+      "description_optional": "Beschreibung (optional)",
+      "category_description_placeholder": "Worum geht es in dieser Kategorie?",
+      "success_create": "Bereich erfolgreich erstellt.",
+      "success_update": "Bereich erfolgreich aktualisiert.",
+      "success_delete": "Bereich erfolgreich gelöscht.",
+      "success_publish": "Bereich erfolgreich veröffentlicht.",
+      "success_unpublish": "Bereich wurde zurückgezogen."
+    },
+    "categories": {
+      "title": "Über Uns Kategorien",
+      "add": "Kategorie hinzufügen",
+      "empty": "Keine Kategorien gefunden."
+    },
+    "confirm": {
+      "delete": "Möchten Sie diese Kategorie wirklich löschen?",
+      "delete_about": "Möchten Sie diesen Bereich wirklich löschen?"
+    },
+    "language": {
+      "en": "Englisch",
+      "tr": "Türkisch",
+      "de": "Deutsch"
+    },
+    "actions": "Aktionen",
+    "loading": "Lade..."
+  },
+  "page": {
+    "empty": "Keine Inhalte gefunden.",
+    "all": "Alle Bereiche",
+    "noTitle": "Ohne Titel",
+    "noSummary": "Keine Zusammenfassung verfügbar.",
+    "tags": "Stichworte",
+    "readMore": "Mehr erfahren →",
+    "other": "Weitere Inhalte",
+    "aboutLink": "Mehr erfahren →"
+  },
+  "seo": {
+    "title": "Über Uns",
+    "description": "Führend in Energieeffizienz und Nachhaltigkeit. Qualität, Innovation und Zuverlässigkeit in industriellen Kühlsystemen."
+  }
+}

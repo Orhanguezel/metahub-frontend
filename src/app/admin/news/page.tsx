@@ -1,19 +1,7 @@
-'use client';
+"use client";
 
-import DynamicAdminPageBuilder from "@/components/shared/DynamicAdminPageBuilder";
-import { useGetAdminModules } from "@/hooks/adminHooks";
-import { useTranslation } from "react-i18next";
+import { AdminNewsPage } from "@/modules/news";
 
-export default function NewsPage() {
-  const { t } = useTranslation("admin-news");
-  const { data, isLoading, error } = useGetAdminModules();
-
-  if (isLoading) return <div>{t("loading", "Yükleniyor...")}</div>;
-  if (error) return <div>{t("error", "Modüller yüklenirken hata oluştu.")}</div>;
-
-  return (
-    <main>
-      <DynamicAdminPageBuilder modules={data?.modules || []} />
-    </main>
-  );
+export default function AdminNewsRoutePage() {
+  return <AdminNewsPage />;
 }

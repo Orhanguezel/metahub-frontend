@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { RootState } from "../store";
+import type { RootState } from ".";
 
 interface StockMovement {
   _id?: string;
@@ -30,29 +30,30 @@ const initialState: StockMovementState = {
 export const createStockMovement = createAsyncThunk(
   "stockMovement/create",
   async (
-    payload: { product: string; type: "in" | "out"; quantity: number; note?: string },
+    payload: {
+      product: string;
+      type: "in" | "out";
+      quantity: number;
+      note?: string;
+    },
     thunkAPI
-  ) => await apiCall("post", "/stock-movements", payload, thunkAPI.rejectWithValue)
+  ) =>
+    await apiCall("post", "/stock-movements", payload, thunkAPI.rejectWithValue)
 );
 
 // 🧩 Hareketleri getir
 export const fetchStockMovements = createAsyncThunk(
-    "stockMovement/fetchAll",
-    async (
-      args: { productId?: string },
-      thunkAPI
-    ) => {
-      const { productId } = args;
-      return await apiCall(
-        "get",
-        `/stock-movements${productId ? `?product=${productId}` : ""}`,
-        null,
-        thunkAPI.rejectWithValue
-      );
-    }
-  );
-  
-  
+  "stockMovement/fetchAll",
+  async (args: { productId?: string }, thunkAPI) => {
+    const { productId } = args;
+    return await apiCall(
+      "get",
+      `/stock-movements${productId ? `?product=${productId}` : ""}`,
+      null,
+      thunkAPI.rejectWithValue
+    );
+  }
+);
 
 // Slice
 const stockMovementSlice = createSlice({
@@ -70,7 +71,10 @@ const stockMovementSlice = createSlice({
       state.error = null;
     };
 
-    const errorReducer = (state: StockMovementState, action: PayloadAction<any>) => {
+    const errorReducer = (
+      state: StockMovementState,
+      action: PayloadAction<any>
+    ) => {
       state.loading = false;
       state.error = action.payload;
     };
@@ -96,8 +100,10 @@ const stockMovementSlice = createSlice({
 
 export const { clearStockMessages } = stockMovementSlice.actions;
 
-export const selectStockMovements = (state: RootState) => state.stockMovement.movements;
-export const selectStockLoading = (state: RootState) => state.stockMovement.loading;
+export const selectStockMovements = (state: RootState) =>
+  state.stockMovement.movements;
+export const selectStockLoading = (state: RootState) =>
+  state.stockMovement.loading;
 export const selectStockError = (state: RootState) => state.stockMovement.error;
 
 export default stockMovementSlice.reducer;

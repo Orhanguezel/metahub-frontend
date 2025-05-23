@@ -1,0 +1,115 @@
+{
+  "page": {
+    "title": "Mein Konto",
+    "loading": "Lade Daten...",
+    "profileImage": "Profilbild",
+    "personalInfo": "Persönliche Informationen",
+    "address": "Adresse",
+    "notifications": "Benachrichtigungen",
+    "social": "Soziale Netzwerke",
+    "password": "Passwort ändern",
+    "deleteAccount": "Konto löschen"
+  },
+
+  "address": {
+    "title": "Meine Adresse",
+    "street": "Straße",
+    "houseNumber": "Hausnummer",
+    "city": "Stadt",
+    "zipCode": "Postleitzahl",
+    "add": "Hinzufügen",
+    "saving": "Speichern...",
+    "update": "Aktualisieren",
+    "remove": "Entfernen",
+    "success": "Adresse erfolgreich gespeichert.",
+    "deleted": "Adresse erfolgreich gelöscht.",
+    "error": "Ein Fehler ist aufgetreten.",
+    "errors": {
+      "street": "Straße ist erforderlich.",
+      "houseNumber": "Hausnummer ist erforderlich.",
+      "city": "Stadt ist erforderlich.",
+      "zipCode": "Postleitzahl ist erforderlich."
+    }
+  },
+  "delete": {
+    "title": "Konto löschen",
+    "warning": "Diese Aktion ist unwiderruflich. Bitte bestätigen Sie unten, um Ihr Konto dauerhaft zu löschen.",
+    "loggedInAs": "Angemeldet als:",
+    "password": "Ihr Passwort",
+    "confirmation": "Geben Sie 'delete' ein zur Bestätigung",
+    "button": "Konto löschen",
+    "loading": "Wird gelöscht...",
+    "success": "Ihr Konto wurde erfolgreich gelöscht.",
+    "error": "Beim Löschen Ihres Kontos ist ein Fehler aufgetreten.",
+    "confirmationError": "Bitte geben Sie 'delete' ein, um zu bestätigen."
+  },
+  "notifications": {
+    "title": "Benachrichtigungseinstellungen",
+    "email": "E-Mail-Benachrichtigungen erhalten",
+    "sms": "SMS-Benachrichtigungen erhalten",
+    "save": "Einstellungen speichern",
+    "saving": "Speichern...",
+    "success": "Ihre Benachrichtigungseinstellungen wurden aktualisiert.",
+    "error": "Beim Aktualisieren Ihrer Benachrichtigungseinstellungen ist ein Fehler aufgetreten."
+  },
+  "payment": {
+    "title": "Zahlungsinformationen",
+    "cardNumber": "Kartennummer",
+    "expiry": "Ablaufdatum (MM/JJ)",
+    "cvc": "CVC",
+    "save": "Zahlungsinfo speichern",
+    "saving": "Speichern...",
+    "success": "Ihre Zahlungsinformationen wurden aktualisiert.",
+    "error": "Beim Aktualisieren Ihrer Zahlungsinformationen ist ein Fehler aufgetreten.",
+    "errors": {
+      "cardNumber": "Kartennummer ist erforderlich.",
+      "cardNumberFormat": "Kartennummer muss 16-stellig sein.",
+      "expiry": "Ablaufdatum ist erforderlich.",
+      "expiryFormat": "Das Ablaufdatum muss im Format MM/JJ sein.",
+      "cvc": "CVC ist erforderlich.",
+      "cvcFormat": "CVC muss 3 oder 4 Ziffern haben."
+    }
+  },
+  "form": {
+    "title": "Profilinformationen",
+    "name": "Name",
+    "email": "E-Mail",
+    "phone": "Telefon (optional)",
+    "save": "Änderungen speichern",
+    "saving": "Speichern...",
+    "success": "Profil erfolgreich aktualisiert.",
+    "error": "Beim Aktualisieren des Profils ist ein Fehler aufgetreten.",
+    "upload": "Hochladen",
+    "loading": "Wird hochgeladen...",
+    "imageSuccess": "Profilbild erfolgreich aktualisiert.",
+    "imageError": "Beim Aktualisieren des Profilbilds ist ein Fehler aufgetreten.",
+    "errors": {
+      "name": "Name ist erforderlich.",
+      "email": "E-Mail ist erforderlich.",
+      "emailInvalid": "Bitte eine gültige E-Mail-Adresse eingeben."
+    }
+  },
+  "social": {
+    "title": "Soziale Medien Links",
+    "save": "Speichern",
+    "saving": "Speichern...",
+    "success": "Social-Media-Links wurden erfolgreich aktualisiert.",
+    "error": "Beim Aktualisieren der Social-Media-Links ist ein Fehler aufgetreten.",
+    "errors": {
+      "instagramInvalid": "Bitte geben Sie eine gültige Instagram-URL ein.",
+      "facebookInvalid": "Bitte geben Sie eine gültige Facebook-URL ein.",
+      "twitterInvalid": "Bitte geben Sie eine gültige Twitter-URL ein."
+    }
+  },
+  "seo": {
+    "title": "Mein Konto",
+    "description": "Verwalten Sie Ihre Kontoinformationen, Benachrichtigungseinstellungen und Zahlungsinformationen."
+  },
+  "actions": {
+    "save": "Änderungen speichern",
+    "cancel": "Abbrechen"
+  },
+  "loading": {
+    "text": "Lade..."
+  }
+}

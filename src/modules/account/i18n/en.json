@@ -1,0 +1,114 @@
+{
+  "page": {
+    "title": "My Account",
+    "loading": "Loading data...",
+    "profileImage": "Profile Image",
+    "personalInfo": "Personal Information",
+    "address": "Address",
+    "notifications": "Notifications",
+    "social": "Social Networks",
+    "password": "Change Password",
+    "deleteAccount": "Delete Account"
+  },
+  "address": {
+    "title": "My Address",
+    "street": "Street",
+    "houseNumber": "House Number",
+    "city": "City",
+    "zipCode": "Postal Code",
+    "add": "Add",
+    "saving": "Saving...",
+    "update": "Update",
+    "remove": "Remove",
+    "success": "Address saved successfully.",
+    "deleted": "Address deleted successfully.",
+    "error": "An error occurred.",
+    "errors": {
+      "street": "Street is required.",
+      "houseNumber": "House number is required.",
+      "city": "City is required.",
+      "zipCode": "Postal code is required."
+    }
+  },
+  "delete": {
+    "title": "Delete Account",
+    "warning": "This action is irreversible. Please confirm below to permanently delete your account.",
+    "loggedInAs": "Logged in as:",
+    "password": "Your password",
+    "confirmation": "Type 'delete' to confirm",
+    "button": "Delete Account",
+    "loading": "Deleting...",
+    "success": "Your account has been deleted successfully.",
+    "error": "An error occurred while deleting your account.",
+    "confirmationError": "Please type 'delete' to confirm."
+  },
+  "notifications": {
+    "title": "Notification Settings",
+    "email": "Receive email notifications",
+    "sms": "Receive SMS notifications",
+    "save": "Save settings",
+    "saving": "Saving...",
+    "success": "Your notification settings have been updated.",
+    "error": "An error occurred while updating your notification settings."
+  },
+  "payment": {
+    "title": "Payment Information",
+    "cardNumber": "Card Number",
+    "expiry": "Expiry Date (MM/YY)",
+    "cvc": "CVC",
+    "save": "Save Payment Info",
+    "saving": "Saving...",
+    "success": "Your payment information has been updated.",
+    "error": "An error occurred while updating your payment information.",
+    "errors": {
+      "cardNumber": "Card number is required.",
+      "cardNumberFormat": "Card number must be 16 digits.",
+      "expiry": "Expiry date is required.",
+      "expiryFormat": "Expiry date must be in MM/YY format.",
+      "cvc": "CVC is required.",
+      "cvcFormat": "CVC must be 3 or 4 digits."
+    }
+  },
+  "form": {
+    "title": "Profile Information",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone (optional)",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "success": "Profile updated successfully.",
+    "error": "An error occurred while updating the profile.",
+    "upload": "Upload",
+    "loading": "Uploading...",
+    "imageSuccess": "Profile image updated successfully.",
+    "imageError": "An error occurred while updating the profile image.",
+    "errors": {
+      "name": "Name is required.",
+      "email": "Email is required.",
+      "emailInvalid": "Please enter a valid email address."
+    }
+  },
+  "social": {
+    "title": "Social Media Links",
+    "save": "Save",
+    "saving": "Saving...",
+    "success": "Social media links updated successfully.",
+    "error": "An error occurred while updating social media links.",
+    "errors": {
+      "instagramInvalid": "Please enter a valid Instagram URL.",
+      "facebookInvalid": "Please enter a valid Facebook URL.",
+      "twitterInvalid": "Please enter a valid Twitter URL."
+    }
+  },
+  "seo": {
+    "title": "My Account",
+    "description": "Manage your account information, notification settings, and payment details."
+  },
+  "actions": {
+    "save": "Save Changes",
+    "cancel": "Cancel"
+  },
+  "loading": {
+    "text": "Loading..."
+  }
+}

@@ -6,5 +6,6 @@
   "contact": "Contact",
   "login": "Login",
   "register": "Register",
-  "account": "My Account"
+  "account": "My Account",
+  "logout": "Logout"
 }

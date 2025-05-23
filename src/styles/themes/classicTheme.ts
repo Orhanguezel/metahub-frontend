@@ -11,6 +11,7 @@ const classicTheme = {
     backgroundAlt: "#ffffff",
     sectionBackground: "#ffffff",
     inputBackground: "#ffffff",
+    footerBackground: "#f8f8f8",
     overlayStart: "rgba(255, 255, 255, 0.3)",
     overlayEnd: "rgba(255, 255, 255, 0.95)",
     text: "#000000",
@@ -23,7 +24,7 @@ const classicTheme = {
     primaryHover: "#365075",
     primaryDark: "#222",
     primaryTransparent: "rgba(72, 98, 137, 0.1)",
-    skeletonBackground: "#f0f0f0", 
+    skeleton: "#f0f0f0", 
     overlayBackground: "rgba(0, 0, 0, 0.5)", // 🆕
     accent: "#007BFF",
     secondary: "#888888",
@@ -46,6 +47,9 @@ const classicTheme = {
     muted: "#6c757d",   // 🆕
     disabled: "#d6d6d6" ,// 🆕
     placeholder: "#888888", // 🆕
+    tableHeader: "#f0f0f0", // 🆕
+    tagBackground: "#eee", // 🆕
+    skeletonBackground: "#f0f0f0", // 🆕
   },
   buttons: {
     primary: {

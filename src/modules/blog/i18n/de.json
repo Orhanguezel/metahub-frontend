@@ -1,0 +1,84 @@
+{
+  "page": {
+    "title": "Titel",
+    "summary": "Zusammenfassung",
+    "content": "Inhalt",
+    "author": "Autor",
+    "tags": "Stichwörter",
+    "image": "Bild",
+    "category": "Kategorie",
+    "select_category": "Kategorie auswählen",
+    "publish_status": "Veröffentlichungsstatus",
+    "publish": "Veröffentlichen",
+    "unpublish": "Veröffentlichung aufheben",
+    "create": "Erstellen",
+    "update": "Aktualisieren",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "other": "Weitere Beiträge",
+    "readMore": "Weiterlesen →",
+    "allBlog": "Alle Beiträge",
+    "noBlog": "Keine Beiträge gefunden.",
+    "no_images": "Keine Bilder",
+    "unknown": "Unbekannt",
+    "empty": "Keine Blogbeiträge verfügbar.",
+    "tabs": {
+      "blog": "Beiträge",
+      "create": "Neuer Beitrag",
+      "categories": "Kategorien"
+    }
+  },
+  "admin": {
+    "tabs": {
+      "blog": "Blogs",
+      "create": "Neuer Blog",
+      "categories": "Kategorien"
+    },
+    "blog": {
+      "title": "Titel",
+      "summary": "Zusammenfassung",
+      "content": "Inhalt",
+      "author": "Autor",
+      "tags": "Tags",
+      "image": "Bild",
+      "category": "Kategorie",
+      "select_category": "Kategorie auswählen",
+      "edit": "Blog Bearbeiten",
+      "create": "Neuen Blog Hinzufügen",
+      "no_images": "Keine Bilder verfügbar",
+      "empty": "Keine Blogs verfügbar.",
+      "publish_status": "Veröffentlichungsstatus",
+      "publish": "Veröffentlichen",
+      "unpublish": "Veröffentlichung aufheben"
+    },
+    "categories": {
+      "title": "Blog-Kategorien",
+      "add": "Neue Kategorie",
+      "empty": "Keine Kategorien gefunden."
+    },
+    "confirm": {
+      "delete": "Möchten Sie diese Kategorie wirklich löschen?",
+      "delete_blog": "Möchten Sie diesen Blog wirklich löschen?"
+    },
+    "actions": "Aktionen",
+    "slug": "Slug",
+    "language": {
+      "tr": "Türkisch",
+      "en": "Englisch",
+      "de": "Deutsch"
+    },
+    "loading": "Wird geladen...",
+    "yes": "Ja",
+    "no": "Nein",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "update": "Aktualisieren",
+    "create_action": "Hinzufügen",
+    "cancel": "Abbrechen"
+  },
+  "seo": {
+    "title": "SEO-Titel",
+    "description": "SEO-Beschreibung"
+  }
+}

@@ -7,13 +7,13 @@ export const sharedTheme = {
     mono: "'Fira Code', monospace",
   },
   fontSizes: {
-    xs: "0.75rem",
-    sm: "0.875rem",
-    md: "1rem",
-    lg: "1.125rem",
-    xl: "1.5rem",
-    "2xl": "2rem",
-    "3xl": "3rem",
+    xs: "0.875rem",
+    sm: "0.975rem",
+    md: "1.25rem",
+    lg: "1.5rem",
+    xl: "2rem",
+    "2xl": "2.5rem",
+    "3xl": "3.5rem",
   },
   lineHeights: {
     normal: "1.5",
@@ -67,6 +67,7 @@ export const sharedTheme = {
     slow: "500ms",
   },
   layout: {
+    
     containerWidth: "1400px",
     sectionSpacing: "4rem",
   },

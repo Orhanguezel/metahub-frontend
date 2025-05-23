@@ -1,11 +1,11 @@
 // src/hooks/useDashboardCards.ts
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../node_modules/react-i18next";
 import { useAppSelector } from "@/store/hooks";
 import * as Icons from "react-icons/md";
 import { useMemo } from "react";
-import type { ModuleAnalyticsItem } from "@/store/adminSlice"; 
+import type { ModuleAnalyticsItem } from "@/modules/adminmodules/slice/adminModuleSlice";
 
 export const useDashboardCards = () => {
   const { i18n } = useTranslation();
@@ -19,7 +19,9 @@ export const useDashboardCards = () => {
     return modules
       .filter((mod) => mod.enabled && mod.showInDashboard !== false)
       .map((mod) => {
-        const foundStat = analytics.find((item: ModuleAnalyticsItem) => item.name === mod.name);
+        const foundStat = analytics.find(
+          (item: ModuleAnalyticsItem) => item.name === mod.name
+        );
 
         return {
           key: mod.name,
@@ -28,7 +30,6 @@ export const useDashboardCards = () => {
           path: `/admin/${mod.name}`,
           icon: dynamicIcon(mod.icon),
           statsKey: mod.statsKey,
-  
         };
       });
   }, [modules, analytics, lang]);

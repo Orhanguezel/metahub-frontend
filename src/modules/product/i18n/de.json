@@ -1,0 +1,80 @@
+{
+  "page": {
+    "allProduct": "Alle Produkte",
+    "noProduct": "Kein Produkt gefunden.",
+    "price": "Preis",
+    "stock": "Lagerbestand",
+    "brand": "Marke",
+    "readMore": "Details ansehen →",
+    "other": "Weitere Produkte",
+    "untitled": "Ohne Titel",
+    "noSummary": "Keine Beschreibung verfügbar.",
+    "radonarprod": {
+      "title": "Aktuelles Produkt",
+      "readMore": "Mehr erfahren",
+      "all": "Alle Produkte"
+    }
+  },
+  "admin": {
+    "tabs": {
+      "product": "Produkte",
+      "create": "Neues Produkt",
+      "categories": "Kategorien"
+    },
+    "product": {
+      "create": "Neues Produkt hinzufügen",
+      "edit": "Produkt bearbeiten",
+      "name": "Produktname",
+      "description": "Beschreibung",
+      "brand": "Marke",
+      "price": "Preis",
+      "stock": "Lagerbestand",
+      "tags": "Tags",
+      "image": "Bild",
+      "category": "Kategorie",
+      "select_category": "Kategorie auswählen",
+      "publish_status": "Veröffentlicht?",
+      "no_images": "Keine Bilder",
+      "publish": "Veröffentlichen",
+      "unpublish": "Verbergen",
+      "empty": "Keine Produkte verfügbar."
+    },
+    "categories": {
+      "title": "Produktkategorien",
+      "add": "Neue Kategorie",
+      "empty": "Keine Kategorien gefunden."
+    },
+    "language": {
+      "en": "Englisch",
+      "tr": "Türkisch",
+      "de": "Deutsch"
+    },
+    "slug": "Slug",
+    "actions": "Aktionen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "cancel": "Abbrechen",
+    "update": "Aktualisieren",
+    "create": "Erstellen",
+    "yes": "Ja",
+    "no": "Nein",
+    "loading": "Wird geladen...",
+    "confirm": {
+      "delete": "Sind Sie sicher, dass Sie diese Kategorie löschen möchten?",
+      "delete_product": "Sind Sie sicher, dass Sie dieses Produkt löschen möchten?"
+    },
+    "optional_description": "Optionale Beschreibung",
+    "category_info": "Worum geht es bei dieser Kategorie?",
+    "saving": "Wird gespeichert...",
+    "save": "Speichern",
+    "update2": "Aktualisieren",
+    "editCategory": "Kategorie bearbeiten",
+    "newCategory": "Neue Kategorie"
+  },
+  "seo": {
+    "title": "SEO-Titel",
+    "description": "SEO-Beschreibung"
+  },
+  "none": "Keine",
+  "delete_confirm": "Sind Sie sicher, dass Sie löschen möchten?"
+}

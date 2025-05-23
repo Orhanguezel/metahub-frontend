@@ -5,16 +5,14 @@ import { useDispatch } from "react-redux";
 import I18nProvider from "@/providers/I18nProvider";
 import ThemeProviderWrapper from "@/providers/ThemeProviderWrapper";
 import ReduxProvider from "@/providers/ReduxProvider";
-import Navbar from "@/components/navbar/Navbar";
-import FooterSection from "@/components/footer/FooterSection";
-import { fetchCurrentUser } from "@/store/user/accountSlice";
+import { fetchCurrentUser } from "@/modules/users/slice/accountSlice";
 import type { AppDispatch } from "@/store";
-import { setAuthUser } from "@/store/user/authSlice";
-import { fetchSettings } from "@/store/settingSlice";
+import { setAuthUser } from "@/modules/users/slice/authSlice";
+import { fetchSettings } from "@/modules/settings/slice/settingSlice";
 import { usePathname } from "next/navigation";
 import ToastProvider from "./ToastProvider";
 import i18n from "@/i18n";
-import { setApiKey } from "@/lib/api";  // ✅ Ekledik
+import { setApiKey } from "@/lib/api";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -25,9 +23,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <I18nProvider>
         <ThemeProviderWrapper>
           <ToastProvider />
-          <Navbar />
           {children}
-          <FooterSection />
         </ThemeProviderWrapper>
       </I18nProvider>
     </ReduxProvider>
@@ -51,7 +47,9 @@ function InitUserLoader() {
           if (res.meta.requestStatus === "fulfilled") {
             dispatch(setAuthUser(res.payload));
           } else {
-            console.log("Not logged in or error fetching user (expected if guest).");
+            console.log(
+              "Not logged in or error fetching user (expected if guest)."
+            );
           }
         })
         .catch((err) => {
@@ -84,12 +82,22 @@ function InitSettingsLoader() {
 
   return null;
 }
+/*
+function InitI18nLoader() {
+  useEffect(() => {
+    if (!i18n.language) {
+      const lang = navigator.language.split("-")[0];
+      i18n.changeLanguage(lang);
+    }
+  }, []);
+  return null;
+}
 
+*/
 function InitI18nLoader() {
   useEffect(() => {
     const lang = navigator.language.split("-")[0];
     i18n.changeLanguage(lang);
   }, []);
-
   return null;
 }

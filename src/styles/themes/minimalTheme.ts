@@ -9,6 +9,7 @@ const minimalTheme = {
     backgroundAlt: "#ffffff",
     sectionBackground: "#ffffff",
     inputBackground: "#ffffff", // 🆕 Eklendi
+    footerBackground: "#f8f8f8",
     overlayStart: "rgba(255, 255, 255, 0.8)",
     overlayEnd: "rgba(255, 255, 255, 0.95)",
     text: "#333333",
@@ -21,7 +22,7 @@ const minimalTheme = {
     primaryHover: "#222222",
     primaryDark: "#000000",
     primaryTransparent: "rgba(51, 51, 51, 0.1)",
-    skeletonBackground: "#f0f0f0", // 🆕
+    skeleton: "#f0f0f0", // 🆕
     overlayBackground: "rgba(0, 0, 0, 0.5)", // 🆕
     accent: "#666666",
     secondary: "#888",
@@ -44,6 +45,9 @@ const minimalTheme = {
     muted: "#6c757d",   // 🆕 Eklendi
     disabled: "#d6d6d6",
     placeholder: "#888888", // 🆕 Eklendi
+    tableHeader: "#f0f0f0", // 🆕 Eklendi
+    tagBackground: "#f0f0f0", // 🆕 Eklendi
+    skeletonBackground: "#f0f0f0", // 🆕 Eklendi
   },
   buttons: {
     primary: {

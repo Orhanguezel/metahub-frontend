@@ -2,12 +2,12 @@
 
 import { useAppSelector } from "@/store/hooks";
 import * as Icons from "react-icons/md";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../node_modules/react-i18next";
 
 export const useSidebarModules = () => {
   const modules = useAppSelector((state) => state.admin.modules);
   const loading = useAppSelector((state) => state.admin.loading);
-  const { i18n} = useTranslation();
+  const { i18n } = useTranslation();
 
   const lang = i18n.language as "tr" | "en" | "de";
 
@@ -29,4 +29,3 @@ const dynamicIcon = (iconName?: string) => {
   }
   return Icons["MdSettings"];
 };
-

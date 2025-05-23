@@ -10,6 +10,7 @@ export const lightTheme = {
     backgroundAlt: "#fdf6f0",
     sectionBackground: "#fdf6f0",
     inputBackground: "#ffffff",
+    footerBackground: "#f8f8f8",
     overlayStart: "rgba(255, 255, 255, 0.3)",
     overlayEnd: "rgba(255, 255, 255, 0.95)",
     text: "#171717",
@@ -45,6 +46,9 @@ export const lightTheme = {
     muted: "#6c757d",
     disabled: "#d6d6d6",
     placeholder: "#999999",
+    skeleton: "#f0f0f0",
+    tableHeader: "#f0f0f0",
+    tagBackground: "#f0f0f0",
   },
   buttons: {
     primary: {

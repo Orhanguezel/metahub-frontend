@@ -1,6 +1,8 @@
-import AdminDashboard from "./dashboard/page";
+"use client";
 
+import { AdminDashboardPage } from "@/modules/dashboard";
 
-export default function Page() {
-  return <AdminDashboard />;
+export default function AdminDashboardRoutePage() {
+  return <AdminDashboardPage />;
 }
+

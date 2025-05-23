@@ -1,0 +1,68 @@
+{
+  "admin": {
+    "tabs": {
+      "activity": "Aktivitäten",
+      "create": "Neue Aktivität",
+      "categories": "Kategorien"
+    },
+    "activity": {
+      "title": "Titel",
+      "summary": "Zusammenfassung",
+      "content": "Inhalt",
+      "tags": "Tags",
+      "category": "Kategorie",
+      "select_category": "Kategorie auswählen",
+      "image": "Bild",
+      "publish_status": "Veröffentlicht",
+      "publish": "Veröffentlichen",
+      "unpublish": "Zurückziehen",
+      "readMore": "Mehr lesen",
+      "all": "Alle Aktivitäten",
+      "create": "Erstellen",
+      "edit": "Aktivität bearbeiten",
+      "update": "Aktualisieren",
+      "cancel": "Abbrechen",
+      "empty": "Keine Aktivitäten verfügbar.",
+      "no_images": "Keine Bilder",
+      "edit_category": "Kategorie bearbeiten",
+      "new_category": "Neue Kategorie",
+      "category_name": "Kategoriename ({{lng}})",
+      "description_optional": "Beschreibung (optional)",
+      "category_description_placeholder": "Worum geht es in dieser Kategorie?",
+      "success_create": "Aktivität erfolgreich erstellt.",
+      "success_update": "Aktivität erfolgreich aktualisiert.",
+      "success_delete": "Aktivität erfolgreich gelöscht.",
+      "success_publish": "Aktivität erfolgreich veröffentlicht.",
+      "success_unpublish": "Aktivität erfolgreich zurückgezogen."
+    },
+    "categories": {
+      "title": "Aktivitätskategorien",
+      "add": "Kategorie hinzufügen",
+      "empty": "Keine Kategorien gefunden."
+    },
+    "confirm": {
+      "delete": "Möchten Sie diese Kategorie wirklich löschen?",
+      "delete_Activity": "Möchten Sie diese Aktivität wirklich löschen?"
+    },
+    "language": {
+      "en": "Englisch",
+      "tr": "Türkisch",
+      "de": "Deutsch"
+    },
+    "actions": "Aktionen",
+    "loading": "Wird geladen..."
+  },
+  "page": {
+    "empty": "Keine Aktivitäten gefunden.",
+    "all": "Alle Aktivitäten",
+    "noTitle": "Ohne Titel",
+    "noSummary": "Keine Zusammenfassung verfügbar.",
+    "tags": "Stichworte",
+    "readMore": "Mehr erfahren →"
+  },
+  "seo": {
+    "title": "Aktivitäten",
+    "description": "Aktivitätenbeschreibung",
+    "keywords": "Aktivitäten, Schlüsselwörter"
+  }
+}

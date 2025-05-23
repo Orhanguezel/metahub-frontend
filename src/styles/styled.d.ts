@@ -10,6 +10,7 @@ declare module "styled-components" {
       backgroundAlt: string;
       sectionBackground: string;
       inputBackground: string;
+      footerBackground: string;
       overlayStart: string;
       overlayEnd: string;
       text: string;
@@ -45,6 +46,10 @@ declare module "styled-components" {
       muted: string;
       disabled: string;
       placeholder: string;
+      skeleton: string;
+      tableHeader: string;
+      tagBackground: string;
+      
     };
     buttons: {
       primary: {

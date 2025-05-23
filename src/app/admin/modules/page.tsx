@@ -1,5 +1,5 @@
-import ModuleManager from "@/components/admin/modules/ModuleManager";
+import AdminModulePage from "@/modules/adminmodules/admin/pages/AdminModulePage";
 
-export default function ModulesPage() {
-  return <ModuleManager />;
+export default function ModulesRouterPage() {
+  return <AdminModulePage />;
 }

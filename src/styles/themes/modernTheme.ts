@@ -9,6 +9,7 @@ const modernTheme = {
     backgroundAlt: "#f0f2f5",
     sectionBackground: "#f7f9fc",
     inputBackground: "#ffffff",
+    footerBackground: "#f7f9fc",
     overlayStart: "rgba(0, 0, 0, 0.3)",
     overlayEnd: "rgba(0, 0, 0, 0.55)",
     text: "#1f1f1f",
@@ -45,6 +46,9 @@ const modernTheme = {
     disabled: "#e5e7eb",
     placeholder: "#9ca3af",
     skeleton: "#e5e7eb",
+    tableHeader: "#f0f0f0",
+    tagBackground: "#f0f0f0",
+    
   },
   buttons: {
     primary: {
