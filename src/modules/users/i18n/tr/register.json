@@ -1,0 +1,81 @@
+{
+  "title": "Kayıt Ol",
+  "description": "Yeni bir hesap oluşturmak için aşağıdaki formu doldurun.",
+  "steps": {
+    "register": "Kayıt Ol",
+    "verifyEmail": "E-posta Doğrulama",
+    "otp": "Kod Onayı",
+    "done": "Tamamlandı",
+    "ariaLabel": "Kayıt Adımları"
+  },
+  "username": "Kullanıcı Adı",
+  "email": "E-posta",
+  "password": "Şifre",
+  "confirmPassword": "Şifre (Tekrar)",
+  "submit": "Kayıt Ol",
+  "loading": "Kayıt yapılıyor...",
+  "haveAccount": "Zaten hesabınız var mı?",
+  "loginNow": "Giriş Yap",
+  "agree": "Kayıt olarak",
+  "terms": "Kullanım Şartları'nı",
+  "and": "ve",
+  "privacy": "Gizlilik Politikası'nı",
+  "placeholders": {
+    "username": "Adınızı girin",
+    "email": "E-posta adresinizi girin",
+    "password": "Şifrenizi girin",
+    "confirmPassword": "Şifrenizi tekrar girin"
+  },
+  "info": {
+    "usernameInfo": "Gerçek adınızı veya takma adınızı giriniz.",
+    "emailInfo": "Aktif bir e-posta giriniz."
+  },
+  "hidePassword": "Şifreyi gizle",
+  "showPassword": "Şifreyi göster",
+  "otpTitle": "Kodu Girin",
+  "otpDesc": "{{email}} adresine gönderilen doğrulama kodunu giriniz.",
+  "otpPlaceholder": "6 haneli kod",
+  "otpRequired": "Lütfen kodu giriniz.",
+  "otpFailed": "Kod doğrulama başarısız.",
+  "otpVerified": "Kod başarıyla doğrulandı!",
+  "otpNoCode": "Kod gelmedi mi?",
+  "otpResend": "Kodu Yeniden Gönder",
+  "otpResent": "Kod tekrar gönderildi!",
+  "otpResendFailed": "Kod tekrar gönderilemedi.",
+  "verifyEmailTitle": "E-posta Doğrulama",
+  "verifyEmailDesc": "{{email}} adresine doğrulama e-postası gönderildi. Lütfen e-posta kutunuzu kontrol edin.",
+  "spamCheck": "Spam klasörünü de kontrol etmeyi unutma!",
+  "resendVerification": "Doğrulama E-postasını Tekrar Gönder",
+  "verificationEmailSent": "Doğrulama e-postası gönderildi!",
+  "verificationEmailFailed": "Doğrulama e-postası gönderilemedi.",
+  "haveCode": "Kodum var",
+  "success": "Kayıt başarılı!",
+  "successTitle": "Kayıt tamamlandı!",
+  "successDesc": "Hesabınız başarıyla oluşturuldu ve doğrulandı. Şimdi giriş yapabilirsiniz.",
+  "goToLogin": "Girişe Git",
+  "redirectingToLogin": "Birazdan giriş sayfasına yönlendiriliyorsunuz...",
+  "pwStrength": {
+    "veryWeak": "Çok Zayıf",
+    "weak": "Zayıf",
+    "medium": "Orta",
+    "strong": "Güçlü",
+    "veryStrong": "Çok Güçlü"
+  },
+  "errors": {
+    "username": "Kullanıcı adı gereklidir.",
+    "email": "E-posta gereklidir.",
+    "emailInvalid": "Geçersiz e-posta adresi.",
+    "password": "Şifre gereklidir.",
+    "passwordLength": "Şifre en az 8 karakter olmalıdır.",
+    "weakPassword": "Şifreniz çok zayıf.",
+    "confirmPassword": "Şifreler uyuşmuyor.",
+    "recaptchaFailed": "reCAPTCHA doğrulaması başarısız.",
+    "error": "Bir hata oluştu, tekrar deneyin."
+  },
+  "verifyEmail": {
+    "title": "E-posta Doğrulama",
+    "verifying": "E-postanız doğrulanıyor...",
+    "success": "E-posta başarıyla doğrulandı. Şimdi giriş yapabilirsiniz.",
+    "error": "Doğrulama başarısız oldu veya bağlantı süresi doldu. Lütfen yeni bir doğrulama e-postası isteyin."
+  }
+}

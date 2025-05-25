@@ -1,13 +1,19 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import { fetchCurrentUser } from "./accountSlice";
 
+
+export interface ProfileImageObj {
+  url: string;
+  thumbnail?: string;
+  webp?: string;
+  publicId?: string;
+}
 export interface AuthUser {
   _id: string;
   name: string;
   email: string;
   role: "admin" | "user" | "moderator" | "staff" | "customer";
-  profileImage: string;
+  profileImage: string | ProfileImageObj;
 }
 
 interface AuthState {
@@ -15,6 +21,10 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   successMessage: string | null;
+  needOtp?: boolean; // true: kullanıcıdan OTP isteniyor
+  otpSession?: string | null; // backend’in döndürdüğü session ya da token
+  mfaRequired?: boolean; // true: ek güvenlik (2FA) adımı
+  emailVerifyRequired?: boolean; // register sonrası aktif olur
 }
 
 interface LoginPayload {
@@ -34,27 +44,30 @@ const initialState: AuthState = {
   loading: false,
   error: null,
   successMessage: null,
+  needOtp: false,
+  otpSession: null,
+  mfaRequired: false,
+  emailVerifyRequired: false,
 };
+
 
 // 🔐 Login
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (data: LoginPayload, thunkAPI) => {
     try {
-      const res = await apiCall(
-        "post",
-        "/users/login",
-        data,
-        thunkAPI.rejectWithValue
+      const res = await apiCall("post", "/users/login", data, thunkAPI.rejectWithValue);
+      // Eğer backend direkt user döndürüyorsa:
+      return res.data; // veya sadece res.data.data (payload: user objesi olacak)
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error?.response?.data?.message || "Login failed"
       );
-      const user = await thunkAPI.dispatch(fetchCurrentUser()).unwrap();
-      thunkAPI.dispatch(setAuthUser(user));
-      return res;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(error);
     }
   }
 );
+
+
 
 // 📝 Register
 export const registerUser = createAsyncThunk(
@@ -165,9 +178,10 @@ const authSlice = createSlice({
       state.error = null;
       state.successMessage = null;
     },
-    setAuthUser: (state, action: PayloadAction<AuthUser>) => {
-      state.user = action.payload;
-    },
+   setAuthUser: (state, action: PayloadAction<AuthUser | null>) => {
+  state.user = action.payload;
+},
+
   },
   extraReducers: (builder) => {
     const loading = (state: AuthState) => {
@@ -182,11 +196,19 @@ const authSlice = createSlice({
     };
 
     builder
+
       .addCase(loginUser.pending, loading)
-      .addCase(loginUser.fulfilled, (state) => {
+      .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
+        state.user = action.payload;
         state.successMessage = "Login successful.";
+        // Eğer OTP/MFA istendi ise
+        state.needOtp = !!action.payload.needOtp;
+        state.otpSession = action.payload.otpSession || null;
+        state.mfaRequired = !!action.payload.mfaRequired;
+        state.emailVerifyRequired = !!action.payload.emailVerifyRequired;
       })
+
       .addCase(loginUser.rejected, failed)
 
       .addCase(registerUser.pending, loading)

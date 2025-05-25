@@ -1,0 +1,18 @@
+{
+  "title": "Passwort vergessen",
+  "instruction": "Geben Sie Ihre E-Mail-Adresse ein, und wir senden Ihnen einen Link zum Zurücksetzen des Passworts.",
+  "steps": {
+    "forgot": "Passwort vergessen",
+    "done": "Abgeschlossen"
+  },
+  "placeholders": {
+    "email": "Ihre E-Mail-Adresse"
+  },
+  "submit": "Link zum Zurücksetzen senden",
+  "loading": "Senden...",
+  "success": "Ein Link zum Zurücksetzen des Passworts wurde an Ihre E-Mail gesendet. Bitte überprüfen Sie Ihr Postfach.",
+  "errors": {
+    "email": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+    "default": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+  }
+}

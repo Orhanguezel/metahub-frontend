@@ -1,13 +1,17 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import { getImageSrc } from "@/utils/getImageSrc";
+import { getImageSrc } from "@/shared/getImageSrc";
 import type { ImageType } from "@/types/image";
 
 interface Props {
   max?: number;
-  defaultImages?: string[];  // ["/uploads/ensotek/references-images/foo.png"]
-  onChange?: (files: File[], removedImages: string[], currentImages: string[]) => void;
+  defaultImages?: string[]; // ["/uploads/ensotek/references-images/foo.png"]
+  onChange?: (
+    files: File[],
+    removedImages: string[],
+    currentImages: string[]
+  ) => void;
   folder?: ImageType;
 }
 
@@ -77,13 +81,17 @@ const ImageUploadWithPreview: React.FC<Props> = ({
       <PreviewGrid>
         {existingImages.map((url, i) => (
           <PreviewBox key={`existing-${i}`}>
-            <RemoveBtn type="button" onClick={() => removeExistingImage(url)}>×</RemoveBtn>
+            <RemoveBtn type="button" onClick={() => removeExistingImage(url)}>
+              ×
+            </RemoveBtn>
             <ImagePreview src={getImageSrc(url, folder)} alt={`image-${i}`} />
           </PreviewBox>
         ))}
         {previews.map((src, i) => (
           <PreviewBox key={`preview-${i}`}>
-            <RemoveBtn type="button" onClick={() => removeNewImage(i)}>×</RemoveBtn>
+            <RemoveBtn type="button" onClick={() => removeNewImage(i)}>
+              ×
+            </RemoveBtn>
             <ImagePreview src={src} alt={`preview-${i}`} />
           </PreviewBox>
         ))}
@@ -118,25 +126,43 @@ const UploadButton = styled.button<{ disabled?: boolean }>`
   }
 `;
 const PreviewGrid = styled.div`
-  display: flex; gap: ${({ theme }) => theme.spacing.sm}; flex-wrap: wrap;
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.sm};
+  flex-wrap: wrap;
 `;
 const PreviewBox = styled.div`
-  position: relative; width: 100px; height: 100px;
+  position: relative;
+  width: 100px;
+  height: 100px;
   border-radius: ${({ theme }) => theme.radii.sm};
-  overflow: hidden; border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  overflow: hidden;
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.colors.border};
   box-shadow: ${({ theme }) => theme.shadows.sm};
 `;
 const RemoveBtn = styled.button`
-  position: absolute; top: 4px; right: 4px;
+  position: absolute;
+  top: 4px;
+  right: 4px;
   background: ${({ theme }) => theme.buttons.danger.background};
   color: ${({ theme }) => theme.buttons.danger.text};
-  border: none; border-radius: ${({ theme }) => theme.radii.circle};
-  width: 24px; height: 24px; font-weight: bold; cursor: pointer;
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.circle};
+  width: 24px;
+  height: 24px;
+  font-weight: bold;
+  cursor: pointer;
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: ${({ theme }) => theme.zIndex.dropdown};
-  &:hover { background: ${({ theme }) => theme.buttons.danger.backgroundHover}; }
+  &:hover {
+    background: ${({ theme }) => theme.buttons.danger.backgroundHover};
+  }
 `;
 const ImagePreview = styled.img`
-  width: 100%; height: 100%; object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 `;

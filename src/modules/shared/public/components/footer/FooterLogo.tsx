@@ -2,14 +2,15 @@
 
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
-import { getImageSrc } from "@/utils/getImageSrc";
+import { getImageSrc } from "@/shared/getImageSrc";
 import { useThemeContext } from "@/providers/ThemeProviderWrapper";
 
 function extractLogoUrl(val: any): string | undefined {
   if (!val) return undefined;
   if (typeof val === "string") return getImageSrc(val, "setting");
   if (typeof val === "object") {
-    if (val.url && typeof val.url === "string") return getImageSrc(val.url, "setting");
+    if (val.url && typeof val.url === "string")
+      return getImageSrc(val.url, "setting");
     // Eğer doğrudan string property varsa
     const maybeString = Object.values(val).find((v) => typeof v === "string");
     if (maybeString) return getImageSrc(maybeString, "setting");
@@ -17,7 +18,10 @@ function extractLogoUrl(val: any): string | undefined {
   return undefined;
 }
 
-function resolveLogoSrc(value: any, themeMode: "light" | "dark" | undefined): string {
+function resolveLogoSrc(
+  value: any,
+  themeMode: "light" | "dark" | undefined
+): string {
   if (!value) return "";
   if (typeof value === "string") return getImageSrc(value, "setting");
   if (typeof value === "object") {
@@ -46,7 +50,8 @@ export default function FooterLogo() {
 }
 
 const LogoWrapper = styled.div`
-  margin: ${({ theme }) => theme.spacing.lg} 0 ${({ theme }) => theme.spacing.md};
+  margin: ${({ theme }) => theme.spacing.lg} 0
+    ${({ theme }) => theme.spacing.md};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -62,7 +67,7 @@ const LogoImg = styled.img`
   background: ${({ theme }) => theme.colors.backgroundAlt};
   padding: 10px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 
   @media (max-width: 600px) {
     max-width: 110px;

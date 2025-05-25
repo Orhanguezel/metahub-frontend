@@ -1,7 +1,13 @@
+// src/app/(public)/account/page.tsx
 "use client";
-import AccountPage from "@/modules/account/public/pages/AccountPage";
+import {ProtectedUserPage} from "@/shared";
+import { AccountPage } from "@/modules/account";
 
 export default function AccountRoutePage() {
-
-  return <AccountPage />;
+  return (
+    <ProtectedUserPage>
+      <AccountPage />
+    </ProtectedUserPage>
+  );
 }
+

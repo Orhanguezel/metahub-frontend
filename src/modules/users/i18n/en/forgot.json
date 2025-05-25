@@ -1,0 +1,18 @@
+{
+  "title": "Forgot Password",
+  "instruction": "Enter your email address and we will send you a password reset link.",
+  "steps": {
+    "forgot": "Forgot Password",
+    "done": "Completed"
+  },
+  "placeholders": {
+    "email": "Your email address"
+  },
+  "submit": "Send Reset Link",
+  "loading": "Sending...",
+  "success": "A password reset link has been sent to your email. Please check your inbox.",
+  "errors": {
+    "email": "Please enter a valid email address.",
+    "default": "An error occurred. Please try again."
+  }
+}

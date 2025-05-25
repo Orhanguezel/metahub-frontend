@@ -2,17 +2,24 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import API from "@/lib/api";
 
+export interface ProfileImageObj {
+  url: string;
+  thumbnail?: string;
+  webp?: string;
+  publicId?: string;
+}
+
 interface User {
   _id: string;
   name: string;
   email: string;
   role: "admin" | "user" | "moderator" | "staff" | "customer";
   isActive?: boolean;
-  profileImage: string;
+  profileImage: string | ProfileImageObj; // <-- güncellendi
   phone?: string;
   bio?: string;
   birthDate?: string;
-  addresses?: string[]; // veya Address[]
+  addresses?: string[];
   socialMedia?: Record<string, string>;
   notifications?: Record<string, any>;
 }
@@ -33,21 +40,18 @@ const initialState: UserState = {
   successMessage: null,
 };
 
-// 📋 Admin: Tüm kullanıcıları getir
 export const fetchUsers = createAsyncThunk(
   "userCrud/fetchUsers",
   async (_, thunkAPI) =>
     await apiCall("get", "/users/users", null, thunkAPI.rejectWithValue)
 );
 
-// 👤 Admin: Tekil kullanıcıyı getir
 export const fetchUserById = createAsyncThunk(
   "userCrud/fetchUserById",
   async (id: string, thunkAPI) =>
     await apiCall("get", `/users/users/${id}`, null, thunkAPI.rejectWithValue)
 );
 
-// ✏️ Admin: Kullanıcıyı güncelle (FormData)
 export const updateUser = createAsyncThunk(
   "userCrud/updateUser",
   async (payload: { id: string; formData: FormData }, thunkAPI) => {
@@ -69,14 +73,12 @@ export const updateUser = createAsyncThunk(
   }
 );
 
-// ❌ Admin: Kullanıcıyı sil
 export const deleteUser = createAsyncThunk(
   "userCrud/deleteUser",
   async (id: string, thunkAPI) =>
     await apiCall("delete", `/users/users/${id}`, null, thunkAPI.rejectWithValue)
 );
 
-// 📦 Slice
 const userCrudSlice = createSlice({
   name: "userCrud",
   initialState,
@@ -97,26 +99,19 @@ const userCrudSlice = createSlice({
       state.error = action.payload;
     };
 
-    // Fetch all users
     builder
       .addCase(fetchUsers.pending, loading)
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.loading = false;
         state.users = action.payload;
       })
-      .addCase(fetchUsers.rejected, failed);
-
-    // Fetch single user
-    builder
+      .addCase(fetchUsers.rejected, failed)
       .addCase(fetchUserById.pending, loading)
       .addCase(fetchUserById.fulfilled, (state, action) => {
         state.loading = false;
         state.selectedUser = action.payload;
       })
-      .addCase(fetchUserById.rejected, failed);
-
-    // Update user
-    builder
+      .addCase(fetchUserById.rejected, failed)
       .addCase(updateUser.pending, loading)
       .addCase(updateUser.fulfilled, (state, action) => {
         state.loading = false;
@@ -129,10 +124,7 @@ const userCrudSlice = createSlice({
           state.selectedUser = updatedUser;
         }
       })
-      .addCase(updateUser.rejected, failed);
-
-    // Delete user
-    builder
+      .addCase(updateUser.rejected, failed)
       .addCase(deleteUser.pending, loading)
       .addCase(deleteUser.fulfilled, (state, action) => {
         state.loading = false;

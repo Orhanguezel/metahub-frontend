@@ -21,22 +21,18 @@ import faqEN from "@/modules/faq/i18n/en.json";
 import companyEN from "@/modules/company/i18n/en.json";
 import galleryEN from "@/modules/gallery/i18n/en.json";
 import homeEN from "@/modules/home/i18n/en.json";
-
-
+import registerEN from "@/modules/users/i18n/en/register.json";
+import loginEN from "@/modules/users/i18n/en/login.json";
+import logoutEN from "@/modules/users/i18n/en/logout.json";
+import forgotPasswordEN from "@/modules/users/i18n/en/forgot.json";
+import changePasswordEN from "@/modules/users/i18n/en/change.json";
+import resetPasswordEN from "@/modules/users/i18n/en/reset.json";
 
 import navbarEN from "./locales/en/navbar.json";
-import authEN from "./locales/en/auth.json";
 import footerEN from "./locales/en/footer.json";
-import registerEN from "./locales/en/register.json";
-import loginEN from "./locales/en/login.json";
 import sidebarEN from "./locales/en/sidebar.json";
 import dashboardEN from "./locales/en/dashboard.json";
 import headerEN from "./locales/en/header.json";
-import logoutEN from "./locales/en/logout.json";
-import forgotPasswordEN from "./locales/en/forgot-password.json";
-import changePasswordEN from "./locales/en/change-password.json";
-import resetPasswordEN from "./locales/en/reset-password.json";
-import changePasswordFormEN from "./locales/en/change-password-form.json";
 import commonEN from "./locales/en/common.json";
 
 
@@ -50,12 +46,12 @@ import articlesTR from "@/modules/articles/i18n/tr.json";
 import activityTR from "@/modules/activity/i18n/tr.json";
 import aboutTR from "@/modules/about/i18n/tr.json";
 import headerTR from "./locales/tr/header.json";
-import logoutTR from "./locales/tr/logout.json";
-import forgotPasswordTR from "./locales/tr/forgot-password.json";
-import resetPasswordTR from "./locales/tr/reset-password.json";
-import changePasswordTR from "./locales/tr/change-password.json";
+import logoutTR from "@/modules/users/i18n/tr/logout.json";
+import forgotPasswordTR from "@/modules/users/i18n/tr/forgot.json";
+import resetPasswordTR from "@/modules/users/i18n/tr/reset.json";
+import changePasswordTR from "@/modules/users/i18n/tr/change.json";
 import accountTR from "@/modules/account/i18n/tr.json";
-import changePasswordFormTR from "./locales/tr/change-password-form.json";
+import changePasswordFormTR from "@/modules/users/i18n/tr/change.json";
 import companyTR from "@/modules/company/i18n/tr.json";
 import commonTR from "./locales/tr/common.json";
 import galleryTR from "@/modules/gallery/i18n/tr.json";
@@ -64,20 +60,18 @@ import commentsTR from "@/modules/comment/i18n/tr.json";
 import faqTR from "@/modules/faq/i18n/tr.json";
 import bookingTR from "@/modules/booking/i18n/tr.json";
 import navbarTR from "./locales/tr/navbar.json";
-import authTR from "./locales/tr/auth.json";
 import footerTR from "./locales/tr/footer.json";
-import registerTR from "./locales/tr/register.json";
-import loginTR from "./locales/tr/login.json";
+import registerTR from "@/modules/users/i18n/tr/register.json";
+import loginTR from "@/modules/users/i18n/tr/login.json";
 import sidebarTR from "./locales/tr/sidebar.json";
 import dashboardTR from "./locales/tr/dashboard.json";
 
 
 import navbarDE from "./locales/de/navbar.json";
 import productDE from "@/modules/product/i18n/de.json";
-import authDE from "./locales/de/auth.json";
 import footerDE from "./locales/de/footer.json";
-import registerDE from "./locales/de/register.json";
-import loginDE from "./locales/de/login.json";
+import registerDE from "@/modules/users/i18n/de/register.json";
+import loginDE from "@/modules/users/i18n/de/login.json";
 import sidebarDE from "./locales/de/sidebar.json";
 import dashboardDE from "./locales/de/dashboard.json";
 import adminModulesDE from "@/modules/adminmodules/i18n/de.json";
@@ -88,12 +82,12 @@ import articlesDE from "@/modules/articles/i18n/de.json";
 import activityDE from "@/modules/activity/i18n/de.json";
 import aboutDE from "@/modules/about/i18n/de.json";
 import headerDE from "./locales/de/header.json";
-import logoutDE from "./locales/de/logout.json";
-import forgotPasswordDE from "./locales/de/forgot-password.json";
-import changePasswordDE from "./locales/de/change-password.json";
-import resetPasswordDE from "./locales/de/reset-password.json";
+import logoutDE from "@/modules/users/i18n/de/logout.json";
+import forgotPasswordDE from "@/modules/users/i18n/de/forgot.json";
+import changePasswordDE from "@/modules/users/i18n/de/change.json";
+import resetPasswordDE from "@/modules/users/i18n/de/reset.json";
 import accountDE from "@/modules/account/i18n/de.json";
-import changePasswordFormDE from "./locales/de/change-password-form.json";
+import changePasswordFormDE from "@/modules/users/i18n/de/change.json";
 import companyDE from "@/modules/company/i18n/de.json";
 import commonDE from "./locales/de/common.json";
 import galleryDE from "@/modules/gallery/i18n/de.json";
@@ -108,7 +102,6 @@ const resources = {
   en: {
     navbar: navbarEN,
     product: productEN,
-    auth: authEN,
     footer: footerEN,
     register: registerEN,
     login: loginEN,
@@ -123,7 +116,6 @@ const resources = {
     changePassword: changePasswordEN,
     resetPassword: resetPasswordEN,
     account: accountEN,
-    changePasswordForm: changePasswordFormEN,
     company: companyEN,
     common: commonEN,
     gallery: galleryEN,
@@ -142,7 +134,6 @@ const resources = {
   tr: {
     navbar: navbarTR,
     product: productTR,
-    auth: authTR,
     footer: footerTR,
     register: registerTR,
     login: loginTR,
@@ -174,7 +165,6 @@ const resources = {
   de: {
     navbar: navbarDE,
     product: productDE,
-    auth: authDE,
     footer: footerDE,
     register: registerDE,
     login: loginDE,
@@ -230,7 +220,7 @@ i18n
       "changePassword",
       "resetPassword",
       "account",
-      "changePasswordForm",
+      "changePassword",
       "company",
       "common",
       "gallery",

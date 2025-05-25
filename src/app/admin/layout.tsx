@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
+import {ProtectedAdminPage} from "@/shared";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchCompanyInfo } from "@/modules/company/slice/companySlice";
 import {
@@ -12,19 +13,30 @@ import { fetchSettings } from "@/modules/settings/slice/settingSlice";
 import styled from "styled-components";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {Loading,ErrorMessage} from "@/shared";
-import { Sidebar,Header,Footer } from "@/modules/shared";
+import { Loading, ErrorMessage } from "@/shared";
+import { Sidebar, Header, Footer } from "@/modules/shared";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <ProtectedAdminPage>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </ProtectedAdminPage>
+  );
+}
+
+// Tüm eski kodunu aşağıya AdminLayoutContent olarak taşıdık
+function AdminLayoutContent({ children }: { children: React.ReactNode }) {
+  // ... tüm yukarıdaki kodun
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const dispatch = useAppDispatch();
+
+  // ... diğer state ve useEffect'ler olduğu gibi devam
 
   // --- STATE ---
   const companyState = useAppSelector((state) => state.company);
   const adminState = useAppSelector((state) => state.admin);
   const settingsState = useAppSelector((state) => state.setting);
 
-  // --- SLICED STATES ---
   const { company, status: companyStatus, error: companyError } = companyState;
   const {
     modules: adminModules,
@@ -37,23 +49,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { loading: settingsLoading, error: settingsError, fetchedSettings } = settingsState;
 
   useEffect(() => {
-  console.log("admin slice:", {
-    availableProjects,
-    selectedProject,
-    adminModules,
-    adminLoading
-  });
-}, [availableProjects, selectedProject, adminModules, adminLoading]);
-
-
-  // --- 1. Projeleri çek (ilk mount)
-  useEffect(() => {
     if (!fetchedAvailableProjects) {
       dispatch(fetchAvailableProjects());
     }
   }, [dispatch, fetchedAvailableProjects]);
 
-  // --- 2. Şirket & Ayarlar (ilk mount)
   useEffect(() => {
     if (!company && companyStatus === "idle") {
       dispatch(fetchCompanyInfo());
@@ -63,21 +63,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [dispatch, company, companyStatus, fetchedSettings]);
 
-  // --- 3. Proje geldiğinde, seçili yoksa ilk projeyi ata
   useEffect(() => {
     if (availableProjects.length > 0 && !selectedProject) {
       dispatch(setSelectedProject(availableProjects[0]));
     }
   }, [dispatch, availableProjects, selectedProject]);
 
-  // --- 4. Proje değiştiğinde modülleri çek
   useEffect(() => {
     if (selectedProject && (!adminModules || adminModules.length === 0)) {
       dispatch(fetchAdminModules(selectedProject));
     }
   }, [dispatch, selectedProject, adminModules]);
 
-  // --- ESC ile sidebar kapama
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsSidebarOpen(false);
@@ -86,7 +83,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
-  // --- Sidebar toggle
   const handleToggleSidebar = useCallback(
     () => setIsSidebarOpen((prev) => !prev),
     []
@@ -108,7 +104,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return <ErrorMessage message={errorMsg} />;
   }
 
-  // --- LAYOUT ---
   return (
     <Wrapper>
       <ToastContainer position="top-right" autoClose={4000} />
@@ -121,13 +116,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {children}
         </Content>
         <Footer company={company} />
-
       </ContentWrapper>
     </Wrapper>
   );
 }
 
-// ---- STYLES ----
+// --- Styled Components ---
 const Wrapper = styled.div`
   display: flex;
   min-height: 100vh;

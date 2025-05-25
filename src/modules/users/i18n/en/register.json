@@ -1,0 +1,81 @@
+{
+  "title": "Sign Up",
+  "description": "Fill in the form below to create a new account.",
+  "steps": {
+    "register": "Sign Up",
+    "verifyEmail": "Verify Email",
+    "otp": "Code Verification",
+    "done": "Completed",
+    "ariaLabel": "Registration Steps"
+  },
+  "username": "Username",
+  "email": "Email",
+  "password": "Password",
+  "confirmPassword": "Confirm Password",
+  "submit": "Register",
+  "loading": "Registering...",
+  "haveAccount": "Already have an account?",
+  "loginNow": "Login",
+  "agree": "By registering you agree to the",
+  "terms": "Terms of Use",
+  "and": "and",
+  "privacy": "Privacy Policy",
+  "placeholders": {
+    "username": "Enter your name",
+    "email": "Enter your email address",
+    "password": "Enter your password",
+    "confirmPassword": "Re-enter your password"
+  },
+  "info": {
+    "usernameInfo": "Enter your real name or nickname.",
+    "emailInfo": "Enter an active email address."
+  },
+  "hidePassword": "Hide password",
+  "showPassword": "Show password",
+  "otpTitle": "Enter the Code",
+  "otpDesc": "Enter the verification code sent to {{email}}.",
+  "otpPlaceholder": "6-digit code",
+  "otpRequired": "Please enter the code.",
+  "otpFailed": "Code verification failed.",
+  "otpVerified": "Code verified successfully!",
+  "otpNoCode": "Didn't get the code?",
+  "otpResend": "Resend Code",
+  "otpResent": "Code resent!",
+  "otpResendFailed": "Failed to resend the code.",
+  "verifyEmailTitle": "Email Verification",
+  "verifyEmailDesc": "A verification email has been sent to {{email}}. Please check your inbox.",
+  "spamCheck": "Don't forget to check your spam folder!",
+  "resendVerification": "Resend Verification Email",
+  "verificationEmailSent": "Verification email sent!",
+  "verificationEmailFailed": "Failed to send verification email.",
+  "haveCode": "I have a code",
+  "success": "Registration successful!",
+  "successTitle": "Registration Complete!",
+  "successDesc": "Your account has been created and verified. You can now log in.",
+  "goToLogin": "Go to Login",
+  "redirectingToLogin": "Redirecting you to the login page shortly...",
+  "pwStrength": {
+    "veryWeak": "Very Weak",
+    "weak": "Weak",
+    "medium": "Medium",
+    "strong": "Strong",
+    "veryStrong": "Very Strong"
+  },
+  "errors": {
+    "username": "Username is required.",
+    "email": "Email is required.",
+    "emailInvalid": "Invalid email address.",
+    "password": "Password is required.",
+    "passwordLength": "Password must be at least 8 characters.",
+    "weakPassword": "Your password is too weak.",
+    "confirmPassword": "Passwords do not match.",
+    "recaptchaFailed": "reCAPTCHA validation failed.",
+    "error": "An error occurred. Please try again."
+  },
+  "verifyEmail": {
+  "title": "Email Verification",
+  "verifying": "Verifying your email...",
+  "success": "Email verified successfully. You can now log in.",
+  "error": "Verification failed or the link has expired. Please request a new verification email."
+}
+}

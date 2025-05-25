@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { User } from "@/modules/users/types/user";
-import { getImageSrc } from "@/utils/getImageSrc";
+import { getImageSrc } from "@/shared/getImageSrc";
 import { UserActions } from "@/modules/users";
 
 interface Props {

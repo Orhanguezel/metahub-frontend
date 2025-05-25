@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { ThemeToggle } from "@/modules/shared";
 import { AvatarMenu } from "@/modules/shared";
 import { useState } from "react";
-import { getImageSrc } from "@/utils/getImageSrc";
+import { getImageSrc } from "@/shared/getImageSrc";
 import { FaBars } from "react-icons/fa";
 
 type HeaderProps = {

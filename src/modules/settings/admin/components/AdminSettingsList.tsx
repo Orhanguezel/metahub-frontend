@@ -10,7 +10,7 @@ import {
 import { useAppDispatch } from "@/store/hooks";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
-import { getImageSrc } from "@/utils/getImageSrc";
+import { getImageSrc } from "@/shared/getImageSrc";
 import { MultiLangValue, NestedLinkItem } from "@/modules/settings";
 
 interface AdminSettingsListProps {

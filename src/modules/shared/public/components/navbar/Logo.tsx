@@ -3,10 +3,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/store/hooks";
-import { getImageSrc } from "@/utils/getImageSrc";
+import { getImageSrc } from "@/shared/getImageSrc";
 import { useThemeContext } from "@/providers/ThemeProviderWrapper";
 
-function resolveLogoSrc(value: any, themeMode: "light" | "dark" | undefined): string {
+function resolveLogoSrc(
+  value: any,
+  themeMode: "light" | "dark" | undefined
+): string {
   if (!value) return "";
 
   if (typeof value === "string") return getImageSrc(value, "setting");
@@ -14,8 +17,17 @@ function resolveLogoSrc(value: any, themeMode: "light" | "dark" | undefined): st
     // Cloudinary gibi: {light: {url}, dark: {url}}
     const light = value.light?.url || value.light;
     const dark = value.dark?.url || value.dark;
-    if (themeMode === "dark") return dark ? getImageSrc(dark, "setting") : light ? getImageSrc(light, "setting") : "";
-    return light ? getImageSrc(light, "setting") : dark ? getImageSrc(dark, "setting") : "";
+    if (themeMode === "dark")
+      return dark
+        ? getImageSrc(dark, "setting")
+        : light
+        ? getImageSrc(light, "setting")
+        : "";
+    return light
+      ? getImageSrc(light, "setting")
+      : dark
+      ? getImageSrc(dark, "setting")
+      : "";
   }
 
   return "";

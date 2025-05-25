@@ -1,0 +1,51 @@
+{
+  "title": "Anmelden",
+  "description": "Bitte melden Sie sich an, um auf das Admin-Panel zuzugreifen.",
+  "email": "E-Mail",
+  "password": "Passwort",
+  "remember": "Angemeldet bleiben",
+  "forgotPassword": "Passwort vergessen",
+  "registerNow": "Jetzt registrieren",
+  "noAccount": "Noch kein Konto?",
+  "submit": "Anmelden",
+  "loading": "Anmeldung läuft...",
+  "otpRequired": "Bitte geben Sie Ihren Sicherheitscode ein",
+  "success": "Sie haben sich erfolgreich angemeldet!",
+  "placeholders": {
+    "email": "Ihre E-Mail-Adresse",
+    "password": "Ihr Passwort"
+  },
+  "steps": {
+    "login": "Anmelden",
+    "otp": "Code-Bestätigung",
+    "done": "Abgeschlossen",
+    "forgot": "Passwort vergessen",
+    "register": "Registrieren",
+    "mfa": "Zwei-Faktor-Authentifizierung"
+  },
+  "errors": {
+    "email": "E-Mail-Adresse ist erforderlich",
+    "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+    "password": "Passwort ist erforderlich",
+    "passwordLength": "Das Passwort muss mindestens 8 Zeichen lang sein",
+    "default": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+  },
+  "otpTitle": "Sicherheitscode-Bestätigung",
+  "otpDesc": "Bitte geben Sie den 6-stelligen Code ein, der Ihnen per {{channel}} gesendet wurde.",
+  "sms": "SMS",
+  "emailChannel": "E-Mail",
+  "verifying": "Wird überprüft...",
+  "verify": "Bestätigen",
+  "resendCode": "Code erneut senden",
+  "resending": "Wird erneut gesendet...",
+  "otpVerified": "Erfolgreich bestätigt!",
+  "otpFailed": "Der Code konnte nicht bestätigt werden.",
+  "otpResent": "Code wurde erneut gesendet!",
+  "otpResendFailed": "Der Code konnte nicht gesendet werden.",
+  "loginSuccess": "Anmeldung erfolgreich!",
+  "welcomeUser": "Willkommen, {{name}}!",
+  "goToDashboard": "Zum Dashboard",
+  "redirectingToDashboard": "Sie werden in Kürze zum Dashboard weitergeleitet...",
+  "hidePassword": "Passwort verbergen",
+  "showPassword": "Passwort anzeigen"
+}

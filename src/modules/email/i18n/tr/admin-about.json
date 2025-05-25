@@ -1,0 +1,53 @@
+{
+  "tabs": {
+    "about": "Hakkımızda Bölümleri",
+    "create": "Yeni Hakkımızda",
+    "categories": "Kategoriler"
+  },
+  "about": {
+    "title": "Başlık",
+    "shortDescription": "Kısa Açıklama",
+    "detailedDescription": "Detaylı Açıklama",
+    "tags": "Etiketler",
+    "category": "Kategori",
+    "select_category": "Kategori seçin",
+    "image": "Görsel",
+    "publish_status": "Yayın Durumu",
+    "publish": "Yayınla",
+    "unpublish": "Yayından Kaldır",
+    "readMore": "Detaylı Bilgi",
+    "all": "Tüm Hakkımızda İçerikleri",
+    "create": "Oluştur",
+    "edit": "Hakkımızda Düzenle",
+    "update": "Güncelle",
+    "cancel": "İptal",
+    "empty": "Henüz hakkımızda içeriği yok.",
+    "no_image": "Görsel bulunamadı",
+    "edit_category": "Kategoriyi Düzenle",
+    "new_category": "Yeni Kategori",
+    "category_name": "Kategori adı ({{lng}})",
+    "description_optional": "Açıklama (isteğe bağlı)",
+    "category_description_placeholder": "Bu kategori neyle ilgili?",
+    "success_create": "Hakkımızda içeriği başarıyla oluşturuldu.",
+    "success_update": "Hakkımızda içeriği başarıyla güncellendi.",
+    "success_delete": "Hakkımızda içeriği başarıyla silindi.",
+    "success_publish": "İçerik başarıyla yayınlandı.",
+    "success_unpublish": "İçerik yayından kaldırıldı."
+  },
+  "categories": {
+    "title": "Hakkımızda Kategorileri",
+    "add": "Kategori Ekle",
+    "empty": "Hiç kategori bulunamadı."
+  },
+  "confirm": {
+    "delete": "Bu kategoriyi silmek istediğinize emin misiniz?",
+    "delete_about": "Bu hakkımızda içeriğini silmek istediğinize emin misiniz?"
+  },
+  "language": {
+    "en": "İngilizce",
+    "tr": "Türkçe",
+    "de": "Almanca"
+  },
+  "actions": "İşlemler",
+  "loading": "Yükleniyor..."
+}

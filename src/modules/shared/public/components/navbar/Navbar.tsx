@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { FaMoon, FaSun, FaBars, FaTimes } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
@@ -14,7 +14,8 @@ import {
   MobileNavbarLinks,
   AvatarMenu,
 } from "@/modules/shared";
-import { getImageSrc } from "@/utils/getImageSrc";
+import { getImageSrc } from "@/shared/getImageSrc";
+import type { ProfileImageObj } from "@/modules/users/types/auth";
 
 export default function Navbar() {
   const { profile: user } = useAppSelector((state) => state.account);
@@ -27,10 +28,20 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const resolvedProfileImage =
-    user?.profileImage?.trim()
-      ? getImageSrc(user.profileImage, "profile")
-      : "/default-avatar.png";
+  // --- Profil resmi string veya obje desteği ---
+  const resolvedProfileImage = useMemo(() => {
+    if (!user?.profileImage) return "/default-avatar.png";
+    if (typeof user.profileImage === "object") {
+      const img = user.profileImage as ProfileImageObj;
+      return img.thumbnail || img.url || "/default-avatar.png";
+    }
+    if (typeof user.profileImage === "string") {
+      // Cloudinary veya local backend dosyası olabilir
+      if (user.profileImage.startsWith("http")) return user.profileImage;
+      return getImageSrc(user.profileImage, "profile");
+    }
+    return "/default-avatar.png";
+  }, [user?.profileImage]);
 
   useEffect(() => {
     setHasMounted(true);
@@ -51,6 +62,7 @@ export default function Navbar() {
     i18n.changeLanguage(e.target.value);
   };
 
+  // --- Responsive Navbar ---
   return (
     <>
       {/* Sticky Navbar */}
@@ -67,10 +79,17 @@ export default function Navbar() {
               <NavbarLinks />
             </DesktopMenu>
             <RightControls>
-              <ThemeToggle onClick={toggle} title={isDark ? "Light mode" : "Dark mode"}>
+              <ThemeToggle
+                onClick={toggle}
+                title={isDark ? "Light mode" : "Dark mode"}
+              >
                 {isDark ? <FaSun /> : <FaMoon />}
               </ThemeToggle>
-              <LangSelect value={i18n.language} onChange={handleLangChange} aria-label="Language">
+              <LangSelect
+                value={i18n.language}
+                onChange={handleLangChange}
+                aria-label="Language"
+              >
                 <option value="de">DE</option>
                 <option value="en">EN</option>
                 <option value="tr">TR</option>
@@ -81,7 +100,10 @@ export default function Navbar() {
                 showDropdown={showDropdown}
                 setShowDropdown={setShowDropdown}
               />
-              <Hamburger onClick={handleHamburgerClick} aria-label="Mobile menu">
+              <Hamburger
+                onClick={handleHamburgerClick}
+                aria-label="Mobile menu"
+              >
                 {mobileOpen ? <FaTimes /> : <FaBars />}
               </Hamburger>
             </RightControls>
@@ -95,10 +117,17 @@ export default function Navbar() {
         <CenterSection>
           <Logo />
           <RightControls>
-            <ThemeToggle onClick={toggle} title={isDark ? "Light mode" : "Dark mode"}>
+            <ThemeToggle
+              onClick={toggle}
+              title={isDark ? "Light mode" : "Dark mode"}
+            >
               {isDark ? <FaSun /> : <FaMoon />}
             </ThemeToggle>
-            <LangSelect value={i18n.language} onChange={handleLangChange} aria-label="Language">
+            <LangSelect
+              value={i18n.language}
+              onChange={handleLangChange}
+              aria-label="Language"
+            >
               <option value="de">DE</option>
               <option value="en">EN</option>
               <option value="tr">TR</option>
@@ -218,9 +247,9 @@ const Hamburger = styled.button`
   padding: ${({ theme }) => theme.spacing.xs};
   border-radius: ${({ theme }) => theme.radii.sm};
   transition: ${({ theme }) => theme.transition.fast};
-  display: none; // <--- Default HIDDEN!
+  display: none;
   @media (max-width: 768px) {
-    display: block; // <--- Only SHOW on mobile
+    display: block;
   }
 `;
 
@@ -229,7 +258,7 @@ const DesktopMenu = styled.ul`
   list-style: none;
   gap: ${({ theme }) => theme.spacing.lg};
   @media (max-width: 768px) {
-    display: none; // <--- Hide links on mobile
+    display: none;
   }
 `;
 

@@ -4,7 +4,8 @@ import authReducer from "@/modules/users/slice/authSlice";
 import userCrudReducer from "@/modules/users/slice/userCrudSlice";
 import userStatusReducer from "@/modules/users/slice/userStatusSlice";
 import accountReducer from "@/modules/users/slice/accountSlice";
-import addressSlice from "@/modules/users/slice/addressSlice";
+import addressReducer from "@/modules/users/slice/addressSlice";
+import advancedReducer from "@/modules/users/slice/advancedSlice";
 import adminModuleReducer from "@/modules/adminmodules/slice/adminModuleSlice";
 import productsReducer from "@/modules/product/slice/productsSlice";
 import radonarprodReducer from "@/modules/product/slice/radonarprodSlice";
@@ -28,7 +29,6 @@ import servicesReducer from "@/modules/services/slice/servicesSlice";
 import serviceCategoryReducer from "@/modules/services/slice/serviceCategorySlice";
 import activityReducer from "@/modules/activity/slice/activitySlice";
 import activityCategoryReducer from "@/modules/activity/slice/activityCategorySlice";
-import stockMovementReducer from "./stockMovementSlice";
 import chatReducer from "@/modules/chat/slice/chatSlice";
 import aboutReducer from "@/modules/about/slice/aboutSlice";
 import aboutCategoryReducer from "@/modules/about/slice/aboutCategorySlice";
@@ -36,17 +36,16 @@ import bookingReducer from "@/modules/booking/slice/bookingSlice";
 import bookingSlotReducer from "@/modules/booking/slice/bookingSlotSlice";
 import referencesReducer from "@/modules/references/slice/referencesSlice";
 import referenceCategoryReducer from "@/modules/references/slice/referencesCategorySlice";
+import emailReducer from "@/modules/email/slice/emailSlice";
+
 
 import cartReducer from "./cartSlice";
-
 import libraryReducer from "./librarySlice";
 import ordersReducer from "./ordersSlice";
-import categoryReducer from "./categorySlice";
 import contactReducer from "./contactMessageSlice";
-import emailReducer from "./emailSlice";
 import notificationReducer from "./notificationSlice";
 import feedbackReducer from "./feedbackSlice";
-
+import stockMovementReducer from "./stockMovementSlice";
 
 
 
@@ -61,8 +60,9 @@ export const store = configureStore({
     account: accountReducer,
     userCrud: userCrudReducer,
     userStatus: userStatusReducer,
-    address: addressSlice,
+    address: addressReducer,
     admin: adminModuleReducer,
+    advanced: advancedReducer,
 
     // 🛒 Ürün & Sipariş
     products: productsReducer,
@@ -70,7 +70,6 @@ export const store = configureStore({
     radonarCategory: radonarCategoryReducer,
     cart: cartReducer,
     orders: ordersReducer,
-    category: categoryReducer,
     stockMovement: stockMovementReducer,
 
     // 📰 İçerik modülleri

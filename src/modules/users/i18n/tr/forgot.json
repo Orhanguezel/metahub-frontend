@@ -1,0 +1,18 @@
+{
+  "title": "Şifremi Unuttum",
+  "instruction": "E-posta adresinizi girin, şifre sıfırlama bağlantısını size gönderelim.",
+  "steps": {
+    "forgot": "Şifremi Unuttum",
+    "done": "Tamamlandı"
+  },
+  "placeholders": {
+    "email": "E-posta adresiniz"
+  },
+  "submit": "Sıfırlama bağlantısı gönder",
+  "loading": "Gönderiliyor...",
+  "success": "Şifre sıfırlama bağlantısı e-postanıza gönderildi. Lütfen gelen kutunuzu kontrol edin.",
+  "errors": {
+    "email": "Geçerli bir e-posta adresi girin.",
+    "default": "Bir hata oluştu. Lütfen tekrar deneyin."
+  }
+}

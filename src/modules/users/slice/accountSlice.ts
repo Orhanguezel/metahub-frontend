@@ -1,6 +1,13 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 
+export interface ProfileImageObj {
+  url: string;
+  thumbnail?: string;
+  webp?: string;
+  publicId?: string;
+}
+
 interface Address {
   _id?: string;
   street: string;
@@ -31,7 +38,7 @@ export interface Account {
   name: string;
   email: string;
   phone?: string;
-  profileImage?: string;
+  profileImage?: string | ProfileImageObj;
   addresses?: Address[];
   notifications?: NotificationSettings;
   socialMedia?: SocialMedia;
@@ -75,17 +82,14 @@ export const updateProfileImage = createAsyncThunk(
   "account/updateProfileImage",
   async (file: File, thunkAPI) => {
     const formData = new FormData();
-    formData.append("profileImage", file); 
-
+    formData.append("profileImage", file);
     return await apiCall(
       "put",
       "/users/account/me/profile-image",
       formData,
       thunkAPI.rejectWithValue,
       {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       }
     );
   }
@@ -109,25 +113,6 @@ export const updateSocialMediaLinks = createAsyncThunk(
   }
 );
 
-export const updateProfileImages = createAsyncThunk(
-  "users/account/profile-image",
-  async (file: File, thunkAPI) => {
-    const formData = new FormData();
-    formData.append("profileImage", file); 
-
-    return await apiCall(
-      "put",
-      "/users/account/me/profile-image",
-      formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-  }
-);
 
 
 export const deleteUserAccount = createAsyncThunk(
@@ -206,15 +191,25 @@ const accountSlice = createSlice({
       .addCase(updateSocialMediaLinks.rejected, failed)
 
       .addCase(updateProfileImage.pending, loading)
-      .addCase(updateProfileImage.fulfilled, (state, action: PayloadAction<{ profileImage: string; profileImageUrl: string }>) => {
-        state.loading = false;
-        if (state.profile) {
-          state.profile.profileImage = action.payload.profileImage;
+      .addCase(
+        updateProfileImage.fulfilled,
+        (
+          state,
+          action: PayloadAction<{
+            profileImage: string | ProfileImageObj;
+            profileImageUrl?: string; // Opsiyonel
+            message?: string;
+          }>
+        ) => {
+          state.loading = false;
+          // Eğer yeni obje döndüyse profile'a ekle
+          if (state.profile) {
+            state.profile.profileImage = action.payload.profileImage;
+          }
+          state.successMessage =
+            action.payload.message || "Profil fotoğrafı güncellendi.";
         }
-        state.successMessage = "Profil fotoğrafı güncellendi.";
-      })
-      
-      
+      )
       .addCase(updateProfileImage.rejected, failed)
 
       .addCase(deleteUserAccount.pending, loading)

@@ -1,245 +1,80 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  registerUser,
-  clearAuthMessages,
-} from "@/modules/users/slice/authSlice";
-import { RootState, AppDispatch } from "@/store";
+import {RegisterPage} from "@/modules/users";
+import styled from "styled-components";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
-import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUser } from "react-icons/fa";
-import Link from "next/link";
-import { useRecaptcha } from "@/hooks/useRecaptcha";
-import zxcvbn from "zxcvbn";
 
-import {
-  Form,
-  FormGroup,
-  InputWrapper,
-  Input,
-  TogglePassword,
-  Icon as InputIcon,
-  ErrorMessage as ErrorText,
-  SubmitButton,
-  AltAction,
-  Terms,
-  Label,
-} from "./RegisterForm.styled";
-
-export default function RegisterPage() {
-  const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter();
+export default function RegisterRouterPage() {
   const { t } = useTranslation("register");
 
-  const { loading, error, successMessage } = useSelector(
-    (state: RootState) => state.auth
-  );
-
-  const [form, setForm] = useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const recaptcha = useRecaptcha();
-
-  useEffect(() => {
-    if (successMessage) {
-      toast.success(successMessage);
-      dispatch(clearAuthMessages());
-      router.push("/login");
-    }
-  }, [successMessage, dispatch, router]);
-
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-      dispatch(clearAuthMessages());
-    }
-  }, [error, dispatch]);
-
-  const validate = () => {
-    const errs: Record<string, string> = {};
-
-    if (!form.username.trim()) {
-      errs.username = t("errors.username");
-    }
-
-    if (!form.email.trim()) {
-      errs.email = t("errors.email");
-    } else if (!/\S+@\S+\.\S+/.test(form.email)) {
-      errs.email = t("errors.emailInvalid");
-    }
-
-    if (!form.password) {
-      errs.password = t("errors.password");
-    } else if (form.password.length < 8) {
-      errs.password = t("errors.passwordLength");
-    }
-
-    const pwStrength = zxcvbn(form.password);
-    if (pwStrength.score < 2) {
-      errs.password = t("errors.weakPassword");
-    }
-
-    if (form.password !== form.confirmPassword) {
-      errs.confirmPassword = t("errors.confirmPassword");
-    }
-
-    return errs;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    try {
-      const recaptchaToken = await recaptcha("register");
-      if (!recaptchaToken) {
-        toast.error("reCAPTCHA validation failed.");
-        return;
-      }
-
-      const payload = {
-        name: form.username, // ✅ backend `name` bekliyor
-        email: form.email,
-        password: form.password,
-        recaptchaToken,
-      };
-
-      await dispatch(registerUser(payload)).unwrap();
-    } catch (err: any) {
-      if (err?.response?.data?.message) {
-        toast.error(err.response.data.message);
-      } else {
-        toast.error(t("error"));
-      }
-    }
-  };
-
   return (
-    <Form onSubmit={handleSubmit}>
-      {/* Username */}
-      <FormGroup>
-        <Label htmlFor="username">{t("username")}</Label>
-        <InputWrapper $hasError={!!errors.username}>
-          <InputIcon>
-            <FaUser />
-          </InputIcon>
-          <Input
-            type="text"
-            name="username"
-            value={form.username}
-            onChange={handleChange}
-            placeholder={t("placeholders.username")}
-          />
-        </InputWrapper>
-        {errors.username && <ErrorText>{errors.username}</ErrorText>}
-      </FormGroup>
+      <OuterWrapper>
+        <Wrapper>
+          <h1>{t("title")}</h1>
+          <p>{t("description")}</p>
+          <RegisterPage />
+        </Wrapper>
+      </OuterWrapper>
+    );
+  }
+  
+  // 1. Sayfa dış wrapper'ı (tam ortalama sağlar!)
+ const OuterWrapper = styled.div`
+  min-height: 100vh;
+  width: 100vw;
+  background: ${({ theme }) => theme.colors.background};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding: ${({ theme }) => `${theme.spacing.xl} ${theme.spacing.lg}`};
+  @media (max-width: 700px) {
+    padding: ${({ theme }) => `${theme.spacing.lg} ${theme.spacing.md}`};
+  }
+`;
 
-      {/* Email */}
-      <FormGroup>
-        <Label htmlFor="email">{t("email")}</Label>
-        <InputWrapper $hasError={!!errors.email}>
-          <InputIcon>
-            <FaEnvelope />
-          </InputIcon>
-          <Input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder={t("placeholders.email")}
-          />
-        </InputWrapper>
-        {errors.email && <ErrorText>{errors.email}</ErrorText>}
-      </FormGroup>
+// 2. Login kartı/card
+const Wrapper = styled.div`
+  width: 100%;
+  max-width: 740px;
+  min-width: 0; 
+  margin: 0 auto;
+  padding: ${({ theme }) => `${theme.spacing.xxl} ${theme.spacing.xl}`};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.form || theme.shadows.sm};
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
-      {/* Password */}
-      <FormGroup>
-        <Label htmlFor="password">{t("password")}</Label>
-        <InputWrapper $hasError={!!errors.password}>
-          <InputIcon>
-            <FaLock />
-          </InputIcon>
-          <Input
-            type={showPassword ? "text" : "password"}
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            placeholder={t("placeholders.password")}
-          />
-          <TogglePassword
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? <FaEyeSlash /> : <FaEye />}
-          </TogglePassword>
-        </InputWrapper>
-        {errors.password && <ErrorText>{errors.password}</ErrorText>}
-      </FormGroup>
+  @media (max-width: 700px) {
+    max-width: 98vw;
+    padding: ${({ theme }) => `${theme.spacing.lg} ${theme.spacing.md}`};
+    border-radius: ${({ theme }) => theme.radii.md};
+  }
 
-      {/* Confirm Password */}
-      <FormGroup>
-        <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
-        <InputWrapper $hasError={!!errors.confirmPassword}>
-          <InputIcon>
-            <FaLock />
-          </InputIcon>
-          <Input
-            type={showConfirm ? "text" : "password"}
-            name="confirmPassword"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            placeholder={t("placeholders.confirmPassword")}
-          />
-          <TogglePassword
-            type="button"
-            onClick={() => setShowConfirm(!showConfirm)}
-          >
-            {showConfirm ? <FaEyeSlash /> : <FaEye />}
-          </TogglePassword>
-        </InputWrapper>
-        {errors.confirmPassword && (
-          <ErrorText>{errors.confirmPassword}</ErrorText>
-        )}
-      </FormGroup>
+  h1 {
+    font-size: ${({ theme }) => theme.fontSizes.xl};
+    margin-bottom: ${({ theme }) => theme.spacing.md};
+    color: ${({ theme }) => theme.colors.primary};
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
+    letter-spacing: 0.01em;
+    line-height: 1.15;
+    @media (max-width: 600px) {
+      font-size: ${({ theme }) => theme.fontSizes.lg};
+    }
+  }
 
-      {/* Terms */}
-      <Terms>
-        {t("agree")} <Link href="/terms">{t("terms")}</Link> {t("and")}{" "}
-        <Link href="/privacy">{t("privacy")}</Link>.
-      </Terms>
-
-      {/* Submit */}
-      <SubmitButton type="submit" disabled={loading}>
-        {loading ? t("loading") : t("submit")}
-      </SubmitButton>
-
-      {/* Alt Action */}
-      <AltAction>
-        <p>
-          {t("haveAccount")} <Link href="/login">{t("loginNow")}</Link>
-        </p>
-      </AltAction>
-    </Form>
-  );
-}
+  p {
+    font-size: ${({ theme }) => theme.fontSizes.base};
+    margin-bottom: ${({ theme }) => theme.spacing.xl};
+    color: ${({ theme }) => theme.colors.textSecondary};
+    line-height: 1.5;
+    max-width: 95%;
+    @media (max-width: 600px) {
+      font-size: ${({ theme }) => theme.fontSizes.sm};
+      margin-bottom: ${({ theme }) => theme.spacing.lg};
+    }
+  }
+`;
