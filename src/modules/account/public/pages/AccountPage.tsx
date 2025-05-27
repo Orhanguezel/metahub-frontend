@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  fetchCurrentUser,
   clearAccountMessages,
 } from "@/modules/users/slice/accountSlice";
 import {
@@ -27,7 +26,6 @@ export default function AccountPage() {
   const { t } = useTranslation("account");
 
   useEffect(() => {
-    dispatch(fetchCurrentUser());
     return () => {
       dispatch(clearAccountMessages());
     };

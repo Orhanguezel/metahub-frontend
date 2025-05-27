@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { useSidebarModules } from "@/hooks/useSidebarModules";
-import { logoutUser } from "@/modules/users/slice/authSlice";
-import { AppDispatch } from "@/store";
+import { logoutUser, resetAuthState } from "@/modules/users/slice/authSlice";
+import { resetProfile } from "@/modules/users/slice/accountSlice";
+import { AppDispatch, persistor } from "@/store";
 import { MdHome, MdLogout, MdClose, MdRefresh } from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
@@ -39,10 +40,22 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     (navbarLogoSetting?.value as any)?.title?.[currentLang] || "E-Market";
   const slogan = (navbarLogoSetting?.value as any)?.slogan?.[currentLang] || "";
 
+  // --- GÜNCEL LOGOUT
   const handleLogout = async () => {
-    const result = await dispatch(logoutUser());
-    if (logoutUser.fulfilled.match(result)) {
-      router.push("/login");
+    try {
+      // 1. Backend'de session/cookie silinir
+      await dispatch(logoutUser()).unwrap();
+      // 2. Redux store temizliği
+      dispatch(resetAuthState());
+      dispatch(resetProfile());
+      // 3. Persisted state'i tamamen temizle
+      await persistor.purge();
+      // 4. Login'e yönlen ve sidebar'ı kapat
+      router.replace("/login");
+      if (onClose) onClose();
+    } catch (err: any) {
+      console.error("Logout failed:", err);
+      alert(t("logoutError", "Logout failed. Please try again."));
     }
   };
 
@@ -121,7 +134,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   );
 }
 
-// 🎨 Styled Components (theme uyumlu)
+// Styled Components aşağıda...
 
 const SidebarWrapper = styled.aside`
   width: 240px;

@@ -19,15 +19,40 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
   const settings = useAppSelector((state) => state.setting.settings) || [];
   const { t, i18n } = useTranslation("header");
 
-  const apiKeySetting = settings.find((s) => s.key === "api_key");
+  const apiKeySetting = settings.find((s:any) => s.key === "api_key");
   const hasApiKey = !!apiKeySetting?.value;
 
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const resolvedProfileImage =
-    user?.profileImage && user.profileImage.trim() !== ""
-      ? getImageSrc(user.profileImage, "profile")
-      : "/default-avatar.png";
+  const resolvedProfileImage = (() => {
+  if (!user?.profileImage) return "/default-avatar.png";
+
+  // Eğer yeni nesil obje ise
+  if (typeof user.profileImage === "object" && user.profileImage !== null) {
+    // Tercihen thumbnail > url > fallback
+    if (user.profileImage.thumbnail?.startsWith("http"))
+      return user.profileImage.thumbnail;
+    if (user.profileImage.url?.startsWith("http"))
+      return user.profileImage.url;
+    // Local fallback ("/uploads/...")
+    if (user.profileImage.thumbnail?.startsWith("/"))
+      return getImageSrc(user.profileImage.thumbnail, "profile");
+    if (user.profileImage.url?.startsWith("/"))
+      return getImageSrc(user.profileImage.url, "profile");
+    return "/default-avatar.png";
+  }
+
+  // Eğer string ise (legacy)
+  if (typeof user.profileImage === "string") {
+    if (user.profileImage.trim() === "") return "/default-avatar.png";
+    if (user.profileImage.startsWith("http"))
+      return user.profileImage;
+    return getImageSrc(user.profileImage, "profile");
+  }
+
+  return "/default-avatar.png";
+})();
+
 
   const handleLangChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     i18n.changeLanguage(e.target.value);

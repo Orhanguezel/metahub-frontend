@@ -38,6 +38,7 @@ export interface Account {
   name: string;
   email: string;
   phone?: string;
+  role: "admin" | "user" | "moderator" | "staff" | "customer"; 
   profileImage?: string | ProfileImageObj;
   addresses?: Address[];
   notifications?: NotificationSettings;
@@ -46,7 +47,8 @@ export interface Account {
   payment?: Payment;
 }
 
-interface AccountState {
+
+export interface AccountState {
   profile: Account | null;
   loading: boolean;
   error: string | null;
@@ -128,13 +130,16 @@ const accountSlice = createSlice({
   name: "account",
   initialState,
   reducers: {
-    clearAccountMessages: (state) => {
-      state.error = null;
-      state.successMessage = null;
+    clearAccountMessages: (state) => { 
+      state.error = null; 
+      state.successMessage = null; 
     },
-    resetProfile: (state) => {
-      state.profile = null;
-    },
+    resetProfile: (state) => { 
+      state.profile = null; 
+      state.loading = false; 
+      state.error = null; 
+      state.successMessage = null; 
+    }
   },
   extraReducers: (builder) => {
     const loading = (state: AccountState) => {
@@ -144,7 +149,12 @@ const accountSlice = createSlice({
 
     const failed = (state: AccountState, action: PayloadAction<any>) => {
       state.loading = false;
-      state.error = action.payload;
+      state.error =
+        typeof action.payload === "string"
+          ? action.payload
+          : (action.payload && typeof action.payload === "object" && "message" in action.payload)
+          ? (action.payload as any).message
+          : "Profil işlemi başarısız";
     };
 
     builder
@@ -153,8 +163,16 @@ const accountSlice = createSlice({
         state.loading = false;
         state.profile = action.payload?.user || action.payload;
       })
-      .addCase(fetchCurrentUser.rejected, failed)
-
+      .addCase(fetchCurrentUser.rejected, (state, action) => {
+        state.loading = false;
+        state.profile = null; // <-- Logout veya 401 sonrası state sıfırlansın!
+        state.error =
+          typeof action.payload === "string"
+            ? action.payload
+            : (action.payload && typeof action.payload === "object" && "message" in action.payload)
+            ? (action.payload as any).message
+            : "Kullanıcı profili alınamadı";
+      })
       .addCase(updateMyProfile.pending, loading)
       .addCase(updateMyProfile.fulfilled, (state, action) => {
         state.loading = false;
@@ -162,14 +180,12 @@ const accountSlice = createSlice({
         state.profile = { ...state.profile, ...action.payload.user };
       })
       .addCase(updateMyProfile.rejected, failed)
-
       .addCase(updateMyPassword.pending, loading)
       .addCase(updateMyPassword.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = action.payload.message;
       })
       .addCase(updateMyPassword.rejected, failed)
-
       .addCase(updateNotificationSettings.pending, loading)
       .addCase(updateNotificationSettings.fulfilled, (state, action) => {
         state.loading = false;
@@ -179,7 +195,6 @@ const accountSlice = createSlice({
         state.successMessage = action.payload.message;
       })
       .addCase(updateNotificationSettings.rejected, failed)
-
       .addCase(updateSocialMediaLinks.pending, loading)
       .addCase(updateSocialMediaLinks.fulfilled, (state, action) => {
         state.loading = false;
@@ -189,7 +204,6 @@ const accountSlice = createSlice({
         state.successMessage = action.payload.message;
       })
       .addCase(updateSocialMediaLinks.rejected, failed)
-
       .addCase(updateProfileImage.pending, loading)
       .addCase(
         updateProfileImage.fulfilled,
@@ -197,12 +211,11 @@ const accountSlice = createSlice({
           state,
           action: PayloadAction<{
             profileImage: string | ProfileImageObj;
-            profileImageUrl?: string; // Opsiyonel
+            profileImageUrl?: string;
             message?: string;
           }>
         ) => {
           state.loading = false;
-          // Eğer yeni obje döndüyse profile'a ekle
           if (state.profile) {
             state.profile.profileImage = action.payload.profileImage;
           }
@@ -211,7 +224,6 @@ const accountSlice = createSlice({
         }
       )
       .addCase(updateProfileImage.rejected, failed)
-
       .addCase(deleteUserAccount.pending, loading)
       .addCase(deleteUserAccount.fulfilled, (state) => {
         state.loading = false;
