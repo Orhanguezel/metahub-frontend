@@ -144,4 +144,13 @@ dist
 .next-*
 dist/
 build/
+/dist
+/.next
+/.next-*
+/.env*
+.env.*
+.env.anastasia
+.env.metahub
+.env.ensotek
+.env.radanor
 
