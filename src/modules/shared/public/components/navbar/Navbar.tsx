@@ -49,17 +49,18 @@ export default function Navbar() {
 
   // Sepet toplam adeti optimize şekilde hesapla
   const cartCount = useMemo(
-    () => cart?.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
+    () =>
+      cart?.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
     [cart]
   );
 
   // Mount olduğunda sepeti yükle
   useEffect(() => {
     setHasMounted(true);
-    if (isAuthenticated) {
-      dispatch(fetchCart());
-    }
-  }, [dispatch, isAuthenticated]);
+     if (isAuthenticated && user?._id) {
+    dispatch(fetchCart());
+  }
+}, [dispatch, isAuthenticated, user?._id]);
 
   // Sticky Navbar için scroll takibi
   useEffect(() => {
@@ -108,11 +109,16 @@ export default function Navbar() {
                 <option value="en">EN</option>
                 <option value="tr">TR</option>
               </LangSelect>
-              {/* Sepet her zaman gösterilir, sadece count varsa badge çıkar */}
-              <CartIconWrapper href="/cart" aria-label={t("navbar.cart", "Sepetim")}>
-                <ShoppingCart size={24} />
-                {cartCount > 0 && <CartBadge>{cartCount}</CartBadge>}
-              </CartIconWrapper>
+              {isAuthenticated && (
+                <CartIconWrapper
+                  href="/cart"
+                  aria-label={t("navbar.cart", "Sepetim")}
+                >
+                  <ShoppingCart size={24} />
+                  {cartCount > 0 && <CartBadge>{cartCount}</CartBadge>}
+                </CartIconWrapper>
+              )}
+
               <AvatarMenu
                 isAuthenticated={isAuthenticated}
                 profileImage={resolvedProfileImage}
@@ -151,10 +157,15 @@ export default function Navbar() {
               <option value="en">EN</option>
               <option value="tr">TR</option>
             </LangSelect>
-            <CartIconWrapper href="/cart" aria-label={t("navbar.cart", "Sepetim")}>
-              <ShoppingCart size={24} />
-              {cartCount > 0 && <CartBadge>{cartCount}</CartBadge>}
-            </CartIconWrapper>
+            {isAuthenticated && (
+                <CartIconWrapper
+                  href="/cart"
+                  aria-label={t("navbar.cart", "Sepetim")}
+                >
+                  <ShoppingCart size={24} />
+                  {cartCount > 0 && <CartBadge>{cartCount}</CartBadge>}
+                </CartIconWrapper>
+              )}
             <AvatarMenu
               isAuthenticated={isAuthenticated}
               profileImage={resolvedProfileImage}

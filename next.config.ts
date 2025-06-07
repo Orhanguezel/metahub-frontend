@@ -5,7 +5,7 @@ dotenv.config({ path: `.env.${tenant}` });
 
 const isDev = process.env.NODE_ENV !== "production";
 const devHost = "localhost";
-const devPort = "5014";
+const devPort = "5019";
 
 // Tenant-specific hostnames
 const tenantHosts: Record<string, string[]> = {

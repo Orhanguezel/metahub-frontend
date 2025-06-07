@@ -1,8 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { fetchGalleryItems } from "@/modules/gallery/slice/gallerySlice";
-import { fetchGalleryCategories } from "@/modules/gallery/slice/galleryCategorySlice";
+import {
+  fetchPublishedGalleryItems,
+  fetchPublishedGalleryCategories,
+} from "@/modules/gallery/slice/gallerySlice";
+
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { FaArrowLeft, FaArrowRight, FaExpand } from "react-icons/fa";
@@ -15,23 +18,24 @@ import Link from "next/link";
 export default function HeroProductSliderSection() {
   const dispatch = useAppDispatch();
   const { items, loading } = useAppSelector((state) => state.gallery);
-  const { categories } = useAppSelector((state) => state.galleryCategory);
+  const { categories } = useAppSelector((state) => state.gallery);
 
   useEffect(() => {
-    dispatch(fetchGalleryCategories());
+    dispatch(fetchPublishedGalleryCategories());
   }, [dispatch]);
 
   useEffect(() => {
-    if (!categories?.length) return;
-    const massageTypesCat = categories.find(
-      (cat) => cat.slug === "massage-types"
+  if (!categories?.length) return;
+  const massageTypesCat = categories.find(
+    (cat) => cat.slug === "massage-types"
+  );
+  if (massageTypesCat?._id) {
+    dispatch(
+      fetchPublishedGalleryItems({ category: massageTypesCat._id })
     );
-    if (massageTypesCat?._id) {
-      dispatch(
-        fetchGalleryItems({ category: massageTypesCat._id, published: true })
-      );
-    }
-  }, [dispatch, categories]);
+  }
+}, [dispatch, categories]);
+
 
   const [flatItems, setFlatItems] = useState<any[]>([]);
   useEffect(() => {

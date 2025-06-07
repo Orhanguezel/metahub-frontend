@@ -16,11 +16,23 @@ const CartPage = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { cart, loading } = useAppSelector((state) => state.cart);
+  const { profile } = useAppSelector((state) => state.account);
   const { t } = useTranslation("cart");
 
   useEffect(() => {
+  if (profile && profile._id) {
     dispatch(fetchCart());
-  }, [dispatch]);
+  }
+}, [dispatch, profile]);
+
+
+  if (!profile) {
+    return (
+      <PageContainer>
+        <Title>{t("cart.login_required", "Bitte einloggen, um den Warenkorb zu sehen.")}</Title>
+      </PageContainer>
+    );
+  }
 
   if (loading) {
     return <PageContainer>{t("cart.loading", "Loading...")}</PageContainer>;
@@ -35,10 +47,10 @@ const CartPage = () => {
       <Title>{t("cart.title", "Your Cart")}</Title>
       <Content>
         <CartItemList items={cart.items} />
-         <CartSummary
+        <CartSummary
           cart={cart}
           onClearCart={() => dispatch(clearCart())}
-          onCheckout={() => router.push("/checkout")} 
+          onCheckout={() => router.push("/checkout")}
         />
       </Content>
     </PageContainer>

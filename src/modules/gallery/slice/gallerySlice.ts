@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import { GalleryItem, GalleryCategory } from "@/modules/gallery/types/gallery";
 
-
 interface GalleryState {
   items: GalleryItem[];
   categories: GalleryCategory[];
@@ -122,6 +121,12 @@ export const getGalleryStats = createAsyncThunk(
   "gallery/getGalleryStats",
   async (_, thunkAPI) =>
     await apiCall("get", `/gallery/stats`, null, thunkAPI.rejectWithValue)
+);
+
+export const fetchPublishedGalleryCategories = createAsyncThunk(
+  "gallery/fetchPublishedGalleryCategories",
+  async (_, thunkAPI) =>
+    await apiCall("get", "/gallery/categories", null, thunkAPI.rejectWithValue)
 );
 
 // ✅ Slice
@@ -252,6 +257,14 @@ const gallerySlice = createSlice({
         state.stats = action.payload.data;
       })
       .addCase(getGalleryStats.rejected, errorReducer);
+
+    builder
+      .addCase(fetchPublishedGalleryCategories.pending, loadingReducer)
+      .addCase(fetchPublishedGalleryCategories.fulfilled, (state, action) => {
+        state.loading = false;
+        state.categories = action.payload.data;
+      })
+      .addCase(fetchPublishedGalleryCategories.rejected, errorReducer);
   },
 });
 

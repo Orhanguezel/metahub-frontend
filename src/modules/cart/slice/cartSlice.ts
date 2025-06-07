@@ -19,74 +19,49 @@ const initialState: CartState = {
   stockWarning: null,
 };
 
-// Async Thunks
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
-  async (_, thunkAPI) =>
-    await apiCall("get", "/cart/", null, thunkAPI.rejectWithValue, {
-      headers: { "x-api-key": process.env.NEXT_PUBLIC_API_KEY },
-    })
+  async (_, thunkAPI) => {
+    try {
+      const response = await apiCall("get", "/cart", null, thunkAPI.rejectWithValue);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        return thunkAPI.rejectWithValue("Not logged in");
+      }
+      return thunkAPI.rejectWithValue(error.message || "Etwas ist schiefgelaufen!");
+    }
+  }
 );
 
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
   async (payload: { productId: string; quantity: number }, thunkAPI) =>
-    await apiCall("post", "/cart/add", payload, thunkAPI.rejectWithValue, {
-      headers: {
-        "x-api-key": process.env.NEXT_PUBLIC_API_KEY,
-        // Authorization header otomatik ekleniyorsa kaldırabilirsin
-      },
-    })
+    await apiCall("post", "/cart/add", payload, thunkAPI.rejectWithValue)
 );
 
 export const increaseQuantity = createAsyncThunk(
   "cart/increaseQuantity",
   async (productId: string, thunkAPI) =>
-    await apiCall(
-      "patch",
-      `/cart/increase/${productId}`,
-      null,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "x-api-key": process.env.NEXT_PUBLIC_API_KEY },
-      }
-    )
+    await apiCall("patch", `/cart/increase/${productId}`, null, thunkAPI.rejectWithValue)
 );
 
 export const decreaseQuantity = createAsyncThunk(
   "cart/decreaseQuantity",
   async (productId: string, thunkAPI) =>
-    await apiCall(
-      "patch",
-      `/cart/decrease/${productId}`,
-      null,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "x-api-key": process.env.NEXT_PUBLIC_API_KEY },
-      }
-    )
+    await apiCall("patch", `/cart/decrease/${productId}`, null, thunkAPI.rejectWithValue)
 );
 
 export const removeFromCart = createAsyncThunk(
   "cart/removeFromCart",
   async (productId: string, thunkAPI) =>
-    await apiCall(
-      "delete",
-      `/cart/remove/${productId}`,
-      null,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "x-api-key": process.env.NEXT_PUBLIC_API_KEY },
-      }
-    )
+    await apiCall("delete", `/cart/remove/${productId}`, null, thunkAPI.rejectWithValue)
 );
 
 export const clearCart = createAsyncThunk(
   "cart/clearCart",
   async (_, thunkAPI) =>
-    await apiCall("delete", "/cart/clear", null, thunkAPI.rejectWithValue, {
-      headers: { "x-api-key": process.env.NEXT_PUBLIC_API_KEY },
-    })
+    await apiCall("delete", "/cart/clear", null, thunkAPI.rejectWithValue)
 );
 
 const cartSlice = createSlice({
