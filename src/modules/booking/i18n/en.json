@@ -1,0 +1,65 @@
+{
+  "page": {
+    "title": "Book Appointment",
+    "description": "Fill in the form below to schedule your session."
+  },
+  "form": {
+    "name": "Full Name",
+    "email": "Email",
+    "phone": "Phone",
+    "service": "Service",
+    "serviceType": "Service Type",
+    "note": "Note",
+    "date": "Date",
+    "time": "Time",
+    "submit": "Book Appointment",
+    "selectService": "Please select a service",
+    "selectDate": "Select a date",
+    "selectTime": "Please select a time",
+    "required": "Please fill all required fields.",
+    "success": "Your booking was successfully submitted!",
+    "error": "Something went wrong. Please try again."
+  },
+  "admin": {
+    "title": "Manage Bookings",
+    "noBookings": "No bookings found.",
+    "confirmDelete": "Are you sure you want to delete this booking?",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "service": "Service",
+      "datetime": "Date / Time",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "modal": {
+      "title": "Update Booking Status",
+      "select": "Select Status",
+      "updated": "Status updated successfully.",
+      "updateError": "Failed to update status."
+    },
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled"
+    }
+  },
+  "slot": {
+    "rules": "Slot Rules",
+    "overrides": "Overrides",
+    "addRule": "Add Rule",
+    "addOverride": "Add Override",
+    "fullDayOff": "Full Day Off",
+    "interval": "Interval (min)",
+    "break": "Break (min)",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "common": {
+    "loading": "Loading...",
+    "edit": "Edit",
+    "delete": "Delete",
+    "update": "Update",
+    "cancel": "Cancel"
+  }
+}

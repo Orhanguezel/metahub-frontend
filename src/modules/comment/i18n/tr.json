@@ -1,0 +1,13 @@
+{
+  "yourName": "Adınız",
+  "yourEmail": "E-posta Adresiniz",
+  "writeComment": "Yorumunuzu yazın",
+  "submit": "Gönder",
+  "rating": "Puan",
+  "captchaError": "reCAPTCHA doğrulaması başarısız.",
+  "loading": "Yükleniyor...",
+  "noComments": "Henüz yorum yok.",
+  "noText": "Yorum içeriği bulunamadı.",
+  "reply": "Yanıtla",
+  "replySaved": "Yanıt kaydedildi."
+}

@@ -1,0 +1,71 @@
+{
+  "admin": {
+    "tabs": {
+      "reference": "Referenzbereiche",
+      "create": "Neue Referenz",
+      "categories": "Kategorien"
+    },
+    "reference": {
+      "title": "Titel",
+      "summary": "Kurzbeschreibung",
+      "content": "Inhalt",
+      "tags": "Stichworte",
+      "category": "Kategorie",
+      "select_category": "Kategorie auswählen",
+      "image": "Bild",
+      "publish_status": "Veröffentlicht",
+      "publish": "Veröffentlichen",
+      "unpublish": "Zurückziehen",
+      "readMore": "Mehr erfahren",
+      "all": "Alle Referenzbereiche",
+      "create": "Erstellen",
+      "edit": "Referenz bearbeiten",
+      "update": "Aktualisieren",
+      "cancel": "Abbrechen",
+      "empty": "Keine Referenzinhalte vorhanden.",
+      "no_image": "Kein Bild verfügbar",
+      "edit_category": "Kategorie bearbeiten",
+      "new_category": "Neue Kategorie",
+      "category_name": "Kategoriename ({{lng}})",
+      "description_optional": "Beschreibung (optional)",
+      "category_description_placeholder": "Worum geht es in dieser Kategorie?",
+      "success_create": "Referenz erfolgreich erstellt.",
+      "success_update": "Referenz erfolgreich aktualisiert.",
+      "success_delete": "Referenz erfolgreich gelöscht.",
+      "success_publish": "Referenz erfolgreich veröffentlicht.",
+      "success_unpublish": "Referenz wurde zurückgezogen.",
+      "delete_reference": "Möchten Sie diese Referenz wirklich löschen?",
+      "delete_category": "Möchten Sie diese Kategorie wirklich löschen?"
+    },
+    "categories": {
+      "title": "Referenzkategorien",
+      "add": "Kategorie hinzufügen",
+      "empty": "Keine Kategorien gefunden."
+    },
+    "confirm": {
+      "delete": "Möchten Sie diese Kategorie wirklich löschen?",
+      "delete_reference": "Möchten Sie diese Referenz wirklich löschen?"
+    },
+    "language": {
+      "en": "Englisch",
+      "tr": "Türkisch",
+      "de": "Deutsch"
+    },
+    "actions": "Aktionen",
+    "loading": "Lade..."
+  },
+  "page": {
+    "empty": "Keine Referenzinhalte gefunden.",
+    "all": "Alle Referenzbereiche",
+    "noTitle": "Ohne Titel",
+    "noSummary": "Keine Zusammenfassung verfügbar.",
+    "tags": "Stichworte",
+    "readMore": "Mehr erfahren →",
+    "other": "Weitere Referenzen",
+    "referenceLink": "Mehr erfahren →"
+  },
+  "seo": {
+    "title": "Referenzen",
+    "description": "Erfolgreiche Projekte und Kundenreferenzen aus der Energie- und Kühltechnik. Qualität, Innovation und Zuverlässigkeit."
+  }
+}

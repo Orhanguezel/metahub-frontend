@@ -1,0 +1,33 @@
+{
+  "title": "Firmendaten",
+  "companyInfo": "Firmendaten",
+  "companyName": "Firmenname",
+  "email": "E-Mail",
+  "phone": "Telefon",
+  "taxNumber": "Steuernummer",
+  "handelsregisterNumber": "Handelsregisternummer",
+  "address": "Adresse",
+  "street": "Straße",
+  "city": "Stadt",
+  "postalCode": "Postleitzahl",
+  "country": "Land",
+  "bankDetails": "Bankdaten",
+  "bankName": "Bankname",
+  "iban": "IBAN",
+  "swiftCode": "SWIFT-Code",
+  "socialMedia": "Social-Media-Konten",
+  "logoUpload": "Logo hochladen",
+  "save": "Speichern",
+  "saving": "Wird gespeichert...",
+  "required": "Dieses Feld ist erforderlich.",
+  "invalidUrl": "Ungültige URL",
+  "allRightsReserved": "Alle Rechte vorbehalten.",
+  "facebook": "Facebook",
+  "instagram": "Instagram",
+  "twitter": "Twitter",
+  "linkedin": "LinkedIn",
+  "youtube": "YouTube"
+}
+
+
+  

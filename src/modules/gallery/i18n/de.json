@@ -1,0 +1,65 @@
+{
+  "title": "Galerie",
+  "form": {
+    "title": "Neues Galerie-Element",
+    "category": "Kategorie",
+    "type": "Typ (Bild/Video)",
+    "title_tr": "Titel (TR)",
+    "title_en": "Titel (EN)",
+    "title_de": "Titel (DE)",
+    "desc_tr": "Beschreibung (TR)",
+    "desc_en": "Beschreibung (EN)",
+    "desc_de": "Beschreibung (DE)",
+    "order": "Reihenfolge",
+    "submit": "Speichern",
+    "loading": "Wird geladen...",
+    "selectCategory": "Kategorie auswählen",
+    "all": "Alle",
+    "save": "Speichern",
+    "search": "Suche"
+  },
+  "upload": {
+    "success": "Dateien erfolgreich hochgeladen.",
+    "error": "Beim Hochladen ist ein Fehler aufgetreten oder Datei bereits vorhanden."
+  },
+  "errors": {
+    "requiredFields": "Bitte füllen Sie alle Felder aus und wählen Sie mindestens eine Datei aus.",
+    "singleImageLimit": "Für diese Kategorie ist nur ein Bild erlaubt."
+  },
+  "delete": {
+    "confirm": "Möchten Sie dieses Element wirklich löschen?",
+    "button": "Löschen",
+    "selected": "Ausgewählte löschen"
+  },
+  "empty": "Noch keine Galerieelemente vorhanden.",
+  "stats": {
+    "title": "Galerie-Statistiken",
+    "total": "Gesamtanzahl",
+    "published": "Veröffentlicht",
+    "archived": "Archiviert",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "images": "Bilder",
+    "videos": "Videos"
+  },
+  "toolbar": {
+    "searchPlaceholder": "Galerie durchsuchen...",
+    "searchButton": "Suchen",
+    "clearButton": "Zurücksetzen"
+  },
+  "detail": {
+    "button": "Details"
+  },
+  "edit": {
+    "button": "Bearbeiten"
+  },
+  "update": {
+    "success": "Erfolgreich aktualisiert."
+  },
+  "success": "Erfolgreich gespeichert.",
+  "tab":{
+    "list": "Liste",
+    "add": "Hinzufügen",
+    "stats": "Statistiken"
+  }
+}

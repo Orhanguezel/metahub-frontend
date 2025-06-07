@@ -1,0 +1,65 @@
+{
+  "page": {
+    "title": "Termin Buchen",
+    "description": "Füllen Sie das folgende Formular aus, um Ihren Termin zu vereinbaren."
+  },
+  "form": {
+    "name": "Vollständiger Name",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "service": "Leistung",
+    "serviceType": "Leistungstyp",
+    "note": "Notiz",
+    "date": "Datum",
+    "time": "Uhrzeit",
+    "submit": "Termin buchen",
+    "selectService": "Bitte eine Leistung wählen",
+    "selectDate": "Datum auswählen",
+    "selectTime": "Bitte Uhrzeit wählen",
+    "required": "Bitte füllen Sie alle Pflichtfelder aus.",
+    "success": "Ihr Termin wurde erfolgreich gebucht!",
+    "error": "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+  },
+  "admin": {
+    "title": "Termine Verwalten",
+    "noBookings": "Keine Termine gefunden.",
+    "confirmDelete": "Sind Sie sicher, dass Sie diesen Termin löschen möchten?",
+    "columns": {
+      "name": "Name",
+      "email": "E-Mail",
+      "service": "Leistung",
+      "datetime": "Datum / Uhrzeit",
+      "status": "Status",
+      "actions": "Aktionen"
+    },
+    "modal": {
+      "title": "Terminstatus aktualisieren",
+      "select": "Status auswählen",
+      "updated": "Status erfolgreich aktualisiert.",
+      "updateError": "Status konnte nicht aktualisiert werden."
+    },
+    "status": {
+      "pending": "Ausstehend",
+      "confirmed": "Bestätigt",
+      "cancelled": "Storniert"
+    }
+  },
+  "slot": {
+    "rules": "Slot-Regeln",
+    "overrides": "Ausnahmen",
+    "addRule": "Regel hinzufügen",
+    "addOverride": "Ausnahme hinzufügen",
+    "fullDayOff": "Ganzer Tag geschlossen",
+    "interval": "Intervall (min)",
+    "break": "Pause (min)",
+    "edit": "Bearbeiten",
+    "delete": "Löschen"
+  },
+  "common": {
+    "loading": "Lädt...",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "update": "Aktualisieren",
+    "cancel": "Abbrechen"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "page": {
+    "loading": "Loading...",
+    "noNews": "No news found.",
+    "allNews": "All News",
+    "author": "Author",
+    "tags": "Tags",
+    "unknown": "Unknown",
+    "readMore": "Read More →",
+    "other": "Other News"
+  },
+  "admin": {
+    "news": {
+      "create": "Add News",
+      "edit": "Edit News",
+      "title": "Title",
+      "summary": "Summary",
+      "content": "Content",
+      "author": "Author",
+      "tags": "Tags",
+      "image": "Image",
+      "category": "Category",
+      "select_category": "Select a category",
+      "no_images": "No images",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "publish_status": "Published",
+      "empty": "No news available."
+    },
+    "categories": {
+      "title": "News Categories",
+      "add": "Add Category",
+      "empty": "No categories found."
+    },
+    "confirm": {
+      "delete_news": "Are you sure you want to delete this news item?",
+      "delete": "Are you sure you want to delete this category?"
+    },
+    "language": {
+      "tr": "TR",
+      "en": "EN",
+      "de": "DE"
+    },
+    "tabs": {
+      "news": "News",
+      "create": "Add News",
+      "categories": "Categories"
+    },
+    "slug": "Slug",
+    "actions": "Actions",
+    "edit": "Edit",
+    "delete": "Delete",
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "create": "Create",
+    "update": "Update",
+    "unknown": "Unknown",
+    "none": "None",
+    "Açıklama (opsiyonel)": "Description (optional)",
+    "Bu kategori neyle ilgili?": "What is this category about?",
+    "Kategoriyi Düzenle": "Edit Category",
+    "Yeni Kategori": "New Category",
+    "Kaydediliyor...": "Saving...",
+    "Kaydet": "Save",
+    "Güncelle": "Update"
+  },
+  "seo": {
+    "title": "News",
+    "description": "Read the latest news."
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "services": {
+    "title": "Faaliyetlerimiz",
+    "all": "Tüm Faaliyetleri Gör →",
+    "noCategory": "Kategori bulunamadı."
+  },
+  "news": {
+    "title": "Haberler",
+    "readMore": "Devamını Oku →",
+    "all": "Tüm Haberler →"
+  },
+  "blog": {
+    "title": "Son Blog Yazıları",
+    "readMore": "Devamını Oku",
+    "all": "Tüm Blog Yazılarını Gör"
+  },
+  "radonarprod": {
+    "title": "Ürünlerimiz",
+    "readMore": "Detayları Gör",
+    "all": "Tüm Ürünleri Gör"
+  },
+  "articles": {
+    "title": "Son Makaleler",
+    "readMore": "Devamını Oku →",
+    "all": "Tüm Makaleler"
+  },
+  "activity": {
+    "title": "Etkinlikler",
+    "readMore": "Devamını Oku",
+    "all": "Tümünü Gör"
+  },
+  "about": {
+    "title": "Hakkımızda",
+    "readMore": "Detaylı Bilgi",
+    "all": "Tümünü Gör"
+  },
+  "hero": {
+    "loading": "Yükleniyor...",
+    "noImages": "Hiç görsel bulunamadı.",
+    "fallbackTitle": "Ürün Adı",
+    "fallbackDescription": "Açıklama bulunamadı.",
+    "heroGsap": {
+    "loaderText": "Hoşgeldiniz"
+  }
+  }
+}

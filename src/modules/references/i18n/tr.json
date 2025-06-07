@@ -1,0 +1,71 @@
+{
+  "admin": {
+    "tabs": {
+      "reference": "Referans Alanları",
+      "create": "Yeni Referans",
+      "categories": "Kategoriler"
+    },
+    "reference": {
+      "title": "Başlık",
+      "summary": "Özet",
+      "content": "İçerik",
+      "tags": "Etiketler",
+      "category": "Kategori",
+      "select_category": "Kategori seç",
+      "image": "Görsel",
+      "publish_status": "Yayın Durumu",
+      "publish": "Yayınla",
+      "unpublish": "Yayından Kaldır",
+      "readMore": "Detay",
+      "all": "Tüm Referanslar",
+      "create": "Oluştur",
+      "edit": "Referans Düzenle",
+      "update": "Güncelle",
+      "cancel": "İptal",
+      "empty": "Henüz referans içeriği yok.",
+      "no_image": "Görsel yok",
+      "edit_category": "Kategori Düzenle",
+      "new_category": "Yeni Kategori",
+      "category_name": "Kategori Adı ({{lng}})",
+      "description_optional": "Açıklama (opsiyonel)",
+      "category_description_placeholder": "Bu kategori neyle ilgili?",
+      "success_create": "Referans başarıyla oluşturuldu.",
+      "success_update": "Referans başarıyla güncellendi.",
+      "success_delete": "Referans başarıyla silindi.",
+      "success_publish": "Referans yayına alındı.",
+      "success_unpublish": "Referans yayından kaldırıldı.",
+      "delete_reference": "Bu referansı silmek istediğinize emin misiniz?",
+      "delete_category": "Bu kategoriyi silmek istediğinize emin misiniz?"
+    },
+    "categories": {
+      "title": "Referans Kategorileri",
+      "add": "Kategori Ekle",
+      "empty": "Kategori bulunamadı."
+    },
+    "confirm": {
+      "delete": "Bu kategoriyi silmek istediğinize emin misiniz?",
+      "delete_reference": "Bu referansı silmek istediğinize emin misiniz?"
+    },
+    "language": {
+      "en": "İngilizce",
+      "tr": "Türkçe",
+      "de": "Almanca"
+    },
+    "actions": "İşlemler",
+    "loading": "Yükleniyor..."
+  },
+  "page": {
+    "empty": "Henüz referans içeriği yok.",
+    "all": "Tüm Referanslar",
+    "noTitle": "Başlık Yok",
+    "noSummary": "Özet mevcut değil.",
+    "tags": "Etiketler",
+    "readMore": "Devamını Oku →",
+    "other": "Diğer Referanslar",
+    "referenceLink": "Devamını Oku →"
+  },
+  "seo": {
+    "title": "Referanslar",
+    "description": "Enerji ve soğutma teknolojilerinde başarılı projeler ve müşteri referansları. Kalite, inovasyon ve güven."
+  }
+}

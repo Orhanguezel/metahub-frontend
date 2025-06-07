@@ -1,0 +1,71 @@
+{
+  "page": {
+    "loading": "Yükleniyor...",
+    "noNews": "Haber bulunamadı.",
+    "allNews": "Tüm Haberler",
+    "author": "Yazar",
+    "tags": "Etiketler",
+    "unknown": "Bilinmiyor",
+    "readMore": "Devamını Oku →",
+    "other": "Diğer Haberler"
+  },
+  "admin": {
+    "news": {
+      "create": "Yeni Haber Ekle",
+      "edit": "Haberi Düzenle",
+      "title": "Başlık",
+      "summary": "Özet",
+      "content": "İçerik",
+      "author": "Yazar",
+      "tags": "Etiketler",
+      "image": "Görsel",
+      "category": "Kategori",
+      "select_category": "Kategori seçiniz",
+      "no_images": "Görsel yok",
+      "publish": "Yayınla",
+      "unpublish": "Yayından Kaldır",
+      "publish_status": "Yayın Durumu",
+      "empty": "Haber bulunamadı."
+    },
+    "categories": {
+      "title": "Haber Kategorileri",
+      "add": "Yeni Kategori",
+      "empty": "Kategori bulunamadı."
+    },
+    "confirm": {
+      "delete_news": "Haberi silmek istediğinizden emin misiniz?",
+      "delete": "Bu kategoriyi silmek istediğinize emin misiniz?"
+    },
+    "language": {
+      "tr": "Türkçe",
+      "en": "İngilizce",
+      "de": "Almanca"
+    },
+    "tabs": {
+      "news": "Haberler",
+      "create": "Yeni Haber",
+      "categories": "Kategoriler"
+    },
+    "slug": "Slug",
+    "actions": "İşlemler",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "loading": "Yükleniyor...",
+    "cancel": "İptal",
+    "create": "Ekle",
+    "update": "Güncelle",
+    "unknown": "Bilinmiyor",
+    "none": "Yok",
+    "Açıklama (opsiyonel)": "Açıklama (opsiyonel)",
+    "Bu kategori neyle ilgili?": "Bu kategori neyle ilgili?",
+    "Kategoriyi Düzenle": "Kategoriyi Düzenle",
+    "Yeni Kategori": "Yeni Kategori",
+    "Kaydediliyor...": "Kaydediliyor...",
+    "Kaydet": "Kaydet",
+    "Güncelle": "Güncelle"
+  },
+  "seo":{
+    "title": "Haberler",
+    "description": "Haberler"
+  }
+}

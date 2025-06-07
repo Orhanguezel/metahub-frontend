@@ -1,0 +1,53 @@
+{
+  "title": "Giriş Yap",
+  "description": "Lütfen yönetim paneline erişmek için giriş yapın.",
+  "email": "E-posta",
+  "password": "Şifre",
+  "remember": "Beni hatırla",
+  "forgotPassword": "Şifremi Unuttum",
+  "registerNow": "Şimdi Kayıt Ol",
+  "noAccount": "Hesabınız yok mu?",
+  "submit": "Giriş Yap",
+  "loading": "Giriş yapılıyor...",
+  "otpRequired": "Güvenlik kodunuzu girin",
+  "success": "Başarıyla giriş yaptınız!",
+  "placeholders": {
+    "email": "E-posta adresiniz",
+    "password": "Şifreniz"
+  },
+  "steps": {
+    "login": "Giriş Yap",
+    "otp": "Kod Onayı",
+    "done": "Tamamlandı",
+    "forgot": "Şifremi Unuttum",
+    "register": "Kayıt Ol",
+    "mfa": "İki Adımlı Doğrulama"
+  },
+  "errors": {
+    "email": "E-posta adresi zorunludur",
+    "emailInvalid": "Geçerli bir e-posta adresi giriniz",
+    "password": "Şifre zorunludur",
+    "passwordLength": "Şifre en az 8 karakter olmalı",
+    "default": "Bir hata oluştu. Lütfen tekrar deneyin."
+  },
+  "otpTitle": "Güvenlik Kodu Doğrulama",
+  "otpDesc": "Lütfen {{channel}} ile gelen 6 haneli kodu girin.",
+  "sms": "SMS",
+  "emailChannel": "E-posta",
+  "verifying": "Doğrulanıyor...",
+  "verify": "Doğrula",
+  "resendCode": "Yeniden Gönder",
+  "resending": "Gönderiliyor...",
+  "otpVerified": "Doğrulama başarılı!",
+  "otpFailed": "Kod doğrulanamadı.",
+  "otpResent": "Kod tekrar gönderildi!",
+  "otpResendFailed": "Kod gönderilemedi.",
+  "loginSuccess": "Giriş başarılı!",
+  "welcomeUser": "Hoş geldiniz, {{name}}!",
+  "goToDashboard": "Yönetim Paneline Git",
+  "redirectingToDashboard": "Birazdan yönetim paneline yönlendiriliyorsunuz...",
+  "hidePassword": "Şifreyi Gizle",
+  "showPassword": "Şifreyi Göster"
+}
+
+

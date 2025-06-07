@@ -1,0 +1,100 @@
+{
+  "page": {
+    "title": "Masaj Menümüz",
+    "all": "Tüm masajları gör →",
+    "noCategory": "Kategori bulunamadı.",
+    "error": "Bir hata oluştu.",
+    "notFound": "Masaj bulunamadı.",
+    "defaultTitle": "Masaj Başlığı",
+    "services": {
+      "title": "Masaj Seçenekleri",
+      "all": "Tüm masajları gör →",
+      "readMore": "Detayları gör",
+      "noServices": "Hiç masaj bulunamadı.",
+      "noTitle": "Başlıksız",
+      "noSummary": "Açıklama yok.",
+      "tags": "Etiketler",
+      "price": "Fiyat",
+      "duration": "Süre",
+      "other": "Diğer Masajlar"
+    },
+    "readMore": "Detayları gör",
+    "tags": "Etiketler",
+    "price": "Fiyat",
+    "duration": "Süre",
+    "noServices": "Hiç masaj bulunamadı.",
+    "noTitle": "Başlıksız",
+    "noSummary": "Açıklama yok.",
+    "other": "Diğer Masajlar"
+  },
+  "admin": {
+    "tabs": {
+      "services": "Masajlar",
+      "create": "Yeni Masaj",
+      "categories": "Kategoriler"
+    },
+    "services": {
+      "empty": "Hiç masaj bulunamadı.",
+      "no_images": "Görsel yok",
+      "tags": "Etiketler",
+      "publish_status": "Yayın durumu",
+      "price": "Fiyat",
+      "duration": "Süre",
+      "publish": "Yayınla",
+      "unpublish": "Yayından Kaldır",
+      "edit": "Düzenle",
+      "delete": "Sil",
+      "title": "Başlık",
+      "summary": "Özet",
+      "content": "İçerik",
+      "category": "Kategori",
+      "select_category": "Kategori seç",
+      "image": "Görsel",
+      "new_category": "Yeni Kategori",
+      "edit_category": "Kategoriyi Düzenle",
+      "category_name": "Kategori Adı",
+      "description_optional": "Açıklama (isteğe bağlı)",
+      "category_description_placeholder": "Bu kategori hangi masaj türünü kapsıyor?",
+      "save": "Kaydet"
+    },
+    "categories": {
+      "title": "Masaj Kategorileri",
+      "add": "Kategori Ekle",
+      "edit": "Düzenle",
+      "delete": "Sil",
+      "empty": "Hiç kategori bulunamadı."
+    },
+    "language": {
+      "en": "İngilizce",
+      "tr": "Türkçe",
+      "de": "Almanca"
+    },
+    "slug": "Slug",
+    "actions": "İşlemler",
+    "yes": "Evet",
+    "no": "Hayır",
+    "none": "Yok",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "create": "Ekle",
+    "update": "Güncelle",
+    "cancel": "İptal",
+    "loading": "Yükleniyor...",
+    "success": "Başarıyla kaydedildi.",
+    "error": "Bir hata oluştu.",
+    "confirm": {
+      "delete_Services": "Bu masajı silmek istediğinize emin misiniz?",
+      "delete": "Silmek istediğinize emin misiniz?"
+    }
+  },
+  "services": {
+    "create": "Yeni Masaj Ekle",
+    "no_images": "Görsel yok",
+    "notFound": "Masaj bulunamadı.",
+    "error": "Masajlar yüklenirken bir hata oluştu."
+  },
+  "seo": {
+    "title": "Masaj Menümüz | Ensotek",
+    "description": "Ensotek’in sunduğu masaj ve terapi seçeneklerini keşfedin, size en uygun rahatlama yöntemini bulun."
+  }
+}

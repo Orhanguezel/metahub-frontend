@@ -1,0 +1,51 @@
+{
+  "title": "Sign In",
+  "description": "Please sign in to access the admin panel.",
+  "email": "Email",
+  "password": "Password",
+  "remember": "Remember me",
+  "forgotPassword": "Forgot Password",
+  "registerNow": "Register Now",
+  "noAccount": "Don't have an account?",
+  "submit": "Sign In",
+  "loading": "Signing in...",
+  "otpRequired": "Enter your security code",
+  "success": "You have signed in successfully!",
+  "placeholders": {
+    "email": "Your email address",
+    "password": "Your password"
+  },
+  "steps": {
+    "login": "Sign In",
+    "otp": "Code Verification",
+    "done": "Completed",
+    "forgot": "Forgot Password",
+    "register": "Register",
+    "mfa": "Two-Factor Authentication"
+  },
+  "errors": {
+    "email": "Email address is required",
+    "emailInvalid": "Please enter a valid email address",
+    "password": "Password is required",
+    "passwordLength": "Password must be at least 8 characters",
+    "default": "An error occurred. Please try again."
+  },
+  "otpTitle": "Security Code Verification",
+  "otpDesc": "Please enter the 6-digit code sent via {{channel}}.",
+  "sms": "SMS",
+  "emailChannel": "Email",
+  "verifying": "Verifying...",
+  "verify": "Verify",
+  "resendCode": "Resend Code",
+  "resending": "Resending...",
+  "otpVerified": "Verification successful!",
+  "otpFailed": "The code could not be verified.",
+  "otpResent": "Code has been resent!",
+  "otpResendFailed": "The code could not be sent.",
+  "loginSuccess": "Login successful!",
+  "welcomeUser": "Welcome, {{name}}!",
+  "goToDashboard": "Go to Dashboard",
+  "redirectingToDashboard": "Redirecting to the dashboard in a moment...",
+  "hidePassword": "Hide Password",
+  "showPassword": "Show Password"
+}

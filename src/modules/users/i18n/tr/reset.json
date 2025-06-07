@@ -1,0 +1,19 @@
+{
+  "title": "Şifre Sıfırla",
+  "success": "Şifreniz başarıyla sıfırlandı. Giriş yapabilirsiniz.",
+  "steps": {
+    "reset": "Şifre Sıfırla",
+    "done": "Tamamlandı"
+  },
+  "placeholders": {
+    "new": "Yeni şifreniz",
+    "confirm": "Yeni şifrenizi tekrar girin"
+  },
+  "submit": "Şifreyi Sıfırla",
+  "loading": "Sıfırlanıyor...",
+  "errors": {
+    "newLength": "Şifre en az 8 karakter olmalıdır.",
+    "confirmMismatch": "Şifreler uyuşmuyor.",
+    "default": "Bir hata oluştu. Lütfen tekrar deneyin."
+  }
+}

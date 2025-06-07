@@ -1,0 +1,85 @@
+{
+  "page": {
+    "title": "Başlık",
+    "summary": "Özet",
+    "content": "İçerik",
+    "author": "Yazar",
+    "tags": "Etiketler",
+    "image": "Görsel",
+    "category": "Kategori",
+    "select_category": "Kategori Seçin",
+    "publish_status": "Yayın Durumu",
+    "publish": "Yayınla",
+    "unpublish": "Yayından Kaldır",
+    "create": "Ekle",
+    "update": "Güncelle",
+    "cancel": "İptal",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "other": "Diğer Haberler",
+    "readMore": "Devamını Oku →",
+    "allBlog": "Tüm Haberler",
+    "noBlog": "Haber bulunamadı.",
+    "no_images": "Görsel yok",
+    "unknown": "Bilinmiyor",
+    "empty": "Hiç blog bulunamadı.",
+    "tabs": {
+      "blog": "Haberler",
+      "create": "Yeni Haber",
+      "categories": "Kategoriler"
+    }
+  },
+  "admin": {
+    "tabs": {
+      "blog": "Bloglar",
+      "create": "Yeni Blog",
+      "categories": "Kategoriler"
+    },
+    "blog": {
+      "title": "Başlık",
+      "summary": "Özet",
+      "content": "İçerik",
+      "author": "Yazar",
+      "tags": "Etiketler",
+      "image": "Görsel",
+      "category": "Kategori",
+      "select_category": "Kategori seçin",
+      "edit": "Blogu Düzenle",
+      "create": "Yeni Blog Ekle",
+      "no_images": "Görsel bulunamadı",
+      "empty": "Hiç blog eklenmemiş.",
+      "publish_status": "Yayın durumu",
+      "publish": "Yayınla",
+      "unpublish": "Yayından Kaldır"
+    },
+    "categories": {
+      "title": "Blog Kategorileri",
+      "add": "Yeni Kategori",
+      "empty": "Kategori bulunamadı."
+    },
+    "confirm": {
+      "delete": "Bu kategoriyi silmek istediğinize emin misiniz?",
+      "delete_blog": "Blogu silmek istediğinize emin misiniz?"
+    },
+    "actions": "İşlemler",
+    "slug": "Slug",
+    "language": {
+      "tr": "Türkçe",
+      "en": "İngilizce",
+      "de": "Almanca"
+    },
+    "loading": "Yükleniyor...",
+    "yes": "Evet",
+    "no": "Hayır",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "update": "Güncelle",
+    "create_action": "Ekle",
+    "cancel": "İptal"
+  },
+
+  "seo": {
+    "title": "SEO Başlığı",
+    "description": "SEO Açıklaması"
+  }
+}

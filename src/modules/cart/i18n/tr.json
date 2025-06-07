@@ -1,0 +1,54 @@
+{
+  "publicFaq": {
+    "title": "Sıkça Sorulan Sorular",
+    "noFaqs": "Şu anda görüntülenecek SSS bulunmamaktadır.",
+    "askTitle": "Bir Soru Sor",
+    "askRequired": "Lütfen bir soru girin.",
+    "askPlaceholder": "Örn: Sistem nasıl çalışıyor?",
+    "askButton": "Sor",
+    "answerTitle": "Cevap",
+    "question": "Sorunuz"
+  },
+  "adminFaq": {
+    "title": "SSS Yönetimi",
+    "create": "Yeni Oluştur",
+    "listEmpty": "SSS bulunamadı.",
+    "actions": "İşlemler",
+    "form": {
+      "required": "Lütfen tüm dillerde tüm alanları doldurun.",
+      "title": "Yeni SSS Ekle",
+      "titleEdit": "SSS'yi Düzenle",
+      "question": "Soru",
+      "answer": "Cevap",
+      "category": "Kategori",
+      "categoryPlaceholder": "Örn: Kargo, İade",
+      "submit": "Oluştur",
+      "success": "SSS başarıyla oluşturuldu.",
+      "updated": "SSS başarıyla güncellendi.",
+      "error": "İşlem başarısız oldu."
+    },
+    "ask": {
+      "title": "Bir Soru Sor",
+      "placeholder": "Örn: Sistem nasıl çalışıyor?",
+      "submit": "Sor",
+      "answerTitle": "Cevap"
+    },
+    "messages": {
+      "created": "SSS başarıyla oluşturuldu.",
+      "error": "SSS oluşturulurken hata oluştu."
+    },
+    "titleMulti": "Yeni SSS (Çok Dilli)"
+  },
+  "common": {
+    "loading": "Yükleniyor...",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "update": "Güncelle",
+    "create": "Oluştur"
+  },
+  "confirm": {
+    "delete": "Bu SSS'yi silmek istediğinizden emin misiniz?"
+  }
+}

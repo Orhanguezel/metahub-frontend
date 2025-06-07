@@ -1,0 +1,69 @@
+{
+  "admin": {
+    "tabs": {
+      "about": "Hakkımızda Alanları",
+      "create": "Yeni Alan",
+      "categories": "Kategoriler"
+    },
+    "about": {
+      "title": "Başlık",
+      "shortDescription": "Kısa Açıklama",
+      "detailedDescription": "Detaylı Açıklama",
+      "tags": "Etiketler",
+      "category": "Kategori",
+      "select_category": "Kategori seç",
+      "image": "Görsel",
+      "publish_status": "Yayınlandı",
+      "publish": "Yayınla",
+      "unpublish": "Yayından Kaldır",
+      "readMore": "Devamını Oku",
+      "all": "Tüm Hakkımızda Alanları",
+      "create": "Oluştur",
+      "edit": "Alanı Düzenle",
+      "update": "Güncelle",
+      "cancel": "İptal",
+      "empty": "Hiç içerik yok.",
+      "no_image": "Görsel yok",
+      "edit_category": "Kategoriyi Düzenle",
+      "new_category": "Yeni Kategori",
+      "category_name": "Kategori Adı ({{lng}})",
+      "description_optional": "Açıklama (opsiyonel)",
+      "category_description_placeholder": "Bu kategori neyle ilgili?",
+      "success_create": "Alan başarıyla oluşturuldu.",
+      "success_update": "Alan başarıyla güncellendi.",
+      "success_delete": "Alan başarıyla silindi.",
+      "success_publish": "Alan başarıyla yayınlandı.",
+      "success_unpublish": "Alan yayından kaldırıldı."
+    },
+    "categories": {
+      "title": "Hakkımızda Kategorileri",
+      "add": "Kategori Ekle",
+      "empty": "Hiç kategori bulunamadı."
+    },
+    "confirm": {
+      "delete": "Bu kategoriyi silmek istediğinize emin misiniz?",
+      "delete_about": "Bu alanı silmek istediğinize emin misiniz?"
+    },
+    "language": {
+      "en": "İngilizce",
+      "tr": "Türkçe",
+      "de": "Almanca"
+    },
+    "actions": "İşlemler",
+    "loading": "Yükleniyor..."
+  },
+  "page": {
+    "empty": "Hiç içerik bulunamadı.",
+    "all": "Tüm Alanlar",
+    "noTitle": "Başlıksız",
+    "noSummary": "Özet yok.",
+    "tags": "Etiketler",
+    "readMore": "Devamını Oku →",
+    "other": "Diğer İçerikler",
+    "aboutLink": "Devamını Oku →"
+  },
+  "seo": {
+    "title": "Hakkımızda",
+    "description": "Enerji verimliliği ve sürdürülebilirlikte lider. Endüstriyel soğutma sistemlerinde kalite, inovasyon ve güvenilirlik."
+  }
+}

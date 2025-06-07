@@ -1,0 +1,71 @@
+{
+  "admin": {
+    "tabs": {
+      "reference": "Reference Sections",
+      "create": "New Reference",
+      "categories": "Categories"
+    },
+    "reference": {
+      "title": "Title",
+      "summary": "Summary",
+      "content": "Content",
+      "tags": "Tags",
+      "category": "Category",
+      "select_category": "Select category",
+      "image": "Image",
+      "publish_status": "Published",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "readMore": "Read More",
+      "all": "All References",
+      "create": "Create",
+      "edit": "Edit Reference",
+      "update": "Update",
+      "cancel": "Cancel",
+      "empty": "No references available.",
+      "no_image": "No image available",
+      "edit_category": "Edit Category",
+      "new_category": "New Category",
+      "category_name": "Category Name ({{lng}})",
+      "description_optional": "Description (optional)",
+      "category_description_placeholder": "What is this category for?",
+      "success_create": "Reference created successfully.",
+      "success_update": "Reference updated successfully.",
+      "success_delete": "Reference deleted successfully.",
+      "success_publish": "Reference published successfully.",
+      "success_unpublish": "Reference unpublished.",
+      "delete_reference": "Are you sure you want to delete this reference?",
+      "delete_category": "Are you sure you want to delete this category?"
+    },
+    "categories": {
+      "title": "Reference Categories",
+      "add": "Add Category",
+      "empty": "No categories found."
+    },
+    "confirm": {
+      "delete": "Are you sure you want to delete this category?",
+      "delete_reference": "Are you sure you want to delete this reference?"
+    },
+    "language": {
+      "en": "English",
+      "tr": "Turkish",
+      "de": "German"
+    },
+    "actions": "Actions",
+    "loading": "Loading..."
+  },
+  "page": {
+    "empty": "No reference content found.",
+    "all": "All References",
+    "noTitle": "No Title",
+    "noSummary": "No summary available.",
+    "tags": "Tags",
+    "readMore": "Read More →",
+    "other": "Other References",
+    "referenceLink": "Read More →"
+  },
+  "seo": {
+    "title": "References",
+    "description": "Successful projects and customer references in energy and cooling technology. Quality, innovation, and reliability."
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "title": "Change Password",
+  "description": "Change your current password. The new password must be at least 8 characters long.",
+  "steps": {
+    "change": "Change Password",
+    "done": "Completed"
+  },
+  "placeholders": {
+    "current": "Current password",
+    "new": "New password",
+    "confirm": "Confirm new password"
+  },
+  "submit": "Change Password",
+  "loading": "Saving...",
+  "success": "Your password has been changed successfully.",
+  "errors": {
+    "currentRequired": "Please enter your current password.",
+    "newLength": "The new password must be at least 8 characters long.",
+    "confirmMismatch": "Passwords do not match.",
+    "default": "An error occurred. Please try again."
+  }
+}
+

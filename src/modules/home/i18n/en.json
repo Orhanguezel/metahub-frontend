@@ -1,0 +1,46 @@
+{
+  "services": {
+    "title": "Our Services",
+    "all": "See All Services →",
+    "noCategory": "No category found."
+  },
+  "news": {
+    "title": "News",
+    "readMore": "Read More →",
+    "all": "See All News →"
+  },
+  "blog": {
+    "title": "Latest Blog Posts",
+    "readMore": "Read More",
+    "all": "See All Blog Posts"
+  },
+  "radonarprod": {
+    "title": "Our Products",
+    "readMore": "View Details",
+    "all": "See All Products"
+  },
+  "articles": {
+    "title":"Latest Articles",
+    "readMore":"Read More",
+    "all":"All Articles"
+  },
+  "activity": {
+    "title": "Activities",
+    "readMore": "Read More",
+    "all": "See All"
+  },
+  "about": {
+    "title": "About Us",
+    "readMore": "Read More",
+    "all": "View All"
+  },
+  "hero": {
+    "loading": "Loading...",
+    "noImages": "No images found.",
+    "fallbackTitle": "Product Title",
+    "fallbackDescription": "No description available.",
+    "heroGsap": {
+    "loaderText": "Welcome"
+  }
+  }
+}

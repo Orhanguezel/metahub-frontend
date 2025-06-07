@@ -1,0 +1,100 @@
+{
+  "page": {
+    "title": "Massage-Menü",
+    "all": "Alle Massagen ansehen →",
+    "noCategory": "Keine Kategorie gefunden.",
+    "error": "Ein Fehler ist aufgetreten.",
+    "notFound": "Keine Massagen gefunden.",
+    "defaultTitle": "Massagetitel",
+    "services": {
+      "title": "Massageangebote",
+      "all": "Alle Massagen ansehen →",
+      "readMore": "Mehr erfahren",
+      "noServices": "Keine Massagen gefunden.",
+      "noTitle": "Kein Titel",
+      "noSummary": "Keine Beschreibung verfügbar.",
+      "tags": "Stichwörter",
+      "price": "Preis",
+      "duration": "Dauer",
+      "other": "Weitere Massagen"
+    },
+    "readMore": "Mehr erfahren",
+    "tags": "Stichwörter",
+    "price": "Preis",
+    "duration": "Dauer",
+    "noServices": "Keine Massagen gefunden.",
+    "noTitle": "Kein Titel",
+    "noSummary": "Keine Beschreibung verfügbar.",
+    "other": "Weitere Massagen"
+  },
+  "admin": {
+    "tabs": {
+      "services": "Massagen",
+      "create": "Neue Massage",
+      "categories": "Kategorien"
+    },
+    "services": {
+      "empty": "Keine Massagen verfügbar.",
+      "no_images": "Kein Bild vorhanden",
+      "tags": "Stichwörter",
+      "publish_status": "Veröffentlichungsstatus",
+      "price": "Preis",
+      "duration": "Dauer",
+      "publish": "Veröffentlichen",
+      "unpublish": "Verbergen",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "title": "Titel",
+      "summary": "Kurzbeschreibung",
+      "content": "Inhalt",
+      "category": "Kategorie",
+      "select_category": "Kategorie auswählen",
+      "image": "Bild",
+      "new_category": "Neue Kategorie",
+      "edit_category": "Kategorie bearbeiten",
+      "category_name": "Kategoriename",
+      "description_optional": "Beschreibung (optional)",
+      "category_description_placeholder": "Welche Massagearten umfasst diese Kategorie?",
+      "save": "Speichern"
+    },
+    "categories": {
+      "title": "Massagekategorien",
+      "add": "Kategorie hinzufügen",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "empty": "Keine Kategorien gefunden."
+    },
+    "language": {
+      "en": "Englisch",
+      "tr": "Türkisch",
+      "de": "Deutsch"
+    },
+    "slug": "Slug",
+    "actions": "Aktionen",
+    "yes": "Ja",
+    "no": "Nein",
+    "none": "Keine",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "create": "Erstellen",
+    "update": "Aktualisieren",
+    "cancel": "Abbrechen",
+    "loading": "Wird geladen...",
+    "success": "Erfolgreich gespeichert.",
+    "error": "Ein Fehler ist aufgetreten.",
+    "confirm": {
+      "delete_Services": "Möchten Sie diese Massage wirklich löschen?",
+      "delete": "Sind Sie sicher, dass Sie löschen möchten?"
+    }
+  },
+  "services": {
+    "create": "Neue Massage hinzufügen",
+    "no_images": "Kein Bild vorhanden",
+    "notFound": "Keine Massage gefunden.",
+    "error": "Beim Laden der Massagen ist ein Fehler aufgetreten."
+  },
+  "seo": {
+    "title": "Massage-Menü | Ensotek",
+    "description": "Entdecken Sie das Massage- und Wellnessangebot von Ensotek und finden Sie die passende Entspannungsmethode für sich."
+  }
+}

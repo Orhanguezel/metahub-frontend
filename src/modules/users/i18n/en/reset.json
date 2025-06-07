@@ -1,0 +1,19 @@
+{
+  "title": "Reset Password",
+  "success": "Your password has been reset successfully. You can now log in.",
+  "steps": {
+    "reset": "Reset Password",
+    "done": "Completed"
+  },
+  "placeholders": {
+    "new": "New password",
+    "confirm": "Confirm new password"
+  },
+  "submit": "Reset Password",
+  "loading": "Resetting...",
+  "errors": {
+    "newLength": "Password must be at least 8 characters.",
+    "confirmMismatch": "Passwords do not match.",
+    "default": "An error occurred. Please try again."
+  }
+}

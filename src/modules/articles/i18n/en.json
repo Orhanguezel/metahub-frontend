@@ -1,0 +1,70 @@
+{
+  "page": {
+    "allArticles": "All Articles",
+    "noArticles": "No articles found.",
+    "untitled": "Untitled",
+    "noSummary": "No summary available.",
+    "author": "Author",
+    "tags": "Tags",
+    "unknown": "Unknown",
+    "readMore": "Read More →",
+    "other": "Other Articles"
+  },
+  "admin": {
+    "tabs": {
+      "articles": "Articles",
+      "create": "New Article",
+      "categories": "Categories"
+    },
+    "articles": {
+      "create": "Create New Article",
+      "edit": "Edit Article",
+      "title": "Title",
+      "summary": "Summary",
+      "content": "Content",
+      "author": "Author",
+      "tags": "Tags",
+      "image": "Image",
+      "category": "Category",
+      "select_category": "Select a category",
+      "publish_status": "Publish Status",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "no_images": "No images",
+      "empty": "No articles available."
+    },
+    "categories": {
+      "title": "Article Categories",
+      "add": "Add Category",
+      "edit": "Edit Category",
+      "create": "New Category",
+      "confirm_delete": "Are you sure you want to delete this category?",
+      "description": "Description (optional)",
+      "description_placeholder": "What is this category about?",
+      "name_placeholder": "Category name"
+    },
+    "languages": {
+      "tr": "Turkish",
+      "en": "English",
+      "de": "German"
+    },
+    "confirm": {
+      "delete_articles": "Are you sure you want to delete this article?"
+    },
+    "saving": "Saving...",
+    "save": "Save",
+    "update": "Update",
+    "create": "Create",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "yes": "Yes",
+    "no": "No",
+    "unknown": "Unknown",
+    "none": "None"
+  },
+  "seo": {
+    "title": "Articles",
+    "description": " Read the latest articles and news."
+  }
+}

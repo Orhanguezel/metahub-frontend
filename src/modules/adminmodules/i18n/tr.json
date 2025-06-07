@@ -1,0 +1,53 @@
+{
+  "deleteTitle": "Modülü Sil",
+  "deleteWarning": "Bu modülü kalıcı olarak silmek istediğinize emin misiniz?",
+  "close": "Kapat",
+  "cancel": "İptal",
+  "confirmDelete": "Kalıcı Sil",
+  "create": "Yeni Modül Ekle",
+  "name": "Modül İsmi",
+  "icon": "İkon",
+  "language": "Dil",
+  "order": "Sıralama",
+  "visibleInSidebar": "Sidebar'da Göster",
+  "useAnalytics": "Analytics Aktif",
+  "enabled": "Aktif",
+  "showInDashboard": "Dashboard'da Göster",
+  "createSubmit": "Oluştur",
+  "errors": {
+    "nameRequired": "Modül ismi boş olamaz.",
+    "createFailed": "Modül oluşturulamadı."
+  },
+  "success": {
+    "created": "Modül başarıyla oluşturuldu. Aktif etmek için .env dosyasını kontrol edin."
+  },
+  "editTitle": "Modül Düzenle",
+  "label": {
+    "tr": "Etiket (Türkçe)",
+    "en": "Etiket (İngilizce)",
+    "de": "Etiket (Almanca)"
+  },
+  "labelPlaceholder": {
+    "tr": "Etiket gir (Türkçe)",
+    "en": "Etiket gir (İngilizce)",
+    "de": "Etiket gir (Almanca)"
+  },
+  "iconPlaceholder": "İkon adı girin",
+  "roles": "Roller (virgülle ayır)",
+  "save": "Kaydet",
+  "updateSuccess": "Modül başarıyla güncellendi!",
+  "updateError": "Güncelleme sırasında bir hata oluştu.",
+  "delete": "Modülü Sil",
+  "createdAt": "Oluşturulma Tarihi",
+  "updatedAt": "Güncellenme Tarihi",
+  "more": "daha fazla",
+  "swagger": "Swagger",
+  "history": "Versiyon Geçmişi",
+  "title": "Modül Yönetimi",
+  "createNew": "Yeni Modül Ekle",
+  "project": "Proje Seç:",
+  "noProjects": "Proje bulunamadı",
+  "search": "Modül ara...",
+  "loading": "Yükleniyor...",
+  "noModulesFound": "Hiç modül bulunamadı."
+}

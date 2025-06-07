@@ -1,0 +1,69 @@
+{
+  "admin": {
+    "tabs": {
+      "about": "About Us Sections",
+      "create": "New Section",
+      "categories": "Categories"
+    },
+    "about": {
+      "title": "Title",
+      "shortDescription": "Short Description",
+      "detailedDescription": "Detailed Description",
+      "tags": "Tags",
+      "category": "Category",
+      "select_category": "Select Category",
+      "image": "Image",
+      "publish_status": "Published",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "readMore": "Read More",
+      "all": "All About Us Sections",
+      "create": "Create",
+      "edit": "Edit Section",
+      "update": "Update",
+      "cancel": "Cancel",
+      "empty": "No content available.",
+      "no_image": "No image available",
+      "edit_category": "Edit Category",
+      "new_category": "New Category",
+      "category_name": "Category Name ({{lng}})",
+      "description_optional": "Description (optional)",
+      "category_description_placeholder": "What is this category about?",
+      "success_create": "Section created successfully.",
+      "success_update": "Section updated successfully.",
+      "success_delete": "Section deleted successfully.",
+      "success_publish": "Section published successfully.",
+      "success_unpublish": "Section unpublished."
+    },
+    "categories": {
+      "title": "About Us Categories",
+      "add": "Add Category",
+      "empty": "No categories found."
+    },
+    "confirm": {
+      "delete": "Do you really want to delete this category?",
+      "delete_about": "Do you really want to delete this section?"
+    },
+    "language": {
+      "en": "English",
+      "tr": "Turkish",
+      "de": "German"
+    },
+    "actions": "Actions",
+    "loading": "Loading..."
+  },
+  "page": {
+    "empty": "No content found.",
+    "all": "All Sections",
+    "noTitle": "No Title",
+    "noSummary": "No summary available.",
+    "tags": "Tags",
+    "readMore": "Read More →",
+    "other": "Other Content",
+    "aboutLink": "Read More →"
+  },
+  "seo": {
+    "title": "About Us",
+    "description": "Leader in energy efficiency and sustainability. Quality, innovation and reliability in industrial cooling systems."
+  }
+}

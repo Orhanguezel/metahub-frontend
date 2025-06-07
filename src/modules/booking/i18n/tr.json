@@ -1,0 +1,65 @@
+{
+  "page": {
+    "title": "Randevu Al",
+    "description": "Aşağıdaki formu doldurarak randevunuzu planlayabilirsiniz."
+  },
+  "form": {
+    "name": "Ad Soyad",
+    "email": "E-posta",
+    "phone": "Telefon",
+    "service": "Hizmet",
+    "serviceType": "Hizmet Türü",
+    "note": "Not",
+    "date": "Tarih",
+    "time": "Saat",
+    "submit": "Randevu Oluştur",
+    "selectService": "Hizmet seçiniz",
+    "selectDate": "Tarih seçiniz",
+    "selectTime": "Saat seçiniz",
+    "required": "Lütfen tüm zorunlu alanları doldurunuz.",
+    "success": "Randevunuz başarıyla oluşturuldu!",
+    "error": "Bir hata oluştu. Lütfen tekrar deneyin."
+  },
+  "admin": {
+    "title": "Randevuları Yönet",
+    "noBookings": "Herhangi bir randevu bulunamadı.",
+    "confirmDelete": "Bu randevuyu silmek istediğinize emin misiniz?",
+    "columns": {
+      "name": "Ad",
+      "email": "E-posta",
+      "service": "Hizmet",
+      "datetime": "Tarih / Saat",
+      "status": "Durum",
+      "actions": "İşlemler"
+    },
+    "modal": {
+      "title": "Randevu Durumunu Güncelle",
+      "select": "Durum Seçiniz",
+      "updated": "Durum başarıyla güncellendi.",
+      "updateError": "Durum güncellenemedi."
+    },
+    "status": {
+      "pending": "Bekliyor",
+      "confirmed": "Onaylandı",
+      "cancelled": "İptal Edildi"
+    }
+  },
+  "slot": {
+    "rules": "Slot Kuralları",
+    "overrides": "İstisnalar",
+    "addRule": "Kural Ekle",
+    "addOverride": "İstisna Ekle",
+    "fullDayOff": "Tüm Gün Kapalı",
+    "interval": "Aralık (dk)",
+    "break": "Randevu Arası (dk)",
+    "edit": "Düzenle",
+    "delete": "Sil"
+  },
+  "common": {
+    "loading": "Yükleniyor...",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "update": "Güncelle",
+    "cancel": "İptal"
+  }
+}
