@@ -23,8 +23,8 @@ module.exports = {
     // ✅ METAHUB - PRODUCTION
     {
       name: "metahub-prod",
-      script: "node_modules/next/dist/bin/next",
-      args: "start -p 3000",
+      script: ".next/standalone/server.js",
+      cwd: "/var/www/tenant-frontends/metahub-frontend",
       env: {
         NODE_ENV: "production",
         PORT: 3000,
@@ -36,7 +36,7 @@ module.exports = {
         NEXT_PUBLIC_SOCKET_URL: "https://api.guezelwebdesign.com",
         NEXT_PUBLIC_RECAPTCHA_SITE_KEY: "6LdvkxArAAAAAFNlFovqunFxta6Gp2yyarkdiMqY",
         METAHUB_API_KEY: "your_api_key_here",
-        COOKIE_DOMAIN: "guezelwebdesign.com" // 🌐 FRONTEND: https://www.guezelwebdesign.com
+        COOKIE_DOMAIN: "guezelwebdesign.com"
       }
     },
 
@@ -63,8 +63,8 @@ module.exports = {
     // ✅ ANASTASIA - PRODUCTION
     {
       name: "anastasia-prod",
-      script: "node_modules/next/dist/bin/next",
-      args: "start -p 3001",
+      script: ".next/standalone/server.js",
+      cwd: "/var/www/tenant-frontends/anastasia-frontend",
       env: {
         NODE_ENV: "production",
         PORT: 3001,
@@ -76,7 +76,7 @@ module.exports = {
         NEXT_PUBLIC_SOCKET_URL: "https://api.guezelwebdesign.com",
         NEXT_PUBLIC_RECAPTCHA_SITE_KEY: "6LdvkxArAAAAAFNlFovqunFxta6Gp2yyarkdiMqY",
         METAHUB_API_KEY: "your_api_key_here",
-        COOKIE_DOMAIN: "koenigsmassage.com" // 🌐 FRONTEND: https://koenigsmassage.com
+        COOKIE_DOMAIN: "koenigsmassage.com"
       }
     },
 
