@@ -1,5 +1,4 @@
 // Pages
-export { default as AdminCartPage } from "./admin/pages/AdminCartPage";
 export { default as CartPage } from "./public/pages/CartPage";
 
 // Admin Components

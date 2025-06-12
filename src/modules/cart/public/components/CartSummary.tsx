@@ -13,19 +13,19 @@ export default function CartSummary({ cart, onClearCart, onCheckout }: Props) {
   const { t } = useTranslation("cart");
   return (
     <SummaryBox>
-      <h2>{t("cart.summary", "Summary")}</h2>
+      <h2>{t("summary", "Summary")}</h2>
       <SummaryLine>
-        {t("cart.total", "Total")}:<span>{cart.totalPrice} €</span>
+        {t("total", "Total")}:<span>{cart.totalPrice} €</span>
       </SummaryLine>
       <SummaryLine>
-        {t("cart.items", "Items")}:<span>{cart.items.length}</span>
+        {t("items", "Items")}:<span>{cart.items.length}</span>
       </SummaryLine>
       <ButtonGroup>
         <ClearButton onClick={onClearCart}>
-          {t("cart.clear", "Clear Cart")}
+          {t("clear", "Clear Cart")}
         </ClearButton>
         <CheckoutButton onClick={onCheckout}>
-          {t("cart.checkout", "Checkout")}
+          {t("checkout", "Checkout")}
         </CheckoutButton>
       </ButtonGroup>
     </SummaryBox>

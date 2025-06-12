@@ -2,40 +2,24 @@
 
 import React from "react";
 import styled from "styled-components";
-import { Check, X, Globe, Trash2 } from "lucide-react";
+import { Globe, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import * as MdIcons from "react-icons/md";
-
-interface RouteMeta {
-  method: string;
-  path: string;
-  summary?: string;
-}
-
-interface Label {
-  tr: string;
-  en: string;
-  de: string;
-}
+import type { AdminModule } from "@/modules/adminmodules/types";
+import { ModuleStatusToggle } from "@/modules/adminmodules";
+import { toggleAdminModuleFlag } from "@/modules/adminmodules/slice/adminModuleSlice";
+import { useAppDispatch } from "@/store/hooks";
+//import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
 
 interface ModuleCardProps {
-  module: {
-    name: string;
-    label: Label;
-    enabled: boolean;
-    icon?: string;
-    version?: string;
-    visibleInSidebar?: boolean;
-    useAnalytics?: boolean;
-    createdAt?: string;
-    updatedAt?: string;
-    routes?: RouteMeta[];
-  };
+  module: AdminModule;
   search?: string;
   onClick?: () => void;
   onDelete?: (name: string) => void;
 }
 
+// --- Dynamic Icon Handler
 const dynamicIcon = (iconName?: string) => {
   if (iconName && MdIcons[iconName as keyof typeof MdIcons]) {
     return MdIcons[iconName as keyof typeof MdIcons];
@@ -43,11 +27,11 @@ const dynamicIcon = (iconName?: string) => {
   return MdIcons.MdSettings;
 };
 
+// --- Highlight Search
 const highlightMatch = (text: string, search: string) => {
   if (!search) return text;
   const regex = new RegExp(`(${search})`, "gi");
   const parts = text.split(regex);
-
   return parts.map((part, i) =>
     part.toLowerCase() === search.toLowerCase() ? (
       <Highlight key={i}>{part}</Highlight>
@@ -63,17 +47,28 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
   onClick,
   onDelete,
 }) => {
-  const { i18n, t } = useTranslation("adminModules");
-  const currentLang = (i18n.language || "en") as keyof Label;
-  const moduleLabel = module.label?.[currentLang] || module.name;
-  const swaggerLink = `/api-docs/#/${module.name}`;
+  const { t} = useTranslation("adminModules");
+  const lang = getCurrentLocale(); // SupportedLocale ("tr", "en", "de", "fr", "es", "pl")
+  // Label öncelik: aktif dil > "en" > modül adı
+  const moduleLabel =
+    (module.label?.[lang] && module.label[lang].trim()) ? module.label[lang]
+      : (module.label?.en && module.label.en.trim()) ? module.label.en
+      : module.name;
 
+  const swaggerLink = `/api-docs/#/${module.name}`;
+  const dispatch = useAppDispatch();
   const IconComponent = dynamicIcon(module.icon);
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (onDelete) {
-      onDelete(module.name);
+    onDelete?.(module.name);
+  };
+
+  const handleToggle = async (key: keyof AdminModule) => {
+    try {
+      await dispatch(toggleAdminModuleFlag({ name: module.name, key })).unwrap();
+    } catch (err) {
+      console.error("Toggle failed:", err);
     }
   };
 
@@ -83,12 +78,10 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
         <IconWrapper>
           <IconComponent />
         </IconWrapper>
-
         <ModuleInfo>
           <LabelText>{highlightMatch(moduleLabel, search)}</LabelText>
           <NameText>{highlightMatch(module.name, search)}</NameText>
         </ModuleInfo>
-
         <Actions>
           <TrashButton
             onClick={handleDeleteClick}
@@ -104,44 +97,48 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
       <StatusGroup>
         <StatusItem>
           <span>{t("enabled", "Enabled")}</span>
-          {module.enabled ? <Check color="green" /> : <X color="red" />}
+          <ModuleStatusToggle
+            isActive={module.enabled ?? false}
+            onToggle={() => handleToggle("enabled")}
+          />
         </StatusItem>
         <StatusItem>
           <span>{t("visibleInSidebar", "Sidebar")}</span>
-          {module.visibleInSidebar ? (
-            <Check color="green" />
-          ) : (
-            <X color="gray" />
-          )}
+          <ModuleStatusToggle
+            isActive={module.visibleInSidebar ?? false}
+            onToggle={() => handleToggle("visibleInSidebar")}
+          />
         </StatusItem>
         <StatusItem>
           <span>{t("useAnalytics", "Analytics")}</span>
-          {module.useAnalytics ? <Check color="blue" /> : <X color="gray" />}
+          <ModuleStatusToggle
+            isActive={module.useAnalytics ?? false}
+            onToggle={() => handleToggle("useAnalytics")}
+          />
         </StatusItem>
       </StatusGroup>
 
       <MetaInfo>
         <small>{t("createdAt", "Created at")}:</small>
-        <TimeText>{new Date(module.createdAt || "").toLocaleString()}</TimeText>
+        <TimeText>
+          {module.createdAt ? new Date(module.createdAt).toLocaleString(lang) : "-"}
+        </TimeText>
         <small>{t("updatedAt", "Updated at")}:</small>
-        <TimeText>{new Date(module.updatedAt || "").toLocaleString()}</TimeText>
+        <TimeText>
+          {module.updatedAt ? new Date(module.updatedAt).toLocaleString(lang) : "-"}
+        </TimeText>
       </MetaInfo>
 
       {module.routes && module.routes.length > 0 && (
         <>
           <Divider />
           <RouteList>
-            {module.routes.slice(0, 5).map((r, idx) => (
+            {module.routes.map((r, idx) => (
               <li key={idx}>
                 <code>{r.method}</code>
                 <span>{r.path}</span>
               </li>
             ))}
-            {module.routes.length > 5 && (
-              <li className="more">
-                +{module.routes.length - 5} {t("more", "more")}
-              </li>
-            )}
           </RouteList>
         </>
       )}
@@ -163,8 +160,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
 
 export default ModuleCard;
 
-// 🎨 Styled Components
-
+// 🎨 Styled Components (aynen kullanılabilir)
 const Card = styled.div`
   background: ${({ theme }) => theme.cards.background};
   border: ${({ theme }) => theme.borders.thin}
@@ -175,7 +171,6 @@ const Card = styled.div`
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.sm};
   transition: box-shadow ${({ theme }) => theme.transition.fast};
-
   &:hover {
     box-shadow: ${({ theme }) => theme.shadows.md};
     cursor: pointer;
@@ -210,7 +205,6 @@ const TrashButton = styled.button`
   padding: 0;
   color: ${({ theme }) => theme.colors.danger};
   transition: opacity ${({ theme }) => theme.transition.fast};
-
   &:hover {
     opacity: 0.7;
   }
@@ -234,7 +228,6 @@ const Highlight = styled.span`
   border-radius: ${({ theme }) => theme.radii.sm};
   padding: 0 2px;
   animation: highlightFlash 0.8s ease-in-out;
-
   @keyframes highlightFlash {
     from {
       background-color: transparent;
@@ -283,16 +276,13 @@ const RouteList = styled.ul`
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-
   li {
     display: flex;
     gap: ${({ theme }) => theme.spacing.xs};
-
     code {
       font-weight: ${({ theme }) => theme.fontWeights.semiBold};
       color: ${({ theme }) => theme.colors.primary};
     }
-
     &.more {
       font-style: italic;
       opacity: 0.7;
@@ -313,7 +303,6 @@ const SwaggerLink = styled.a`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   text-decoration: none;
   transition: color ${({ theme }) => theme.transition.fast};
-
   &:hover {
     text-decoration: underline;
     color: ${({ theme }) => theme.colors.linkHover};

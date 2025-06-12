@@ -1,0 +1,80 @@
+{
+  "page": {
+    "allBike": "Tous les vélos",
+    "noBike": "Aucun vélo trouvé.",
+    "price": "Prix",
+    "stock": "Stock",
+    "brand": "Marque",
+    "readMore": "Voir les détails →",
+    "other": "Autres produits",
+    "untitled": "Sans titre",
+    "noSummary": "Pas de description.",
+    "bike": {
+      "title": "Dernier vélo",
+      "readMore": "Voir les détails",
+      "all": "Tous les vélos"
+    }
+  },
+  "admin": {
+    "tabs": {
+      "bike": "Vélos",
+      "create": "Nouveau vélo",
+      "categories": "Catégories"
+    },
+    "bike": {
+      "create": "Ajouter un nouveau vélo",
+      "edit": "Modifier le vélo",
+      "name": "Nom du vélo",
+      "description": "Description",
+      "brand": "Marque",
+      "price": "Prix",
+      "stock": "Stock",
+      "tags": "Tags",
+      "image": "Image",
+      "category": "Catégorie",
+      "select_category": "Sélectionner une catégorie",
+      "publish_status": "Publié ?",
+      "no_images": "Aucune image",
+      "publish": "Publier",
+      "unpublish": "Dépublier",
+      "empty": "Aucun vélo disponible."
+    },
+    "categories": {
+      "title": "Catégories de vélos",
+      "add": "Nouvelle catégorie",
+      "empty": "Aucune catégorie trouvée."
+    },
+    "language": {
+      "en": "Anglais",
+      "tr": "Turc",
+      "de": "Allemand"
+    },
+    "slug": "Slug",
+    "actions": "Actions",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "update": "Mettre à jour",
+    "create": "Créer",
+    "yes": "Oui",
+    "no": "Non",
+    "loading": "Chargement...",
+    "confirm": {
+      "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
+      "delete_bike": "Êtes-vous sûr de vouloir supprimer ce vélo ?"
+    },
+    "optional_description": "Description (optionnel)",
+    "category_info": "À propos de cette catégorie ?",
+    "saving": "Enregistrement...",
+    "save": "Enregistrer",
+    "update2": "Mettre à jour",
+    "editCategory": "Modifier la catégorie",
+    "newCategory": "Nouvelle catégorie"
+  },
+  "seo": {
+    "title": "Titre SEO",
+    "description": "Description SEO"
+  },
+  "none": "Aucun",
+  "delete_confirm": "Êtes-vous sûr de vouloir supprimer ?"
+}

@@ -10,8 +10,9 @@ import {
 } from "@/modules/adminmodules/slice/adminModuleSlice";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
+import { SUPPORTED_LOCALES, LANG_LABELS, SupportedLocale } from "@/types/common";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
 
-// --- Types
 interface Props {
   onClose: () => void;
 }
@@ -19,8 +20,8 @@ interface Props {
 interface FormState {
   name: string;
   icon: string;
-  roles: string[];
-  language: "en" | "tr" | "de";
+  roles: string;
+  language: SupportedLocale;
   visibleInSidebar: boolean;
   useAnalytics: boolean;
   enabled: boolean;
@@ -28,17 +29,19 @@ interface FormState {
   order: number;
 }
 
-// --- Component
 const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
   const { t } = useTranslation("adminModules");
   const dispatch = useAppDispatch();
   const { selectedProject } = useAppSelector((state) => state.admin);
 
+  // Merkezi ve dinamik dil (en iyi fallback ile)
+  const lang: SupportedLocale = getCurrentLocale();
+
   const [form, setForm] = useState<FormState>({
     name: "",
     icon: "box",
-    roles: ["admin"],
-    language: "en",
+    roles: "admin",
+    language: lang,
     visibleInSidebar: true,
     useAnalytics: false,
     enabled: true,
@@ -48,24 +51,41 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
 
   const [error, setError] = useState<string | null>(null);
 
+  // --- Dinamik form değişimi ---
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value, type, checked } = e.target as HTMLInputElement;
+    const target = e.target;
+    const { name, value, type } = target;
 
-    setForm((prev) => ({
-      ...prev,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : type === "number"
-          ? parseInt(value) || 0
-          : value,
-    }));
+    if (type === "checkbox" && target instanceof HTMLInputElement) {
+      setForm((prev) => ({
+        ...prev,
+        [name]: target.checked,
+      }));
+    } else if (type === "number") {
+      setForm((prev) => ({
+        ...prev,
+        [name]: parseInt(value) || 0,
+      }));
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
+  // --- Mesajı locale ile çeken yardımcı ---
+  const getMsg = (msg: any) => {
+    if (!msg) return "";
+    return typeof msg === "string" ? msg : msg?.[lang] || msg?.en || "";
+  };
+
+  // --- Form submit ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
     if (!form.name.trim()) {
       setError(t("errors.nameRequired", "Module name is required."));
@@ -73,8 +93,16 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
     }
 
     try {
-      await dispatch(createAdminModule(form)).unwrap();
-      await dispatch(fetchAdminModules(selectedProject));
+      await dispatch(
+        createAdminModule({
+          ...form,
+          roles: form.roles.split(",").map((r) => r.trim()),
+        })
+      ).unwrap();
+
+      if (selectedProject) {
+        await dispatch(fetchAdminModules(selectedProject));
+      }
       toast.success(
         t(
           "success.created",
@@ -83,9 +111,7 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
       );
       onClose();
     } catch (err: any) {
-      setError(
-        err?.message || t("errors.createFailed", "Module creation failed.")
-      );
+      setError(getMsg(err?.message) || t("errors.createFailed", "Module creation failed."));
     }
   };
 
@@ -104,17 +130,17 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
         <Form onSubmit={handleSubmit}>
           <InputGroup>
             <label>{t("name", "Module Name")} *</label>
-            <input
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              required
-            />
+            <input name="name" value={form.name} onChange={handleChange} />
           </InputGroup>
 
           <InputGroup>
             <label>{t("icon", "Icon")}</label>
             <input name="icon" value={form.icon} onChange={handleChange} />
+          </InputGroup>
+
+          <InputGroup>
+            <label>{t("roles", "Roles (comma separated)")}</label>
+            <input name="roles" value={form.roles} onChange={handleChange} />
           </InputGroup>
 
           <InputGroup>
@@ -124,9 +150,11 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
               value={form.language}
               onChange={handleChange}
             >
-              <option value="en">EN</option>
-              <option value="tr">TR</option>
-              <option value="de">DE</option>
+              {SUPPORTED_LOCALES.map((l) => (
+                <option key={l} value={l}>
+                  {LANG_LABELS[l] || l.toUpperCase()}
+                </option>
+              ))}
             </select>
           </InputGroup>
 
@@ -142,28 +170,19 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
 
           <CheckboxGroup>
             {[
-              {
-                name: "visibleInSidebar",
-                label: t("visibleInSidebar", "Show in Sidebar"),
-              },
-              {
-                name: "useAnalytics",
-                label: t("useAnalytics", "Enable Analytics"),
-              },
+              { name: "visibleInSidebar", label: t("visibleInSidebar", "Show in Sidebar") },
+              { name: "useAnalytics", label: t("useAnalytics", "Enable Analytics") },
               { name: "enabled", label: t("enabled", "Enabled") },
-              {
-                name: "showInDashboard",
-                label: t("showInDashboard", "Show on Dashboard"),
-              },
-            ].map((item) => (
-              <label key={item.name}>
+              { name: "showInDashboard", label: t("showInDashboard", "Show on Dashboard") },
+            ].map(({ name, label }) => (
+              <label key={name}>
                 <input
                   type="checkbox"
-                  name={item.name}
-                  checked={(form as any)[item.name]}
+                  name={name}
+                  checked={(form as any)[name]}
                   onChange={handleChange}
                 />
-                {item.label}
+                {label}
               </label>
             ))}
           </CheckboxGroup>
@@ -179,8 +198,7 @@ const CreateModuleModal: React.FC<Props> = ({ onClose }) => {
 
 export default CreateModuleModal;
 
-// --- Styled Components ---
-
+// --- Styled Components --- (Aynen kalabilir)
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
@@ -191,7 +209,6 @@ const Overlay = styled.div`
   justify-content: center;
   align-items: center;
 `;
-
 const Modal = styled.div`
   background: ${({ theme }) => theme.colors.background};
   padding: ${({ theme }) => theme.spacing.lg};
@@ -200,20 +217,17 @@ const Modal = styled.div`
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.md};
 `;
-
 const Header = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.md};
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
-
 const ModalTitle = styled.h3`
   margin: 0;
   font-size: ${({ theme }) => theme.fontSizes.lg};
   color: ${({ theme }) => theme.colors.text};
 `;
-
 const CloseButton = styled.button`
   background: none;
   border: none;
@@ -223,23 +237,19 @@ const CloseButton = styled.button`
   display: flex;
   align-items: center;
   transition: color ${({ theme }) => theme.transition.fast};
-
   &:hover {
     color: ${({ theme }) => theme.colors.danger};
   }
 `;
-
 const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.md};
 `;
-
 const InputGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xs};
-
   input,
   select {
     padding: ${({ theme }) => theme.spacing.sm};
@@ -251,12 +261,10 @@ const InputGroup = styled.div`
     font-size: ${({ theme }) => theme.fontSizes.md};
   }
 `;
-
 const CheckboxGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xs};
-
   label {
     display: flex;
     align-items: center;
@@ -265,7 +273,6 @@ const CheckboxGroup = styled.div`
     color: ${({ theme }) => theme.colors.text};
   }
 `;
-
 const SubmitButton = styled.button`
   width: 100%;
   padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
@@ -277,12 +284,10 @@ const SubmitButton = styled.button`
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transition.fast};
-
   &:hover {
     background: ${({ theme }) => theme.colors.primaryHover};
   }
 `;
-
 const ErrorText = styled.p`
   color: ${({ theme }) => theme.colors.danger};
   font-size: ${({ theme }) => theme.fontSizes.sm};

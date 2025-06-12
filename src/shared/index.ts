@@ -9,5 +9,8 @@ export { default as ProtectedUserPage } from "./ProtectedUserPage";
 export { default as ProtectedAdminPage } from "./ProtectedAdminPage";
 export { default as Message } from "./Message";
 export { default as SEOManager } from "./SEOManager";
+export { default as Loader } from "./Loader";
+export { default as AddToCartButton } from "./AddToCartButton";
+
 
 

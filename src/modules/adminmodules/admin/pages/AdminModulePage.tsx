@@ -18,10 +18,13 @@ import {
   CreateModuleModal,
   ConfirmDeleteModal,
 } from "@/modules/adminmodules";
+import MessageBox from "@/shared/Message";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import { SupportedLocale } from "@/types/common";
 
 const AdminModulePage = () => {
   const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("adminModules");
+  const { t } = useTranslation("adminModules");
 
   const {
     modules,
@@ -37,7 +40,16 @@ const AdminModulePage = () => {
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  // Proje değişikliği olduğunda fetchAdminModules çağırılır
+  // --- Dili merkezi yöneten fonksiyon ---
+  const lang: SupportedLocale = getCurrentLocale();
+
+  // --- Hata/Mesajı dillerden çeken yardımcı ---
+  const getTextByLocale = (obj: any) => {
+    if (!obj) return undefined;
+    return obj?.[lang] || obj?.en || (typeof obj === "string" ? obj : "");
+  };
+
+  // --- Proje değiştiğinde fetch işlemi ---
   const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const project = e.target.value;
     dispatch(setSelectedProject(project));
@@ -45,19 +57,13 @@ const AdminModulePage = () => {
     dispatch(clearAdminMessages());
   };
 
-  // Silme işlemi için modal açılır
-  const handleDelete = (name: string) => {
-    setDeleteTarget(name);
-  };
+  const handleDelete = (name: string) => setDeleteTarget(name);
 
-  // Silme işlemini onaylayınca modül silinir, sonra modüller güncellenir
   const confirmDelete = async () => {
-    if (deleteTarget) {
+    if (deleteTarget && selectedProject) {
       try {
-        await dispatch(deleteAdminModule({ name: deleteTarget })).unwrap();
-        if (selectedProject) {
-          dispatch(fetchAdminModules(selectedProject));
-        }
+        await dispatch(deleteAdminModule({ name: deleteTarget, project: selectedProject })).unwrap();
+        dispatch(fetchAdminModules(selectedProject));
       } catch (err) {
         console.error(err);
       } finally {
@@ -66,20 +72,15 @@ const AdminModulePage = () => {
     }
   };
 
-  type SupportedLang = "tr" | "en" | "de";
-  const lang = (i18n.language || "en") as SupportedLang;
-
+  // --- Arama ve sıralama ---
   const filteredModules = Array.isArray(modules)
     ? modules
         .filter((m) => {
           const labelText = (m.label?.[lang] || "").toLowerCase();
           const nameText = (m.name || "").toLowerCase();
           const searchText = search.toLowerCase();
-          return (
-            labelText.includes(searchText) || nameText.includes(searchText)
-          );
+          return labelText.includes(searchText) || nameText.includes(searchText);
         })
-        .slice()
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     : [];
 
@@ -93,10 +94,7 @@ const AdminModulePage = () => {
           </AddButton>
           <ProjectSelector>
             <label>{t("project", "Select Project:")}</label>
-            <select
-              value={selectedProject ?? ""}
-              onChange={handleProjectChange}
-            >
+            <select value={selectedProject ?? ""} onChange={handleProjectChange}>
               {availableProjects.length > 0 ? (
                 availableProjects.map((proj) => (
                   <option key={proj} value={proj}>
@@ -118,9 +116,9 @@ const AdminModulePage = () => {
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      {loading && <InfoText>{t("loading", "Loading...")}</InfoText>}
-      {error && <ErrorText>{error}</ErrorText>}
-      {successMessage && <SuccessText>{successMessage}</SuccessText>}
+      {getTextByLocale(error) && <MessageBox $error>{getTextByLocale(error)}</MessageBox>}
+      {getTextByLocale(successMessage) && <MessageBox $success>{getTextByLocale(successMessage)}</MessageBox>}
+      {loading && <MessageBox>{t("loading", "Loading...")}</MessageBox>}
 
       <Grid>
         {filteredModules.length > 0 ? (
@@ -170,7 +168,6 @@ const AdminModulePage = () => {
 export default AdminModulePage;
 
 // --- Styled Components ---
-
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacing.lg};
 `;
@@ -222,8 +219,7 @@ const ProjectSelector = styled.div`
   select {
     padding: ${({ theme }) => theme.spacing.sm};
     border-radius: ${({ theme }) => theme.radii.sm};
-    border: ${({ theme }) => theme.borders.thin}
-      ${({ theme }) => theme.colors.border};
+    border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
     font-size: ${({ theme }) => theme.fontSizes.sm};
     background: ${({ theme }) => theme.inputs.background};
     color: ${({ theme }) => theme.inputs.text};
@@ -235,8 +231,7 @@ const SearchInput = styled.input`
   padding: ${({ theme }) => theme.spacing.sm};
   width: 100%;
   max-width: 400px;
-  border: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.sm};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   background: ${({ theme }) => theme.inputs.background};
@@ -248,21 +243,6 @@ const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: ${({ theme }) => theme.spacing.lg};
-`;
-
-const InfoText = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const ErrorText = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.danger};
-`;
-
-const SuccessText = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.success};
 `;
 
 const EmptyResult = styled.div`

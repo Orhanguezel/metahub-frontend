@@ -1,0 +1,81 @@
+{
+  "page": {
+    "allBike": "Alle Fahrräder",
+    "noBike": "Keine Fahrräder gefunden.",
+    "price": "Preis",
+    "stock": "Bestand",
+    "brand": "Marke",
+    "readMore": "Details ansehen →",
+    "other": "Weitere Produkte",
+    "untitled": "Ohne Titel",
+    "noSummary": "Keine Beschreibung.",
+    "bike": {
+      "title": "Aktuelles Fahrrad",
+      "readMore": "Details ansehen",
+      "all": "Alle Fahrräder"
+    }
+  },
+  "admin": {
+    "tabs": {
+      "bike": "Fahrräder",
+      "create": "Neues Fahrrad",
+      "categories": "Kategorien"
+    },
+    "bike": {
+      "create": "Neues Fahrrad hinzufügen",
+      "edit": "Fahrrad bearbeiten",
+      "name": "Fahrradname",
+      "description": "Beschreibung",
+      "brand": "Marke",
+      "price": "Preis",
+      "stock": "Bestand",
+      "tags": "Tags",
+      "image": "Bild",
+      "category": "Kategorie",
+      "select_category": "Kategorie wählen",
+      "publish_status": "Veröffentlicht?",
+      "no_images": "Keine Bilder",
+      "publish": "Veröffentlichen",
+      "unpublish": "Verbergen",
+      "empty": "Keine Fahrräder verfügbar."
+    },
+    "categories": {
+      "title": "Fahrradkategorien",
+      "add": "Neue Kategorie",
+      "empty": "Keine Kategorien gefunden."
+    },
+    "language": {
+      "en": "Englisch",
+      "tr": "Türkisch",
+      "de": "Deutsch"
+    },
+    "slug": "Slug",
+    "actions": "Aktionen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "cancel": "Abbrechen",
+    "update": "Aktualisieren",
+    "create": "Erstellen",
+    "yes": "Ja",
+    "no": "Nein",
+    "loading": "Lädt...",
+    "confirm": {
+      "delete": "Möchten Sie diese Kategorie wirklich löschen?",
+      "delete_bike": "Möchten Sie dieses Fahrrad wirklich löschen?"
+    },
+    "optional_description": "Beschreibung (optional)",
+    "category_info": "Worum geht es in dieser Kategorie?",
+    "saving": "Speichern...",
+    "save": "Speichern",
+    "update2": "Aktualisieren",
+    "editCategory": "Kategorie bearbeiten",
+    "newCategory": "Neue Kategorie"
+  },
+  "seo": {
+    "title": "SEO Titel",
+    "description": "SEO Beschreibung"
+  },
+  "none": "Keine",
+  "delete_confirm": "Sind Sie sicher, dass Sie löschen möchten?"
+}
+

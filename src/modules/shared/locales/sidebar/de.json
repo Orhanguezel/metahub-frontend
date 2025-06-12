@@ -1,0 +1,6 @@
+{
+  "dashboard": "Verwaltung",
+  "logout": "Abmelden",
+  "loading": "Menü wird geladen...",
+  "logoutError": "Abmeldung fehlgeschlagen. Bitte erneut versuchen."
+}

@@ -17,8 +17,8 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
   onConfirm,
 }) => {
   const { t } = useTranslation("adminModules");
+  //const lang: SupportedLocale = getCurrentLocale();
 
-  // Escape key closes modal
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") onCancel();
@@ -44,15 +44,14 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
               "Are you sure you want to permanently delete this module?"
             )}
           </WarningText>
-
           {moduleName && <ModuleName>{moduleName}</ModuleName>}
         </Content>
 
         <ButtonGroup>
-          <CancelButton onClick={onCancel}>
+          <CancelButton type="button" onClick={onCancel}>
             {t("cancel", "Cancel")}
           </CancelButton>
-          <ConfirmButton onClick={onConfirm}>
+          <ConfirmButton type="button" onClick={onConfirm}>
             {t("confirmDelete", "Delete Permanently")}
           </ConfirmButton>
         </ButtonGroup>
@@ -64,23 +63,22 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
 export default ConfirmDeleteModal;
 
 // --- Styled Components ---
-
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(3px);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   z-index: ${({ theme }) => theme.zIndex.modal};
 `;
 
 const Modal = styled.div`
   background: ${({ theme }) => theme.colors.background};
   padding: ${({ theme }) => theme.spacing.lg};
-  width: 95%;
   max-width: 420px;
+  width: 95%;
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.md};
 `;
@@ -92,9 +90,9 @@ const Header = styled.div`
 `;
 
 const Title = styled.h3`
-  margin: 0;
   font-size: ${({ theme }) => theme.fontSizes.lg};
   color: ${({ theme }) => theme.colors.text};
+  margin: 0;
 `;
 
 const CloseButton = styled.button`
@@ -104,9 +102,8 @@ const CloseButton = styled.button`
   cursor: pointer;
   padding: ${({ theme }) => theme.spacing.xs};
   transition: color ${({ theme }) => theme.transition.fast};
-
   &:hover {
-    color: ${({ theme }) => theme.colors.text};
+    color: ${({ theme }) => theme.colors.danger};
   }
 `;
 
@@ -118,21 +115,20 @@ const Content = styled.div`
 const WarningText = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.text};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
 `;
 
 const ModuleName = styled.div`
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   font-size: ${({ theme }) => theme.fontSizes.lg};
   color: ${({ theme }) => theme.colors.primary};
-  margin-top: ${({ theme }) => theme.spacing.sm};
 `;
 
 const ButtonGroup = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.lg};
   display: flex;
   justify-content: flex-end;
   gap: ${({ theme }) => theme.spacing.sm};
-  margin-top: ${({ theme }) => theme.spacing.lg};
 `;
 
 const CancelButton = styled.button`

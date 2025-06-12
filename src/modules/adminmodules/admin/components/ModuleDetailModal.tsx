@@ -4,9 +4,11 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { XCircle, Pencil } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { AdminModule } from "@/modules/adminmodules/slice/adminModuleSlice";
+import { AdminModule } from "@/modules/adminmodules/types";
 import { EditModuleModal } from "@/modules/adminmodules";
 import { toast } from "react-toastify";
+import { SupportedLocale } from "@/types/common";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
 
 interface Props {
   module: AdminModule;
@@ -14,11 +16,15 @@ interface Props {
 }
 
 const ModuleDetailModal: React.FC<Props> = ({ module, onClose }) => {
-  const { t, i18n } = useTranslation("adminModules");
+  const { t } = useTranslation("adminModules");
   const [isEditModalOpen, setEditModalOpen] = useState(false);
 
-  const currentLang = (i18n.language || "en") as keyof AdminModule["label"];
-  const moduleLabel = module.label?.[currentLang] || module.name;
+  // --- Çoklu dil için label fallback sıralaması
+  const lang: SupportedLocale = getCurrentLocale();
+  const moduleLabel =
+    (module.label?.[lang] && module.label[lang].trim()) ? module.label[lang]
+    : (module.label?.en && module.label.en.trim()) ? module.label.en
+    : module.name;
 
   const handleEditSuccess = () => {
     toast.success(t("updateSuccess", "Module updated successfully!"));
@@ -48,18 +54,18 @@ const ModuleDetailModal: React.FC<Props> = ({ module, onClose }) => {
             <DetailItem>
               <strong>{t("createdAt", "Created At")}:</strong>{" "}
               {module?.createdAt
-                ? new Date(module.createdAt).toLocaleString()
+                ? new Date(module.createdAt).toLocaleString(lang)
                 : "-"}
             </DetailItem>
 
             <DetailItem>
               <strong>{t("updatedAt", "Updated At")}:</strong>{" "}
               {module?.updatedAt
-                ? new Date(module.updatedAt).toLocaleString()
+                ? new Date(module.updatedAt).toLocaleString(lang)
                 : "-"}
             </DetailItem>
 
-            {module.history && module.history.length > 0 && (
+            {Array.isArray(module.history) && module.history.length > 0 && (
               <>
                 <SectionTitle>{t("history", "Version History")}</SectionTitle>
                 <HistoryList>
@@ -72,7 +78,9 @@ const ModuleDetailModal: React.FC<Props> = ({ module, onClose }) => {
                         <Author>{h.by}</Author>
                         <HistoryDate>
                           (
-                          {h.date ? new Date(h.date).toLocaleDateString() : "-"}
+                          {h.date
+                            ? new Date(h.date).toLocaleDateString(lang)
+                            : "-"}
                           )
                         </HistoryDate>
                       </VersionLine>
@@ -115,6 +123,9 @@ const Modal = styled.div`
   width: 95%;
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.lg};
+  @media (max-width: 480px) {
+    padding: ${({ theme }) => theme.spacing.md};
+  }
 `;
 
 const Header = styled.div`

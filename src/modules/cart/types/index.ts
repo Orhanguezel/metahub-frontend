@@ -1,10 +1,10 @@
 // src/modules/cart/types/index.ts
 
-import type { Iradonarprod } from "@/modules/product";
+import type { IBike } from "@/modules/bikes";
 
 
 export interface ICartItem {
-  product: Iradonarprod | string; 
+  product: IBike | string; 
   quantity: number;
   priceAtAddition: number;
   totalPriceAtAddition: number;

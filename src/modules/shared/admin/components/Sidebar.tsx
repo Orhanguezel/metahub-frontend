@@ -1,17 +1,15 @@
 "use client";
-
 import styled from "styled-components";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
-import { useDispatch } from "react-redux";
+import { usePathname } from "next/navigation";
 import { useSidebarModules } from "@/hooks/useSidebarModules";
-import { logoutUser, resetAuthState } from "@/modules/users/slice/authSlice";
-import { resetProfile } from "@/modules/users/slice/accountSlice";
-import { AppDispatch, persistor } from "@/store";
 import { MdHome, MdLogout, MdClose, MdRefresh } from "react-icons/md";
 import { useTranslation } from "react-i18next";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { logoutUser, resetAuthState } from "@/modules/users/slice/authSlice";
+import { resetProfile } from "@/modules/users/slice/accountSlice";
+import { persistor } from "@/store";
 import { useEffect } from "react";
-import { useAppSelector } from "@/store/hooks";
 
 type SidebarProps = {
   isOpen: boolean;
@@ -19,46 +17,37 @@ type SidebarProps = {
 };
 
 const isActive = (currentPath: string, linkPath: string) => {
-  if (linkPath === "/admin") {
-    return currentPath === "/admin";
-  }
+  if (linkPath === "/admin") return currentPath === "/admin";
   return currentPath.startsWith(linkPath);
 };
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter();
+  const dispatch = useAppDispatch();
   const pathname = usePathname();
-  const { i18n, t } = useTranslation("sidebar");
+  const { t, i18n } = useTranslation("sidebar");
   const currentLang = i18n.language;
-
   const { sidebarModules, isLoading } = useSidebarModules();
   const { settings = [] } = useAppSelector((state) => state.setting || {});
   const navbarLogoSetting = settings.find((s) => s.key === "navbar_logo_text");
-
   const title =
     (navbarLogoSetting?.value as any)?.title?.[currentLang] || "E-Market";
   const slogan = (navbarLogoSetting?.value as any)?.slogan?.[currentLang] || "";
 
-  // --- GÜNCEL LOGOUT
   const handleLogout = async () => {
     try {
-      // 1. Backend'de session/cookie silinir
       await dispatch(logoutUser()).unwrap();
-      // 2. Redux store temizliği
       dispatch(resetAuthState());
       dispatch(resetProfile());
-      // 3. Persisted state'i tamamen temizle
       await persistor.purge();
-      // 4. Login'e yönlen ve sidebar'ı kapat
-      router.replace("/login");
       if (onClose) onClose();
+      window.location.href = "/login";
     } catch (err: any) {
-      console.error("Logout failed:", err);
-      alert(t("logoutError", "Logout failed. Please try again."));
+      alert(t("logoutError"));
+      console.error("Logout error:", err);
     }
   };
 
+  // Responsive sidebar kapatma
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768 && onClose) {
@@ -84,7 +73,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <MdClose size={20} />
           </CloseButton>
         </LogoSection>
-
         <Nav>
           <MenuLink
             href="/admin"
@@ -94,13 +82,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <IconWrapper $active={isActive(pathname, "/admin")}>
               <MdHome size={18} />
             </IconWrapper>
-            <span>{t("dashboard", "Dashboard")}</span>
+            <span>{t("dashboard")}</span>
           </MenuLink>
-
           {isLoading ? (
             <LoadingText>
               <MdRefresh className="spin" />
-              {t("loading", "Loading menu...")}
+              {t("loading")}
             </LoadingText>
           ) : (
             sidebarModules.map(({ key, path, label, Icon }) => (
@@ -118,23 +105,22 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             ))
           )}
         </Nav>
-
         <LogoutSection>
           <LogoutButton type="button" onClick={handleLogout}>
             <IconWrapper>
               <MdLogout size={18} />
             </IconWrapper>
-            {t("logout", "Logout")}
+            {t("logout")}
           </LogoutButton>
         </LogoutSection>
       </SidebarWrapper>
-
       {isOpen && <Overlay onClick={onClose} />}
     </>
   );
 }
 
-// Styled Components aşağıda...
+// Styled Components aynı kalabilir.
+
 
 const SidebarWrapper = styled.aside`
   width: 240px;

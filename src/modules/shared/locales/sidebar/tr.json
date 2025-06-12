@@ -1,0 +1,6 @@
+{
+  "dashboard": "Yönetim",
+  "logout": "Çıkış Yap",
+  "loading": "Menü yükleniyor...",
+  "logoutError": "Çıkış başarısız. Lütfen tekrar deneyin."
+}

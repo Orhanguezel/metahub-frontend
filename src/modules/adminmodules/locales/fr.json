@@ -1,0 +1,61 @@
+{
+  "deleteTitle": "Supprimer le module",
+  "deleteWarning": "Êtes-vous sûr de vouloir supprimer définitivement ce module ?",
+  "close": "Fermer",
+  "cancel": "Annuler",
+  "confirmDelete": "Supprimer définitivement",
+  "create": "Ajouter un nouveau module",
+  "name": "Nom du module",
+  "icon": "Icône",
+  "language": "Langue",
+  "order": "Ordre",
+  "visibleInSidebar": "Afficher dans la barre latérale",
+  "useAnalytics": "Activer les analyses",
+  "enabled": "Activé",
+  "showInDashboard": "Afficher sur le tableau de bord",
+  "createSubmit": "Créer",
+  "errors": {
+    "nameRequired": "Le nom du module ne peut pas être vide.",
+    "createFailed": "La création du module a échoué."
+  },
+  "success": {
+    "created": "Module créé avec succès. Vérifiez votre fichier .env pour l’activer."
+  },
+  "editTitle": "Modifier le module",
+  "label": {
+    "tr": "Libellé (Turc)",
+    "en": "Libellé (Anglais)",
+    "de": "Libellé (Allemand)",
+    "fr": "Libellé (Français)",
+    "es": "Libellé (Espagnol)",
+    "pl": "Libellé (Polonais)"
+  },
+  "labelPlaceholder": {
+    "tr": "Saisir le libellé (Turc)",
+    "en": "Saisir le libellé (Anglais)",
+    "de": "Saisir le libellé (Allemand)",
+    "fr": "Saisir le libellé (Français)",
+    "es": "Saisir le libellé (Espagnol)",
+    "pl": "Saisir le libellé (Polonais)"
+  },
+  "iconPlaceholder": "Saisir le nom de l’icône",
+  "roles": "Rôles (séparés par des virgules)",
+  "save": "Enregistrer",
+  "updateSuccess": "Module mis à jour avec succès !",
+  "updateError": "Une erreur est survenue lors de la mise à jour.",
+  "delete": "Supprimer le module",
+  "createdAt": "Créé le",
+  "updatedAt": "Mis à jour le",
+  "more": "plus",
+  "swagger": "Swagger",
+  "history": "Historique des versions",
+  "title": "Gestion des modules",
+  "createNew": "Ajouter un nouveau module",
+  "project": "Sélectionner le projet :",
+  "noProjects": "Aucun projet trouvé",
+  "search": "Rechercher des modules...",
+  "loading": "Chargement...",
+  "noModulesFound": "Aucun module trouvé.",
+  "toggleActive": "Activé",
+  "toggleInactive": "Désactivé"
+}

@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import Link from "next/link";
@@ -10,56 +11,65 @@ import {
   RevenueCard,
   StatsGrid,
   UsersCard,
+  AnalyticsPanel,
 } from "@/modules/dashboard";
+import type { SupportedLocale } from "@/types/common";
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation("admin-dashboard");
   const dispatch = useAppDispatch();
   const [tab, setTab] = useState<
-    "modules" | "stats" | "users" | "revenue" | "feedbacks"
+    "modules" | "stats" | "users" | "revenue" | "feedbacks" | "analytics"
   >("modules");
 
-  // Tüm hook'lar komponentin en üstünde, koşulsuz şekilde!
   const stats = useAppSelector((state) => state.dashboard.stats);
 
   useEffect(() => {
     dispatch(fetchDashboardStats());
   }, [dispatch]);
 
+  //const supportedLang: SupportedLocale = (i18n.language as SupportedLocale) || "en";
+
+  // Tablar çoklu dil anahtarı ile
   const tabs = [
-    { key: "modules", label: t("tabs.modules", "Modüller") },
-    { key: "stats", label: t("tabs.stats", "İstatistikler") },
-    { key: "users", label: t("tabs.users", "Kullanıcılar") },
-    { key: "revenue", label: t("tabs.revenue", "Gelir") },
-    { key: "feedbacks", label: t("tabs.feedbacks", "Geri Bildirimler") },
+    { key: "modules", label: t("tabs.modules", "Modules") },
+    { key: "stats", label: t("tabs.stats", "Statistics") },
+    { key: "users", label: t("tabs.users", "Users") },
+    { key: "revenue", label: t("tabs.revenue", "Revenue") },
+    { key: "feedbacks", label: t("tabs.feedbacks", "Feedbacks") },
+    { key: "analytics", label: t("tabs.analytics", "Analytics") },
   ];
 
-  // Stateleri işleyip StatsGrid'e uygun entries array'i hazırla
+  // Stat grid'i çoklu dil anahtarı ile
   const statEntries = useMemo(() => {
     if (!stats) return [];
     return [
       {
         key: "users",
-        label: t("stats.users", "Kullanıcılar"),
+        label: t("stats.users", "Users"),
         value: stats.users || 0,
       },
       {
         key: "products",
-        label: t("stats.products", "Ürünler"),
+        label: t("stats.products", "Products"),
         value: stats.products || 0,
       },
       {
         key: "orders",
-        label: t("stats.orders", "Siparişler"),
+        label: t("stats.orders", "Orders"),
         value: stats.orders || 0,
       },
       {
         key: "revenue",
-        label: t("stats.revenue", "Toplam Gelir"),
+        label: t("stats.revenue", "Total Revenue"),
         value: stats.revenue || 0,
         highlight: true,
       },
-      // Backend’deki ek statlara göre artırabilirsin!
+      {
+        key: "analytics",
+        label: t("stats.analytics", "Analytics"),
+        value: stats.analytics || 0,
+      },
     ];
   }, [stats, t]);
 
@@ -82,26 +92,30 @@ export default function AdminDashboardPage() {
       {tab === "users" && <UsersCard />}
       {tab === "revenue" && <RevenueCard />}
       {tab === "feedbacks" && <FeedbacksCard />}
+      {tab === "analytics" && <AnalyticsPanel />}
     </Main>
   );
 }
 
-// --- Modüller Grid ---
 function ModulesGrid() {
-  const { i18n } = useTranslation();
+  const { i18n } = useTranslation("admin-dashboard");
   const modules = useAppSelector((state) => state.admin.modules);
-  const lang = (i18n.language || "en") as "tr" | "en" | "de";
+  // Tüm locale'ler destekli; eksikse fallback
+  const lang = (i18n.language as SupportedLocale) || "en";
+
   const dashboardModules = Array.isArray(modules)
     ? modules
         .filter((mod) => mod.showInDashboard !== false && mod.enabled !== false)
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
         .map((mod) => ({
           key: mod.name,
-          label: mod.label?.[lang] || mod.name,
-          description: mod.description?.[lang] || "",
+          label: mod.label?.[lang] || mod.label?.en || mod.name,
+          description:
+            mod.description?.[lang] || mod.description?.en || "",
           slug: mod.slug || mod.name,
         }))
     : [];
+
   return (
     <Grid>
       {dashboardModules.map((mod) => (
@@ -120,58 +134,65 @@ function ModulesGrid() {
   );
 }
 
-// Styled components
+// --- Styled Components ---
 const Main = styled.div`
   width: 100%;
-  padding: 2rem;
+  padding: ${({ theme }) => theme.spacing.xl};
 `;
+
 const TabBar = styled.div`
   display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
 `;
+
 const TabBtn = styled.button<{ $active: boolean }>`
-  padding: 0.5rem 1.3rem;
-  font-size: 1rem;
-  border-radius: 1.1rem;
+  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.lg}`};
+  font-size: ${({ theme }) => theme.fontSizes.medium};
+  border-radius: ${({ theme }) => theme.radii.pill};
   border: none;
   cursor: pointer;
   background: ${({ $active, theme }) =>
     $active ? theme.colors.primary : theme.colors.background};
   color: ${({ $active, theme }) =>
-    $active ? "#fff" : theme.colors.textPrimary};
+    $active ? theme.colors.white : theme.colors.textPrimary};
   font-weight: ${({ $active }) => ($active ? 700 : 400)};
-  box-shadow: ${({ $active }) =>
-    $active ? "0 4px 12px rgba(44,55,125,0.11)" : "none"};
-  transition: all 0.18s;
+  box-shadow: ${({ $active, theme }) =>
+    $active ? theme.shadows.sm : "none"};
+  transition: ${({ theme }) => theme.transition.fast};
 `;
+
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 2rem;
+  gap: ${({ theme }) => theme.spacing.xl};
 `;
+
 const Card = styled.div`
-  background: ${({ theme }) => theme.colors.background || "#fff"};
-  border-radius: 1.5rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
-  padding: 2rem 1rem;
+  background: ${({ theme }) => theme.cards.background};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  padding: ${({ theme }) => `${theme.spacing.xl} ${theme.spacing.md}`};
   display: flex;
   flex-direction: column;
   align-items: center;
   cursor: pointer;
-  transition: box-shadow 0.12s;
+  transition: ${({ theme }) => theme.transition.fast};
   &:hover,
   &:focus {
-    box-shadow: 0 6px 20px rgba(44, 55, 125, 0.13);
+    box-shadow: ${({ theme }) => theme.shadows.lg};
   }
 `;
+
 const Label = styled.div`
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 0.3rem;
+  font-size: ${({ theme }) => theme.fontSizes.large};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
 `;
+
 const Description = styled.div`
-  color: ${({ theme }) => theme.colors.textSecondary || "#888"};
-  font-size: 0.95rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   text-align: center;
 `;
+

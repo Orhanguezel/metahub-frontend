@@ -1,0 +1,61 @@
+{
+  "deleteTitle": "Usuń moduł",
+  "deleteWarning": "Czy na pewno chcesz trwale usunąć ten moduł?",
+  "close": "Zamknij",
+  "cancel": "Anuluj",
+  "confirmDelete": "Usuń na stałe",
+  "create": "Dodaj nowy moduł",
+  "name": "Nazwa modułu",
+  "icon": "Ikona",
+  "language": "Język",
+  "order": "Kolejność",
+  "visibleInSidebar": "Pokaż na pasku bocznym",
+  "useAnalytics": "Włącz analitykę",
+  "enabled": "Aktywne",
+  "showInDashboard": "Pokaż na pulpicie",
+  "createSubmit": "Utwórz",
+  "errors": {
+    "nameRequired": "Nazwa modułu nie może być pusta.",
+    "createFailed": "Nie udało się utworzyć modułu."
+  },
+  "success": {
+    "created": "Moduł został pomyślnie utworzony. Sprawdź plik .env, aby go aktywować."
+  },
+  "editTitle": "Edytuj moduł",
+  "label": {
+    "tr": "Etykieta (Turecki)",
+    "en": "Etykieta (Angielski)",
+    "de": "Etykieta (Niemiecki)",
+    "fr": "Etykieta (Francuski)",
+    "es": "Etykieta (Hiszpański)",
+    "pl": "Etykieta (Polski)"
+  },
+  "labelPlaceholder": {
+    "tr": "Wpisz etykietę (Turecki)",
+    "en": "Wpisz etykietę (Angielski)",
+    "de": "Wpisz etykietę (Niemiecki)",
+    "fr": "Wpisz etykietę (Francuski)",
+    "es": "Wpisz etykietę (Hiszpański)",
+    "pl": "Wpisz etykietę (Polski)"
+  },
+  "iconPlaceholder": "Wpisz nazwę ikony",
+  "roles": "Role (oddzielone przecinkami)",
+  "save": "Zapisz",
+  "updateSuccess": "Moduł został zaktualizowany!",
+  "updateError": "Wystąpił błąd podczas aktualizacji.",
+  "delete": "Usuń moduł",
+  "createdAt": "Utworzono",
+  "updatedAt": "Zaktualizowano",
+  "more": "więcej",
+  "swagger": "Swagger",
+  "history": "Historia wersji",
+  "title": "Zarządzanie modułami",
+  "createNew": "Dodaj nowy moduł",
+  "project": "Wybierz projekt:",
+  "noProjects": "Nie znaleziono projektów",
+  "search": "Szukaj modułów...",
+  "loading": "Ładowanie...",
+  "noModulesFound": "Nie znaleziono modułów.",
+  "toggleActive": "Aktywne",
+  "toggleInactive": "Nieaktywne"
+}

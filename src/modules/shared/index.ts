@@ -15,10 +15,12 @@ export { default as FooterSocialLinks } from "./public/components/footer/FooterS
 export { default as FooterCompanyInfo } from "./public/components/footer/FooterCompanyInfo";
 export { default as AvatarMenu } from "./public/components/navbar/AvatarMenu";
 export { default as Logo } from "./public/components/navbar/Logo";
+export { default as LangSelect } from "./public/components/navbar/LangSelect";
 //export { default as MenuDropdown } from "./public/components/navbar/MenuDropdown";
 export { default as MobileNavbarLinks } from "./public/components/navbar/MobileNavbarLinks";
 export { default as Navbar } from "./public/components/navbar/Navbar";
 export { default as NavbarLinks } from "./public/components/navbar/NavbarLinks";
+export { default as CartButton } from "./public/components/navbar/CartButton";
 //export { default as NavbarStyles } from "./public/components/navbar/NavbarStyles";
 //export { default as NavigationLinks } from "./public/components/navbar/navigationLinks";
 export { default as SocialLinks } from "./public/components/navbar/SocialLinks";

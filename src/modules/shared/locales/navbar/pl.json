@@ -1,0 +1,42 @@
+{
+  "home": "Strona główna",
+  "products": "Produkty",
+  "bikes": "Rowery",
+  "about": "O nas",
+  "contact": "Kontakt",
+  "login": "Zaloguj się",
+  "logout": "Wyloguj się",
+  "register": "Zarejestruj się",
+  "account": "Moje konto",
+  "profile": "Profil",
+  "admin": "Panel administracyjny",
+  "dashboard": "Panel",
+  "orders": "Moje zamówienia",
+  "settings": "Ustawienia",
+  "favorites": "Ulubione",
+  "cart": "Mój koszyk",
+  "language": "Język",
+  "theme": "Motyw",
+  "menu": "Menu",
+  "close": "Zamknij",
+  "privacy": "Polityka prywatności",
+  "terms": "Regulamin",
+  "hello": "Cześć, {{name}}",
+  "guest": "Gość",
+  "notifications": "Powiadomienia",
+  "new": "Nowy",
+  "change_language": "Zmień język",
+  "cart_empty": "Twój koszyk jest pusty",
+  "cart_items": "{{count}} szt.",
+  "open_menu": "Otwórz menu",
+  "close_menu": "Zamknij menu",
+  "dark_mode": "Tryb ciemny",
+  "light_mode": "Tryb jasny",
+  "loading": "Ładowanie...",
+  "error": "Wystąpił błąd"
+}
+
+
+
+
+

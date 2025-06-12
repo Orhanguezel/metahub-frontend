@@ -12,7 +12,7 @@ interface MessageProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
 
-export const Message = styled.div<{
+const Message = styled.div<{
   $success?: boolean;
   $error?: boolean;
   $warning?: boolean;

@@ -8,6 +8,7 @@ import { AvatarMenu } from "@/modules/shared";
 import { useState } from "react";
 import { getImageSrc } from "@/shared/getImageSrc";
 import { FaBars } from "react-icons/fa";
+import { SUPPORTED_LOCALES, LANG_LABELS } from "@/types/common";
 
 type HeaderProps = {
   onToggleSidebar?: () => void;
@@ -26,29 +27,22 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
 
   const resolvedProfileImage = (() => {
     if (!user?.profileImage) return "/default-avatar.png";
-
-    // Eğer yeni nesil obje ise
     if (typeof user.profileImage === "object" && user.profileImage !== null) {
-      // Tercihen thumbnail > url > fallback
       if (user.profileImage.thumbnail?.startsWith("http"))
         return user.profileImage.thumbnail;
       if (user.profileImage.url?.startsWith("http"))
         return user.profileImage.url;
-      // Local fallback ("/uploads/...")
       if (user.profileImage.thumbnail?.startsWith("/"))
         return getImageSrc(user.profileImage.thumbnail, "profile");
       if (user.profileImage.url?.startsWith("/"))
         return getImageSrc(user.profileImage.url, "profile");
       return "/default-avatar.png";
     }
-
-    // Eğer string ise (legacy)
     if (typeof user.profileImage === "string") {
       if (user.profileImage.trim() === "") return "/default-avatar.png";
       if (user.profileImage.startsWith("http")) return user.profileImage;
       return getImageSrc(user.profileImage, "profile");
     }
-
     return "/default-avatar.png";
   })();
 
@@ -76,10 +70,16 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
       </LeftSection>
 
       <RightSection>
-        <LangSelect value={i18n.language} onChange={handleLangChange}>
-          <option value="de">DE</option>
-          <option value="en">EN</option>
-          <option value="tr">TR</option>
+        <LangSelect
+          value={i18n.language}
+          onChange={handleLangChange}
+          aria-label={t("selectLanguage", "Select Language")}
+        >
+          {SUPPORTED_LOCALES.map((locale) => (
+            <option key={locale} value={locale}>
+              {LANG_LABELS[locale]}
+            </option>
+          ))}
         </LangSelect>
         <ThemeToggle />
         <AvatarMenu
@@ -93,6 +93,7 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
   );
 }
 
+// --- Styled Components aynen kalabilir ---
 const HeaderWrapper = styled.header`
   width: 100%;
   min-height: 80px;
@@ -134,7 +135,6 @@ const HamburgerButton = styled.button`
 const Welcome = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
-
   strong {
     font-weight: ${({ theme }) => theme.fontWeights.bold};
     color: ${({ theme }) => theme.colors.primary};

@@ -4,29 +4,53 @@ import styled from "styled-components";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchActivity } from "@/modules/activity/slice/activitySlice";
-import { Skeleton, ErrorMessage } from "@/shared";
+import { useAppSelector } from "@/store/hooks";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import { Skeleton } from "@/shared";
+
+// Çoklu dil fallback fonksiyonu (tekrar kullan!)
+function getBestTranslation<T extends Record<string, string>>(
+  obj: T | undefined,
+  lang: SupportedLocale
+) {
+  if (!obj) return "";
+  if (obj[lang]) return obj[lang];
+  for (const l of SUPPORTED_LOCALES) {
+    if (obj[l]) return obj[l];
+  }
+  return "";
+}
 
 export default function ActivitySection() {
-  const { t, i18n } = useTranslation("activity");
-  const dispatch = useAppDispatch();
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
+  const { t } = useTranslation("activity");
+  const lang = getCurrentLocale();
+
+  // Sadece store’dan okuma — stateless!
   const { activities, loading, error } = useAppSelector(
     (state) => state.activity
   );
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    dispatch(fetchActivity(lang));
-  }, [dispatch, lang]);
+  // Loading
+  if (loading) {
+    return (
+      <Section>
+        <Title>🎯 {t("page.title", "Etkinlikler")}</Title>
+        <Grid>
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} />
+          ))}
+        </Grid>
+      </Section>
+    );
+  }
 
-  if (!mounted) return null;
+  // Error veya hiç içerik yoksa
+  if (error || !activities || activities.length === 0) {
+    return null;
+  }
 
+  // Son 3 etkinlik
   const latestActivities = activities.slice(0, 3);
 
   return (
@@ -37,56 +61,45 @@ export default function ActivitySection() {
       transition={{ duration: 0.6 }}
     >
       <Title>🎯 {t("page.title", "Etkinlikler")}</Title>
-
-      {loading && (
-        <Grid>
-          {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} />
-          ))}
-        </Grid>
-      )}
-
-      {!loading && error && <ErrorMessage />}
-
-      {!loading && !error && (
-        <>
-          <Grid>
-            {latestActivities.map((item, index) => (
-              <CardLink key={item._id} href={`/activity/${item.slug}`} passHref>
-                <Card
-                  as={motion.div}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.2 }}
+      <Grid>
+        {latestActivities.map((item, index) => (
+          <CardLink key={item._id} href={`/activity/${item.slug}`} passHref>
+            <Card
+              as={motion.div}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.2 }}
+              viewport={{ once: true }}
+            >
+              <Content>
+                <ActivityTitle>
+                  {getBestTranslation(item.title, lang) || "—"}
+                </ActivityTitle>
+                <Excerpt>
+                  {getBestTranslation(item.summary, lang) || "—"}
+                </Excerpt>
+              </Content>
+              {item.images?.[0]?.url && (
+                <StyledImage
+                  src={item.images[0].url}
+                  alt={getBestTranslation(item.title, lang) || "activity"}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
                   viewport={{ once: true }}
-                >
-                  <Content>
-                    <ActivityTitle>{item.title?.[lang] || "—"}</ActivityTitle>
-                    <Excerpt>{item.summary?.[lang] || "—"}</Excerpt>
-                  </Content>
-                  {item.images?.[0]?.url && (
-                    <StyledImage
-                      src={item.images[0].url}
-                      alt={item.title?.[lang] || "activity"}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.5, delay: 0.1 }}
-                      viewport={{ once: true }}
-                    />
-                  )}
-                </Card>
-              </CardLink>
-            ))}
-          </Grid>
+                />
+              )}
+            </Card>
+          </CardLink>
+        ))}
+      </Grid>
 
-          <SeeAll href="/activity">{t("page.all", "Tümünü Gör")}</SeeAll>
-        </>
-      )}
+      <SeeAll href="/activity">{t("page.all", "Tümünü Gör")}</SeeAll>
     </Section>
   );
 }
 
-// 💅 Styled Components
+// --- Styled Components aynı kalabilir ---
 
 const Section = styled(motion.section)`
   padding: ${({ theme }) => theme.spacing.xxl}

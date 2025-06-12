@@ -19,23 +19,25 @@ const CartPage = () => {
   const { profile } = useAppSelector((state) => state.account);
   const { t } = useTranslation("cart");
 
-  useEffect(() => {
+ useEffect(() => {
   if (profile && profile._id) {
+    console.log(">>> fetchCart tetiklendi!", profile._id);
     dispatch(fetchCart());
   }
-}, [dispatch, profile]);
+}, [dispatch, profile?._id]);
+
 
 
   if (!profile) {
     return (
       <PageContainer>
-        <Title>{t("cart.login_required", "Bitte einloggen, um den Warenkorb zu sehen.")}</Title>
+        <Title>{t("login_required", "Bitte einloggen, um den Warenkorb zu sehen.")}</Title>
       </PageContainer>
     );
   }
 
   if (loading) {
-    return <PageContainer>{t("cart.loading", "Loading...")}</PageContainer>;
+    return <PageContainer>{t("loading", "Loading...")}</PageContainer>;
   }
 
   if (!cart || cart.items.length === 0) {
@@ -44,7 +46,7 @@ const CartPage = () => {
 
   return (
     <PageContainer>
-      <Title>{t("cart.title", "Your Cart")}</Title>
+      <Title>{t("title", "Your Cart")}</Title>
       <Content>
         <CartItemList items={cart.items} />
         <CartSummary

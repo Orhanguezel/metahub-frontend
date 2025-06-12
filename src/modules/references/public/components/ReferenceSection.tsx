@@ -4,40 +4,42 @@ import styled from "styled-components";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchReferences } from "@/modules/references/slice/referencesSlice";
+import { useAppSelector } from "@/store/hooks";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
 import type { IReference } from "@/modules/references/types/reference";
 
+// --- Çoklu dil fallback helper ---
+function getBestTranslation<T extends Record<string, string>>(
+  obj: T | undefined,
+  lang: SupportedLocale
+) {
+  if (!obj) return "";
+  if (obj[lang]) return obj[lang];
+  for (const l of SUPPORTED_LOCALES) {
+    if (obj[l]) return obj[l];
+  }
+  return "";
+}
+
 export default function ReferenceSection() {
-  const { t, i18n } = useTranslation("reference");
-  const dispatch = useAppDispatch();
+  const { t } = useTranslation("reference");
+  const lang = getCurrentLocale();
 
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
-
+  // Sadece store consumption!
   const { references, loading, error } = useAppSelector(
     (state) => state.references
   );
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    dispatch(fetchReferences());
-  }, [dispatch /*, lang */]);
-
-  if (!mounted || loading || !!error || !references || references.length === 0)
-    return null;
+  if (loading || error || !references || references.length === 0) return null;
 
   const item: IReference = references[0];
+  const title = getBestTranslation(item.title, lang);
   const content =
-    (item as any).shortDescription?.[lang] ??
-    (item as any).summary?.[lang] ??
-    item.content?.[lang] ??
+    getBestTranslation((item as any).shortDescription, lang) ||
+    getBestTranslation((item as any).summary, lang) ||
+    getBestTranslation(item.content, lang) ||
     "";
-
-  const title = item.title?.[lang] || "";
 
   return (
     <Section
@@ -57,7 +59,7 @@ export default function ReferenceSection() {
   );
 }
 
-// --- Styled Components ---
+// --- Styled Components aynı kalabilir ---
 
 const Section = styled(motion.section)`
   padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.md};

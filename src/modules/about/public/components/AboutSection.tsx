@@ -4,35 +4,40 @@ import styled from "styled-components";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchAbout } from "@/modules/about/slice/aboutSlice";
+import { useAppSelector } from "@/store/hooks";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
+
+// --- Çoklu dil fallback fonksiyonu ---
+function getBestTranslation<T extends Record<string, string>>(
+  obj: T | undefined,
+  lang: SupportedLocale
+) {
+  if (!obj) return "";
+  if (obj[lang]) return obj[lang];
+  for (const l of SUPPORTED_LOCALES) {
+    if (obj[l]) return obj[l];
+  }
+  return "";
+}
 
 export default function AboutSection() {
-  const { t, i18n } = useTranslation("about");
-  const dispatch = useAppDispatch();
+  const { t } = useTranslation("about");
+  const lang = getCurrentLocale();
 
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
-
+  // Sadece store’dan oku (stateless!)
   const { about, loading, error } = useAppSelector((state) => state.about);
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    dispatch(fetchAbout(lang));
-  }, [dispatch, lang]);
+  if (loading || error || !about || about.length === 0) return null;
 
-  if (!mounted || loading || error || about.length === 0) return null;
+  const item = about[0]; // Sadece ilk içerik gösterilecek
 
-  const item = about[0]; // sadece ilk içerik gösterilecek
-  const title = item.title?.[lang] || "";
+  // Tüm çoklu dil alanlarında fallback uygula
+  const title = getBestTranslation(item.title, lang);
   const content =
-    item.shortDescription?.[lang] ||
-    item.summary?.[lang] ||
-    item.content?.[lang] ||
-    "";
+    getBestTranslation(item.shortDescription, lang) ||
+    getBestTranslation(item.summary, lang) ||
+    getBestTranslation(item.content, lang);
 
   return (
     <Section
@@ -52,7 +57,7 @@ export default function AboutSection() {
   );
 }
 
-// Styled Components
+// --- Styled Components aynı kalabilir ---
 
 const Section = styled(motion.section)`
   padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.md};

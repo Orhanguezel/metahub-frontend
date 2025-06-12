@@ -1,0 +1,61 @@
+{
+  "deleteTitle": "Modul löschen",
+  "deleteWarning": "Sind Sie sicher, dass Sie dieses Modul dauerhaft löschen möchten?",
+  "close": "Schließen",
+  "cancel": "Abbrechen",
+  "confirmDelete": "Dauerhaft löschen",
+  "create": "Neues Modul hinzufügen",
+  "name": "Modulname",
+  "icon": "Icon",
+  "language": "Sprache",
+  "order": "Reihenfolge",
+  "visibleInSidebar": "In der Sidebar anzeigen",
+  "useAnalytics": "Analytics aktivieren",
+  "enabled": "Aktiviert",
+  "showInDashboard": "Im Dashboard anzeigen",
+  "createSubmit": "Erstellen",
+  "errors": {
+    "nameRequired": "Modulname darf nicht leer sein.",
+    "createFailed": "Modul konnte nicht erstellt werden."
+  },
+  "success": {
+    "created": "Modul erfolgreich erstellt. Prüfen Sie die .env-Datei zur Aktivierung."
+  },
+  "editTitle": "Modul bearbeiten",
+  "label": {
+    "tr": "Bezeichnung (Türkisch)",
+    "en": "Bezeichnung (Englisch)",
+    "de": "Bezeichnung (Deutsch)",
+    "fr": "Bezeichnung (Französisch)",
+    "es": "Bezeichnung (Spanisch)",
+    "pl": "Bezeichnung (Polnisch)"
+  },
+  "labelPlaceholder": {
+    "tr": "Bezeichnung eingeben (Türkisch)",
+    "en": "Bezeichnung eingeben (Englisch)",
+    "de": "Bezeichnung eingeben (Deutsch)",
+    "fr": "Bezeichnung eingeben (Französisch)",
+    "es": "Bezeichnung eingeben (Spanisch)",
+    "pl": "Bezeichnung eingeben (Polnisch)"
+  },
+  "iconPlaceholder": "Icon-Name eingeben",
+  "roles": "Rollen (mit Komma trennen)",
+  "save": "Speichern",
+  "updateSuccess": "Modul erfolgreich aktualisiert!",
+  "updateError": "Beim Aktualisieren ist ein Fehler aufgetreten.",
+  "delete": "Modul löschen",
+  "createdAt": "Erstellt am",
+  "updatedAt": "Aktualisiert am",
+  "more": "mehr",
+  "swagger": "Swagger",
+  "history": "Versionsverlauf",
+  "title": "Modulverwaltung",
+  "createNew": "Neues Modul hinzufügen",
+  "project": "Projekt wählen:",
+  "noProjects": "Keine Projekte gefunden",
+  "search": "Module suchen...",
+  "loading": "Lädt...",
+  "noModulesFound": "Keine Module gefunden.",
+  "toggleActive": "Aktiv",
+  "toggleInactive": "Inaktiv"
+}

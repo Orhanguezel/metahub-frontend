@@ -1,7 +1,8 @@
 "use client";
 import React from "react";
 import styled from "styled-components";
-import {StatCard} from "@/modules/dashboard";
+import { useTranslation } from "react-i18next";
+import { StatCard } from "@/modules/dashboard";
 
 export interface GridEntry {
   key: string;
@@ -16,8 +17,10 @@ export interface StatsGridProps {
 }
 
 const StatsGrid: React.FC<StatsGridProps> = ({ entries }) => {
+  const { t } = useTranslation("admin-dashboard");
+
   if (!Array.isArray(entries) || entries.length === 0) {
-    return <EmptyInfo>Hiç veri bulunamadı.</EmptyInfo>; // İsterseniz i18n ile çeviri ekleyebilirsiniz
+    return <EmptyInfo>{t("noData", "Hiç veri bulunamadı.")}</EmptyInfo>;
   }
   return (
     <Grid>
@@ -44,7 +47,7 @@ const Grid = styled.div`
 `;
 
 const EmptyInfo = styled.div`
-  color: ${({ theme }) => theme.colors.textSecondary || "#aaa"};
+  color: ${({ theme }) => theme.colors.textSecondary};
   font-size: 1.15rem;
   text-align: center;
   padding: 2rem 0;

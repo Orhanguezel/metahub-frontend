@@ -1,0 +1,61 @@
+{
+  "deleteTitle": "Eliminar módulo",
+  "deleteWarning": "¿Está seguro de que desea eliminar este módulo de forma permanente?",
+  "close": "Cerrar",
+  "cancel": "Cancelar",
+  "confirmDelete": "Eliminar permanentemente",
+  "create": "Agregar nuevo módulo",
+  "name": "Nombre del módulo",
+  "icon": "Icono",
+  "language": "Idioma",
+  "order": "Orden",
+  "visibleInSidebar": "Mostrar en la barra lateral",
+  "useAnalytics": "Activar analíticas",
+  "enabled": "Activado",
+  "showInDashboard": "Mostrar en el panel",
+  "createSubmit": "Crear",
+  "errors": {
+    "nameRequired": "El nombre del módulo no puede estar vacío.",
+    "createFailed": "Error al crear el módulo."
+  },
+  "success": {
+    "created": "Módulo creado con éxito. Consulte su archivo .env para activarlo."
+  },
+  "editTitle": "Editar módulo",
+  "label": {
+    "tr": "Etiqueta (Turco)",
+    "en": "Etiqueta (Inglés)",
+    "de": "Etiqueta (Alemán)",
+    "fr": "Etiqueta (Francés)",
+    "es": "Etiqueta (Español)",
+    "pl": "Etiqueta (Polaco)"
+  },
+  "labelPlaceholder": {
+    "tr": "Ingrese etiqueta (Turco)",
+    "en": "Ingrese etiqueta (Inglés)",
+    "de": "Ingrese etiqueta (Alemán)",
+    "fr": "Ingrese etiqueta (Francés)",
+    "es": "Ingrese etiqueta (Español)",
+    "pl": "Ingrese etiqueta (Polaco)"
+  },
+  "iconPlaceholder": "Ingrese el nombre del icono",
+  "roles": "Roles (separados por comas)",
+  "save": "Guardar",
+  "updateSuccess": "¡Módulo actualizado con éxito!",
+  "updateError": "Se produjo un error al actualizar.",
+  "delete": "Eliminar módulo",
+  "createdAt": "Creado en",
+  "updatedAt": "Actualizado en",
+  "more": "más",
+  "swagger": "Swagger",
+  "history": "Historial de versiones",
+  "title": "Gestión de módulos",
+  "createNew": "Agregar nuevo módulo",
+  "project": "Seleccionar proyecto:",
+  "noProjects": "No se encontraron proyectos",
+  "search": "Buscar módulos...",
+  "loading": "Cargando...",
+  "noModulesFound": "No se encontraron módulos.",
+  "toggleActive": "Activado",
+  "toggleInactive": "Desactivado"
+}

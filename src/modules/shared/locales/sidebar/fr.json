@@ -1,0 +1,6 @@
+{
+  "dashboard": "Tableau de bord",
+  "logout": "Déconnexion",
+  "loading": "Chargement du menu...",
+  "logoutError": "Échec de la déconnexion. Veuillez réessayer."
+}

@@ -11,14 +11,26 @@ import { useTranslation } from "react-i18next";
 import { Skeleton, ErrorMessage } from "@/shared";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
+
+// --- Çoklu dil fallback fonksiyonu ---
+function getBestTranslation<T extends Record<string, string>>(
+  obj: T | undefined,
+  lang: SupportedLocale
+) {
+  if (!obj) return "";
+  if (obj[lang]) return obj[lang];
+  for (const l of SUPPORTED_LOCALES) {
+    if (obj[l]) return obj[l];
+  }
+  return "";
+}
 
 export default function ArticlesPage() {
   const dispatch = useAppDispatch();
-  const { i18n, t } = useTranslation("articles");
-
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
+  const { t } = useTranslation("articles");
+  const lang = getCurrentLocale();
 
   const { articles, loading, error } = useAppSelector(
     (state) => state.articles
@@ -71,12 +83,15 @@ export default function ArticlesPage() {
           >
             {item.images?.[0]?.url && (
               <ImageWrapper>
-                <img src={item.images[0].url} alt={item.title?.[lang]} />
+                <img
+                  src={item.images[0].url}
+                  alt={getBestTranslation(item.title, lang)}
+                />
               </ImageWrapper>
             )}
             <CardContent>
-              <h2>{item.title?.[lang] || t("page.untitled")}</h2>
-              <p>{item.summary?.[lang] || t("page.noSummary")}</p>
+              <h2>{getBestTranslation(item.title, lang) || t("page.untitled")}</h2>
+              <p>{getBestTranslation(item.summary, lang) || t("page.noSummary")}</p>
               <Meta>
                 <span>
                   {t("page.author")}: {item.author || t("page.unknown")}
@@ -95,6 +110,8 @@ export default function ArticlesPage() {
     </PageWrapper>
   );
 }
+
+// --- Styled Components aynı kalabilir ---
 
 const PageWrapper = styled.div`
   max-width: 1200px;

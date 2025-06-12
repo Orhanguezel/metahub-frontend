@@ -2,20 +2,20 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { FaMoon, FaSun, FaBars, FaTimes } from "react-icons/fa";
-import { ShoppingCart } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { fetchCart } from "@/modules/cart/slice/cartSlice";
 import { useThemeContext } from "@/providers/ThemeProviderWrapper";
 import styled from "styled-components";
-import Link from "next/link";
 import {
   TopBar,
   Logo,
   NavbarLinks,
   MobileNavbarLinks,
   AvatarMenu,
+  CartButton,
+  LangSelect
 } from "@/modules/shared";
 import { getImageSrc } from "@/shared/getImageSrc";
 import type { ProfileImageObj } from "@/modules/users/types/auth";
@@ -23,10 +23,9 @@ import type { ProfileImageObj } from "@/modules/users/types/auth";
 export default function Navbar() {
   const { profile: user } = useAppSelector((state) => state.account);
   const dispatch = useAppDispatch();
-  const { cart } = useAppSelector((state) => state.cart);
   const isAuthenticated = !!user;
   const { toggle, isDark } = useThemeContext();
-  const { t, i18n } = useTranslation("navbar");
+  const { t } = useTranslation("navbar");
 
   const [hasMounted, setHasMounted] = useState(false);
   const [showStickyMenu, setShowStickyMenu] = useState(false);
@@ -47,20 +46,13 @@ export default function Navbar() {
     return "/default-avatar.png";
   }, [user?.profileImage]);
 
-  // Sepet toplam adeti optimize şekilde hesapla
-  const cartCount = useMemo(
-    () =>
-      cart?.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
-    [cart]
-  );
-
   // Mount olduğunda sepeti yükle
   useEffect(() => {
     setHasMounted(true);
-     if (isAuthenticated && user?._id) {
-    dispatch(fetchCart());
-  }
-}, [dispatch, isAuthenticated, user?._id]);
+    if (isAuthenticated && user?._id) {
+      dispatch(fetchCart());
+    }
+  }, [dispatch, isAuthenticated, user?._id]);
 
   // Sticky Navbar için scroll takibi
   useEffect(() => {
@@ -73,10 +65,6 @@ export default function Navbar() {
   if (!hasMounted) return null;
 
   const handleHamburgerClick = () => setMobileOpen((prev) => !prev);
-
-  const handleLangChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    i18n.changeLanguage(e.target.value);
-  };
 
   return (
     <>
@@ -100,25 +88,8 @@ export default function Navbar() {
               >
                 {isDark ? <FaSun /> : <FaMoon />}
               </ThemeToggle>
-              <LangSelect
-                value={i18n.language}
-                onChange={handleLangChange}
-                aria-label={t("navbar.language", "Dil")}
-              >
-                <option value="de">DE</option>
-                <option value="en">EN</option>
-                <option value="tr">TR</option>
-              </LangSelect>
-              {isAuthenticated && (
-                <CartIconWrapper
-                  href="/cart"
-                  aria-label={t("navbar.cart", "Sepetim")}
-                >
-                  <ShoppingCart size={24} />
-                  {cartCount > 0 && <CartBadge>{cartCount}</CartBadge>}
-                </CartIconWrapper>
-              )}
-
+              <LangSelect />
+              {isAuthenticated && <CartButton ariaLabel={t("navbar.cart", "Sepetim")} />}
               <AvatarMenu
                 isAuthenticated={isAuthenticated}
                 profileImage={resolvedProfileImage}
@@ -148,24 +119,8 @@ export default function Navbar() {
             >
               {isDark ? <FaSun /> : <FaMoon />}
             </ThemeToggle>
-            <LangSelect
-              value={i18n.language}
-              onChange={handleLangChange}
-              aria-label={t("navbar.language", "Dil")}
-            >
-              <option value="de">DE</option>
-              <option value="en">EN</option>
-              <option value="tr">TR</option>
-            </LangSelect>
-            {isAuthenticated && (
-                <CartIconWrapper
-                  href="/cart"
-                  aria-label={t("navbar.cart", "Sepetim")}
-                >
-                  <ShoppingCart size={24} />
-                  {cartCount > 0 && <CartBadge>{cartCount}</CartBadge>}
-                </CartIconWrapper>
-              )}
+            <LangSelect />
+            {isAuthenticated && <CartButton ariaLabel={t("navbar.cart", "Sepetim")} />}
             <AvatarMenu
               isAuthenticated={isAuthenticated}
               profileImage={resolvedProfileImage}
@@ -239,23 +194,7 @@ const RightControls = styled.div`
   align-items: center;
 `;
 
-const LangSelect = styled.select`
-  background: ${({ theme }) => theme.inputs.background};
-  border: ${({ theme }) => `${theme.borders.thin} ${theme.colors.border}`};
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.inputs.text};
-  cursor: pointer;
-  transition: ${({ theme }) => theme.transition.fast};
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-  option {
-    color: ${({ theme }) => theme.inputs.text};
-    background: ${({ theme }) => theme.inputs.background};
-  }
-`;
+
 
 const ThemeToggle = styled.button`
   background: ${({ theme }) => theme.buttons.primary.background};
@@ -321,40 +260,3 @@ const StickyMenu = styled(motion.div)<{ isAdmin?: boolean }>`
   z-index: ${({ theme }) => theme.zIndex.dropdown};
 `;
 
-const CartIconWrapper = styled(Link)`
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 8px;
-  color: ${({ theme }) => theme.colors.primary};
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: ${({ theme }) => theme.spacing.xs};
-  border-radius: 50%;
-  transition: background 0.2s;
-  &:hover {
-    background: ${({ theme }) => theme.colors.backgroundAlt};
-  }
-`;
-
-const CartBadge = styled.span`
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: ${({ theme }) => theme.colors.danger || "#ff3232"};
-  color: #fff;
-  font-size: 0.82rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid ${({ theme }) => theme.colors.backgroundSecondary};
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
-  pointer-events: none;
-`;

@@ -143,5 +143,3 @@ pm2 save
 * `server.js` dosyası `dist/` altında olmalıdır. Giriş noktası orasıdır.
 
 ---
-
-Hazır bir dosya olarak istersem `.md` şeklinde de çıktı alabilirim. Kaydetmek ister misin?

@@ -1,0 +1,80 @@
+{
+  "page": {
+    "allBike": "Todas las bicicletas",
+    "noBike": "No se encontraron bicicletas.",
+    "price": "Precio",
+    "stock": "Stock",
+    "brand": "Marca",
+    "readMore": "Ver detalles →",
+    "other": "Otros productos",
+    "untitled": "Sin título",
+    "noSummary": "Sin descripción.",
+    "bike": {
+      "title": "Bicicleta destacada",
+      "readMore": "Ver detalles",
+      "all": "Todas las bicicletas"
+    }
+  },
+  "admin": {
+    "tabs": {
+      "bike": "Bicicletas",
+      "create": "Nueva bicicleta",
+      "categories": "Categorías"
+    },
+    "bike": {
+      "create": "Agregar nueva bicicleta",
+      "edit": "Editar bicicleta",
+      "name": "Nombre de la bicicleta",
+      "description": "Descripción",
+      "brand": "Marca",
+      "price": "Precio",
+      "stock": "Stock",
+      "tags": "Etiquetas",
+      "image": "Imagen",
+      "category": "Categoría",
+      "select_category": "Seleccionar categoría",
+      "publish_status": "¿Publicado?",
+      "no_images": "Sin imágenes",
+      "publish": "Publicar",
+      "unpublish": "Ocultar",
+      "empty": "No hay bicicletas disponibles."
+    },
+    "categories": {
+      "title": "Categorías de bicicletas",
+      "add": "Nueva categoría",
+      "empty": "No se encontraron categorías."
+    },
+    "language": {
+      "en": "Inglés",
+      "tr": "Turco",
+      "de": "Alemán"
+    },
+    "slug": "Slug",
+    "actions": "Acciones",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "update": "Actualizar",
+    "create": "Crear",
+    "yes": "Sí",
+    "no": "No",
+    "loading": "Cargando...",
+    "confirm": {
+      "delete": "¿Estás seguro de que quieres eliminar esta categoría?",
+      "delete_bike": "¿Estás seguro de que quieres eliminar esta bicicleta?"
+    },
+    "optional_description": "Descripción (opcional)",
+    "category_info": "¿De qué trata esta categoría?",
+    "saving": "Guardando...",
+    "save": "Guardar",
+    "update2": "Actualizar",
+    "editCategory": "Editar categoría",
+    "newCategory": "Nueva categoría"
+  },
+  "seo": {
+    "title": "Título SEO",
+    "description": "Descripción SEO"
+  },
+  "none": "Ninguno",
+  "delete_confirm": "¿Estás seguro de que quieres eliminar?"
+}

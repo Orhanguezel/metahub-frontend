@@ -5,7 +5,7 @@ export interface IComment {
   name: string;
   email: string;
   label: { tr: string; en: string; de: string };
-  contentType: "news" | "blog" | "product" | "articles" | "services" | "radonarprod";
+  contentType: "news" | "blog" | "product" | "articles" | "services" | "radonarprod" | "bike";
   contentId: string | { _id: string; title?: any; slug?: string };
   userId?: string | { _id: string; name: string; email: string };
   isPublished: boolean;

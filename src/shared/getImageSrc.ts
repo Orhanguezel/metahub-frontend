@@ -30,6 +30,7 @@ const folderMap: Record<ImageType, string> = {
   about: "about-images",
   activity: "activity-images",
   company: "company-images",
+  bike: "bike-images",
   misc: "misc",
 };
 
@@ -63,7 +64,9 @@ const defaultImageMap: Record<ImageType, string> = {
   about: "about.png",
   activity: "activity.png",
   company: "company.png",
+  bike: "bike.png",
   misc: "default.png",
+
 };
 
 const BASE_URL =

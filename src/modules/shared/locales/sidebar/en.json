@@ -1,0 +1,6 @@
+{
+  "dashboard": "Dashboard",
+  "logout": "Logout",
+  "loading": "Loading menu...",
+  "logoutError": "Logout failed. Please try again."
+}

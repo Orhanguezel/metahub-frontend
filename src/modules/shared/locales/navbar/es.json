@@ -1,0 +1,41 @@
+{
+  "home": "Inicio",
+  "products": "Productos",
+  "bikes": "Bicicletas",
+  "about": "Acerca de",
+  "contact": "Contacto",
+  "login": "Iniciar sesión",
+  "logout": "Cerrar sesión",
+  "register": "Registrarse",
+  "account": "Mi cuenta",
+  "profile": "Perfil",
+  "admin": "Panel de administración",
+  "dashboard": "Panel de control",
+  "orders": "Mis pedidos",
+  "settings": "Configuraciones",
+  "favorites": "Favoritos",
+  "cart": "Mi carrito",
+  "language": "Idioma",
+  "theme": "Tema",
+  "menu": "Menú",
+  "close": "Cerrar",
+  "privacy": "Política de privacidad",
+  "terms": "Términos de servicio",
+  "hello": "Hola, {{name}}",
+  "guest": "Invitado",
+  "notifications": "Notificaciones",
+  "new": "Nuevo",
+  "change_language": "Cambiar idioma",
+  "cart_empty": "Tu carrito está vacío",
+  "cart_items": "{{count}} artículo(s)",
+  "open_menu": "Abrir menú",
+  "close_menu": "Cerrar menú",
+  "dark_mode": "Modo oscuro",
+  "light_mode": "Modo claro",
+  "loading": "Cargando...",
+  "error": "Ocurrió un error"
+}
+
+
+
+

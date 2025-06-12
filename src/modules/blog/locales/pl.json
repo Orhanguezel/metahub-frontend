@@ -1,0 +1,80 @@
+{
+  "page": {
+    "allBike": "Wszystkie rowery",
+    "noBike": "Nie znaleziono rowerów.",
+    "price": "Cena",
+    "stock": "Stan",
+    "brand": "Marka",
+    "readMore": "Zobacz szczegóły →",
+    "other": "Inne produkty",
+    "untitled": "Bez tytułu",
+    "noSummary": "Brak opisu.",
+    "bike": {
+      "title": "Najnowszy rower",
+      "readMore": "Zobacz szczegóły",
+      "all": "Wszystkie rowery"
+    }
+  },
+  "admin": {
+    "tabs": {
+      "bike": "Rowery",
+      "create": "Nowy rower",
+      "categories": "Kategorie"
+    },
+    "bike": {
+      "create": "Dodaj nowy rower",
+      "edit": "Edytuj rower",
+      "name": "Nazwa roweru",
+      "description": "Opis",
+      "brand": "Marka",
+      "price": "Cena",
+      "stock": "Stan",
+      "tags": "Tagi",
+      "image": "Obraz",
+      "category": "Kategoria",
+      "select_category": "Wybierz kategorię",
+      "publish_status": "Opublikowano?",
+      "no_images": "Brak zdjęć",
+      "publish": "Opublikuj",
+      "unpublish": "Ukryj",
+      "empty": "Brak dostępnych rowerów."
+    },
+    "categories": {
+      "title": "Kategorie rowerów",
+      "add": "Nowa kategoria",
+      "empty": "Nie znaleziono kategorii."
+    },
+    "language": {
+      "en": "Angielski",
+      "tr": "Turecki",
+      "de": "Niemiecki"
+    },
+    "slug": "Slug",
+    "actions": "Akcje",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "cancel": "Anuluj",
+    "update": "Aktualizuj",
+    "create": "Utwórz",
+    "yes": "Tak",
+    "no": "Nie",
+    "loading": "Ładowanie...",
+    "confirm": {
+      "delete": "Czy na pewno chcesz usunąć tę kategorię?",
+      "delete_bike": "Czy na pewno chcesz usunąć ten rower?"
+    },
+    "optional_description": "Opis (opcjonalnie)",
+    "category_info": "Czego dotyczy ta kategoria?",
+    "saving": "Zapisywanie...",
+    "save": "Zapisz",
+    "update2": "Aktualizuj",
+    "editCategory": "Edytuj kategorię",
+    "newCategory": "Nowa kategoria"
+  },
+  "seo": {
+    "title": "Tytuł SEO",
+    "description": "Opis SEO"
+  },
+  "none": "Brak",
+  "delete_confirm": "Czy na pewno chcesz usunąć?"
+}

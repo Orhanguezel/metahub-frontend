@@ -1,20 +1,10 @@
 "use client";
-
-import React, { useEffect, useState, useCallback } from "react";
-import {ProtectedAdminPage} from "@/shared";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchCompanyInfo } from "@/modules/company/slice/companySlice";
-import {
-  fetchAdminModules,
-  fetchAvailableProjects,
-  setSelectedProject,
-} from "@/modules/adminmodules/slice/adminModuleSlice";
-import { fetchSettings } from "@/modules/settings/slice/settingSlice";
+import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { Loading, ErrorMessage } from "@/shared";
-import { Sidebar, Header, Footer } from "@/modules/shared";
+import { Sidebar, Header, FooterSection } from "@/modules/shared";
+import { Loading, ErrorMessage, ProtectedAdminPage } from "@/shared";
+import { useAdminLayoutInit } from "@/hooks/useAdminLayoutInit"; // 🔑
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -24,57 +14,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   );
 }
 
-// Tüm eski kodunu aşağıya AdminLayoutContent olarak taşıdık
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
-  // ... tüm yukarıdaki kodun
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const dispatch = useAppDispatch();
 
-  // ... diğer state ve useEffect'ler olduğu gibi devam
-
-  // --- STATE ---
-  const companyState = useAppSelector((state) => state.company);
-  const adminState = useAppSelector((state) => state.admin);
-  const settingsState = useAppSelector((state) => state.setting);
-
-  const { company, status: companyStatus, error: companyError } = companyState;
+  // --- Init Logic (hook!) ---
   const {
-    modules: adminModules,
-    loading: adminLoading,
-    error: adminError,
-    selectedProject,
+    adminLoading,
+    adminError,
+    settingsLoading,
+    settingsError,
+    companyStatus,
+    companyError,
     availableProjects,
-    fetchedAvailableProjects,
-  } = adminState;
-  const { loading: settingsLoading, error: settingsError, fetchedSettings } = settingsState;
+    selectedProject,
+  } = useAdminLayoutInit();
 
-  useEffect(() => {
-    if (!fetchedAvailableProjects) {
-      dispatch(fetchAvailableProjects());
-    }
-  }, [dispatch, fetchedAvailableProjects]);
-
-  useEffect(() => {
-    if (!company && companyStatus === "idle") {
-      dispatch(fetchCompanyInfo());
-    }
-    if (!fetchedSettings) {
-      dispatch(fetchSettings());
-    }
-  }, [dispatch, company, companyStatus, fetchedSettings]);
-
-  useEffect(() => {
-    if (availableProjects.length > 0 && !selectedProject) {
-      dispatch(setSelectedProject(availableProjects[0]));
-    }
-  }, [dispatch, availableProjects, selectedProject]);
-
-  useEffect(() => {
-    if (selectedProject && (!adminModules || adminModules.length === 0)) {
-      dispatch(fetchAdminModules(selectedProject));
-    }
-  }, [dispatch, selectedProject, adminModules]);
-
+  // --- Sidebar Toggle Logic (aynı kalabilir) ---
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsSidebarOpen(false);
@@ -89,6 +44,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   );
   const handleCloseSidebar = useCallback(() => setIsSidebarOpen(false), []);
 
+  // --- Loading & Error ---
   if (
     companyStatus === "loading" ||
     settingsLoading ||
@@ -98,7 +54,6 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   ) {
     return <Loading />;
   }
-
   const errorMsg = companyError || adminError || settingsError;
   if (errorMsg) {
     return <ErrorMessage message={errorMsg} />;
@@ -115,11 +70,15 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         <Content onClick={isSidebarOpen ? handleCloseSidebar : undefined}>
           {children}
         </Content>
-        <Footer company={company} />
+        <FooterSection />
       </ContentWrapper>
     </Wrapper>
   );
 }
+
+// --- Styled Components aynı kalabilir ---
+
+
 
 // --- Styled Components ---
 const Wrapper = styled.div`
@@ -160,3 +119,5 @@ const Content = styled.main`
   flex: 1;
   min-height: 0;
 `;
+
+

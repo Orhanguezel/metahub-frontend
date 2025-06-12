@@ -8,8 +8,8 @@ export default function CartEmpty() {
   return (
     <EmptyBox>
       <ShoppingCart size={60} />
-      <p>{t("cart.empty", "Your cart is empty!")}</p>
-      <GoShopLink href="/product">{t("cart.shopNow", "Go Shopping")}</GoShopLink>
+      <p>{t("empty", "Your cart is empty!")}</p>
+      <GoShopLink href="/bikes">{t("shopNow", "Go Shopping")}</GoShopLink>
     </EmptyBox>
   );
 }

@@ -22,14 +22,14 @@ export default function CartItem({ item }: Props) {
       <Image src={prod.images?.[0]?.thumbnail || "/no-image.png"} alt={prod.name?.en || ""} />
       <Info>
         <Name>
-          {prod.name?.en || prod.name?.tr || prod.name?.de || t("cart.noName", "Unnamed")}
+          {prod.name?.en || prod.name?.tr || prod.name?.de || t("noName", "Unnamed")}
         </Name>
         <Price>
           {prod.price} €
           <QuantityControls>
             <button
               onClick={() => dispatch(decreaseQuantity(prodId))}
-              aria-label={t("cart.decrease", "-")}
+              aria-label={t("decrease", "-")}
               disabled={item.quantity < 2}
             >
               -
@@ -37,7 +37,7 @@ export default function CartItem({ item }: Props) {
             <span>{item.quantity}</span>
             <button
               onClick={() => dispatch(increaseQuantity(prodId))}
-              aria-label={t("cart.increase", "+")}
+              aria-label={t("increase", "+")}
             >
               +
             </button>
@@ -45,7 +45,7 @@ export default function CartItem({ item }: Props) {
         </Price>
         <RemoveBtn
           onClick={() => dispatch(removeFromCart(prodId))}
-          title={t("cart.remove", "Remove")}
+          title={t("remove", "Remove")}
         >
           <X size={18} />
         </RemoveBtn>

@@ -1,7 +1,6 @@
-// src/modules/cart/slice/cartSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { ICart } from "@/modules/cart/types"; 
+import type { ICart } from "@/modules/cart/types";
 
 interface CartState {
   cart: ICart | null;
@@ -9,6 +8,7 @@ interface CartState {
   error: string | null;
   successMessage: string | null;
   stockWarning: string | null;
+
 }
 
 const initialState: CartState = {
@@ -17,51 +17,129 @@ const initialState: CartState = {
   error: null,
   successMessage: null,
   stockWarning: null,
+
 };
 
-export const fetchCart = createAsyncThunk(
+export const EMPTY_CART: ICart = {
+  items: [],
+  totalPrice: 0,
+  status: "open",
+  isActive: true,
+  couponCode: null,
+  discount: 0,
+};
+
+export const fetchCart = createAsyncThunk<ICart, void, { rejectValue: string }>(
   "cart/fetchCart",
   async (_, thunkAPI) => {
     try {
-      const response = await apiCall("get", "/cart", null, thunkAPI.rejectWithValue);
-      return response.data;
+      const response = await apiCall(
+        "get",
+        "/cart",
+        null,
+        thunkAPI.rejectWithValue
+      );
+      // Cart yoksa veya session yoksa, null yerine boş bir cart objesi dön
+      if (response && response.data) {
+        return response.data as ICart;
+      }
+      // Hiç data yoksa (yeni kullanıcı, başka browser, session sıfırlandı, vs.)
+      return EMPTY_CART;
     } catch (error: any) {
+      // Auth olmayan durum
       if (error.response?.status === 401) {
         return thunkAPI.rejectWithValue("Not logged in");
       }
-      return thunkAPI.rejectWithValue(error.message || "Etwas ist schiefgelaufen!");
+      // Cart yoksa (404 veya benzeri)
+      if (error.response?.status === 404) {
+        return EMPTY_CART;
+      }
+      return thunkAPI.rejectWithValue(
+        error.message || "Etwas ist schiefgelaufen!"
+      );
     }
   }
 );
 
-export const addToCart = createAsyncThunk(
-  "cart/addToCart",
-  async (payload: { productId: string; quantity: number }, thunkAPI) =>
-    await apiCall("post", "/cart/add", payload, thunkAPI.rejectWithValue)
-);
+export const addToCart = createAsyncThunk<
+  ICart,
+  { productId: string; quantity: number },
+  { rejectValue: string }
+>("cart/addToCart", async (payload, thunkAPI) => {
+  try {
+    const response = await apiCall(
+      "post",
+      "/cart/add",
+      payload,
+      thunkAPI.rejectWithValue
+    );
+    if (response && response.data) {
+      return response.data as ICart;
+    }
+    return thunkAPI.rejectWithValue("Cart eklenemedi.");
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(error.message || "Cart eklenemedi.");
+  }
+});
 
-export const increaseQuantity = createAsyncThunk(
-  "cart/increaseQuantity",
-  async (productId: string, thunkAPI) =>
-    await apiCall("patch", `/cart/increase/${productId}`, null, thunkAPI.rejectWithValue)
-);
+// Aynı mantık diğer thunklar için de geçerli!
+export const increaseQuantity = createAsyncThunk<
+  ICart,
+  string,
+  { rejectValue: string }
+>("cart/increaseQuantity", async (productId, thunkAPI) => {
+  const response = await apiCall(
+    "patch",
+    `/cart/increase/${productId}`,
+    null,
+    thunkAPI.rejectWithValue
+  );
+  if (response && response.data) return response.data as ICart;
+  return thunkAPI.rejectWithValue("Quantity arttırılamadı.");
+});
 
-export const decreaseQuantity = createAsyncThunk(
-  "cart/decreaseQuantity",
-  async (productId: string, thunkAPI) =>
-    await apiCall("patch", `/cart/decrease/${productId}`, null, thunkAPI.rejectWithValue)
-);
+export const decreaseQuantity = createAsyncThunk<
+  ICart,
+  string,
+  { rejectValue: string }
+>("cart/decreaseQuantity", async (productId, thunkAPI) => {
+  const response = await apiCall(
+    "patch",
+    `/cart/decrease/${productId}`,
+    null,
+    thunkAPI.rejectWithValue
+  );
+  if (response && response.data) return response.data as ICart;
+  return thunkAPI.rejectWithValue("Quantity azaltılamadı.");
+});
 
-export const removeFromCart = createAsyncThunk(
-  "cart/removeFromCart",
-  async (productId: string, thunkAPI) =>
-    await apiCall("delete", `/cart/remove/${productId}`, null, thunkAPI.rejectWithValue)
-);
+export const removeFromCart = createAsyncThunk<
+  ICart,
+  string,
+  { rejectValue: string }
+>("cart/removeFromCart", async (productId, thunkAPI) => {
+  const response = await apiCall(
+    "delete",
+    `/cart/remove/${productId}`,
+    null,
+    thunkAPI.rejectWithValue
+  );
+  if (response && response.data) return response.data as ICart;
+  return thunkAPI.rejectWithValue("Cart ürünü çıkarılamadı.");
+});
 
-export const clearCart = createAsyncThunk(
+export const clearCart = createAsyncThunk<ICart, void, { rejectValue: string }>(
   "cart/clearCart",
-  async (_, thunkAPI) =>
-    await apiCall("delete", "/cart/clear", null, thunkAPI.rejectWithValue)
+  async (_, thunkAPI) => {
+    const response = await apiCall(
+      "delete",
+      "/cart/clear",
+      null,
+      thunkAPI.rejectWithValue
+    );
+    if (response && response.data) return response.data as ICart;
+    return thunkAPI.rejectWithValue("Cart temizlenemedi.");
+  }
 );
 
 const cartSlice = createSlice({
@@ -75,72 +153,85 @@ const cartSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    const loadingReducer = (state: CartState) => {
-      state.loading = true;
-      state.error = null;
-      state.stockWarning = null;
-    };
-
-    const errorReducer = (state: CartState, action: PayloadAction<any>) => {
-      state.loading = false;
-      state.error = action.payload?.message || "Etwas ist schiefgelaufen!";
-      state.stockWarning = null;
-    };
-
     builder
-      // 🛒 GET CART
-      .addCase(fetchCart.pending, loadingReducer)
-      .addCase(fetchCart.fulfilled, (state, action) => {
-        state.loading = false;
-        // API'den gelen veri bazen data.cart bazen data olabiliyor.
-        state.cart = action.payload.cart || action.payload.data || null;
+      .addCase(fetchCart.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.stockWarning = null;
       })
-      .addCase(fetchCart.rejected, errorReducer)
+      .addCase(fetchCart.fulfilled, (state, action: PayloadAction<ICart>) => {
+        state.loading = false;
+        state.cart = action.payload;
+      })
+      .addCase(fetchCart.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) || "Cart yüklenemedi!";
+        if (action.payload === "Not logged in") {
+          state.cart = null;
+        } else {
+          state.cart = { ...EMPTY_CART };
+        }
+      })
 
-      // ➕ ADD
-      .addCase(addToCart.pending, loadingReducer)
-      .addCase(addToCart.fulfilled, (state, action) => {
-        state.loading = false;
-        state.cart = action.payload.cart || null;
-        state.successMessage = "Produkt wurde zum Warenkorb hinzugefügt.";
-        state.stockWarning = action.payload.warning || null;
+      .addCase(addToCart.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.stockWarning = null;
       })
-      .addCase(addToCart.rejected, errorReducer)
+      .addCase(addToCart.fulfilled, (state, action: PayloadAction<ICart>) => {
+        state.loading = false;
+        state.cart = action.payload;
+        state.successMessage = "Ürün sepete eklendi.";
+      })
+      .addCase(addToCart.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) || "Sepete eklenemedi!";
+      })
 
-      // 🔼 INCREASE
-      .addCase(increaseQuantity.pending, loadingReducer)
-      .addCase(increaseQuantity.fulfilled, (state, action) => {
+      // ...Diğer case'ler aynı şekilde (increaseQuantity, decreaseQuantity, vs.)
+      .addCase(
+        increaseQuantity.fulfilled,
+        (state, action: PayloadAction<ICart>) => {
+          state.loading = false;
+          state.cart = action.payload;
+        }
+      )
+      .addCase(increaseQuantity.rejected, (state, action) => {
         state.loading = false;
-        state.cart = action.payload.cart || null;
-        state.stockWarning = action.payload.warning || null;
+        state.error = (action.payload as string) || "Arttırılamadı!";
       })
-      .addCase(increaseQuantity.rejected, errorReducer)
-
-      // 🔽 DECREASE
-      .addCase(decreaseQuantity.pending, loadingReducer)
-      .addCase(decreaseQuantity.fulfilled, (state, action) => {
+      .addCase(
+        decreaseQuantity.fulfilled,
+        (state, action: PayloadAction<ICart>) => {
+          state.loading = false;
+          state.cart = action.payload;
+        }
+      )
+      .addCase(decreaseQuantity.rejected, (state, action) => {
         state.loading = false;
-        state.cart = action.payload.cart || null;
+        state.error = (action.payload as string) || "Azaltılamadı!";
       })
-      .addCase(decreaseQuantity.rejected, errorReducer)
-
-      // ❌ REMOVE
-      .addCase(removeFromCart.pending, loadingReducer)
-      .addCase(removeFromCart.fulfilled, (state, action) => {
+      .addCase(
+        removeFromCart.fulfilled,
+        (state, action: PayloadAction<ICart>) => {
+          state.loading = false;
+          state.cart = action.payload;
+          state.successMessage = "Sepetten çıkarıldı.";
+        }
+      )
+      .addCase(removeFromCart.rejected, (state, action) => {
         state.loading = false;
-        state.cart = action.payload.cart || null;
-        state.successMessage = "Produkt wurde aus dem Warenkorb entfernt.";
+        state.error = (action.payload as string) || "Çıkarılamadı!";
       })
-      .addCase(removeFromCart.rejected, errorReducer)
-
-      // 🧹 CLEAR
-      .addCase(clearCart.pending, loadingReducer)
-      .addCase(clearCart.fulfilled, (state, action) => {
+      .addCase(clearCart.fulfilled, (state, action: PayloadAction<ICart>) => {
         state.loading = false;
-        state.cart = action.payload.cart || null;
-        state.successMessage = "Warenkorb wurde geleert.";
+        state.cart = action.payload;
+        state.successMessage = "Sepet temizlendi.";
       })
-      .addCase(clearCart.rejected, errorReducer);
+      .addCase(clearCart.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) || "Temizlenemedi!";
+      });
   },
 });
 

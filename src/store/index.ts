@@ -11,9 +11,6 @@ import accountReducer from "@/modules/users/slice/accountSlice";
 import addressReducer from "@/modules/users/slice/addressSlice";
 import advancedReducer from "@/modules/users/slice/advancedSlice";
 import adminModuleReducer from "@/modules/adminmodules/slice/adminModuleSlice";
-import productsReducer from "@/modules/product/slice/productsSlice";
-import radonarprodReducer from "@/modules/product/slice/radonarprodSlice";
-import radonarCategoryReducer from "@/modules/product/slice/radonarCategorySlice";
 import blogReducer from "@/modules/blog/slice/blogSlice";
 import blogCategoryReducer from "@/modules/blog/slice/blogCategorySlice";
 import newsReducer from "@/modules/news/slice/newsSlice";
@@ -30,6 +27,7 @@ import dashboardReducer from "@/modules/dashboard/slice/dashboardSlice";
 import dailyOverviewReducer from "@/modules/dashboard/slice/dailyOverviewSlice";
 import chartDataReducer from "@/modules/dashboard/slice/chartDataSlice";
 import reportsReducer from "@/modules/dashboard/slice/reportsSlice";
+import analyticsReducer from "@/modules/dashboard/slice/analyticsSlice";
 import servicesReducer from "@/modules/services/slice/servicesSlice";
 import serviceCategoryReducer from "@/modules/services/slice/serviceCategorySlice";
 import activityReducer from "@/modules/activity/slice/activitySlice";
@@ -45,6 +43,9 @@ import emailReducer from "@/modules/email/slice/emailSlice";
 import cartReducer from "@/modules/cart/slice/cartSlice";
 import ordersReducer from "@/modules/order/slice/ordersSlice";
 import couponReducer from "@/modules/coupon/slice/couponSlice";
+import bikeReducer from "@/modules/bikes/slice/bikeSlice";
+import bikeCategory from "@/modules/bikes/slice/bikeCategorySlice";
+
 
 import libraryReducer from "./librarySlice";
 import contactReducer from "./contactMessageSlice";
@@ -64,9 +65,6 @@ const rootReducer = combineReducers({
   address: addressReducer,
   admin: adminModuleReducer,
   advanced: advancedReducer,
-  products: productsReducer,
-  radonarprod: radonarprodReducer,
-  radonarCategory: radonarCategoryReducer,
   cart: cartReducer,
   orders: ordersReducer,
   stockMovement: stockMovementReducer,
@@ -99,10 +97,13 @@ const rootReducer = combineReducers({
   dailyOverview: dailyOverviewReducer,
   chartData: chartDataReducer,
   reports: reportsReducer,
+  analytics: analyticsReducer,
   about: aboutReducer,
   aboutCategory: aboutCategoryReducer,
   chat: chatReducer,
   coupon: couponReducer,
+  bike: bikeReducer,
+  bikeCategory: bikeCategory,
 });
 
 // --- Store ---

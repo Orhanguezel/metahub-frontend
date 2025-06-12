@@ -5,27 +5,49 @@ import styled from "styled-components";
 import { XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
-  AdminModule,
   updateAdminModule,
   fetchAdminModules,
 } from "@/modules/adminmodules/slice/adminModuleSlice";
+import { AdminModule } from "@/modules/adminmodules/types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { toast } from "react-toastify";
+import { SUPPORTED_LOCALES, LANG_LABELS, SupportedLocale } from "@/types/common";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
 
 interface Props {
   module: AdminModule;
   onClose: () => void;
 }
 
+type FormState = {
+  label: { [key in SupportedLocale]: string };
+  icon: string;
+  roles: string;
+  visibleInSidebar: boolean;
+  useAnalytics: boolean;
+  enabled: boolean;
+  showInDashboard: boolean;
+  order: number;
+};
+
 const EditModuleModal: React.FC<Props> = ({ module, onClose }) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation("adminModules");
   const { selectedProject } = useAppSelector((state) => state.admin);
 
-  const [form, setForm] = useState({
-    label: { ...module.label },
+  // Otomatik locale ve fallback
+  const lang: SupportedLocale = getCurrentLocale();
+
+  // Eğer eski modülde bir dil eksikse otomatik tamamla
+  const safeLabel = SUPPORTED_LOCALES.reduce(
+    (acc, l) => ({ ...acc, [l]: module.label?.[l] ?? "" }),
+    {} as { [key in SupportedLocale]: string }
+  );
+
+  const [form, setForm] = useState<FormState>({
+    label: safeLabel,
     icon: module.icon || "box",
-    roles: Array.isArray(module.roles) ? module.roles.join(", ") : "",
+    roles: module.roles?.join(", ") || "",
     visibleInSidebar: module.visibleInSidebar ?? true,
     useAnalytics: module.useAnalytics ?? false,
     enabled: module.enabled ?? true,
@@ -33,25 +55,41 @@ const EditModuleModal: React.FC<Props> = ({ module, onClose }) => {
     order: module.order ?? 0,
   });
 
+  // Dinamik değişim
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
-      const checked = (e.target as HTMLInputElement).checked;
-      setForm((prev) => ({ ...prev, [name]: checked }));
+      setForm((prev) => ({
+        ...prev,
+        [name]: (e.target as HTMLInputElement).checked,
+      }));
     } else if (type === "number") {
-      setForm((prev) => ({ ...prev, [name]: parseInt(value) || 0 }));
+      setForm((prev) => ({
+        ...prev,
+        [name]: parseInt(value) || 0,
+      }));
     } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
+      setForm((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
   };
 
-  const handleLabelChange = (lang: "tr" | "en" | "de", value: string) => {
+  // Çoklu dil label input
+  const handleLabelChange = (l: SupportedLocale, value: string) => {
     setForm((prev) => ({
       ...prev,
-      label: { ...prev.label, [lang]: value },
+      label: { ...prev.label, [l]: value },
     }));
+  };
+
+  // Hata/başarı mesajını locale ile çek
+  const getMsg = (msg: any) => {
+    if (!msg) return "";
+    return typeof msg === "string" ? msg : msg?.[lang] || msg?.en || "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,12 +111,13 @@ const EditModuleModal: React.FC<Props> = ({ module, onClose }) => {
         })
       ).unwrap();
 
-      await dispatch(fetchAdminModules(selectedProject));
-      toast.success(t("updateSuccess", "Module updated successfully!"));
+      if (selectedProject) {
+        await dispatch(fetchAdminModules(selectedProject));
+      }
+      toast.success(t("updateSuccess", "Module updated successfully."));
       onClose();
-    } catch (err) {
-      console.error("Update error:", err);
-      toast.error(t("updateError", "An error occurred during update."));
+    } catch (err: any) {
+      toast.error(getMsg(err?.message) || t("updateError", "Update failed."));
     }
   };
 
@@ -93,21 +132,16 @@ const EditModuleModal: React.FC<Props> = ({ module, onClose }) => {
         </Header>
 
         <form onSubmit={handleSubmit}>
-          {/* Label inputs */}
-          {["tr", "en", "de"].map((lang) => (
-            <InputGroup key={lang}>
-              <label>
-                {t(`label.${lang}`, `Label (${lang.toUpperCase()})`)}
+          {SUPPORTED_LOCALES.map((l) => (
+            <InputGroup key={l}>
+              <label htmlFor={`label-${l}`}>
+                {LANG_LABELS[l] || l.toUpperCase()}
               </label>
               <input
-                value={(form.label as any)[lang]}
-                onChange={(e) =>
-                  handleLabelChange(lang as "tr" | "en" | "de", e.target.value)
-                }
-                placeholder={t(
-                  `labelPlaceholder.${lang}`,
-                  `Enter label (${lang.toUpperCase()})`
-                )}
+                id={`label-${l}`}
+                value={form.label[l]}
+                onChange={(e) => handleLabelChange(l, e.target.value)}
+                placeholder={t(`labelPlaceholder.${l}`, "Module name in this language")}
               />
             </InputGroup>
           ))}
@@ -118,7 +152,7 @@ const EditModuleModal: React.FC<Props> = ({ module, onClose }) => {
               name="icon"
               value={form.icon}
               onChange={handleChange}
-              placeholder={t("iconPlaceholder", "Enter icon name")}
+              placeholder={t("iconPlaceholder", "Icon")}
             />
           </InputGroup>
 
@@ -144,28 +178,19 @@ const EditModuleModal: React.FC<Props> = ({ module, onClose }) => {
 
           <CheckboxGroup>
             {[
-              {
-                name: "visibleInSidebar",
-                label: t("visibleInSidebar", "Show in Sidebar"),
-              },
-              {
-                name: "useAnalytics",
-                label: t("useAnalytics", "Enable Analytics"),
-              },
-              { name: "enabled", label: t("enabled", "Enabled") },
-              {
-                name: "showInDashboard",
-                label: t("showInDashboard", "Show on Dashboard"),
-              },
-            ].map((item) => (
-              <label key={item.name}>
+              ["visibleInSidebar", t("visibleInSidebar", "Show in Sidebar")],
+              ["useAnalytics", t("useAnalytics", "Enable Analytics")],
+              ["enabled", t("enabled", "Enabled")],
+              ["showInDashboard", t("showInDashboard", "Show on Dashboard")],
+            ].map(([name, label]) => (
+              <label key={name}>
                 <input
                   type="checkbox"
-                  name={item.name}
-                  checked={(form as any)[item.name]}
+                  name={name}
+                  checked={form[name as keyof FormState] as boolean}
                   onChange={handleChange}
                 />
-                {item.label}
+                {label}
               </label>
             ))}
           </CheckboxGroup>
@@ -179,8 +204,7 @@ const EditModuleModal: React.FC<Props> = ({ module, onClose }) => {
 
 export default EditModuleModal;
 
-// --- Styled Components ---
-
+// --- Styled Components --- (aynı kalabilir)
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
@@ -219,7 +243,6 @@ const CloseButton = styled.button`
   cursor: pointer;
   color: ${({ theme }) => theme.colors.danger};
   transition: color ${({ theme }) => theme.transition.fast};
-
   &:hover {
     color: ${({ theme }) => theme.colors.error};
   }
@@ -230,7 +253,6 @@ const InputGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xs};
-
   input,
   select {
     padding: ${({ theme }) => theme.spacing.sm};
@@ -263,7 +285,6 @@ const SubmitButton = styled.button`
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   cursor: pointer;
   transition: background ${({ theme }) => theme.transition.fast};
-
   &:hover {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
   }

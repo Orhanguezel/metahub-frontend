@@ -14,6 +14,7 @@ interface Props {
     | "blog"
     | "product"
     | "radonarprod"
+    | "bike"
     | "articles"
     | "services";
 }
