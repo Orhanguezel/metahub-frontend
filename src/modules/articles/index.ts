@@ -18,6 +18,6 @@ export { default as articlesReducer } from "./slice/articlesSlice";
 export { default as articlesCategoryReducer } from "./slice/articlesCategorySlice";
 
 // Types (if any)
-export * from "./types/article";
+export * from "./types";
 
 // Optionally: i18n can be loaded in page-level or via config

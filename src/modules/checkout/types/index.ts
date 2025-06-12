@@ -1,10 +1,9 @@
-// src/modules/cart/types/index.ts
+// src/modules/checkout/types/index.ts
 
-import type { Iradonarprod } from "@/modules/product";
-
+import type { IBike } from "@/modules/bikes";
 
 export interface ICartItem {
-  product: Iradonarprod | string; 
+  product: IBike | string;
   quantity: number;
   priceAtAddition: number;
   totalPriceAtAddition: number;
@@ -13,13 +12,13 @@ export interface ICartItem {
 // Sepet (cart) ana tipi
 export interface ICart {
   _id?: string;
-  user?: string; 
+  user?: string;
   items: ICartItem[];
   totalPrice: number;
   couponCode?: string | null;
   status: "open" | "ordered" | "cancelled";
   isActive: boolean;
   discount?: number;
-  createdAt?: string; 
+  createdAt?: string;
   updatedAt?: string;
 }

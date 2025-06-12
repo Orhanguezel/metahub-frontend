@@ -1,6 +1,8 @@
+// src/modules/articles/slice/articlesSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { IArticles } from "@/modules/articles/types/article";
+import type { IArticles } from "@/modules/articles/types";
+import type { SupportedLocale } from "@/types/common";
 
 interface ArticlesState {
   articles: IArticles[];
@@ -18,10 +20,10 @@ const initialState: ArticlesState = {
   successMessage: null,
 };
 
-// 🌐 Public - fetch by language
-export const fetchArticles = createAsyncThunk(
+// 🌐 Public - fetch by dynamic language
+export const fetchArticles = createAsyncThunk<IArticles[], SupportedLocale>(
   "articles/fetchAll",
-  async (lang: "tr" | "en" | "de", thunkAPI) => {
+  async (lang, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/articles?language=${lang}`,
@@ -33,9 +35,9 @@ export const fetchArticles = createAsyncThunk(
 );
 
 // ➕ Create Article
-export const createArticles = createAsyncThunk(
+export const createArticles = createAsyncThunk<IArticles, FormData>(
   "articles/create",
-  async (formData: FormData, thunkAPI) => {
+  async (formData, thunkAPI) => {
     const res = await apiCall(
       "post",
       "/articles/admin",
@@ -50,40 +52,40 @@ export const createArticles = createAsyncThunk(
 );
 
 // ✏️ Update Article
-export const updateArticles = createAsyncThunk(
-  "articles/update",
-  async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) => {
-    const res = await apiCall(
-      "put",
-      `/articles/admin/${id}`,
-      formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
-    );
-    return res.data;
-  }
-);
+export const updateArticles = createAsyncThunk<
+  IArticles,
+  { id: string; formData: FormData }
+>("articles/update", async ({ id, formData }, thunkAPI) => {
+  const res = await apiCall(
+    "put",
+    `/articles/admin/${id}`,
+    formData,
+    thunkAPI.rejectWithValue,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    }
+  );
+  return res.data;
+});
 
 // ❌ Delete Article
-export const deleteArticles = createAsyncThunk(
-  "articles/delete",
-  async (id: string, thunkAPI) => {
-    const res = await apiCall(
-      "delete",
-      `/articles/admin/${id}`,
-      null,
-      thunkAPI.rejectWithValue
-    );
-    return { id, message: res.message };
-  }
-);
+export const deleteArticles = createAsyncThunk<
+  { id: string; message: string },
+  string
+>("articles/delete", async (id, thunkAPI) => {
+  const res = await apiCall(
+    "delete",
+    `/articles/${id}`,
+    null,
+    thunkAPI.rejectWithValue
+  );
+  return { id, message: res.message };
+});
 
-// 🛠 Admin - fetch all Articles
+// 🛠 Admin - fetch all Articles (dinamik dil header üzerinden alınır)
 export const fetchAllArticlesAdmin = createAsyncThunk(
   "articles/fetchAllAdmin",
-  async (lang: "tr" | "en" | "de", thunkAPI) => {
+  async (lang: SupportedLocale, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/articles/admin?language=${lang}`,
@@ -95,32 +97,29 @@ export const fetchAllArticlesAdmin = createAsyncThunk(
 );
 
 // 🔁 Admin - publish toggle
-export const togglePublishArticles = createAsyncThunk(
-  "articles/togglePublish",
-  async (
-    { id, isPublished }: { id: string; isPublished: boolean },
-    thunkAPI
-  ) => {
-    const formData = new FormData();
-    formData.append("isPublished", String(isPublished));
+export const togglePublishArticles = createAsyncThunk<
+  IArticles,
+  { id: string; isPublished: boolean }
+>("articles/togglePublish", async ({ id, isPublished }, thunkAPI) => {
+  const formData = new FormData();
+  formData.append("isPublished", String(isPublished));
 
-    const res = await apiCall(
-      "put",
-      `/articles/admin/${id}`,
-      formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
-    );
-    return res.data;
-  }
-);
+  const res = await apiCall(
+    "put",
+    `/articles/admin/${id}`,
+    formData,
+    thunkAPI.rejectWithValue,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    }
+  );
+  return res.data;
+});
 
 // 🌐 Public - Fetch By Slug
-export const fetchArticlesBySlug = createAsyncThunk(
+export const fetchArticlesBySlug = createAsyncThunk<IArticles, string>(
   "articles/fetchBySlug",
-  async (slug: string, thunkAPI) => {
+  async (slug, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/articles/slug/${slug}`,
@@ -163,8 +162,7 @@ const articlesSlice = createSlice({
       .addCase(createArticles.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = "Article created successfully.";
-        const item = action.payload;
-        if (item && item._id) state.articles.unshift(item);
+        state.articles.unshift(action.payload);
       })
       .addCase(createArticles.rejected, failed)
 
@@ -172,7 +170,7 @@ const articlesSlice = createSlice({
       .addCase(updateArticles.fulfilled, (state, action) => {
         state.loading = false;
         const updated = action.payload;
-        const index = state.articles.findIndex((n) => n._id === updated._id);
+        const index = state.articles.findIndex((a) => a._id === updated._id);
         if (index !== -1) state.articles[index] = updated;
         if (state.selected?._id === updated._id) {
           state.selected = updated;
@@ -185,7 +183,7 @@ const articlesSlice = createSlice({
       .addCase(deleteArticles.fulfilled, (state, action) => {
         state.loading = false;
         state.articles = state.articles.filter(
-          (n) => n._id !== action.payload.id
+          (a) => a._id !== action.payload.id
         );
         state.successMessage = "Article deleted successfully.";
       })
@@ -202,7 +200,7 @@ const articlesSlice = createSlice({
       .addCase(togglePublishArticles.fulfilled, (state, action) => {
         state.loading = false;
         const updated = action.payload;
-        const index = state.articles.findIndex((n) => n._id === updated._id);
+        const index = state.articles.findIndex((a) => a._id === updated._id);
         if (index !== -1) state.articles[index] = updated;
         if (state.selected?._id === updated._id) {
           state.selected = updated;

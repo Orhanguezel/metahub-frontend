@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { IActivity } from "@/modules/activity/types/activity";
+import type { SupportedLocale } from "@/types/common";
 
 interface ActivityState {
   activities: IActivity[];
@@ -21,7 +22,7 @@ const initialState: ActivityState = {
 // 🌐 Public - fetch by language
 export const fetchActivity = createAsyncThunk(
   "activity/fetchAll",
-  async (lang: "tr" | "en" | "de", thunkAPI) => {
+  async (lang: SupportedLocale, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/activity?language=${lang}`,
@@ -83,7 +84,7 @@ export const deleteActivity = createAsyncThunk(
 // 🛠 Admin - fetch all Activities
 export const fetchAllActivitiesAdmin = createAsyncThunk(
   "activity/fetchAllAdmin",
-  async (lang: "tr" | "en" | "de", thunkAPI) => {
+  async (lang: SupportedLocale, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/activity/admin?language=${lang}`,

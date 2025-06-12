@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { IAbout } from "@/modules/about/types/about";
+import type { SupportedLocale } from "@/types/common";
 
 interface AboutState {
   about: IAbout[];
@@ -21,13 +22,10 @@ const initialState: AboutState = {
 // 🌐 Public - fetch by language
 export const fetchAbout = createAsyncThunk(
   "about/fetchAll",
-  async (lang: "tr" | "en" | "de", thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      `/about?language=${lang}`,
-      null,
-      thunkAPI.rejectWithValue
-    );
+  async (lang: SupportedLocale, thunkAPI) => {
+    const res = await apiCall("get", `/about`, null, thunkAPI.rejectWithValue, {
+      headers: { "Accept-Language": lang },
+    });
     return res.data;
   }
 );
@@ -83,18 +81,20 @@ export const deleteAbout = createAsyncThunk(
 // 🛠 Admin - fetch all abouts
 export const fetchAllAboutAdmin = createAsyncThunk(
   "about/fetchAllAdmin",
-  async (lang: "tr" | "en" | "de", thunkAPI) => {
+  async (lang: SupportedLocale, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/about/admin?language=${lang}`,
+      `/about/admin`,
       null,
-      thunkAPI.rejectWithValue
+      thunkAPI.rejectWithValue,
+      {
+        headers: { "Accept-Language": lang },
+      }
     );
     return res.data;
   }
 );
 
-// 🔁 Toggle Publish (isPublished)
 // 🔁 Toggle Publish
 export const togglePublishAbout = createAsyncThunk(
   "about/togglePublish",
@@ -116,8 +116,6 @@ export const togglePublishAbout = createAsyncThunk(
     return res.data;
   }
 );
-
-
 
 // 🌐 Fetch by Slug
 export const fetchAboutBySlug = createAsyncThunk(

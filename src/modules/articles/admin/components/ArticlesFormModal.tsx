@@ -7,9 +7,11 @@ import {
   fetchArticlesCategories,
   clearCategoryMessages,
 } from "@/modules/articles/slice/articlesCategorySlice";
-import { IArticles } from "@/modules/articles/types/article";
+import { IArticles } from "@/modules/articles/types";
 import { useTranslation } from "react-i18next";
 import { ImageUploadWithPreview } from "@/shared";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 
 interface Props {
   isOpen: boolean;
@@ -18,8 +20,6 @@ interface Props {
   onSubmit: (formData: FormData, id?: string) => Promise<void>;
 }
 
-const LANGUAGES: ("tr" | "en" | "de")[] = ["tr", "en", "de"];
-
 export default function ArticlesFormModal({
   isOpen,
   onClose,
@@ -27,37 +27,27 @@ export default function ArticlesFormModal({
   onSubmit,
 }: Props) {
   const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("articles");
-  const currentLang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
+  const { t } = useTranslation("articles");
+  const currentLang = getCurrentLocale();
 
   const { categories } = useAppSelector((state) => state.articlesCategory);
 
-  const [titles, setTitles] = useState<Record<string, string>>({
-    tr: "",
-    en: "",
-    de: "",
-  });
-  const [summaries, setSummaries] = useState<Record<string, string>>({
-    tr: "",
-    en: "",
-    de: "",
-  });
-  const [contents, setContents] = useState<Record<string, string>>({
-    tr: "",
-    en: "",
-    de: "",
-  });
+  const [titles, setTitles] = useState<Record<SupportedLocale, string>>(
+    {} as Record<SupportedLocale, string>
+  );
+  const [summaries, setSummaries] = useState<Record<SupportedLocale, string>>(
+    {} as Record<SupportedLocale, string>
+  );
+  const [contents, setContents] = useState<Record<SupportedLocale, string>>(
+    {} as Record<SupportedLocale, string>
+  );
   const [author, setAuthor] = useState("");
   const [tags, setTags] = useState("");
   const [category, setCategory] = useState("");
-  // Görsel yönetimi için:
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
 
-  // Kategoriler yüklenirken
   useEffect(() => {
     dispatch(fetchArticlesCategories());
     return () => {
@@ -65,12 +55,29 @@ export default function ArticlesFormModal({
     };
   }, [dispatch]);
 
-  // editingItem değişirse formu ve mevcut resimleri güncelle
   useEffect(() => {
     if (editingItem) {
-      setTitles(editingItem.title || { tr: "", en: "", de: "" });
-      setSummaries(editingItem.summary || { tr: "", en: "", de: "" });
-      setContents(editingItem.content || { tr: "", en: "", de: "" });
+      setTitles(
+        (SUPPORTED_LOCALES as SupportedLocale[]).reduce((acc, lang) => {
+          acc[lang] = editingItem.title?.[lang] || "";
+          return acc;
+        }, {} as Record<SupportedLocale, string>)
+      );
+
+      setSummaries(
+        (SUPPORTED_LOCALES as SupportedLocale[]).reduce((acc, lang) => {
+          acc[lang] = editingItem.summary?.[lang] || "";
+          return acc;
+        }, {} as Record<SupportedLocale, string>)
+      );
+
+      setContents(
+        (SUPPORTED_LOCALES as SupportedLocale[]).reduce((acc, lang) => {
+          acc[lang] = editingItem.content?.[lang] || "";
+          return acc;
+        }, {} as Record<SupportedLocale, string>)
+      );
+
       setAuthor(editingItem.author || "");
       setTags(editingItem.tags?.join(", ") || "");
       setCategory(
@@ -79,12 +86,25 @@ export default function ArticlesFormModal({
           : editingItem.category?._id || ""
       );
       setExistingImages(editingItem.images?.map((img) => img.url) || []);
-      setSelectedFiles([]);
-      setRemovedImages([]);
     } else {
-      setTitles({ tr: "", en: "", de: "" });
-      setSummaries({ tr: "", en: "", de: "" });
-      setContents({ tr: "", en: "", de: "" });
+      setTitles(
+        SUPPORTED_LOCALES.reduce(
+          (acc, lang) => ({ ...acc, [lang]: "" }),
+          {} as Record<SupportedLocale, string>
+        )
+      );
+      setSummaries(
+        SUPPORTED_LOCALES.reduce(
+          (acc, lang) => ({ ...acc, [lang]: "" }),
+          {} as Record<SupportedLocale, string>
+        )
+      );
+      setContents(
+        SUPPORTED_LOCALES.reduce(
+          (acc, lang) => ({ ...acc, [lang]: "" }),
+          {} as Record<SupportedLocale, string>
+        )
+      );
       setAuthor("");
       setTags("");
       setCategory("");
@@ -94,7 +114,6 @@ export default function ArticlesFormModal({
     }
   }, [editingItem, isOpen]);
 
-  // ImageUploadWithPreview’dan gelenleri al
   const handleImagesChange = useCallback(
     (files: File[], removed: string[], current: string[]) => {
       setSelectedFiles(files);
@@ -124,12 +143,10 @@ export default function ArticlesFormModal({
     formData.append("category", category);
     formData.append("isPublished", "true");
 
-    // Yeni eklenen görselleri ekle
     for (const file of selectedFiles) {
       formData.append("images", file);
     }
 
-    // Silinecek eski görselleri ekle
     if (removedImages.length > 0) {
       formData.append("removedImages", JSON.stringify(removedImages));
     }
@@ -148,7 +165,7 @@ export default function ArticlesFormModal({
       </h2>
 
       <form onSubmit={handleSubmit}>
-        {LANGUAGES.map((lng) => (
+        {SUPPORTED_LOCALES.map((lng) => (
           <div key={lng}>
             <label htmlFor={`title-${lng}`}>
               {t("admin.articles.title", "Title")} ({lng.toUpperCase()})

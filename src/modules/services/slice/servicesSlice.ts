@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { IServices } from "@/modules/services/types/services";
+import type { SupportedLocale } from "@/types/common";
 
 interface ServicesState {
   services: IServices[];
@@ -21,7 +22,7 @@ const initialState: ServicesState = {
 // 🌐 Public - fetch by language
 export const fetchServices = createAsyncThunk(
   "services/fetchAll",
-  async (lang: "tr" | "en" | "de", thunkAPI) => {
+  async (lang: SupportedLocale, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/services?language=${lang}`,
@@ -83,7 +84,7 @@ export const deleteServices = createAsyncThunk(
 // 🛠 Admin - fetch all Services
 export const fetchAllServicesAdmin = createAsyncThunk(
   "services/fetchAllAdmin",
-  async (lang: "tr" | "en" | "de", thunkAPI) => {
+  async (lang: SupportedLocale, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/services/admin?language=${lang}`,

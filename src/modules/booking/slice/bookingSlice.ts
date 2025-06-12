@@ -3,6 +3,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { Booking, BookingFormInput } from "@/modules/booking";
+import type { SupportedLocale } from "@/types/common";
 
 interface BookingState {
   bookings: Booking[];
@@ -33,7 +34,7 @@ export const createBooking = createAsyncThunk(
 // ✅ 2. Get All Bookings (Admin)
 export const fetchBookings = createAsyncThunk(
   "booking/fetchBookings",
-  async (params: { language?: "tr" | "en" | "de" }, { rejectWithValue }) => {
+  async (params: { language: SupportedLocale }, { rejectWithValue }) => {
     const res = await apiCall("get", "/booking/admin", params, rejectWithValue);
     return Array.isArray(res.data) ? res.data : [];
   }
@@ -43,7 +44,12 @@ export const fetchBookings = createAsyncThunk(
 export const fetchBookingById = createAsyncThunk(
   "booking/fetchBookingById",
   async (id: string, { rejectWithValue }) => {
-    const res = await apiCall("get", `/booking/admin/${id}`, null, rejectWithValue);
+    const res = await apiCall(
+      "get",
+      `/booking/admin/${id}`,
+      null,
+      rejectWithValue
+    );
     return res.data;
   }
 );
@@ -52,10 +58,18 @@ export const fetchBookingById = createAsyncThunk(
 export const updateBookingStatus = createAsyncThunk(
   "booking/updateBookingStatus",
   async (
-    { id, status }: { id: string; status: "pending" | "confirmed" | "cancelled" },
+    {
+      id,
+      status,
+    }: { id: string; status: "pending" | "confirmed" | "cancelled" },
     { rejectWithValue }
   ) => {
-    const res = await apiCall("put", `/booking/admin/${id}/status`, { status }, rejectWithValue);
+    const res = await apiCall(
+      "put",
+      `/booking/admin/${id}/status`,
+      { status },
+      rejectWithValue
+    );
     // Backend: { success, message, booking }
     return { ...res.booking, successMessage: res.message };
   }
@@ -65,7 +79,12 @@ export const updateBookingStatus = createAsyncThunk(
 export const deleteBooking = createAsyncThunk(
   "booking/deleteBooking",
   async (id: string, { rejectWithValue }) => {
-    const res = await apiCall("delete", `/booking/admin/${id}`, null, rejectWithValue);
+    const res = await apiCall(
+      "delete",
+      `/booking/admin/${id}`,
+      null,
+      rejectWithValue
+    );
     // Backend: { success, message }
     return { id, successMessage: res.message };
   }
@@ -90,7 +109,8 @@ const bookingSlice = createSlice({
       })
       .addCase(createBooking.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload?.successMessage || "Booking created successfully.";
+        state.successMessage =
+          action.payload?.successMessage || "Booking created successfully.";
         if (action.payload && action.payload._id) {
           state.bookings.unshift(action.payload);
         }
@@ -139,9 +159,10 @@ const bookingSlice = createSlice({
       })
       .addCase(updateBookingStatus.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload?.successMessage || "Booking status updated.";
+        state.successMessage =
+          action.payload?.successMessage || "Booking status updated.";
         const updated = action.payload;
-        const index = state.bookings.findIndex(b => b._id === updated._id);
+        const index = state.bookings.findIndex((b) => b._id === updated._id);
         if (index !== -1) state.bookings[index] = updated;
         if (state.booking && state.booking._id === updated._id) {
           state.booking = updated;
@@ -150,7 +171,8 @@ const bookingSlice = createSlice({
       .addCase(updateBookingStatus.rejected, (state, action) => {
         state.loading = false;
         state.error =
-          (action.payload as any)?.message || "Could not update booking status.";
+          (action.payload as any)?.message ||
+          "Could not update booking status.";
       })
 
       // Delete Booking
@@ -161,8 +183,11 @@ const bookingSlice = createSlice({
       })
       .addCase(deleteBooking.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload?.successMessage || "Booking deleted successfully.";
-        state.bookings = state.bookings.filter((b) => b._id !== action.payload.id);
+        state.successMessage =
+          action.payload?.successMessage || "Booking deleted successfully.";
+        state.bookings = state.bookings.filter(
+          (b) => b._id !== action.payload.id
+        );
         if (state.booking && state.booking._id === action.payload.id) {
           state.booking = undefined;
         }

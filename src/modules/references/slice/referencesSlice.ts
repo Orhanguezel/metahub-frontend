@@ -3,6 +3,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { IReference } from "@/modules/references/types/reference";
+import type { SupportedLocale } from "@/types/common";
 
 interface ReferenceState {
   references: IReference[];
@@ -24,19 +25,28 @@ const initialState: ReferenceState = {
 
 export const fetchReferences = createAsyncThunk(
   "references/fetchAll",
-  async (lang: "tr" | "en" | "de" | undefined, thunkAPI) => {
+  async (lang: SupportedLocale | undefined, thunkAPI) => {
     const param = lang ? `?language=${lang}` : "";
-    const res = await apiCall("get", `/references${param}`, null, thunkAPI.rejectWithValue);
+    const res = await apiCall(
+      "get",
+      `/references${param}`,
+      null,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
-
 
 // Slug ile getir (public)
 export const fetchReferenceBySlug = createAsyncThunk(
   "references/fetchBySlug",
   async (slug: string, thunkAPI) => {
-    const res = await apiCall("get", `/references/slug/${slug}`, null, thunkAPI.rejectWithValue);
+    const res = await apiCall(
+      "get",
+      `/references/slug/${slug}`,
+      null,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
@@ -45,7 +55,12 @@ export const fetchReferenceBySlug = createAsyncThunk(
 export const fetchReferenceById = createAsyncThunk(
   "references/fetchById",
   async (id: string, thunkAPI) => {
-    const res = await apiCall("get", `/references/${id}`, null, thunkAPI.rejectWithValue);
+    const res = await apiCall(
+      "get",
+      `/references/${id}`,
+      null,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
@@ -55,9 +70,14 @@ export const fetchReferenceById = createAsyncThunk(
 // Admin: tüm referansları çek (dil opsiyonu ile)
 export const fetchReferencesAdmin = createAsyncThunk(
   "references/fetchAllAdmin",
-  async (lang: "tr" | "en" | "de" | undefined, thunkAPI) => {
+  async (lang: SupportedLocale | undefined, thunkAPI) => {
     const params = lang ? `?language=${lang}` : "";
-    const res = await apiCall("get", `/references/admin${params}`, null, thunkAPI.rejectWithValue);
+    const res = await apiCall(
+      "get",
+      `/references/admin${params}`,
+      null,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
@@ -66,7 +86,12 @@ export const fetchReferencesAdmin = createAsyncThunk(
 export const fetchReferenceByIdAdmin = createAsyncThunk(
   "references/fetchByIdAdmin",
   async (id: string, thunkAPI) => {
-    const res = await apiCall("get", `/references/admin/${id}`, null, thunkAPI.rejectWithValue);
+    const res = await apiCall(
+      "get",
+      `/references/admin/${id}`,
+      null,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
@@ -105,12 +130,15 @@ export const updateReference = createAsyncThunk(
 export const deleteReference = createAsyncThunk(
   "references/delete",
   async (id: string, thunkAPI) => {
-    await apiCall("delete", `/references/admin/${id}`, null, thunkAPI.rejectWithValue);
+    await apiCall(
+      "delete",
+      `/references/admin/${id}`,
+      null,
+      thunkAPI.rejectWithValue
+    );
     return { id };
   }
 );
-
-
 
 // Admin: Toggle Publish (isPublished)
 export const togglePublishReference = createAsyncThunk(
@@ -242,5 +270,6 @@ const referencesSlice = createSlice({
   },
 });
 
-export const { clearReferenceMessages, clearSelectedReference } = referencesSlice.actions;
+export const { clearReferenceMessages, clearSelectedReference } =
+  referencesSlice.actions;
 export default referencesSlice.reducer;

@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { IBlog } from "@/modules/blog/types/blog";
+import type { SupportedLocale } from "@/types/common";
 
 interface BlogState {
   blogs: IBlog[];
@@ -21,7 +22,7 @@ const initialState: BlogState = {
 // 🌐 Public - fetch by language
 export const fetchBlogs = createAsyncThunk(
   "blog/fetchAll",
-  async (lang: "tr" | "en" | "de", thunkAPI) => {
+  async (lang: SupportedLocale, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/blog?language=${lang}`,
@@ -83,7 +84,7 @@ export const deleteBlog = createAsyncThunk(
 // 🛠 Admin - fetch all blogs
 export const fetchAllBlogsAdmin = createAsyncThunk(
   "blog/fetchAllAdmin",
-  async (lang: "tr" | "en" | "de", thunkAPI) => {
+  async (lang: SupportedLocale, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/blog/admin?language=${lang}`,

@@ -7,8 +7,8 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchArticlesCategories,
   deleteArticlesCategory,
-  ArticlesCategory,
 } from "@/modules/articles/slice/articlesCategorySlice";
+import { ArticlesCategory } from "@/modules/articles/types";
 
 interface Props {
   onAdd: () => void;

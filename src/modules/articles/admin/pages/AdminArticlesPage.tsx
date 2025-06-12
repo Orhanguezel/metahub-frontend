@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
 
 import {
   fetchAllArticlesAdmin,
@@ -23,8 +24,8 @@ import {
 } from "@/modules/articles";
 
 import { Modal } from "@/shared";
-import { IArticles } from "@/modules/articles/types/article";
-import { ArticlesCategory } from "@/modules/articles/slice/articlesCategorySlice";
+import { IArticles } from "@/modules/articles/types";
+import { ArticlesCategory } from "@/modules/articles/types";
 
 export default function AdminArticlesPage() {
   const [activeTab, setActiveTab] = useState<"list" | "create" | "categories">(
@@ -39,11 +40,9 @@ export default function AdminArticlesPage() {
   const { articles, loading, error } = useAppSelector(
     (state) => state.articles
   );
-  const { i18n, t } = useTranslation("adminArticles");
+  const { t } = useTranslation("adminArticles");
 
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
+  const lang = getCurrentLocale();
 
   useEffect(() => {
     dispatch(fetchAllArticlesAdmin(lang));

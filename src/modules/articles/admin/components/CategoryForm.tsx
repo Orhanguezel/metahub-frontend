@@ -7,9 +7,10 @@ import {
   createArticlesCategory,
   updateArticlesCategory,
   clearCategoryMessages,
-  ArticlesCategory,
 } from "@/modules/articles/slice/articlesCategorySlice";
+import { ArticlesCategory } from "@/modules/articles/types";
 import { useTranslation } from "react-i18next";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 
 interface AriclesCategoryFormProp {
   onClose: () => void;
@@ -26,15 +27,31 @@ export default function ArticlesCategoryForm({
     (state) => state.articlesCategory
   );
 
-  const [name, setName] = useState({ tr: "", en: "", de: "" });
+  const [name, setName] = useState<Record<SupportedLocale, string>>(
+    SUPPORTED_LOCALES.reduce((acc, lang) => {
+      acc[lang] = "";
+      return acc;
+    }, {} as Record<SupportedLocale, string>)
+  );
+
   const [description, setDescription] = useState("");
 
   useEffect(() => {
     if (editingItem) {
-      setName(editingItem.name || { tr: "", en: "", de: "" });
+      const nameData = SUPPORTED_LOCALES.reduce((acc, lang) => {
+        acc[lang] = editingItem.name?.[lang] || "";
+        return acc;
+      }, {} as Record<SupportedLocale, string>);
+
+      setName(nameData);
       setDescription(editingItem.description || "");
     } else {
-      setName({ tr: "", en: "", de: "" });
+      setName(
+        SUPPORTED_LOCALES.reduce((acc, lang) => {
+          acc[lang] = "";
+          return acc;
+        }, {} as Record<SupportedLocale, string>)
+      );
       setDescription("");
     }
   }, [editingItem]);
@@ -46,7 +63,7 @@ export default function ArticlesCategoryForm({
     }
   }, [successMessage, error, dispatch]);
 
-  const handleChange = (lang: "tr" | "en" | "de", value: string) => {
+  const handleChange = (lang: SupportedLocale, value: string) => {
     setName((prev) => ({ ...prev, [lang]: value }));
   };
 
@@ -78,7 +95,7 @@ export default function ArticlesCategoryForm({
           : t("categories.create", "New Category")}
       </h3>
 
-      {["tr", "en", "de"].map((lng) => (
+      {SUPPORTED_LOCALES.map((lng) => (
         <div key={lng}>
           <label htmlFor={`name-${lng}`}>
             {t(`languages.${lng}`, lng.toUpperCase())}:
@@ -86,10 +103,8 @@ export default function ArticlesCategoryForm({
           <input
             id={`name-${lng}`}
             type="text"
-            value={name[lng as "tr" | "en" | "de"]}
-            onChange={(e) =>
-              handleChange(lng as "tr" | "en" | "de", e.target.value)
-            }
+            value={name[lng]}
+            onChange={(e) => handleChange(lng, e.target.value)}
             placeholder={t(
               "categories.name_placeholder",
               `Category name (${lng.toUpperCase()})`
@@ -126,6 +141,7 @@ export default function ArticlesCategoryForm({
   );
 }
 
+// 💅 Styled Components
 const Form = styled.form`
   display: flex;
   flex-direction: column;

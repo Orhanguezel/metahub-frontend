@@ -1,15 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-
-export interface ArticlesCategory {
-  _id: string;
-  name: { tr: string; en: string; de: string };
-  slug: string;
-  description?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import type {
+  ArticlesCategory,
+  TranslatedField,
+} from "@/modules/articles/types";
 
 interface CategoryState {
   categories: ArticlesCategory[];
@@ -29,7 +23,12 @@ const initialState: CategoryState = {
 export const fetchArticlesCategories = createAsyncThunk(
   "articlesCategory/fetchAll",
   async (_, thunkAPI) => {
-    const res = await apiCall("get", "/articlescategory", null, thunkAPI.rejectWithValue);
+    const res = await apiCall(
+      "get",
+      "/articlescategory",
+      null,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
@@ -37,11 +36,13 @@ export const fetchArticlesCategories = createAsyncThunk(
 // ✅ Create
 export const createArticlesCategory = createAsyncThunk(
   "articlesCategory/create",
-  async (
-    data: { name: { tr: string; en: string; de: string }; description?: string },
-    thunkAPI
-  ) => {
-    const res = await apiCall("post", "/articlescategory", data, thunkAPI.rejectWithValue);
+  async (data: { name: TranslatedField; description?: string }, thunkAPI) => {
+    const res = await apiCall(
+      "post",
+      "/articlescategory",
+      data,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
@@ -55,11 +56,16 @@ export const updateArticlesCategory = createAsyncThunk(
       data,
     }: {
       id: string;
-      data: { name: { tr: string; en: string; de: string }; description?: string };
+      data: { name: TranslatedField; description?: string };
     },
     thunkAPI
   ) => {
-    const res = await apiCall("put", `/articlescategory/${id}`, data, thunkAPI.rejectWithValue);
+    const res = await apiCall(
+      "put",
+      `/articlescategory/${id}`,
+      data,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
@@ -68,7 +74,12 @@ export const updateArticlesCategory = createAsyncThunk(
 export const deleteArticlesCategory = createAsyncThunk(
   "articlesCategory/delete",
   async (id: string, thunkAPI) => {
-    await apiCall("delete", `/articlescategory/${id}`, null, thunkAPI.rejectWithValue);
+    await apiCall(
+      "delete",
+      `/articlescategory/${id}`,
+      null,
+      thunkAPI.rejectWithValue
+    );
     return id;
   }
 );
@@ -94,10 +105,14 @@ const articlesCategorySlice = createSlice({
         state.loading = false;
         state.categories = action.payload;
       })
-      .addCase(fetchArticlesCategories.rejected, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        state.error = action.payload?.message || "Failed to fetch categories.";
-      })
+      .addCase(
+        fetchArticlesCategories.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error =
+            action.payload?.message || "Failed to fetch categories.";
+        }
+      )
 
       // CREATE
       .addCase(createArticlesCategory.pending, (state) => {
@@ -109,10 +124,13 @@ const articlesCategorySlice = createSlice({
         state.successMessage = "Category created successfully.";
         state.categories.unshift(action.payload);
       })
-      .addCase(createArticlesCategory.rejected, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        state.error = action.payload?.message || "Failed to create category.";
-      })
+      .addCase(
+        createArticlesCategory.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload?.message || "Failed to create category.";
+        }
+      )
 
       // UPDATE
       .addCase(updateArticlesCategory.pending, (state) => {
@@ -123,13 +141,18 @@ const articlesCategorySlice = createSlice({
         state.loading = false;
         state.successMessage = "Category updated successfully.";
         const updated = action.payload;
-        const index = state.categories.findIndex((cat) => cat._id === updated._id);
+        const index = state.categories.findIndex(
+          (cat) => cat._id === updated._id
+        );
         if (index !== -1) state.categories[index] = updated;
       })
-      .addCase(updateArticlesCategory.rejected, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        state.error = action.payload?.message || "Failed to update category.";
-      })
+      .addCase(
+        updateArticlesCategory.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload?.message || "Failed to update category.";
+        }
+      )
 
       // DELETE
       .addCase(deleteArticlesCategory.pending, (state) => {
@@ -139,12 +162,17 @@ const articlesCategorySlice = createSlice({
       .addCase(deleteArticlesCategory.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = "Category deleted successfully.";
-        state.categories = state.categories.filter((cat) => cat._id !== action.payload);
+        state.categories = state.categories.filter(
+          (cat) => cat._id !== action.payload
+        );
       })
-      .addCase(deleteArticlesCategory.rejected, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        state.error = action.payload?.message || "Failed to delete category.";
-      });
+      .addCase(
+        deleteArticlesCategory.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload?.message || "Failed to delete category.";
+        }
+      );
   },
 });
 

@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { INews } from "@/modules/news/types/news";
+import type { SupportedLocale } from "@/types/common";
 
 interface NewsState {
   news: INews[];
@@ -21,7 +22,7 @@ const initialState: NewsState = {
 // 🌐 Public - fetch by language
 export const fetchNews = createAsyncThunk(
   "news/fetchAll",
-  async (lang: "tr" | "en" | "de", thunkAPI) => {
+  async (lang: SupportedLocale, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/news?language=${lang}`,
@@ -83,7 +84,7 @@ export const deleteNews = createAsyncThunk(
 // 🛠 Admin - fetch all news
 export const fetchAllNewsAdmin = createAsyncThunk(
   "news/fetchAllAdmin",
-  async (lang: "tr" | "en" | "de", thunkAPI) => {
+  async (lang: SupportedLocale, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/news/admin?language=${lang}`,

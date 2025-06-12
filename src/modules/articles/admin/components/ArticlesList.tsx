@@ -1,13 +1,14 @@
 "use client";
 
 import styled from "styled-components";
-import { IArticles } from "@/modules/articles/types/article";
+import { IArticles } from "@/modules/articles/types";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/shared";
+import { SupportedLocale } from "@/types/common";
 
 interface Props {
   articles: IArticles[] | undefined;
-  lang: "tr" | "en" | "de";
+  lang: SupportedLocale;
   loading: boolean;
   error: string | null;
   onEdit?: (item: IArticles) => void;
