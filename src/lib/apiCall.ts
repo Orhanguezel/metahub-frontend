@@ -19,6 +19,7 @@ const apiCall = async (
 
     const isFormData = data instanceof FormData;
     const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+    const tenant = process.env.NEXT_PUBLIC_APP_ENV;
 
     const finalConfig = {
       ...config,
@@ -31,6 +32,7 @@ const apiCall = async (
           navigator.language?.split("-")[0] ||
           "de",
         ...(apiKey ? { "x-api-key": apiKey } : {}),
+        ...(tenant ? { "X-Tenant": tenant } : {}),
       },
     };
 
@@ -56,7 +58,6 @@ const apiCall = async (
       error?.message ||
       "Etwas ist schiefgelaufen!";
 
-    // Sadece /account/me için 401 ise sessiz geç
     if (status === 401 && url === "/account/me") {
       if (isDev) {
         console.warn("🔐 [account/me] için 401 — kullanıcı login değil.");
@@ -64,7 +65,6 @@ const apiCall = async (
       return null;
     }
 
-    // --- LOG DÜZENLEMESİ ---
     if (error?.response) {
       const res = error.response;
       const logObj = {
@@ -76,7 +76,6 @@ const apiCall = async (
           method?.toUpperCase?.() ||
           "-",
       };
-      // Sadece boş bir obje dönüyorsa (ör: {}), loglamayı gereksiz büyütme
       const isEmptyObj = Object.values(logObj).every(
         (v) => v === "-" || v === "" || v == null
       );
@@ -86,14 +85,12 @@ const apiCall = async (
         console.error("❌ API Fehler / Error: Empty or invalid error object.");
       }
     } else {
-      // response yoksa
       console.error("❌ API Network/Error:", {
         url,
         message: error?.message || message,
         error,
       });
     }
-    // --- SON LOG DÜZENLEMESİ ---
 
     return rejectWithValue({ status, message, data: errorData });
   }
