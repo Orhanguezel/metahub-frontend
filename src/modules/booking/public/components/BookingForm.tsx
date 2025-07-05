@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchServices } from "@/modules/services/slice/servicesSlice";
 import {
   fetchAvailableSlots,
   clearSlotMessages,
@@ -42,10 +41,6 @@ export default function BookingForm() {
   });
 
   useEffect(() => {
-    dispatch(fetchServices(lang));
-  }, [dispatch, lang]);
-
-  useEffect(() => {
     if (form.date) {
       dispatch(fetchAvailableSlots(form.date));
     }
@@ -77,9 +72,7 @@ export default function BookingForm() {
     }
   };
 
-  const handleDateChange = (
-    date: Date | null
-  ) => {
+  const handleDateChange = (date: Date | null) => {
     setSelectedDate(date);
     if (date) {
       const formatted = format(date, "yyyy-MM-dd");
@@ -189,15 +182,15 @@ export default function BookingForm() {
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
+  gap: ${({ theme }) => theme.spacings.lg};
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.form};
-  padding: ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacings.xl};
   margin: 0 auto;
 
   @media ${({ theme }) => theme.media.mobile} {
-    padding: ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => theme.spacings.md};
     border-radius: ${({ theme }) => theme.radii.lg};
   }
 `;
@@ -205,7 +198,7 @@ const Form = styled.form`
 const Field = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
+  gap: ${({ theme }) => theme.spacings.xs};
 `;
 
 const Label = styled.label`
@@ -213,7 +206,7 @@ const Label = styled.label`
   font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
 `;
 
 const Input = styled.input`
@@ -224,7 +217,7 @@ const Input = styled.input`
   border: ${({ theme }) => theme.borders.thin}
     ${({ theme }) => theme.inputs.border};
   border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   transition: border ${({ theme }) => theme.transition.normal};
 
   &:focus {
@@ -247,7 +240,7 @@ const Select = styled.select`
   border: ${({ theme }) => theme.borders.thin}
     ${({ theme }) => theme.inputs.border};
   border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   transition: border ${({ theme }) => theme.transition.normal};
   width: 100%;
 
@@ -266,7 +259,7 @@ const TextArea = styled.textarea`
   border: ${({ theme }) => theme.borders.thin}
     ${({ theme }) => theme.inputs.border};
   border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   resize: vertical;
   min-height: 70px;
   transition: border ${({ theme }) => theme.transition.normal};
@@ -291,8 +284,9 @@ const SubmitButton = styled.button`
   font-family: ${({ theme }) => theme.fonts.body};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.xl};
-  margin-top: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.xl};
+  margin-top: ${({ theme }) => theme.spacings.lg};
   box-shadow: ${({ theme }) => theme.shadows.button};
   cursor: pointer;
   transition: background ${({ theme }) => theme.transition.normal},

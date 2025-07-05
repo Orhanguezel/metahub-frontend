@@ -2,10 +2,8 @@
 
 import { DefaultTheme } from "styled-components";
 
-
 const classicTheme: DefaultTheme = {
   templateName: "classic",
-
 
   fonts: {
     main: "'Segoe UI', Arial, sans-serif",
@@ -50,7 +48,7 @@ const classicTheme: DefaultTheme = {
     loose: "2",
   },
 
-  spacing: {
+  spacings: {
     xs: "4px",
     sm: "8px",
     md: "16px",
@@ -99,7 +97,7 @@ const classicTheme: DefaultTheme = {
 
   layout: {
     containerWidth: "1280px",
-    sectionSpacing: "3rem",
+    sectionspacings: "3rem",
   },
 
   zIndex: {
@@ -136,7 +134,8 @@ const classicTheme: DefaultTheme = {
     desktop: "@media (min-width: 1025px)",
     landscape: "@media (orientation: landscape)",
     portrait: "@media (orientation: portrait)",
-    retina: "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
+    retina:
+      "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
   },
 
   colors: {
@@ -171,6 +170,12 @@ const classicTheme: DefaultTheme = {
     primaryHover: "#365075",
     primaryDark: "#222222",
     primaryTransparent: "rgba(72, 98, 137, 0.1)",
+
+    secondary: "#52404b",
+    secondaryLight: "#f3d9e5",
+    secondaryHover: "#40333d",
+    secondaryDark: "#32272a",
+    secondaryTransparent: "rgba(82,64,75,0.1)",
 
     accent: "#007BFF",
     accentHover: "#0056b3",
@@ -222,6 +227,8 @@ const classicTheme: DefaultTheme = {
     white: "#ffffff",
     whiteColor: "#ffffff",
     darkColor: "#000000",
+    disabledBg: "#d6d6d6",
+    lightGrey: "#f7f7f7",
   },
 
   buttons: {

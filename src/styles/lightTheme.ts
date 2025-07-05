@@ -25,10 +25,14 @@ export const lightTheme = {
     primaryDark: "#8B6914",
     primaryLight: "#f1e3c0",
     primaryTransparent: "rgba(217, 164, 65, 0.1)",
+    secondary: "#c2d941",
+    secondaryLight: "#f3d9e5",
+    secondaryHover: "#40333d",
+    secondaryDark: "#32272a",
+    secondaryTransparent: "rgba(82,64,75,0.1)",
     skeletonBackground: "#f1f1f1",
     overlayBackground: "rgba(0, 0, 0, 0.5)",
     accent: "#d95841",
-    secondary: "#c2d941",
     border: "#ddd",
     cardBackground: "#ffffff",
     card: "#ffffff",
@@ -53,6 +57,8 @@ export const lightTheme = {
     tableHeader: "#f0f0f0",
     tagBackground: "#f0f0f0",
     textLight: "#171717",
+    disabledBg: "#d6d6d6",
+    lightGrey: "#f7f7f7",
   },
   buttons: {
     primary: {
@@ -85,4 +91,3 @@ export const lightTheme = {
     hoverBackground: "#f0f0f0",
   },
 };
-

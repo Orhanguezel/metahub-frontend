@@ -1,72 +1,73 @@
 {
   "page": {
-    "loading": "Lädt...",
-    "noNews": "Keine Nachrichten gefunden.",
-    "allNews": "Alle Nachrichten",
-    "author": "Autor",
-    "tags": "Stichwörter",
-    "unknown": "Unbekannt",
-    "readMore": "Weiterlesen →",
-    "other": "Weitere Nachrichten"
+    "noNews": "Keine Artikel gefunden.",
+    "allNews": "Alle Artikel",
+    "news": {
+      "title": "Über",
+      "all": "Alle anzeigen"
+    },
+    "other": "Weitere Bereiche",
+    "summary": "Zusammenfassung",
+    "detail": "Detail",
+    "noTitle": "Kein Titel"
   },
+  "readMore": "Mehr lesen →",
+  "author": "Autor",
+  "tags": "Tags",
+  "unknown": "Unbekannt",
+  "tabs": {
+    "news": "Über",
+    "create": "Neuer Artikel",
+    "categories": "Kategorien"
+  },
+  "news": {
+    "empty": "Keine Artikel verfügbar.",
+    "no_images": "Keine Bilder",
+    "author": "Autor",
+    "tags": "Tags",
+    "publish_status": "Veröffentlicht",
+    "unpublish": "Veröffentlichung aufheben",
+    "publish": "Veröffentlichen",
+    "unknown": "Unbekannt",
+    "none": "Keine"
+  },
+  "edit": "Bearbeiten",
+  "delete": "Löschen",
+  "yes": "Ja",
+  "no": "Nein",
   "admin": {
     "news": {
-      "create": "Nachricht hinzufügen",
-      "edit": "Nachricht bearbeiten",
+      "edit": "Artikel bearbeiten",
+      "create": "Neuen Artikel erstellen",
       "title": "Titel",
       "summary": "Zusammenfassung",
       "content": "Inhalt",
       "author": "Autor",
-      "tags": "Stichwörter",
-      "image": "Bild",
+      "tags": "Tags",
+      "image": "Bilder",
       "category": "Kategorie",
-      "select_category": "Kategorie auswählen",
-      "no_images": "Keine Bilder",
-      "publish": "Veröffentlichen",
-      "unpublish": "Veröffentlichung aufheben",
-      "publish_status": "Veröffentlicht",
-      "empty": "Keine Nachrichten verfügbar."
+      "select_category": "Kategorie auswählen"
     },
     "categories": {
-      "title": "Nachrichtenkategorien",
-      "add": "Neue Kategorie",
-      "empty": "Keine Kategorien gefunden."
+      "title": "Produktkategorien",
+      "add": "Kategorie hinzufügen",
+      "name": "Kategoriename"
     },
-    "confirm": {
-      "delete_news": "Möchten Sie diese Nachricht wirklich löschen?",
-      "delete": "Möchten Sie diese Kategorie wirklich löschen?"
-    },
-    "language": {
-      "tr": "TR",
-      "en": "EN",
-      "de": "DE"
-    },
-    "tabs": {
-      "news": "Nachrichten",
-      "create": "Neue Nachricht",
-      "categories": "Kategorien"
-    },
-    "slug": "Slug",
-    "actions": "Aktionen",
-    "edit": "Bearbeiten",
-    "delete": "Löschen",
-    "loading": "Lädt...",
-    "cancel": "Abbrechen",
-    "create": "Erstellen",
+    "editCategory": "Kategorie bearbeiten",
+    "newCategory": "Neue Kategorie",
+    "optional_description": "Optionale Beschreibung",
+    "category_info": "Worum geht es in dieser Kategorie?",
     "update": "Aktualisieren",
-    "unknown": "Unbekannt",
-    "none": "Keine",
-    "Açıklama (opsiyonel)": "Beschreibung (optional)",
-    "Bu kategori neyle ilgili?": "Worum geht es in dieser Kategorie?",
-    "Kategoriyi Düzenle": "Kategorie bearbeiten",
-    "Yeni Kategori": "Neue Kategorie",
-    "Kaydediliyor...": "Speichert...",
-    "Kaydet": "Speichern",
-    "Güncelle": "Aktualisieren"
-  },
-
-  "seo": {
-    "title": "SEO-Titel",
-    "description": "SEO-Beschreibung"
+    "update2": "Aktualisieren",
+    "save": "Speichern",
+    "saving": "Speichert...",
+    "cancel": "Abbrechen",
+    "confirm": {
+      "delete": "Möchten Sie diese Kategorie wirklich löschen?",
+      "delete_article": "Möchten Sie diesen Artikel wirklich löschen?"
+    },
+    "loading": "Lädt...",
+    "actions": "Aktionen",
+    "slug": "Kurzname"
   }
 }

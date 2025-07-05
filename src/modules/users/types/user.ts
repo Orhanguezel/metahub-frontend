@@ -6,7 +6,7 @@ export interface User {
   _id: string;
   name: string;
   email: string;
-  role: "admin" | "user" | "moderator" | "staff" | "customer";
+  role: "superadmin" | "admin" | "user" | "moderator" | "staff" | "customer";
   isActive: boolean;
   profileImage?: string;
   phone?: string;
@@ -17,14 +17,13 @@ export interface User {
   notifications?: Record<string, any>;
 }
 
-
 export interface Account {
   _id: string;
   name: string;
   email: string;
   phone?: string;
   profileImage?: string;
-  addresses?: Address[];  // Address[] ile birebir uyumlu!
+  addresses?: Address[]; // Address[] ile birebir uyumlu!
   notifications?: NotificationSettings;
   socialMedia?: SocialMediaLinks;
   language?: "tr" | "en" | "de";

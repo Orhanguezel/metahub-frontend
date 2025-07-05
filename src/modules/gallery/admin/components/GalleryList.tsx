@@ -1,212 +1,130 @@
 "use client";
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import { useAppDispatch } from "@/store/hooks";
 import { deleteGalleryItem } from "@/modules/gallery/slice/gallerySlice";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import translations from "../../locales";
 import { Modal } from "@/shared";
 import { GalleryEditForm } from "@/modules/gallery";
-import type { GalleryItem, GalleryCategory } from "@/modules/gallery/types/gallery";
+import type { IGalleryCategory, IGallery } from "@/modules/gallery/types";
 
 interface GalleryListProps {
-  items: GalleryItem[];
-  categories: GalleryCategory[];
+  images: IGallery[];
+  categories: IGalleryCategory[];
   onUpdate: () => void;
 }
 
 const GalleryList: React.FC<GalleryListProps> = ({
-  items,
+  images,
   categories,
   onUpdate,
 }) => {
   const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("gallery");
-  const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
+  const { i18n, t } = useI18nNamespace("gallery", translations);
+  const lang = (i18n.language?.slice(0, 2) || "en") as SupportedLocale;
+  const [selectedItem, setSelectedItem] = useState<IGallery | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [visibleCount, setVisibleCount] = useState(12);
-  const [search, setSearch] = useState("");
 
-  // Güvenli dil anahtarı
-  const lang: "tr" | "en" | "de" =
-    i18n.language === "tr" || i18n.language === "en" || i18n.language === "de"
-      ? i18n.language
-      : "tr";
-
-  // Seçili kategoriye ve aramaya göre filtrele
-  const filteredItems = items
-    .filter((item) => {
-     const categoryId =
-  item && item.category
-    ? typeof item.category === "string"
-      ? item.category
-      : item.category._id || ""
-    : "";
-
-      const matchesCategory =
-        selectedCategory === "" || categoryId === selectedCategory;
-
-      const firstItem = item.items[0];
-      const matchesSearch =
-        search === "" ||
-        firstItem?.title?.tr?.toLowerCase().includes(search.toLowerCase()) ||
-        firstItem?.title?.en?.toLowerCase().includes(search.toLowerCase()) ||
-        firstItem?.title?.de?.toLowerCase().includes(search.toLowerCase());
-
-      return matchesCategory && matchesSearch;
-    })
-    .slice(0, visibleCount);
-
-
-  const getCategoryObj = (cat: string | GalleryCategory) =>
-    typeof cat === "string"
-      ? categories.find((c) => c._id === cat)
-      : cat;
+  const filteredItems = selectedCategory
+    ? images.filter((item) =>
+        typeof item.category === "string"
+          ? item.category === selectedCategory
+          : item.category?._id === selectedCategory
+      )
+    : images;
 
   const handleDelete = async (id: string) => {
-    if (window.confirm(t("delete.confirm"))) {
+    if (window.confirm(t("delete.confirm", "Are you sure you want to delete?"))) {
       await dispatch(deleteGalleryItem(id));
       onUpdate();
     }
   };
 
-  const handleToggleSelect = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
-
-  const handleToggleFavorite = (id: string) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
-
-  const handleOpenEdit = (item: GalleryItem) => {
-    setSelectedItem(item);
-  };
-
-  const handleCloseModal = async () => {
+  const handleOpenEdit = (item: IGallery) => setSelectedItem(item);
+  const handleCloseModal = () => {
     setSelectedItem(null);
     onUpdate();
   };
 
-  const handleScroll = () => {
-    if (
-      window.innerHeight + window.scrollY >=
-      document.body.offsetHeight - 100
-    ) {
-      setVisibleCount((prev) => prev + 12);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
     <>
-      <Controls>
-        <CategoryButtons>
+      {/* Category Filter */}
+      <CategoryButtons>
+        <CategoryButton
+          $active={selectedCategory === ""}
+          onClick={() => setSelectedCategory("")}
+        >
+          {t("form.all", "All")}
+        </CategoryButton>
+        {categories.map((cat) => (
           <CategoryButton
-            $active={selectedCategory === ""}
-            onClick={() => setSelectedCategory("")}
+            key={cat._id}
+            $active={selectedCategory === cat._id}
+            onClick={() => setSelectedCategory(cat._id)}
           >
-            {t("form.all")}
+            {cat.name?.[lang] ||
+              SUPPORTED_LOCALES.map((l) => cat.name?.[l]).find(Boolean) ||
+              cat.slug}
           </CategoryButton>
-          {categories.map((cat) => (
-            <CategoryButton
-              key={cat._id}
-              $active={selectedCategory === cat._id}
-              onClick={() => setSelectedCategory(cat._id)}
-            >
-              {cat.name?.[lang] || cat.slug}
-            </CategoryButton>
-          ))}
-        </CategoryButtons>
+        ))}
+      </CategoryButtons>
 
-        <SearchInput
-          type="text"
-          placeholder={t("form.search")}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </Controls>
+      {/* Grid */}
+      {filteredItems.length === 0 ? (
+        <EmptyMessage>{t("empty", "No gallery items found.")}</EmptyMessage>
+      ) : (
+        <GridWrapper>
+          {filteredItems.map((item) => {
+            const firstItem = item.images?.[0];
+            const imageUrl = firstItem?.thumbnail || firstItem?.url || "";
+            const title =
+              firstItem?.name?.[lang] ||
+              SUPPORTED_LOCALES.map((l) => firstItem?.name?.[l]).find(Boolean) ||
+              t("noTitle", "No title");
 
-      {selectedIds.length > 0 && (
-        <BatchActions>
-          <button
-            onClick={async () => {
-              for (const id of selectedIds) {
-                await dispatch(deleteGalleryItem(id));
-              }
-              setSelectedIds([]);
-              onUpdate();
-            }}
-          >
-            {t("delete.selected")}
-          </button>
-        </BatchActions>
-      )}
+            const categoryObj =
+              typeof item.category === "string"
+                ? categories.find((c) => c._id === item.category)
+                : item.category;
 
-      <GridWrapper>
-        {filteredItems.map((item) => {
-          const firstItem = item.items[0];
-          const imageUrl = firstItem?.thumbnail || firstItem?.image;
-          const title = firstItem?.title?.[lang] || "No title";
-          const categoryObj = getCategoryObj(item.category);
+            const categoryTitle =
+              categoryObj?.name?.[lang] ||
+              SUPPORTED_LOCALES.map((l) => categoryObj?.name?.[l]).find(Boolean) ||
+              categoryObj?.slug ||
+              t("noCategory", "No category");
 
-          return (
-            <SmallCard key={item._id}>
-              <SelectCheckbox
-                type="checkbox"
-                checked={selectedIds.includes(item._id)}
-                onChange={() => handleToggleSelect(item._id)}
-              />
-              <FavoriteButton
-                onClick={() => handleToggleFavorite(item._id)}
-                $active={favorites.includes(item._id)}
-              >
-                ♥
-              </FavoriteButton>
-
-              <div
-                onClick={() => handleToggleSelect(item._id)}
-                style={{ cursor: "pointer" }}
-              >
+            return (
+              <SmallCard key={item._id}>
                 {imageUrl ? (
                   <ImagePreview src={imageUrl} alt={title} />
                 ) : (
-                  <Placeholder>No image</Placeholder>
+                  <Placeholder>{t("noImage", "No image")}</Placeholder>
                 )}
-              </div>
 
-              <Info>
-                <CategoryText>
-                  {categoryObj?.name?.[lang] ||
-                    (typeof item.category === "string"
-                      ? item.category
-                      : (item.category as GalleryCategory)?.slug || "")}
-                </CategoryText>
-                <Type>{item.type}</Type>
-                <p>{title}</p>
-              </Info>
+                <Info>
+                  <CategoryText>{categoryTitle}</CategoryText>
+                  <Type>{item.type}</Type>
+                  <p>{title}</p>
+                </Info>
 
-              <ButtonGroup>
-                <ActionButton onClick={() => handleOpenEdit(item)}>
-                  {t("edit.button")}
-                </ActionButton>
-                <DeleteButton onClick={() => handleDelete(item._id)}>
-                  {t("delete.button")}
-                </DeleteButton>
-              </ButtonGroup>
-            </SmallCard>
-          );
-        })}
-      </GridWrapper>
+                <ButtonGroup>
+                  <ActionButton type="button" onClick={() => handleOpenEdit(item)}>
+                    {t("edit.button", "Edit")}
+                  </ActionButton>
+                  <DeleteButton type="button" onClick={() => handleDelete(item._id)}>
+                    {t("delete.button", "Delete")}
+                  </DeleteButton>
+                </ButtonGroup>
+              </SmallCard>
+            );
+          })}
+        </GridWrapper>
+      )}
 
+      {/* Modal */}
       {selectedItem && (
         <Modal isOpen onClose={handleCloseModal}>
           <GalleryEditForm
@@ -222,26 +140,18 @@ const GalleryList: React.FC<GalleryListProps> = ({
 
 export default GalleryList;
 
-const Controls = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-  align-items: center;
 
-  @media ${({ theme }) => theme.media.mobile} {
-    flex-direction: column;
-    gap: ${({ theme }) => theme.spacing.sm};
-  }
-`;
+// Styled Components
 
 const CategoryButtons = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacings.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
 
   @media ${({ theme }) => theme.media.mobile} {
-    flex-wrap: wrap;
-    gap: ${({ theme }) => theme.spacing.xs};
+    gap: ${({ theme }) => theme.spacings.xs};
+    margin-bottom: ${({ theme }) => theme.spacings.md};
   }
 `;
 
@@ -254,12 +164,13 @@ const CategoryButton = styled.button<{ $active: boolean }>`
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ $active, theme }) =>
     $active ? theme.fontWeights.bold : theme.fontWeights.medium};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.xl};
   border: none;
   border-radius: ${({ theme }) => theme.radii.pill};
-  cursor: pointer;
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.xl};
   box-shadow: ${({ $active, theme }) =>
     $active ? theme.shadows.button : "none"};
+  cursor: pointer;
   transition: background ${({ theme }) => theme.transition.normal},
     color ${({ theme }) => theme.transition.normal},
     box-shadow ${({ theme }) => theme.transition.normal};
@@ -268,176 +179,60 @@ const CategoryButton = styled.button<{ $active: boolean }>`
   &:focus {
     background: ${({ theme }) => theme.colors.primaryHover};
     color: ${({ theme }) => theme.colors.buttonText};
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-  }
-`;
-
-const SearchInput = styled.input`
-  flex: 1 1 200px;
-  min-width: 180px;
-  background: ${({ theme }) => theme.colors.inputBackground};
-  color: ${({ theme }) => theme.colors.text};
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.md};
-  transition: border ${({ theme }) => theme.transition.normal},
-    background ${({ theme }) => theme.transition.normal};
-
-  &::placeholder {
-    color: ${({ theme }) => theme.inputs.placeholder};
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-    opacity: 1;
-  }
-
-  &:focus {
-    border: ${({ theme }) => theme.borders.thick} ${({ theme }) => theme.colors.inputBorderFocus};
-    outline: none;
-    background: ${({ theme }) => theme.colors.inputBackgroundLight};
-  }
-`;
-
-const BatchActions = styled.div`
-  margin: ${({ theme }) => theme.spacing.md} 0;
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
-
-  button {
-    background: ${({ theme }) => theme.buttons.danger.background};
-    color: ${({ theme }) => theme.buttons.danger.text};
-    font-family: ${({ theme }) => theme.fonts.body};
-    font-size: ${({ theme }) => theme.fontSizes.md};
-    font-weight: ${({ theme }) => theme.fontWeights.bold};
-    border: none;
-    border-radius: ${({ theme }) => theme.radii.pill};
-    padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.xl};
-    cursor: pointer;
-    box-shadow: ${({ theme }) => theme.shadows.button};
-    transition: background ${({ theme }) => theme.transition.normal};
-
-    &:hover,
-    &:focus {
-      background: ${({ theme }) => theme.buttons.danger.backgroundHover};
-      color: ${({ theme }) => theme.buttons.danger.textHover};
-      box-shadow: ${({ theme }) => theme.shadows.lg};
-    }
+    box-shadow: ${({ theme }) => theme.shadows.md};
   }
 `;
 
 const GridWrapper = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: ${({ theme }) => theme.spacing.lg};
-  width: 100%;
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
 
   @media ${({ theme }) => theme.media.mobile} {
     grid-template-columns: 1fr 1fr;
-    gap: ${({ theme }) => theme.spacing.md};
+    gap: ${({ theme }) => theme.spacings.md};
   }
-
   @media ${({ theme }) => theme.media.xsmall} {
     grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing.sm};
+    gap: ${({ theme }) => theme.spacings.sm};
   }
 `;
 
 const SmallCard = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.md};
+  color: ${({ theme }) => theme.colors.text};
+  padding: ${({ theme }) => theme.spacings.xl}
+    ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.md};
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  position: relative;
+  justify-content: space-between;
   min-height: 230px;
-  transition: box-shadow ${({ theme }) => theme.transition.normal},
-    background ${({ theme }) => theme.transition.normal},
+  transition: background ${({ theme }) => theme.transition.normal},
+    box-shadow ${({ theme }) => theme.transition.normal},
     transform ${({ theme }) => theme.transition.normal};
 
   &:hover {
-    box-shadow: ${({ theme }) => theme.shadows.lg};
     background: ${({ theme }) => theme.colors.hoverBackground};
-    transform: scale(1.03);
+    box-shadow: ${({ theme }) => theme.shadows.lg};
+    transform: scale(1.025);
   }
 
   @media ${({ theme }) => theme.media.mobile} {
     border-radius: ${({ theme }) => theme.radii.md};
-    padding: ${({ theme }) => theme.spacing.lg} ${({ theme }) => theme.spacing.sm};
+    padding: ${({ theme }) => theme.spacings.lg}
+      ${({ theme }) => theme.spacings.sm};
     min-height: 170px;
   }
 `;
 
-const SelectCheckbox = styled.input`
-  position: absolute;
-  top: ${({ theme }) => theme.spacing.sm};
-  left: ${({ theme }) => theme.spacing.sm};
-  width: 1.2em;
-  height: 1.2em;
-  accent-color: ${({ theme }) => theme.colors.primary};
-  cursor: pointer;
-`;
-
-const FavoriteButton = styled.button<{ $active: boolean }>`
-  position: absolute;
-  top: ${({ theme }) => theme.spacing.sm};
-  right: ${({ theme }) => theme.spacing.sm};
-  background: ${({ $active, theme }) =>
-    $active ? theme.colors.primaryTransparent : "transparent"};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.circle};
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  color: ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.textSecondary};
-  width: 2.1em;
-  height: 2.1em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background ${({ theme }) => theme.transition.normal},
-    color ${({ theme }) => theme.transition.normal};
-  cursor: pointer;
-  box-shadow: ${({ $active, theme }) =>
-    $active ? theme.shadows.button : "none"};
-
-  &:hover,
-  &:focus {
-    color: ${({ theme }) => theme.colors.primaryDark};
-    background: ${({ theme }) => theme.colors.primaryTransparent};
-    box-shadow: ${({ theme }) => theme.shadows.md};
-  }
-`;
-
-const ImagePreview = styled.img`
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-`;
-
-const Placeholder = styled.div`
-  width: 100%;
-  height: 120px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-`;
-
 const Info = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.md};
-  flex: 1 1 auto;
+  margin-top: ${({ theme }) => theme.spacings.md};
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
+  gap: ${({ theme }) => theme.spacings.xs};
 `;
 
 const CategoryText = styled.p`
@@ -457,8 +252,8 @@ const Type = styled.p`
 
 const ButtonGroup = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
-  margin-top: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
+  margin-top: ${({ theme }) => theme.spacings.sm};
 `;
 
 const ActionButton = styled.button`
@@ -468,7 +263,8 @@ const ActionButton = styled.button`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   border: none;
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.xs}
+    ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.pill};
   cursor: pointer;
   box-shadow: ${({ theme }) => theme.shadows.button};
@@ -494,22 +290,49 @@ const DeleteButton = styled(ActionButton)`
   }
 `;
 
+const EmptyMessage = styled.p`
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  text-align: center;
+  margin-top: ${({ theme }) => theme.spacings.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
+  font-family: ${({ theme }) => theme.fonts.body};
+`;
+
+const ImagePreview = styled.img`
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  box-shadow: ${({ theme }) => theme.shadows.xs};
+`;
+
+const Placeholder = styled.div`
+  width: 100%;
+  height: 120px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  box-shadow: ${({ theme }) => theme.shadows.xs};
+`;
+
 export {
-  Controls,
   CategoryButtons,
   CategoryButton,
-  SearchInput,
-  BatchActions,
   GridWrapper,
   SmallCard,
-  SelectCheckbox,
-  FavoriteButton,
-  ImagePreview,
-  Placeholder,
   Info,
   CategoryText,
   Type,
   ButtonGroup,
   ActionButton,
   DeleteButton,
+  EmptyMessage,
+  ImagePreview,
+  Placeholder,
 };

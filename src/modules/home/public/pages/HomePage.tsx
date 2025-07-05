@@ -2,8 +2,6 @@
 
 import React, { useEffect, useMemo } from "react";
 import { useAppDispatch } from "@/store/hooks";
-import { getCurrentLocale } from "@/utils/getCurrentLocale";
-import { SupportedLocale } from "@/types/common";
 
 // SECTION COMPONENTS
 import { AboutSection } from "@/modules/about";
@@ -12,41 +10,32 @@ import { NewsSection } from "@/modules/news";
 import { BlogSection } from "@/modules/blog";
 import { ArticlesSection } from "@/modules/articles";
 import { ActivitySection } from "@/modules/activity";
-import { ReferenceSection } from "@/modules/references";
-import { BikeSection } from "@/modules/bikes";
-import SliderSection from "../components/HeroProductSliderSection";
-import CouponBanner from "@/shared/CouponBanner";
+import { ReferencesSection } from "@/modules/references";
+import { BikesSection } from "@/modules/bikes";
+import SliderProductSection from "../components/HeroProductSliderSection";
+import HeroSection from "../components/HeroSection";
+import HeroSectionSlayt from "../components/HeroSectionSlayt";
+import CouponBanner from "@/modules/coupon/public/components/CouponBanner";
 
-// SLICE FETCH/CLEAR (opsiyonel hata toleranslı)
-import {
-  fetchAbout,
-  clearAboutMessages,
-} from "@/modules/about/slice/aboutSlice";
-import {
-  fetchServices,
-  clearServicesMessages,
-} from "@/modules/services/slice/servicesSlice";
+// SLICE FETCH/CLEAR
+import { fetchAbout, clearAboutMessages } from "@/modules/about/slice/aboutSlice";
+import { fetchServices, clearServicesMessages } from "@/modules/services/slice/servicesSlice";
 import { fetchNews, clearNewsMessages } from "@/modules/news/slice/newsSlice";
-import { fetchBlogs, clearBlogMessages } from "@/modules/blog/slice/blogSlice";
-import {
-  fetchArticles,
-  clearArticlesMessages,
-} from "@/modules/articles/slice/articlesSlice";
-import {
-  fetchActivity,
-  clearActivityMessages,
-} from "@/modules/activity/slice/activitySlice";
-import {
-  fetchReferences,
-  clearReferenceMessages,
-} from "@/modules/references/slice/referencesSlice";
+import { fetchBlog, clearBlogMessages } from "@/modules/blog/slice/blogSlice";
+import { fetchArticles, clearArticlesMessages } from "@/modules/articles/slice/articlesSlice";
+import { fetchActivity, clearActivityMessages } from "@/modules/activity/slice/activitySlice";
+import { fetchReferences, clearReferencesMessages } from "@/modules/references/slice/referencesSlice";
 import { fetchBikes, clearBikeMessages } from "@/modules/bikes/slice/bikeSlice";
+import {fetchPublishedGalleryItems,fetchPublishedGalleryCategories,} from "@/modules/gallery/slice/gallerySlice";
+import { fetchGalleryCategories,clearGalleryCategoryMessages } from "@/modules/gallery/slice/galleryCategorySlice";
 
 const isDev = process.env.NODE_ENV === "development";
 
-// SECTION AYARLARI
+// SECTION SETTINGS
 const sectionSettings = [
-  { id: "heroSlider", enabled: true, order: 1 },
+  { id: "heroSlider", enabled: false, order: 1 }, // Hero slider section
+  { id: "heroSection", enabled: true, order: 1 }, // Hero section (deprecated)
+  { id: "heroSectionSlayt", enabled: false, order: 1 }, // Hero section with slides (deprecated)
   { id: "couponBanner", enabled: true, order: 2 },
   { id: "services", enabled: true, order: 3 },
   { id: "about", enabled: true, order: 4 },
@@ -60,45 +49,40 @@ const sectionSettings = [
 ];
 
 // COMPONENT MAP
-const sectionComponents: Record<string, React.ComponentType<any> | undefined> =
-  {
-    heroSlider: SliderSection,
-    couponBanner: CouponBanner,
-    about: AboutSection,
-    services: ServicesSection,
-    news: NewsSection,
-    blog: BlogSection,
-    articles: ArticlesSection,
-    activity: ActivitySection,
-    references: ReferenceSection,
-    bikes: BikeSection,
-  };
+const sectionComponents: Record<string, React.ComponentType<any> | undefined> = {
+  heroSlider: SliderProductSection,
+  heroSection: HeroSection, // Deprecated
+  heroSectionSlayt: HeroSectionSlayt, // Deprecated
+  couponBanner: CouponBanner,
+  about: AboutSection,
+  services: ServicesSection,
+  news: NewsSection,
+  blog: BlogSection,
+  articles: ArticlesSection,
+  activity: ActivitySection,
+  references: ReferencesSection,
+  bikes: BikesSection,
+};
 
 // FETCH MAP
-type FetcherConfig = {
-  fetch: (lang: SupportedLocale) => any;
-  clear: () => any;
-};
-const sectionFetchers: Record<string, FetcherConfig | undefined> = {
+const sectionFetchers = {
   about: { fetch: fetchAbout, clear: clearAboutMessages },
   services: { fetch: fetchServices, clear: clearServicesMessages },
   news: { fetch: fetchNews, clear: clearNewsMessages },
-  blog: { fetch: fetchBlogs, clear: clearBlogMessages },
+  blog: { fetch: fetchBlog, clear: clearBlogMessages },
   articles: { fetch: fetchArticles, clear: clearArticlesMessages },
   activity: { fetch: fetchActivity, clear: clearActivityMessages },
-  references: { fetch: fetchReferences, clear: clearReferenceMessages },
+  references: { fetch: fetchReferences, clear: clearReferencesMessages },
   bikes: { fetch: fetchBikes, clear: clearBikeMessages },
+  gallery: { fetch: fetchPublishedGalleryItems, clear: clearGalleryCategoryMessages },
+  galleryCategories: { fetch: fetchGalleryCategories, clear: clearGalleryCategoryMessages },
 };
 
 export default function HomePage() {
   const dispatch = useAppDispatch();
-  const lang = getCurrentLocale();
 
   const activeSections = useMemo(
-    () =>
-      sectionSettings
-        .filter((section) => section.enabled)
-        .sort((a, b) => a.order - b.order),
+    () => sectionSettings.filter((s) => s.enabled).sort((a, b) => a.order - b.order),
     []
   );
 
@@ -106,11 +90,11 @@ export default function HomePage() {
     const cleanupFns: Array<() => void> = [];
 
     activeSections.forEach(({ id }) => {
-      const fetcher = sectionFetchers[id];
+      const fetcher = sectionFetchers[id as keyof typeof sectionFetchers];
       if (fetcher) {
         try {
-          dispatch(fetcher.fetch(lang));
-          cleanupFns.push(() => dispatch(fetcher.clear()));
+          dispatch(fetcher.fetch()); // ✅ parametresiz çağrı
+          cleanupFns.push(() => dispatch(fetcher.clear())); // ✅ parametresiz çağrı
         } catch (err) {
           if (isDev) console.warn(`❌ Fetch failed for section '${id}'`, err);
         }
@@ -120,7 +104,7 @@ export default function HomePage() {
     return () => {
       cleanupFns.forEach((fn) => fn());
     };
-  }, [dispatch, lang, activeSections]);
+  }, [dispatch, activeSections]);
 
   return (
     <>
@@ -128,13 +112,10 @@ export default function HomePage() {
         const SectionComponent = sectionComponents[id];
         if (!SectionComponent) {
           if (isDev) {
-            console.warn(
-              `⚠️ Section '${id}' bileşeni tanımlı değil veya import edilmemiş.`
-            );
+            console.warn(`⚠️ Section '${id}' bileşeni import edilmemiş veya tanımlı değil.`);
           }
           return null;
         }
-
         try {
           return <SectionComponent key={id} />;
         } catch (err) {

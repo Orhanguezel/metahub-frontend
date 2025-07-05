@@ -35,50 +35,48 @@ export default function CouponForm({
   });
 
   const submitHandler = (data: any) => {
-  data.discount = parseFloat(data.discount);
-  if (data.expiresAt) data.expiresAt = new Date(data.expiresAt);
+    data.discount = parseFloat(data.discount);
+    if (data.expiresAt) data.expiresAt = new Date(data.expiresAt);
 
-  data.label = {
-    title: {
-      tr: data["label.title.tr"].trim(),
-      en: data["label.title.en"].trim(),
-      de: data["label.title.de"].trim(),
-    },
-    description: {
-      tr: data["label.description.tr"].trim(),
-      en: data["label.description.en"].trim(),
-      de: data["label.description.de"].trim(),
-    },
+    data.label = {
+      title: {
+        tr: data["label.title.tr"].trim(),
+        en: data["label.title.en"].trim(),
+        de: data["label.title.de"].trim(),
+      },
+      description: {
+        tr: data["label.description.tr"].trim(),
+        en: data["label.description.en"].trim(),
+        de: data["label.description.de"].trim(),
+      },
+    };
+
+    // Temizle
+    Object.keys(data).forEach((k) => {
+      if (k.startsWith("label.")) delete data[k];
+    });
+
+    // Boş alan kontrolü
+    const missingFields = [];
+    if (!data.code) missingFields.push("code");
+    if (!data.discount) missingFields.push("discount");
+    if (!data.expiresAt) missingFields.push("expiresAt");
+    ["tr", "en", "de"].forEach((lang) => {
+      if (!data.label.title[lang]) missingFields.push(`title.${lang}`);
+      if (!data.label.description[lang]) missingFields.push(`desc.${lang}`);
+    });
+    if (missingFields.length) {
+      alert(
+        t("form.required_fields", "Please fill in all required fields:") +
+          " " +
+          missingFields.join(", ")
+      );
+      return;
+    }
+
+    onSubmit(data);
+    reset();
   };
-
-  // Temizle
-  Object.keys(data).forEach((k) => {
-    if (k.startsWith("label.")) delete data[k];
-  });
-
-  // Boş alan kontrolü
-  const missingFields = [];
-  if (!data.code) missingFields.push("code");
-  if (!data.discount) missingFields.push("discount");
-  if (!data.expiresAt) missingFields.push("expiresAt");
-  ["tr", "en", "de"].forEach((lang) => {
-    if (!data.label.title[lang]) missingFields.push(`title.${lang}`);
-    if (!data.label.description[lang]) missingFields.push(`desc.${lang}`);
-  });
-  if (missingFields.length) {
-    alert(
-      t("form.required_fields", "Please fill in all required fields:") +
-        " " +
-        missingFields.join(", ")
-    );
-    return;
-  }
-
-  onSubmit(data);
-  reset();
-};
-
-
 
   return (
     <Form onSubmit={handleSubmit(submitHandler)} autoComplete="off">
@@ -154,7 +152,7 @@ export default function CouponForm({
 // Styled Components ... (değişmedi, senin kodun aynen kullanılabilir)
 const Form = styled.form`
   margin-bottom: 36px;
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.md};
   border-radius: ${({ theme }) => theme.radii.md};
   background: ${({ theme }) => theme.colors.background};
   box-shadow: ${({ theme }) => theme.shadows.sm};
@@ -162,8 +160,8 @@ const Form = styled.form`
 
 const Row = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.md};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
   flex-wrap: wrap;
 `;
 

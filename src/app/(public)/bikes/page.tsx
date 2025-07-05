@@ -1,7 +1,8 @@
 "use client";
-import BikePage from "@/modules/bikes/public/pages/BikePage";
+import React from "react";
+import BikesPage from "@/modules/bikes/public/pages/BikesPage";
 
-export default function BikeRouterPage() {
+export default function BikesRouterPage() {
 
-  return <BikePage />;
+  return <BikesPage />;
 }

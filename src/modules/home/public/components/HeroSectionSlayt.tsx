@@ -1,86 +1,88 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { fetchGalleryItems } from "@/modules/gallery/slice/gallerySlice";
-import { fetchGalleryCategories } from "@/modules/gallery/slice/galleryCategorySlice";
+import { useAppSelector } from "@/store/hooks";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import useModal from "@/hooks/useModal";
 import Modal from "./Modal";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { SupportedLocale } from "@/types/common";
 import SkeletonBox from "@/shared/Skeleton";
+import type { IGallery } from "@/modules/gallery/types";
 
-// Değiştir: Bu slug'ı hangi kategoriye göre slayt göstereceksen ona göre güncelle
-const SLIDER_CATEGORY_SLUG = "massage-types"; // veya "product-slider" gibi başka bir slug
+const SLIDER_CATEGORY_SLUG = "massage-types";
+
+type GalleryItem = IGallery["images"][0] & {
+  _galleryId?: string;
+  category?: any;
+};
 
 export default function HeroSectionSlayt() {
-  const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("home");
-  const currentLang = ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en";
-  const { items, loading } = useAppSelector((state) => state.gallery);
+  const { i18n, t } = useI18nNamespace("home", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+
+  const { images } = useAppSelector((state) => state.gallery);
   const { categories } = useAppSelector((state) => state.galleryCategory);
 
-  // Kategori ID'si bulma ve ilgili itemları çekme
-  useEffect(() => {
-    dispatch(fetchGalleryCategories());
-  }, [dispatch]);
+  // FlatItems için type tanımlı state
+  const [flatItems, setFlatItems] = useState<GalleryItem[]>([]);
 
   useEffect(() => {
-    if (!categories?.length) return;
-    const targetCategory = categories.find(cat => cat.slug === SLIDER_CATEGORY_SLUG);
-    if (targetCategory?._id) {
-      dispatch(fetchGalleryItems({ category: targetCategory._id, published: true }));
+    if (!images || !Array.isArray(images) || !categories?.length) {
+      setFlatItems([]);
+      return;
     }
-  }, [dispatch, categories]);
 
-  // Flat items oluştur
-  const [flatItems, setFlatItems] = useState<any[]>([]);
-  useEffect(() => {
-    if (!items || !Array.isArray(items)) return setFlatItems([]);
-    const flatted = items
-      .map((item) =>
-        item.items && item.items.length > 0
-          ? {
-              ...item.items[0],
+    const targetCategory = categories.find(cat => cat.slug === SLIDER_CATEGORY_SLUG);
+    if (!targetCategory) {
+      setFlatItems([]);
+      return;
+    }
+
+    const filtered: GalleryItem[] = images
+      .filter(item =>
+        typeof item.category === "string"
+          ? item.category === targetCategory._id
+          : item.category?._id === targetCategory._id
+      )
+      .flatMap(item =>
+        item.images?.length
+          ? [{
+              ...item.images[0],
               category: item.category,
               _galleryId: item._id,
-            }
-          : null
-      )
-      .filter(Boolean);
-    setFlatItems(flatted);
-  }, [items]);
+            }]
+          : []
+      );
 
-  // Modal için
+    setFlatItems(filtered);
+  }, [images, categories]);
+
   const modal = useModal(flatItems);
 
   // Otomatik slayt geçişi
   useEffect(() => {
     if (flatItems.length === 0) return;
-    const timer = setInterval(() => {
-      modal.next();
-    }, 5000);
+    const timer = setInterval(() => modal.next(), 5000);
     return () => clearInterval(timer);
-  }, [flatItems, modal.next]);
+  }, [flatItems, modal]);
 
   // Swipe desteği
-  const handleSwipe = useCallback(
-    (e: React.TouchEvent) => {
-      const touchStartX = e.changedTouches[0].clientX;
-      const touchEndHandler = (endEvent: TouchEvent) => {
-        const touchEndX = endEvent.changedTouches[0].clientX;
-        if (touchStartX - touchEndX > 50) modal.next();
-        if (touchEndX - touchStartX > 50) modal.prev();
-        window.removeEventListener("touchend", touchEndHandler);
-      };
-      window.addEventListener("touchend", touchEndHandler);
-    },
-    [modal.next, modal.prev]
-  );
+  const handleSwipe = useCallback((e: React.TouchEvent) => {
+    const startX = e.changedTouches[0].clientX;
+    const handler = (endEvent: TouchEvent) => {
+      const endX = endEvent.changedTouches[0].clientX;
+      if (startX - endX > 50) modal.next();
+      if (endX - startX > 50) modal.prev();
+      window.removeEventListener("touchend", handler);
+    };
+    window.addEventListener("touchend", handler);
+  }, [modal]);
 
-  if (loading) {
+  if (!images || !categories) {
     return (
       <HeroWrapper>
         <SkeletonBox style={{ height: "60px", marginBottom: "24px" }} />
@@ -90,48 +92,47 @@ export default function HeroSectionSlayt() {
   }
 
   if (flatItems.length === 0) {
-    return <HeroWrapper>No slider items found.</HeroWrapper>;
+    return <HeroWrapper>{t("noItemsFound", "No slider items found.")}</HeroWrapper>;
   }
 
   const heroItem = flatItems[modal.currentIndex];
-  const title = heroItem?.title?.[currentLang] || "No title";
-  const description = heroItem?.description?.[currentLang] || "No description";
-  const imageSrc =
-    heroItem?.webp || heroItem?.image || heroItem?.thumbnail || "/placeholder.jpg";
+  const title = heroItem?.name?.[lang] || "No title";
+  const description = heroItem?.description?.[lang] || "No description";
+  const imageSrc = heroItem?.webp || heroItem?.url || heroItem?.thumbnail || "/placeholder.jpg";
 
   return (
     <>
-      <HeroWrapper>
-        <AnimatePresence mode="wait">
-          <Slide
-            key={modal.currentIndex}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
-            onClick={() => modal.open(modal.currentIndex)}
-          >
-            <Background>
-              <StyledImage src={imageSrc} alt={title} fill priority />
-              <Overlay />
-            </Background>
-            <Content>
-              <Title>{title}</Title>
-              <Subtitle>{description}</Subtitle>
-            </Content>
-          </Slide>
-        </AnimatePresence>
+      <HeroWrapper onTouchStart={handleSwipe}>
+  <AnimatePresence mode="wait">
+    <Slide
+      key={modal.currentIndex}
+      initial={{ opacity: 0, x: 50 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -50 }}
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+      onClick={() => modal.open(modal.currentIndex)}
+    >
+      <Background>
+        <StyledImage src={imageSrc} alt={title} fill priority />
+        <Overlay />
+      </Background>
+      <Content>
+        <Title>{title}</Title>
+        <Subtitle>{description}</Subtitle>
+      </Content>
+    </Slide>
+  </AnimatePresence>
+  <Nav>
+    {flatItems.map((_, idx) => (
+      <Dot
+        key={idx}
+        $active={idx === modal.currentIndex}
+        onClick={() => modal.open(idx)}
+      />
+    ))}
+  </Nav>
+</HeroWrapper>
 
-        <Nav>
-          {flatItems.map((_, index) => (
-            <Dot
-              key={index}
-              $active={index === modal.currentIndex}
-              onClick={() => modal.open(index)}
-            />
-          ))}
-        </Nav>
-      </HeroWrapper>
 
       <Modal
         isOpen={modal.isOpen}
@@ -139,15 +140,10 @@ export default function HeroSectionSlayt() {
         onNext={modal.next}
         onPrev={modal.prev}
       >
-        <div onTouchStart={handleSwipe} style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center" }}>
           <Image
-            src={
-              modal.currentItem?.webp ||
-              modal.currentItem?.image ||
-              modal.currentItem?.thumbnail ||
-              "/placeholder.jpg"
-            }
-            alt={modal.currentItem?.title?.[currentLang] || ""}
+            src={imageSrc}
+            alt={title}
             width={1200}
             height={800}
             unoptimized
@@ -159,60 +155,64 @@ export default function HeroSectionSlayt() {
               borderRadius: "12px",
             }}
           />
-          <h2 style={{ color: "#fff", marginTop: "10px" }}>
-            {modal.currentItem?.title?.[currentLang]}
-          </h2>
-          <p style={{ color: "#fff" }}>
-            {modal.currentItem?.description?.[currentLang]}
-          </p>
+          <h2 style={{ color: "#fff", marginTop: "10px" }}>{title}</h2>
+          <p style={{ color: "#fff" }}>{description}</p>
         </div>
       </Modal>
     </>
   );
 }
-
-// === THEME UYUMLU STYLED COMPONENTS ===
-
 const HeroWrapper = styled.section`
-  background: ${({ theme }) => theme.colors.background};
   width: 100%;
-  min-height: 440px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: ${({ theme }) => theme.spacing.xxl};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: ${({ theme }) => theme.shadows.lg};
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: ${({ theme }) => theme.colors.background};
+  padding: 0;
   margin: 0 auto;
   max-width: ${({ theme }) => theme.layout.containerWidth};
-
-  @media ${({ theme }) => theme.media.mobile} {
-    padding: ${({ theme }) => theme.spacing.md};
-    border-radius: ${({ theme }) => theme.radii.lg};
-    min-height: 240px;
-  }
 `;
 
 const Slide = styled(motion.div)`
-  width: 100%;
-  height: 100%;
   position: relative;
+  width: 100%;
+  height: 320px;
+  min-height: 220px;
+  max-height: 400px;
   display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
+  border-radius: ${({ theme }) => theme.radii.lg};
+  overflow: hidden;
+
+  @media (min-width: 768px) {
+    height: 420px;
+    min-height: 320px;
+    max-height: 540px;
+  }
+  @media (min-width: 1200px) {
+    height: 520px;
+    max-height: 640px;
+  }
 `;
 
 const Background = styled.div`
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  position: absolute;
+  z-index: 1;
 `;
 
 const StyledImage = styled(Image)`
+  width: 100% !important;
+  height: 100% !important;
   object-fit: cover;
-  filter: brightness(0.65);
+  object-position: center;
+  display: block;
+  filter: brightness(0.7);
 `;
 
 const Overlay = styled.div`
@@ -220,31 +220,39 @@ const Overlay = styled.div`
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(0,0,0,0.08) 0%,
-    rgba(0,0,0,0.48) 100%
+    rgba(0,0,0,0.02) 0%,
+    rgba(0,0,0,0.38) 100%
   );
+  z-index: 2;
 `;
 
 const Content = styled.div`
-  position: relative;
-  z-index: 2;
-  max-width: 800px;
-  margin: 0 auto;
-  text-align: center;
+  position: absolute;
   top: 50%;
-  transform: translateY(-50%);
-  color: ${({ theme }) => theme.colors.text};
+  left: 50%;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+  width: 92%;
+  max-width: 720px;
+  padding: 32px 16px;
+  background: rgba(0,0,0,0.28);
+  border-radius: ${({ theme }) => theme.radii.xl};
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  text-align: center;
+  color: ${({ theme }) => theme.colors.whiteColor};
 
   @media (max-width: 768px) {
-    padding: ${({ theme }) => theme.spacing.md};
+    padding: 20px 6px;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    max-width: 96vw;
   }
 `;
 
 const Title = styled.h2`
-  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+  font-size: ${({ theme }) => theme.fontSizes.xl};
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
   color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  margin-bottom: 0.5em;
 
   @media (max-width: 768px) {
     font-size: ${({ theme }) => theme.fontSizes.lg};
@@ -253,26 +261,23 @@ const Title = styled.h2`
 
 const Subtitle = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.md};
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  @media (max-width: 768px) {
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-  }
+  color: ${({ theme }) => theme.colors.textLight};
+  margin-bottom: 0;
 `;
 
 const Nav = styled.div`
   position: absolute;
-  bottom: ${({ theme }) => theme.spacing.md};
   left: 50%;
+  bottom: 22px;
   transform: translateX(-50%);
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
-  z-index: 3;
+  gap: ${({ theme }) => theme.spacings.sm};
+  z-index: 5;
 `;
 
 const Dot = styled.button<{ $active: boolean }>`
-  width: ${({ theme }) => theme.spacing.lg};
-  height: ${({ theme }) => theme.spacing.lg};
+  width: ${({ theme }) => theme.spacings.lg};
+  height: ${({ theme }) => theme.spacings.lg};
   border-radius: 50%;
   background: ${({ $active, theme }) =>
     $active ? theme.colors.primary : theme.colors.skeleton};

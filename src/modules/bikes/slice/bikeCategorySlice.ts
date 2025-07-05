@@ -1,83 +1,72 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { BikeCategory } from "../types";
-import type { TranslatedLabel } from "@/types/common";
 
-// STATE
 interface CategoryState {
   categories: BikeCategory[];
+  selected: BikeCategory | null;
   loading: boolean;
   error: string | null;
   successMessage: string | null;
 }
+
 const initialState: CategoryState = {
   categories: [],
+  selected: null,
   loading: false,
   error: null,
   successMessage: null,
 };
 
-// ✅ Fetch All (Public & Admin aynı endpoint ile kullanılabilir)
+// 🌍 Fetch All (public veya admin)
 export const fetchBikeCategories = createAsyncThunk(
   "bikescategory/fetchAll",
-  async (_, thunkAPI) => {
+  async (_: void, thunkAPI) => {
     const res = await apiCall(
       "get",
       "/bikescategory",
       null,
       thunkAPI.rejectWithValue
     );
-    return res.data;
+    return res.data; // direkt array
   }
 );
 
-// ✅ Create (Herhangi bir dilde tek alan bile olabilir)
+// ➕ Create (FormData)
 export const createBikeCategory = createAsyncThunk(
   "bikescategory/create",
-  async (
-    data: {
-      name: Partial<TranslatedLabel>;
-      description?: Partial<TranslatedLabel>;
-    },
-    thunkAPI
-  ) => {
+  async (formData: FormData, thunkAPI) => {
     const res = await apiCall(
       "post",
       "/bikescategory",
-      data,
-      thunkAPI.rejectWithValue
+      formData,
+      thunkAPI.rejectWithValue,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
     );
-    return res.data;
+    return res.data; // tek kategori objesi
   }
 );
 
-// ✅ Update (Herhangi bir dil, sadece güncellenen dil ile)
+// ✏️ Update (FormData)
 export const updateBikeCategory = createAsyncThunk(
   "bikescategory/update",
-  async (
-    {
-      id,
-      data,
-    }: {
-      id: string;
-      data: {
-        name?: Partial<TranslatedLabel>;
-        description?: Partial<TranslatedLabel>;
-      };
-    },
-    thunkAPI
-  ) => {
+  async (params: { id: string; data: FormData }, thunkAPI) => {
     const res = await apiCall(
       "put",
-      `/bikescategory/${id}`,
-      data,
-      thunkAPI.rejectWithValue
+      `/bikescategory/${params.id}`,
+      params.data,
+      thunkAPI.rejectWithValue,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
     );
-    return res.data;
+    return res.data; // tek kategori objesi
   }
 );
 
-// ✅ Delete
+// ❌ Delete
 export const deleteBikeCategory = createAsyncThunk(
   "bikescategory/delete",
   async (id: string, thunkAPI) => {
@@ -91,80 +80,67 @@ export const deleteBikeCategory = createAsyncThunk(
   }
 );
 
+// 🧠 Slice
 const bikeCategorySlice = createSlice({
   name: "bikeCategory",
   initialState,
   reducers: {
-    clearCategoryMessages(state) {
+    clearBikeCategoryMessages(state) {
       state.error = null;
       state.successMessage = null;
     },
+    clearSelectedCategory(state) {
+      state.selected = null;
+    },
   },
   extraReducers: (builder) => {
+    const loading = (state: CategoryState) => {
+      state.loading = true;
+      state.error = null;
+    };
+    const failed = (state: CategoryState, action: PayloadAction<any>) => {
+      state.loading = false;
+      state.error = action.payload?.message || "An error occurred.";
+    };
+
     builder
-      // FETCH
-      .addCase(fetchBikeCategories.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      // fetch
+      .addCase(fetchBikeCategories.pending, loading)
       .addCase(fetchBikeCategories.fulfilled, (state, action) => {
         state.loading = false;
-        state.categories = action.payload;
+        state.categories = Array.isArray(action.payload) ? action.payload : [];
       })
-      .addCase(
-        fetchBikeCategories.rejected,
-        (state, action: PayloadAction<any>) => {
-          state.loading = false;
-          state.error =
-            action.payload?.message || "Failed to fetch categories.";
-        }
-      )
+      .addCase(fetchBikeCategories.rejected, failed)
 
-      // CREATE
-      .addCase(createBikeCategory.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      // create
+      .addCase(createBikeCategory.pending, loading)
       .addCase(createBikeCategory.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = "Category created successfully.";
-        state.categories.unshift(action.payload);
-      })
-      .addCase(
-        createBikeCategory.rejected,
-        (state, action: PayloadAction<any>) => {
-          state.loading = false;
-          state.error = action.payload?.message || "Failed to create category.";
+        if (action.payload && action.payload._id) {
+          state.categories.unshift(action.payload);
         }
-      )
-
-      // UPDATE
-      .addCase(updateBikeCategory.pending, (state) => {
-        state.loading = true;
-        state.error = null;
       })
+      .addCase(createBikeCategory.rejected, failed)
+
+      // update
+      .addCase(updateBikeCategory.pending, loading)
       .addCase(updateBikeCategory.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = "Category updated successfully.";
         const updated = action.payload;
-        const index = state.categories.findIndex(
-          (cat) => cat._id === updated._id
-        );
-        if (index !== -1) state.categories[index] = updated;
-      })
-      .addCase(
-        updateBikeCategory.rejected,
-        (state, action: PayloadAction<any>) => {
-          state.loading = false;
-          state.error = action.payload?.message || "Failed to update category.";
+        if (updated && updated._id) {
+          const index = state.categories.findIndex(
+            (cat) => cat._id === updated._id
+          );
+          if (index !== -1) state.categories[index] = updated;
+          if (state.selected?._id === updated._id) state.selected = updated;
         }
-      )
-
-      // DELETE
-      .addCase(deleteBikeCategory.pending, (state) => {
-        state.loading = true;
-        state.error = null;
       })
+      .addCase(updateBikeCategory.rejected, failed)
+
+      // delete
+      .addCase(deleteBikeCategory.pending, loading)
       .addCase(deleteBikeCategory.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = "Category deleted successfully.";
@@ -172,15 +148,10 @@ const bikeCategorySlice = createSlice({
           (cat) => cat._id !== action.payload
         );
       })
-      .addCase(
-        deleteBikeCategory.rejected,
-        (state, action: PayloadAction<any>) => {
-          state.loading = false;
-          state.error = action.payload?.message || "Failed to delete category.";
-        }
-      );
+      .addCase(deleteBikeCategory.rejected, failed);
   },
 });
 
-export const { clearCategoryMessages } = bikeCategorySlice.actions;
+export const { clearBikeCategoryMessages, clearSelectedCategory } =
+  bikeCategorySlice.actions;
 export default bikeCategorySlice.reducer;

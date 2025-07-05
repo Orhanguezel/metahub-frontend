@@ -50,8 +50,8 @@ export default function FooterLogo() {
 }
 
 const LogoWrapper = styled.div`
-  margin: ${({ theme }) => theme.spacing.lg} 0
-    ${({ theme }) => theme.spacing.md};
+  margin: ${({ theme }) => theme.spacings.lg} 0
+    ${({ theme }) => theme.spacings.md};
   display: flex;
   justify-content: center;
   align-items: center;

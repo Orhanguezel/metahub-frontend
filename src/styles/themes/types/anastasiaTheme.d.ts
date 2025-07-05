@@ -45,7 +45,7 @@ export interface AnastasiaTheme {
     loose: string;
   };
 
-  spacing: {
+  spacings: {
     xs: string;
     sm: string;
     md: string;
@@ -94,7 +94,7 @@ export interface AnastasiaTheme {
 
   layout: {
     containerWidth: string;
-    sectionSpacing: string;
+    sectionspacings: string;
   };
 
   zIndex: {

@@ -1,36 +1,36 @@
 "use client";
 
-import { useEffect } from "react";
 import styled from "styled-components";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchBlogs, clearBlogMessages } from "@/modules/blog/slice/blogSlice";
+import { useAppSelector } from "@/store/hooks";
+import i18n from "@/i18n";
 import { useTranslation } from "react-i18next";
-import SkeletonBox from "@/shared/Skeleton";
-import ErrorMessage from "@/shared/ErrorMessage";
+import translations from "../../locales";
+import { Skeleton, ErrorMessage } from "@/shared";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
+import type { SupportedLocale } from "@/types/common";
+import type { IBlog } from "../../types";
+
 
 export default function BlogPage() {
-  const dispatch = useAppDispatch();
-  const { i18n, t } = useTranslation("blog");
+const { i18n, t } = useTranslation("blog");
+  const lang = (i18n.language?.slice(0, 2) || "tr") as SupportedLocale; 
+  const { blog, loading, error } = useAppSelector((state) => state.blog);
 
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
-  const { blogs, loading, error } = useAppSelector((state) => state.blog);
+      Object.entries(translations).forEach(([lang, resources]) => {
+  if (!i18n.hasResourceBundle(lang, "blog")) {
+    i18n.addResourceBundle(lang, "blog", resources, true, true);
+  }
+});
 
-  useEffect(() => {
-    dispatch(fetchBlogs(lang));
-    return () => {
-      dispatch(clearBlogMessages());
-    };
-  }, [dispatch, lang]);
+  
 
   if (loading) {
     return (
       <PageWrapper>
         {[...Array(3)].map((_, i) => (
-          <SkeletonBox key={i} />
+          <Skeleton key={i} />
         ))}
       </PageWrapper>
     );
@@ -39,76 +39,87 @@ export default function BlogPage() {
   if (error) {
     return (
       <PageWrapper>
-        <ErrorMessage />
+        <ErrorMessage message={error} />
       </PageWrapper>
     );
   }
 
-  if (!blogs || blogs.length === 0) {
+  if (!blog || blog.length === 0) {
     return (
       <PageWrapper>
-        <p>{t("noBlog", "Haber bulunamadı.")}</p>
+        <p>{t("page.noBlog")}</p>
       </PageWrapper>
     );
   }
+
+  
 
   return (
     <PageWrapper>
-      <PageTitle>{t("allBlog", "Tüm Haberler")}</PageTitle>
-
+      <PageTitle>{t("page.allBlog")}</PageTitle>
       <BlogGrid>
-        {blogs.map((item, index) => (
+        {blog.map((item: IBlog, index: number) => (
           <BlogCard
             key={item._id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * 0.07 }}
+
           >
-            {item.images?.[0]?.url && (
-              <ImageWrapper>
-                <img src={item.images[0].url} alt={item.title?.[lang]} />
-              </ImageWrapper>
-            )}
-            <CardContent>
-              <h2>{item.title?.[lang] || t("untitled", "Başlıksız")}</h2>
-              <p>{item.summary?.[lang] || t("noSummary", "Özet yok.")}</p>
-              <Meta>
-                <span>
-                  {t("author", "Yazar")}:{" "}
-                  {item.author || t("unknown", "Bilinmiyor")}
-                </span>
-                <span>
-                  {t("tags", "Etiketler")}: {item.tags?.join(", ") || "-"}
-                </span>
-              </Meta>
-              <ReadMore href={`/blog/${item.slug}`}>
-                {t("readMore", "Devamını Oku →")}
-              </ReadMore>
-            </CardContent>
-          </BlogCard>
-        ))}
+
+             {item.images?.[0]?.url && (
+                           <ImageWrapper>
+                             <Image
+                               src={item.images[0].url}
+                               alt={item.title?.[lang] || "Blog Image"}
+                               width={780}
+                               height={420}
+                               style={{ objectFit: "cover" }}
+                               loading="lazy"
+                             />
+                           </ImageWrapper>
+                         )}
+                         <CardContent>
+                           <h2>{item.title?.[lang] || "Untitled"}</h2>
+                           <p>{item.summary?.[lang] || "No summary available."}</p>
+                           <Meta>
+                             <span>
+                               {t("author", "Yazar")}:{" "}
+                               {item.author || t("unknown", "Bilinmiyor")}
+                             </span>
+                             <span>
+                               {t("tags", "Etiketler")}: {item.tags?.join(", ") || "-"}
+                             </span>
+                           </Meta>
+                           <ReadMore href={`/blog/${item.slug}`}>
+                             {t("readMore", "Devamını Oku →")}
+                           </ReadMore>
+                         </CardContent>
+                       </BlogCard>
+                     ))}
       </BlogGrid>
     </PageWrapper>
   );
 }
 
+// Styled Components aynı kalabilir
 const PageWrapper = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xxl}
-    ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const PageTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   color: ${({ theme }) => theme.colors.primary};
   text-align: center;
 `;
 
 const BlogGrid = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.spacing.lg};
+  gap: ${({ theme }) => theme.spacings.lg};
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 `;
 
@@ -126,22 +137,24 @@ const ImageWrapper = styled.div`
     width: 100%;
     height: 200px;
     object-fit: cover;
+    background: #f2f2f2;
+    display: block;
   }
 `;
 
 const CardContent = styled.div`
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.md};
 
   h2 {
     font-size: ${({ theme }) => theme.fontSizes.lg};
-    margin-bottom: ${({ theme }) => theme.spacing.sm};
+    margin-bottom: ${({ theme }) => theme.spacings.sm};
     color: ${({ theme }) => theme.colors.text};
   }
 
   p {
     font-size: ${({ theme }) => theme.fontSizes.base};
     color: ${({ theme }) => theme.colors.textSecondary};
-    margin-bottom: ${({ theme }) => theme.spacing.md};
+    margin-bottom: ${({ theme }) => theme.spacings.md};
   }
 `;
 
@@ -151,7 +164,7 @@ const Meta = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
 const ReadMore = styled(Link)`

@@ -1,14 +1,15 @@
 "use client";
 
-import React from "react";
 import styled from "styled-components";
-import { IActivity } from "@/modules/activity/types/activity";
-import { useTranslation } from "react-i18next";
+import { IActivity } from "@/modules/activity/types";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { Skeleton } from "@/shared";
+import { SupportedLocale } from "@/types/common";
 
 interface Props {
-  activities?: IActivity[];
-  lang: "tr" | "en" | "de";
+  activity: IActivity[] | undefined;
+  lang: SupportedLocale;
   loading: boolean;
   error: string | null;
   onEdit?: (item: IActivity) => void;
@@ -17,7 +18,7 @@ interface Props {
 }
 
 export default function ActivityList({
-  activities,
+  activity,
   lang,
   loading,
   error,
@@ -25,14 +26,12 @@ export default function ActivityList({
   onDelete,
   onTogglePublish,
 }: Props) {
-  const { t } = useTranslation("adminActivity");
-
-  const hasActions = !!onEdit || !!onDelete || !!onTogglePublish;
+  const { t } = useI18nNamespace("activity", translations);
 
   if (loading) {
     return (
       <SkeletonWrapper>
-        {[...Array(3)].map((_, i) => (
+        {Array.from({ length: 3 }).map((_, i) => (
           <Skeleton key={i} />
         ))}
       </SkeletonWrapper>
@@ -40,16 +39,22 @@ export default function ActivityList({
   }
 
   if (error) return <ErrorText>❌ {error}</ErrorText>;
-  if (!activities || activities.length === 0) {
-    return <Empty>{t("activity.empty", "No Activity available.")}</Empty>;
-  }
+  if (!Array.isArray(activity)) return null;
+  if (activity.length === 0)
+    return <Empty>{t("activity.empty", "No activity available.")}</Empty>;
+
+  // Fallback fonksiyonu (çok dilli)
+  const getMultiLang = (obj?: Record<string, string>) => {
+    if (!obj) return "";
+    return obj[lang] || obj["en"] || Object.values(obj)[0] || "—";
+  };
 
   return (
-    <ListWrapper>
-      {activities.map((item) => (
-        <Card key={item._id}>
-          <h2>{item.title?.[lang] || "—"}</h2>
-          <p>{item.summary?.[lang] || "—"}</p>
+    <div>
+      {activity.map((item) => (
+        <ActivityCard key={item._id}>
+          <h2>{getMultiLang(item.title)}</h2>
+          <p>{getMultiLang(item.summary)}</p>
 
           {item.images?.length > 0 ? (
             <ImageGrid>
@@ -57,8 +62,9 @@ export default function ActivityList({
                 <img
                   key={i}
                   src={img.url}
-                  alt={`Activity-${i}`}
+                  alt={getMultiLang(item.title) || `article-${i}`}
                   loading="lazy"
+                  width={150}
                 />
               ))}
             </ImageGrid>
@@ -67,83 +73,89 @@ export default function ActivityList({
           )}
 
           <InfoLine>
-            <strong>{t("activity.tags", "Tags")}:</strong>{" "}
-            {item.tags?.join(", ") || t("none", "None")}
+            <strong>{t("activity.author", "Author")}:</strong>{" "}
+            {item.author || t("unknown", "Unknown")}
           </InfoLine>
-
+          <InfoLine>
+            <strong>{t("activity.tags", "Tags")}:</strong>{" "}
+            {item.tags?.length ? item.tags.join(", ") : t("none", "None")}
+          </InfoLine>
           <InfoLine>
             <strong>{t("activity.publish_status", "Published")}:</strong>{" "}
             {item.isPublished ? t("yes", "Yes") : t("no", "No")}
           </InfoLine>
 
-          {hasActions && (
+          {(onEdit || onDelete || onTogglePublish) && (
             <ButtonGroup>
               {onEdit && (
-                <WarningButton onClick={() => onEdit(item)}>
+                <ActionButton
+                  onClick={() => onEdit(item)}
+                  aria-label={t("edit", "Edit")}
+                >
                   {t("edit", "Edit")}
-                </WarningButton>
+                </ActionButton>
               )}
               {onDelete && (
-                <DangerButton onClick={() => onDelete(item._id)}>
+                <DeleteButton
+                  onClick={() => onDelete(item._id)}
+                  aria-label={t("delete", "Delete")}
+                >
                   {t("delete", "Delete")}
-                </DangerButton>
+                </DeleteButton>
               )}
               {onTogglePublish && (
-                <SuccessButton
+                <ToggleButton
                   onClick={() => onTogglePublish(item._id, item.isPublished)}
+                  aria-label={
+                    item.isPublished
+                      ? t("activity.unpublish", "Unpublish")
+                      : t("activity.publish", "Publish")
+                  }
                 >
                   {item.isPublished
                     ? t("activity.unpublish", "Unpublish")
                     : t("activity.publish", "Publish")}
-                </SuccessButton>
+                </ToggleButton>
               )}
             </ButtonGroup>
           )}
-        </Card>
+        </ActivityCard>
       ))}
-    </ListWrapper>
+    </div>
   );
 }
 
-// 💅 Styled Components
-
+// --- Styles ---
 const SkeletonWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
 `;
 
-const ListWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-`;
-
-const Card = styled.div`
+const ActivityCard = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.md};
   padding: 1rem;
+  margin-bottom: 1rem;
   background: ${({ theme }) => theme.colors.cardBackground};
-  box-shadow: ${({ theme }) => theme.shadows.sm};
 `;
 
 const ImageGrid = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  gap: 1rem;
+  margin-top: 1rem;
 
   img {
-    width: 140px;
-    height: auto;
-    border-radius: ${({ theme }) => theme.radii.sm};
+    width: 150px;
+    border-radius: 4px;
+    object-fit: cover;
   }
 `;
 
 const InfoLine = styled.p`
   margin-top: 0.5rem;
   color: ${({ theme }) => theme.colors.text};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
 const Empty = styled.p`
@@ -154,7 +166,6 @@ const Empty = styled.p`
 const ErrorText = styled.p`
   color: ${({ theme }) => theme.colors.danger};
   font-weight: bold;
-  text-align: center;
 `;
 
 const ButtonGroup = styled.div`
@@ -164,23 +175,29 @@ const ButtonGroup = styled.div`
   gap: 0.5rem;
 `;
 
-const BaseButton = styled.button`
-  padding: 0.45rem 0.8rem;
+const ActionButton = styled.button`
+  padding: 0.4rem 0.75rem;
+  background: ${({ theme }) => theme.colors.warning};
+  color: white;
   border: none;
   border-radius: 4px;
-  color: white;
   cursor: pointer;
-  font-size: 0.85rem;
 `;
 
-const WarningButton = styled(BaseButton)`
-  background: ${({ theme }) => theme.colors.warning};
-`;
-
-const DangerButton = styled(BaseButton)`
+const DeleteButton = styled.button`
+  padding: 0.4rem 0.75rem;
   background: ${({ theme }) => theme.colors.danger};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 `;
 
-const SuccessButton = styled(BaseButton)`
+const ToggleButton = styled.button`
+  padding: 0.4rem 0.75rem;
   background: ${({ theme }) => theme.colors.success};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 `;

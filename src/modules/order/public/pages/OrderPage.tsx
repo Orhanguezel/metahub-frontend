@@ -1,46 +1,92 @@
-// src/modules/order/public/pages/OrderPage.tsx
 "use client";
-
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { getAllOrders, clearOrderMessages } from "@/modules/order/slice/ordersSlice";
+import {
+  getMyOrders,
+  clearOrderMessages,
+} from "@/modules/order/slice/ordersSlice";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { OrderList } from "@/modules/order";
-import { Message } from "@/shared"; 
+import type { IOrder } from "@/modules/order/types";
+
+type OrderMessageProps = {
+  $error?: boolean;
+};
 
 const OrderPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { orders, loading, error } = useAppSelector((state) => state.orders);
+  const { myOrders, loading, error } = useAppSelector((state) => state.orders);
   const { t } = useTranslation("order");
 
   useEffect(() => {
-    dispatch(getAllOrders());
+    dispatch(getMyOrders());
     return () => {
       dispatch(clearOrderMessages());
     };
   }, [dispatch]);
 
+  const isEmpty =
+    !myOrders || !Array.isArray(myOrders) || myOrders.length === 0;
+
   return (
-    <Container>
-      <Title>{t("order.title", "My Orders")}</Title>
-      {loading && <Message>{t("order.loading", "Loading...")}</Message>}
-      {error && <Message $error>{error}</Message>}
-      <OrderList orders={orders} />
-    </Container>
+    <OrderPageWrapper>
+      <MainContent>
+        <Title>{t("title", "My Orders")}</Title>
+        {loading && <OrderMessage>{t("loading", "Loading...")}</OrderMessage>}
+        {error && <OrderMessage $error>{error}</OrderMessage>}
+        {isEmpty ? (
+          <OrderMessage>{t("empty", "You have no orders yet.")}</OrderMessage>
+        ) : (
+          <OrderListWrapper>
+            {/* TS'yi ikna etmek için as IOrder[] eklenebilir */}
+            <OrderList orders={myOrders as IOrder[]} />
+          </OrderListWrapper>
+        )}
+      </MainContent>
+    </OrderPageWrapper>
   );
 };
 
 export default OrderPage;
 
-const Container = styled.div`
-  max-width: 900px;
+// --- Styled Components ---
+
+const OrderPageWrapper = styled.div`
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: ${({ theme }) => theme.colors.grey || "#f4f4f4"};
+`;
+
+const MainContent = styled.main`
+  flex-grow: 1;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.lg};
+  padding: 120px 2rem 4rem;
+  color: ${({ theme }) => theme.colors.black || "#0a0a0a"};
 `;
 
 const Title = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.grey || "#ddd"};
+  padding-bottom: 1rem;
+`;
+
+const OrderListWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+`;
+
+const OrderMessage = styled.div<OrderMessageProps>`
+  text-align: center;
+  padding: 4rem 0 2rem;
+  font-size: 1.15rem;
+  color: ${({ $error, theme }) =>
+    $error ? theme.colors.danger || "red" : theme.colors.darkGrey || "#555"};
 `;

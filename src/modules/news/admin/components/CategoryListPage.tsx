@@ -1,39 +1,38 @@
 "use client";
 
-import React, { useEffect } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  fetchNewsCategories,
-  deleteNewsCategory,
-  NewsCategory,
-} from "@/modules/news/slice/newsCategorySlice";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import i18n from "@/i18n";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import type { NewsCategory } from "@/modules/news/types";
+import { LANG_LABELS, SupportedLocale } from "@/types/common";
+import { deleteNewsCategory } from "@/modules/news/slice/newsCategorySlice";
 
-interface NewsCategoryListPageProps {
+interface ProductCategoryListPageProps {
   onAdd: () => void;
   onEdit: (category: NewsCategory) => void;
 }
 
-export default function CategoryListPage({
+export default function ProductCategoryListPage({
   onAdd,
   onEdit,
-}: NewsCategoryListPageProps) {
-  const { t } = useTranslation("adminNews");
-
+}: ProductCategoryListPageProps) {
   const dispatch = useAppDispatch();
+  const { i18n, t } = useI18nNamespace("news", translations);
+
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
+
+  // Merkezi fetch ile gelen slice'ı okuyoruz
   const { categories, loading, error } = useAppSelector(
     (state) => state.newsCategory
   );
 
-  useEffect(() => {
-    dispatch(fetchNewsCategories());
-  }, [dispatch]);
-
+  // Silme işlemi
   const handleDelete = (id: string) => {
     const confirmMessage = t(
-      "confirm.delete",
-      "Bu kategoriyi silmek istediğinize emin misiniz?"
+      "admin.confirm.delete",
+      "Are you sure you want to delete this category?"
     );
     if (window.confirm(confirmMessage)) {
       dispatch(deleteNewsCategory(id));
@@ -43,46 +42,42 @@ export default function CategoryListPage({
   return (
     <Wrapper>
       <Header>
-        <h2>{t("categories.title", "Haber Kategorileri")}</h2>
+        <h2>{t("admin.categories.title", "Product Categories")}</h2>
         <AddButton onClick={onAdd}>
-          {t("categories.add", "Yeni Kategori")}
+          {t("admin.categories.add", "Add Category")}
         </AddButton>
       </Header>
 
       {loading ? (
-        <StatusMessage>{t("loading", "Yükleniyor...")}</StatusMessage>
+        <StatusMessage>{t("admin.loading", "Loading...")}</StatusMessage>
       ) : error ? (
         <ErrorMessage>❌ {error}</ErrorMessage>
-      ) : categories.length === 0 ? (
+      ) : !categories || categories.length === 0 ? (
         <StatusMessage>
-          {t("categories.empty", "Kategori bulunamadı.")}
+          {t("admin.categories.empty", "No categories found.")}
         </StatusMessage>
       ) : (
         <Table>
           <thead>
             <tr>
               <th>#</th>
-              <th>{t("language.en", "EN")}</th>
-              <th>{t("language.tr", "TR")}</th>
-              <th>{t("language.de", "DE")}</th>
-              <th>{t("slug", "Slug")}</th>
-              <th>{t("actions", "İşlemler")}</th>
+              <th>{t(`admin.language.${lang}`, LANG_LABELS[lang])}</th>
+              <th>{t("admin.slug", "Slug")}</th>
+              <th>{t("admin.actions", "Actions")}</th>
             </tr>
           </thead>
           <tbody>
-            {categories.map((cat, i) => (
+            {categories.map((cat: NewsCategory, i: number) => (
               <tr key={cat._id}>
                 <td>{i + 1}</td>
-                <td>{cat.name.en}</td>
-                <td>{cat.name.tr}</td>
-                <td>{cat.name.de}</td>
+                <td>{cat.name?.[lang] || "—"}</td>
                 <td>{cat.slug}</td>
                 <td>
                   <ActionButton onClick={() => onEdit(cat)}>
-                    {t("edit", "Düzenle")}
+                    {t("admin.edit", "Edit")}
                   </ActionButton>
                   <DeleteButton onClick={() => handleDelete(cat._id)}>
-                    {t("delete", "Sil")}
+                    {t("admin.delete", "Delete")}
                   </DeleteButton>
                 </td>
               </tr>
@@ -94,6 +89,7 @@ export default function CategoryListPage({
   );
 }
 
+// --- Styled Components ---
 const Wrapper = styled.div`
   margin-top: 1rem;
 `;
@@ -103,7 +99,6 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-
   h2 {
     margin: 0;
     font-size: 1.25rem;
@@ -118,7 +113,6 @@ const AddButton = styled.button`
   border: none;
   border-radius: ${({ theme }) => theme.radii.sm};
   cursor: pointer;
-
   &:hover {
     background: ${({ theme }) => theme.colors.primaryHover};
   }
@@ -127,15 +121,12 @@ const AddButton = styled.button`
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-
-  th,
-  td {
+  th, td {
     padding: 0.75rem;
     border: 1px solid ${({ theme }) => theme.colors.border};
     text-align: left;
     font-size: 0.95rem;
   }
-
   th {
     background: ${({ theme }) => theme.colors.tableHeader};
     color: ${({ theme }) => theme.colors.text};

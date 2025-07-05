@@ -13,12 +13,8 @@ import {
   Message as Desc,
   Button,
 } from "@/modules/users/styles/AccountStyles";
-import {
-  Input,
-  Label,
-  Form,
-} from "@/modules/users/styles/AccountStyles";
-import { ResendButton } from "@/modules/users/styles/AuthStyles"; 
+import { Input, Label, Form } from "@/modules/users/styles/AccountStyles";
+import { ResendButton } from "@/modules/users/styles/AuthStyles";
 
 interface Props {
   email: string;
@@ -95,7 +91,11 @@ export default function OtpStep({ email, onNext, channel = "sms" }: Props) {
             marginBottom: 24,
           }}
         />
-        <Button type="submit" disabled={loading || code.length < 6} style={{ marginBottom: 8 }}>
+        <Button
+          type="submit"
+          disabled={loading || code.length < 6}
+          style={{ marginBottom: 8 }}
+        >
           {loading ? t("verifying", "Verifying...") : t("verify", "Verify")}
         </Button>
         <ResendButton

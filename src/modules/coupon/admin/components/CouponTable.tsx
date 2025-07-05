@@ -11,7 +11,7 @@ interface Props {
 
 export default function CouponTable({ coupons, onEdit, onDelete }: Props) {
   const { t, i18n } = useTranslation("coupon");
-  const lang = i18n.language as "tr" | "en" | "de" || "en";
+  const lang = (i18n.language as "tr" | "en" | "de") || "en";
 
   if (!coupons?.length)
     return <EmptyMsg>{t("admin.empty", "No coupons available.")}</EmptyMsg>;
@@ -37,21 +37,26 @@ export default function CouponTable({ coupons, onEdit, onDelete }: Props) {
             <td>{c.label.title?.[lang] || c.label.title?.en}</td>
             <td>{c.isActive ? "✔" : ""}</td>
             <td>
-              <EditBtn onClick={() => onEdit(c)}>{t("form.edit", "Edit")}</EditBtn>
-              <DeleteBtn onClick={() => onDelete(c._id)}>{t("form.delete", "Delete")}</DeleteBtn>
+              <EditBtn onClick={() => onEdit(c)}>
+                {t("form.edit", "Edit")}
+              </EditBtn>
+              <DeleteBtn onClick={() => onDelete(c._id)}>
+                {t("form.delete", "Delete")}
+              </DeleteBtn>
             </td>
           </tr>
         ))}
       </tbody>
     </Table>
   );
-};
+}
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  margin-top: ${({ theme }) => theme.spacing.md};
-  th, td {
+  margin-top: ${({ theme }) => theme.spacings.md};
+  th,
+  td {
     padding: 8px 10px;
     border-bottom: 1px solid ${({ theme }) => theme.colors.border};
     text-align: left;

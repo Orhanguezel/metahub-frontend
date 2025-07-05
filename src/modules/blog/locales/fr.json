@@ -1,80 +1,73 @@
 {
   "page": {
-    "allBike": "Tous les vélos",
-    "noBike": "Aucun vélo trouvé.",
-    "price": "Prix",
-    "stock": "Stock",
-    "brand": "Marque",
-    "readMore": "Voir les détails →",
-    "other": "Autres produits",
-    "untitled": "Sans titre",
-    "noSummary": "Pas de description.",
-    "bike": {
-      "title": "Dernier vélo",
-      "readMore": "Voir les détails",
-      "all": "Tous les vélos"
-    }
-  },
-  "admin": {
-    "tabs": {
-      "bike": "Vélos",
-      "create": "Nouveau vélo",
-      "categories": "Catégories"
+    "noBlog": "Aucun article trouvé.",
+    "allBlog": "Tous les articles",
+    "blog": {
+      "title": "À propos",
+      "all": "Voir tout"
     },
-    "bike": {
-      "create": "Ajouter un nouveau vélo",
-      "edit": "Modifier le vélo",
-      "name": "Nom du vélo",
-      "description": "Description",
-      "brand": "Marque",
-      "price": "Prix",
-      "stock": "Stock",
+    "other": "Autres sections",
+    "summary": "Résumé",
+    "detail": "Détail",
+    "noTitle": "Pas de titre"
+  },
+  "readMore": "Lire la suite →",
+  "author": "Auteur",
+  "tags": "Tags",
+  "unknown": "Inconnu",
+  "tabs": {
+    "blog": "À propos",
+    "create": "Nouvel article",
+    "categories": "Catégories"
+  },
+  "blog": {
+    "empty": "Aucun article disponible.",
+    "no_images": "Aucune image",
+    "author": "Auteur",
+    "tags": "Tags",
+    "publish_status": "Publié",
+    "unpublish": "Dépublier",
+    "publish": "Publier",
+    "unknown": "Inconnu",
+    "none": "Aucun"
+  },
+  "edit": "Modifier",
+  "delete": "Supprimer",
+  "yes": "Oui",
+  "no": "Non",
+  "admin": {
+    "blog": {
+      "edit": "Modifier l'article",
+      "create": "Créer un nouvel article",
+      "title": "Titre",
+      "summary": "Résumé",
+      "content": "Contenu",
+      "author": "Auteur",
       "tags": "Tags",
-      "image": "Image",
+      "image": "Images",
       "category": "Catégorie",
-      "select_category": "Sélectionner une catégorie",
-      "publish_status": "Publié ?",
-      "no_images": "Aucune image",
-      "publish": "Publier",
-      "unpublish": "Dépublier",
-      "empty": "Aucun vélo disponible."
+      "select_category": "Sélectionner une catégorie"
     },
     "categories": {
-      "title": "Catégories de vélos",
-      "add": "Nouvelle catégorie",
-      "empty": "Aucune catégorie trouvée."
+      "title": "Catégories de produits",
+      "add": "Ajouter une catégorie",
+      "name": "Nom de la catégorie"
     },
-    "language": {
-      "en": "Anglais",
-      "tr": "Turc",
-      "de": "Allemand"
-    },
-    "slug": "Slug",
-    "actions": "Actions",
-    "edit": "Modifier",
-    "delete": "Supprimer",
-    "cancel": "Annuler",
+    "editCategory": "Modifier la catégorie",
+    "newCategory": "Nouvelle catégorie",
+    "optional_description": "Description optionnelle",
+    "category_info": "De quoi s'agit-il dans cette catégorie ?",
     "update": "Mettre à jour",
-    "create": "Créer",
-    "yes": "Oui",
-    "no": "Non",
-    "loading": "Chargement...",
+    "update2": "Mettre à jour",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "cancel": "Annuler",
     "confirm": {
       "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
-      "delete_bike": "Êtes-vous sûr de vouloir supprimer ce vélo ?"
+      "delete_article": "Êtes-vous sûr de vouloir supprimer cet article ?"
     },
-    "optional_description": "Description (optionnel)",
-    "category_info": "À propos de cette catégorie ?",
-    "saving": "Enregistrement...",
-    "save": "Enregistrer",
-    "update2": "Mettre à jour",
-    "editCategory": "Modifier la catégorie",
-    "newCategory": "Nouvelle catégorie"
-  },
-  "seo": {
-    "title": "Titre SEO",
-    "description": "Description SEO"
-  },
-  "none": "Aucun",
-  "delete_confirm": "Êtes-vous sûr de vouloir supprimer ?"
+    "loading": "Chargement...",
+    "actions": "Actions",
+    "slug": "Identifiant"
+  }
 }

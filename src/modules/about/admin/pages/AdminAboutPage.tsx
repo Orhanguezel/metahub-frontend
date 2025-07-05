@@ -1,91 +1,92 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import type { SupportedLocale } from "@/types/common";
+
 import {
-  fetchAllAboutAdmin,
-  clearAboutMessages,
   createAbout,
   updateAbout,
   deleteAbout,
   togglePublishAbout,
 } from "@/modules/about/slice/aboutSlice";
 import {
-  AboutTabs,
-  AboutList,
+  createAboutCategory,
+  updateAboutCategory,
+} from "@/modules/about/slice/aboutCategorySlice";
+
+import {
   AboutFormModal,
-  CategoryListPage,
   CategoryForm,
+  CategoryListPage,
+  AboutList,
+  AboutTabs,
 } from "@/modules/about";
+
 import { Modal } from "@/shared";
-import type { IAbout } from "@/modules/about/types/about";
-import type { AboutCategory } from "@/modules/about/slice/aboutCategorySlice";
+import { IAbout } from "@/modules/about/types";
+import { AboutCategory } from "@/modules/about/types";
 
 export default function AdminAboutPage() {
-  const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("about");
-
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
-
+const { i18n, t } = useI18nNamespace("about", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
   const { about, loading, error } = useAppSelector((state) => state.about);
+
+
 
   const [activeTab, setActiveTab] = useState<"list" | "create" | "categories">(
     "list"
   );
   const [editingItem, setEditingItem] = useState<IAbout | null>(null);
-  const [editingCategory, setEditingCategory] = useState<AboutCategory | null>(
-    null
-  );
+  const [editingCategory, setEditingCategory] =
+    useState<AboutCategory | null>(null);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
-  useEffect(() => {
-    dispatch(fetchAllAboutAdmin(lang));
-    return () => {
-      dispatch(clearAboutMessages());
-    };
-  }, [dispatch, lang]);
+  const dispatch = useAppDispatch();
 
-  const resetForm = () => {
-    setEditingItem(null);
-    setActiveTab("list");
-  };
+  // ---- FETCH YOK! ----
 
-  const resetCategoryModal = () => {
-    setEditingCategory(null);
-    setCategoryModalOpen(false);
-  };
-
-  const handleCreateOrUpdate = async (formData: FormData, id?: string) => {
+  const handleSubmit = async (formData: FormData, id?: string) => {
     if (id) {
       await dispatch(updateAbout({ id, formData }));
     } else {
       await dispatch(createAbout(formData));
     }
-    resetForm();
+    setActiveTab("list");
   };
 
   const handleDelete = async (id: string) => {
     const confirmMsg = t(
-      "admin.confirm.delete_about",
-      "Are you sure you want to delete this About?"
+      "confirm.delete_article",
+      "Bu makaleyi silmek istediğinize emin misiniz?"
     );
     if (confirm(confirmMsg)) {
       await dispatch(deleteAbout(id));
     }
   };
 
-  const handleTogglePublish = async (id: string, isPublished: boolean) => {
-    await dispatch(togglePublishAbout({ id, isPublished: !isPublished }));
+  const handleTogglePublish = (id: string, isPublished: boolean) => {
+    dispatch(togglePublishAbout({ id, isPublished: !isPublished }));
   };
 
-  const handleEdit = (item: IAbout) => {
-    setEditingItem(item);
-    setActiveTab("create");
-  };
+  // Create/Update Category
+const handleCategorySubmit = async (
+  data: { name: Record<SupportedLocale, string>; description?: Record<SupportedLocale, string> },
+  id?: string
+) => {
+  if (id) {
+    await dispatch(updateAboutCategory({ id, data }));
+  } else {
+    await dispatch(createAboutCategory(data));
+  }
+  setEditingCategory(null);
+  setCategoryModalOpen(false);
+};
+
+  
 
   return (
     <Wrapper>
@@ -98,7 +99,10 @@ export default function AdminAboutPage() {
             lang={lang}
             loading={loading}
             error={error}
-            onEdit={handleEdit}
+            onEdit={(item) => {
+              setEditingItem(item);
+              setActiveTab("create");
+            }}
             onDelete={handleDelete}
             onTogglePublish={handleTogglePublish}
           />
@@ -107,9 +111,12 @@ export default function AdminAboutPage() {
         {activeTab === "create" && (
           <AboutFormModal
             isOpen
-            onClose={resetForm}
+            onClose={() => {
+              setEditingItem(null);
+              setActiveTab("list");
+            }}
             editingItem={editingItem}
-            onSubmit={handleCreateOrUpdate}
+            onSubmit={handleSubmit}
           />
         )}
 
@@ -125,10 +132,15 @@ export default function AdminAboutPage() {
                 setCategoryModalOpen(true);
               }}
             />
-            <Modal isOpen={categoryModalOpen} onClose={resetCategoryModal}>
+            <Modal
+              isOpen={categoryModalOpen}
+              onClose={() => setCategoryModalOpen(false)}
+            >
               <CategoryForm
-                onClose={resetCategoryModal}
+                isOpen={categoryModalOpen}
+                onClose={() => setCategoryModalOpen(false)}
                 editingItem={editingCategory}
+                onSubmit={handleCategorySubmit}
               />
             </Modal>
           </>
@@ -141,13 +153,13 @@ export default function AdminAboutPage() {
 const Wrapper = styled.div`
   max-width: 1200px;
   margin: auto;
-  padding: ${({ theme }) => theme.layout.sectionSpacing}
-    ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.layout.sectionspacings}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const TabContent = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.md};
 `;

@@ -56,8 +56,8 @@ export default function VerifyEmailPage() {
 const Container = styled.div`
   width: 100%;
   max-width: 420px;
-  margin: ${({ theme }) => `${theme.spacing.xl} auto`};
-  padding: ${({ theme }) => `${theme.spacing.xxl} ${theme.spacing.xl}`};
+  margin: ${({ theme }) => `${theme.spacings.xl} auto`};
+  padding: ${({ theme }) => `${theme.spacings.xxl} ${theme.spacings.xl}`};
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.form || theme.shadows.sm};
@@ -69,40 +69,40 @@ const Container = styled.div`
   min-height: 200px;
   @media (max-width: 600px) {
     max-width: 96vw;
-    padding: ${({ theme }) => `${theme.spacing.lg} ${theme.spacing.md}`};
+    padding: ${({ theme }) => `${theme.spacings.lg} ${theme.spacings.md}`};
     border-radius: ${({ theme }) => theme.radii.md};
   }
 `;
 
 const Title = styled.h2`
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   color: ${({ theme }) => theme.colors.primary};
   text-align: center;
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  letter-spacing: 0.01em;
+  letter-spacings: 0.01em;
 `;
 
 const Info = styled.p`
   color: ${({ theme }) => theme.colors.info};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   font-size: ${({ theme }) => theme.fontSizes.base};
-  margin: ${({ theme }) => `${theme.spacing.xl} 0`};
-  letter-spacing: 0.01em;
+  margin: ${({ theme }) => `${theme.spacings.xl} 0`};
+  letter-spacings: 0.01em;
 `;
 
 const Success = styled.p`
   color: ${({ theme }) => theme.colors.success};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  margin: ${({ theme }) => `${theme.spacing.xl} 0`};
-  letter-spacing: 0.01em;
+  margin: ${({ theme }) => `${theme.spacings.xl} 0`};
+  letter-spacings: 0.01em;
 `;
 
 const Error = styled.p`
   color: ${({ theme }) => theme.colors.danger};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  margin: ${({ theme }) => `${theme.spacing.xl} 0`};
-  letter-spacing: 0.01em;
+  margin: ${({ theme }) => `${theme.spacings.xl} 0`};
+  letter-spacings: 0.01em;
 `;

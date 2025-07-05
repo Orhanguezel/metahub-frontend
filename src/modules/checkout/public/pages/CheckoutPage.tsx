@@ -5,11 +5,7 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { fetchCart, clearCart } from "@/modules/cart/slice/cartSlice";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
-import {
-  CartItemList,
-  CartSummary,
-  CartEmpty,
-} from "@/modules/cart";
+import { CartItemList, CartSummary, CartEmpty } from "@/modules/cart";
 
 const CartPage = () => {
   const dispatch = useAppDispatch();
@@ -45,12 +41,13 @@ export default CartPage;
 const PageContainer = styled.div`
   max-width: 1000px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const Title = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
@@ -58,7 +55,7 @@ const Title = styled.h1`
 const Content = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xl};
+  gap: ${({ theme }) => theme.spacings.xl};
   @media (max-width: 768px) {
     flex-direction: column;
   }

@@ -1,0 +1,13 @@
+{
+  "addToCart": "Añadir al carrito",
+  "remove": "Eliminar",
+  "increase": "Aumentar",
+  "decrease": "Disminuir",
+  "clearCart": "Vaciar carrito",
+  "continueShopping": "Seguir comprando",
+  "checkout": "Finalizar compra",
+  "empty": "Tu carrito está vacío.",
+  "title": "Carrito de compras",
+  "size": "Talla",
+  "oneSize": "Talla única"
+}

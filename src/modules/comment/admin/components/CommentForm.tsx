@@ -20,7 +20,16 @@ interface Props {
     | "radonarprod"
     | "bike"
     | "articles"
-    | "services";
+    | "services"
+    | "about"
+    | "customProduct"
+    | "references"
+    | "library"
+    | "faq"
+    | "contact"
+    | "company"
+    | "tenant";
+  // contentType: "news" | "blog" | "product" | "radonarprod" | "bike" | "articles" | "services" | "about" | "customProduct" | "references" | "library" | "faq" | "contact" | "company" | "tenant";
 }
 
 export default function CommentForm({ contentId, contentType }: Props) {

@@ -23,7 +23,10 @@ export default function CartButton({ ariaLabel }: Props) {
     cart?.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
 
   return (
-    <CartIconWrapper href="/cart" aria-label={ariaLabel || t("navbar.cart", "Sepetim")}>
+    <CartIconWrapper
+      href="/cart"
+      aria-label={ariaLabel || t("navbar.cart", "Sepetim")}
+    >
       <ShoppingCart size={24} />
       {/* Sadece 1+ ürün varsa badge göster */}
       {cartCount > 0 && <CartBadge>{cartCount}</CartBadge>}
@@ -42,7 +45,7 @@ const CartIconWrapper = styled(Link)`
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: ${({ theme }) => theme.spacing.xs};
+  padding: ${({ theme }) => theme.spacings.xs};
   border-radius: 50%;
   transition: background 0.2s;
   &:hover {

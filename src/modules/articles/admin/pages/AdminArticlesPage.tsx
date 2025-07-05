@@ -1,19 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import type { SupportedLocale } from "@/types/common";
 
 import {
-  fetchAllArticlesAdmin,
-  clearArticlesMessages,
   createArticles,
   updateArticles,
   deleteArticles,
   togglePublishArticles,
 } from "@/modules/articles/slice/articlesSlice";
+import {
+  createArticlesCategory,
+  updateArticlesCategory,
+} from "@/modules/articles/slice/articlesCategorySlice";
 
 import {
   ArticlesFormModal,
@@ -28,6 +31,12 @@ import { IArticles } from "@/modules/articles/types";
 import { ArticlesCategory } from "@/modules/articles/types";
 
 export default function AdminArticlesPage() {
+const { i18n, t } = useI18nNamespace("articles", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
+  const { articles, loading, error } = useAppSelector((state) => state.articles);
+
+
+
   const [activeTab, setActiveTab] = useState<"list" | "create" | "categories">(
     "list"
   );
@@ -37,19 +46,8 @@ export default function AdminArticlesPage() {
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
   const dispatch = useAppDispatch();
-  const { articles, loading, error } = useAppSelector(
-    (state) => state.articles
-  );
-  const { t } = useTranslation("adminArticles");
 
-  const lang = getCurrentLocale();
-
-  useEffect(() => {
-    dispatch(fetchAllArticlesAdmin(lang));
-    return () => {
-      dispatch(clearArticlesMessages());
-    };
-  }, [dispatch, lang]);
+  // ---- FETCH YOK! ----
 
   const handleSubmit = async (formData: FormData, id?: string) => {
     if (id) {
@@ -73,6 +71,22 @@ export default function AdminArticlesPage() {
   const handleTogglePublish = (id: string, isPublished: boolean) => {
     dispatch(togglePublishArticles({ id, isPublished: !isPublished }));
   };
+
+  // Create/Update Category
+const handleCategorySubmit = async (
+  data: { name: Record<SupportedLocale, string>; description?: Record<SupportedLocale, string> },
+  id?: string
+) => {
+  if (id) {
+    await dispatch(updateArticlesCategory({ id, data }));
+  } else {
+    await dispatch(createArticlesCategory(data));
+  }
+  setEditingCategory(null);
+  setCategoryModalOpen(false);
+};
+
+  
 
   return (
     <Wrapper>
@@ -123,8 +137,10 @@ export default function AdminArticlesPage() {
               onClose={() => setCategoryModalOpen(false)}
             >
               <CategoryForm
+                isOpen={categoryModalOpen}
                 onClose={() => setCategoryModalOpen(false)}
                 editingItem={editingCategory}
+                onSubmit={handleCategorySubmit}
               />
             </Modal>
           </>
@@ -137,13 +153,13 @@ export default function AdminArticlesPage() {
 const Wrapper = styled.div`
   max-width: 1200px;
   margin: auto;
-  padding: ${({ theme }) => theme.layout.sectionSpacing}
-    ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.layout.sectionspacings}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const TabContent = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.md};
 `;

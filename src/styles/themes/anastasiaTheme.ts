@@ -47,7 +47,7 @@ const anastasiaTheme: DefaultTheme = {
     loose: "2",
   },
 
-  spacing: {
+  spacings: {
     xs: "4px",
     sm: "8px",
     md: "16px",
@@ -96,7 +96,7 @@ const anastasiaTheme: DefaultTheme = {
 
   layout: {
     containerWidth: "1280px",
-    sectionSpacing: "3rem",
+    sectionspacings: "3rem",
   },
 
   zIndex: {
@@ -133,7 +133,8 @@ const anastasiaTheme: DefaultTheme = {
     desktop: "@media (min-width: 1025px)",
     landscape: "@media (orientation: landscape)",
     portrait: "@media (orientation: portrait)",
-    retina: "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
+    retina:
+      "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
   },
 
   colors: {
@@ -169,6 +170,12 @@ const anastasiaTheme: DefaultTheme = {
     primaryHover: "#d7428a",
     primaryDark: "#b53075",
     primaryTransparent: "rgba(229,84,156,0.1)",
+
+    secondary: "#52404b",
+    secondaryLight: "#f3d9e5",
+    secondaryHover: "#40333d",
+    secondaryDark: "#32272a",
+    secondaryTransparent: "rgba(82,64,75,0.1)",
 
     accent: "#d95841",
     accentHover: "#c94b35",
@@ -220,6 +227,8 @@ const anastasiaTheme: DefaultTheme = {
     white: "#ffffff",
     whiteColor: "#ffffff",
     darkColor: "#40333d",
+    disabledBg: "#d6d6d6",
+    lightGrey: "#f7f7f7",
   },
 
   buttons: {

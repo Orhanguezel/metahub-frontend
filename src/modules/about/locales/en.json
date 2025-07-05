@@ -1,69 +1,73 @@
 {
-  "admin": {
-    "tabs": {
-      "about": "About Us Sections",
-      "create": "New Section",
-      "categories": "Categories"
-    },
+  "page": {
+    "noAbout": "No articles found.",
+    "allAbout": "All Articles",
     "about": {
+      "title": "About",
+      "all": "See All"
+    },
+    "other": "Other Sections",
+    "summary": "Summary",
+    "detail": "Detail",
+    "noTitle": "No Title"
+  },
+  "readMore": "Read More →",
+  "author": "Author",
+  "tags": "Tags",
+  "unknown": "Unknown",
+  "tabs": {
+    "about": "About",
+    "create": "New Article",
+    "categories": "Categories"
+  },
+  "about": {
+    "empty": "No about available.",
+    "no_images": "No images",
+    "author": "Author",
+    "tags": "Tags",
+    "publish_status": "Published",
+    "unpublish": "Unpublish",
+    "publish": "Publish",
+    "unknown": "Unknown",
+    "none": "None"
+  },
+  "edit": "Edit",
+  "delete": "Delete",
+  "yes": "Yes",
+  "no": "No",
+  "admin": {
+    "about": {
+      "edit": "Edit Article",
+      "create": "Create New Article",
       "title": "Title",
-      "shortDescription": "Short Description",
-      "detailedDescription": "Detailed Description",
+      "summary": "Summary",
+      "content": "Content",
+      "author": "Author",
       "tags": "Tags",
+      "image": "Images",
       "category": "Category",
-      "select_category": "Select Category",
-      "image": "Image",
-      "publish_status": "Published",
-      "publish": "Publish",
-      "unpublish": "Unpublish",
-      "readMore": "Read More",
-      "all": "All About Us Sections",
-      "create": "Create",
-      "edit": "Edit Section",
-      "update": "Update",
-      "cancel": "Cancel",
-      "empty": "No content available.",
-      "no_image": "No image available",
-      "edit_category": "Edit Category",
-      "new_category": "New Category",
-      "category_name": "Category Name ({{lng}})",
-      "description_optional": "Description (optional)",
-      "category_description_placeholder": "What is this category about?",
-      "success_create": "Section created successfully.",
-      "success_update": "Section updated successfully.",
-      "success_delete": "Section deleted successfully.",
-      "success_publish": "Section published successfully.",
-      "success_unpublish": "Section unpublished."
+      "select_category": "Select a category"
     },
     "categories": {
-      "title": "About Us Categories",
+      "title": "Product Categories",
       "add": "Add Category",
-      "empty": "No categories found."
+      "name": "Category Name"
     },
+    "editCategory": "Edit Category",
+    "newCategory": "New Category",
+    "optional_description": "Optional description",
+    "category_info": "What is this category about?",
+    "update": "Update",
+    "update2": "Update",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
     "confirm": {
-      "delete": "Do you really want to delete this category?",
-      "delete_about": "Do you really want to delete this section?"
+      "delete": "Are you sure you want to delete this category?",
+      "delete_article": "Are you sure you want to delete this article?"
     },
-    "language": {
-      "en": "English",
-      "tr": "Turkish",
-      "de": "German"
-    },
+    "loading": "Loading...",
     "actions": "Actions",
-    "loading": "Loading..."
-  },
-  "page": {
-    "empty": "No content found.",
-    "all": "All Sections",
-    "noTitle": "No Title",
-    "noSummary": "No summary available.",
-    "tags": "Tags",
-    "readMore": "Read More →",
-    "other": "Other Content",
-    "aboutLink": "Read More →"
-  },
-  "seo": {
-    "title": "About Us",
-    "description": "Leader in energy efficiency and sustainability. Quality, innovation and reliability in industrial cooling systems."
+    "slug": "Slug"
   }
 }

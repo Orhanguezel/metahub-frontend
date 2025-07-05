@@ -1,22 +1,30 @@
 "use client";
-
 import React from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 
-interface Props {
+const SYSTEM_KEYS = [
+  "available_themes",
+  "site_template",
+  "navbar_logos",
+  "footer_logos",
+];
+
+interface KeyInputSectionProps {
   keyValue: string;
-  setKey: (v: string) => void;
+  setKey: (value: string) => void;
   isMultiLang: boolean;
-  setIsMultiLang: (v: boolean) => void;
+  setIsMultiLang: (value: boolean) => void;
   isImage: boolean;
-  setIsImage: (v: boolean) => void;
+  setIsImage: (value: boolean) => void;
   isNestedObject: boolean;
-  setIsNestedObject: (v: boolean) => void;
+  setIsNestedObject: (value: boolean) => void;
   isEditing: boolean;
+  supportedLocales: readonly string[];
 }
 
-export default function KeyInputSection({
+const KeyInputSection: React.FC<KeyInputSectionProps> = ({
   keyValue,
   setKey,
   isMultiLang,
@@ -26,22 +34,24 @@ export default function KeyInputSection({
   isNestedObject,
   setIsNestedObject,
   isEditing,
-}: Props) {
-  const { t } = useTranslation("settings");
+}) => {
+  const { i18n, t } = useI18nNamespace("settings", translations);
+
+  const isSystemKey = SYSTEM_KEYS.includes(keyValue);
 
   const handleNestedChange = () => {
     const newVal = !isNestedObject;
     setIsNestedObject(newVal);
-    if (newVal) setIsMultiLang(false); // Çakışmayı önle
+    if (newVal) setIsMultiLang(false);
   };
 
-  // 🔒 Özel key’lerde checkbox’ları kapat
-  const isSystemKey = [
-    "available_themes",
-    "site_template",
-    "navbar_logos",
-    "footer_logos",
-  ].includes(keyValue);
+  const handleMultiLangChange = () => {
+    const newVal = !isMultiLang;
+    setIsMultiLang(newVal);
+    if (newVal) setIsNestedObject(false);
+  };
+
+  const canImage = !isMultiLang && !isNestedObject && !isSystemKey;
 
   return (
     <>
@@ -52,16 +62,16 @@ export default function KeyInputSection({
         onChange={(e) => setKey(e.target.value)}
         placeholder={t("keyPlaceholder", "Enter key")}
         required
-        disabled={isEditing}
+        disabled={isEditing || isSystemKey}
+        autoComplete="off"
       />
-
       {!isSystemKey && (
         <>
           <CheckboxWrapper>
             <input
               type="checkbox"
               checked={isMultiLang}
-              onChange={() => setIsMultiLang(!isMultiLang)}
+              onChange={handleMultiLangChange}
               id="multiLang"
               disabled={isNestedObject}
             />
@@ -69,25 +79,25 @@ export default function KeyInputSection({
               {t("multiLanguage", "Multi-Language?")}
             </label>
           </CheckboxWrapper>
-
           <CheckboxWrapper>
             <input
               type="checkbox"
               checked={isNestedObject}
               onChange={handleNestedChange}
               id="nestedObject"
+              disabled={isMultiLang}
             />
             <label htmlFor="nestedObject">
               {t("nestedObject", "Is Nested Object?")}
             </label>
           </CheckboxWrapper>
-
           <CheckboxWrapper>
             <input
               type="checkbox"
               checked={isImage}
               onChange={() => setIsImage(!isImage)}
               id="isImage"
+              disabled={!canImage}
             />
             <label htmlFor="isImage">
               {t("isImage", "Is this a file/image?")}
@@ -97,17 +107,20 @@ export default function KeyInputSection({
       )}
     </>
   );
-}
+};
 
+export default KeyInputSection;
+
+// Styled Components
 const Label = styled.label`
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   color: ${({ theme }) => theme.colors.text};
   font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
 const Input = styled.input`
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   border: ${({ theme }) => theme.borders.thin}
     ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.sm};
@@ -119,6 +132,6 @@ const Input = styled.input`
 const CheckboxWrapper = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  margin: ${({ theme }) => theme.spacing.sm} 0;
+  gap: ${({ theme }) => theme.spacings.sm};
+  margin: ${({ theme }) => theme.spacings.sm} 0;
 `;

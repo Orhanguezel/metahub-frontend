@@ -2,7 +2,7 @@
 
 import React from "react";
 import styled, { keyframes } from "styled-components";
-import { X } from "lucide-react"; 
+import { X } from "lucide-react";
 
 interface ModalProps {
   isOpen: boolean;
@@ -25,7 +25,6 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
   );
 }
 
-
 const fadeIn = keyframes`
   from {
     opacity: 0;
@@ -41,7 +40,8 @@ const fadeIn = keyframes`
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: ${({ theme }) => theme.colors.overlayBackground || "rgba(0, 0, 0, 0.6)"};
+  background: ${({ theme }) =>
+    theme.colors.overlayBackground || "rgba(0, 0, 0, 0.6)"};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -51,7 +51,7 @@ const Overlay = styled.div`
 // İçerik kutusu
 const Content = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.lg};
   width: 90%;
   max-width: 500px;
@@ -65,8 +65,8 @@ const Content = styled.div`
 // Kapatma butonu
 const CloseButton = styled.button`
   position: absolute;
-  top: ${({ theme }) => theme.spacing.sm};
-  right: ${({ theme }) => theme.spacing.sm};
+  top: ${({ theme }) => theme.spacings.sm};
+  right: ${({ theme }) => theme.spacings.sm};
   background: transparent;
   border: none;
   color: ${({ theme }) => theme.colors.textSecondary};

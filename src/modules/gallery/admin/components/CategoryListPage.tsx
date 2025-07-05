@@ -2,24 +2,27 @@
 
 import React, { useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import translations from "../../locales";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  fetchGalleryCategories,
   deleteGalleryCategory,
+  fetchGalleryCategories,
 } from "@/modules/gallery/slice/galleryCategorySlice";
-import type { GalleryCategory } from "@/modules/gallery/types/gallery";
+import type { IGalleryCategory } from "@/modules/gallery/types";
 
 interface GalleryCategoryListPageProps {
   onAdd: () => void;
-  onEdit: (category: GalleryCategory) => void;
+  onEdit: (category: IGalleryCategory) => void;
 }
 
 const GalleryCategoryListPage: React.FC<GalleryCategoryListPageProps> = ({
   onAdd,
   onEdit,
 }) => {
-  const { t } = useTranslation("gallery");
+  const { i18n, t } = useI18nNamespace("gallery", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const dispatch = useAppDispatch();
   const { categories = [], loading, error } = useAppSelector(
     (state) => state.galleryCategory || {}
@@ -33,7 +36,10 @@ const GalleryCategoryListPage: React.FC<GalleryCategoryListPageProps> = ({
     (id: string) => {
       if (
         window.confirm(
-          t("admin.confirm.delete", "Are you sure you want to delete this category?")
+          t(
+            "admin.confirm.delete",
+            "Are you sure you want to delete this category?"
+          )
         )
       ) {
         dispatch(deleteGalleryCategory(id));
@@ -63,27 +69,36 @@ const GalleryCategoryListPage: React.FC<GalleryCategoryListPageProps> = ({
             <thead>
               <tr>
                 <TableHeaderCell>#</TableHeaderCell>
-                <TableHeaderCell>{t("admin.language.en", "EN")}</TableHeaderCell>
-                <TableHeaderCell>{t("admin.language.tr", "TR")}</TableHeaderCell>
-                <TableHeaderCell>{t("admin.language.de", "DE")}</TableHeaderCell>
+                {SUPPORTED_LOCALES.map((lng) => (
+                  <TableHeaderCell key={lng}>
+                    {t(`admin.language.${lng}`, lng.toUpperCase())}
+                  </TableHeaderCell>
+                ))}
                 <TableHeaderCell>{t("admin.slug", "Slug")}</TableHeaderCell>
-                <TableHeaderCell>{t("admin.actions", "Actions")}</TableHeaderCell>
+                <TableHeaderCell>
+                  {t("admin.actions", "Actions")}
+                </TableHeaderCell>
               </tr>
             </thead>
             <tbody>
               {categories.map((cat, i) => (
                 <TableRow key={cat._id}>
                   <TableCell>{i + 1}</TableCell>
-                  <TableCell>{cat.name?.en}</TableCell>
-                  <TableCell>{cat.name?.tr}</TableCell>
-                  <TableCell>{cat.name?.de}</TableCell>
+                  {SUPPORTED_LOCALES.map((lng) => (
+                    <TableCell key={lng}>
+                      {cat.name?.[lng] || <i>-</i>}
+                    </TableCell>
+                  ))}
                   <TableCell>{cat.slug}</TableCell>
                   <TableCell>
                     <ActionGroup>
                       <EditButton type="button" onClick={() => onEdit(cat)}>
                         {t("admin.edit", "Edit")}
                       </EditButton>
-                      <DeleteButton type="button" onClick={() => handleDelete(cat._id)}>
+                      <DeleteButton
+                        type="button"
+                        onClick={() => handleDelete(cat._id)}
+                      >
                         {t("admin.delete", "Delete")}
                       </DeleteButton>
                     </ActionGroup>
@@ -100,10 +115,9 @@ const GalleryCategoryListPage: React.FC<GalleryCategoryListPageProps> = ({
 
 export default GalleryCategoryListPage;
 
-// 💅 Styled Components AnastasiaTheme uyumlu
 
 const Wrapper = styled.section`
-  margin-top: ${({ theme }) => theme.spacing.xl};
+  margin-top: ${({ theme }) => theme.spacings.xl};
   width: 100%;
   max-width: 100%;
 `;
@@ -112,13 +126,13 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  gap: ${({ theme }) => theme.spacings.md};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
 
   @media ${({ theme }) => theme.media.mobile} {
     flex-direction: column;
     align-items: stretch;
-    gap: ${({ theme }) => theme.spacing.sm};
+    gap: ${({ theme }) => theme.spacings.sm};
   }
 `;
 
@@ -128,7 +142,7 @@ const Title = styled.h2`
   color: ${({ theme }) => theme.colors.primary};
   margin: 0;
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  letter-spacing: 0.01em;
+  letter-spacings: 0.01em;
 `;
 
 const TableWrapper = styled.div`
@@ -164,15 +178,17 @@ const TableHeaderCell = styled.th`
   background: ${({ theme }) => theme.colors.tableHeader};
   color: ${({ theme }) => theme.colors.text};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.md};
   text-align: left;
-  border-bottom: ${({ theme }) => theme.borders.thick} ${({ theme }) => theme.colors.border};
+  border-bottom: ${({ theme }) => theme.borders.thick}
+    ${({ theme }) => theme.colors.border};
   white-space: nowrap;
 `;
 
 const TableCell = styled.td`
-  padding: ${({ theme }) => theme.spacing.md};
-  border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  padding: ${({ theme }) => theme.spacings.md};
+  border-bottom: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.text};
   font-size: ${({ theme }) => theme.fontSizes.md};
@@ -199,7 +215,7 @@ const Status = styled.p`
   text-align: center;
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  margin: ${({ theme }) => theme.spacing.xl} 0;
+  margin: ${({ theme }) => theme.spacings.xl} 0;
   font-family: ${({ theme }) => theme.fonts.body};
 `;
 
@@ -207,11 +223,11 @@ const Error = styled.p`
   text-align: center;
   color: ${({ theme }) => theme.colors.danger};
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  margin: ${({ theme }) => theme.spacing.xl} 0;
+  margin: ${({ theme }) => theme.spacings.xl} 0;
   font-family: ${({ theme }) => theme.fonts.body};
   background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.md};
 `;
 
 const PrimaryButton = styled.button`
@@ -220,7 +236,8 @@ const PrimaryButton = styled.button`
   font-family: ${({ theme }) => theme.fonts.body};
   font-size: ${({ theme }) => theme.fontSizes.lg};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.xl};
   border: none;
   border-radius: ${({ theme }) => theme.radii.pill};
   box-shadow: ${({ theme }) => theme.shadows.button};
@@ -247,7 +264,7 @@ const PrimaryButton = styled.button`
 
 const ActionGroup = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
 `;
 
 const EditButton = styled.button`
@@ -256,7 +273,8 @@ const EditButton = styled.button`
   font-family: ${({ theme }) => theme.fonts.body};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.xs}
+    ${({ theme }) => theme.spacings.lg};
   border: none;
   border-radius: ${({ theme }) => theme.radii.md};
   cursor: pointer;
@@ -276,7 +294,8 @@ const DeleteButton = styled.button`
   font-family: ${({ theme }) => theme.fonts.body};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.xs}
+    ${({ theme }) => theme.spacings.lg};
   border: none;
   border-radius: ${({ theme }) => theme.radii.md};
   cursor: pointer;
@@ -284,8 +303,7 @@ const DeleteButton = styled.button`
 
   &:hover,
   &:focus {
-    background: ${({ theme }) =>
-      theme.buttons.danger.backgroundHover};
+    background: ${({ theme }) => theme.buttons.danger.backgroundHover};
     color: ${({ theme }) => theme.buttons.danger.textHover};
   }
 `;

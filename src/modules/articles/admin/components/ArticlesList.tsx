@@ -2,7 +2,8 @@
 
 import styled from "styled-components";
 import { IArticles } from "@/modules/articles/types";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { Skeleton } from "@/shared";
 import { SupportedLocale } from "@/types/common";
 
@@ -25,7 +26,7 @@ export default function ArticlesList({
   onDelete,
   onTogglePublish,
 }: Props) {
-  const { t } = useTranslation("adminArticles");
+  const { t } = useI18nNamespace("articles", translations);
 
   if (loading) {
     return (
@@ -42,17 +43,29 @@ export default function ArticlesList({
   if (articles.length === 0)
     return <Empty>{t("articles.empty", "No articles available.")}</Empty>;
 
+  // Fallback fonksiyonu (çok dilli)
+  const getMultiLang = (obj?: Record<string, string>) => {
+    if (!obj) return "";
+    return obj[lang] || obj["en"] || Object.values(obj)[0] || "—";
+  };
+
   return (
     <div>
       {articles.map((item) => (
         <ArticlesCard key={item._id}>
-          <h2>{item.title?.[lang] || "—"}</h2>
-          <p>{item.summary?.[lang] || "—"}</p>
+          <h2>{getMultiLang(item.title)}</h2>
+          <p>{getMultiLang(item.summary)}</p>
 
           {item.images?.length > 0 ? (
             <ImageGrid>
               {item.images.map((img, i) => (
-                <img key={i} src={img.url} alt={`article-${i}`} />
+                <img
+                  key={i}
+                  src={img.url}
+                  alt={getMultiLang(item.title) || `article-${i}`}
+                  loading="lazy"
+                  width={150}
+                />
               ))}
             </ImageGrid>
           ) : (
@@ -63,12 +76,10 @@ export default function ArticlesList({
             <strong>{t("articles.author", "Author")}:</strong>{" "}
             {item.author || t("unknown", "Unknown")}
           </InfoLine>
-
           <InfoLine>
             <strong>{t("articles.tags", "Tags")}:</strong>{" "}
-            {item.tags?.join(", ") || t("none", "None")}
+            {item.tags?.length ? item.tags.join(", ") : t("none", "None")}
           </InfoLine>
-
           <InfoLine>
             <strong>{t("articles.publish_status", "Published")}:</strong>{" "}
             {item.isPublished ? t("yes", "Yes") : t("no", "No")}
@@ -77,18 +88,29 @@ export default function ArticlesList({
           {(onEdit || onDelete || onTogglePublish) && (
             <ButtonGroup>
               {onEdit && (
-                <ActionButton onClick={() => onEdit(item)}>
+                <ActionButton
+                  onClick={() => onEdit(item)}
+                  aria-label={t("edit", "Edit")}
+                >
                   {t("edit", "Edit")}
                 </ActionButton>
               )}
               {onDelete && (
-                <DeleteButton onClick={() => onDelete(item._id)}>
+                <DeleteButton
+                  onClick={() => onDelete(item._id)}
+                  aria-label={t("delete", "Delete")}
+                >
                   {t("delete", "Delete")}
                 </DeleteButton>
               )}
               {onTogglePublish && (
                 <ToggleButton
                   onClick={() => onTogglePublish(item._id, item.isPublished)}
+                  aria-label={
+                    item.isPublished
+                      ? t("articles.unpublish", "Unpublish")
+                      : t("articles.publish", "Publish")
+                  }
                 >
                   {item.isPublished
                     ? t("articles.unpublish", "Unpublish")
@@ -103,7 +125,7 @@ export default function ArticlesList({
   );
 }
 
-// 💅 Styles
+// --- Styles ---
 const SkeletonWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -127,6 +149,7 @@ const ImageGrid = styled.div`
   img {
     width: 150px;
     border-radius: 4px;
+    object-fit: cover;
   }
 `;
 

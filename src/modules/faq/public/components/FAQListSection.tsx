@@ -49,7 +49,8 @@ export default function FAQListSection() {
 const Section = styled.section`
   max-width: 800px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xl}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const Title = styled.h2`
@@ -61,17 +62,17 @@ const Title = styled.h2`
 
 const Paragraph = styled.p`
   text-align: center;
-  margin-top: ${({ theme }) => theme.spacing.lg};
+  margin-top: ${({ theme }) => theme.spacings.lg};
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: ${({ theme }) => theme.fontSizes.base};
 `;
 
 const FAQList = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.xl};
+  margin-top: ${({ theme }) => theme.spacings.xl};
 `;
 
 const FAQItem = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
 `;
 
 const Question = styled.h4`
@@ -81,7 +82,7 @@ const Question = styled.h4`
 `;
 
 const Answer = styled.p`
-  margin-top: ${({ theme }) => theme.spacing.sm};
+  margin-top: ${({ theme }) => theme.spacings.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: ${({ theme }) => theme.fontSizes.base};
   line-height: 1.6;

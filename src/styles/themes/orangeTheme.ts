@@ -2,7 +2,6 @@
 
 import { DefaultTheme } from "styled-components";
 
-
 const orangeTheme: DefaultTheme = {
   templateName: "orange",
   fonts: {
@@ -48,7 +47,7 @@ const orangeTheme: DefaultTheme = {
     loose: "2",
   },
 
-  spacing: {
+  spacings: {
     xs: "4px",
     sm: "8px",
     md: "16px",
@@ -97,7 +96,7 @@ const orangeTheme: DefaultTheme = {
 
   layout: {
     containerWidth: "1280px",
-    sectionSpacing: "3rem",
+    sectionspacings: "3rem",
   },
 
   zIndex: {
@@ -134,9 +133,9 @@ const orangeTheme: DefaultTheme = {
     desktop: "@media (min-width: 1025px)",
     landscape: "@media (orientation: landscape)",
     portrait: "@media (orientation: portrait)",
-    retina: "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
+    retina:
+      "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
   },
-
 
   colors: {
     background: "#FFFFFF",
@@ -172,6 +171,12 @@ const orangeTheme: DefaultTheme = {
     primaryHover: "#EA580C",
     primaryDark: "#C2410C",
     primaryTransparent: "rgba(249, 115, 22, 0.1)",
+
+    secondary: "#F97316",
+    secondaryLight: "#FB923C",
+    secondaryHover: "#EA580C",
+    secondaryDark: "#C2410C",
+    secondaryTransparent: "rgba(249, 115, 22, 0.1)",
 
     accent: "#F1F5F9",
     accentHover: "#E2E8F0",
@@ -223,6 +228,8 @@ const orangeTheme: DefaultTheme = {
     white: "#FFFFFF",
     whiteColor: "#FFFFFF",
     darkColor: "#0F172A",
+    disabledBg: "#d6d6d6",
+    lightGrey: "#f7f7f7",
   },
 
   buttons: {

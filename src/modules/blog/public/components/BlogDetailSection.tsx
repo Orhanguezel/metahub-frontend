@@ -1,54 +1,60 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
+import i18n from "@/i18n";
+import translations from "../../locales";
 import { useTranslation } from "react-i18next";
-import dynamic from "next/dynamic";
 import Link from "next/link";
-import "react-image-lightbox/style.css";
-
+import Image from "next/image";
+import { Skeleton, ErrorMessage } from "@/shared";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  fetchBlogBySlug,
-  fetchBlogs,
   clearBlogMessages,
+  fetchBlogBySlug,
+  setSelectedBlog,
 } from "@/modules/blog/slice/blogSlice";
-import { Skeleton, ErrorMessage } from "@/shared";
 import { CommentForm, CommentList } from "@/modules/comment";
-
-const Lightbox = dynamic(() => import("react-image-lightbox"), { ssr: false });
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import type { IBlog } from "@/modules/blog/types";
 
 export default function BlogDetailSection() {
   const { slug } = useParams() as { slug: string };
-  const { i18n, t } = useTranslation("blog");
+  const { t } = useTranslation("blog");
   const dispatch = useAppDispatch();
+  const lang = getCurrentLocale();
 
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
+  // Locale dosyalarını i18n'e yükle
+  Object.entries(translations).forEach(([locale, resources]) => {
+    if (!i18n.hasResourceBundle(locale, "blog")) {
+      i18n.addResourceBundle(locale, "blog", resources, true, true);
+    }
+  });
 
-  const { selected, blogs, loading, error } = useAppSelector(
-    (state) => state.blog
-  );
-
-  const [photoIndex, setPhotoIndex] = useState(0);
-  const [isOpen, setIsOpen] = useState(false);
+  const {
+    selected: blog,
+    blog: allBlog,
+    loading,
+    error,
+  } = useAppSelector((state) => state.blog);
 
   useEffect(() => {
-    if (slug) {
+    if (allBlog && allBlog.length > 0) {
+      const found = allBlog.find((item: IBlog) => item.slug === slug);
+      if (found) {
+        dispatch(setSelectedBlog(found));
+      } else {
+        dispatch(fetchBlogBySlug(slug));
+      }
+    } else {
       dispatch(fetchBlogBySlug(slug));
     }
-
-    dispatch(fetchBlogs(lang));
-
     return () => {
       dispatch(clearBlogMessages());
     };
-  }, [dispatch, slug, lang]);
-
-  const otherBlogs = blogs.filter((b) => b.slug !== slug).slice(0, 2);
+  }, [dispatch, allBlog, slug]);
 
   if (loading) {
     return (
@@ -58,7 +64,7 @@ export default function BlogDetailSection() {
     );
   }
 
-  if (error || !selected) {
+  if (error || !blog) {
     return (
       <Container>
         <ErrorMessage />
@@ -66,84 +72,47 @@ export default function BlogDetailSection() {
     );
   }
 
+  const otherBlog = allBlog.filter((item: IBlog) => item.slug !== slug).slice(0, 2);
+
   return (
     <Container
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <Title>{selected.title?.[lang]}</Title>
+      <Title>{blog.title?.[lang] || t("page.noTitle", "Başlık yok")}</Title>
 
-      {selected.images?.length > 0 && (
-        <Gallery>
-          {selected.images.map((img, idx) => (
-            <ImageWrapper
-              key={idx}
-              onClick={() => {
-                setPhotoIndex(idx);
-                setIsOpen(true);
-              }}
-            >
-              <img src={img.url} alt={`image-${idx}`} />
-            </ImageWrapper>
-          ))}
-        </Gallery>
+      {blog.images?.[0]?.url && (
+        <ImageWrapper>
+          <Image
+            src={blog.images[0].url}
+            alt={blog.title?.[lang] || ""}
+            width={800}
+            height={400}
+            style={{ width: "100%", height: "auto", objectFit: "cover" }}
+          />
+        </ImageWrapper>
       )}
 
-      <Content
-        dangerouslySetInnerHTML={{ __html: selected.content?.[lang] || "" }}
-      />
-
-      {isOpen && selected.images?.length > 0 && (
-        <Lightbox
-          mainSrc={selected.images[photoIndex].url}
-          nextSrc={
-            selected.images[(photoIndex + 1) % selected.images.length].url
-          }
-          prevSrc={
-            selected.images[
-              (photoIndex + selected.images.length - 1) % selected.images.length
-            ].url
-          }
-          onCloseRequest={() => setIsOpen(false)}
-          onMovePrevRequest={() =>
-            setPhotoIndex(
-              (photoIndex + selected.images.length - 1) % selected.images.length
-            )
-          }
-          onMoveNextRequest={() =>
-            setPhotoIndex((photoIndex + 1) % selected.images.length)
-          }
-          imageCaption={selected.title?.[lang]}
-        />
+      {blog.summary?.[lang] && (
+        <SummaryBox>
+          <h3>{t("page.summary")}</h3>
+          <div>{blog.summary?.[lang]}</div>
+        </SummaryBox>
       )}
 
-      <MetaInfo>
-        {selected.author && <MetaItem>✍️ {selected.author}</MetaItem>}
-        {selected.publishedAt && (
-          <MetaItem>
-            🗓{" "}
-            {new Date(selected.publishedAt).toLocaleDateString(lang, {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </MetaItem>
-        )}
-        {selected.tags?.length > 0 && (
-          <Tags>
-            {selected.tags.map((tag, i) => (
-              <Tag key={i}>#{tag}</Tag>
-            ))}
-          </Tags>
-        )}
-      </MetaInfo>
+      {blog.content?.[lang] && (
+        <ContentBox>
+          <h3>{t("page.detail")}</h3>
+          <div dangerouslySetInnerHTML={{ __html: blog.content[lang] }} />
+        </ContentBox>
+      )}
 
-      {otherBlogs.length > 0 && (
+      {otherBlog?.length > 0 && (
         <OtherSection>
-          <h3>{t("other", "Diğer Haberler")}</h3>
+          <h3>{t("page.other")}</h3>
           <OtherList>
-            {otherBlogs.map((item) => (
+            {otherBlog.map((item: IBlog) => (
               <OtherItem key={item._id}>
                 <Link href={`/blog/${item.slug}`}>{item.title?.[lang]}</Link>
               </OtherItem>
@@ -151,111 +120,72 @@ export default function BlogDetailSection() {
           </OtherList>
         </OtherSection>
       )}
-
-      <CommentForm contentId={selected._id} contentType="blog" />
-      <CommentList contentId={selected._id} contentType="blog" />
+      <CommentForm contentId={blog._id} contentType="blog" />
+      <CommentList contentId={blog._id} contentType="blog" />
     </Container>
   );
 }
 
-// Styled Components
+// --------- STYLES -----------
 const Container = styled(motion.section)`
   max-width: 900px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xxl}
-    ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const Title = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
-const Gallery = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-`;
-
 const ImageWrapper = styled.div`
-  flex: 1 1 280px;
-  border-radius: ${({ theme }) => theme.radii.md};
-  overflow: hidden;
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  transition: transform 0.3s ease;
-  cursor: pointer;
-
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   img {
     width: 100%;
     height: auto;
     object-fit: cover;
     border-radius: ${({ theme }) => theme.radii.sm};
-  }
-
-  &:hover {
-    transform: scale(1.02);
+    box-shadow: ${({ theme }) => theme.shadows.sm};
   }
 `;
 
-const Content = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  color: ${({ theme }) => theme.colors.text};
-  line-height: 1.7;
-
-  p {
-    margin-bottom: ${({ theme }) => theme.spacing.md};
-  }
-`;
-
-const MetaInfo = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.lg};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const MetaItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const Tags = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xs};
-`;
-
-const Tag = styled.span`
-  background: ${({ theme }) => theme.colors.tagBackground || "#eee"};
-  color: ${({ theme }) => theme.colors.text};
-  padding: 4px 8px;
+const SummaryBox = styled.div`
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-left: 4px solid ${({ theme }) => theme.colors.primary};
+  padding: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.sm};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  font-weight: 500;
+`;
+
+const ContentBox = styled.div`
+  background: ${({ theme }) => theme.colors.background};
+  padding: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  h3 {
+    margin-bottom: ${({ theme }) => theme.spacings.md};
+    color: ${({ theme }) => theme.colors.primary};
+  }
 `;
 
 const OtherSection = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.xxl};
+  margin-top: ${({ theme }) => theme.spacings.xxl};
   border-top: 1px solid ${({ theme }) => theme.colors.border};
-  padding-top: ${({ theme }) => theme.spacing.lg};
+  padding-top: ${({ theme }) => theme.spacings.lg};
 `;
 
 const OtherList = styled.ul`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
 `;
 
 const OtherItem = styled.li`
   font-size: ${({ theme }) => theme.fontSizes.base};
-
   a {
     color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;

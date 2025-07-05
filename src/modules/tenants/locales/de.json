@@ -1,0 +1,42 @@
+{
+  "admin": {
+    "title": "Mandantenverwaltung",
+    "create": "Neuen Mandanten hinzufügen",
+    "update": "Aktualisieren",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "confirm": {
+      "delete_tenant": "Sind Sie sicher, dass Sie diesen Mandanten löschen möchten?"
+    },
+    "tenant": {
+      "edit": "Mandanten bearbeiten",
+      "create": "Neuen Mandanten hinzufügen",
+      "name": "Mandantenname",
+      "description": "Beschreibung",
+      "slug": "Mandantenslug",
+      "mongoUri": "MongoDB URI",
+      "domainMain": "Hauptdomain",
+      "phone": "Telefon",
+      "theme": "Theme",
+      "isActive": "Aktiv",
+      "metaTitle": "Meta Titel",
+      "metaDescription": "Meta Beschreibung",
+      "address": "Adresse",
+      "emailSettings": "E-Mail Einstellungen (SMTP)",
+      "social": "Soziale Medien Links",
+      "images": "Bilder",
+      "empty": "Kein Mandant gefunden.",
+      "domain": "Domain",
+      "email": "E-Mail",
+      "active": "Aktiv",
+      "no_images": "Keine Bilder"
+    },
+    "tabs": {
+      "tenant": "Mandanten",
+      "create": "Neu hinzufügen"
+    }
+  },
+  "yes": "Ja",
+  "no": "Nein"
+}

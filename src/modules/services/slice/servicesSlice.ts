@@ -1,11 +1,10 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { IServices } from "@/modules/services/types/services";
-import type { SupportedLocale } from "@/types/common";
+import type { IServices } from "@/modules/services/types";
 
 interface ServicesState {
   services: IServices[];
-  selectedServices: IServices | null;
+  selected: IServices | null;
   loading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -13,19 +12,30 @@ interface ServicesState {
 
 const initialState: ServicesState = {
   services: [],
-  selectedServices: null,
+  selected: null,
   loading: false,
   error: null,
   successMessage: null,
 };
 
-// 🌐 Public - fetch by language
-export const fetchServices = createAsyncThunk(
+const extractErrorMessage = (payload: unknown): string => {
+  if (typeof payload === "string") return payload;
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    "message" in payload &&
+    typeof (payload as any).message === "string"
+  )
+    return (payload as any).message;
+  return "An error occurred.";
+};
+
+export const fetchServices = createAsyncThunk<IServices[]>(
   "services/fetchAll",
-  async (lang: SupportedLocale, thunkAPI) => {
+  async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/services?language=${lang}`,
+      `/services`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -33,7 +43,6 @@ export const fetchServices = createAsyncThunk(
   }
 );
 
-// ➕ Create Services
 export const createServices = createAsyncThunk(
   "services/create",
   async (formData: FormData, thunkAPI) => {
@@ -46,11 +55,10 @@ export const createServices = createAsyncThunk(
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
-    return res.data;
+    return res.data; // backend: { success: true, message: "..." }
   }
 );
 
-// ✏️ Update Services
 export const updateServices = createAsyncThunk(
   "services/update",
   async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) => {
@@ -67,7 +75,6 @@ export const updateServices = createAsyncThunk(
   }
 );
 
-// ❌ Delete Services
 export const deleteServices = createAsyncThunk(
   "services/delete",
   async (id: string, thunkAPI) => {
@@ -81,13 +88,12 @@ export const deleteServices = createAsyncThunk(
   }
 );
 
-// 🛠 Admin - fetch all Services
 export const fetchAllServicesAdmin = createAsyncThunk(
   "services/fetchAllAdmin",
-  async (lang: SupportedLocale, thunkAPI) => {
+  async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/services/admin?language=${lang}`,
+      `/services/admin`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -95,7 +101,6 @@ export const fetchAllServicesAdmin = createAsyncThunk(
   }
 );
 
-// 🔁 Admin - toggle publish
 export const togglePublishServices = createAsyncThunk(
   "services/togglePublish",
   async (
@@ -104,7 +109,6 @@ export const togglePublishServices = createAsyncThunk(
   ) => {
     const formData = new FormData();
     formData.append("isPublished", String(isPublished));
-
     const res = await apiCall(
       "put",
       `/services/admin/${id}`,
@@ -118,97 +122,107 @@ export const togglePublishServices = createAsyncThunk(
   }
 );
 
+export const fetchServicesBySlug = createAsyncThunk(
+  "services/fetchBySlug",
+  async (slug: string, thunkAPI) => {
+    const res = await apiCall(
+      "get",
+      `/services/slug/${slug}`,
+      null,
+      thunkAPI.rejectWithValue
+    );
+    return res.data;
+  }
+);
+
+// --- Slice ---
 const servicesSlice = createSlice({
   name: "services",
   initialState,
   reducers: {
-    clearServicesMessages: (state) => {
+    clearServicesMessages(state) {
       state.error = null;
       state.successMessage = null;
     },
-    setSelectedServices: (state, action: PayloadAction<IServices | null>) => {
-      state.selectedServices = action.payload;
+    setSelectedServices(state, action: PayloadAction<IServices | null>) {
+      state.selected = action.payload;
     },
   },
   extraReducers: (builder) => {
-    const loading = (state: ServicesState) => {
+    const startLoading = (state: ServicesState) => {
       state.loading = true;
       state.error = null;
     };
 
-    const failed = (state: ServicesState, action: PayloadAction<any>) => {
+    const setError = (state: ServicesState, action: PayloadAction<any>) => {
       state.loading = false;
-      state.error = action.payload?.message || "An error occurred.";
+      state.error = extractErrorMessage(action.payload);
     };
 
     builder
-      // 🌐 Public
-      .addCase(fetchServices.pending, loading)
+      .addCase(fetchServices.pending, startLoading)
       .addCase(fetchServices.fulfilled, (state, action) => {
         state.loading = false;
         state.services = action.payload;
       })
-      .addCase(fetchServices.rejected, failed)
+      .addCase(fetchServices.rejected, setError)
 
-      // ➕ Create
-      .addCase(createServices.pending, loading)
-      .addCase(createServices.fulfilled, (state, action) => {
-        state.loading = false;
-        state.successMessage = "Service created successfully.";
-        if (action.payload && action.payload._id) {
-          state.services.unshift(action.payload);
-        }
-      })
-      .addCase(createServices.rejected, failed)
-
-      // ✏️ Update
-      .addCase(updateServices.pending, loading)
-      .addCase(updateServices.fulfilled, (state, action) => {
-        state.loading = false;
-        const updated = action.payload;
-        const index = state.services.findIndex((s) => s._id === updated._id);
-        if (index !== -1) state.services[index] = updated;
-        if (state.selectedServices?._id === updated._id) {
-          state.selectedServices = updated;
-        }
-        state.successMessage = "Service updated successfully.";
-      })
-      .addCase(updateServices.rejected, failed)
-
-      // ❌ Delete
-      .addCase(deleteServices.pending, loading)
-      .addCase(deleteServices.fulfilled, (state, action) => {
-        state.loading = false;
-        state.services = state.services.filter(
-          (s) => s._id !== action.payload.id
-        );
-        state.successMessage = "Service deleted successfully.";
-      })
-      .addCase(deleteServices.rejected, failed)
-
-      // 🛠 Fetch All Admin
-      .addCase(fetchAllServicesAdmin.pending, loading)
+      .addCase(fetchAllServicesAdmin.pending, startLoading)
       .addCase(fetchAllServicesAdmin.fulfilled, (state, action) => {
         state.loading = false;
         state.services = action.payload;
       })
-      .addCase(fetchAllServicesAdmin.rejected, failed)
+      .addCase(fetchAllServicesAdmin.rejected, setError)
 
-      // 🔁 Toggle Publish
-      .addCase(togglePublishServices.pending, loading)
+      .addCase(createServices.pending, startLoading)
+      .addCase(createServices.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage =
+          action.payload?.message || "Article created successfully.";
+        if (action.payload?.data) {
+          state.services.unshift(action.payload.data);
+        }
+      })
+      .addCase(createServices.rejected, setError)
+
+      .addCase(updateServices.pending, startLoading)
+      .addCase(updateServices.fulfilled, (state, action) => {
+        state.loading = false;
+        const updated = action.payload?.data || action.payload;
+        const index = state.services.findIndex((a) => a._id === updated._id);
+        if (index !== -1) state.services[index] = updated;
+        if (state.selected?._id === updated._id) state.selected = updated;
+        state.successMessage = action.payload?.message;
+      })
+      .addCase(updateServices.rejected, setError)
+
+      .addCase(deleteServices.pending, startLoading)
+      .addCase(deleteServices.fulfilled, (state, action) => {
+        state.loading = false;
+        state.services = state.services.filter(
+          (a) => a._id !== action.payload.id
+        );
+        state.successMessage = action.payload?.message;
+      })
+      .addCase(deleteServices.rejected, setError)
+
+      .addCase(togglePublishServices.pending, startLoading)
       .addCase(togglePublishServices.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload;
-        const index = state.services.findIndex((s) => s._id === updated._id);
+        const updated = action.payload?.data || action.payload;
+        const index = state.services.findIndex((a) => a._id === updated._id);
         if (index !== -1) state.services[index] = updated;
-        if (state.selectedServices?._id === updated._id) {
-          state.selectedServices = updated;
-        }
-        state.successMessage = updated.isPublished
-          ? "Service published successfully."
-          : "Service unpublished successfully.";
+        if (state.selected?._id === updated._id) state.selected = updated;
+        state.successMessage = action.payload?.message;
       })
-      .addCase(togglePublishServices.rejected, failed);
+      .addCase(togglePublishServices.rejected, setError)
+
+      .addCase(fetchServicesBySlug.pending, startLoading)
+      .addCase(fetchServicesBySlug.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selected = action.payload;
+      })
+      .addCase(fetchServicesBySlug.rejected, setError);
   },
 });
 

@@ -2,43 +2,33 @@
 
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
-import { useTranslation } from "react-i18next";
-import { useEffect } from "react";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { useAppDispatch } from "@/store/hooks";
 import {
-  fetchBikeCategories,
   deleteBikeCategory,
 } from "@/modules/bikes/slice/bikeCategorySlice";
 import type { BikeCategory } from "@/modules/bikes/types";
-import { LANG_LABELS, SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
-//import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import {
+  LANG_LABELS,
+  SupportedLocale,
+} from "@/types/common";
 
-interface ProductCategoryListPageProps {
+interface Props {
   onAdd: () => void;
   onEdit: (category: BikeCategory) => void;
 }
 
-export default function ProductCategoryListPage({
+export default function BikesCategoryListPage({
   onAdd,
   onEdit,
-}: ProductCategoryListPageProps) {
-  const { t, i18n } = useTranslation("bike");
+}: Props) {
+  const { i18n, t } = useI18nNamespace("bikes", translations);
+    const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const dispatch = useAppDispatch();
   const { categories, loading, error } = useAppSelector(
     (state) => state.bikeCategory
   );
-
-  // --- Seçili dili belirle (future-proof) ---
-  // Eğer locale backend'den/utility'den alınacaksa aşağıyı kullan:
-  // const lang: SupportedLocale = getCurrentLocale();
-  // Ama i18n'dan direkt almak pratik:
-  const lang = (SUPPORTED_LOCALES.includes(i18n.language as SupportedLocale)
-    ? (i18n.language as SupportedLocale)
-    : "en");
-
-  useEffect(() => {
-    dispatch(fetchBikeCategories());
-  }, [dispatch]);
 
   const handleDelete = (id: string) => {
     const confirmMessage = t(
@@ -72,31 +62,50 @@ export default function ProductCategoryListPage({
           <thead>
             <tr>
               <th>#</th>
-              <th>
-                {/* Aktif dil etiketi */}
-                {t(`admin.language.${lang}`, LANG_LABELS[lang])}
-              </th>
+              <th>{t(`admin.language.${lang}`, LANG_LABELS[lang])}</th>
               <th>{t("admin.slug", "Slug")}</th>
+              <th>{t("admin.categories.image", "Image")}</th>
               <th>{t("admin.actions", "Actions")}</th>
             </tr>
           </thead>
           <tbody>
-            {categories.map((cat, i) => (
-              <tr key={cat._id}>
-                <td>{i + 1}</td>
-                {/* Sadece aktif dilde göster */}
-                <td>{cat.name?.[lang] || "—"}</td>
-                <td>{cat.slug}</td>
-                <td>
-                  <ActionButton onClick={() => onEdit(cat)}>
-                    {t("admin.edit", "Edit")}
-                  </ActionButton>
-                  <DeleteButton onClick={() => handleDelete(cat._id)}>
-                    {t("admin.delete", "Delete")}
-                  </DeleteButton>
-                </td>
-              </tr>
-            ))}
+            {categories.map((cat: BikeCategory, i: number) => {
+              const imageSrc =
+                cat.images && cat.images.length > 0
+                  ? cat.images[0]?.thumbnail || cat.images[0]?.url || ""
+                  : "";
+
+              return (
+                <tr key={cat._id}>
+                  <td>{i + 1}</td>
+                  <td>{cat.name?.[lang] || "—"}</td>
+                  <td>{cat.slug}</td>
+                  <td>
+                    {imageSrc ? (
+                      <img
+                        src={imageSrc}
+                        alt="category image"
+                        width={60}
+                        height={60}
+                        style={{ borderRadius: 4, objectFit: "cover" }}
+                      />
+                    ) : (
+                      <span style={{ color: "#999" }}>
+                        {t("admin.bike.no_images", "No images")}
+                      </span>
+                    )}
+                  </td>
+                  <td>
+                    <ActionButton onClick={() => onEdit(cat)}>
+                      {t("admin.edit", "Edit")}
+                    </ActionButton>
+                    <DeleteButton onClick={() => handleDelete(cat._id)}>
+                      {t("admin.delete", "Delete")}
+                    </DeleteButton>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </Table>
       )}
@@ -104,7 +113,7 @@ export default function ProductCategoryListPage({
   );
 }
 
-// 💅 Styles aynı kalabilir
+// Styled Components aşağıda değişmedi
 
 const Wrapper = styled.div`
   margin-top: 1rem;

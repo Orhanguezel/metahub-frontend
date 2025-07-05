@@ -1,37 +1,30 @@
 "use client";
 
-import { useEffect } from "react";
 import styled from "styled-components";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  fetchAbout,
-  clearAboutMessages,
-} from "@/modules/about/slice/aboutSlice";
+import { useAppSelector } from "@/store/hooks";
+import i18n from "@/i18n";
 import { useTranslation } from "react-i18next";
+import translations from "../../locales";
 import { Skeleton, ErrorMessage } from "@/shared";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
+import type { SupportedLocale } from "@/types/common";
+import type { IAbout } from "../../types";
+
 
 export default function AboutPage() {
-  const dispatch = useAppDispatch();
-  const { i18n, t } = useTranslation("about");
+const { i18n, t } = useTranslation("about");
+  const lang = (i18n.language?.slice(0, 2) || "tr") as SupportedLocale; 
+  const { about, loading, error } = useAppSelector((state) => state.about);
 
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
+      Object.entries(translations).forEach(([lang, resources]) => {
+  if (!i18n.hasResourceBundle(lang, "about")) {
+    i18n.addResourceBundle(lang, "about", resources, true, true);
+  }
+});
 
-  const {
-    about: aboutList,
-    loading,
-    error,
-  } = useAppSelector((state) => state.about);
-
-  useEffect(() => {
-    dispatch(fetchAbout(lang));
-    return () => {
-      dispatch(clearAboutMessages());
-    };
-  }, [dispatch, lang]);
+  
 
   if (loading) {
     return (
@@ -46,80 +39,91 @@ export default function AboutPage() {
   if (error) {
     return (
       <PageWrapper>
-        <ErrorMessage />
+        <ErrorMessage message={error} />
       </PageWrapper>
     );
   }
 
-  if (!aboutList || aboutList.length === 0) {
+  if (!about || about.length === 0) {
     return (
       <PageWrapper>
-        <p>{t("page.empty", "No about content found.")}</p>
+        <p>{t("page.noAbout")}</p>
       </PageWrapper>
     );
   }
+
+  
 
   return (
     <PageWrapper>
-      <PageTitle>{t("page.all", "About Sections")}</PageTitle>
-
-      <Grid>
-        {aboutList.map((item, index) => (
-          <Card
+      <PageTitle>{t("page.allAbout")}</PageTitle>
+      <AboutGrid>
+        {about.map((item: IAbout, index: number) => (
+          <AboutCard
             key={item._id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * 0.07 }}
+
           >
-            {item.images?.[0]?.url && (
-              <ImageWrapper>
-                <img
-                  src={item.images[0].url}
-                  alt={item.title?.[lang] || "About Image"}
-                />
-              </ImageWrapper>
-            )}
-            <CardContent>
-              <h2>{item.title?.[lang]}</h2>
-              <p>
-                {item.shortDescription?.[lang]?.slice(0, 160) ||
-                  item.detailedDescription?.[lang]?.slice(0, 160) ||
-                  item.content?.[lang]?.slice(0, 160) ||
-                  "..."}
-              </p>
-              <ReadMore href={`/about/${item.slug}`}>
-                {t("page.readMore", "Read More →")}
-              </ReadMore>
-            </CardContent>
-          </Card>
-        ))}
-      </Grid>
+
+             {item.images?.[0]?.url && (
+                           <ImageWrapper>
+                             <Image
+                               src={item.images[0].url}
+                               alt={item.title?.[lang] || "About Image"}
+                               width={780}
+                               height={420}
+                               style={{ objectFit: "cover" }}
+                               loading="lazy"
+                             />
+                           </ImageWrapper>
+                         )}
+                         <CardContent>
+                           <h2>{item.title?.[lang] || "Untitled"}</h2>
+                           <p>{item.summary?.[lang] || "No summary available."}</p>
+                           <Meta>
+                             <span>
+                               {t("author", "Yazar")}:{" "}
+                               {item.author || t("unknown", "Bilinmiyor")}
+                             </span>
+                             <span>
+                               {t("tags", "Etiketler")}: {item.tags?.join(", ") || "-"}
+                             </span>
+                           </Meta>
+                           <ReadMore href={`/about/${item.slug}`}>
+                             {t("readMore", "Devamını Oku →")}
+                           </ReadMore>
+                         </CardContent>
+                       </AboutCard>
+                     ))}
+      </AboutGrid>
     </PageWrapper>
   );
 }
 
-// Styled Components
+// Styled Components aynı kalabilir
 const PageWrapper = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xxl}
-    ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const PageTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   color: ${({ theme }) => theme.colors.primary};
   text-align: center;
 `;
 
-const Grid = styled.div`
+const AboutGrid = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.spacing.lg};
+  gap: ${({ theme }) => theme.spacings.lg};
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 `;
 
-const Card = styled(motion.div)`
+const AboutCard = styled(motion.div)`
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.md};
@@ -133,23 +137,34 @@ const ImageWrapper = styled.div`
     width: 100%;
     height: 200px;
     object-fit: cover;
+    background: #f2f2f2;
+    display: block;
   }
 `;
 
 const CardContent = styled.div`
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.md};
 
   h2 {
     font-size: ${({ theme }) => theme.fontSizes.lg};
-    margin-bottom: ${({ theme }) => theme.spacing.sm};
+    margin-bottom: ${({ theme }) => theme.spacings.sm};
     color: ${({ theme }) => theme.colors.text};
   }
 
   p {
     font-size: ${({ theme }) => theme.fontSizes.base};
     color: ${({ theme }) => theme.colors.textSecondary};
-    margin-bottom: ${({ theme }) => theme.spacing.md};
+    margin-bottom: ${({ theme }) => theme.spacings.md};
   }
+`;
+
+const Meta = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
 const ReadMore = styled(Link)`

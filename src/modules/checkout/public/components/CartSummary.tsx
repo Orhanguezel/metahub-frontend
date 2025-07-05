@@ -13,14 +13,14 @@ export default function CartSummary({ cart, onClearCart }: Props) {
     <SummaryBox>
       <h2>{t("cart.summary", "Summary")}</h2>
       <SummaryLine>
-        {t("cart.total", "Total")}:
-        <span>{cart.totalPrice} €</span>
+        {t("cart.total", "Total")}:<span>{cart.totalPrice} €</span>
       </SummaryLine>
       <SummaryLine>
-        {t("cart.items", "Items")}:
-        <span>{cart.items.length}</span>
+        {t("cart.items", "Items")}:<span>{cart.items.length}</span>
       </SummaryLine>
-      <ClearButton onClick={onClearCart}>{t("cart.clear", "Clear Cart")}</ClearButton>
+      <ClearButton onClick={onClearCart}>
+        {t("cart.clear", "Clear Cart")}
+      </ClearButton>
     </SummaryBox>
   );
 }
@@ -30,12 +30,12 @@ const SummaryBox = styled.div`
   background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.md};
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   min-width: 240px;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.md};
 `;
 
 const SummaryLine = styled.div`

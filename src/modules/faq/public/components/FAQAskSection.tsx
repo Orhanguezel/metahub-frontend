@@ -55,27 +55,27 @@ export default function FAQAskSection() {
 const Container = styled.section`
   background: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.text};
-  padding: ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacings.xl};
   border-radius: ${({ theme }) => theme.radii.md};
-  margin-top: ${({ theme }) => theme.spacing.xl};
+  margin-top: ${({ theme }) => theme.spacings.xl};
 `;
 
 const Title = styled.h3`
   font-size: ${({ theme }) => theme.fontSizes.xl};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
 `;
 
 const Label = styled.label`
   font-weight: 600;
   display: block;
-  margin: ${({ theme }) => theme.spacing.md} 0
-    ${({ theme }) => theme.spacing.xs};
+  margin: ${({ theme }) => theme.spacings.md} 0
+    ${({ theme }) => theme.spacings.xs};
 `;
 
 const TextArea = styled.textarea`
   width: 100%;
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   border-radius: ${({ theme }) => theme.radii.sm};
   resize: vertical;
   font-size: 1rem;
@@ -85,7 +85,7 @@ const TextArea = styled.textarea`
 `;
 
 const Button = styled.button`
-  margin-top: ${({ theme }) => theme.spacing.lg};
+  margin-top: ${({ theme }) => theme.spacings.lg};
   padding: 10px 18px;
   background: ${({ theme }) => theme.colors.primary};
   color: white;
@@ -105,14 +105,14 @@ const Button = styled.button`
 `;
 
 const AnswerBox = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.xl};
-  padding: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacings.xl};
+  padding: ${({ theme }) => theme.spacings.md};
   background: ${({ theme }) => theme.colors.inputBackground};
   border-radius: ${({ theme }) => theme.radii.md};
   border: 1px solid ${({ theme }) => theme.colors.border};
 
   h4 {
-    margin-bottom: ${({ theme }) => theme.spacing.xs};
+    margin-bottom: ${({ theme }) => theme.spacings.xs};
     color: ${({ theme }) => theme.colors.success};
   }
 

@@ -1,69 +1,73 @@
 {
-  "admin": {
-    "tabs": {
-      "about": "Über Uns Bereiche",
-      "create": "Neuer Bereich",
-      "categories": "Kategorien"
-    },
+  "page": {
+    "noAbout": "Keine Artikel gefunden.",
+    "allAbout": "Alle Artikel",
     "about": {
+      "title": "Über",
+      "all": "Alle anzeigen"
+    },
+    "other": "Weitere Bereiche",
+    "summary": "Zusammenfassung",
+    "detail": "Detail",
+    "noTitle": "Kein Titel"
+  },
+  "readMore": "Mehr lesen →",
+  "author": "Autor",
+  "tags": "Tags",
+  "unknown": "Unbekannt",
+  "tabs": {
+    "about": "Über",
+    "create": "Neuer Artikel",
+    "categories": "Kategorien"
+  },
+  "about": {
+    "empty": "Keine Artikel verfügbar.",
+    "no_images": "Keine Bilder",
+    "author": "Autor",
+    "tags": "Tags",
+    "publish_status": "Veröffentlicht",
+    "unpublish": "Veröffentlichung aufheben",
+    "publish": "Veröffentlichen",
+    "unknown": "Unbekannt",
+    "none": "Keine"
+  },
+  "edit": "Bearbeiten",
+  "delete": "Löschen",
+  "yes": "Ja",
+  "no": "Nein",
+  "admin": {
+    "about": {
+      "edit": "Artikel bearbeiten",
+      "create": "Neuen Artikel erstellen",
       "title": "Titel",
-      "shortDescription": "Kurzbeschreibung",
-      "detailedDescription": "Detaillierte Beschreibung",
-      "tags": "Stichworte",
+      "summary": "Zusammenfassung",
+      "content": "Inhalt",
+      "author": "Autor",
+      "tags": "Tags",
+      "image": "Bilder",
       "category": "Kategorie",
-      "select_category": "Kategorie auswählen",
-      "image": "Bild",
-      "publish_status": "Veröffentlicht",
-      "publish": "Veröffentlichen",
-      "unpublish": "Zurückziehen",
-      "readMore": "Mehr erfahren",
-      "all": "Alle Über Uns Bereiche",
-      "create": "Erstellen",
-      "edit": "Bereich bearbeiten",
-      "update": "Aktualisieren",
-      "cancel": "Abbrechen",
-      "empty": "Keine Inhalte vorhanden.",
-      "no_image": "Kein Bild verfügbar",
-      "edit_category": "Kategorie bearbeiten",
-      "new_category": "Neue Kategorie",
-      "category_name": "Kategoriename ({{lng}})",
-      "description_optional": "Beschreibung (optional)",
-      "category_description_placeholder": "Worum geht es in dieser Kategorie?",
-      "success_create": "Bereich erfolgreich erstellt.",
-      "success_update": "Bereich erfolgreich aktualisiert.",
-      "success_delete": "Bereich erfolgreich gelöscht.",
-      "success_publish": "Bereich erfolgreich veröffentlicht.",
-      "success_unpublish": "Bereich wurde zurückgezogen."
+      "select_category": "Kategorie auswählen"
     },
     "categories": {
-      "title": "Über Uns Kategorien",
+      "title": "Produktkategorien",
       "add": "Kategorie hinzufügen",
-      "empty": "Keine Kategorien gefunden."
+      "name": "Kategoriename"
     },
+    "editCategory": "Kategorie bearbeiten",
+    "newCategory": "Neue Kategorie",
+    "optional_description": "Optionale Beschreibung",
+    "category_info": "Worum geht es in dieser Kategorie?",
+    "update": "Aktualisieren",
+    "update2": "Aktualisieren",
+    "save": "Speichern",
+    "saving": "Speichert...",
+    "cancel": "Abbrechen",
     "confirm": {
       "delete": "Möchten Sie diese Kategorie wirklich löschen?",
-      "delete_about": "Möchten Sie diesen Bereich wirklich löschen?"
+      "delete_article": "Möchten Sie diesen Artikel wirklich löschen?"
     },
-    "language": {
-      "en": "Englisch",
-      "tr": "Türkisch",
-      "de": "Deutsch"
-    },
+    "loading": "Lädt...",
     "actions": "Aktionen",
-    "loading": "Lade..."
-  },
-  "page": {
-    "empty": "Keine Inhalte gefunden.",
-    "all": "Alle Bereiche",
-    "noTitle": "Ohne Titel",
-    "noSummary": "Keine Zusammenfassung verfügbar.",
-    "tags": "Stichworte",
-    "readMore": "Mehr erfahren →",
-    "other": "Weitere Inhalte",
-    "aboutLink": "Mehr erfahren →"
-  },
-  "seo": {
-    "title": "Über Uns",
-    "description": "Führend in Energieeffizienz und Nachhaltigkeit. Qualität, Innovation und Zuverlässigkeit in industriellen Kühlsystemen."
+    "slug": "Kurzname"
   }
 }

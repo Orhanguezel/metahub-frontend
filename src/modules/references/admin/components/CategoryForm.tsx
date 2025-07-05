@@ -1,188 +1,185 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import type { ReferenceCategory } from "@/modules/references/slice/referencesCategorySlice";
-
-type Lang = "tr" | "en" | "de";
-
-type CategoryName = {
-  tr: string;
-  en: string;
-  de: string;
-};
-
-type CategoryDescription = {
-  tr: string;
-  en: string;
-  de: string;
-};
+import { useState, useEffect } from "react";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import type { ReferencesCategory } from "@/modules/references/types";
+import { useAppDispatch } from "@/store/hooks";
+import { fetchReferencesCategories } from "@/modules/references/slice/referencesCategorySlice";
 
 interface Props {
-  editingItem?: ReferenceCategory | null;
+  isOpen: boolean;
   onClose: () => void;
+  editingItem: ReferencesCategory | null;
   onSubmit: (
-    data: { name: CategoryName; description: CategoryDescription },
+    data: { name: Record<SupportedLocale, string>; description?: Record<SupportedLocale, string> },
     id?: string
   ) => Promise<void>;
-  loading?: boolean;
-  error?: string | null;
-  successMessage?: string | null;
 }
 
-export default function ReferenceCategoryForm({
+export default function ReferencesCategoryForm({
+  isOpen,
+  onClose,
   editingItem,
   onSubmit,
-  onClose,
-  loading = false,
-  error,
-  successMessage,
 }: Props) {
-  const { t } = useTranslation("reference");
-  // Çok dilli inputlar
-  const [name, setName] = useState<CategoryName>({ tr: "", en: "", de: "" });
-  const [description, setDescription] = useState<CategoryDescription>({
-    tr: "",
-    en: "",
-    de: "",
-  });
-  const languages = useMemo(() => ["tr", "en", "de"] as Lang[], []);
+  const dispatch = useAppDispatch();
+  const { i18n, t } = useI18nNamespace("references", translations);
+  const lang = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
 
-  // Formu doldur
+  const emptyLabel = SUPPORTED_LOCALES.reduce((acc, lng) => {
+    acc[lng] = "";
+    return acc;
+  }, {} as Record<SupportedLocale, string>);
+
+  const [name, setName] = useState<Record<SupportedLocale, string>>(emptyLabel);
+  const [description, setDescription] = useState<Record<SupportedLocale, string>>(emptyLabel);
+
   useEffect(() => {
     if (editingItem) {
-      setName(editingItem.name || { tr: "", en: "", de: "" });
-      setDescription(
-        (editingItem.description as CategoryDescription) || {
-          tr: "",
-          en: "",
-          de: "",
-        }
-      );
+      setName({ ...emptyLabel, ...editingItem.name });
+      setDescription(editingItem.description ? { ...emptyLabel, ...editingItem.description } : emptyLabel);
     } else {
-      setName({ tr: "", en: "", de: "" });
-      setDescription({ tr: "", en: "", de: "" });
+      setName(emptyLabel);
+      setDescription(emptyLabel);
     }
-  }, [editingItem]);
-
-  // Toastify ile hata/success gösterimi
-  useEffect(() => {
-    if (error) toast.error(error, { autoClose: 3500 });
-    if (successMessage) toast.success(successMessage, { autoClose: 2500 });
-  }, [error, successMessage]);
-
-  const handleNameChange = useCallback((lang: Lang, value: string) => {
-    setName((prev) => ({ ...prev, [lang]: value }));
-  }, []);
-  const handleDescriptionChange = useCallback((lang: Lang, value: string) => {
-    setDescription((prev) => ({ ...prev, [lang]: value }));
-  }, []);
+  }, [editingItem, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = { name, description };
-    try {
-      await onSubmit(payload, editingItem?._id);
-      onClose();
-    } catch (err: any) {
-      toast.error(t("admin.category_error", "An error occurred"), err);
+
+    // Name fill
+    const firstName = Object.values(name).find((v) => v.trim());
+    const filledName = { ...name };
+    if (firstName) {
+      SUPPORTED_LOCALES.forEach((lng) => {
+        if (!filledName[lng]) filledName[lng] = firstName;
+      });
     }
+
+    // Description fill
+    const firstDesc = Object.values(description).find((v) => v.trim());
+    const filledDescription = { ...description };
+    if (firstDesc) {
+      SUPPORTED_LOCALES.forEach((lng) => {
+        if (!filledDescription[lng]) filledDescription[lng] = firstDesc;
+      });
+    }
+
+    await onSubmit({ name: filledName, description: filledDescription }, editingItem?._id);
+
+    // ⚡️ Listeyi yenilemek için:
+    dispatch(fetchReferencesCategories());
+
+    onClose();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Form onSubmit={handleSubmit}>
-      <h3>
+    <FormWrapper>
+      <h2>
         {editingItem
-          ? t("admin.edit_category", "Edit Category")
-          : t("admin.new_category", "New Category")}
-      </h3>
-      {languages.map((lng) => (
-        <FieldGroup key={lng}>
-          <label htmlFor={`name-${lng}`}>
-            {t(`admin.name_${lng}`, `${lng.toUpperCase()} Name`)}
-          </label>
-          <input
-            id={`name-${lng}`}
-            type="text"
-            value={name[lng]}
-            onChange={(e) => handleNameChange(lng, e.target.value)}
-            placeholder={t("admin.category_name_placeholder", {
-              lng: lng.toUpperCase(),
-            })}
-            required
-          />
-          <label htmlFor={`desc-${lng}`} style={{ marginTop: 4 }}>
-            {t(`admin.description_${lng}`, `${lng.toUpperCase()} Description`)}
-          </label>
-          <textarea
-            id={`desc-${lng}`}
-            value={description[lng]}
-            onChange={(e) => handleDescriptionChange(lng, e.target.value)}
-            placeholder={t(
-              "admin.category_description_placeholder",
-              `What is this category for?`
-            )}
-            rows={2}
-          />
-        </FieldGroup>
-      ))}
-      <SubmitButton type="submit" disabled={loading}>
-        {loading
-          ? t("admin.loading", "Saving...")
-          : editingItem
-          ? t("admin.update", "Update")
-          : t("admin.create", "Create")}
-      </SubmitButton>
-    </Form>
+          ? t("admin.referencescategory.edit", "Edit References Category")
+          : t("admin.referencescategory.create", "Add New References Category")}
+      </h2>
+      <form onSubmit={handleSubmit}>
+        {SUPPORTED_LOCALES.map((lng) => (
+          <div key={lng}>
+            <label>
+              {t("admin.referencescategory.name", "Category Name")} ({lng.toUpperCase()})
+            </label>
+            <input
+              type="text"
+              value={name[lng]}
+              onChange={(e) => setName({ ...name, [lng]: e.target.value })}
+              required={lng === lang}
+            />
+
+            <label>
+              {t("admin.referencescategory.description", "Description")} ({lng.toUpperCase()})
+            </label>
+            <textarea
+              value={description[lng]}
+              onChange={(e) => setDescription({ ...description, [lng]: e.target.value })}
+              required={lng === lang}
+            />
+          </div>
+        ))}
+
+        <ButtonGroup>
+          <button type="submit">
+            {editingItem ? t("admin.update", "Update") : t("admin.create", "Create")}
+          </button>
+          <button type="button" onClick={onClose}>
+            {t("admin.cancel", "Cancel")}
+          </button>
+        </ButtonGroup>
+      </form>
+    </FormWrapper>
   );
 }
 
-// 💅 Styles
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-`;
+const FormWrapper = styled.div`
+  max-width: 600px;
+  margin: auto;
+  padding: 1.5rem;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.md};
 
-const FieldGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 0.25rem;
-  label {
-    font-weight: 600;
-    margin-bottom: 0.25rem;
+  h2 {
+    margin-bottom: 1rem;
   }
+
+  label {
+    display: block;
+    margin-top: 1rem;
+    font-weight: 600;
+  }
+
   input,
   textarea {
+    width: 100%;
+    margin-top: 0.25rem;
     padding: 0.5rem;
     border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: 4px;
     background: ${({ theme }) => theme.colors.inputBackground};
     color: ${({ theme }) => theme.colors.text};
-    font-size: 0.97rem;
+    font-size: 0.95rem;
   }
+
   textarea {
-    min-height: 50px;
+    min-height: 100px;
     resize: vertical;
   }
 `;
 
-const SubmitButton = styled.button`
-  align-self: flex-end;
-  padding: 0.5rem 1.25rem;
-  background: ${({ theme }) => theme.colors.primary};
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  &:hover {
-    background: ${({ theme }) => theme.colors.primaryHover};
-  }
-  &:disabled {
-    background: #ccc;
-    cursor: not-allowed;
+const ButtonGroup = styled.div`
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+
+  button {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:first-child {
+      background: ${({ theme }) => theme.colors.primary};
+      color: #fff;
+    }
+    &:last-child {
+      background: ${({ theme }) => theme.colors.danger};
+      color: #fff;
+    }
+    &:hover {
+      opacity: 0.9;
+    }
   }
 `;

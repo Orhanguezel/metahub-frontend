@@ -2,9 +2,10 @@
 
 import React from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 
-// Stat alanlarını prop tipinde daha esnek tanımlayabilirsin
+// Flexible prop type for future extensibility
 interface GalleryStatsProps {
   stats?: {
     total?: number;
@@ -14,20 +15,20 @@ interface GalleryStatsProps {
     inactive?: number;
     images?: number;
     videos?: number;
-  };
+  } | null; // null eklenir
 }
 
 const GalleryStats: React.FC<GalleryStatsProps> = ({ stats }) => {
-  const { t} = useTranslation("gallery");
+  const { t } = useI18nNamespace("gallery", translations);
 
   const statList = [
-    { key: "total", label: t("stats.total"), value: stats?.total ?? 0 },
-    { key: "published", label: t("stats.published"), value: stats?.published ?? 0 },
-    { key: "archived", label: t("stats.archived"), value: stats?.archived ?? 0 },
-    { key: "active", label: t("stats.active"), value: stats?.active ?? 0 },
-    { key: "inactive", label: t("stats.inactive"), value: stats?.inactive ?? 0 },
-    { key: "images", label: t("stats.images"), value: stats?.images ?? 0 },
-    { key: "videos", label: t("stats.videos"), value: stats?.videos ?? 0 },
+    { key: "total", label: t("stats.total", "Total"), value: stats?.total ?? 0 },
+    { key: "published", label: t("stats.published", "Published"), value: stats?.published ?? 0 },
+    { key: "archived", label: t("stats.archived", "Archived"), value: stats?.archived ?? 0 },
+    { key: "active", label: t("stats.active", "Active"), value: stats?.active ?? 0 },
+    { key: "inactive", label: t("stats.inactive", "Inactive"), value: stats?.inactive ?? 0 },
+    { key: "images", label: t("stats.images", "Images"), value: stats?.images ?? 0 },
+    { key: "videos", label: t("stats.videos", "Videos"), value: stats?.videos ?? 0 },
   ];
 
   return (
@@ -47,23 +48,21 @@ const GalleryStats: React.FC<GalleryStatsProps> = ({ stats }) => {
 
 export default GalleryStats;
 
+// 💅 Styled Components
 
-// Styled-components
 const StatsWrapper = styled.section`
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.md};
-  padding: ${({ theme }) => theme.spacing.xl};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-  width: 100%;
-  box-sizing: border-box;
+  padding: ${({ theme }) => theme.spacings.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   transition: box-shadow ${({ theme }) => theme.transition.normal},
     background ${({ theme }) => theme.transition.normal};
 
   @media ${({ theme }) => theme.media.mobile} {
-    padding: ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => theme.spacings.md};
     border-radius: ${({ theme }) => theme.radii.md};
-    margin-bottom: ${({ theme }) => theme.spacing.lg};
+    margin-bottom: ${({ theme }) => theme.spacings.lg};
   }
 `;
 
@@ -71,41 +70,36 @@ const Title = styled.h3`
   font-size: ${({ theme }) => theme.fontSizes.xl};
   font-family: ${({ theme }) => theme.fonts.heading};
   color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   letter-spacing: 0.01em;
-  text-align: left;
 `;
 
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: ${({ theme }) => theme.spacing.lg};
-  width: 100%;
+  gap: ${({ theme }) => theme.spacings.lg};
 `;
 
 const StatBox = styled.div`
   background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.sm};
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: 0;
   transition: background ${({ theme }) => theme.transition.normal},
-    box-shadow ${({ theme }) => theme.transition.normal},
-    transform ${({ theme }) => theme.transition.normal};
+    box-shadow ${({ theme }) => theme.transition.normal};
 
   &:hover {
     background: ${({ theme }) => theme.colors.hoverBackground};
     box-shadow: ${({ theme }) => theme.shadows.lg};
-    transform: translateY(-2px) scale(1.025);
   }
 
   @media ${({ theme }) => theme.media.mobile} {
     border-radius: ${({ theme }) => theme.radii.md};
-    padding: ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => theme.spacings.md};
   }
 `;
 
@@ -113,7 +107,7 @@ const Label = styled.span`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
   font-family: ${({ theme }) => theme.fonts.body};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   letter-spacing: 0.01em;
 `;
@@ -126,12 +120,3 @@ const Value = styled.span`
   margin: 0;
   letter-spacing: 0.01em;
 `;
-
-export {
-  StatsWrapper,
-  Title,
-  Grid,
-  StatBox,
-  Label,
-  Value,
-};

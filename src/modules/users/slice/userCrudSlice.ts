@@ -13,7 +13,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
-  role: "admin" | "user" | "moderator" | "staff" | "customer";
+  role: "superadmin" | "admin" | "user" | "moderator" | "staff" | "customer";
   isActive?: boolean;
   profileImage: string | ProfileImageObj; // <-- güncellendi
   phone?: string;
@@ -56,11 +56,15 @@ export const updateUser = createAsyncThunk(
   "userCrud/updateUser",
   async (payload: { id: string; formData: FormData }, thunkAPI) => {
     try {
-      const response = await API.put(`/users/users/${payload.id}`, payload.formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await API.put(
+        `/users/users/${payload.id}`,
+        payload.formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data.user;
     } catch (error: any) {
       const message =
@@ -76,7 +80,12 @@ export const updateUser = createAsyncThunk(
 export const deleteUser = createAsyncThunk(
   "userCrud/deleteUser",
   async (id: string, thunkAPI) =>
-    await apiCall("delete", `/users/users/${id}`, null, thunkAPI.rejectWithValue)
+    await apiCall(
+      "delete",
+      `/users/users/${id}`,
+      null,
+      thunkAPI.rejectWithValue
+    )
 );
 
 const userCrudSlice = createSlice({

@@ -17,13 +17,13 @@ const Message = styled.div<{
   $error?: boolean;
   $warning?: boolean;
 }>`
-  margin: ${({ theme }) => theme.spacing.xs} 0;
+  margin: ${({ theme }) => theme.spacings.xs} 0;
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
-  letter-spacing: 0.01em;
+  letter-spacings: 0.01em;
   text-align: center;
   border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   background: ${({ theme, $success, $error, $warning }) =>
     $success
       ? theme.colors.success + "15"
@@ -52,7 +52,6 @@ const Message = styled.div<{
       : "none"};
   transition: all ${({ theme }) => theme.transition.normal};
 `;
-
 
 const MessageBox: React.FC<MessageProps> = ({
   children,

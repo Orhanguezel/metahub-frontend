@@ -1,63 +1,55 @@
-// Siparişteki ürün satırı tipi (populate destekli)
-export interface PopulatedProduct {
-  _id: string;
-  name: { en?: string; tr?: string; de?: string } | string;
-  // Diğer gerekli alanlar eklenebilir (örn: images vs.)
-}
+import type { SupportedLocale } from "@/types/common";
 
-export interface OrderItem {
-  product: string | PopulatedProduct;
+// Payment yöntemi
+export type PaymentMethod = "cash_on_delivery" | "credit_card" | "paypal";
+
+// Sipariş durumu
+export type OrderStatus =
+  | "pending"
+  | "preparing"
+  | "shipped"
+  | "completed"
+  | "cancelled"
+  | "delivered";
+
+// Sipariş ürünü (cart item)
+export interface IOrderItem {
+  product: string; // veya Types.ObjectId
   quantity: number;
+  tenant: string;
   unitPrice: number;
 }
 
-// Adres tipi
-export interface ShippingAddress {
+// Teslimat adresi
+export interface IShippingAddress {
   name: string;
   phone: string;
-  email: string;
+  tenant: string;
   street: string;
   city: string;
   postalCode: string;
   country: string;
 }
 
-// Sipariş durumları
-export type PaymentMethod = "cash_on_delivery";
-export type OrderStatus =
-  | "pending"
-  | "preparing"
-  | "shipped"
-  | "completed"
-  | "cancelled";
-
-// Sipariş ana tipi (Redux ve backend ile uyumlu)
-export interface Order {
+// Ana sipariş modeli
+export interface IOrder {
   _id?: string;
-  user: string | { _id: string; name?: string; email?: string }; // populate veya id
-  items: OrderItem[];
-  shippingAddress: ShippingAddress;
+  id?: string; // MongoDB ObjectId veya UUID
+  user: string; // veya Types.ObjectId
+  addressId?: string; // veya Types.ObjectId
+  items: IOrderItem[];
+  tenant: string;
+  shippingAddress: IShippingAddress;
   totalPrice: number;
-  paymentMethod?: PaymentMethod;
-  status?: OrderStatus;
-  isDelivered?: boolean;
-  isPaid?: boolean;
-  deliveredAt?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  language?: "tr" | "en" | "de";
-}
-
-// Liste response'u
-export interface OrderListResponse {
-  success: boolean;
-  message: string;
-  data: Order[];
-}
-
-// Tekil sipariş response'u
-export interface OrderSingleResponse {
-  success: boolean;
-  message: string;
-  data: Order;
+  discount?: number;
+  coupon?: string; // veya Types.ObjectId
+  paymentMethod: PaymentMethod;
+  payments?: string[]; // veya Types.ObjectId[]
+  status: OrderStatus;
+  isDelivered: boolean;
+  isPaid: boolean;
+  deliveredAt?: string | Date;
+  language?: SupportedLocale;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }

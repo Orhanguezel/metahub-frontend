@@ -34,26 +34,26 @@ export default function BookingPublicPage() {
 
 // Styled Components ... (senin mevcut stilin zaten uygun)
 
-
 // Styled Components
 const Wrapper = styled.main`
   max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.lg};
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.lg};
 `;
 
 const Header = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
 `;
 
 const Title = styled.h1`
   text-align: center;
   color: ${({ theme }) => theme.colors.primary};
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
 `;
@@ -68,12 +68,12 @@ const Description = styled.p`
 
 const Content = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.xxl};
+  gap: ${({ theme }) => theme.spacings.xxl};
   justify-content: center;
 
   @media ${({ theme }) => theme.media.mobile} {
     flex-direction: column;
-    gap: ${({ theme }) => theme.spacing.lg};
+    gap: ${({ theme }) => theme.spacings.lg};
   }
 `;
 

@@ -1,0 +1,722 @@
+[
+  {
+    "_id": {
+      "$oid": "6854b9b20e770414b9ea9aa8"
+    },
+    "name": {
+      "tr": "Metahub (Yerel)",
+      "en": "Metahub (Local)",
+      "de": "Metahub (Lokal)",
+      "pl": "Metahub (Lokalny)",
+      "fr": "Metahub (Local)",
+      "es": "Metahub (Local)",
+      "_id": {
+        "$oid": "685a748ac339bc8ac2bf77e4"
+      }
+    },
+    "slug": "metahub_local",
+    "mongoUri": "mongodb://admin:adminpassword@141.136.36.40:27017/metahub-db?authSource=admin",
+    "domain": {
+      "main": "localhost",
+      "subdomains": [],
+      "customDomains": []
+    },
+    "emailSettings": {
+      "smtpHost": "smtp.hostinger.com",
+      "smtpPort": 465,
+      "smtpSecure": true,
+      "smtpUser": "info@koenigsmassage.com",
+      "smtpPass": "Kaman@12!",
+      "senderName": "Metahub Support",
+      "senderEmail": "info@koenigsmassage.com",
+      "imapSecure": true
+    },
+    "logo": "https://cdn.guezelwebdesign.com/metahub/logo.png",
+    "theme": "default",
+    "enabledModules": [
+      "about",
+      "aboutcategory",
+      "activity",
+      "activitycategory",
+      "address",
+      "admin",
+      "analytics",
+      "apartment",
+      "apartmentcategory",
+      "apikey",
+      "articles",
+      "articlescategory",
+      "blog",
+      "blogcategory",
+      "booking",
+      "bookingslot",
+      "cart",
+      "chat",
+      "comment",
+      "company",
+      "contact",
+      "customer",
+      "dashboard",
+      "email",
+      "ensotekcategory",
+      "ensotekprod",
+      "experience",
+      "faq",
+      "favorite",
+      "feedback",
+      "gallery",
+      "gallerycategory",
+      "invoice",
+      "library",
+      "news",
+      "newscategory",
+      "notification",
+      "offer",
+      "order",
+      "payment",
+      "product",
+      "references",
+      "referencescategory",
+      "review",
+      "services",
+      "servicescategory",
+      "setting",
+      "shipment",
+      "sparepart",
+      "sport",
+      "sportcategory",
+      "stockmovement",
+      "task",
+      "users",
+      "wishlist",
+      "coupon",
+      "bikes",
+      "bikescategory",
+      "section",
+      "tenants"
+    ],
+    "isActive": true,
+    "description": {
+      "tr": "Metahub, çok kiracılı iş ve analitik için modüler bir SaaS platformudur.",
+      "en": "Metahub is a modular SaaS platform for multi-tenant business and analytics.",
+      "de": "Metahub ist eine modulare SaaS-Plattform für Multi-Tenant-Unternehmen und Analysen.",
+      "pl": "Metahub to modułowa platforma SaaS dla biznesu i analiz multi-tenant.",
+      "fr": "Metahub est une plateforme SaaS modulaire pour la gestion multi-locataires et l'analyse.",
+      "es": "Metahub es una plataforma SaaS modular para negocios multi-inquilino y análisis.",
+      "_id": {
+        "$oid": "685a748ac339bc8ac2bf77e5"
+      }
+    },
+    "metaTitle": {
+      "tr": "Metahub - Çok Kiracılı SaaS",
+      "en": "Metahub - Multi-Tenant SaaS",
+      "de": "Metahub - Multi-Tenant SaaS",
+      "pl": "Metahub - Multi-Tenant SaaS",
+      "fr": "Metahub - SaaS Multi-Locataires",
+      "es": "Metahub - SaaS Multi-Inquilino",
+      "_id": {
+        "$oid": "685a748ac339bc8ac2bf77e6"
+      }
+    },
+    "metaDescription": {
+      "tr": "Metahub’ın esnek çok kiracılı modülleriyle işinizi yönetin ve büyütün.",
+      "en": "Manage and scale your business with Metahub's flexible multi-tenant modules.",
+      "de": "Verwalten und skalieren Sie Ihr Unternehmen mit den flexiblen Multi-Tenant-Modulen von Metahub.",
+      "pl": "Zarządzaj i rozwijaj swoją firmę dzięki elastycznym modułom multi-tenant Metahub.",
+      "fr": "Gérez et développez votre entreprise avec les modules multi-locataires flexibles de Metahub.",
+      "es": "Gestione y escale su negocio con los módulos multi-inquilino flexibles de Metahub.",
+      "_id": {
+        "$oid": "685a748ac339bc8ac2bf77e7"
+      }
+    },
+    "address": {
+      "tr": "Demo Adres, Münih, Almanya",
+      "en": "Demo Address, München, Germany",
+      "de": "Demo Adresse, München, Deutschland",
+      "pl": "Adres demo, Monachium, Niemcy",
+      "fr": "Adresse démo, Munich, Allemagne",
+      "es": "Dirección de demostración, Múnich, Alemania",
+      "_id": {
+        "$oid": "685a748ac339bc8ac2bf77e8"
+      }
+    },
+    "phone": "+498912345678",
+    "social": {
+      "facebook": "https://facebook.com/metahub",
+      "instagram": "https://instagram.com/metahub",
+      "twitter": "",
+      "tiktok": "",
+      "linkedin": "",
+      "youtube": ""
+    },
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1750758537/uploads/metahub/tenant-images/metahub-1750758537230-653463707.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1750758537/uploads/metahub/tenant-images/metahub-1750758537230-653463707.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1750758537/uploads/metahub/tenant-images/metahub-1750758537230-653463707.webp"
+      }
+    ],
+    "createdAt": {
+      "$date": "2025-06-20T08:00:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-24T09:48:58.479Z"
+    },
+    "__v": 2
+  },
+  {
+    "_id": {
+      "$oid": "68589d61b0d632868a1e0cc5"
+    },
+    "name": {
+      "tr": "Metahub",
+      "en": "Metahub",
+      "de": "Metahub",
+      "pl": "Metahub",
+      "fr": "Metahub",
+      "es": "Metahub",
+      "_id": {
+        "$oid": "685a747dc339bc8ac2bf6df4"
+      }
+    },
+    "slug": "metahub",
+    "mongoUri": "mongodb://admin:adminpassword@141.136.36.40:27017/metahub-db?authSource=admin",
+    "domain": {
+      "main": "guezelwebdesign.com",
+      "subdomains": [],
+      "customDomains": []
+    },
+    "emailSettings": {
+      "smtpHost": "smtp.hostinger.com",
+      "smtpPort": 465,
+      "smtpSecure": true,
+      "smtpUser": "info@koenigsmassage.com",
+      "smtpPass": "Kaman@12!",
+      "senderName": "Metahub Support",
+      "senderEmail": "info@koenigsmassage.com",
+      "imapSecure": true
+    },
+    "logo": "https://cdn.guezelwebdesign.com/metahub/logo.png",
+    "theme": "default",
+    "enabledModules": [
+      "about",
+      "aboutcategory",
+      "activity",
+      "activitycategory",
+      "address",
+      "admin",
+      "analytics",
+      "apartment",
+      "apartmentcategory",
+      "apikey",
+      "articles",
+      "articlescategory",
+      "blog",
+      "blogcategory",
+      "booking",
+      "bookingslot",
+      "cart",
+      "chat",
+      "comment",
+      "company",
+      "contact",
+      "customer",
+      "dashboard",
+      "email",
+      "ensotekcategory",
+      "ensotekprod",
+      "experience",
+      "faq",
+      "favorite",
+      "feedback",
+      "gallery",
+      "gallerycategory",
+      "invoice",
+      "library",
+      "news",
+      "newscategory",
+      "notification",
+      "offer",
+      "order",
+      "payment",
+      "product",
+      "references",
+      "referencescategory",
+      "review",
+      "services",
+      "servicescategory",
+      "setting",
+      "shipment",
+      "sparepart",
+      "sport",
+      "sportcategory",
+      "stockmovement",
+      "task",
+      "users",
+      "wishlist",
+      "coupon",
+      "bikes",
+      "bikescategory",
+      "section",
+      "tenants"
+    ],
+    "isActive": true,
+    "description": {
+      "tr": "Metahub, çok kiracılı iş ve analitik için modüler bir SaaS platformudur.",
+      "en": "Metahub is a modular SaaS platform for multi-tenant business and analytics.",
+      "de": "Metahub ist eine modulare SaaS-Plattform für Multi-Tenant-Unternehmen und Analysen.",
+      "pl": "Metahub to modułowa platforma SaaS dla biznesu i analiz multi-tenant.",
+      "fr": "Metahub est une plateforme SaaS modulaire pour la gestion multi-locataires et l'analyse.",
+      "es": "Metahub es una plataforma SaaS modular para negocios multi-inquilino y análisis.",
+      "_id": {
+        "$oid": "685a747dc339bc8ac2bf6df5"
+      }
+    },
+    "metaTitle": {
+      "tr": "Metahub - Çok Kiracılı SaaS",
+      "en": "Metahub - Multi-Tenant SaaS",
+      "de": "Metahub - Multi-Tenant SaaS",
+      "pl": "Metahub - Multi-Tenant SaaS",
+      "fr": "Metahub - SaaS Multi-Locataires",
+      "es": "Metahub - SaaS Multi-Inquilino",
+      "_id": {
+        "$oid": "685a747dc339bc8ac2bf6df6"
+      }
+    },
+    "metaDescription": {
+      "tr": "Metahub’ın esnek çok kiracılı modülleriyle işinizi yönetin ve büyütün.",
+      "en": "Manage and scale your business with Metahub's flexible multi-tenant modules.",
+      "de": "Verwalten und skalieren Sie Ihr Unternehmen mit den flexiblen Multi-Tenant-Modulen von Metahub.",
+      "pl": "Zarządzaj i rozwijaj swoją firmę dzięki elastycznym modułom multi-tenant Metahub.",
+      "fr": "Gérez et développez votre entreprise avec les modules multi-locataires flexibles de Metahub.",
+      "es": "Gestione y escale su negocio con los módulos multi-inquilino flexibles de Metahub.",
+      "_id": {
+        "$oid": "685a747dc339bc8ac2bf6df7"
+      }
+    },
+    "address": {
+      "tr": "Demo Adres, Münih, Almanya",
+      "en": "Demo Address, München, Germany",
+      "de": "Demo Adresse, München, Deutschland",
+      "pl": "Adres demo, Monachium, Niemcy",
+      "fr": "Adresse démo, Munich, Allemagne",
+      "es": "Dirección de demostración, Múnich, Alemania",
+      "_id": {
+        "$oid": "685a747dc339bc8ac2bf6df8"
+      }
+    },
+    "phone": "+498912345678",
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1750758524/uploads/metahub/tenant-images/metahub-1750758523708-946009996.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1750758524/uploads/metahub/tenant-images/metahub-1750758523708-946009996.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1750758524/uploads/metahub/tenant-images/metahub-1750758523708-946009996.webp"
+      }
+    ],
+    "__v": 1,
+    "social": {
+      "facebook": "",
+      "instagram": "",
+      "linkedin": "",
+      "tiktok": "",
+      "twitter": "",
+      "youtube": ""
+    },
+    "updatedAt": {
+      "$date": "2025-06-24T09:48:45.138Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "685a74291f46b1d28e0c5a44"
+    },
+    "name": {
+      "tr": "Königs Massage",
+      "en": "Königs Massage",
+      "de": "Königs Massage",
+      "pl": "Königs Massage",
+      "fr": "Königs Massage",
+      "es": "Königs Massage",
+      "_id": {
+        "$oid": "685a746dc339bc8ac2bf63fa"
+      }
+    },
+    "slug": "anastasia",
+    "mongoUri": "mongodb://admin:adminpassword@141.136.36.40:27017/anastasia-db?authSource=admin",
+    "domain": {
+      "main": "koenigsmassage.com",
+      "subdomains": [],
+      "customDomains": []
+    },
+    "emailSettings": {
+      "smtpHost": "smtp.hostinger.com",
+      "smtpPort": 465,
+      "smtpSecure": true,
+      "smtpUser": "info@koenigsmassage.com",
+      "smtpPass": "Kaman@12!",
+      "senderName": "anastasia Support",
+      "senderEmail": "info@koenigsmassage.com",
+      "imapSecure": true
+    },
+    "logo": "https://cdn.guezelwebdesign.com/anastasia/logo.png",
+    "theme": "default",
+    "enabledModules": [
+      "users",
+      "order",
+      "notification",
+      "feedback",
+      "contact",
+      "gallery",
+      "gallerycategory",
+      "faq",
+      "comment",
+      "setting",
+      "services",
+      "servicescategory",
+      "payment",
+      "email",
+      "address",
+      "admin",
+      "chat",
+      "company",
+      "invoice",
+      "review",
+      "wishlist",
+      "apikey",
+      "about",
+      "aboutcategory",
+      "dashboard",
+      "booking",
+      "bookingslot",
+      "cart",
+      "checkout",
+      "analitics"
+    ],
+    "isActive": true,
+    "description": {
+      "tr": "Königs Massage, çok kiracılı SaaS platformunda özel masaj ve sağlık hizmetleri sunar.",
+      "en": "Königs Massage provides professional massage and wellness services on a multi-tenant SaaS platform.",
+      "de": "Königs Massage bietet professionelle Massage- und Wellness-Dienstleistungen auf einer Multi-Tenant-SaaS-Plattform.",
+      "pl": "Königs Massage oferuje profesjonalne masaże i usługi wellness na platformie SaaS multi-tenant.",
+      "fr": "Königs Massage propose des services de massage et de bien-être professionnels sur une plateforme SaaS multi-locataires.",
+      "es": "Königs Massage ofrece servicios profesionales de masaje y bienestar en una plataforma SaaS multi-inquilino.",
+      "_id": {
+        "$oid": "685a746dc339bc8ac2bf63fb"
+      }
+    },
+    "metaTitle": {
+      "tr": "Königs Massage - Masaj & Sağlık",
+      "en": "Königs Massage - Massage & Wellness",
+      "de": "Königs Massage - Massage & Wellness",
+      "pl": "Königs Massage - Masaż i Wellness",
+      "fr": "Königs Massage - Massage et Bien-être",
+      "es": "Königs Massage - Masaje y Bienestar",
+      "_id": {
+        "$oid": "685a746dc339bc8ac2bf63fc"
+      }
+    },
+    "metaDescription": {
+      "tr": "Königs Massage ile uzman terapistler eşliğinde profesyonel masaj ve sağlık deneyimi yaşayın.",
+      "en": "Experience professional massage and wellness services with expert therapists at Königs Massage.",
+      "de": "Erleben Sie professionelle Massage- und Wellnessangebote mit erfahrenen Therapeuten bei Königs Massage.",
+      "pl": "Doświadcz profesjonalnych masaży i usług wellness z doświadczonymi terapeutami w Königs Massage.",
+      "fr": "Profitez de massages et de services de bien-être professionnels avec des thérapeutes experts chez Königs Massage.",
+      "es": "Viva la experiencia de masajes profesionales y bienestar con terapeutas expertos en Königs Massage.",
+      "_id": {
+        "$oid": "685a746dc339bc8ac2bf63fd"
+      }
+    },
+    "address": {
+      "tr": "Demo Adres, Münih, Almanya",
+      "en": "Demo Address, München, Germany",
+      "de": "Demo Adresse, München, Deutschland",
+      "pl": "Adres demo, Monachium, Niemcy",
+      "fr": "Adresse démo, Munich, Allemagne",
+      "es": "Dirección de demostración, Múnich, Alemania",
+      "_id": {
+        "$oid": "685a746dc339bc8ac2bf63fe"
+      }
+    },
+    "phone": "+498912345678",
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1750758508/uploads/metahub/tenant-images/anastasia-3-1750758507328-268123982.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1750758508/uploads/metahub/tenant-images/anastasia-3-1750758507328-268123982.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1750758508/uploads/metahub/tenant-images/anastasia-3-1750758507328-268123982.webp"
+      }
+    ],
+    "__v": 1,
+    "social": {
+      "facebook": "",
+      "instagram": "",
+      "linkedin": "",
+      "tiktok": "",
+      "twitter": "",
+      "youtube": ""
+    },
+    "updatedAt": {
+      "$date": "2025-06-24T09:48:29.116Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "685a75351f46b1d28e0c5a46"
+    },
+    "name": {
+      "tr": "Ensotek",
+      "en": "Ensotek",
+      "de": "Ensotek",
+      "pl": "Ensotek",
+      "fr": "Ensotek",
+      "es": "Ensotek",
+      "_id": {
+        "$oid": "685a759bc339bc8ac2bf8bcb"
+      }
+    },
+    "slug": "ensotek",
+    "mongoUri": "mongodb://admin:adminpassword@141.136.36.40:27017/ensotek-db?authSource=admin",
+    "domain": {
+      "main": "ensotek.de",
+      "subdomains": [],
+      "customDomains": []
+    },
+    "emailSettings": {
+      "smtpHost": "smtp.hostinger.com",
+      "smtpPort": 465,
+      "smtpSecure": true,
+      "smtpUser": "info@md-hygienelogistik.de",
+      "smtpPass": "Md123456,",
+      "senderName": "ensotek Support",
+      "senderEmail": "info@md-hygienelogistik.de",
+      "imapSecure": true
+    },
+    "logo": "https://cdn.guezelwebdesign.com/ensotek/logo.png",
+    "theme": "default",
+    "enabledModules": [
+      "users",
+      "product",
+      "order",
+      "blog",
+      "news",
+      "articles",
+      "sparepart",
+      "library",
+      "references",
+      "cart",
+      "notification",
+      "feedback",
+      "contact",
+      "gallery",
+      "faq",
+      "comment",
+      "setting",
+      "payment",
+      "services",
+      "email",
+      "address",
+      "admin",
+      "category",
+      "chat",
+      "company",
+      "customer",
+      "invoice",
+      "offer",
+      "review",
+      "shipment",
+      "stockmovement",
+      "wishlist",
+      "newscategory",
+      "apikey",
+      "blogcategory",
+      "dashboard",
+      "articlescategory",
+      "servicescategory",
+      "activity",
+      "activitycategory",
+      "ensotekprod",
+      "ensotekcategory",
+      "about",
+      "aboutcategory"
+    ],
+    "isActive": true,
+    "description": {
+      "tr": "Ensotek, endüstriyel soğutma ve iklimlendirme çözümlerinde uzman, çok kiracılı SaaS platformudur.",
+      "en": "Ensotek is a multi-tenant SaaS platform specializing in industrial cooling and climate solutions.",
+      "de": "Ensotek ist eine Multi-Tenant-SaaS-Plattform, spezialisiert auf industrielle Kühl- und Klimalösungen.",
+      "pl": "Ensotek to platforma SaaS multi-tenant specjalizująca się w przemysłowym chłodnictwie i klimatyzacji.",
+      "fr": "Ensotek est une plateforme SaaS multi-locataires spécialisée dans le refroidissement industriel et les solutions climatiques.",
+      "es": "Ensotek es una plataforma SaaS multi-inquilino especializada en soluciones de refrigeración y clima industrial.",
+      "_id": {
+        "$oid": "685a759bc339bc8ac2bf8bcc"
+      }
+    },
+    "metaTitle": {
+      "tr": "Ensotek - Endüstriyel Soğutma & Klima",
+      "en": "Ensotek - Industrial Cooling & Climate",
+      "de": "Ensotek - Industrielle Kühlung & Klima",
+      "pl": "Ensotek - Chłodnictwo i Klimatyzacja",
+      "fr": "Ensotek - Refroidissement Industriel & Climat",
+      "es": "Ensotek - Refrigeración y Clima Industrial",
+      "_id": {
+        "$oid": "685a759bc339bc8ac2bf8bcd"
+      }
+    },
+    "metaDescription": {
+      "tr": "Ensotek ile endüstriyel soğutma ve iklimlendirme projelerinizi güvenle yönetin.",
+      "en": "Manage your industrial cooling and climate projects confidently with Ensotek.",
+      "de": "Verwalten Sie Ihre industriellen Kühl- und Klimaprojekte mit Ensotek zuverlässig.",
+      "pl": "Zarządzaj projektami chłodnictwa i klimatyzacji przemysłowej z Ensotek.",
+      "fr": "Gérez vos projets de refroidissement industriel et de climat avec Ensotek.",
+      "es": "Gestione sus proyectos de refrigeración y clima industrial con Ensotek.",
+      "_id": {
+        "$oid": "685a759bc339bc8ac2bf8bce"
+      }
+    },
+    "address": {
+      "tr": "Demo Adres, Münih, Almanya",
+      "en": "Demo Address, München, Germany",
+      "de": "Demo Adresse, München, Deutschland",
+      "pl": "Adres demo, Monachium, Niemcy",
+      "fr": "Adresse démo, Munich, Allemagne",
+      "es": "Dirección de demostración, Múnich, Alemania",
+      "_id": {
+        "$oid": "685a759bc339bc8ac2bf8bcf"
+      }
+    },
+    "phone": "+498912345678",
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1750758811/uploads/metahub/tenant-images/logo-1750758811143-348137908.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1750758811/uploads/metahub/tenant-images/logo-1750758811143-348137908.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1750758811/uploads/metahub/tenant-images/logo-1750758811143-348137908.webp"
+      }
+    ],
+    "__v": 1,
+    "social": {
+      "facebook": "",
+      "instagram": "",
+      "linkedin": "",
+      "tiktok": "",
+      "twitter": "",
+      "youtube": ""
+    },
+    "updatedAt": {
+      "$date": "2025-06-24T09:53:31.909Z"
+    }
+  },
+  {
+    "name": {
+      "tr": "Güzel Web Design",
+      "en": "Guezel Web Design",
+      "de": "Guezel Web Design",
+      "pl": "Guezel Web Design",
+      "fr": "Guezel Web Design",
+      "es": "Guezel Web Design"
+    },
+    "slug": "guezelweb",
+    "mongoUri": "mongodb://admin:adminpassword@141.136.36.40:27017/guezelweb-db?authSource=admin",
+    "domain": {
+      "main": "www.guezelwebdesign.com",
+      "subdomains": [],
+      "customDomains": []
+    },
+    "emailSettings": {
+      "smtpHost": "smtp.hostinger.com",
+      "smtpPort": 465,
+      "smtpSecure": true,
+      "smtpUser": "info@guezelwebdesign.com",
+      "smtpPass": "DemoPassword123!",
+      "senderName": "Guezel Web Support",
+      "senderEmail": "info@guezelwebdesign.com",
+      "imapSecure": true
+    },
+    "logo": "https://cdn.guezelwebdesign.com/guezelweb/logo.png",
+    "theme": "default",
+    "enabledModules": [
+      "users",
+      "order",
+      "notification",
+      "feedback",
+      "contact",
+      "gallery",
+      "gallerycategory",
+      "faq",
+      "comment",
+      "setting",
+      "services",
+      "servicescategory",
+      "payment",
+      "email",
+      "address",
+      "admin",
+      "chat",
+      "company",
+      "invoice",
+      "review",
+      "wishlist",
+      "apikey",
+      "about",
+      "aboutcategory",
+      "dashboard",
+      "booking",
+      "bookingslot",
+      "cart",
+      "bikes",
+      "bikescategory",
+      "checkout",
+      "analitics",
+      "product",
+      "blog",
+      "news",
+      "articles",
+      "sparepart",
+      "library",
+      "references",
+      "category",
+      "customer",
+      "offer",
+      "shipment",
+      "stockmovement",
+      "newscategory",
+      "blogcategory",
+      "articlescategory",
+      "activity",
+      "activitycategory"
+    ],
+    "isActive": true,
+    "description": {
+      "tr": "Güzel Web Design, modern ve ölçeklenebilir SaaS tabanlı web çözümleri sunar.",
+      "en": "Guezel Web Design delivers modern, scalable SaaS-based web solutions.",
+      "de": "Guezel Web Design bietet moderne, skalierbare SaaS-Weblösungen.",
+      "pl": "Guezel Web Design oferuje nowoczesne, skalowalne rozwiązania webowe SaaS.",
+      "fr": "Guezel Web Design propose des solutions web SaaS modernes et évolutives.",
+      "es": "Guezel Web Design ofrece soluciones web SaaS modernas y escalables."
+    },
+    "metaTitle": {
+      "tr": "Güzel Web Design - Modern SaaS Çözümleri",
+      "en": "Guezel Web Design - Modern SaaS Solutions",
+      "de": "Guezel Web Design - Moderne SaaS-Lösungen",
+      "pl": "Guezel Web Design - Nowoczesne Rozwiązania SaaS",
+      "fr": "Guezel Web Design - Solutions SaaS Modernes",
+      "es": "Guezel Web Design - Soluciones SaaS Modernas"
+    },
+    "metaDescription": {
+      "tr": "Web sitenizi ve iş süreçlerinizi Güzel Web Design ile dijitalleştirin ve büyütün.",
+      "en": "Digitalize and grow your business with Guezel Web Design's solutions.",
+      "de": "Digitalisieren und erweitern Sie Ihr Geschäft mit den Lösungen von Guezel Web Design.",
+      "pl": "Zdigitalizuj i rozwijaj swój biznes z Guezel Web Design.",
+      "fr": "Numérisez et développez votre entreprise avec les solutions de Guezel Web Design.",
+      "es": "Digitalice y haga crecer su negocio con las soluciones de Guezel Web Design."
+    },
+    "address": {
+      "tr": "Demo Adres, Berlin, Almanya",
+      "en": "Demo Address, Berlin, Germany",
+      "de": "Demo Adresse, Berlin, Deutschland",
+      "pl": "Adres demo, Berlin, Niemcy",
+      "fr": "Adresse démo, Berlin, Allemagne",
+      "es": "Dirección de demostración, Berlín, Alemania"
+    },
+    "phone": "+493012345678",
+    "images": []
+  }
+]

@@ -13,11 +13,7 @@ export { default as CategoryForm } from "./admin/components/CategoryForm";
 export { default as ActivitySection } from "./public/components/ActivitySection";
 export { default as ActivityDetailSection } from "./public/components/ActivityDetailSection";
 
-// Redux Slice
-export { default as activityReducer } from "./slice/activitySlice";
-export { default as activityCategoryReducer } from "./slice/activityCategorySlice";
-
 // Types (if any)
-export * from "./types/activity";
+export * from "./types";
 
 // Optionally: i18n can be loaded in page-level or via config

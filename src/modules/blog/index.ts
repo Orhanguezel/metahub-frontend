@@ -13,11 +13,7 @@ export { default as CategoryForm } from "./admin/components/CategoryForm";
 export { default as BlogSection } from "./public/components/BlogSection";
 export { default as BlogDetailSection } from "./public/components/BlogDetailSection";
 
-// Redux Slice
-export { default as blogReducer } from "./slice/blogSlice";
-export { default as blogCategoryReducer } from "./slice/blogCategorySlice";
-
 // Types (if any)
-export * from "./types/blog";
+export * from "./types";
 
 // Optionally: i18n can be loaded in page-level or via config

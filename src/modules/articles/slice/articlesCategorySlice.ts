@@ -19,7 +19,7 @@ const initialState: CategoryState = {
   successMessage: null,
 };
 
-// ✅ Fetch All
+// --- Fetch ---
 export const fetchArticlesCategories = createAsyncThunk(
   "articlesCategory/fetchAll",
   async (_, thunkAPI) => {
@@ -33,10 +33,16 @@ export const fetchArticlesCategories = createAsyncThunk(
   }
 );
 
-// ✅ Create
+// --- Create ---
 export const createArticlesCategory = createAsyncThunk(
   "articlesCategory/create",
-  async (data: { name: TranslatedField; description?: string }, thunkAPI) => {
+  async (
+    data: {
+      name: TranslatedField;
+      description?: TranslatedField;
+    },
+    thunkAPI
+  ) => {
     const res = await apiCall(
       "post",
       "/articlescategory",
@@ -47,7 +53,7 @@ export const createArticlesCategory = createAsyncThunk(
   }
 );
 
-// ✅ Update
+// --- Update ---
 export const updateArticlesCategory = createAsyncThunk(
   "articlesCategory/update",
   async (
@@ -56,7 +62,10 @@ export const updateArticlesCategory = createAsyncThunk(
       data,
     }: {
       id: string;
-      data: { name: TranslatedField; description?: string };
+      data: {
+        name: TranslatedField;
+        description?: TranslatedField;
+      };
     },
     thunkAPI
   ) => {
@@ -70,17 +79,17 @@ export const updateArticlesCategory = createAsyncThunk(
   }
 );
 
-// ✅ Delete
+// --- Delete ---
 export const deleteArticlesCategory = createAsyncThunk(
   "articlesCategory/delete",
   async (id: string, thunkAPI) => {
-    await apiCall(
+    const res = await apiCall(
       "delete",
       `/articlescategory/${id}`,
       null,
       thunkAPI.rejectWithValue
     );
-    return id;
+    return { id, message: res.message }; // backend response.message
   }
 );
 
@@ -88,93 +97,66 @@ const articlesCategorySlice = createSlice({
   name: "articlesCategory",
   initialState,
   reducers: {
-    clearCategoryMessages(state) {
+    clearArticlesCategoryMessages: (state) => {
       state.error = null;
       state.successMessage = null;
     },
   },
   extraReducers: (builder) => {
-    builder
+    const startLoading = (state: CategoryState) => {
+      state.loading = true;
+      state.error = null;
+    };
 
-      // FETCH
-      .addCase(fetchArticlesCategories.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+    const setError = (state: CategoryState, action: PayloadAction<any>) => {
+      state.loading = false;
+      state.error = action.payload?.message || "Something went wrong.";
+    };
+
+    builder
+      // Fetch
+      .addCase(fetchArticlesCategories.pending, startLoading)
       .addCase(fetchArticlesCategories.fulfilled, (state, action) => {
         state.loading = false;
         state.categories = action.payload;
       })
-      .addCase(
-        fetchArticlesCategories.rejected,
-        (state, action: PayloadAction<any>) => {
-          state.loading = false;
-          state.error =
-            action.payload?.message || "Failed to fetch categories.";
-        }
-      )
-
-      // CREATE
-      .addCase(createArticlesCategory.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(fetchArticlesCategories.rejected, setError)
+      // Create
+      .addCase(createArticlesCategory.pending, startLoading)
       .addCase(createArticlesCategory.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Category created successfully.";
-        state.categories.unshift(action.payload);
-      })
-      .addCase(
-        createArticlesCategory.rejected,
-        (state, action: PayloadAction<any>) => {
-          state.loading = false;
-          state.error = action.payload?.message || "Failed to create category.";
+        state.successMessage = action.payload?.message;
+        if (action.payload?.data?._id) {
+          state.categories.unshift(action.payload.data);
         }
-      )
-
-      // UPDATE
-      .addCase(updateArticlesCategory.pending, (state) => {
-        state.loading = true;
-        state.error = null;
       })
+      .addCase(createArticlesCategory.rejected, setError)
+      // Update
+      .addCase(updateArticlesCategory.pending, startLoading)
       .addCase(updateArticlesCategory.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Category updated successfully.";
-        const updated = action.payload;
+        state.successMessage = action.payload?.message;
+        const updated = action.payload?.data || action.payload;
         const index = state.categories.findIndex(
           (cat) => cat._id === updated._id
         );
-        if (index !== -1) state.categories[index] = updated;
-      })
-      .addCase(
-        updateArticlesCategory.rejected,
-        (state, action: PayloadAction<any>) => {
-          state.loading = false;
-          state.error = action.payload?.message || "Failed to update category.";
+        if (index !== -1) {
+          state.categories[index] = updated;
         }
-      )
-
-      // DELETE
-      .addCase(deleteArticlesCategory.pending, (state) => {
-        state.loading = true;
-        state.error = null;
       })
+      .addCase(updateArticlesCategory.rejected, setError)
+      // Delete
+      .addCase(deleteArticlesCategory.pending, startLoading)
       .addCase(deleteArticlesCategory.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Category deleted successfully.";
+        state.successMessage = action.payload?.message;
         state.categories = state.categories.filter(
-          (cat) => cat._id !== action.payload
+          (cat) => cat._id !== action.payload.id
         );
       })
-      .addCase(
-        deleteArticlesCategory.rejected,
-        (state, action: PayloadAction<any>) => {
-          state.loading = false;
-          state.error = action.payload?.message || "Failed to delete category.";
-        }
-      );
+      .addCase(deleteArticlesCategory.rejected, setError);
   },
 });
 
-export const { clearCategoryMessages } = articlesCategorySlice.actions;
+export const { clearArticlesCategoryMessages } = articlesCategorySlice.actions;
 export default articlesCategorySlice.reducer;

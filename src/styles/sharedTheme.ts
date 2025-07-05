@@ -44,7 +44,7 @@ export const sharedTheme = {
     loose: "2",
   },
 
-  spacing: {
+  spacings: {
     xs: "4px",
     sm: "8px",
     md: "16px",
@@ -93,7 +93,7 @@ export const sharedTheme = {
 
   layout: {
     containerWidth: "1280px",
-    sectionSpacing: "3rem",
+    sectionspacings: "3rem",
   },
 
   zIndex: {
@@ -130,6 +130,7 @@ export const sharedTheme = {
     desktop: "@media (min-width: 1025px)",
     landscape: "@media (orientation: landscape)",
     portrait: "@media (orientation: portrait)",
-    retina: "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
+    retina:
+      "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
   },
 };

@@ -1,100 +1,73 @@
 {
   "page": {
-    "title": "Massage Menu",
-    "all": "See all massages →",
-    "noCategory": "No category found.",
-    "error": "An error occurred.",
-    "notFound": "No massages found.",
-    "defaultTitle": "Massage Title",
+    "noServices": "No articles found.",
+    "allServices": "All Articles",
     "services": {
-      "title": "Massage Treatments",
-      "all": "View all massages →",
-      "readMore": "Learn More",
-      "noServices": "No massage treatments found.",
-      "noTitle": "No Title",
-      "noSummary": "No description available.",
-      "tags": "Tags",
-      "price": "Price",
-      "duration": "Duration",
-      "other": "Other Massage Options"
+      "title": "Services",
+      "all": "See All"
     },
-    "readMore": "Learn More",
-    "tags": "Tags",
-    "price": "Price",
-    "duration": "Duration",
-    "noServices": "No massage treatments found.",
-    "noTitle": "No Title",
-    "noSummary": "No description available.",
-    "other": "Other Massage Options"
+    "other": "Other Sections",
+    "summary": "Summary",
+    "detail": "Detail",
+    "noTitle": "No Title"
   },
-  "admin": {
-    "tabs": {
-      "services": "Massages",
-      "create": "New Massage",
-      "categories": "Categories"
-    },
-    "services": {
-      "empty": "No massages available.",
-      "no_images": "No image",
-      "tags": "Tags",
-      "publish_status": "Publish Status",
-      "price": "Price",
-      "duration": "Duration",
-      "publish": "Publish",
-      "unpublish": "Unpublish",
-      "edit": "Edit",
-      "delete": "Delete",
-      "title": "Title",
-      "summary": "Short Description",
-      "content": "Content",
-      "category": "Category",
-      "select_category": "Select Category",
-      "image": "Image",
-      "new_category": "New Category",
-      "edit_category": "Edit Category",
-      "category_name": "Category Name",
-      "description_optional": "Description (optional)",
-      "category_description_placeholder": "What types of massages are included in this category?",
-      "save": "Save"
-    },
-    "categories": {
-      "title": "Massage Categories",
-      "add": "Add Category",
-      "edit": "Edit",
-      "delete": "Delete",
-      "empty": "No categories found."
-    },
-    "language": {
-      "en": "English",
-      "tr": "Turkish",
-      "de": "German"
-    },
-    "slug": "Slug",
-    "actions": "Actions",
-    "yes": "Yes",
-    "no": "No",
-    "none": "None",
-    "edit": "Edit",
-    "delete": "Delete",
-    "create": "Create",
-    "update": "Update",
-    "cancel": "Cancel",
-    "loading": "Loading...",
-    "success": "Saved successfully.",
-    "error": "An error occurred.",
-    "confirm": {
-      "delete_Services": "Are you sure you want to delete this massage?",
-      "delete": "Are you sure you want to delete?"
-    }
+  "readMore": "Read More →",
+  "author": "Author",
+  "tags": "Tags",
+  "unknown": "Unknown",
+  "tabs": {
+    "services": "Services",
+    "create": "New Article",
+    "categories": "Categories"
   },
   "services": {
-    "create": "Add New Massage",
-    "no_images": "No image",
-    "notFound": "No massage found.",
-    "error": "An error occurred while loading massages."
+    "empty": "No services available.",
+    "no_images": "No images",
+    "author": "Author",
+    "tags": "Tags",
+    "publish_status": "Published",
+    "unpublish": "Unpublish",
+    "publish": "Publish",
+    "unknown": "Unknown",
+    "none": "None"
   },
-  "seo": {
-    "title": "Massage Menu",
-    "description": "massages and wellness treatments to find the perfect relaxation for you."
+  "edit": "Edit",
+  "delete": "Delete",
+  "yes": "Yes",
+  "no": "No",
+  "admin": {
+    "services": {
+      "edit": "Edit Article",
+      "create": "Create New Article",
+      "title": "Title",
+      "summary": "Summary",
+      "content": "Content",
+      "author": "Author",
+      "tags": "Tags",
+      "image": "Images",
+      "category": "Category",
+      "select_category": "Select a category"
+    },
+    "categories": {
+      "title": "Product Categories",
+      "add": "Add Category",
+      "name": "Category Name"
+    },
+    "editCategory": "Edit Category",
+    "newCategory": "New Category",
+    "optional_description": "Optional description",
+    "category_info": "What is this category services?",
+    "update": "Update",
+    "update2": "Update",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "confirm": {
+      "delete": "Are you sure you want to delete this category?",
+      "delete_article": "Are you sure you want to delete this article?"
+    },
+    "loading": "Loading...",
+    "actions": "Actions",
+    "slug": "Slug"
   }
 }

@@ -22,7 +22,9 @@ export default function BookingStatusModal({
   const { t } = useTranslation("booking");
   const dispatch = useAppDispatch();
 
-  const [status, setStatus] = useState<"pending" | "confirmed" | "cancelled">("pending");
+  const [status, setStatus] = useState<"pending" | "confirmed" | "cancelled">(
+    "pending"
+  );
   const [loading, setLoading] = useState(false);
 
   // Statüyü booking değiştiğinde ayarla
@@ -41,7 +43,9 @@ export default function BookingStatusModal({
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      await dispatch(updateBookingStatus({ id: booking!._id, status })).unwrap();
+      await dispatch(
+        updateBookingStatus({ id: booking!._id, status })
+      ).unwrap();
       toast.success(t("admin.modal.updated", "Status updated successfully."));
       onClose();
     } catch {
@@ -119,17 +123,17 @@ const Overlay = styled.div`
 const Modal = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.text};
-  padding: ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacings.xl};
   width: 100%;
   max-width: 430px;
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.lg};
-  margin: ${({ theme }) => theme.spacing.lg};
+  margin: ${({ theme }) => theme.spacings.lg};
 
   @media ${({ theme }) => theme.media.mobile} {
-    padding: ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => theme.spacings.md};
     border-radius: ${({ theme }) => theme.radii.md};
-    margin: ${({ theme }) => theme.spacing.sm};
+    margin: ${({ theme }) => theme.spacings.sm};
   }
 `;
 
@@ -138,7 +142,7 @@ const ModalTitle = styled.h3`
   font-family: ${({ theme }) => theme.fonts.heading};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
   text-align: center;
 `;
 
@@ -146,8 +150,9 @@ const StatusInfo = styled.div`
   background: ${({ theme }) => theme.colors.warningBackground || "#fffbe6"};
   color: ${({ theme }) => theme.colors.warning || "#d97706"};
   border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.md};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   text-align: center;
 `;
@@ -158,19 +163,20 @@ const Label = styled.label`
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   color: ${({ theme }) => theme.colors.textPrimary};
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
 const Select = styled.select`
   width: 100%;
   font-family: ${({ theme }) => theme.fonts.body};
   font-size: ${({ theme }) => theme.fontSizes.md};
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   border-radius: ${({ theme }) => theme.radii.md};
   background: ${({ theme }) => theme.inputs.background};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.inputs.border};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.inputs.border};
   color: ${({ theme }) => theme.colors.text};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   transition: border ${({ theme }) => theme.transition.normal};
 
   &:focus {
@@ -182,13 +188,14 @@ const Select = styled.select`
 
 const ButtonGroup = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.md};
   justify-content: flex-end;
-  margin-top: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacings.md};
 `;
 
 const Button = styled.button<{ $danger?: boolean }>`
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.xl};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-family: ${({ theme }) => theme.fonts.body};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
@@ -197,9 +204,7 @@ const Button = styled.button<{ $danger?: boolean }>`
       ? theme.buttons.danger.background
       : theme.buttons.primary.background};
   color: ${({ $danger, theme }) =>
-    $danger
-      ? theme.buttons.danger.text
-      : theme.buttons.primary.text};
+    $danger ? theme.buttons.danger.text : theme.buttons.primary.text};
   border: none;
   border-radius: ${({ theme }) => theme.radii.pill};
   box-shadow: ${({ theme }) => theme.shadows.button};

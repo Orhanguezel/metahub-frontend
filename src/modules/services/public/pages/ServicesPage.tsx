@@ -1,37 +1,30 @@
 "use client";
 
-import { useEffect } from "react";
 import styled from "styled-components";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  fetchServices,
-  clearServicesMessages,
-} from "@/modules/services/slice/servicesSlice";
+import { useAppSelector } from "@/store/hooks";
+import i18n from "@/i18n";
 import { useTranslation } from "react-i18next";
-import {
-  Skeleton,
-  ErrorMessage
- } from "@/shared";
+import translations from "../../locales";
+import { Skeleton, ErrorMessage } from "@/shared";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
+import type { SupportedLocale } from "@/types/common";
+import type { IServices } from "../../types";
+
 
 export default function ServicesPage() {
-  const dispatch = useAppDispatch();
-  const { i18n, t } = useTranslation("services");
+const { i18n, t } = useTranslation("services");
+  const lang = (i18n.language?.slice(0, 2) || "tr") as SupportedLocale; 
+  const { services, loading, error } = useAppSelector((state) => state.services);
 
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
-  const { services, loading, error } = useAppSelector(
-    (state) => state.services
-  );
+      Object.entries(translations).forEach(([lang, resources]) => {
+  if (!i18n.hasResourceBundle(lang, "services")) {
+    i18n.addResourceBundle(lang, "services", resources, true, true);
+  }
+});
 
-  useEffect(() => {
-    dispatch(fetchServices(lang));
-    return () => {
-      dispatch(clearServicesMessages());
-    };
-  }, [dispatch, lang]);
+  
 
   if (loading) {
     return (
@@ -46,7 +39,7 @@ export default function ServicesPage() {
   if (error) {
     return (
       <PageWrapper>
-        <ErrorMessage />
+        <ErrorMessage message={error} />
       </PageWrapper>
     );
   }
@@ -54,80 +47,79 @@ export default function ServicesPage() {
   if (!services || services.length === 0) {
     return (
       <PageWrapper>
-        <p>{t("page.noServices", "No services found.")}</p>
+        <p>{t("page.noServices")}</p>
       </PageWrapper>
     );
   }
 
+  
+
   return (
     <PageWrapper>
-      <PageTitle>{t("page.allServices", "All Services")}</PageTitle>
-
+      <PageTitle>{t("page.allServices")}</PageTitle>
       <ServicesGrid>
-        {services.map((item, index) => (
+        {services.map((item: IServices, index: number) => (
           <ServicesCard
             key={item._id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * 0.07 }}
+
           >
-            {item.images?.[0]?.url && (
-              <ImageWrapper>
-                <img
-                  src={item.images[0].url}
-                  alt={item.title?.[lang] || "Service"}
-                />
-              </ImageWrapper>
-            )}
-            <CardContent>
-              <h2>{item.title?.[lang] || t("page.noTitle", "Untitled")}</h2>
-              <p>
-                {item.summary?.[lang] ||
-                  t("page.noSummary", "No summary available.")}
-              </p>
-              <Meta>
-                <span>
-                  {t("page.tags", "Tags")}: {item.tags?.join(", ") || "-"}
-                </span>
-                {item.price && (
-                  <span>
-                    {t("page.price", "Price")}: €{item.price.toFixed(2)}
-                  </span>
-                )}
-                {item.durationMinutes && (
-                  <span>
-                    {t("page.duration", "Duration")}: {item.durationMinutes} min
-                  </span>
-                )}
-              </Meta>
-              <ReadMore href={`/services/${item.slug}`}>
-                {t("page.readMore", "Read More →")}
-              </ReadMore>
-            </CardContent>
-          </ServicesCard>
-        ))}
+
+             {item.images?.[0]?.url && (
+                           <ImageWrapper>
+                             <Image
+                               src={item.images[0].url}
+                               alt={item.title?.[lang] || "Services Image"}
+                               width={780}
+                               height={420}
+                               style={{ objectFit: "cover" }}
+                               loading="lazy"
+                             />
+                           </ImageWrapper>
+                         )}
+                         <CardContent>
+                           <h2>{item.title?.[lang] || "Untitled"}</h2>
+                           <p>{item.summary?.[lang] || "No summary available."}</p>
+                           <Meta>
+                             <span>
+                               {t("author", "Yazar")}:{" "}
+                               {item.author || t("unknown", "Bilinmiyor")}
+                             </span>
+                             <span>
+                               {t("tags", "Etiketler")}: {item.tags?.join(", ") || "-"}
+                             </span>
+                           </Meta>
+                           <ReadMore href={`/services/${item.slug}`}>
+                             {t("readMore", "Devamını Oku →")}
+                           </ReadMore>
+                         </CardContent>
+                       </ServicesCard>
+                     ))}
       </ServicesGrid>
     </PageWrapper>
   );
 }
 
+// Styled Components aynı kalabilir
 const PageWrapper = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xxl}
-    ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const PageTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   color: ${({ theme }) => theme.colors.primary};
   text-align: center;
 `;
 
 const ServicesGrid = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.spacing.lg};
+  gap: ${({ theme }) => theme.spacings.lg};
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 `;
 
@@ -145,22 +137,24 @@ const ImageWrapper = styled.div`
     width: 100%;
     height: 200px;
     object-fit: cover;
+    background: #f2f2f2;
+    display: block;
   }
 `;
 
 const CardContent = styled.div`
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.md};
 
   h2 {
     font-size: ${({ theme }) => theme.fontSizes.lg};
-    margin-bottom: ${({ theme }) => theme.spacing.sm};
+    margin-bottom: ${({ theme }) => theme.spacings.sm};
     color: ${({ theme }) => theme.colors.text};
   }
 
   p {
     font-size: ${({ theme }) => theme.fontSizes.base};
     color: ${({ theme }) => theme.colors.textSecondary};
-    margin-bottom: ${({ theme }) => theme.spacing.md};
+    margin-bottom: ${({ theme }) => theme.spacings.md};
   }
 `;
 
@@ -170,7 +164,7 @@ const Meta = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
 const ReadMore = styled(Link)`

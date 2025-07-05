@@ -1,0 +1,42 @@
+{
+  "admin": {
+    "title": "Zarządzanie najemcami",
+    "create": "Dodaj nowego najemcę",
+    "update": "Aktualizuj",
+    "cancel": "Anuluj",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "confirm": {
+      "delete_tenant": "Czy na pewno chcesz usunąć tego najemcę?"
+    },
+    "tenant": {
+      "edit": "Edytuj najemcę",
+      "create": "Dodaj nowego najemcę",
+      "name": "Nazwa najemcy",
+      "description": "Opis",
+      "slug": "Slug najemcy",
+      "mongoUri": "MongoDB URI",
+      "domainMain": "Główna domena",
+      "phone": "Telefon",
+      "theme": "Motyw",
+      "isActive": "Aktywny",
+      "metaTitle": "Meta tytuł",
+      "metaDescription": "Meta opis",
+      "address": "Adres",
+      "emailSettings": "Ustawienia e-mail (SMTP)",
+      "social": "Linki do mediów społecznościowych",
+      "images": "Obrazy",
+      "empty": "Nie znaleziono najemców.",
+      "domain": "Domena",
+      "email": "E-mail",
+      "active": "Aktywny",
+      "no_images": "Brak obrazów"
+    },
+    "tabs": {
+      "tenant": "Najemcy",
+      "create": "Dodaj nowy"
+    }
+  },
+  "yes": "Tak",
+  "no": "Nie"
+}

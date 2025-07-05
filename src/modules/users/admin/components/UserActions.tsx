@@ -23,7 +23,10 @@ export default function UserActions({ userId, currentRole, onRefresh }: Props) {
   const { t } = useTranslation("admin");
 
   const handleRoleChange = () => {
-    const newRole: User["role"] = currentRole === "admin" ? "user" : "admin";
+    const newRole: User["role"] =
+      currentRole === "admin" || currentRole === "superadmin"
+        ? "user"
+        : "admin";
     dispatch(updateUserRole({ id: userId, role: newRole }))
       .unwrap()
       .then(() => {

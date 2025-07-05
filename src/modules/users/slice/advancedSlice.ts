@@ -6,7 +6,7 @@ export interface AuthUser {
   _id: string;
   name: string;
   email: string;
-  role: "admin" | "user" | "moderator" | "staff" | "customer";
+  role: "superadmin" | "admin" | "user" | "moderator" | "staff" | "customer";
   profileImage: string;
 }
 
@@ -35,7 +35,12 @@ export const resendOtp = createAsyncThunk(
   "auth/resendOtp",
   async (data: { email: string }, thunkAPI) => {
     try {
-      const res = await apiCall("post", "/users/advanced-auth/resend-otp", data, thunkAPI.rejectWithValue);
+      const res = await apiCall(
+        "post",
+        "/users/advanced-auth/resend-otp",
+        data,
+        thunkAPI.rejectWithValue
+      );
       return { message: res.message || "OTP was resent." };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
@@ -49,7 +54,12 @@ export const sendOtp = createAsyncThunk(
   "auth/sendOtp",
   async (data: { email: string }, thunkAPI) => {
     try {
-      const res = await apiCall("post", "/users/advanced-auth/send-otp", data, thunkAPI.rejectWithValue);
+      const res = await apiCall(
+        "post",
+        "/users/advanced-auth/send-otp",
+        data,
+        thunkAPI.rejectWithValue
+      );
       // Artık session yok, sadece mesaj ve belki needOtp dönebiliriz.
       return { message: res.message, needOtp: true };
     } catch (error: any) {
@@ -64,7 +74,12 @@ export const verifyOtp = createAsyncThunk(
   "auth/verifyOtp",
   async (data: { email: string; code: string }, thunkAPI) => {
     try {
-      const res = await apiCall("post", "/users/advanced-auth/verify-otp", data, thunkAPI.rejectWithValue);
+      const res = await apiCall(
+        "post",
+        "/users/advanced-auth/verify-otp",
+        data,
+        thunkAPI.rejectWithValue
+      );
       const user = await thunkAPI.dispatch(fetchCurrentUser()).unwrap();
       thunkAPI.dispatch(setAuthUser(user));
       return { user, message: res.message || "Verification successful." };
@@ -80,11 +95,17 @@ export const resendEmailVerification = createAsyncThunk(
   "auth/resendEmailVerification",
   async (data: { email: string }, thunkAPI) => {
     try {
-      const res = await apiCall("post", "/users/advanced-auth/send-verification", data, thunkAPI.rejectWithValue);
+      const res = await apiCall(
+        "post",
+        "/users/advanced-auth/send-verification",
+        data,
+        thunkAPI.rejectWithValue
+      );
       return { message: res.message || "Verification email was sent." };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
-        error?.response?.data?.message || "Verification email could not be sent."
+        error?.response?.data?.message ||
+          "Verification email could not be sent."
       );
     }
   }
@@ -94,7 +115,12 @@ export const verifyEmail = createAsyncThunk(
   "auth/verifyEmail",
   async (token: string, thunkAPI) => {
     try {
-      const res = await apiCall("post", "/users/advanced-auth/verify-email", { token }, thunkAPI.rejectWithValue);
+      const res = await apiCall(
+        "post",
+        "/users/advanced-auth/verify-email",
+        { token },
+        thunkAPI.rejectWithValue
+      );
       return { message: res.message || "Email verified successfully." };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
@@ -108,7 +134,12 @@ export const verifyMfa = createAsyncThunk(
   "auth/verifyMfa",
   async (data: { code: string }, thunkAPI) => {
     try {
-      const res = await apiCall("post", "/users/advanced-auth/verify-mfa", data, thunkAPI.rejectWithValue);
+      const res = await apiCall(
+        "post",
+        "/users/advanced-auth/verify-mfa",
+        data,
+        thunkAPI.rejectWithValue
+      );
       const user = await thunkAPI.dispatch(fetchCurrentUser()).unwrap();
       thunkAPI.dispatch(setAuthUser(user));
       return { user, message: res.message || "MFA verification successful." };

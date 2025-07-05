@@ -48,7 +48,7 @@ const guezelwebTheme: DefaultTheme = {
     loose: "1.6",
   },
 
-  spacing: {
+  spacings: {
     xs: "4px",
     sm: "8px",
     md: "16px",
@@ -97,7 +97,7 @@ const guezelwebTheme: DefaultTheme = {
 
   layout: {
     containerWidth: "1280px",
-    sectionSpacing: "3rem",
+    sectionspacings: "3rem",
   },
 
   zIndex: {
@@ -134,12 +134,13 @@ const guezelwebTheme: DefaultTheme = {
     desktop: "@media (min-width: 1025px)",
     landscape: "@media (orientation: landscape)",
     portrait: "@media (orientation: portrait)",
-    retina: "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
+    retina:
+      "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
   },
 
   colors: {
-    background: "#1b2838",                 // --background-color
-    backgroundSecondary: "#0d1f2d",        // --secondary-color
+    background: "#1b2838", // --background-color
+    backgroundSecondary: "#0d1f2d", // --secondary-color
     backgroundAlt: "#0d1f2d",
     sectionBackground: "#1b2838",
     inputBackground: "#1b2838",
@@ -147,8 +148,8 @@ const guezelwebTheme: DefaultTheme = {
     footerBackground: "#0d1f2d",
     warningBackground: "#fffbe6",
 
-    text: "#fff",                          // --text-color
-    textAlt: "#19d6e3",                    // --highlight-color (alternatif vurgu için)
+    text: "#fff", // --text-color
+    textAlt: "#19d6e3", // --highlight-color (alternatif vurgu için)
     textSecondary: "#cccccc",
     textPrimary: "#fff",
     textMuted: "#888",
@@ -157,7 +158,7 @@ const guezelwebTheme: DefaultTheme = {
     textOnSuccess: "#ffffff",
     textOnDanger: "#ffffff",
 
-    title: "#19d6e3",                      // --highlight-color
+    title: "#19d6e3", // --highlight-color
 
     overlayStart: "rgba(25, 214, 227, 0.08)",
     overlayEnd: "rgba(25, 214, 227, 0.45)",
@@ -166,11 +167,17 @@ const guezelwebTheme: DefaultTheme = {
     skeleton: "#213040",
     skeletonBackground: "#0d1f2d",
 
-    primary: "#19d6e3",                    // --primary-color
+    primary: "#19d6e3", // --primary-color
     primaryLight: "#7af2ff",
     primaryHover: "#10a3b6",
     primaryDark: "#0d97a6",
     primaryTransparent: "rgba(25, 214, 227, 0.12)",
+
+    secondary: "#52404b",
+    secondaryLight: "#f3d9e5",
+    secondaryHover: "#40333d",
+    secondaryDark: "#32272a",
+    secondaryTransparent: "rgba(82,64,75,0.1)",
 
     accent: "#19d6e3",
     accentHover: "#16b9c9",
@@ -186,8 +193,8 @@ const guezelwebTheme: DefaultTheme = {
     card: "#22344a",
     cardBackground: "#22344a",
 
-    buttonBackground: "#19d6e3",           // --btn-bg-color
-    buttonText: "#000000",                 // --btn-text-color
+    buttonBackground: "#19d6e3", // --btn-bg-color
+    buttonText: "#000000", // --btn-text-color
     buttonBorder: "#19d6e3",
 
     link: "#19d6e3",
@@ -222,12 +229,15 @@ const guezelwebTheme: DefaultTheme = {
     white: "#fff",
     whiteColor: "#fff",
     darkColor: "#0d1f2d",
+    disabledBg: "#333333",
+    lightGrey: "#f7f7f7",
   },
 
   buttons: {
     primary: {
       background: "#19d6e3",
-      backgroundHover: "radial-gradient(circle, rgba(64,64,64,0.6), rgba(0,0,0,0.8))",
+      backgroundHover:
+        "radial-gradient(circle, rgba(64,64,64,0.6), rgba(0,0,0,0.8))",
       text: "#000000",
       textHover: "#19d6e3",
     },

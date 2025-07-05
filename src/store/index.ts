@@ -1,7 +1,5 @@
 // src/store/index.ts
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
-import { persistReducer, persistStore } from "redux-persist";
-import { accountPersistConfig, authPersistConfig } from "./persistConfig";
 
 // --- Tüm reducerları import et (senin mevcut import yapınla aynı) ---
 import authReducer from "@/modules/users/slice/authSlice";
@@ -10,7 +8,9 @@ import userStatusReducer from "@/modules/users/slice/userStatusSlice";
 import accountReducer from "@/modules/users/slice/accountSlice";
 import addressReducer from "@/modules/users/slice/addressSlice";
 import advancedReducer from "@/modules/users/slice/advancedSlice";
-import adminModuleReducer from "@/modules/adminmodules/slice/adminModuleSlice";
+import moduleSettingReducer from "@/modules/adminmodules/slices/moduleSettingSlice";
+import moduleMetaReducer from "@/modules/adminmodules/slices/moduleMetaSlice";
+import moduleMaintenanceReducer from "@/modules/adminmodules/slices/moduleMaintenanceSlice";
 import blogReducer from "@/modules/blog/slice/blogSlice";
 import blogCategoryReducer from "@/modules/blog/slice/blogCategorySlice";
 import newsReducer from "@/modules/news/slice/newsSlice";
@@ -19,7 +19,7 @@ import articlesReducer from "@/modules/articles/slice/articlesSlice";
 import articlesCategoryReducer from "@/modules/articles/slice/articlesCategorySlice";
 import commentsReducer from "@/modules/comment/slice/commentSlice";
 import companyReducer from "@/modules/company/slice/companySlice";
-import settingReducer from "@/modules/settings/slice/settingSlice";
+import settingReducer from "@/modules/settings/slice/settingsSlice";
 import galleryReducer from "@/modules/gallery/slice/gallerySlice";
 import galleryCategoryReducer from "@/modules/gallery/slice/galleryCategorySlice";
 import faqReducer from "@/modules/faq/slice/faqSlice";
@@ -29,7 +29,7 @@ import chartDataReducer from "@/modules/dashboard/slice/chartDataSlice";
 import reportsReducer from "@/modules/dashboard/slice/reportsSlice";
 import analyticsReducer from "@/modules/dashboard/slice/analyticsSlice";
 import servicesReducer from "@/modules/services/slice/servicesSlice";
-import serviceCategoryReducer from "@/modules/services/slice/serviceCategorySlice";
+import servicesCategoryReducer from "@/modules/services/slice/servicesCategorySlice";
 import activityReducer from "@/modules/activity/slice/activitySlice";
 import activityCategoryReducer from "@/modules/activity/slice/activityCategorySlice";
 import chatReducer from "@/modules/chat/slice/chatSlice";
@@ -38,36 +38,27 @@ import aboutCategoryReducer from "@/modules/about/slice/aboutCategorySlice";
 import bookingReducer from "@/modules/booking/slice/bookingSlice";
 import bookingSlotReducer from "@/modules/booking/slice/bookingSlotSlice";
 import referencesReducer from "@/modules/references/slice/referencesSlice";
-import referenceCategoryReducer from "@/modules/references/slice/referencesCategorySlice";
-import emailReducer from "@/modules/email/slice/emailSlice";
+import referencesCategoryReducer from "@/modules/references/slice/referencesCategorySlice";
 import cartReducer from "@/modules/cart/slice/cartSlice";
 import ordersReducer from "@/modules/order/slice/ordersSlice";
 import couponReducer from "@/modules/coupon/slice/couponSlice";
 import bikeReducer from "@/modules/bikes/slice/bikeSlice";
-import bikeCategory from "@/modules/bikes/slice/bikeCategorySlice";
-
-
-import libraryReducer from "./librarySlice";
-import contactReducer from "./contactMessageSlice";
-import notificationReducer from "./notificationSlice";
-import feedbackReducer from "./feedbackSlice";
-import stockMovementReducer from "./stockMovementSlice";
+import bikeCategoryReducer from "@/modules/bikes/slice/bikeCategorySlice";
+import paymentReducer from "@/modules/payment/slice/paymentSlice";
+import tenantReducer from "@/modules/tenants/slice/tenantSlice";
 
 // --- Combine reducers ---
 // Sadece slice bazında persistReducer uygula!
 const rootReducer = combineReducers({
-  auth: persistReducer(authPersistConfig, authReducer),
-  account: persistReducer(accountPersistConfig, accountReducer),
-
-  // Diğer slice'lar normal şekilde:
   userCrud: userCrudReducer,
   userStatus: userStatusReducer,
   address: addressReducer,
-  admin: adminModuleReducer,
+  moduleSetting: moduleSettingReducer,
+  moduleMeta: moduleMetaReducer,
+  moduleMaintenance: moduleMaintenanceReducer,
   advanced: advancedReducer,
   cart: cartReducer,
   orders: ordersReducer,
-  stockMovement: stockMovementReducer,
   blog: blogReducer,
   blogCategory: blogCategoryReducer,
   news: newsReducer,
@@ -75,22 +66,17 @@ const rootReducer = combineReducers({
   articles: articlesReducer,
   articlesCategory: articlesCategoryReducer,
   references: referencesReducer,
-  referenceCategory: referenceCategoryReducer,
-  library: libraryReducer,
+  referencesCategory: referencesCategoryReducer,
   comments: commentsReducer,
   company: companyReducer,
   booking: bookingReducer,
   bookingSlot: bookingSlotReducer,
-  notifications: notificationReducer,
-  feedback: feedbackReducer,
   setting: settingReducer,
-  contactMessage: contactReducer,
-  email: emailReducer,
   gallery: galleryReducer,
   galleryCategory: galleryCategoryReducer,
   faq: faqReducer,
   services: servicesReducer,
-  serviceCategory: serviceCategoryReducer,
+  servicesCategory: servicesCategoryReducer,
   activity: activityReducer,
   activityCategory: activityCategoryReducer,
   dashboard: dashboardReducer,
@@ -103,20 +89,21 @@ const rootReducer = combineReducers({
   chat: chatReducer,
   coupon: couponReducer,
   bike: bikeReducer,
-  bikeCategory: bikeCategory,
+  bikeCategory: bikeCategoryReducer,
+  payment: paymentReducer,
+  tenant: tenantReducer,
+  auth: authReducer,
+  account: accountReducer,
 });
 
 // --- Store ---
 export const store = configureStore({
-  reducer: rootReducer, 
+  reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
     }),
 });
-
-// --- Persistor (App'te kullanmak için) ---
-export const persistor = persistStore(store);
 
 // --- Types ---
 export type RootState = ReturnType<typeof store.getState>;

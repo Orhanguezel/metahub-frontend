@@ -5,11 +5,13 @@ import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { checkCouponByCode, clearCouponMessages } from "@/modules/coupon/slice/couponSlice";
 import { Message } from "@/shared";
-import { useTranslation } from "react-i18next";
-import i18n from "@/i18n";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
 
 const CouponPage: React.FC = () => {
-  const { t } = useTranslation("coupon");
+   const { t } = useI18nNamespace("about", translations);
+    const lang = getCurrentLocale();
   const dispatch = useAppDispatch();
   const { current, loading, error, successMessage } = useAppSelector((s) => s.coupon);
 
@@ -27,9 +29,6 @@ const CouponPage: React.FC = () => {
     await dispatch(checkCouponByCode(code));
   };
 
-  // Varsayılan dili çek
-  const lang = i18n.language as "tr" | "en" | "de" || "en";
-
   return (
     <Wrapper>
       <Title>{t("page.title", "Apply Coupon")}</Title>
@@ -38,7 +37,7 @@ const CouponPage: React.FC = () => {
           type="text"
           placeholder={t("form.code", "Enter coupon code")}
           value={code}
-          onChange={e => setCode(e.target.value.toUpperCase())}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
         />
         <Button type="submit" disabled={loading}>
           {loading ? t("form.checking", "Checking...") : t("form.check", "Check Coupon")}
@@ -46,18 +45,22 @@ const CouponPage: React.FC = () => {
         {error && <Message $error>{error}</Message>}
         {successMessage && <Message $success>{successMessage}</Message>}
       </Form>
+
       {current && (
         <CouponDetail>
-          <h3>{current.label.title[lang] || current.label.title.en}</h3>
+          <h3>{current.title?.[lang] || "-"}</h3>
           <div>
             {t("label.discount", "Discount")}: <strong>{current.discount}%</strong>
           </div>
           <div>
-            {t("label.expiresAt", "Expires at")}: <strong>{new Date(current.expiresAt).toLocaleDateString()}</strong>
+            {t("label.expiresAt", "Expires at")}:{" "}
+            <strong>{new Date(current.expiresAt).toLocaleDateString(lang)}</strong>
           </div>
-          <p style={{ marginTop: 8, color: "#666" }}>
-            {current.label.description[lang] || current.label.description.en}
-          </p>
+          {current.description && (
+            <p style={{ marginTop: 8, color: "#666" }}>
+              {current.description?.[lang] || "-"}
+            </p>
+          )}
         </CouponDetail>
       )}
     </Wrapper>
@@ -66,14 +69,14 @@ const CouponPage: React.FC = () => {
 
 export default CouponPage;
 
-// Styled Components (değişmedi)
+// 💅 Styled Components değişmedi
 const Wrapper = styled.div`
   max-width: 420px;
   margin: 48px auto;
   background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.md};
-  padding: ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacings.xl};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -81,7 +84,7 @@ const Wrapper = styled.div`
 
 const Title = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
@@ -89,7 +92,7 @@ const Title = styled.h1`
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.md};
   width: 100%;
 `;
 
@@ -121,8 +124,8 @@ const Button = styled.button`
 `;
 
 const CouponDetail = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.xl};
-  padding: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacings.xl};
+  padding: ${({ theme }) => theme.spacings.md};
   background: ${({ theme }) => theme.colors.background};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.sm};

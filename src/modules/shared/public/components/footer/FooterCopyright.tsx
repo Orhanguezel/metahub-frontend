@@ -54,18 +54,18 @@ export default function FooterCopyright({
 }
 
 const Copyright = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.lg};
+  margin-top: ${({ theme }) => theme.spacings.lg};
   font-size: ${({ theme }) => theme.fontSizes.xs};
   color: ${({ theme }) => theme.colors.textSecondary};
   line-height: ${({ theme }) => theme.lineHeights.normal};
   text-align: center;
   opacity: 0.88;
-  letter-spacing: 0.02em;
+  letter-spacings: 0.02em;
 
   strong {
     color: ${({ theme }) => theme.colors.primary};
     font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-    letter-spacing: 0.04em;
+    letter-spacings: 0.04em;
   }
 `;
 

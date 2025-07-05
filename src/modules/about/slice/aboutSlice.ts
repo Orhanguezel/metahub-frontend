@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { IAbout } from "@/modules/about/types/about";
-import type { SupportedLocale } from "@/types/common";
+import type { IAbout } from "@/modules/about/types";
 
 interface AboutState {
   about: IAbout[];
@@ -19,18 +18,26 @@ const initialState: AboutState = {
   successMessage: null,
 };
 
-// 🌐 Public - fetch by language
-export const fetchAbout = createAsyncThunk(
+const extractErrorMessage = (payload: unknown): string => {
+  if (typeof payload === "string") return payload;
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    "message" in payload &&
+    typeof (payload as any).message === "string"
+  )
+    return (payload as any).message;
+  return "An error occurred.";
+};
+
+export const fetchAbout = createAsyncThunk<IAbout[]>(
   "about/fetchAll",
-  async (lang: SupportedLocale, thunkAPI) => {
-    const res = await apiCall("get", `/about`, null, thunkAPI.rejectWithValue, {
-      headers: { "Accept-Language": lang },
-    });
+  async (_, thunkAPI) => {
+    const res = await apiCall("get", `/about`, null, thunkAPI.rejectWithValue);
     return res.data;
   }
 );
 
-// ➕ Create About
 export const createAbout = createAsyncThunk(
   "about/create",
   async (formData: FormData, thunkAPI) => {
@@ -43,11 +50,10 @@ export const createAbout = createAsyncThunk(
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
-    return res.data;
+    return res.data; // backend: { success: true, message: "..." }
   }
 );
 
-// ✏️ Update About
 export const updateAbout = createAsyncThunk(
   "about/update",
   async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) => {
@@ -64,7 +70,6 @@ export const updateAbout = createAsyncThunk(
   }
 );
 
-// ❌ Delete About
 export const deleteAbout = createAsyncThunk(
   "about/delete",
   async (id: string, thunkAPI) => {
@@ -78,24 +83,19 @@ export const deleteAbout = createAsyncThunk(
   }
 );
 
-// 🛠 Admin - fetch all abouts
 export const fetchAllAboutAdmin = createAsyncThunk(
   "about/fetchAllAdmin",
-  async (lang: SupportedLocale, thunkAPI) => {
+  async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/about/admin`,
       null,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Accept-Language": lang },
-      }
+      thunkAPI.rejectWithValue
     );
     return res.data;
   }
 );
 
-// 🔁 Toggle Publish
 export const togglePublishAbout = createAsyncThunk(
   "about/togglePublish",
   async (
@@ -117,7 +117,6 @@ export const togglePublishAbout = createAsyncThunk(
   }
 );
 
-// 🌐 Fetch by Slug
 export const fetchAboutBySlug = createAsyncThunk(
   "about/fetchBySlug",
   async (slug: string, thunkAPI) => {
@@ -131,6 +130,7 @@ export const fetchAboutBySlug = createAsyncThunk(
   }
 );
 
+// --- Slice ---
 const aboutSlice = createSlice({
   name: "about",
   initialState,
@@ -151,7 +151,7 @@ const aboutSlice = createSlice({
 
     const setError = (state: AboutState, action: PayloadAction<any>) => {
       state.loading = false;
-      state.error = action.payload?.message || "An error occurred.";
+      state.error = extractErrorMessage(action.payload);
     };
 
     builder
@@ -172,9 +172,10 @@ const aboutSlice = createSlice({
       .addCase(createAbout.pending, startLoading)
       .addCase(createAbout.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "About created successfully.";
-        if (action.payload?._id) {
-          state.about.unshift(action.payload);
+        state.successMessage =
+          action.payload?.message || "Article created successfully.";
+        if (action.payload?.data) {
+          state.about.unshift(action.payload.data);
         }
       })
       .addCase(createAbout.rejected, setError)
@@ -182,11 +183,11 @@ const aboutSlice = createSlice({
       .addCase(updateAbout.pending, startLoading)
       .addCase(updateAbout.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload;
+        const updated = action.payload?.data || action.payload;
         const index = state.about.findIndex((a) => a._id === updated._id);
         if (index !== -1) state.about[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = "About updated successfully.";
+        state.successMessage = action.payload?.message;
       })
       .addCase(updateAbout.rejected, setError)
 
@@ -194,20 +195,18 @@ const aboutSlice = createSlice({
       .addCase(deleteAbout.fulfilled, (state, action) => {
         state.loading = false;
         state.about = state.about.filter((a) => a._id !== action.payload.id);
-        state.successMessage = "About deleted successfully.";
+        state.successMessage = action.payload?.message;
       })
       .addCase(deleteAbout.rejected, setError)
 
       .addCase(togglePublishAbout.pending, startLoading)
       .addCase(togglePublishAbout.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload;
+        const updated = action.payload?.data || action.payload;
         const index = state.about.findIndex((a) => a._id === updated._id);
         if (index !== -1) state.about[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = updated.isPublished
-          ? "About published."
-          : "About unpublished.";
+        state.successMessage = action.payload?.message;
       })
       .addCase(togglePublishAbout.rejected, setError)
 

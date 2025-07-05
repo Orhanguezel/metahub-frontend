@@ -4,12 +4,13 @@ import React, { useState, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { searchGalleryItems } from "@/modules/gallery/slice/gallerySlice";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 
 const GalleryToolbar: React.FC = () => {
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector((state) => state.gallery);
-  const { t } = useTranslation("gallery");
+  const { t } = useI18nNamespace("gallery", translations);
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -19,12 +20,12 @@ const GalleryToolbar: React.FC = () => {
     inputRef.current?.blur();
   };
 
-  // Enter tuşu ile arama
+  // Enter ile arama
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleSearch();
   };
 
-  // Arama kutusunu temizle
+  // Temizle
   const clearSearch = () => {
     setSearch("");
     dispatch(searchGalleryItems({ search: "" }));
@@ -36,52 +37,56 @@ const GalleryToolbar: React.FC = () => {
       <Input
         ref={inputRef}
         type="text"
-        aria-label={t("toolbar.searchPlaceholder")}
-        placeholder={t("toolbar.searchPlaceholder")}
+        placeholder={t("toolbar.searchPlaceholder", "Search images...")}
+        aria-label={t("toolbar.searchPlaceholder", "Search images...")}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         onKeyDown={handleKeyDown}
         disabled={loading}
-        autoComplete="off"
       />
-      <Button type="button" onClick={handleSearch} disabled={loading || search.trim() === ""}>
-        {t("toolbar.searchButton")}
-      </Button>
-      <ClearButton
+      <Button
         type="button"
-        onClick={clearSearch}
-        disabled={loading || search === ""}
-        style={{ display: search ? "block" : "none" }}
-        aria-label={t("toolbar.clearButton")}
+        onClick={handleSearch}
+        disabled={loading || search.trim() === ""}
       >
-        {t("toolbar.clearButton")}
-      </ClearButton>
+        {t("toolbar.searchButton", "Search")}
+      </Button>
+      {search && (
+        <ClearButton
+          type="button"
+          onClick={clearSearch}
+          disabled={loading}
+          aria-label={t("toolbar.clearButton", "Clear")}
+        >
+          {t("toolbar.clearButton", "Clear")}
+        </ClearButton>
+      )}
     </Toolbar>
   );
 };
 
 export default GalleryToolbar;
 
-// Styled Components
-
+// 💅 Styled Components
 
 const Toolbar = styled.div`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.md};
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.md};
-  padding: ${({ theme }) => theme.spacing.lg};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-  transition: box-shadow ${({ theme }) => theme.transition.normal}, background ${({ theme }) => theme.transition.normal};
+  padding: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+  transition: box-shadow ${({ theme }) => theme.transition.normal},
+    background ${({ theme }) => theme.transition.normal};
 
   @media ${({ theme }) => theme.media.mobile} {
-    gap: ${({ theme }) => theme.spacing.sm};
-    padding: ${({ theme }) => theme.spacing.md};
+    gap: ${({ theme }) => theme.spacings.sm};
+    padding: ${({ theme }) => theme.spacings.md};
     border-radius: ${({ theme }) => theme.radii.md};
-    margin-bottom: ${({ theme }) => theme.spacing.md};
+    margin-bottom: ${({ theme }) => theme.spacings.md};
   }
 `;
 
@@ -94,13 +99,14 @@ const Input = styled.input`
   font-size: ${({ theme }) => theme.fontSizes.md};
   border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
-  transition: border ${({ theme }) => theme.transition.normal}, background ${({ theme }) => theme.transition.normal};
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
+  transition: border ${({ theme }) => theme.transition.normal},
+    background ${({ theme }) => theme.transition.normal};
 
   &::placeholder {
     color: ${({ theme }) => theme.inputs.placeholder};
-    opacity: 1;
     font-size: ${({ theme }) => theme.fontSizes.sm};
+    opacity: 1;
   }
 
   &:focus {
@@ -125,16 +131,19 @@ const Button = styled.button`
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   border: none;
   border-radius: ${({ theme }) => theme.radii.pill};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.xl};
   box-shadow: ${({ theme }) => theme.shadows.button};
   cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.normal}, color ${({ theme }) => theme.transition.normal}, box-shadow ${({ theme }) => theme.transition.normal};
+  transition: background ${({ theme }) => theme.transition.normal},
+    color ${({ theme }) => theme.transition.normal},
+    box-shadow ${({ theme }) => theme.transition.normal};
 
   &:hover,
   &:focus {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
     color: ${({ theme }) => theme.buttons.primary.textHover};
     box-shadow: ${({ theme }) => theme.shadows.lg};
+    outline: none;
   }
 
   &:disabled {
@@ -149,7 +158,6 @@ const Button = styled.button`
 const ClearButton = styled(Button)`
   background: ${({ theme }) => theme.buttons.danger.background};
   color: ${({ theme }) => theme.buttons.danger.text};
-  margin-left: 0;
 
   &:hover,
   &:focus {
@@ -157,10 +165,3 @@ const ClearButton = styled(Button)`
     color: ${({ theme }) => theme.buttons.danger.textHover};
   }
 `;
-
-export {
-  Toolbar,
-  Input,
-  Button,
-  ClearButton,
-};

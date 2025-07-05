@@ -1,0 +1,13 @@
+{
+  "addToCart": "Dodaj do koszyka",
+  "remove": "Usuń",
+  "increase": "Zwiększ",
+  "decrease": "Zmniejsz",
+  "clearCart": "Wyczyść koszyk",
+  "continueShopping": "Kontynuuj zakupy",
+  "checkout": "Do kasy",
+  "empty": "Twój koszyk jest pusty.",
+  "title": "Koszyk",
+  "size": "Rozmiar",
+  "oneSize": "Uniwersalny rozmiar"
+}

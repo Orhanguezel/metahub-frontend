@@ -1,80 +1,35 @@
 {
-  "page": {
-    "allBike": "Wszystkie rowery",
-    "noBike": "Nie znaleziono rowerów.",
-    "price": "Cena",
-    "stock": "Stan",
-    "brand": "Marka",
-    "readMore": "Zobacz szczegóły →",
-    "other": "Inne produkty",
-    "untitled": "Bez tytułu",
-    "noSummary": "Brak opisu.",
-    "bike": {
-      "title": "Najnowszy rower",
-      "readMore": "Zobacz szczegóły",
-      "all": "Wszystkie rowery"
-    }
-  },
-  "admin": {
-    "tabs": {
-      "bike": "Rowery",
-      "create": "Nowy rower",
-      "categories": "Kategorie"
-    },
-    "bike": {
-      "create": "Dodaj nowy rower",
-      "edit": "Edytuj rower",
-      "name": "Nazwa roweru",
-      "description": "Opis",
-      "brand": "Marka",
-      "price": "Cena",
-      "stock": "Stan",
-      "tags": "Tagi",
-      "image": "Obraz",
-      "category": "Kategoria",
-      "select_category": "Wybierz kategorię",
-      "publish_status": "Opublikowano?",
-      "no_images": "Brak zdjęć",
-      "publish": "Opublikuj",
-      "unpublish": "Ukryj",
-      "empty": "Brak dostępnych rowerów."
-    },
-    "categories": {
-      "title": "Kategorie rowerów",
-      "add": "Nowa kategoria",
-      "empty": "Nie znaleziono kategorii."
-    },
-    "language": {
-      "en": "Angielski",
-      "tr": "Turecki",
-      "de": "Niemiecki"
-    },
-    "slug": "Slug",
-    "actions": "Akcje",
-    "edit": "Edytuj",
-    "delete": "Usuń",
-    "cancel": "Anuluj",
-    "update": "Aktualizuj",
-    "create": "Utwórz",
-    "yes": "Tak",
-    "no": "Nie",
-    "loading": "Ładowanie...",
-    "confirm": {
-      "delete": "Czy na pewno chcesz usunąć tę kategorię?",
-      "delete_bike": "Czy na pewno chcesz usunąć ten rower?"
-    },
-    "optional_description": "Opis (opcjonalnie)",
-    "category_info": "Czego dotyczy ta kategoria?",
-    "saving": "Zapisywanie...",
-    "save": "Zapisz",
-    "update2": "Aktualizuj",
-    "editCategory": "Edytuj kategorię",
-    "newCategory": "Nowa kategoria"
-  },
-  "seo": {
-    "title": "Tytuł SEO",
-    "description": "Opis SEO"
-  },
-  "none": "Brak",
-  "delete_confirm": "Czy na pewno chcesz usunąć?"
+  "title": "Moje Zamówienia",
+  "loading": "Ładowanie...",
+  "empty": "Nie masz jeszcze żadnych zamówień.",
+  "orderInfo": "Informacje o zamówieniu",
+  "orderId": "ID zamówienia",
+  "user": "Użytkownik",
+  "createdAt": "Utworzono",
+  "productDetails": "Szczegóły produktu",
+  "productName": "Nazwa produktu",
+  "productDescription": "Opis",
+  "quantity": "Ilość",
+  "unitPrice": "Cena jednostkowa",
+  "total": "Cena całkowita",
+  "shippingAddress": "Adres dostawy",
+  "name": "Imię",
+  "phone": "Telefon",
+  "address": "Adres",
+  "street": "Ulica",
+  "city": "Miasto",
+  "postalCode": "Kod pocztowy",
+  "country": "Kraj",
+  "paymentMethod": "Metoda płatności",
+  "method": "Metoda",
+  "status": "Status zamówienia",
+  "backToHomepage": "Powrót do strony głównej",
+  "myOrders": "Moje zamówienia",
+  "purchaseSuccess": "Zakup udany",
+  "emailInfo": "Zostaniesz powiadomiony na adres e-mail.",
+  "shippingInfo": "Otrzymasz powiadomienie, gdy Twoje zamówienie zostanie wysłane.",
+  "orderDetails": "Szczegóły zamówienia",
+  "orderNumber": "Numer zamówienia",
+  "hideDetails": "Ukryj szczegóły",
+  "showDetails": "Pokaż szczegóły"
 }

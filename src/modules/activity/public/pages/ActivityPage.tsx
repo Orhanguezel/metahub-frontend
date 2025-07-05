@@ -1,34 +1,30 @@
 "use client";
 
-import { useEffect } from "react";
 import styled from "styled-components";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  fetchActivity,
-  clearActivityMessages,
-} from "@/modules/activity/slice/activitySlice";
+import { useAppSelector } from "@/store/hooks";
+import i18n from "@/i18n";
 import { useTranslation } from "react-i18next";
+import translations from "../../locales";
 import { Skeleton, ErrorMessage } from "@/shared";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
+import type { SupportedLocale } from "@/types/common";
+import type { IActivity } from "../../types";
+
 
 export default function ActivityPage() {
-  const dispatch = useAppDispatch();
-  const { i18n, t } = useTranslation("activity");
+const { i18n, t } = useTranslation("activity");
+  const lang = (i18n.language?.slice(0, 2) || "tr") as SupportedLocale; 
+  const { activity, loading, error } = useAppSelector((state) => state.activity);
 
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
-  const { activities, loading, error } = useAppSelector(
-    (state) => state.activity
-  );
+      Object.entries(translations).forEach(([lang, resources]) => {
+  if (!i18n.hasResourceBundle(lang, "activity")) {
+    i18n.addResourceBundle(lang, "activity", resources, true, true);
+  }
+});
 
-  useEffect(() => {
-    dispatch(fetchActivity(lang));
-    return () => {
-      dispatch(clearActivityMessages());
-    };
-  }, [dispatch, lang]);
+  
 
   if (loading) {
     return (
@@ -43,83 +39,91 @@ export default function ActivityPage() {
   if (error) {
     return (
       <PageWrapper>
-        <ErrorMessage />
+        <ErrorMessage message={error} />
       </PageWrapper>
     );
   }
 
-  if (!activities || activities.length === 0) {
+  if (!activity || activity.length === 0) {
     return (
       <PageWrapper>
-        <p>{t("page.empty", "No activities found.")}</p>
+        <p>{t("page.noActivity")}</p>
       </PageWrapper>
     );
   }
+
+  
 
   return (
     <PageWrapper>
-      <PageTitle>{t("page.all", "All Activities")}</PageTitle>
-
-      <Grid>
-        {activities.map((item, index) => (
-          <Card
+      <PageTitle>{t("page.allActivity")}</PageTitle>
+      <ActivityGrid>
+        {activity.map((item: IActivity, index: number) => (
+          <ActivityCard
             key={item._id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * 0.07 }}
+
           >
-            {item.images?.[0]?.url && (
-              <ImageWrapper>
-                <img
-                  src={item.images[0].url}
-                  alt={item.title?.[lang] || "Activity"}
-                />
-              </ImageWrapper>
-            )}
-            <CardContent>
-              <h2>{item.title?.[lang] || t("page.noTitle", "Untitled")}</h2>
-              <p>
-                {item.summary?.[lang] ||
-                  t("page.noSummary", "No summary available.")}
-              </p>
-              <Meta>
-                <span>
-                  {t("page.tags", "Tags")}: {item.tags?.join(", ") || "-"}
-                </span>
-              </Meta>
-              <ReadMore href={`/activity/${item.slug}`}>
-                {t("page.readMore", "Read More →")}
-              </ReadMore>
-            </CardContent>
-          </Card>
-        ))}
-      </Grid>
+
+             {item.images?.[0]?.url && (
+                           <ImageWrapper>
+                             <Image
+                               src={item.images[0].url}
+                               alt={item.title?.[lang] || "Activity Image"}
+                               width={780}
+                               height={420}
+                               style={{ objectFit: "cover" }}
+                               loading="lazy"
+                             />
+                           </ImageWrapper>
+                         )}
+                         <CardContent>
+                           <h2>{item.title?.[lang] || "Untitled"}</h2>
+                           <p>{item.summary?.[lang] || "No summary available."}</p>
+                           <Meta>
+                             <span>
+                               {t("author", "Yazar")}:{" "}
+                               {item.author || t("unknown", "Bilinmiyor")}
+                             </span>
+                             <span>
+                               {t("tags", "Etiketler")}: {item.tags?.join(", ") || "-"}
+                             </span>
+                           </Meta>
+                           <ReadMore href={`/activity/${item.slug}`}>
+                             {t("readMore", "Devamını Oku →")}
+                           </ReadMore>
+                         </CardContent>
+                       </ActivityCard>
+                     ))}
+      </ActivityGrid>
     </PageWrapper>
   );
 }
 
-// Styled Components
+// Styled Components aynı kalabilir
 const PageWrapper = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xxl}
-    ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const PageTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   color: ${({ theme }) => theme.colors.primary};
   text-align: center;
 `;
 
-const Grid = styled.div`
+const ActivityGrid = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.spacing.lg};
+  gap: ${({ theme }) => theme.spacings.lg};
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 `;
 
-const Card = styled(motion.div)`
+const ActivityCard = styled(motion.div)`
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.md};
@@ -133,29 +137,34 @@ const ImageWrapper = styled.div`
     width: 100%;
     height: 200px;
     object-fit: cover;
+    background: #f2f2f2;
+    display: block;
   }
 `;
 
 const CardContent = styled.div`
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.md};
 
   h2 {
     font-size: ${({ theme }) => theme.fontSizes.lg};
-    margin-bottom: ${({ theme }) => theme.spacing.sm};
+    margin-bottom: ${({ theme }) => theme.spacings.sm};
     color: ${({ theme }) => theme.colors.text};
   }
 
   p {
     font-size: ${({ theme }) => theme.fontSizes.base};
     color: ${({ theme }) => theme.colors.textSecondary};
-    margin-bottom: ${({ theme }) => theme.spacing.md};
+    margin-bottom: ${({ theme }) => theme.spacings.md};
   }
 `;
 
 const Meta = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
 const ReadMore = styled(Link)`

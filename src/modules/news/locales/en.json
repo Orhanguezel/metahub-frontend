@@ -1,71 +1,73 @@
 {
   "page": {
-    "loading": "Loading...",
-    "noNews": "No news found.",
-    "allNews": "All News",
+    "noNews": "No articles found.",
+    "allNews": "All Articles",
+    "news": {
+      "title": "News",
+      "all": "See All"
+    },
+    "other": "Other Sections",
+    "summary": "Summary",
+    "detail": "Detail",
+    "noTitle": "No Title"
+  },
+  "readMore": "Read More →",
+  "author": "Author",
+  "tags": "Tags",
+  "unknown": "Unknown",
+  "tabs": {
+    "news": "News",
+    "create": "New Article",
+    "categories": "Categories"
+  },
+  "news": {
+    "empty": "No news available.",
+    "no_images": "No images",
     "author": "Author",
     "tags": "Tags",
+    "publish_status": "Published",
+    "unpublish": "Unpublish",
+    "publish": "Publish",
     "unknown": "Unknown",
-    "readMore": "Read More →",
-    "other": "Other News"
+    "none": "None"
   },
+  "edit": "Edit",
+  "delete": "Delete",
+  "yes": "Yes",
+  "no": "No",
   "admin": {
     "news": {
-      "create": "Add News",
-      "edit": "Edit News",
+      "edit": "Edit Article",
+      "create": "Create New Article",
       "title": "Title",
       "summary": "Summary",
       "content": "Content",
       "author": "Author",
       "tags": "Tags",
-      "image": "Image",
+      "image": "Images",
       "category": "Category",
-      "select_category": "Select a category",
-      "no_images": "No images",
-      "publish": "Publish",
-      "unpublish": "Unpublish",
-      "publish_status": "Published",
-      "empty": "No news available."
+      "select_category": "Select a category"
     },
     "categories": {
-      "title": "News Categories",
+      "title": "Product Categories",
       "add": "Add Category",
-      "empty": "No categories found."
+      "name": "Category Name"
     },
-    "confirm": {
-      "delete_news": "Are you sure you want to delete this news item?",
-      "delete": "Are you sure you want to delete this category?"
-    },
-    "language": {
-      "tr": "TR",
-      "en": "EN",
-      "de": "DE"
-    },
-    "tabs": {
-      "news": "News",
-      "create": "Add News",
-      "categories": "Categories"
-    },
-    "slug": "Slug",
-    "actions": "Actions",
-    "edit": "Edit",
-    "delete": "Delete",
-    "loading": "Loading...",
-    "cancel": "Cancel",
-    "create": "Create",
+    "editCategory": "Edit Category",
+    "newCategory": "New Category",
+    "optional_description": "Optional description",
+    "category_info": "What is this category news?",
     "update": "Update",
-    "unknown": "Unknown",
-    "none": "None",
-    "Açıklama (opsiyonel)": "Description (optional)",
-    "Bu kategori neyle ilgili?": "What is this category about?",
-    "Kategoriyi Düzenle": "Edit Category",
-    "Yeni Kategori": "New Category",
-    "Kaydediliyor...": "Saving...",
-    "Kaydet": "Save",
-    "Güncelle": "Update"
-  },
-  "seo": {
-    "title": "News",
-    "description": "Read the latest news."
+    "update2": "Update",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "confirm": {
+      "delete": "Are you sure you want to delete this category?",
+      "delete_article": "Are you sure you want to delete this article?"
+    },
+    "loading": "Loading...",
+    "actions": "Actions",
+    "slug": "Slug"
   }
 }

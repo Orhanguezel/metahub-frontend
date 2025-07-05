@@ -16,8 +16,6 @@ import {
 } from "@/modules/users/styles/AccountStyles";
 import { IconWrap, RedirectMsg } from "@/modules/users/styles/AuthStyles";
 
-
-
 interface Props {
   onAuthSuccess?: () => void;
   autoRedirect?: boolean;
@@ -35,7 +33,7 @@ export default function LoginSuccessStep({
 
   // Role göre path belirle
   const redirectPath = useMemo(() => {
-    if (user?.role === "admin") return "/admin";
+    if (user?.role === "admin" || user?.role === "superadmin") return "/admin";
     return "/account";
   }, [user?.role]);
 
@@ -54,19 +52,28 @@ export default function LoginSuccessStep({
   }, [onAuthSuccess, router, redirectPath]);
 
   const dashboardText =
-    user?.role === "admin"
+    user?.role === "admin" || user?.role === "superadmin"
       ? t("goToAdminDashboard", "Go to Admin Dashboard")
       : t("goToAccount", "Go to My Account");
 
   const redirectingMsg =
-    user?.role === "admin"
-      ? t("redirectingToDashboard", "Redirecting to the admin dashboard in a moment...")
-      : t("redirectingToAccount", "Redirecting to your account page in a moment...");
+    user?.role === "admin" || user?.role === "superadmin"
+      ? t(
+          "redirectingToDashboard",
+          "Redirecting to the admin dashboard in a moment..."
+        )
+      : t(
+          "redirectingToAccount",
+          "Redirecting to your account page in a moment..."
+        );
 
   return (
     <Wrapper style={{ maxWidth: 440, margin: "0 auto" }}>
       <IconWrap>
-        <FaCheckCircle size={52} aria-label={t("loginSuccess", "Login successful!")} />
+        <FaCheckCircle
+          size={52}
+          aria-label={t("loginSuccess", "Login successful!")}
+        />
       </IconWrap>
       <Title>{t("loginSuccess", "Login successful!")}</Title>
       <Desc>

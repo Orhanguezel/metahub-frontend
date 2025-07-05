@@ -1,10 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { IActivity } from "@/modules/activity/types/activity";
-import type { SupportedLocale } from "@/types/common";
+import type { IActivity } from "@/modules/activity/types";
 
 interface ActivityState {
-  activities: IActivity[];
+  activity: IActivity[];
   selected: IActivity | null;
   loading: boolean;
   error: string | null;
@@ -12,20 +11,31 @@ interface ActivityState {
 }
 
 const initialState: ActivityState = {
-  activities: [],
+  activity: [],
   selected: null,
   loading: false,
   error: null,
   successMessage: null,
 };
 
-// 🌐 Public - fetch by language
-export const fetchActivity = createAsyncThunk(
+const extractErrorMessage = (payload: unknown): string => {
+  if (typeof payload === "string") return payload;
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    "message" in payload &&
+    typeof (payload as any).message === "string"
+  )
+    return (payload as any).message;
+  return "An error occurred.";
+};
+
+export const fetchActivity = createAsyncThunk<IActivity[]>(
   "activity/fetchAll",
-  async (lang: SupportedLocale, thunkAPI) => {
+  async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/activity?language=${lang}`,
+      `/activity`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -33,7 +43,6 @@ export const fetchActivity = createAsyncThunk(
   }
 );
 
-// ➕ Create Activity
 export const createActivity = createAsyncThunk(
   "activity/create",
   async (formData: FormData, thunkAPI) => {
@@ -46,11 +55,10 @@ export const createActivity = createAsyncThunk(
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
-    return res.data;
+    return res.data; // backend: { success: true, message: "..." }
   }
 );
 
-// ✏️ Update Activity
 export const updateActivity = createAsyncThunk(
   "activity/update",
   async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) => {
@@ -67,7 +75,6 @@ export const updateActivity = createAsyncThunk(
   }
 );
 
-// ❌ Delete Activity
 export const deleteActivity = createAsyncThunk(
   "activity/delete",
   async (id: string, thunkAPI) => {
@@ -81,13 +88,12 @@ export const deleteActivity = createAsyncThunk(
   }
 );
 
-// 🛠 Admin - fetch all Activities
-export const fetchAllActivitiesAdmin = createAsyncThunk(
+export const fetchAllActivityAdmin = createAsyncThunk(
   "activity/fetchAllAdmin",
-  async (lang: SupportedLocale, thunkAPI) => {
+  async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/activity/admin?language=${lang}`,
+      `/activity/admin`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -95,7 +101,6 @@ export const fetchAllActivitiesAdmin = createAsyncThunk(
   }
 );
 
-// 🔁 Toggle Publish
 export const togglePublishActivity = createAsyncThunk(
   "activity/togglePublish",
   async (
@@ -104,7 +109,6 @@ export const togglePublishActivity = createAsyncThunk(
   ) => {
     const formData = new FormData();
     formData.append("isPublished", String(isPublished));
-
     const res = await apiCall(
       "put",
       `/activity/admin/${id}`,
@@ -118,7 +122,6 @@ export const togglePublishActivity = createAsyncThunk(
   }
 );
 
-// 🌐 Fetch by Slug
 export const fetchActivityBySlug = createAsyncThunk(
   "activity/fetchBySlug",
   async (slug: string, thunkAPI) => {
@@ -132,6 +135,7 @@ export const fetchActivityBySlug = createAsyncThunk(
   }
 );
 
+// --- Slice ---
 const activitySlice = createSlice({
   name: "activity",
   initialState,
@@ -152,30 +156,31 @@ const activitySlice = createSlice({
 
     const setError = (state: ActivityState, action: PayloadAction<any>) => {
       state.loading = false;
-      state.error = action.payload?.message || "An error occurred.";
+      state.error = extractErrorMessage(action.payload);
     };
 
     builder
       .addCase(fetchActivity.pending, startLoading)
       .addCase(fetchActivity.fulfilled, (state, action) => {
         state.loading = false;
-        state.activities = action.payload;
+        state.activity = action.payload;
       })
       .addCase(fetchActivity.rejected, setError)
 
-      .addCase(fetchAllActivitiesAdmin.pending, startLoading)
-      .addCase(fetchAllActivitiesAdmin.fulfilled, (state, action) => {
+      .addCase(fetchAllActivityAdmin.pending, startLoading)
+      .addCase(fetchAllActivityAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.activities = action.payload;
+        state.activity = action.payload;
       })
-      .addCase(fetchAllActivitiesAdmin.rejected, setError)
+      .addCase(fetchAllActivityAdmin.rejected, setError)
 
       .addCase(createActivity.pending, startLoading)
       .addCase(createActivity.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Activity created successfully.";
-        if (action.payload?._id) {
-          state.activities.unshift(action.payload);
+        state.successMessage =
+          action.payload?.message || "Article created successfully.";
+        if (action.payload?.data) {
+          state.activity.unshift(action.payload.data);
         }
       })
       .addCase(createActivity.rejected, setError)
@@ -183,34 +188,32 @@ const activitySlice = createSlice({
       .addCase(updateActivity.pending, startLoading)
       .addCase(updateActivity.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload;
-        const index = state.activities.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.activities[index] = updated;
+        const updated = action.payload?.data || action.payload;
+        const index = state.activity.findIndex((a) => a._id === updated._id);
+        if (index !== -1) state.activity[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = "Activity updated successfully.";
+        state.successMessage = action.payload?.message;
       })
       .addCase(updateActivity.rejected, setError)
 
       .addCase(deleteActivity.pending, startLoading)
       .addCase(deleteActivity.fulfilled, (state, action) => {
         state.loading = false;
-        state.activities = state.activities.filter(
+        state.activity = state.activity.filter(
           (a) => a._id !== action.payload.id
         );
-        state.successMessage = "Activity deleted successfully.";
+        state.successMessage = action.payload?.message;
       })
       .addCase(deleteActivity.rejected, setError)
 
       .addCase(togglePublishActivity.pending, startLoading)
       .addCase(togglePublishActivity.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload;
-        const index = state.activities.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.activities[index] = updated;
+        const updated = action.payload?.data || action.payload;
+        const index = state.activity.findIndex((a) => a._id === updated._id);
+        if (index !== -1) state.activity[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = updated.isPublished
-          ? "Activity published successfully."
-          : "Activity unpublished successfully.";
+        state.successMessage = action.payload?.message;
       })
       .addCase(togglePublishActivity.rejected, setError)
 

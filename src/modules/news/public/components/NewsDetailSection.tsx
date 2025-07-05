@@ -1,69 +1,70 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
+import i18n from "@/i18n";
+import translations from "../../locales";
 import { useTranslation } from "react-i18next";
-import dynamic from "next/dynamic";
 import Link from "next/link";
-import "react-image-lightbox/style.css";
-
+import Image from "next/image";
+import { Skeleton, ErrorMessage } from "@/shared";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  fetchNewsBySlug,
-  fetchNews,
   clearNewsMessages,
+  fetchNewsBySlug,
+  setSelectedNews,
 } from "@/modules/news/slice/newsSlice";
-import {
-  Skeleton,
-  ErrorMessage
- } from "@/shared";
-import {
-  CommentForm,
-  CommentList,
- } from "@/modules/comment";
-
-const Lightbox = dynamic(() => import("react-image-lightbox"), { ssr: false });
+import { CommentForm, CommentList } from "@/modules/comment";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import type { INews } from "@/modules/news/types";
 
 export default function NewsDetailSection() {
   const { slug } = useParams() as { slug: string };
-  const { i18n, t } = useTranslation("news");
+  const { t } = useTranslation("news");
   const dispatch = useAppDispatch();
+  const lang = getCurrentLocale();
 
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
+  // Locale dosyalarını i18n'e yükle
+  Object.entries(translations).forEach(([locale, resources]) => {
+    if (!i18n.hasResourceBundle(locale, "news")) {
+      i18n.addResourceBundle(locale, "news", resources, true, true);
+    }
+  });
 
-  const { selectedNews, news, loading, error } = useAppSelector(
-    (state) => state.news
-  );
-
-  const [photoIndex, setPhotoIndex] = useState(0);
-  const [isOpen, setIsOpen] = useState(false);
+  const {
+    selected: news,
+    news: allNews,
+    loading,
+    error,
+  } = useAppSelector((state) => state.news);
 
   useEffect(() => {
-    if (slug) {
+    if (allNews && allNews.length > 0) {
+      const found = allNews.find((item: INews) => item.slug === slug);
+      if (found) {
+        dispatch(setSelectedNews(found));
+      } else {
+        dispatch(fetchNewsBySlug(slug));
+      }
+    } else {
       dispatch(fetchNewsBySlug(slug));
     }
-    dispatch(fetchNews(lang));
-
     return () => {
       dispatch(clearNewsMessages());
     };
-  }, [dispatch, slug, lang]);
-
-  const otherNews = news.filter((n) => n.slug !== slug).slice(0, 2);
+  }, [dispatch, allNews, slug]);
 
   if (loading) {
     return (
       <Container>
-        <Skeleton/>
+        <Skeleton />
       </Container>
     );
   }
 
-  if (error || !selectedNews) {
+  if (error || !news) {
     return (
       <Container>
         <ErrorMessage />
@@ -71,199 +72,120 @@ export default function NewsDetailSection() {
     );
   }
 
+  const otherNews = allNews.filter((item: INews) => item.slug !== slug).slice(0, 2);
+
   return (
     <Container
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <Title>{selectedNews.title?.[lang]}</Title>
+      <Title>{news.title?.[lang] || t("page.noTitle", "Başlık yok")}</Title>
 
-      {selectedNews.images?.length > 0 && (
-        <Gallery>
-          {selectedNews.images.map((img, idx) => (
-            <ImageWrapper
-              key={idx}
-              onClick={() => {
-                setPhotoIndex(idx);
-                setIsOpen(true);
-              }}
-            >
-              <img src={img.url} alt={`image-${idx}`} />
-            </ImageWrapper>
-          ))}
-        </Gallery>
+      {news.images?.[0]?.url && (
+        <ImageWrapper>
+          <Image
+            src={news.images[0].url}
+            alt={news.title?.[lang] || ""}
+            width={800}
+            height={400}
+            style={{ width: "100%", height: "auto", objectFit: "cover" }}
+          />
+        </ImageWrapper>
       )}
 
-      <Content
-        dangerouslySetInnerHTML={{ __html: selectedNews.content?.[lang] || "" }}
-      />
-
-      {isOpen && selectedNews.images?.length > 0 && (
-        <Lightbox
-          mainSrc={selectedNews.images[photoIndex].url}
-          nextSrc={
-            selectedNews.images[(photoIndex + 1) % selectedNews.images.length]
-              .url
-          }
-          prevSrc={
-            selectedNews.images[
-              (photoIndex + selectedNews.images.length - 1) %
-                selectedNews.images.length
-            ].url
-          }
-          onCloseRequest={() => setIsOpen(false)}
-          onMovePrevRequest={() =>
-            setPhotoIndex(
-              (photoIndex + selectedNews.images.length - 1) %
-                selectedNews.images.length
-            )
-          }
-          onMoveNextRequest={() =>
-            setPhotoIndex((photoIndex + 1) % selectedNews.images.length)
-          }
-          imageCaption={selectedNews.title?.[lang]}
-        />
+      {news.summary?.[lang] && (
+        <SummaryBox>
+          <h3>{t("page.summary")}</h3>
+          <div>{news.summary?.[lang]}</div>
+        </SummaryBox>
       )}
 
-      <MetaInfo>
-        {selectedNews.author && <MetaItem>✍️ {selectedNews.author}</MetaItem>}
-        {selectedNews.publishedAt && (
-          <MetaItem>
-            🗓{" "}
-            {new Date(selectedNews.publishedAt).toLocaleDateString(lang, {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </MetaItem>
-        )}
-        {selectedNews.tags?.length > 0 && (
-          <Tags>
-            {selectedNews.tags.map((tag, i) => (
-              <Tag key={i}>#{tag}</Tag>
-            ))}
-          </Tags>
-        )}
-      </MetaInfo>
+      {news.content?.[lang] && (
+        <ContentBox>
+          <h3>{t("page.detail")}</h3>
+          <div dangerouslySetInnerHTML={{ __html: news.content[lang] }} />
+        </ContentBox>
+      )}
 
-      {otherNews.length > 0 && (
-        <OtherNews>
-          <h3>{t("other", "Diğer Haberler")}</h3>
-          <NewsList>
-            {otherNews.map((item) => (
-              <NewsItem key={item._id}>
+      {otherNews?.length > 0 && (
+        <OtherSection>
+          <h3>{t("page.other")}</h3>
+          <OtherList>
+            {otherNews.map((item: INews) => (
+              <OtherItem key={item._id}>
                 <Link href={`/news/${item.slug}`}>{item.title?.[lang]}</Link>
-              </NewsItem>
+              </OtherItem>
             ))}
-          </NewsList>
-        </OtherNews>
+          </OtherList>
+        </OtherSection>
       )}
-
-      <CommentForm contentId={selectedNews._id} contentType="news" />
-      <CommentList contentId={selectedNews._id} contentType="news" />
+      <CommentForm contentId={news._id} contentType="news" />
+      <CommentList contentId={news._id} contentType="news" />
     </Container>
   );
 }
 
-// Styled Components
+// --------- STYLES -----------
 const Container = styled(motion.section)`
   max-width: 900px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xxl}
-    ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const Title = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
-const Gallery = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-`;
-
 const ImageWrapper = styled.div`
-  flex: 1 1 280px;
-  border-radius: ${({ theme }) => theme.radii.md};
-  overflow: hidden;
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  transition: transform 0.3s ease;
-  cursor: pointer;
-
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   img {
     width: 100%;
     height: auto;
     object-fit: cover;
     border-radius: ${({ theme }) => theme.radii.sm};
-  }
-
-  &:hover {
-    transform: scale(1.02);
+    box-shadow: ${({ theme }) => theme.shadows.sm};
   }
 `;
 
-const Content = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  color: ${({ theme }) => theme.colors.text};
-  line-height: 1.7;
-
-  p {
-    margin-bottom: ${({ theme }) => theme.spacing.md};
-  }
-`;
-
-const MetaInfo = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.lg};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const MetaItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const Tags = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xs};
-`;
-
-const Tag = styled.span`
-  background: ${({ theme }) => theme.colors.tagBackground || "#eee"};
-  color: ${({ theme }) => theme.colors.text};
-  padding: 4px 8px;
+const SummaryBox = styled.div`
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-left: 4px solid ${({ theme }) => theme.colors.primary};
+  padding: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.sm};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  font-weight: 500;
 `;
 
-const OtherNews = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.xxl};
+const ContentBox = styled.div`
+  background: ${({ theme }) => theme.colors.background};
+  padding: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  h3 {
+    margin-bottom: ${({ theme }) => theme.spacings.md};
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+const OtherSection = styled.div`
+  margin-top: ${({ theme }) => theme.spacings.xxl};
   border-top: 1px solid ${({ theme }) => theme.colors.border};
-  padding-top: ${({ theme }) => theme.spacing.lg};
+  padding-top: ${({ theme }) => theme.spacings.lg};
 `;
 
-const NewsList = styled.ul`
+const OtherList = styled.ul`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
 `;
 
-const NewsItem = styled.li`
+const OtherItem = styled.li`
   font-size: ${({ theme }) => theme.fontSizes.base};
-
   a {
     color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;

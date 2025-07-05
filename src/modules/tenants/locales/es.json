@@ -1,0 +1,42 @@
+{
+  "admin": {
+    "title": "Gestión de inquilinos",
+    "create": "Agregar nuevo inquilino",
+    "update": "Actualizar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "confirm": {
+      "delete_tenant": "¿Está seguro de que desea eliminar este inquilino?"
+    },
+    "tenant": {
+      "edit": "Editar inquilino",
+      "create": "Agregar nuevo inquilino",
+      "name": "Nombre del inquilino",
+      "description": "Descripción",
+      "slug": "Slug del inquilino",
+      "mongoUri": "MongoDB URI",
+      "domainMain": "Dominio principal",
+      "phone": "Teléfono",
+      "theme": "Tema",
+      "isActive": "Activo",
+      "metaTitle": "Meta título",
+      "metaDescription": "Meta descripción",
+      "address": "Dirección",
+      "emailSettings": "Configuración de email (SMTP)",
+      "social": "Enlaces de redes sociales",
+      "images": "Imágenes",
+      "empty": "No se encontró ningún inquilino.",
+      "domain": "Dominio",
+      "email": "Correo electrónico",
+      "active": "Activo",
+      "no_images": "Sin imágenes"
+    },
+    "tabs": {
+      "tenant": "Inquilinos",
+      "create": "Agregar nuevo"
+    }
+  },
+  "yes": "Sí",
+  "no": "No"
+}

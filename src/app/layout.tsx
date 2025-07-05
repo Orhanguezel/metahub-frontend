@@ -1,16 +1,14 @@
-"use client";
+// src/app/layout.tsx
+import { TenantProvider } from "@/providers/TenantProvider";
+import GlobalProviders from "@/providers/GlobalProviders";
 
-import Providers from "@/providers/Providers";
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body suppressHydrationWarning={true}>
-        <Providers>{children}</Providers>
+      <body suppressHydrationWarning>
+        <TenantProvider>
+          <GlobalProviders>{children}</GlobalProviders>
+        </TenantProvider>
       </body>
     </html>
   );

@@ -1,0 +1,42 @@
+{
+  "admin": {
+    "title": "Kiracı Yönetimi",
+    "create": "Yeni Kiracı Ekle",
+    "update": "Güncelle",
+    "cancel": "İptal",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "confirm": {
+      "delete_tenant": "Bu kiracıyı silmek istediğinize emin misiniz?"
+    },
+    "tenant": {
+      "edit": "Kiracı Düzenle",
+      "create": "Yeni Kiracı Ekle",
+      "name": "Kiracı Adı",
+      "description": "Açıklama",
+      "slug": "Kiracı Slug",
+      "mongoUri": "MongoDB URI",
+      "domainMain": "Ana Domain",
+      "phone": "Telefon",
+      "theme": "Tema",
+      "isActive": "Aktif",
+      "metaTitle": "Meta Başlık",
+      "metaDescription": "Meta Açıklama",
+      "address": "Adres",
+      "emailSettings": "E-Posta Ayarları (SMTP)",
+      "social": "Sosyal Medya Linkleri",
+      "images": "Görseller",
+      "empty": "Hiç kiracı bulunamadı.",
+      "domain": "Domain",
+      "email": "E-Posta",
+      "active": "Aktif",
+      "no_images": "Görsel yok"
+    },
+    "tabs": {
+      "tenant": "Kiracılar",
+      "create": "Yeni Ekle"
+    }
+  },
+  "yes": "Evet",
+  "no": "Hayır"
+}

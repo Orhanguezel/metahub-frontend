@@ -1,54 +1,52 @@
-// src/modules/settings/admin/pages/AdminSettingsPage.tsx
-
 "use client";
 
-import React, { useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { fetchSettings, Setting } from "@/modules/settings/slice/settingSlice";
-import { AdminSettingsList, AdminSettingsForm } from "@/modules/settings";
-import { Modal } from "@/shared";
+import React, { useCallback, useState, useMemo } from "react";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { useAppSelector } from "@/store/hooks";
+import type { SupportedLocale } from "@/types/common";
+import {
+  AdminSettingsList,
+  AdminSettingsForm,
+  ThemeManager,
+} from "@/modules/settings";
+import Modal from "@/shared/Modal";
 import styled from "styled-components";
+import { SUPPORTED_LOCALES } from "@/i18n";
+import type { ISetting } from "@/modules/settings/types";
 
 export default function AdminSettingsPage() {
-  const { t } = useTranslation("settings");
-  const dispatch = useAppDispatch();
+  const { i18n, t } = useI18nNamespace("settings", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
   const { settings, loading, error } = useAppSelector((state) => state.setting);
 
-  // İlk yüklemede ayarları çek
-  useEffect(() => {
-    if (!settings || settings.length === 0) {
-      dispatch(fetchSettings());
-    }
-  }, [dispatch, settings]);
+  const [selectedSetting, setSelectedSetting] = useState<ISetting | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Modal ve seçili ayar state
-  const [selectedSetting, setSelectedSetting] = React.useState<Setting | null>(
-    null
-  );
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  // --- THEMES ---
+  const availableThemesSetting = settings.find((s) => s.key === "available_themes");
 
-  // Her zaman güncel availableThemes hesaplama
-  const availableThemesSetting = settings.find(
-    (s) => s.key === "available_themes"
-  );
-  const getAvailableThemes = useCallback((): string[] => {
+  const availableThemes = useMemo(() => {
     if (Array.isArray(availableThemesSetting?.value)) {
-      return availableThemesSetting.value as string[];
+      return availableThemesSetting.value;
     }
     if (typeof availableThemesSetting?.value === "string") {
-      return availableThemesSetting.value.split(",").map((v) => v.trim());
+      return availableThemesSetting.value.split(",").map((v) => v.trim()).filter(Boolean);
     }
     return [];
   }, [availableThemesSetting]);
 
-  // Modal Açma-Kapama
+  const siteTemplateSetting = settings.find((s) => s.key === "site_template");
+  const selectedTheme =
+    typeof siteTemplateSetting?.value === "string" ? siteTemplateSetting.value : "";
+
+  // --- MODAL HANDLERS ---
   const handleCreate = () => {
     setSelectedSetting(null);
     setIsModalOpen(true);
   };
 
-  const handleEdit = (setting: Setting) => {
+  const handleEdit = (setting: ISetting) => {
     setSelectedSetting(setting);
     setIsModalOpen(true);
   };
@@ -56,8 +54,7 @@ export default function AdminSettingsPage() {
   const handleCloseModal = () => {
     setSelectedSetting(null);
     setIsModalOpen(false);
-    // Modal kapandıktan sonra ayarları tazele
-    setTimeout(() => dispatch(fetchSettings()), 500);
+    // ❌ dispatch(fetchSettings()); ÇIKARILDI, çünkü parent merkezi fetch yapıyor
   };
 
   return (
@@ -69,38 +66,51 @@ export default function AdminSettingsPage() {
         </AddButton>
       </TopBar>
 
+      <ThemeManager
+  availableThemes={availableThemes}
+  selectedTheme={selectedTheme}
+  onThemesChange={() => {}} // boş fonksiyon, eğer işlemin yoksa
+/>
+
+
+
       {loading && <EmptyMessage>{t("loading", "Loading...")}</EmptyMessage>}
       {error && <EmptyMessage style={{ color: "red" }}>{error}</EmptyMessage>}
 
       {!Array.isArray(settings) || settings.length === 0 ? (
         <EmptyMessage>{t("noSettings", "No settings found.")}</EmptyMessage>
       ) : (
-        <AdminSettingsList settings={settings} onEdit={handleEdit} />
+        <AdminSettingsList
+          settings={settings}
+          onEdit={handleEdit}
+          supportedLocales={SUPPORTED_LOCALES}
+        />
       )}
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <AdminSettingsForm
-          editingSetting={selectedSetting}
-          availableThemes={getAvailableThemes()}
-          onAvailableThemesUpdate={() => dispatch(fetchSettings())}
-          onSave={handleCloseModal}
-        />
+       <AdminSettingsForm
+  editingSetting={selectedSetting}
+  availableThemes={availableThemes}
+  onSave={handleCloseModal}
+/>
+
       </Modal>
     </Wrapper>
   );
 }
 
-// 🎨 Styled Components
+// --- Styled Components ---
+
 const Wrapper = styled.div`
-  padding: ${({ theme }) => theme.spacing.lg};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacings.lg};
 
   ${({ theme }) => theme.media.small} {
-    padding: ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => theme.spacings.sm};
   }
 `;
 
@@ -109,7 +119,12 @@ const TopBar = styled.div`
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
+
+  ${({ theme }) => theme.media.small} {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 `;
 
 const Title = styled.h1`
@@ -123,7 +138,7 @@ const Title = styled.h1`
 `;
 
 const AddButton = styled.button`
-  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
+  padding: ${({ theme }) => `${theme.spacings.sm} ${theme.spacings.md}`};
   background: ${({ theme }) => theme.buttons.primary.background};
   color: ${({ theme }) => theme.buttons.primary.text};
   border: none;
@@ -136,13 +151,18 @@ const AddButton = styled.button`
   &:hover {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
   }
+
+  ${({ theme }) => theme.media.small} {
+    width: 100%;
+    text-align: center;
+  }
 `;
 
-const EmptyMessage = styled.div`
+const EmptyMessage = styled.p`
   text-align: center;
   color: ${({ theme }) => theme.colors.textSecondary};
-  padding: ${({ theme }) => theme.spacing.lg};
   font-size: ${({ theme }) => theme.fontSizes.md};
+  padding: ${({ theme }) => theme.spacings.lg};
 
   ${({ theme }) => theme.media.small} {
     font-size: ${({ theme }) => theme.fontSizes.sm};

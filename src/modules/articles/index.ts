@@ -13,10 +13,6 @@ export { default as CategoryForm } from "./admin/components/CategoryForm";
 export { default as ArticlesSection } from "./public/components/ArticlesSection";
 export { default as ArticlesDetailSection } from "./public/components/ArticlesDetailSection";
 
-// Redux Slice
-export { default as articlesReducer } from "./slice/articlesSlice";
-export { default as articlesCategoryReducer } from "./slice/articlesCategorySlice";
-
 // Types (if any)
 export * from "./types";
 

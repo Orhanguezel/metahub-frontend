@@ -1,87 +1,78 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
+import i18n from "@/i18n";
+import translations from "../../locales";
 import { useTranslation } from "react-i18next";
-import dynamic from "next/dynamic";
 import Link from "next/link";
-import "react-image-lightbox/style.css";
-
-import apiCall from "@/lib/apiCall";
-import { IServices } from "@/modules/services/types/services";
+import Image from "next/image";
+import { Skeleton, ErrorMessage } from "@/shared";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  Skeleton,
-  ErrorMessage
- } from "@/shared";
-
-const Lightbox = dynamic(() => import("react-image-lightbox"), { ssr: false });
+  clearServicesMessages,
+  fetchServicesBySlug,
+  setSelectedServices,
+} from "@/modules/services/slice/servicesSlice";
+import { CommentForm, CommentList } from "@/modules/comment";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import type { IServices } from "@/modules/services/types";
 
 export default function ServicesDetailSection() {
   const { slug } = useParams() as { slug: string };
-  const { i18n, t } = useTranslation("services");
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
+  const { t } = useTranslation("services");
+  const dispatch = useAppDispatch();
+  const lang = getCurrentLocale();
 
-  const [services, setServices] = useState<IServices | null>(null);
-  const [otherServices, setOtherServices] = useState<IServices[]>([]);
-  const [photoIndex, setPhotoIndex] = useState(0);
-  const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Locale dosyalarını i18n'e yükle
+  Object.entries(translations).forEach(([locale, resources]) => {
+    if (!i18n.hasResourceBundle(locale, "services")) {
+      i18n.addResourceBundle(locale, "services", resources, true, true);
+    }
+  });
+
+  const {
+    selected: services,
+    services: allServices,
+    loading,
+    error,
+  } = useAppSelector((state) => state.services);
 
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const res = await apiCall(
-          "get",
-          `/services/slug/${slug}`,
-          null,
-          (err) => {
-            setError(err.message);
-            return err;
-          }
-        );
-        setServices(res.data);
-      } catch (err: any) {
-        setError(err.message || "Service not found.");
-      } finally {
-        setLoading(false);
+    if (allServices && allServices.length > 0) {
+      const found = allServices.find((item: IServices) => item.slug === slug);
+      if (found) {
+        dispatch(setSelectedServices(found));
+      } else {
+        dispatch(fetchServicesBySlug(slug));
       }
+    } else {
+      dispatch(fetchServicesBySlug(slug));
+    }
+    return () => {
+      dispatch(clearServicesMessages());
     };
+  }, [dispatch, allServices, slug]);
 
-    const fetchOthers = async () => {
-      try {
-        const res = await apiCall(
-          "get",
-          `/services?language=${lang}`,
-          null,
-          () => null
-        );
-        setOtherServices(
-          res.data.filter((s: IServices) => s.slug !== slug).slice(0, 2)
-        );
-      } catch {}
-    };
-
-    fetchServices();
-    fetchOthers();
-  }, [slug, lang]);
-
-  if (loading)
+  if (loading) {
     return (
       <Container>
         <Skeleton />
       </Container>
     );
-  if (error || !services)
+  }
+
+  if (error || !services) {
     return (
       <Container>
         <ErrorMessage />
       </Container>
     );
+  }
+
+  const otherServices = allServices.filter((item: IServices) => item.slug !== slug).slice(0, 2);
 
   return (
     <Container
@@ -89,253 +80,118 @@ export default function ServicesDetailSection() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <Title>{services.title?.[lang]}</Title>
+      <Title>{services.title?.[lang] || t("page.noTitle", "Başlık yok")}</Title>
 
-      {services.images?.length > 0 && (
-        <Gallery>
-          {services.images.map((img, idx) => (
-            <ImageWrapper
-              key={idx}
-              onClick={() => {
-                setPhotoIndex(idx);
-                setIsOpen(true);
-              }}
-            >
-              <img src={img.url} alt={`service-image-${idx}`} />
-            </ImageWrapper>
-          ))}
-        </Gallery>
+      {services.images?.[0]?.url && (
+        <ImageWrapper>
+          <Image
+            src={services.images[0].url}
+            alt={services.title?.[lang] || ""}
+            width={800}
+            height={400}
+            style={{ width: "100%", height: "auto", objectFit: "cover" }}
+          />
+        </ImageWrapper>
       )}
 
-      <Content
-        dangerouslySetInnerHTML={{ __html: services.content?.[lang] || "" }}
-      />
-
-      {services.price && (
-        <Info>
-          {t("page.price", "Price")}: €{services.price.toFixed(2)}
-        </Info>
-      )}
-      {services.durationMinutes && (
-        <Info>
-          {t("page.duration", "Duration")}: {services.durationMinutes} min
-        </Info>
+      {services.summary?.[lang] && (
+        <SummaryBox>
+          <h3>{t("page.summary")}</h3>
+          <div>{services.summary?.[lang]}</div>
+        </SummaryBox>
       )}
 
-      {isOpen && services.images?.length > 0 && (
-        <Lightbox
-          mainSrc={services.images[photoIndex].url}
-          nextSrc={
-            services.images[(photoIndex + 1) % services.images.length].url
-          }
-          prevSrc={
-            services.images[
-              (photoIndex + services.images.length - 1) % services.images.length
-            ].url
-          }
-          onCloseRequest={() => setIsOpen(false)}
-          onMovePrevRequest={() =>
-            setPhotoIndex(
-              (photoIndex + services.images.length - 1) % services.images.length
-            )
-          }
-          onMoveNextRequest={() =>
-            setPhotoIndex((photoIndex + 1) % services.images.length)
-          }
-          imageCaption={services.title?.[lang]}
-        />
+      {services.content?.[lang] && (
+        <ContentBox>
+          <h3>{t("page.detail")}</h3>
+          <div dangerouslySetInnerHTML={{ __html: services.content[lang] }} />
+        </ContentBox>
       )}
 
-      {services.tags?.length > 0 && (
-        <Tags>
-          {services.tags.map((tag, i) => (
-            <Tag key={i}>#{tag}</Tag>
-          ))}
-        </Tags>
-      )}
-
-      {otherServices.length > 0 && (
-        <OtherServices>
-          <h3>{t("page.other", "Other Services")}</h3>
-          <ServicesList>
-            {otherServices.map((item) => (
-              <ServicesItem key={item._id}>
-                <Link href={`/services/${item.slug}`}>
-                  {item.title?.[lang]}
-                </Link>
-              </ServicesItem>
+      {otherServices?.length > 0 && (
+        <OtherSection>
+          <h3>{t("page.other")}</h3>
+          <OtherList>
+            {otherServices.map((item: IServices) => (
+              <OtherItem key={item._id}>
+                <Link href={`/services/${item.slug}`}>{item.title?.[lang]}</Link>
+              </OtherItem>
             ))}
-          </ServicesList>
-        </OtherServices>
+          </OtherList>
+        </OtherSection>
       )}
+      <CommentForm contentId={services._id} contentType="services" />
+      <CommentList contentId={services._id} contentType="services" />
     </Container>
   );
 }
 
-// Styled Components
+// --------- STYLES -----------
 const Container = styled(motion.section)`
-  max-width: 920px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.md};
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: ${({ theme }) => theme.shadows.xl};
-  position: relative;
-  font-family: ${({ theme }) => theme.fonts.body};
-
-  @media (max-width: 767px) {
-    padding: ${({ theme }) => theme.spacing.lg} ${({ theme }) => theme.spacing.sm};
-    border-radius: ${({ theme }) => theme.radii.lg};
-  }
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const Title = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes["3xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   color: ${({ theme }) => theme.colors.primary};
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-  letter-spacing: 0.03em;
-  text-align: center;
-`;
-
-const Gallery = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.xl};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-  justify-content: center;
-  flex-wrap: wrap;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
 const ImageWrapper = styled.div`
-  flex: 0 1 340px;
-  max-width: 370px;
-  border-radius: ${({ theme }) => theme.radii.xl};
-  overflow: hidden;
-  box-shadow: ${({ theme }) => theme.shadows.lg};
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  cursor: pointer;
-  transition: box-shadow 0.23s, transform 0.23s;
-
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   img {
     width: 100%;
-    height: 235px;
+    height: auto;
     object-fit: cover;
-    border-radius: ${({ theme }) => theme.radii.xl};
-    display: block;
-    transition: transform 0.18s;
-    background: ${({ theme }) => theme.colors.backgroundAlt};
-  }
-  &:hover {
-    box-shadow: ${({ theme }) => theme.shadows.xl}, 0 0 0 4px ${({ theme }) => theme.colors.primaryTransparent};
-    transform: scale(1.038);
-  }
-
-  @media (max-width: 767px) {
-    flex: 1 1 100%;
-    max-width: 100%;
-    img {
-      height: 165px;
-    }
+    border-radius: ${({ theme }) => theme.radii.sm};
+    box-shadow: ${({ theme }) => theme.shadows.sm};
   }
 `;
 
-const Content = styled.div`
-  background: ${({ theme }) => theme.colors.inputBackgroundLight};
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
-  border-radius: ${({ theme }) => theme.radii.md};
+const SummaryBox = styled.div`
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-left: 4px solid ${({ theme }) => theme.colors.primary};
+  padding: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+  border-radius: ${({ theme }) => theme.radii.sm};
+`;
+
+const ContentBox = styled.div`
+  background: ${({ theme }) => theme.colors.background};
+  padding: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
+  border-radius: ${({ theme }) => theme.radii.sm};
   box-shadow: ${({ theme }) => theme.shadows.sm};
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  color: ${({ theme }) => theme.colors.text};
-  line-height: ${({ theme }) => theme.lineHeights.relaxed};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-  margin-top: ${({ theme }) => theme.spacing.lg};
-  font-family: ${({ theme }) => theme.fonts.body};
-
-  p {
-    margin-bottom: ${({ theme }) => theme.spacing.md};
-  }
-  ul, ol {
-    margin-left: 1.1em;
-    margin-bottom: ${({ theme }) => theme.spacing.md};
-  }
-
-  @media (max-width: 767px) {
-    padding: ${({ theme }) => theme.spacing.lg} ${({ theme }) => theme.spacing.sm};
-    font-size: ${({ theme }) => theme.fontSizes.md};
+  h3 {
+    margin-bottom: ${({ theme }) => theme.spacings.md};
+    color: ${({ theme }) => theme.colors.primary};
   }
 `;
 
-
-const Info = styled.span`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  border-radius: ${({ theme }) => theme.radii.pill};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-weight: 500;
-  padding: 0.42em 1.18em;
-  margin-bottom: 0;
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-  letter-spacing: 0.02em;
-  font-family: ${({ theme }) => theme.fonts.main};
+const OtherSection = styled.div`
+  margin-top: ${({ theme }) => theme.spacings.xxl};
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  padding-top: ${({ theme }) => theme.spacings.lg};
 `;
 
-const Tags = styled.div`
+const OtherList = styled.ul`
   display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xs};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-  justify-content: center;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacings.sm};
 `;
 
-const Tag = styled.span`
-  background: ${({ theme }) => theme.colors.tagBackground};
-  color: ${({ theme }) => theme.colors.primary};
-  padding: 6px 15px;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-  margin-bottom: 4px;
-`;
-
-const OtherServices = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.xxl};
-  border-top: 1.5px dashed ${({ theme }) => theme.colors.border};
-  padding-top: ${({ theme }) => theme.spacing.xl};
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  border-radius: ${({ theme }) => theme.radii.md};
-`;
-
-const ServicesList = styled.ul`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.lg};
-  justify-content: center;
-  margin-top: ${({ theme }) => theme.spacing.md};
-`;
-
-const ServicesItem = styled.li`
+const OtherItem = styled.li`
   font-size: ${({ theme }) => theme.fontSizes.base};
-  list-style: none;
   a {
     color: ${({ theme }) => theme.colors.primary};
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-    padding: 0.65em 1.5em;
-    border-radius: ${({ theme }) => theme.radii.pill};
     text-decoration: none;
-    font-weight: 600;
-    box-shadow: ${({ theme }) => theme.shadows.xs};
-    transition: background 0.18s, color 0.18s, box-shadow 0.2s;
-    letter-spacing: 0.01em;
-    font-family: ${({ theme }) => theme.fonts.main};
+
     &:hover {
-      background: ${({ theme }) => theme.colors.primary};
-      color: ${({ theme }) => theme.colors.buttonText};
-      text-decoration: none;
-      box-shadow: ${({ theme }) => theme.shadows.md};
+      text-decoration: underline;
     }
   }
 `;

@@ -1,14 +1,15 @@
 "use client";
 
-import React from "react";
 import styled from "styled-components";
-import { IBlog } from "@/modules/blog/types/blog";
-import { useTranslation } from "react-i18next";
+import { IBlog } from "@/modules/blog/types";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { Skeleton } from "@/shared";
+import { SupportedLocale } from "@/types/common";
 
 interface Props {
-  blogs: IBlog[] | undefined;
-  lang: "tr" | "en" | "de";
+  blog: IBlog[] | undefined;
+  lang: SupportedLocale;
   loading: boolean;
   error: string | null;
   onEdit?: (item: IBlog) => void;
@@ -17,7 +18,7 @@ interface Props {
 }
 
 export default function BlogList({
-  blogs,
+  blog,
   lang,
   loading,
   error,
@@ -25,12 +26,12 @@ export default function BlogList({
   onDelete,
   onTogglePublish,
 }: Props) {
-  const { t } = useTranslation("adminBlog");
+  const { t } = useI18nNamespace("blog", translations);
 
   if (loading) {
     return (
       <SkeletonWrapper>
-        {[...Array(3)].map((_, i) => (
+        {Array.from({ length: 3 }).map((_, i) => (
           <Skeleton key={i} />
         ))}
       </SkeletonWrapper>
@@ -38,21 +39,33 @@ export default function BlogList({
   }
 
   if (error) return <ErrorText>❌ {error}</ErrorText>;
-  if (!Array.isArray(blogs)) return null;
-  if (blogs.length === 0)
+  if (!Array.isArray(blog)) return null;
+  if (blog.length === 0)
     return <Empty>{t("blog.empty", "No blog available.")}</Empty>;
+
+  // Fallback fonksiyonu (çok dilli)
+  const getMultiLang = (obj?: Record<string, string>) => {
+    if (!obj) return "";
+    return obj[lang] || obj["en"] || Object.values(obj)[0] || "—";
+  };
 
   return (
     <div>
-      {blogs.map((item) => (
+      {blog.map((item) => (
         <BlogCard key={item._id}>
-          <h2>{item.title?.[lang] || "—"}</h2>
-          <p>{item.summary?.[lang] || "—"}</p>
+          <h2>{getMultiLang(item.title)}</h2>
+          <p>{getMultiLang(item.summary)}</p>
 
-          {Array.isArray(item.images) && item.images.length > 0 ? (
+          {item.images?.length > 0 ? (
             <ImageGrid>
               {item.images.map((img, i) => (
-                <img key={i} src={img.url} alt={`blog-${i}`} />
+                <img
+                  key={i}
+                  src={img.url}
+                  alt={getMultiLang(item.title) || `article-${i}`}
+                  loading="lazy"
+                  width={150}
+                />
               ))}
             </ImageGrid>
           ) : (
@@ -63,12 +76,10 @@ export default function BlogList({
             <strong>{t("blog.author", "Author")}:</strong>{" "}
             {item.author || t("unknown", "Unknown")}
           </InfoLine>
-
           <InfoLine>
             <strong>{t("blog.tags", "Tags")}:</strong>{" "}
-            {item.tags?.join(", ") || t("none", "None")}
+            {item.tags?.length ? item.tags.join(", ") : t("none", "None")}
           </InfoLine>
-
           <InfoLine>
             <strong>{t("blog.publish_status", "Published")}:</strong>{" "}
             {item.isPublished ? t("yes", "Yes") : t("no", "No")}
@@ -77,18 +88,29 @@ export default function BlogList({
           {(onEdit || onDelete || onTogglePublish) && (
             <ButtonGroup>
               {onEdit && (
-                <ActionButton onClick={() => onEdit(item)}>
+                <ActionButton
+                  onClick={() => onEdit(item)}
+                  aria-label={t("edit", "Edit")}
+                >
                   {t("edit", "Edit")}
                 </ActionButton>
               )}
               {onDelete && (
-                <DeleteButton onClick={() => onDelete(item._id)}>
+                <DeleteButton
+                  onClick={() => onDelete(item._id)}
+                  aria-label={t("delete", "Delete")}
+                >
                   {t("delete", "Delete")}
                 </DeleteButton>
               )}
               {onTogglePublish && (
                 <ToggleButton
                   onClick={() => onTogglePublish(item._id, item.isPublished)}
+                  aria-label={
+                    item.isPublished
+                      ? t("blog.unpublish", "Unpublish")
+                      : t("blog.publish", "Publish")
+                  }
                 >
                   {item.isPublished
                     ? t("blog.unpublish", "Unpublish")
@@ -103,7 +125,7 @@ export default function BlogList({
   );
 }
 
-// 💅 Styles
+// --- Styles ---
 const SkeletonWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -127,6 +149,7 @@ const ImageGrid = styled.div`
   img {
     width: 150px;
     border-radius: 4px;
+    object-fit: cover;
   }
 `;
 

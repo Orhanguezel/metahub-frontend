@@ -2,36 +2,39 @@
 
 import Link from "next/link";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { SupportedLocale } from "@/types/common";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { fetchGalleryItems } from "@/modules/gallery/slice/gallerySlice";
-import { fetchGalleryCategories } from "@/modules/gallery/slice/galleryCategorySlice";
+import { useEffect, useState, useMemo } from "react";
+import { useAppSelector } from "@/store/hooks";
+import type { IGallery } from "@/modules/gallery/types";
 
 export default function HeroSection() {
-  const { t, i18n } = useTranslation("home");
-  const dispatch = useAppDispatch();
-  const { items } = useAppSelector((state) => state.gallery);
-  const [flatItems, setFlatItems] = useState<any[]>([]);
+   const { i18n, t } = useI18nNamespace("home", translations);
+     const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const { images } = useAppSelector((state) => state.gallery);
   const [current, setCurrent] = useState(0);
 
-  useEffect(() => {
-    dispatch(fetchGalleryCategories());
-    // burada "hero" slug veya id olmalı! string olması gerekirse id'yi çek.
-    dispatch(fetchGalleryItems({ category: "hero", published: true }));
-  }, [dispatch]);
+  // ✅ flatItems artık useMemo ile mapping, sadece images değişirse hesaplanır
+  const flatItems = useMemo(() => {
+    if (!images || !images.length) return [];
+    return images
+      .map((gallery: IGallery) => {
+        const firstImage = gallery.images?.[0];
+        if (!firstImage) return null;
+        return {
+          ...firstImage,
+          _galleryId: gallery._id,
+          category: gallery.category,
+          type: gallery.type,
+          tenant: gallery.tenant,
+        };
+      })
+      .filter(Boolean);
+  }, [images]);
 
-  useEffect(() => {
-    // Flat gallery mantığı: sadece görselleri tek diziye indir
-    if (items.length > 0) {
-      const merged = items.flatMap((item) => item.items || []);
-      setFlatItems(merged);
-    }
-  }, [items]);
-
-  // Slider otomatik kaydırma
   useEffect(() => {
     if (flatItems.length === 0) return;
     const timer = setInterval(() => {
@@ -40,21 +43,20 @@ export default function HeroSection() {
     return () => clearInterval(timer);
   }, [flatItems]);
 
-  // Dots veya ok ile manuel geçiş
+  // Eğer dil veya images değişirse slider ilk karta dönsün istiyorsan (opsiyonel):
+  // useEffect(() => setCurrent(0), [flatItems, currentLang]);
+
   const goTo = (idx: number) => setCurrent(idx);
 
-  const backgroundImage =
-    flatItems[current]?.webp ||
-    flatItems[current]?.image ||
-    flatItems[current]?.thumbnail ||
-    "/placeholder.jpg";
+ const currentHero = flatItems[current] as IGallery["images"][0] | undefined; // Tipi daha net
 
-  const title =
-    flatItems[current]?.title?.[i18n.language] ||
-    t("hero1.heroTitle", "Königs Masaj");
-  const description =
-    flatItems[current]?.description?.[i18n.language] ||
-    t("hero1.heroSubtitle", "Doğallığın dokunuşuyla sağlığınızı şımartın");
+const backgroundImage =
+  currentHero?.webp || currentHero?.url || currentHero?.thumbnail || "/placeholder.jpg";
+const title =
+  currentHero?.name?.[lang] || t("hero1.heroTitle", "Königs Masaj");
+const description =
+  currentHero?.description?.[lang] || t("hero1.heroSubtitle", "Doğallığın dokunuşuyla sağlığınızı şımartın");
+
 
   return (
     <Hero>
@@ -96,8 +98,8 @@ export default function HeroSection() {
           >
             {description}
           </motion.p>
-          <Link href="/booking" passHref legacyBehavior>
-            <CTAButton as="a">
+          <Link href="/booking">
+            <CTAButton>
               {t("hero.bookAppointment", "Randevu Al")}
             </CTAButton>
           </Link>
@@ -117,8 +119,6 @@ export default function HeroSection() {
     </Hero>
   );
 }
-
-// === STYLES ===
 
 const Hero = styled.section`
   position: relative;
@@ -164,27 +164,30 @@ const Overlay = styled.div`
 
 const SliderContent = styled.div`
   position: absolute;
-  left: 0; right: 0; bottom: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 2;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-bottom: ${({ theme }) => theme.spacing.xxl};
+  padding-bottom: ${({ theme }) => theme.spacings.xxl};
 
   @media ${({ theme }) => theme.media.mobile} {
-    padding-bottom: ${({ theme }) => theme.spacing.xl};
+    padding-bottom: ${({ theme }) => theme.spacings.xl};
   }
 `;
 
 const HeroCard = styled.div`
-  background: rgba(255,255,255,0.07);
+  background: rgba(255, 255, 255, 0.07);
   border-radius: ${({ theme }) => theme.radii.xl};
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.xxl};
+  padding: ${({ theme }) => theme.spacings.xl}
+    ${({ theme }) => theme.spacings.xxl};
   box-shadow: ${({ theme }) => theme.shadows.lg};
   max-width: 620px;
   width: 100%;
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   text-align: center;
   color: ${({ theme }) => theme.colors.whiteColor};
   backdrop-filter: blur(2px);
@@ -194,28 +197,33 @@ const HeroCard = styled.div`
     font-size: ${({ theme }) => theme.fontSizes["2xl"]};
     color: ${({ theme }) => theme.colors.primary};
     font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-    margin: 0 0 ${({ theme }) => theme.spacing.sm} 0;
-    letter-spacing: 0.01em;
+    margin: 0 0 ${({ theme }) => theme.spacings.sm} 0;
+    letter-spacings: 0.01em;
     line-height: 1.15;
   }
 
   p {
     font-size: ${({ theme }) => theme.fontSizes.lg};
     color: ${({ theme }) => theme.colors.textLight};
-    margin: 0 0 ${({ theme }) => theme.spacing.lg} 0;
+    margin: 0 0 ${({ theme }) => theme.spacings.lg} 0;
     font-family: ${({ theme }) => theme.fonts.body};
     line-height: 1.4;
   }
 
   @media ${({ theme }) => theme.media.mobile} {
-    padding: ${({ theme }) => theme.spacing.md};
-    h1 { font-size: ${({ theme }) => theme.fontSizes.xl}; }
-    p { font-size: ${({ theme }) => theme.fontSizes.md}; }
+    padding: ${({ theme }) => theme.spacings.md};
+    h1 {
+      font-size: ${({ theme }) => theme.fontSizes.xl};
+    }
+    p {
+      font-size: ${({ theme }) => theme.fontSizes.md};
+    }
   }
 `;
 
 const CTAButton = styled.button`
-  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacings.md}
+    ${({ theme }) => theme.spacings.xl};
   background-color: ${({ theme }) => theme.buttons.primary.background};
   color: ${({ theme }) => theme.buttons.primary.text};
   border: none;
@@ -224,7 +232,8 @@ const CTAButton = styled.button`
   font-size: ${({ theme }) => theme.fontSizes.lg};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   box-shadow: ${({ theme }) => theme.shadows.button};
-  transition: background ${({ theme }) => theme.transition.normal}, color ${({ theme }) => theme.transition.normal};
+  transition: background ${({ theme }) => theme.transition.normal},
+    color ${({ theme }) => theme.transition.normal};
 
   &:hover,
   &:focus {
@@ -237,14 +246,14 @@ const CTAButton = styled.button`
 
 const Dots = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
   justify-content: center;
   align-items: center;
 `;
 
 const Dot = styled.button<{ $active: boolean }>`
-  width: ${({ theme }) => theme.spacing.lg};
-  height: ${({ theme }) => theme.spacing.lg};
+  width: ${({ theme }) => theme.spacings.lg};
+  height: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.circle};
   background: ${({ $active, theme }) =>
     $active ? theme.colors.primary : theme.colors.skeleton};

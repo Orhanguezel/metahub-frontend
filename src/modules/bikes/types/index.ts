@@ -5,22 +5,24 @@ export interface IBikeImage {
   thumbnail: string;
   webp?: string;
   publicId?: string;
-  altText: Partial<TranslatedLabel>; // Çok dilli, zorunlu değil
 }
 
 export interface IBike {
   _id: string;
   name: Partial<TranslatedLabel>;
   slug: string;
+  tenant: string;
   description?: Partial<TranslatedLabel>;
   brand: string;
   price: number;
   stock: number;
   stockThreshold?: number;
-  category: {
-    _id: string;
-    name: Partial<TranslatedLabel>;
-  } | string; 
+  category:
+    | {
+        _id: string;
+        name: Partial<TranslatedLabel>;
+      }
+    | string;
   tags?: string[];
   images: IBikeImage[];
 
@@ -35,7 +37,7 @@ export interface IBike {
   batteryRangeKm?: number;
   motorPowerW?: number;
 
-  comments?: string[]; 
+  comments?: string[];
   likes?: number;
 
   isActive: boolean;
@@ -45,12 +47,20 @@ export interface IBike {
   updatedAt: string;
 }
 
+export interface CategoryImage {
+  url: string;
+  thumbnail: string;
+  webp?: string;
+  publicId?: string;
+  altText?: Partial<TranslatedLabel>;
+}
 
 export interface BikeCategory {
   _id: string;
   name: Partial<TranslatedLabel>;
-  slug: string;
   description?: Partial<TranslatedLabel>;
+  slug: string;
+  images?: CategoryImage[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

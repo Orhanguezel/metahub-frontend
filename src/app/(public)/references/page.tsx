@@ -1,6 +1,7 @@
 "use client";
-import ReferencePage from "@/modules/references/public/pages/ReferencePage";
+import React from "react";
+import ReferencesPage from "@/modules/references/public/pages/ReferencesPage";
 
 export default function ReferenceRouterPage() {
-  return <ReferencePage />;
+  return <ReferencesPage />;
 }

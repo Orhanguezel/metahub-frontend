@@ -15,6 +15,6 @@ export { default as companyReducer } from "./slice/companySlice";
 //export { default as CompanyDetailSection } from "./public/components/CompanyDetailSection";
 
 // Types (if any)
-export * from "./types/company";
+export * from "./types";
 
 // Optionally: i18n can be loaded in page-level or via config

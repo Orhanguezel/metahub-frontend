@@ -1,99 +1,194 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { Order, OrderItem } from "@/modules/order/types";
+import { IOrder, IShippingAddress, OrderStatus } from "../types";
 
-interface OrderState {
-  orders: Order[];
-  order: Order | null;
-  orderDetails: Order | null;
+// --- Response Tipi ---
+interface ApiResponse<T> {
+  data: T;
+  message?: string;
+  id?: string;
+  errors?: { msg: string }[];
+}
+
+// --- State ---
+interface OrdersState {
+  orders: IOrder[];
+  myOrders: IOrder[];
+  order: IOrder | null;
   loading: boolean;
   error: string | null;
   successMessage: string | null;
 }
 
-const initialState: OrderState = {
+// --- Initial State ---
+const initialState: OrdersState = {
   orders: [],
+  myOrders: [],
   order: null,
-  orderDetails: null,
   loading: false,
   error: null,
   successMessage: null,
 };
 
-// POST /order
-export const createOrder = createAsyncThunk(
-  "orders/createOrder",
-  async (
-    data: { items: OrderItem[]; shippingAddress: any; totalPrice: number },
-    thunkAPI
-  ) => await apiCall("post", "/order", data, thunkAPI.rejectWithValue)
+// --- Async Thunks ---
+
+// PUBLIC: Sipariş oluştur
+export const createOrder = createAsyncThunk<
+  ApiResponse<IOrder>,
+  Partial<IOrder>
+>("orders/createOrder", async (data, thunkAPI) => {
+  try {
+    return await apiCall("post", "/order", data, thunkAPI.rejectWithValue);
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err?.response?.data?.message ||
+        err.message ||
+        "Order could not be created."
+    );
+  }
+});
+
+// PUBLIC: Kendi siparişlerini getir
+export const getMyOrders = createAsyncThunk<ApiResponse<IOrder[]>>(
+  "orders/getMyOrders",
+  async (_, thunkAPI) => {
+    try {
+      return await apiCall("get", "/order", null, thunkAPI.rejectWithValue);
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err?.response?.data?.message ||
+          err.message ||
+          "Orders could not be fetched."
+      );
+    }
+  }
 );
 
-// GET /order/:orderId
-export const getOrderById = createAsyncThunk(
+// PUBLIC: Tek siparişi getir
+export const getOrderById = createAsyncThunk<ApiResponse<IOrder>, string>(
   "orders/getOrderById",
-  async (orderId: string, thunkAPI) =>
-    await apiCall("get", `/order/${orderId}`, null, thunkAPI.rejectWithValue)
+  async (id, thunkAPI) => {
+    try {
+      return await apiCall(
+        "get",
+        `/order/${id}`,
+        null,
+        thunkAPI.rejectWithValue
+      );
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err?.response?.data?.message || err.message || "Order not found."
+      );
+    }
+  }
 );
 
-// PUT /order/:orderId/address
-export const updateShippingAddress = createAsyncThunk(
-  "orders/updateShippingAddress",
-  async (
-    { orderId, shippingAddress }: { orderId: string; shippingAddress: any },
-    thunkAPI
-  ) =>
-    await apiCall(
+// PUBLIC: Adres güncelle
+export const updateShippingAddress = createAsyncThunk<
+  ApiResponse<IOrder>,
+  { id: string; shippingAddress: IShippingAddress }
+>("orders/updateShippingAddress", async ({ id, shippingAddress }, thunkAPI) => {
+  try {
+    return await apiCall(
       "put",
-      `/order/${orderId}/address`,
+      `/order/${id}/address`,
       { shippingAddress },
       thunkAPI.rejectWithValue
-    )
-);
+    );
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err?.response?.data?.message ||
+        err.message ||
+        "Shipping address could not be updated."
+    );
+  }
+});
 
-// GET /order/admin (admin)
-export const getAllOrders = createAsyncThunk(
+// ADMIN: Tüm siparişleri getir
+export const getAllOrders = createAsyncThunk<ApiResponse<IOrder[]>>(
   "orders/getAllOrders",
-  async (_, thunkAPI) =>
-    await apiCall("get", "/order/admin", null, thunkAPI.rejectWithValue)
+  async (_, thunkAPI) => {
+    try {
+      return await apiCall(
+        "get",
+        "/order/admin",
+        null,
+        thunkAPI.rejectWithValue
+      );
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err?.response?.data?.message ||
+          err.message ||
+          "Orders could not be fetched."
+      );
+    }
+  }
 );
 
-// PUT /order/admin/:orderId/status (admin)
-export const updateOrderStatus = createAsyncThunk(
-  "orders/updateOrderStatus",
-  async ({ orderId, status }: { orderId: string; status: string }, thunkAPI) =>
-    await apiCall(
+// ADMIN: Sipariş durumunu güncelle
+export const updateOrderStatus = createAsyncThunk<
+  ApiResponse<IOrder>,
+  { id: string; status: OrderStatus }
+>("orders/updateOrderStatus", async ({ id, status }, thunkAPI) => {
+  try {
+    return await apiCall(
       "put",
-      `/order/admin/${orderId}/status`,
+      `/order/admin/${id}/status`,
       { status },
       thunkAPI.rejectWithValue
-    )
-);
+    );
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err?.response?.data?.message ||
+        err.message ||
+        "Order status could not be updated."
+    );
+  }
+});
 
-// PUT /order/admin/:orderId/deliver (admin)
-export const markOrderAsDelivered = createAsyncThunk(
-  "orders/markOrderAsDelivered",
-  async (orderId: string, thunkAPI) =>
-    await apiCall(
+// ADMIN: Siparişi teslim edildi olarak işaretle
+export const markOrderAsDelivered = createAsyncThunk<
+  ApiResponse<IOrder>,
+  string
+>("orders/markOrderAsDelivered", async (id, thunkAPI) => {
+  try {
+    return await apiCall(
       "put",
-      `/order/admin/${orderId}/deliver`,
+      `/order/admin/${id}/deliver`,
       null,
       thunkAPI.rejectWithValue
-    )
-);
+    );
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err?.response?.data?.message ||
+        err.message ||
+        "Order could not be marked as delivered."
+    );
+  }
+});
 
-// DELETE /order/admin/:orderId (admin)
-export const deleteOrder = createAsyncThunk(
-  "orders/deleteOrder",
-  async (orderId: string, thunkAPI) =>
-    await apiCall(
+// ADMIN: Siparişi sil
+export const deleteOrder = createAsyncThunk<
+  ApiResponse<{ id: string }>,
+  string
+>("orders/deleteOrder", async (id, thunkAPI) => {
+  try {
+    return await apiCall(
       "delete",
-      `/order/admin/${orderId}`,
+      `/order/admin/${id}`,
       null,
       thunkAPI.rejectWithValue
-    )
-);
+    );
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err?.response?.data?.message ||
+        err.message ||
+        "Order could not be deleted."
+    );
+  }
+});
 
+// --- Slice ---
 const ordersSlice = createSlice({
   name: "orders",
   initialState,
@@ -101,95 +196,171 @@ const ordersSlice = createSlice({
     clearOrderMessages: (state) => {
       state.error = null;
       state.successMessage = null;
-      state.orderDetails = null;
+    },
+    resetOrders: (state) => {
+      state.orders = [];
+      state.myOrders = [];
+      state.order = null;
+      state.error = null;
+      state.successMessage = null;
     },
   },
   extraReducers: (builder) => {
-    const loading = (state: OrderState) => {
+    const loading = (state: OrdersState) => {
       state.loading = true;
       state.error = null;
     };
-    const failed = (state: OrderState, action: PayloadAction<any>) => {
+    const failed = (state: OrdersState, action: PayloadAction<any>) => {
       state.loading = false;
-      state.error = action.payload?.message || "An error occurred";
+      const err = action.payload;
+      state.error =
+        typeof err === "string"
+          ? err
+          : err && err.message
+          ? err.message
+          : "An error occurred";
     };
 
-    // Create
     builder
+      // PUBLIC
       .addCase(createOrder.pending, loading)
-      .addCase(createOrder.fulfilled, (state, action) => {
-        state.loading = false;
-        state.successMessage = action.payload.message;
-        state.orders.unshift(action.payload.data);
-      })
-      .addCase(createOrder.rejected, failed);
+      .addCase(
+        createOrder.fulfilled,
+        (state, action: PayloadAction<ApiResponse<IOrder>>) => {
+          state.loading = false;
+          state.successMessage = action.payload?.message || "Order created.";
+          if (action.payload?.data) {
+            state.myOrders = [action.payload.data, ...state.myOrders];
+          }
+        }
+      )
+      .addCase(createOrder.rejected, failed)
 
-    // Get Order By ID
-    builder.addCase(getOrderById.pending, loading);
-    builder
-      .addCase(getOrderById.fulfilled, (state, action) => {
-        state.loading = false;
-        state.order = action.payload.data;
-      })
+      .addCase(getMyOrders.pending, loading)
+      .addCase(
+        getMyOrders.fulfilled,
+        (state, action: PayloadAction<ApiResponse<IOrder[]>>) => {
+          state.loading = false;
+          state.myOrders = Array.isArray(action.payload?.data)
+            ? action.payload.data
+            : [];
+          state.successMessage = action.payload?.message || "Orders fetched.";
+        }
+      )
+      .addCase(getMyOrders.rejected, failed)
 
-      .addCase(getOrderById.rejected, failed);
+      .addCase(getOrderById.pending, loading)
+      .addCase(
+        getOrderById.fulfilled,
+        (state, action: PayloadAction<ApiResponse<IOrder>>) => {
+          state.loading = false;
+          const orderData = action.payload?.data;
+          state.order = orderData
+            ? {
+                ...orderData,
+                items: orderData.items || [],
+                shippingAddress: orderData.shippingAddress || {},
+              }
+            : null;
+        }
+      )
+      .addCase(getOrderById.rejected, failed)
 
-    // Update Address
-    builder
       .addCase(updateShippingAddress.pending, loading)
-      .addCase(updateShippingAddress.fulfilled, (state, action) => {
-        state.loading = false;
-        state.successMessage = action.payload.message;
-        state.orderDetails = action.payload.data;
-      })
-      .addCase(updateShippingAddress.rejected, failed);
+      .addCase(
+        updateShippingAddress.fulfilled,
+        (state, action: PayloadAction<ApiResponse<IOrder>>) => {
+          state.loading = false;
+          state.successMessage = action.payload?.message || "Shipping updated.";
+          state.order = action.payload?.data || null;
+        }
+      )
+      .addCase(updateShippingAddress.rejected, failed)
 
-    // Get All Orders (Admin)
-    builder
+      // ADMIN
       .addCase(getAllOrders.pending, loading)
-      .addCase(getAllOrders.fulfilled, (state, action) => {
-        state.loading = false;
-        state.orders = action.payload.data;
-      })
-      .addCase(getAllOrders.rejected, failed);
+      .addCase(
+        getAllOrders.fulfilled,
+        (state, action: PayloadAction<ApiResponse<IOrder[]>>) => {
+          state.loading = false;
+          state.orders = Array.isArray(action.payload?.data)
+            ? action.payload.data
+            : [];
+        }
+      )
+      .addCase(getAllOrders.rejected, failed)
 
-    // Update Order Status (Admin)
-    builder
       .addCase(updateOrderStatus.pending, loading)
-      .addCase(updateOrderStatus.fulfilled, (state, action) => {
+      .addCase(
+        updateOrderStatus.fulfilled,
+        (state, action: PayloadAction<ApiResponse<IOrder>>) => {
+          state.loading = false;
+          state.successMessage = action.payload?.message || "Status updated.";
+          const updated = action.payload?.data;
+          if (updated && Array.isArray(state.orders)) {
+            state.orders = state.orders.map((o) =>
+              o._id === updated._id ? updated : o
+            );
+          }
+        }
+      )
+      .addCase(updateOrderStatus.rejected, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload.message;
-        const updated = action.payload.data;
-        state.orders = state.orders.map((o) =>
-          o._id === updated._id ? updated : o
-        );
+        const err = action.payload as any; // veya as Record<string, any>
+        if (typeof err === "string") {
+          state.error = err;
+        } else if (
+          err &&
+          typeof err === "object" &&
+          "message" in err &&
+          err.message
+        ) {
+          state.error = err.message;
+        } else if (
+          err &&
+          typeof err === "object" &&
+          "errors" in err &&
+          Array.isArray(err.errors)
+        ) {
+          state.error = err.errors.map((e: any) => e.msg).join(", ");
+        } else {
+          state.error = "An error occurred";
+        }
       })
-      .addCase(updateOrderStatus.rejected, failed);
 
-    // Mark as Delivered (Admin)
-    builder
       .addCase(markOrderAsDelivered.pending, loading)
-      .addCase(markOrderAsDelivered.fulfilled, (state, action) => {
-        state.loading = false;
-        state.successMessage = action.payload.message;
-        const updated = action.payload.data;
-        state.orders = state.orders.map((o) =>
-          o._id === updated._id ? updated : o
-        );
-      })
-      .addCase(markOrderAsDelivered.rejected, failed);
+      .addCase(
+        markOrderAsDelivered.fulfilled,
+        (state, action: PayloadAction<ApiResponse<IOrder>>) => {
+          state.loading = false;
+          state.successMessage = action.payload?.message || "Order delivered.";
+          const updated = action.payload?.data;
+          if (updated && Array.isArray(state.orders)) {
+            state.orders = state.orders.map((o) =>
+              o._id === updated._id ? updated : o
+            );
+          }
+        }
+      )
+      .addCase(markOrderAsDelivered.rejected, failed)
 
-    // Delete Order (Admin)
-    builder
       .addCase(deleteOrder.pending, loading)
-      .addCase(deleteOrder.fulfilled, (state, action) => {
-        state.loading = false;
-        state.successMessage = action.payload.message;
-        state.orders = state.orders.filter((o) => o._id !== action.meta.arg);
-      })
+      .addCase(
+        deleteOrder.fulfilled,
+        (state, action: PayloadAction<ApiResponse<{ id: string }>>) => {
+          state.loading = false;
+          state.successMessage = action.payload?.message || "Order deleted.";
+          const id =
+            action.payload?.id ||
+            (action.payload?.data && action.payload.data.id);
+          if (id) {
+            state.orders = state.orders.filter((o) => o._id !== id);
+          }
+        }
+      )
       .addCase(deleteOrder.rejected, failed);
   },
 });
 
-export const { clearOrderMessages } = ordersSlice.actions;
+export const { clearOrderMessages, resetOrders } = ordersSlice.actions;
 export default ordersSlice.reducer;

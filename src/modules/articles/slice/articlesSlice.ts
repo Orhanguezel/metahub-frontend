@@ -1,8 +1,6 @@
-// src/modules/articles/slice/articlesSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { IArticles } from "@/modules/articles/types";
-import type { SupportedLocale } from "@/types/common";
 
 interface ArticlesState {
   articles: IArticles[];
@@ -20,13 +18,24 @@ const initialState: ArticlesState = {
   successMessage: null,
 };
 
-// 🌐 Public - fetch by dynamic language
-export const fetchArticles = createAsyncThunk<IArticles[], SupportedLocale>(
+const extractErrorMessage = (payload: unknown): string => {
+  if (typeof payload === "string") return payload;
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    "message" in payload &&
+    typeof (payload as any).message === "string"
+  )
+    return (payload as any).message;
+  return "An error occurred.";
+};
+
+export const fetchArticles = createAsyncThunk<IArticles[]>(
   "articles/fetchAll",
-  async (lang, thunkAPI) => {
+  async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/articles?language=${lang}`,
+      `/articles`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -34,13 +43,28 @@ export const fetchArticles = createAsyncThunk<IArticles[], SupportedLocale>(
   }
 );
 
-// ➕ Create Article
-export const createArticles = createAsyncThunk<IArticles, FormData>(
+export const createArticles = createAsyncThunk(
   "articles/create",
-  async (formData, thunkAPI) => {
+  async (formData: FormData, thunkAPI) => {
     const res = await apiCall(
       "post",
       "/articles/admin",
+      formData,
+      thunkAPI.rejectWithValue,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    return res.data; // backend: { success: true, message: "..." }
+  }
+);
+
+export const updateArticles = createAsyncThunk(
+  "articles/update",
+  async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) => {
+    const res = await apiCall(
+      "put",
+      `/articles/admin/${id}`,
       formData,
       thunkAPI.rejectWithValue,
       {
@@ -51,44 +75,25 @@ export const createArticles = createAsyncThunk<IArticles, FormData>(
   }
 );
 
-// ✏️ Update Article
-export const updateArticles = createAsyncThunk<
-  IArticles,
-  { id: string; formData: FormData }
->("articles/update", async ({ id, formData }, thunkAPI) => {
-  const res = await apiCall(
-    "put",
-    `/articles/admin/${id}`,
-    formData,
-    thunkAPI.rejectWithValue,
-    {
-      headers: { "Content-Type": "multipart/form-data" },
-    }
-  );
-  return res.data;
-});
+export const deleteArticles = createAsyncThunk(
+  "articles/delete",
+  async (id: string, thunkAPI) => {
+    const res = await apiCall(
+      "delete",
+      `/articles/admin/${id}`,
+      null,
+      thunkAPI.rejectWithValue
+    );
+    return { id, message: res.message };
+  }
+);
 
-// ❌ Delete Article
-export const deleteArticles = createAsyncThunk<
-  { id: string; message: string },
-  string
->("articles/delete", async (id, thunkAPI) => {
-  const res = await apiCall(
-    "delete",
-    `/articles/${id}`,
-    null,
-    thunkAPI.rejectWithValue
-  );
-  return { id, message: res.message };
-});
-
-// 🛠 Admin - fetch all Articles (dinamik dil header üzerinden alınır)
 export const fetchAllArticlesAdmin = createAsyncThunk(
   "articles/fetchAllAdmin",
-  async (lang: SupportedLocale, thunkAPI) => {
+  async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/articles/admin?language=${lang}`,
+      `/articles/admin`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -96,30 +101,30 @@ export const fetchAllArticlesAdmin = createAsyncThunk(
   }
 );
 
-// 🔁 Admin - publish toggle
-export const togglePublishArticles = createAsyncThunk<
-  IArticles,
-  { id: string; isPublished: boolean }
->("articles/togglePublish", async ({ id, isPublished }, thunkAPI) => {
-  const formData = new FormData();
-  formData.append("isPublished", String(isPublished));
+export const togglePublishArticles = createAsyncThunk(
+  "articles/togglePublish",
+  async (
+    { id, isPublished }: { id: string; isPublished: boolean },
+    thunkAPI
+  ) => {
+    const formData = new FormData();
+    formData.append("isPublished", String(isPublished));
+    const res = await apiCall(
+      "put",
+      `/articles/admin/${id}`,
+      formData,
+      thunkAPI.rejectWithValue,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    return res.data;
+  }
+);
 
-  const res = await apiCall(
-    "put",
-    `/articles/admin/${id}`,
-    formData,
-    thunkAPI.rejectWithValue,
-    {
-      headers: { "Content-Type": "multipart/form-data" },
-    }
-  );
-  return res.data;
-});
-
-// 🌐 Public - Fetch By Slug
-export const fetchArticlesBySlug = createAsyncThunk<IArticles, string>(
+export const fetchArticlesBySlug = createAsyncThunk(
   "articles/fetchBySlug",
-  async (slug, thunkAPI) => {
+  async (slug: string, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/articles/slug/${slug}`,
@@ -130,95 +135,97 @@ export const fetchArticlesBySlug = createAsyncThunk<IArticles, string>(
   }
 );
 
+// --- Slice ---
 const articlesSlice = createSlice({
   name: "articles",
   initialState,
   reducers: {
-    clearArticlesMessages: (state) => {
+    clearArticlesMessages(state) {
       state.error = null;
       state.successMessage = null;
     },
+    setSelectedArticles(state, action: PayloadAction<IArticles | null>) {
+      state.selected = action.payload;
+    },
   },
   extraReducers: (builder) => {
-    const loading = (state: ArticlesState) => {
+    const startLoading = (state: ArticlesState) => {
       state.loading = true;
       state.error = null;
     };
 
-    const failed = (state: ArticlesState, action: PayloadAction<any>) => {
+    const setError = (state: ArticlesState, action: PayloadAction<any>) => {
       state.loading = false;
-      state.error = action.payload?.message || "An error occurred.";
+      state.error = extractErrorMessage(action.payload);
     };
 
     builder
-      .addCase(fetchArticles.pending, loading)
+      .addCase(fetchArticles.pending, startLoading)
       .addCase(fetchArticles.fulfilled, (state, action) => {
         state.loading = false;
         state.articles = action.payload;
       })
-      .addCase(fetchArticles.rejected, failed)
+      .addCase(fetchArticles.rejected, setError)
 
-      .addCase(createArticles.pending, loading)
+      .addCase(fetchAllArticlesAdmin.pending, startLoading)
+      .addCase(fetchAllArticlesAdmin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.articles = action.payload;
+      })
+      .addCase(fetchAllArticlesAdmin.rejected, setError)
+
+      .addCase(createArticles.pending, startLoading)
       .addCase(createArticles.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Article created successfully.";
-        state.articles.unshift(action.payload);
+        state.successMessage =
+          action.payload?.message || "Article created successfully.";
+        if (action.payload?.data) {
+          state.articles.unshift(action.payload.data);
+        }
       })
-      .addCase(createArticles.rejected, failed)
+      .addCase(createArticles.rejected, setError)
 
-      .addCase(updateArticles.pending, loading)
+      .addCase(updateArticles.pending, startLoading)
       .addCase(updateArticles.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload;
+        const updated = action.payload?.data || action.payload;
         const index = state.articles.findIndex((a) => a._id === updated._id);
         if (index !== -1) state.articles[index] = updated;
-        if (state.selected?._id === updated._id) {
-          state.selected = updated;
-        }
-        state.successMessage = "Article updated successfully.";
+        if (state.selected?._id === updated._id) state.selected = updated;
+        state.successMessage = action.payload?.message;
       })
-      .addCase(updateArticles.rejected, failed)
+      .addCase(updateArticles.rejected, setError)
 
-      .addCase(deleteArticles.pending, loading)
+      .addCase(deleteArticles.pending, startLoading)
       .addCase(deleteArticles.fulfilled, (state, action) => {
         state.loading = false;
         state.articles = state.articles.filter(
           (a) => a._id !== action.payload.id
         );
-        state.successMessage = "Article deleted successfully.";
+        state.successMessage = action.payload?.message;
       })
-      .addCase(deleteArticles.rejected, failed)
+      .addCase(deleteArticles.rejected, setError)
 
-      .addCase(fetchAllArticlesAdmin.pending, loading)
-      .addCase(fetchAllArticlesAdmin.fulfilled, (state, action) => {
-        state.loading = false;
-        state.articles = action.payload;
-      })
-      .addCase(fetchAllArticlesAdmin.rejected, failed)
-
-      .addCase(togglePublishArticles.pending, loading)
+      .addCase(togglePublishArticles.pending, startLoading)
       .addCase(togglePublishArticles.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload;
+        const updated = action.payload?.data || action.payload;
         const index = state.articles.findIndex((a) => a._id === updated._id);
         if (index !== -1) state.articles[index] = updated;
-        if (state.selected?._id === updated._id) {
-          state.selected = updated;
-        }
-        state.successMessage = updated.isPublished
-          ? "Article published successfully."
-          : "Article unpublished successfully.";
+        if (state.selected?._id === updated._id) state.selected = updated;
+        state.successMessage = action.payload?.message;
       })
-      .addCase(togglePublishArticles.rejected, failed)
+      .addCase(togglePublishArticles.rejected, setError)
 
-      .addCase(fetchArticlesBySlug.pending, loading)
+      .addCase(fetchArticlesBySlug.pending, startLoading)
       .addCase(fetchArticlesBySlug.fulfilled, (state, action) => {
         state.loading = false;
         state.selected = action.payload;
       })
-      .addCase(fetchArticlesBySlug.rejected, failed);
+      .addCase(fetchArticlesBySlug.rejected, setError);
   },
 });
 
-export const { clearArticlesMessages } = articlesSlice.actions;
+export const { clearArticlesMessages, setSelectedArticles } =
+  articlesSlice.actions;
 export default articlesSlice.reducer;

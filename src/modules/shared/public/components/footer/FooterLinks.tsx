@@ -25,9 +25,7 @@ export default function FooterLinks({ title, links }: FooterLinksProps) {
       <FooterList>
         {validLinks.map((item, idx) => (
           <FooterListItem key={idx}>
-            <StyledLink href={item.href}>
-              {item.label}
-            </StyledLink>
+            <StyledLink href={item.href}>{item.label}</StyledLink>
           </FooterListItem>
         ))}
       </FooterList>
@@ -41,12 +39,12 @@ const FooterTitle = styled.h3`
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  letter-spacing: 0.5px;
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  letter-spacings: 0.5px;
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
 `;
 
 const FooterBlock = styled.div`
-  margin: ${({ theme }) => theme.spacing.md};
+  margin: ${({ theme }) => theme.spacings.md};
   max-width: 300px;
   text-align: center;
 `;
@@ -58,7 +56,7 @@ const FooterList = styled.ul`
 `;
 
 const FooterListItem = styled.li`
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: 400;

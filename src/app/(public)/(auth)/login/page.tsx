@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 
 import { LoginPage } from "@/modules/users";
 import styled from "styled-components";
@@ -27,9 +28,9 @@ const OuterWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   position: relative;
-  padding: ${({ theme }) => `${theme.spacing.xl} ${theme.spacing.lg}`};
+  padding: ${({ theme }) => `${theme.spacings.xl} ${theme.spacings.lg}`};
   @media (max-width: 700px) {
-    padding: ${({ theme }) => `${theme.spacing.lg} ${theme.spacing.md}`};
+    padding: ${({ theme }) => `${theme.spacings.lg} ${theme.spacings.md}`};
   }
 `;
 
@@ -39,7 +40,7 @@ const Wrapper = styled.div`
   max-width: 740px;
   min-width: 0;
   margin: 0 auto;
-  padding: ${({ theme }) => `${theme.spacing.xxl} ${theme.spacing.xl}`};
+  padding: ${({ theme }) => `${theme.spacings.xxl} ${theme.spacings.xl}`};
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.form || theme.shadows.sm};
@@ -50,16 +51,16 @@ const Wrapper = styled.div`
 
   @media (max-width: 700px) {
     max-width: 98vw;
-    padding: ${({ theme }) => `${theme.spacing.lg} ${theme.spacing.md}`};
+    padding: ${({ theme }) => `${theme.spacings.lg} ${theme.spacings.md}`};
     border-radius: ${({ theme }) => theme.radii.md};
   }
 
   h1 {
     font-size: ${({ theme }) => theme.fontSizes.xl};
-    margin-bottom: ${({ theme }) => theme.spacing.md};
+    margin-bottom: ${({ theme }) => theme.spacings.md};
     color: ${({ theme }) => theme.colors.primary};
     font-weight: ${({ theme }) => theme.fontWeights.bold};
-    letter-spacing: 0.01em;
+    letter-spacings: 0.01em;
     line-height: 1.15;
     @media (max-width: 600px) {
       font-size: ${({ theme }) => theme.fontSizes.lg};
@@ -68,13 +69,13 @@ const Wrapper = styled.div`
 
   p {
     font-size: ${({ theme }) => theme.fontSizes.base};
-    margin-bottom: ${({ theme }) => theme.spacing.xl};
+    margin-bottom: ${({ theme }) => theme.spacings.xl};
     color: ${({ theme }) => theme.colors.textSecondary};
     line-height: 1.5;
     max-width: 95%;
     @media (max-width: 600px) {
       font-size: ${({ theme }) => theme.fontSizes.sm};
-      margin-bottom: ${({ theme }) => theme.spacing.lg};
+      margin-bottom: ${({ theme }) => theme.spacings.lg};
     }
   }
 `;

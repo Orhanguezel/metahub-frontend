@@ -2,38 +2,35 @@
 
 import styled from "styled-components";
 import Link from "next/link";
+import i18n from "@/i18n";
+import translations from "../../locales";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { useAppSelector } from "@/store/hooks";
-import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import { useAppSelector } from "@/store/hooks";
 import { Skeleton, ErrorMessage } from "@/shared";
+import type { IBlog } from "../../types";
 
-// --- Çoklu dil fallback helper ---
-function getBestTranslation<T extends Record<string, string>>(
-  obj: T | undefined,
-  lang: SupportedLocale
-) {
-  if (!obj) return "";
-  if (obj[lang]) return obj[lang];
-  for (const l of SUPPORTED_LOCALES) {
-    if (obj[l]) return obj[l];
-  }
-  return "";
-}
+
 
 export default function BlogSection() {
-  const { t } = useTranslation("home");
+  const { t } = useTranslation("blog");
   const lang = getCurrentLocale();
 
-  // Sadece store’dan oku!
-  const { blogs, loading, error } = useAppSelector((state) => state.blog);
+    Object.entries(translations).forEach(([lang, resources]) => {
+  if (!i18n.hasResourceBundle(lang, "blog")) {
+    i18n.addResourceBundle(lang, "blog", resources, true, true);
+  }
+});
 
-  // Loading, error, empty state
+  // Store’dan sadece tüketici (stateless)
+  const { blog, loading, error } = useAppSelector((state) => state.blog);
+
+ 
   if (loading) {
     return (
       <Section>
-        <Title>📰 {t("blog.title")}</Title>
+        <Title>📰 {t("page.blog.title")}</Title>
         <Grid>
           <Skeleton />
           <Skeleton />
@@ -46,22 +43,22 @@ export default function BlogSection() {
   if (error) {
     return (
       <Section>
-        <Title>📰 {t("blog.title")}</Title>
+        <Title>📰 {t("page.blog.title")}</Title>
         <ErrorMessage />
       </Section>
     );
   }
 
-  if (!blogs || blogs.length === 0) {
+  if (!blog || blog.length === 0) {
     return (
       <Section>
-        <Title>📰 {t("blog.title")}</Title>
-        <p>{t("blog.noBlog", "Henüz blog bulunamadı.")}</p>
+        <Title>📰 {t("page.blog.title")}</Title>
+        <p>{t("page.blog.noBlog", "Haber bulunamadı.")}</p>
       </Section>
     );
   }
 
-  const latestBlog = blogs.slice(0, 3);
+  const latestBlog = blog.slice(0, 3);
 
   return (
     <Section
@@ -70,10 +67,10 @@ export default function BlogSection() {
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
     >
-      <Title>📰 {t("blog.title")}</Title>
+      <Title>📰 {t("page.blog.title")}</Title>
 
       <Grid>
-        {latestBlog.map((item, index) => (
+        {latestBlog.map((item: IBlog, index: number) => (
           <CardLink key={item._id} href={`/blog/${item.slug}`} passHref>
             <Card
               as={motion.div}
@@ -83,17 +80,14 @@ export default function BlogSection() {
               viewport={{ once: true }}
             >
               <Content>
-                <BlogTitle>
-                  {getBestTranslation(item.title, lang) || t("blog.untitled", "Başlıksız")}
+                <BlogTitle>{item.title?.[lang] || "-"}
                 </BlogTitle>
-                <Excerpt>
-                  {getBestTranslation(item.summary, lang) || t("blog.noSummary", "Özet yok.")}
-                </Excerpt>
+                <Excerpt>{item.summary?.[lang] || "-"}</Excerpt>
               </Content>
               {item.images?.[0]?.url && (
                 <StyledImage
                   src={item.images[0].url}
-                  alt={getBestTranslation(item.title, lang)}
+                  alt={item.title?.[lang] || "Blog"}
                   initial={{ opacity: 0, scale: 0.95 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, delay: 0.1 }}
@@ -104,15 +98,16 @@ export default function BlogSection() {
           </CardLink>
         ))}
       </Grid>
-      <SeeAll href="/blog">{t("blog.all")}</SeeAll>
+
+      <SeeAll href="/blog">{t("page.blog.all")}</SeeAll>
     </Section>
   );
 }
 
-// Styled Components aynı kalabilir
-
+// Styled Components (değişmeden bırakılabilir)
 const Section = styled(motion.section)`
-  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   text-align: center;
@@ -120,14 +115,14 @@ const Section = styled(motion.section)`
 
 const Title = styled.h2`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
 const Grid = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.spacing.xl};
+  gap: ${({ theme }) => theme.spacings.xl};
   @media (min-width: 1024px) {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -149,7 +144,7 @@ const CardLink = styled(Link)`
 
 const Card = styled(motion.div)`
   background: ${({ theme }) => theme.colors.cardBackground};
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.md};
   display: flex;
@@ -169,7 +164,7 @@ const Content = styled.div`
 
 const BlogTitle = styled.h3`
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
   color: ${({ theme }) => theme.colors.text};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 `;
@@ -186,7 +181,7 @@ const StyledImage = styled(motion.img)`
   object-fit: cover;
   box-shadow: ${({ theme }) => theme.shadows.sm};
   transition: transform 0.3s ease;
-  margin-top: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacings.md};
   &:hover {
     transform: scale(1.02);
   }
@@ -197,7 +192,7 @@ const StyledImage = styled(motion.img)`
 
 const SeeAll = styled(Link)`
   display: inline-block;
-  margin-top: ${({ theme }) => theme.spacing.xl};
+  margin-top: ${({ theme }) => theme.spacings.xl};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   font-size: ${({ theme }) => theme.fontSizes.base};

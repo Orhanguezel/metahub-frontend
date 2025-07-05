@@ -2,14 +2,15 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  fetchBlogCategories,
-  clearCategoryMessages,
-} from "@/modules/blog/slice/blogCategorySlice";
-import { IBlog } from "@/modules/blog/types/blog";
-import { useTranslation } from "react-i18next";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { BlogCategory, IBlog } from "@/modules/blog/types";
 import { ImageUploadWithPreview } from "@/shared";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import { toast } from "react-toastify";
+import { clearBlogMessages } from "@/modules/blog/slice/blogSlice"; // Mutlaka doğru import et!
 
 interface Props {
   isOpen: boolean;
@@ -18,58 +19,60 @@ interface Props {
   onSubmit: (formData: FormData, id?: string) => Promise<void>;
 }
 
-const LANGUAGES: ("tr" | "en" | "de")[] = ["tr", "en", "de"];
-
 export default function BlogFormModal({
   isOpen,
   onClose,
   editingItem,
   onSubmit,
 }: Props) {
-  const { t, i18n } = useTranslation("adminBlog");
-  const currentLang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
-
+  // --- DİL ve ÇEVİRİ ---
+  const { t } = useI18nNamespace("blog", translations);
+  const lang = getCurrentLocale();
   const dispatch = useAppDispatch();
-  const { categories } = useAppSelector((state) => state.blogCategory);
 
-  const [titles, setTitles] = useState<Record<string, string>>({
-    tr: "",
-    en: "",
-    de: "",
-  });
-  const [summaries, setSummaries] = useState<Record<string, string>>({
-    tr: "",
-    en: "",
-    de: "",
-  });
-  const [contents, setContents] = useState<Record<string, string>>({
-    tr: "",
-    en: "",
-    de: "",
-  });
+  // --- STATE ---
+  const { categories } = useAppSelector((state) => state.blogCategory);
+  const { successMessage, error } = useAppSelector((state) => state.blog);
+  const currentUser = useAppSelector((state) => state.account.profile);
+
+  const [titles, setTitles] = useState<Record<SupportedLocale, string>>(() =>
+    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
+  );
+  const [summaries, setSummaries] = useState<Record<SupportedLocale, string>>(() =>
+    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
+  );
+  const [contents, setContents] = useState<Record<SupportedLocale, string>>(() =>
+    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
+  );
   const [author, setAuthor] = useState("");
   const [tags, setTags] = useState("");
-  const [category, setCategory] = useState<string>("");
-
+  const [category, setCategory] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
 
-  useEffect(() => {
-    dispatch(fetchBlogCategories());
-    return () => {
-      dispatch(clearCategoryMessages());
-    };
-  }, [dispatch]);
-
+  // --- FILL ON EDIT ---
   useEffect(() => {
     if (editingItem) {
-      setTitles(editingItem.title || { tr: "", en: "", de: "" });
-      setSummaries(editingItem.summary || { tr: "", en: "", de: "" });
-      setContents(editingItem.content || { tr: "", en: "", de: "" });
-      setAuthor(editingItem.author || "");
+      setTitles(
+        SUPPORTED_LOCALES.reduce((acc, lang) => {
+          acc[lang] = editingItem.title?.[lang] || "";
+          return acc;
+        }, {} as Record<SupportedLocale, string>)
+      );
+      setSummaries(
+        SUPPORTED_LOCALES.reduce((acc, lang) => {
+          acc[lang] = editingItem.summary?.[lang] || "";
+          return acc;
+        }, {} as Record<SupportedLocale, string>)
+      );
+      setContents(
+        SUPPORTED_LOCALES.reduce((acc, lang) => {
+          acc[lang] = editingItem.content?.[lang] || "";
+          return acc;
+        }, {} as Record<SupportedLocale, string>)
+      );
+      setAuthor(editingItem.author || currentUser?.name || "");
       setTags(editingItem.tags?.join(", ") || "");
       setCategory(
         typeof editingItem.category === "string"
@@ -77,13 +80,12 @@ export default function BlogFormModal({
           : editingItem.category?._id || ""
       );
       setExistingImages(editingItem.images?.map((img) => img.url) || []);
-      setSelectedFiles([]);
-      setRemovedImages([]);
     } else {
-      setTitles({ tr: "", en: "", de: "" });
-      setSummaries({ tr: "", en: "", de: "" });
-      setContents({ tr: "", en: "", de: "" });
-      setAuthor("");
+      // Reset
+      setTitles(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
+      setSummaries(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
+      setContents(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
+      setAuthor(currentUser?.name || "");
       setTags("");
       setCategory("");
       setExistingImages([]);
@@ -92,6 +94,20 @@ export default function BlogFormModal({
     }
   }, [editingItem, isOpen]);
 
+  // --- TOAST Mesajları ---
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearBlogMessages());
+      onClose(); // Başarılı kayıttan sonra modalı kapat
+    } else if (error) {
+      toast.error(error);
+      dispatch(clearBlogMessages());
+      // Modal açık kalsın, kullanıcı tekrar deneyebilsin
+    }
+  }, [successMessage, error, dispatch, onClose]);
+
+  // --- IMAGE HANDLER ---
   const handleImagesChange = useCallback(
     (files: File[], removed: string[], current: string[]) => {
       setSelectedFiles(files);
@@ -101,6 +117,7 @@ export default function BlogFormModal({
     []
   );
 
+  // --- SUBMIT ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData();
@@ -114,7 +131,7 @@ export default function BlogFormModal({
       JSON.stringify(
         tags
           .split(",")
-          .map((tag) => tag.trim())
+          .map((t) => t.trim())
           .filter(Boolean)
       )
     );
@@ -124,86 +141,112 @@ export default function BlogFormModal({
     for (const file of selectedFiles) {
       formData.append("images", file);
     }
-
     if (removedImages.length > 0) {
       formData.append("removedImages", JSON.stringify(removedImages));
     }
 
     await onSubmit(formData, editingItem?._id);
+    // Başarı durumunu useEffect ile handle edeceğiz
   };
 
   if (!isOpen) return null;
 
   return (
     <FormWrapper>
-      <h2>{editingItem ? t("admin.blog.edit") : t("admin.blog.create")}</h2>
+      <h2>
+        {editingItem
+          ? t("admin.blog.edit", "Edit Article")
+          : t("admin.blog.create", "Create New Article")}
+      </h2>
       <form onSubmit={handleSubmit}>
-        {LANGUAGES.map((lng) => (
+        {SUPPORTED_LOCALES.map((lng) => (
           <div key={lng}>
-            <label>
-              {t("admin.blog.title")} ({lng.toUpperCase()})
+            <label htmlFor={`title-${lng}`}>
+              {t("admin.blog.title", "Title")} ({lng.toUpperCase()})
             </label>
             <input
+              id={`title-${lng}`}
               value={titles[lng]}
               onChange={(e) => setTitles({ ...titles, [lng]: e.target.value })}
-              required
             />
-            <label>
-              {t("admin.blog.summary")} ({lng.toUpperCase()})
+
+            <label htmlFor={`summary-${lng}`}>
+              {t("admin.blog.summary", "Summary")} ({lng.toUpperCase()})
             </label>
             <textarea
+              id={`summary-${lng}`}
               value={summaries[lng]}
               onChange={(e) =>
                 setSummaries({ ...summaries, [lng]: e.target.value })
               }
-              required
             />
-            <label>
-              {t("admin.blog.content")} ({lng.toUpperCase()})
+
+            <label htmlFor={`content-${lng}`}>
+              {t("admin.blog.content", "Content")} ({lng.toUpperCase()})
             </label>
             <textarea
+              id={`content-${lng}`}
               value={contents[lng]}
               onChange={(e) =>
                 setContents({ ...contents, [lng]: e.target.value })
               }
-              required
             />
           </div>
         ))}
-        <label>{t("admin.blog.author")}</label>
+
+        <label htmlFor="author">{t("admin.blog.author", "Author")}</label>
         <input
+          id="author"
+          type="text"
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
           required
         />
-        <label>{t("admin.blog.tags")}</label>
-        <input value={tags} onChange={(e) => setTags(e.target.value)} />
-        <label>{t("admin.blog.image")}</label>
+
+        <label htmlFor="tags">{t("admin.blog.tags", "Tags")}</label>
+        <input
+          id="tags"
+          type="text"
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+          placeholder="tag1, tag2, tag3"
+        />
+
+        <label>{t("admin.blog.image", "Images")}</label>
         <ImageUploadWithPreview
           max={5}
           defaultImages={existingImages}
           onChange={handleImagesChange}
-          folder="blog"
+          folder="article"
         />
-        <label>{t("admin.blog.category")}</label>
+
+        <label htmlFor="category">
+          {t("admin.blog.category", "Category")}
+        </label>
         <select
+          id="category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           required
         >
-          <option value="">{t("admin.blog.select_category")}</option>
-          {categories.map((cat) => (
+          <option value="" disabled>
+            {t("admin.blog.select_category", "Select a category")}
+          </option>
+          {categories.map((cat: BlogCategory) => (
             <option key={cat._id} value={cat._id}>
-              {cat.name?.[currentLang]} ({cat.slug})
+              {cat.name?.[lang] || cat.name?.en || Object.values(cat.name || {})[0] || cat.slug}
             </option>
           ))}
         </select>
+
         <ButtonGroup>
           <button type="submit">
-            {editingItem ? t("admin.update") : t("admin.create")}
+            {editingItem
+              ? t("admin.update", "Update")
+              : t("admin.create", "Create")}
           </button>
           <button type="button" onClick={onClose}>
-            {t("admin.cancel")}
+            {t("admin.cancel", "Cancel")}
           </button>
         </ButtonGroup>
       </form>
@@ -211,7 +254,7 @@ export default function BlogFormModal({
   );
 }
 
-// 💅 Styled Components
+// --- Styled Components ---
 const FormWrapper = styled.div`
   max-width: 600px;
   margin: auto;

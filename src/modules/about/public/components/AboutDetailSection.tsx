@@ -4,55 +4,75 @@ import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
+import i18n from "@/i18n";
+import translations from "../../locales";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
+import Image from "next/image";
 import { Skeleton, ErrorMessage } from "@/shared";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchAbout, fetchAboutBySlug } from "@/modules/about/slice/aboutSlice";
+import {
+  clearAboutMessages,
+  fetchAboutBySlug,
+  setSelectedAbout,
+} from "@/modules/about/slice/aboutSlice";
+import { CommentForm, CommentList } from "@/modules/comment";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import type { IAbout } from "@/modules/about/types";
 
 export default function AboutDetailSection() {
   const { slug } = useParams() as { slug: string };
+  const { t } = useTranslation("about");
   const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("about");
+  const lang = getCurrentLocale();
 
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
+  // Locale dosyalarını i18n'e yükle
+  Object.entries(translations).forEach(([locale, resources]) => {
+    if (!i18n.hasResourceBundle(locale, "about")) {
+      i18n.addResourceBundle(locale, "about", resources, true, true);
+    }
+  });
 
   const {
-    selected,
-    about: aboutList,
+    selected: about,
+    about: allAbout,
     loading,
     error,
   } = useAppSelector((state) => state.about);
 
   useEffect(() => {
-    dispatch(fetchAboutBySlug(slug));
-    dispatch(fetchAbout(lang));
-  }, [dispatch, slug, lang]);
+    if (allAbout && allAbout.length > 0) {
+      const found = allAbout.find((item: IAbout) => item.slug === slug);
+      if (found) {
+        dispatch(setSelectedAbout(found));
+      } else {
+        dispatch(fetchAboutBySlug(slug));
+      }
+    } else {
+      dispatch(fetchAboutBySlug(slug));
+    }
+    return () => {
+      dispatch(clearAboutMessages());
+    };
+  }, [dispatch, allAbout, slug]);
 
-  const others = aboutList.filter((item) => item.slug !== slug).slice(0, 2);
-
-  if (loading)
+  if (loading) {
     return (
       <Container>
         <Skeleton />
       </Container>
     );
-  if (error || !selected)
+  }
+
+  if (error || !about) {
     return (
       <Container>
         <ErrorMessage />
       </Container>
     );
+  }
 
-  const { title, detailedDescription, shortDescription, content, images } =
-    selected;
-  const description =
-    detailedDescription?.[lang] ||
-    content?.[lang] ||
-    shortDescription?.[lang] ||
-    "";
+  const otherAbout = allAbout.filter((item: IAbout) => item.slug !== slug).slice(0, 2);
 
   return (
     <Container
@@ -60,21 +80,39 @@ export default function AboutDetailSection() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <Title>{title?.[lang]}</Title>
+      <Title>{about.title?.[lang] || t("page.noTitle", "Başlık yok")}</Title>
 
-      {images?.[0]?.url && (
+      {about.images?.[0]?.url && (
         <ImageWrapper>
-          <img src={images[0].url} alt={title?.[lang]} />
+          <Image
+            src={about.images[0].url}
+            alt={about.title?.[lang] || ""}
+            width={800}
+            height={400}
+            style={{ width: "100%", height: "auto", objectFit: "cover" }}
+          />
         </ImageWrapper>
       )}
 
-      <Content dangerouslySetInnerHTML={{ __html: description }} />
+      {about.summary?.[lang] && (
+        <SummaryBox>
+          <h3>{t("page.summary")}</h3>
+          <div>{about.summary?.[lang]}</div>
+        </SummaryBox>
+      )}
 
-      {!!others.length && (
+      {about.content?.[lang] && (
+        <ContentBox>
+          <h3>{t("page.detail")}</h3>
+          <div dangerouslySetInnerHTML={{ __html: about.content[lang] }} />
+        </ContentBox>
+      )}
+
+      {otherAbout?.length > 0 && (
         <OtherSection>
-          <h3>{t("page.other", "Other Sections")}</h3>
+          <h3>{t("page.other")}</h3>
           <OtherList>
-            {others.map((item) => (
+            {otherAbout.map((item: IAbout) => (
               <OtherItem key={item._id}>
                 <Link href={`/about/${item.slug}`}>{item.title?.[lang]}</Link>
               </OtherItem>
@@ -82,26 +120,29 @@ export default function AboutDetailSection() {
           </OtherList>
         </OtherSection>
       )}
+      <CommentForm contentId={about._id} contentType="about" />
+      <CommentList contentId={about._id} contentType="about" />
     </Container>
   );
 }
 
+// --------- STYLES -----------
 const Container = styled(motion.section)`
   max-width: 900px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xxl}
-    ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const Title = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
 const ImageWrapper = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   img {
     width: 100%;
     height: auto;
@@ -111,25 +152,36 @@ const ImageWrapper = styled.div`
   }
 `;
 
-const Content = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  color: ${({ theme }) => theme.colors.text};
-  line-height: 1.7;
-  p {
-    margin-bottom: ${({ theme }) => theme.spacing.md};
+const SummaryBox = styled.div`
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-left: 4px solid ${({ theme }) => theme.colors.primary};
+  padding: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+  border-radius: ${({ theme }) => theme.radii.sm};
+`;
+
+const ContentBox = styled.div`
+  background: ${({ theme }) => theme.colors.background};
+  padding: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  h3 {
+    margin-bottom: ${({ theme }) => theme.spacings.md};
+    color: ${({ theme }) => theme.colors.primary};
   }
 `;
 
 const OtherSection = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.xxl};
+  margin-top: ${({ theme }) => theme.spacings.xxl};
   border-top: 1px solid ${({ theme }) => theme.colors.border};
-  padding-top: ${({ theme }) => theme.spacing.lg};
+  padding-top: ${({ theme }) => theme.spacings.lg};
 `;
 
 const OtherList = styled.ul`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
 `;
 
 const OtherItem = styled.li`

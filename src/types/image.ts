@@ -26,10 +26,11 @@ export type ImageType =
   | "appointment"
   | "coupon"
   | "bike"
-  | "customProduct"    
-  | "emailAttachment" 
+  | "bikeCategory"
+  | "customProduct"
+  | "emailAttachment"
   | "about"
   | "activity"
   | "company"
-  | "bike"
-  | "misc";          
+  | "tenant"
+  | "misc";

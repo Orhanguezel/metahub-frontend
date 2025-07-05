@@ -1,14 +1,8 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
+import { ICompany, CompanyState } from "../types";
 
-interface CompanyState {
-  company: any | null;
-  status: "idle" | "loading" | "succeeded" | "failed";
-  updateStatus: "idle" | "loading" | "succeeded" | "failed";
-  createStatus: "idle" | "loading" | "succeeded" | "failed";
-  error: string | null;
-  successMessage: string | null;
-}
+// --- State ---
 
 const initialState: CompanyState = {
   company: null,
@@ -19,67 +13,75 @@ const initialState: CompanyState = {
   successMessage: null,
 };
 
-// Yardımcı: Nested objeler ve birden fazla dosya desteği!
-const appendFormData = (formData: FormData, data: any) => {
+// --- FormData Helper (Nested Key Support) ---
+const appendFormData = (
+  formData: FormData,
+  data: Record<string, any>,
+  parentKey?: string
+) => {
   Object.entries(data).forEach(([key, value]) => {
-    if (key === "logos" && Array.isArray(value)) {
-      // Çoklu logo dosyası
-      value.forEach((file) => {
-        if (file instanceof File) {
-          formData.append("logos", file);
+    const fieldName = parentKey ? `${parentKey}[${key}]` : key;
+    if (Array.isArray(value)) {
+      // Array of files (logos), array of strings vs.
+      value.forEach((item, idx) => {
+        if (item instanceof File) {
+          formData.append(`${fieldName}`, item);
+        } else if (typeof item === "object" && item !== null) {
+          // Array of objects (rare, ama logos gibi image meta için değil!)
+          appendFormData(formData, item, `${fieldName}[${idx}]`);
+        } else {
+          formData.append(`${fieldName}[${idx}]`, String(item));
         }
       });
-    } else if (key === "removedLogos" && Array.isArray(value)) {
-      // Silinecek logoları JSON.stringify olarak ekle!
-      formData.append("removedLogos", JSON.stringify(value));
-    } else if (typeof value === "object" && value !== null && !(value instanceof File)) {
-      // Nested object'ler için recursive (ör: address, bankDetails, socialLinks)
-      Object.entries(value).forEach(([nestedKey, nestedValue]) => {
-        formData.append(`${key}[${nestedKey}]`, nestedValue ?? "");
-      });
+    } else if (value instanceof File) {
+      formData.append(fieldName, value);
+    } else if (typeof value === "object" && value !== null) {
+      // Nested object: açarak ekle!
+      appendFormData(formData, value, fieldName);
     } else if (value !== undefined && value !== null) {
-      formData.append(key, String(value));
+      formData.append(fieldName, String(value));
     }
+    // null/undefined'ları hiç ekleme
   });
 };
 
-// 📥 Get company info
-export const fetchCompanyInfo = createAsyncThunk(
-  "company/fetchCompanyInfo",
-  async (_, { rejectWithValue }) => {
-    const result = await apiCall("get", "/company", null, rejectWithValue);
-    if (result?.data) {
-      return result.data;
-    }
-    return rejectWithValue(result?.message || "No company data found.");
-  }
-);
+// --- Async Thunks ---
 
-// ➕ Create new company (çoklu logo)
-export const createCompany = createAsyncThunk(
-  "company/createCompany",
-  async (newCompany: any, { rejectWithValue }) => {
+export const fetchCompanyInfo = createAsyncThunk<
+  ICompany,
+  void,
+  { rejectValue: string }
+>("company/fetchCompanyInfo", async (_, { rejectWithValue }) => {
+  try {
+    const result = await apiCall("get", "/company", null, rejectWithValue);
+    return result.data;
+  } catch (error: any) {
+    return rejectWithValue(error?.message || "No company data found.");
+  }
+});
+
+export const createCompany = createAsyncThunk<
+  ICompany,
+  Record<string, any>,
+  { rejectValue: string }
+>("company/createCompany", async (newCompany, { rejectWithValue }) => {
+  try {
     const formData = new FormData();
     appendFormData(formData, newCompany);
 
-    const result = await apiCall(
-      "post",
-      "/company",
-      formData,
-      rejectWithValue
-    );
-
-    if (result?.data) {
-      return result.data;
-    }
-    return rejectWithValue(result?.message || "Failed to create company.");
+    const result = await apiCall("post", "/company", formData, rejectWithValue);
+    return result.data;
+  } catch (error: any) {
+    return rejectWithValue(error?.message || "Failed to create company.");
   }
-);
+});
 
-// ✏️ Update company info (çoklu logo + silme desteği)
-export const updateCompanyInfo = createAsyncThunk(
-  "company/updateCompanyInfo",
-  async (updatedData: any, { rejectWithValue }) => {
+export const updateCompanyInfo = createAsyncThunk<
+  ICompany,
+  Record<string, any>,
+  { rejectValue: string }
+>("company/updateCompanyInfo", async (updatedData, { rejectWithValue }) => {
+  try {
     const formData = new FormData();
     appendFormData(formData, updatedData);
 
@@ -89,16 +91,13 @@ export const updateCompanyInfo = createAsyncThunk(
       formData,
       rejectWithValue
     );
-
-    if (result?.data) {
-      return result.data;
-    }
-    return rejectWithValue(result?.message || "Failed to update company.");
+    return result.data;
+  } catch (error: any) {
+    return rejectWithValue(error?.message || "Failed to update company.");
   }
-);
+});
 
-// (Opsiyonel: DELETE ile silmek için thunk yazabilirsin)
-
+// --- Slice ---
 const companySlice = createSlice({
   name: "company",
   initialState,
@@ -107,57 +106,75 @@ const companySlice = createSlice({
       state.error = null;
       state.successMessage = null;
     },
+    clearCompany(state) {
+      state.company = null;
+      state.status = "idle";
+      state.updateStatus = "idle";
+      state.createStatus = "idle";
+      state.error = null;
+      state.successMessage = null;
+    },
   },
   extraReducers: (builder) => {
     builder
-      // 📥 Fetch
+      // Fetch
       .addCase(fetchCompanyInfo.pending, (state) => {
         state.status = "loading";
         state.error = null;
+        state.successMessage = null;
       })
-      .addCase(fetchCompanyInfo.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.company = action.payload;
-      })
+      .addCase(
+        fetchCompanyInfo.fulfilled,
+        (state, action: PayloadAction<ICompany>) => {
+          state.status = "succeeded";
+          state.company = action.payload;
+        }
+      )
       .addCase(fetchCompanyInfo.rejected, (state, action) => {
         state.status = "failed";
         state.error =
-          (action.payload as any)?.message || "Failed to fetch company data.";
+          (action.payload as string) || "Failed to fetch company data.";
       })
 
-      // ✏️ Update
+      // Update
       .addCase(updateCompanyInfo.pending, (state) => {
         state.updateStatus = "loading";
         state.error = null;
+        state.successMessage = null;
       })
-      .addCase(updateCompanyInfo.fulfilled, (state, action) => {
-        state.updateStatus = "succeeded";
-        state.company = action.payload;
-        state.successMessage = "Company updated successfully.";
-      })
+      .addCase(
+        updateCompanyInfo.fulfilled,
+        (state, action: PayloadAction<ICompany>) => {
+          state.updateStatus = "succeeded";
+          state.company = action.payload;
+          state.successMessage = "Company updated successfully.";
+        }
+      )
       .addCase(updateCompanyInfo.rejected, (state, action) => {
         state.updateStatus = "failed";
-        state.error =
-          (action.payload as any)?.message || "Failed to update company.";
+        state.error = (action.payload as string) || "Failed to update company.";
       })
 
-      // ➕ Create
+      // Create
       .addCase(createCompany.pending, (state) => {
         state.createStatus = "loading";
         state.error = null;
+        state.successMessage = null;
       })
-      .addCase(createCompany.fulfilled, (state, action) => {
-        state.createStatus = "succeeded";
-        state.company = action.payload;
-        state.successMessage = "Company created successfully.";
-      })
+      .addCase(
+        createCompany.fulfilled,
+        (state, action: PayloadAction<ICompany>) => {
+          state.createStatus = "succeeded";
+          state.company = action.payload;
+          state.successMessage = "Company created successfully.";
+        }
+      )
       .addCase(createCompany.rejected, (state, action) => {
         state.createStatus = "failed";
-        state.error =
-          (action.payload as any)?.message || "Failed to create company.";
+        state.error = (action.payload as string) || "Failed to create company.";
       });
   },
 });
 
-export const { resetMessages } = companySlice.actions;
+export const { resetMessages, clearCompany } = companySlice.actions;
 export default companySlice.reducer;

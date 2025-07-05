@@ -13,11 +13,7 @@ export { default as CategoryForm } from "./admin/components/CategoryForm";
 export { default as ServicesSection } from "./public/components/ServicesSection";
 export { default as ServicesDetailSection } from "./public/components/ServicesDetailSection";
 
-// Redux Slice
-export { default as servicesReducer } from "./slice/servicesSlice";
-export { default as serviceCategoryReducer } from "./slice/serviceCategorySlice";
-
 // Types (if any)
-export * from "./types/services";
+export * from "./types";
 
 // Optionally: i18n can be loaded in page-level or via config

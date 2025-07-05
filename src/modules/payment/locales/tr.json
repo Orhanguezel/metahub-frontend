@@ -1,0 +1,13 @@
+{
+  "addToCart": "Sepete Ekle",
+  "remove": "Çıkar",
+  "increase": "Arttır",
+  "decrease": "Azalt",
+  "clearCart": "Sepeti Temizle",
+  "continueShopping": "Alışverişe Devam Et",
+  "checkout": "Satın Al",
+  "empty": "Sepetinizde ürün yok.",
+  "title": "Alışveriş Sepeti",
+  "size": "Beden",
+  "oneSize": "Tek Beden"
+}

@@ -1,46 +1,91 @@
 "use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { SUPPORTED_LOCALES } from "@/i18n";
 
-type MultiLangValue = { tr: string; en: string; de: string };
-type MultiLangObjectValue = Record<string, MultiLangValue>;
-
-interface Props {
-  value: MultiLangObjectValue;
-  setValue: (val: MultiLangObjectValue) => void;
+// --- Helper: Eksik locale'leri tamamla
+function completeLocales(
+  obj: Record<string, any> | undefined,
+  fallback: string = ""
+): Record<string, string> {
+  if (!obj || typeof obj !== "object") return {};
+  const keys = Object.keys(obj).filter((lng) => !!obj[lng]);
+  const primary = keys.includes("en") ? "en" : keys[0] || null;
+  return SUPPORTED_LOCALES.reduce((acc, lng) => {
+    acc[lng] =
+      obj[lng] !== undefined && obj[lng] !== null
+        ? obj[lng]
+        : primary
+        ? obj[primary]
+        : fallback;
+    return acc;
+  }, {} as Record<string, string>);
 }
 
-export default function MultiLangObjectEditor({ value, setValue }: Props) {
-  const { t } = useTranslation("settings");
-  const [newField, setNewField] = useState("");
+// --- Props tipi
+interface MultiLangObjectEditorProps {
+  value: Record<string, Record<string, string>>;
+  setValue: (val: Record<string, Record<string, string>>) => void;
+  supportedLocales?: readonly string[];
+}
 
-  // Alan ekleme
+const MultiLangObjectEditor: React.FC<MultiLangObjectEditorProps> = ({
+  value,
+  setValue,
+  supportedLocales = SUPPORTED_LOCALES,
+}) => {
+  const { i18n, t } = useI18nNamespace("settings", translations);
+  const [newField, setNewField] = useState<string>("");
+
+  // Editte eksik locale'leri tamamla
+  useEffect(() => {
+    if (!value) return;
+    let updated = false;
+    const newObj: Record<string, Record<string, string>> = {};
+    for (const [fieldKey, fieldValue] of Object.entries(value)) {
+      const completed = completeLocales(fieldValue);
+      if (
+        SUPPORTED_LOCALES.some(
+          (lng) =>
+            typeof fieldValue !== "object" ||
+            !(lng in fieldValue) ||
+            fieldValue[lng] === undefined
+        )
+      ) {
+        updated = true;
+      }
+      newObj[fieldKey] = completed;
+    }
+    if (updated) setValue(newObj);
+    // eslint-disable-next-line
+  }, [value]);
+
+  // Add new field
   const handleAddField = () => {
     const trimmed = newField.trim();
     if (!trimmed) return;
-    if (Object.keys(value).includes(trimmed)) return;
+    if (Object.keys(value || {}).includes(trimmed)) return;
     setValue({
       ...value,
-      [trimmed]: { tr: "", en: "", de: "" },
+      [trimmed]: SUPPORTED_LOCALES.reduce(
+        (acc, lng) => ({ ...acc, [lng]: "" }),
+        {} as Record<string, string>
+      ),
     });
     setNewField("");
   };
 
-  // Alan silme
+  // Remove a field
   const handleRemoveField = (fieldKey: string) => {
     const v = { ...value };
     delete v[fieldKey];
     setValue(v);
   };
 
-  // Alan güncelleme
-  const handleChange = (
-    fieldKey: string,
-    lang: keyof MultiLangValue,
-    newVal: string
-  ) => {
+  // Change value for a specific field and language
+  const handleChange = (fieldKey: string, lang: string, newVal: string) => {
     setValue({
       ...value,
       [fieldKey]: {
@@ -65,11 +110,11 @@ export default function MultiLangObjectEditor({ value, setValue }: Props) {
         </AddFieldButton>
       </AddFieldRow>
 
-      {Object.entries(value).length === 0 && (
+      {(!value || Object.entries(value).length === 0) && (
         <EmptyInfo>{t("noFields", "No fields added yet.")}</EmptyInfo>
       )}
 
-      {Object.entries(value).map(([fieldKey, fieldValue]) => (
+      {Object.entries(value || {}).map(([fieldKey, fieldValue]) => (
         <FieldBlock key={fieldKey}>
           <FieldHeader>
             <FieldTitle>{fieldKey}</FieldTitle>
@@ -81,57 +126,42 @@ export default function MultiLangObjectEditor({ value, setValue }: Props) {
               ❌
             </RemoveButton>
           </FieldHeader>
-          <LangInput>
-            <Label>TR:</Label>
-            <Input
-              type="text"
-              value={fieldValue.tr || ""}
-              placeholder={t("trValue", "Türkçe...")}
-              onChange={(e) => handleChange(fieldKey, "tr", e.target.value)}
-            />
-          </LangInput>
-          <LangInput>
-            <Label>EN:</Label>
-            <Input
-              type="text"
-              value={fieldValue.en || ""}
-              placeholder={t("enValue", "English...")}
-              onChange={(e) => handleChange(fieldKey, "en", e.target.value)}
-            />
-          </LangInput>
-          <LangInput>
-            <Label>DE:</Label>
-            <Input
-              type="text"
-              value={fieldValue.de || ""}
-              placeholder={t("deValue", "Deutsch...")}
-              onChange={(e) => handleChange(fieldKey, "de", e.target.value)}
-            />
-          </LangInput>
+          {supportedLocales.map((lng) => (
+            <LangInput key={lng}>
+              <Label>{lng.toUpperCase()}:</Label>
+              <Input
+                type="text"
+                value={fieldValue?.[lng] || ""}
+                placeholder={t("valueLang", { lng })}
+                onChange={(e) => handleChange(fieldKey, lng, e.target.value)}
+              />
+            </LangInput>
+          ))}
         </FieldBlock>
       ))}
     </Wrapper>
   );
-}
+};
 
-// 🎨 Styled Components
+export default MultiLangObjectEditor;
 
+// --- Styled Components ---
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.md};
 `;
 
 const AddFieldRow = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
   align-items: center;
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
 const NewFieldInput = styled.input`
   flex: 1;
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   border: ${({ theme }) => theme.borders.thin}
     ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.sm};
@@ -141,7 +171,8 @@ const NewFieldInput = styled.input`
 `;
 
 const AddFieldButton = styled.button`
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.md};
   background: ${({ theme }) => theme.buttons.primary.background};
   color: ${({ theme }) => theme.buttons.primary.text};
   border: none;
@@ -149,6 +180,7 @@ const AddFieldButton = styled.button`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   cursor: pointer;
   transition: background ${({ theme }) => theme.transition.fast};
+
   &:hover {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
   }
@@ -164,17 +196,17 @@ const EmptyInfo = styled.div`
 const FieldBlock = styled.div`
   border: ${({ theme }) => theme.borders.thin}
     ${({ theme }) => theme.colors.border};
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   border-radius: ${({ theme }) => theme.radii.sm};
   background: ${({ theme }) => theme.colors.backgroundAlt};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
 `;
 
 const FieldHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
 `;
 
 const FieldTitle = styled.div`
@@ -188,7 +220,7 @@ const RemoveButton = styled.button`
   color: ${({ theme }) => theme.colors.danger};
   font-size: ${({ theme }) => theme.fontSizes.md};
   cursor: pointer;
-  margin-left: ${({ theme }) => theme.spacing.sm};
+  margin-left: ${({ theme }) => theme.spacings.sm};
   opacity: 0.8;
   transition: opacity 0.15s;
   &:hover {
@@ -199,8 +231,8 @@ const RemoveButton = styled.button`
 const LangInput = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  margin: ${({ theme }) => theme.spacing.xs} 0;
+  gap: ${({ theme }) => theme.spacings.sm};
+  margin: ${({ theme }) => theme.spacings.xs} 0;
 `;
 
 const Label = styled.label`
@@ -211,7 +243,7 @@ const Label = styled.label`
 
 const Input = styled.input`
   flex: 1;
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   border: ${({ theme }) => theme.borders.thin}
     ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.sm};

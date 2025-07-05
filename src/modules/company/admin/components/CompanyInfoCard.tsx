@@ -2,18 +2,15 @@
 
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
-import type {
-  CompanyFormValues,
-  CompanyLogo,
-} from "@/modules/company/types/company";
+import type { ICompany, ICompanyImage } from "@/modules/company/types";
 
 interface CompanyInfoCardProps {
-  company: CompanyFormValues | null;
+  company: ICompany | null;
 }
 
 const DEFAULT_LOGO = "/default-company-logo.png";
 
-function resolveLogoUrl(logo?: CompanyLogo): string {
+function resolveLogoUrl(logo?: ICompanyImage): string {
   if (!logo) return DEFAULT_LOGO;
   const url = logo.thumbnail || logo.url || "";
   if (!url) return DEFAULT_LOGO;
@@ -67,7 +64,7 @@ export default function CompanyInfoCard({ company }: CompanyInfoCardProps) {
 const Card = styled.section`
   background: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.textPrimary};
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.sm};
   display: flex;
@@ -87,12 +84,12 @@ const Card = styled.section`
 const InfoBlock = styled.div`
   flex: 1;
   text-align: center;
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
 
   ${({ theme }) => theme.media.small} {
     text-align: left;
     margin-bottom: 0;
-    margin-right: ${({ theme }) => theme.spacing.xl};
+    margin-right: ${({ theme }) => theme.spacings.xl};
   }
 `;
 
@@ -100,18 +97,18 @@ const CompanyName = styled.h3`
   font-size: ${({ theme }) => theme.fontSizes.lg};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   color: ${({ theme }) => theme.colors.textPrimary};
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
 const Contact = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
-  margin: ${({ theme }) => theme.spacing.xs} 0;
+  margin: ${({ theme }) => theme.spacings.xs} 0;
 `;
 
 const LogoRow = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;

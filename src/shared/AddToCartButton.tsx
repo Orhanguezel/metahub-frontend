@@ -24,13 +24,9 @@ export default function AddToCartButton({
   const { t } = useTranslation("cart");
   const [added, setAdded] = useState(false);
 
-  const {
-    loading,
-    error,
-    successMessage,
-    cart,
-    stockWarning,
-  } = useAppSelector((state) => state.cart);
+  const { loading, error, successMessage, cart, stockWarning } = useAppSelector(
+    (state) => state.cart
+  );
 
   // Kullanıcı login mi?
   const isAuthenticated = !!useAppSelector((state) => state.account.profile);
@@ -68,9 +64,7 @@ export default function AddToCartButton({
     <>
       <StyledButton
         onClick={handleClick}
-        disabled={
-          disabled || loading || isInCart
-        }
+        disabled={disabled || loading || isInCart}
         aria-label={t("add", "Sepete Ekle")}
         $added={!!successMessage && added}
       >
@@ -98,7 +92,7 @@ export default function AddToCartButton({
 // --- Styled Components ---
 const StyledButton = styled.button<{ $added?: boolean }>`
   width: 100%;
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   background: ${({ theme, $added }) =>
     $added ? theme.colors.success : theme.colors.primary};
   color: ${({ theme }) => theme.colors.buttonText || "#fff"};
@@ -107,7 +101,7 @@ const StyledButton = styled.button<{ $added?: boolean }>`
   font-size: ${({ theme }) => theme.fontSizes.base};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   cursor: pointer;
-  margin-top: ${({ theme }) => theme.spacing.sm};
+  margin-top: ${({ theme }) => theme.spacings.sm};
   transition: background 0.2s;
 
   &:hover:not(:disabled) {
@@ -120,19 +114,19 @@ const StyledButton = styled.button<{ $added?: boolean }>`
 `;
 
 const CartSuccessMsg = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.xs};
+  margin-top: ${({ theme }) => theme.spacings.xs};
   color: ${({ theme }) => theme.colors.success || "green"};
   font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
 const StockWarningMsg = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.xs};
+  margin-top: ${({ theme }) => theme.spacings.xs};
   color: ${({ theme }) => theme.colors.warning || "orange"};
   font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
 const CartErrorMsg = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.xs};
+  margin-top: ${({ theme }) => theme.spacings.xs};
   color: ${({ theme }) => theme.colors.danger || "red"};
   font-size: ${({ theme }) => theme.fontSizes.sm};
 `;

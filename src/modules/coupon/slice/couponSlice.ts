@@ -1,3 +1,5 @@
+// src/modules/coupon/slice/couponSlice.ts
+
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { Coupon } from "../types";
@@ -19,19 +21,20 @@ const initialState: CouponState = {
   successMessage: null,
 };
 
-// 🔎 Kupon kodu kontrol et (public/checkout)
-export const checkCouponByCode = createAsyncThunk(
-  "coupon/checkCouponByCode",
-  async (code: string, thunkAPI) => {
-    return await apiCall("get", `/coupon/check/${code}`, null, thunkAPI.rejectWithValue);
-  }
-);
 
 // 📥 Tüm kuponları getir (admin)
 export const fetchCoupons = createAsyncThunk(
   "coupon/fetchCoupons",
   async (_, thunkAPI) => {
     return await apiCall("get", "/coupon", null, thunkAPI.rejectWithValue);
+  }
+);
+
+// 🔎 Kupon kodu kontrol et (public/checkout)
+export const checkCouponByCode = createAsyncThunk(
+  "coupon/checkCouponByCode",
+  async (code: string, thunkAPI) => {
+    return await apiCall("get", `/coupon/check/${code}`, null, thunkAPI.rejectWithValue);
   }
 );
 

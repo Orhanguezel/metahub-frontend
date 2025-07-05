@@ -1,22 +1,31 @@
 "use client";
-
-import React, { useState } from "react";
+import React, { useState, KeyboardEvent, ChangeEvent } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { SUPPORTED_LOCALES } from "@/i18n";
+import { completeLocales } from "@/utils/completeLocales"; // ← PROJENİN TEK FONKSİYONU
 
-type MultiLangValue = { tr: string; en: string; de: string };
-type NestedLinkItem = { label: MultiLangValue; url: string };
-type NestedMultiLangLinkValue = Record<string, NestedLinkItem>;
+type NestedValue = {
+  label: Record<string, string>;
+  url: string;
+};
 
-interface Props {
-  value: NestedMultiLangLinkValue;
-  setValue: (val: NestedMultiLangLinkValue) => void;
+interface NestedValueEditorProps {
+  value: Record<string, any>;
+  setValue: (val: Record<string, any>) => void;
+  supportedLocales?: readonly string[];
 }
 
-export default function NestedValueEditor({ value, setValue }: Props) {
-  const { t } = useTranslation("settings");
-  const [newField, setNewField] = useState("");
+const NestedValueEditor: React.FC<NestedValueEditorProps> = ({
+  value,
+  setValue,
+  supportedLocales = SUPPORTED_LOCALES,
+}) => {
+  const { t } = useI18nNamespace("settings", translations);
+  const [newField, setNewField] = useState<string>("");
 
+  // Field ekleme
   const handleAddField = () => {
     const trimmed = newField.trim();
     if (!trimmed) return;
@@ -27,36 +36,35 @@ export default function NestedValueEditor({ value, setValue }: Props) {
     setValue({
       ...value,
       [trimmed]: {
-        label: { tr: "", en: "", de: "" },
+        label: completeLocales({}),
         url: "",
       },
     });
     setNewField("");
   };
 
+  // Field silme
   const handleRemoveField = (fieldKey: string) => {
     const updated = { ...value };
     delete updated[fieldKey];
     setValue(updated);
   };
 
-  const handleLabelChange = (
-    fieldKey: string,
-    lang: keyof MultiLangValue,
-    val: string
-  ) => {
+  // Label değişimi
+  const handleLabelChange = (fieldKey: string, lang: string, val: string) => {
     setValue({
       ...value,
       [fieldKey]: {
         ...value[fieldKey],
         label: {
-          ...value[fieldKey].label,
+          ...completeLocales(value[fieldKey]?.label),
           [lang]: val,
         },
       },
     });
   };
 
+  // URL değişimi
   const handleUrlChange = (fieldKey: string, val: string) => {
     setValue({
       ...value,
@@ -66,6 +74,12 @@ export default function NestedValueEditor({ value, setValue }: Props) {
       },
     });
   };
+
+  // Her field için label objesini tamamla
+  function getLabelObj(fieldValue: NestedValue) {
+    return completeLocales(fieldValue?.label, "")
+;
+  }
 
   return (
     <Wrapper>
@@ -87,10 +101,7 @@ export default function NestedValueEditor({ value, setValue }: Props) {
       )}
 
       {Object.entries(value).map(([fieldKey, fieldValue]) => {
-        const label =
-          fieldValue.label && typeof fieldValue.label === "object"
-            ? fieldValue.label
-            : { tr: "", en: "", de: "" };
+        const label = getLabelObj(fieldValue);
         const url = fieldValue.url || "";
 
         return (
@@ -106,39 +117,21 @@ export default function NestedValueEditor({ value, setValue }: Props) {
               </RemoveButton>
             </FieldHeader>
 
-            <LangInput>
-              <Label>TR:</Label>
-              <Input
-                type="text"
-                value={label.tr}
-                onChange={(e) =>
-                  handleLabelChange(fieldKey, "tr", e.target.value)
-                }
-                placeholder={t("labelTr", "Label (Turkish)")}
-              />
-            </LangInput>
-            <LangInput>
-              <Label>EN:</Label>
-              <Input
-                type="text"
-                value={label.en}
-                onChange={(e) =>
-                  handleLabelChange(fieldKey, "en", e.target.value)
-                }
-                placeholder={t("labelEn", "Label (English)")}
-              />
-            </LangInput>
-            <LangInput>
-              <Label>DE:</Label>
-              <Input
-                type="text"
-                value={label.de}
-                onChange={(e) =>
-                  handleLabelChange(fieldKey, "de", e.target.value)
-                }
-                placeholder={t("labelDe", "Label (German)")}
-              />
-            </LangInput>
+            {supportedLocales.map((lang) => (
+              <LangInput key={lang}>
+                <Label>{lang.toUpperCase()}:</Label>
+                <Input
+                  type="text"
+                  value={label[lang]}
+                  onChange={(e) => handleLabelChange(fieldKey, lang, e.target.value)}
+                  placeholder={t(
+                    `label${lang.toUpperCase()}`,
+                    `Label (${lang})`
+                  )}
+                />
+              </LangInput>
+            ))}
+
             <LangInput>
               <Label>{t("url", "URL")}:</Label>
               <Input
@@ -153,26 +146,27 @@ export default function NestedValueEditor({ value, setValue }: Props) {
       })}
     </Wrapper>
   );
-}
+};
 
-// 🎨 Styled Components
+export default NestedValueEditor;
+// --- Styled Components ---
 
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.md};
 `;
 
 const AddFieldRow = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
   align-items: center;
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
 const NewFieldInput = styled.input`
   flex: 1;
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   border: ${({ theme }) => theme.borders.thin}
     ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.sm};
@@ -182,7 +176,8 @@ const NewFieldInput = styled.input`
 `;
 
 const AddButton = styled.button`
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.md};
   background: ${({ theme }) => theme.buttons.primary.background};
   color: ${({ theme }) => theme.buttons.primary.text};
   border: none;
@@ -204,17 +199,17 @@ const EmptyMessage = styled.div`
 const FieldBlock = styled.div`
   border: ${({ theme }) => theme.borders.thin}
     ${({ theme }) => theme.colors.border};
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   border-radius: ${({ theme }) => theme.radii.sm};
   background: ${({ theme }) => theme.colors.backgroundAlt};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
 `;
 
 const FieldHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
 const FieldTitle = styled.strong`
@@ -229,7 +224,6 @@ const RemoveButton = styled.button`
   font-size: 1.2rem;
   cursor: pointer;
   transition: opacity ${({ theme }) => theme.transition.fast};
-
   &:hover {
     opacity: 0.7;
   }
@@ -238,8 +232,8 @@ const RemoveButton = styled.button`
 const LangInput = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  margin: ${({ theme }) => theme.spacing.xs} 0;
+  gap: ${({ theme }) => theme.spacings.sm};
+  margin: ${({ theme }) => theme.spacings.xs} 0;
 
   @media (max-width: 480px) {
     flex-direction: column;
@@ -255,7 +249,7 @@ const Label = styled.label`
 
 const Input = styled.input`
   flex: 1;
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   border: ${({ theme }) => theme.borders.thin}
     ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.sm};

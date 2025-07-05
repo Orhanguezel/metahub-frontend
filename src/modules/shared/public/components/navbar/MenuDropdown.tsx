@@ -36,8 +36,8 @@ interface MenuDropdownProps {
   label: string;
   children: React.ReactNode;
   isMobile?: boolean;
-  open?: boolean;               // Ekledik!
-  onToggle?: () => void;        // Ekledik!
+  open?: boolean; // Ekledik!
+  onToggle?: () => void; // Ekledik!
   onClose?: () => void;
 }
 
@@ -54,9 +54,9 @@ const Toggle = styled.button<{ isMobile?: boolean }>`
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
+  gap: ${({ theme }) => theme.spacings.xs};
   padding: ${({ isMobile, theme }) =>
-    isMobile ? `${theme.spacing.sm} 0` : "0"};
+    isMobile ? `${theme.spacings.sm} 0` : "0"};
   width: ${({ isMobile }) => (isMobile ? "100%" : "auto")};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   transition: ${({ theme }) => theme.transition.fast};
@@ -73,7 +73,7 @@ const Dropdown = styled.div<{ isMobile?: boolean }>`
   top: 100%;
   left: 0;
   z-index: ${({ theme }) => theme.zIndex.dropdown};
-  padding: ${({ theme }) => theme.spacing.sm} 0;
+  padding: ${({ theme }) => theme.spacings.sm} 0;
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ isMobile, theme }) =>
     isMobile ? "none" : theme.shadows.lg};
@@ -82,7 +82,8 @@ const Dropdown = styled.div<{ isMobile?: boolean }>`
 `;
 
 const DropdownLink = styled(Link)<{ isMobile?: boolean }>`
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.md};
   white-space: nowrap;
   text-decoration: none;
   color: ${({ theme }) => theme.colors.text};

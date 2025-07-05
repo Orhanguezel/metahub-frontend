@@ -57,7 +57,10 @@ const BookingTable: React.FC<Props> = React.memo(function BookingTable({
                 </Datetime>
               </td>
               <td>
-                <StatusTag $status={booking.status} title={statusDescriptions[booking.status]}>
+                <StatusTag
+                  $status={booking.status}
+                  title={statusDescriptions[booking.status]}
+                >
                   {t(`admin.status.${booking.status}`, booking.status)}
                 </StatusTag>
               </td>
@@ -91,12 +94,9 @@ export default BookingTable;
 
 // 🏷️ Status açıklamaları (tooltip için)
 const statusDescriptions: Record<string, string> = {
-  pending:
-    "Waiting for admin approval. No email sent to customer yet.",
-  confirmed:
-    "Booking confirmed. Customer has received a confirmation email.",
-  cancelled:
-    "Booking cancelled. The slot is now available for others.",
+  pending: "Waiting for admin approval. No email sent to customer yet.",
+  confirmed: "Booking confirmed. Customer has received a confirmation email.",
+  cancelled: "Booking cancelled. The slot is now available for others.",
 };
 
 // 💅 Styled Components
@@ -107,26 +107,26 @@ const TableWrapper = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.lg};
-  margin-top: ${({ theme }) => theme.spacing.lg};
-  padding: ${({ theme }) => theme.spacing.lg};
+  margin-top: ${({ theme }) => theme.spacings.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
 
   @media ${({ theme }) => theme.media.mobile} {
     border-radius: ${({ theme }) => theme.radii.md};
-    padding: ${({ theme }) => theme.spacing.sm};
+    padding: ${({ theme }) => theme.spacings.sm};
   }
 `;
 
 const StyledTable = styled.table`
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0;
+  border-spacings: 0;
   background: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.text};
   min-width: 650px;
 
   th,
   td {
-    padding: ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => theme.spacings.md};
     text-align: left;
     font-size: ${({ theme }) => theme.fontSizes.md};
     border-bottom: ${({ theme }) => theme.borders.thin}
@@ -173,7 +173,7 @@ const TimePart = styled.span`
 
 const ButtonGroup = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
 `;
 
 const EditButton = styled.button`
@@ -182,7 +182,8 @@ const EditButton = styled.button`
   border: none;
   border-radius: ${({ theme }) => theme.radii.pill};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xs}
+    ${({ theme }) => theme.spacings.md};
   font-family: ${({ theme }) => theme.fonts.body};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   box-shadow: ${({ theme }) => theme.shadows.button};
@@ -205,7 +206,8 @@ const DeleteButton = styled.button`
   border: none;
   border-radius: ${({ theme }) => theme.radii.pill};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xs}
+    ${({ theme }) => theme.spacings.md};
   font-family: ${({ theme }) => theme.fonts.body};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   box-shadow: ${({ theme }) => theme.shadows.button};
@@ -224,7 +226,8 @@ const DeleteButton = styled.button`
 
 const StatusTag = styled.span<{ $status: string }>`
   display: inline-block;
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xs}
+    ${({ theme }) => theme.spacings.md};
   border-radius: ${({ theme }) => theme.radii.pill};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
@@ -246,7 +249,7 @@ const StatusTag = styled.span<{ $status: string }>`
 `;
 
 const Paragraph = styled.p`
-  margin-top: ${({ theme }) => theme.spacing.lg};
+  margin-top: ${({ theme }) => theme.spacings.lg};
   text-align: center;
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: ${({ theme }) => theme.fontSizes.md};

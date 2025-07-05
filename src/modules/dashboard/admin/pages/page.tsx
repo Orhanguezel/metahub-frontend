@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import styled from "styled-components";
 import Link from "next/link";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { useAppSelector } from "@/store/hooks";
 import { useTranslation } from "react-i18next";
-import { fetchDashboardStats } from "@/modules/dashboard/slice/dashboardSlice";
 import {
   FeedbacksCard,
   RevenueCard,
@@ -17,20 +16,13 @@ import type { SupportedLocale } from "@/types/common";
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation("admin-dashboard");
-  const dispatch = useAppDispatch();
   const [tab, setTab] = useState<
     "modules" | "stats" | "users" | "revenue" | "feedbacks" | "analytics"
   >("modules");
 
+  // --- SENİN MEVCUT TAB KODUN VE COMPONENTLERİN ---
   const stats = useAppSelector((state) => state.dashboard.stats);
 
-  useEffect(() => {
-    dispatch(fetchDashboardStats());
-  }, [dispatch]);
-
-  //const supportedLang: SupportedLocale = (i18n.language as SupportedLocale) || "en";
-
-  // Tablar çoklu dil anahtarı ile
   const tabs = [
     { key: "modules", label: t("tabs.modules", "Modules") },
     { key: "stats", label: t("tabs.stats", "Statistics") },
@@ -40,7 +32,6 @@ export default function AdminDashboardPage() {
     { key: "analytics", label: t("tabs.analytics", "Analytics") },
   ];
 
-  // Stat grid'i çoklu dil anahtarı ile
   const statEntries = useMemo(() => {
     if (!stats) return [];
     return [
@@ -97,10 +88,10 @@ export default function AdminDashboardPage() {
   );
 }
 
+// --- Module grid sadece selector ile state çeker ---
 function ModulesGrid() {
   const { i18n } = useTranslation("admin-dashboard");
-  const modules = useAppSelector((state) => state.admin.modules);
-  // Tüm locale'ler destekli; eksikse fallback
+  const modules = useAppSelector((state) => state.moduleSetting); // moduleSetting slice!
   const lang = (i18n.language as SupportedLocale) || "en";
 
   const dashboardModules = Array.isArray(modules)
@@ -110,8 +101,7 @@ function ModulesGrid() {
         .map((mod) => ({
           key: mod.name,
           label: mod.label?.[lang] || mod.label?.en || mod.name,
-          description:
-            mod.description?.[lang] || mod.description?.en || "",
+          description: mod.description?.[lang] || mod.description?.en || "",
           slug: mod.slug || mod.name,
         }))
     : [];
@@ -137,17 +127,17 @@ function ModulesGrid() {
 // --- Styled Components ---
 const Main = styled.div`
   width: 100%;
-  padding: ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacings.xl};
 `;
 
 const TabBar = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  gap: ${({ theme }) => theme.spacings.md};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
 `;
 
 const TabBtn = styled.button<{ $active: boolean }>`
-  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.lg}`};
+  padding: ${({ theme }) => `${theme.spacings.sm} ${theme.spacings.lg}`};
   font-size: ${({ theme }) => theme.fontSizes.medium};
   border-radius: ${({ theme }) => theme.radii.pill};
   border: none;
@@ -157,22 +147,21 @@ const TabBtn = styled.button<{ $active: boolean }>`
   color: ${({ $active, theme }) =>
     $active ? theme.colors.white : theme.colors.textPrimary};
   font-weight: ${({ $active }) => ($active ? 700 : 400)};
-  box-shadow: ${({ $active, theme }) =>
-    $active ? theme.shadows.sm : "none"};
+  box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.sm : "none")};
   transition: ${({ theme }) => theme.transition.fast};
 `;
 
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: ${({ theme }) => theme.spacing.xl};
+  gap: ${({ theme }) => theme.spacings.xl};
 `;
 
 const Card = styled.div`
   background: ${({ theme }) => theme.cards.background};
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.cards.shadow};
-  padding: ${({ theme }) => `${theme.spacing.xl} ${theme.spacing.md}`};
+  padding: ${({ theme }) => `${theme.spacings.xl} ${theme.spacings.md}`};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -187,7 +176,7 @@ const Card = styled.div`
 const Label = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.large};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
 const Description = styled.div`
@@ -195,4 +184,3 @@ const Description = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   text-align: center;
 `;
-

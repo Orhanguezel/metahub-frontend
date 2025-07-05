@@ -96,7 +96,7 @@ export default function AdminFaqPage() {
 
 // 💅 Styled Components
 const Container = styled.div`
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.sm};
@@ -106,7 +106,7 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
 
   h2 {
     font-size: ${({ theme }) => theme.fontSizes.xl};

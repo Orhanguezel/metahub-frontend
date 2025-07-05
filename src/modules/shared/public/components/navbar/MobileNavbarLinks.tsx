@@ -57,7 +57,8 @@ const MobileMenuLink = styled(Link)`
   font-size: ${({ theme }) => theme.fontSizes.md};
   text-decoration: none;
   color: ${({ theme }) => theme.colors.text};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.md};
   border-bottom: ${({ theme }) =>
     `${theme.borders.thin} ${theme.colors.border}`};
   display: block;

@@ -1,0 +1,42 @@
+{
+  "admin": {
+    "title": "Gestion des locataires",
+    "create": "Ajouter un nouveau locataire",
+    "update": "Mettre à jour",
+    "cancel": "Annuler",
+    "edit": "Éditer",
+    "delete": "Supprimer",
+    "confirm": {
+      "delete_tenant": "Êtes-vous sûr de vouloir supprimer ce locataire ?"
+    },
+    "tenant": {
+      "edit": "Modifier le locataire",
+      "create": "Ajouter un nouveau locataire",
+      "name": "Nom du locataire",
+      "description": "Description",
+      "slug": "Slug du locataire",
+      "mongoUri": "MongoDB URI",
+      "domainMain": "Domaine principal",
+      "phone": "Téléphone",
+      "theme": "Thème",
+      "isActive": "Actif",
+      "metaTitle": "Méta titre",
+      "metaDescription": "Méta description",
+      "address": "Adresse",
+      "emailSettings": "Paramètres email (SMTP)",
+      "social": "Liens des réseaux sociaux",
+      "images": "Images",
+      "empty": "Aucun locataire trouvé.",
+      "domain": "Domaine",
+      "email": "E-mail",
+      "active": "Actif",
+      "no_images": "Aucune image"
+    },
+    "tabs": {
+      "tenant": "Locataires",
+      "create": "Ajouter"
+    }
+  },
+  "yes": "Oui",
+  "no": "Non"
+}

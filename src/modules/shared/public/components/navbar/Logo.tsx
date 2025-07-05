@@ -90,7 +90,7 @@ export default function Logo({
 const LogoWrapper = styled(Link)`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
+  gap: ${({ theme }) => theme.spacings.xs};
   text-decoration: none;
 `;
 

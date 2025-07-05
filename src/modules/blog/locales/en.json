@@ -1,85 +1,73 @@
 {
   "page": {
-    "title": "Title",
+    "noBlog": "No articles found.",
+    "allBlog": "All Articles",
+    "blog": {
+      "title": "Blog",
+      "all": "See All"
+    },
+    "other": "Other Sections",
     "summary": "Summary",
-    "content": "Content",
+    "detail": "Detail",
+    "noTitle": "No Title"
+  },
+  "readMore": "Read More →",
+  "author": "Author",
+  "tags": "Tags",
+  "unknown": "Unknown",
+  "tabs": {
+    "blog": "Blog",
+    "create": "New Article",
+    "categories": "Categories"
+  },
+  "blog": {
+    "empty": "No blog available.",
+    "no_images": "No images",
     "author": "Author",
     "tags": "Tags",
-    "image": "Image",
-    "category": "Category",
-    "select_category": "Select Category",
-    "publish_status": "Publish Status",
-    "publish": "Publish",
+    "publish_status": "Published",
     "unpublish": "Unpublish",
-    "create": "Create",
-    "update": "Update",
-    "cancel": "Cancel",
-    "edit": "Edit",
-    "delete": "Delete",
-    "other": "Other Blogs",
-    "readMore": "Read More →",
-    "allBlog": "All Blogs",
-    "noBlog": "No blogs found.",
-    "no_images": "No images",
+    "publish": "Publish",
     "unknown": "Unknown",
-    "empty": "No blogs available.",
-    "tabs": {
-      "blog": "Blogs",
-      "create": "New Blog",
-      "categories": "Categories"
-    }
+    "none": "None"
   },
+  "edit": "Edit",
+  "delete": "Delete",
+  "yes": "Yes",
+  "no": "No",
   "admin": {
-    "tabs": {
-      "blog": "Blogs",
-      "create": "New Blog",
-      "categories": "Categories"
-    },
     "blog": {
+      "edit": "Edit Article",
+      "create": "Create New Article",
       "title": "Title",
       "summary": "Summary",
       "content": "Content",
       "author": "Author",
       "tags": "Tags",
-      "image": "Image",
+      "image": "Images",
       "category": "Category",
-      "select_category": "Select a category",
-      "edit": "Edit Blog",
-      "create": "Add New Blog",
-      "no_images": "No images available",
-      "empty": "No blogs available.",
-      "publish_status": "Publish Status",
-      "publish": "Publish",
-      "unpublish": "Unpublish"
+      "select_category": "Select a category"
     },
     "categories": {
-      "title": "Blog Categories",
-      "add": "Add New Category",
-      "empty": "No categories found."
+      "title": "Product Categories",
+      "add": "Add Category",
+      "name": "Category Name"
     },
+    "editCategory": "Edit Category",
+    "newCategory": "New Category",
+    "optional_description": "Optional description",
+    "category_info": "What is this category blog?",
+    "update": "Update",
+    "update2": "Update",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
     "confirm": {
       "delete": "Are you sure you want to delete this category?",
-      "delete_blog": "Are you sure you want to delete this blog?"
-    },
-    "actions": "Actions",
-    "slug": "Slug",
-    "language": {
-      "tr": "Turkish",
-      "en": "English",
-      "de": "German"
+      "delete_article": "Are you sure you want to delete this article?"
     },
     "loading": "Loading...",
-    "yes": "Yes",
-    "no": "No",
-    "edit": "Edit",
-    "delete": "Delete",
-    "update": "Update",
-    "create_action": "Add",
-    "cancel": "Cancel"
-  },
-
-  "seo": {
-    "title": "SEO Title",
-    "description": "SEO Description"
+    "actions": "Actions",
+    "slug": "Slug"
   }
 }

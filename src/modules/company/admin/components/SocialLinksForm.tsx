@@ -103,13 +103,13 @@ export default SocialLinksForm;
 const Form = styled.form`
   margin-top: 24px;
   background: ${({ theme }) => theme.colors.cardBackground};
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.xs};
 `;
 
 const SectionTitle = styled.h4`
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
   color: ${({ theme }) => theme.colors.textPrimary};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
@@ -117,7 +117,7 @@ const SectionTitle = styled.h4`
 
 const InputsGrid = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.md};
   grid-template-columns: 1fr;
 
   ${({ theme }) => theme.media.small} {
@@ -132,19 +132,19 @@ const InputBlock = styled.div`
 const Label = styled.label`
   display: block;
   font-weight: 600;
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const Input = styled.input`
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   width: 100%;
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.sm};
   background: ${({ theme }) => theme.colors.inputBackground};
   color: ${({ theme }) => theme.colors.textPrimary};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 
   &:focus {
     border-color: ${({ theme }) => theme.colors.primary};
@@ -161,8 +161,9 @@ const Input = styled.input`
 `;
 
 const Button = styled.button`
-  margin-top: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.lg};
+  margin-top: ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.lg};
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.buttonText};
   border: none;

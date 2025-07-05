@@ -14,10 +14,10 @@ import {
   FaWhatsapp,
 } from "react-icons/fa6";
 import React from "react";
-import { SocialLinks } from "@/types/SocialLinks";
+import { ISocialLink } from "@/modules/settings/types";
 
 interface FooterSocialLinksProps {
-  links?: SocialLinks;
+  links?: ISocialLink;
 }
 
 // İkon haritası
@@ -58,7 +58,9 @@ export default function FooterSocialLinks({ links }: FooterSocialLinksProps) {
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={normalizedKey.charAt(0).toUpperCase() + normalizedKey.slice(1)}
+            aria-label={
+              normalizedKey.charAt(0).toUpperCase() + normalizedKey.slice(1)
+            }
             tabIndex={0}
           >
             {icon}
@@ -71,14 +73,14 @@ export default function FooterSocialLinks({ links }: FooterSocialLinksProps) {
 
 // 🎨 Styled Components
 const SocialMedia = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.lg};
+  margin-top: ${({ theme }) => theme.spacings.lg};
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.md};
 
   ${({ theme }) => theme.media.small} {
-    margin-top: ${({ theme }) => theme.spacing.md};
+    margin-top: ${({ theme }) => theme.spacings.md};
   }
 `;
 

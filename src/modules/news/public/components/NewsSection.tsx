@@ -2,37 +2,35 @@
 
 import styled from "styled-components";
 import Link from "next/link";
+import i18n from "@/i18n";
+import translations from "../../locales";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { useAppSelector } from "@/store/hooks";
-import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import { useAppSelector } from "@/store/hooks";
 import { Skeleton, ErrorMessage } from "@/shared";
+import type { INews } from "../../types";
 
-// --- Çoklu dil fallback helper ---
-function getBestTranslation<T extends Record<string, string>>(
-  obj: T | undefined,
-  lang: SupportedLocale
-) {
-  if (!obj) return "";
-  if (obj[lang]) return obj[lang];
-  for (const l of SUPPORTED_LOCALES) {
-    if (obj[l]) return obj[l];
-  }
-  return "";
-}
+
 
 export default function NewsSection() {
-  const { t } = useTranslation("home");
+  const { t } = useTranslation("news");
   const lang = getCurrentLocale();
 
-  // Sadece store consumption!
+    Object.entries(translations).forEach(([lang, resources]) => {
+  if (!i18n.hasResourceBundle(lang, "news")) {
+    i18n.addResourceBundle(lang, "news", resources, true, true);
+  }
+});
+
+  // Store’dan sadece tüketici (stateless)
   const { news, loading, error } = useAppSelector((state) => state.news);
 
+ 
   if (loading) {
     return (
       <Section>
-        <Title>📰 {t("news.title")}</Title>
+        <Title>📰 {t("page.news.title")}</Title>
         <Grid>
           <Skeleton />
           <Skeleton />
@@ -45,7 +43,7 @@ export default function NewsSection() {
   if (error) {
     return (
       <Section>
-        <Title>📰 {t("news.title")}</Title>
+        <Title>📰 {t("page.news.title")}</Title>
         <ErrorMessage />
       </Section>
     );
@@ -54,8 +52,8 @@ export default function NewsSection() {
   if (!news || news.length === 0) {
     return (
       <Section>
-        <Title>📰 {t("news.title")}</Title>
-        <p>{t("news.noNews", "Haber bulunamadı.")}</p>
+        <Title>📰 {t("page.news.title")}</Title>
+        <p>{t("page.news.noNews", "Haber bulunamadı.")}</p>
       </Section>
     );
   }
@@ -69,15 +67,11 @@ export default function NewsSection() {
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
     >
-      <Title>📰 {t("news.title")}</Title>
+      <Title>📰 {t("page.news.title")}</Title>
 
       <Grid>
-        {latestNews.map((item, index) => (
-          <CardLink
-            key={item._id}
-            href={`/news/${item.slug}`}
-            passHref
-          >
+        {latestNews.map((item: INews, index: number) => (
+          <CardLink key={item._id} href={`/news/${item.slug}`} passHref>
             <Card
               as={motion.div}
               initial={{ opacity: 0, y: 30 }}
@@ -86,17 +80,14 @@ export default function NewsSection() {
               viewport={{ once: true }}
             >
               <Content>
-                <NewsTitle>
-                  {getBestTranslation(item.title, lang) || t("news.untitled", "Başlıksız")}
+                <NewsTitle>{item.title?.[lang] || "-"}
                 </NewsTitle>
-                <Excerpt>
-                  {getBestTranslation(item.summary, lang) || t("news.noSummary", "Özet yok.")}
-                </Excerpt>
+                <Excerpt>{item.summary?.[lang] || "-"}</Excerpt>
               </Content>
               {item.images?.[0]?.url && (
                 <StyledImage
                   src={item.images[0].url}
-                  alt={getBestTranslation(item.title, lang)}
+                  alt={item.title?.[lang] || "News"}
                   initial={{ opacity: 0, scale: 0.95 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, delay: 0.1 }}
@@ -108,14 +99,15 @@ export default function NewsSection() {
         ))}
       </Grid>
 
-      <SeeAll href="/news">{t("news.all")}</SeeAll>
+      <SeeAll href="/news">{t("page.news.all")}</SeeAll>
     </Section>
   );
 }
 
 // Styled Components (değişmeden bırakılabilir)
 const Section = styled(motion.section)`
-  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   text-align: center;
@@ -123,14 +115,14 @@ const Section = styled(motion.section)`
 
 const Title = styled.h2`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
 const Grid = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.spacing.xl};
+  gap: ${({ theme }) => theme.spacings.xl};
   @media (min-width: 1024px) {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -152,7 +144,7 @@ const CardLink = styled(Link)`
 
 const Card = styled(motion.div)`
   background: ${({ theme }) => theme.colors.cardBackground};
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.md};
   display: flex;
@@ -172,7 +164,7 @@ const Content = styled.div`
 
 const NewsTitle = styled.h3`
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
   color: ${({ theme }) => theme.colors.text};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 `;
@@ -189,7 +181,7 @@ const StyledImage = styled(motion.img)`
   object-fit: cover;
   box-shadow: ${({ theme }) => theme.shadows.sm};
   transition: transform 0.3s ease;
-  margin-top: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacings.md};
   &:hover {
     transform: scale(1.02);
   }
@@ -200,7 +192,7 @@ const StyledImage = styled(motion.img)`
 
 const SeeAll = styled(Link)`
   display: inline-block;
-  margin-top: ${({ theme }) => theme.spacing.xl};
+  margin-top: ${({ theme }) => theme.spacings.xl};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   font-size: ${({ theme }) => theme.fontSizes.base};

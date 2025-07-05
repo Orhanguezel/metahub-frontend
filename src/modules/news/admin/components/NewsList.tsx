@@ -1,16 +1,15 @@
 "use client";
 
-import React from "react";
 import styled from "styled-components";
-import { INews } from "@/modules/news/types/news";
-import { useTranslation } from "react-i18next";
-import {
-  Skeleton,
- } from "@/shared";
+import { INews } from "@/modules/news/types";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { Skeleton } from "@/shared";
+import { SupportedLocale } from "@/types/common";
 
 interface Props {
   news: INews[] | undefined;
-  lang: "tr" | "en" | "de";
+  lang: SupportedLocale;
   loading: boolean;
   error: string | null;
   onEdit?: (item: INews) => void;
@@ -27,12 +26,12 @@ export default function NewsList({
   onDelete,
   onTogglePublish,
 }: Props) {
-  const { t } = useTranslation("adminNews");
+  const { t } = useI18nNamespace("news", translations);
 
   if (loading) {
     return (
       <SkeletonWrapper>
-        {[...Array(3)].map((_, i) => (
+        {Array.from({ length: 3 }).map((_, i) => (
           <Skeleton key={i} />
         ))}
       </SkeletonWrapper>
@@ -44,21 +43,29 @@ export default function NewsList({
   if (news.length === 0)
     return <Empty>{t("news.empty", "No news available.")}</Empty>;
 
+  // Fallback fonksiyonu (çok dilli)
+  const getMultiLang = (obj?: Record<string, string>) => {
+    if (!obj) return "";
+    return obj[lang] || obj["en"] || Object.values(obj)[0] || "—";
+  };
+
   return (
     <div>
       {news.map((item) => (
         <NewsCard key={item._id}>
-          <h2>
-            {typeof item.title === "object" ? item.title[lang] || "—" : "—"}
-          </h2>
-          <p>
-            {typeof item.summary === "object" ? item.summary[lang] || "—" : "—"}
-          </p>
+          <h2>{getMultiLang(item.title)}</h2>
+          <p>{getMultiLang(item.summary)}</p>
 
-          {Array.isArray(item.images) && item.images.length > 0 ? (
+          {item.images?.length > 0 ? (
             <ImageGrid>
               {item.images.map((img, i) => (
-                <img key={i} src={img.url} alt={`news-${i}`} />
+                <img
+                  key={i}
+                  src={img.url}
+                  alt={getMultiLang(item.title) || `article-${i}`}
+                  loading="lazy"
+                  width={150}
+                />
               ))}
             </ImageGrid>
           ) : (
@@ -69,12 +76,10 @@ export default function NewsList({
             <strong>{t("news.author", "Author")}:</strong>{" "}
             {item.author || t("unknown", "Unknown")}
           </InfoLine>
-
           <InfoLine>
             <strong>{t("news.tags", "Tags")}:</strong>{" "}
-            {item.tags?.join(", ") || t("none", "None")}
+            {item.tags?.length ? item.tags.join(", ") : t("none", "None")}
           </InfoLine>
-
           <InfoLine>
             <strong>{t("news.publish_status", "Published")}:</strong>{" "}
             {item.isPublished ? t("yes", "Yes") : t("no", "No")}
@@ -83,18 +88,29 @@ export default function NewsList({
           {(onEdit || onDelete || onTogglePublish) && (
             <ButtonGroup>
               {onEdit && (
-                <ActionButton onClick={() => onEdit(item)}>
+                <ActionButton
+                  onClick={() => onEdit(item)}
+                  aria-label={t("edit", "Edit")}
+                >
                   {t("edit", "Edit")}
                 </ActionButton>
               )}
               {onDelete && (
-                <DeleteButton onClick={() => onDelete(item._id)}>
+                <DeleteButton
+                  onClick={() => onDelete(item._id)}
+                  aria-label={t("delete", "Delete")}
+                >
                   {t("delete", "Delete")}
                 </DeleteButton>
               )}
               {onTogglePublish && (
                 <ToggleButton
                   onClick={() => onTogglePublish(item._id, item.isPublished)}
+                  aria-label={
+                    item.isPublished
+                      ? t("news.unpublish", "Unpublish")
+                      : t("news.publish", "Publish")
+                  }
                 >
                   {item.isPublished
                     ? t("news.unpublish", "Unpublish")
@@ -109,6 +125,7 @@ export default function NewsList({
   );
 }
 
+// --- Styles ---
 const SkeletonWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -132,6 +149,7 @@ const ImageGrid = styled.div`
   img {
     width: 150px;
     border-radius: 4px;
+    object-fit: cover;
   }
 `;
 

@@ -3,10 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  fetchGalleryItems,
   getGalleryStats,
 } from "@/modules/gallery/slice/gallerySlice";
-import { fetchGalleryCategories } from "@/modules/gallery/slice/galleryCategorySlice";
 
 import {
   GalleryList,
@@ -16,32 +14,36 @@ import {
   CategoryForm,
 } from "@/modules/gallery";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import type { SupportedLocale } from "@/types/common";
 import { motion, AnimatePresence } from "framer-motion";
-import { GalleryCategory } from "@/modules/gallery/types/gallery";
+import { IGalleryCategory } from "@/modules/gallery/types";
 
 const AdminGalleryPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const items = useAppSelector((state) => state.gallery.items);
+  const images = useAppSelector((state) => state.gallery.images);
   const stats = useAppSelector((state) => state.gallery.stats);
   const loading = useAppSelector((state) => state.gallery.loading);
-  const categories = useAppSelector((state) => state.galleryCategory.categories);
-  const { t } = useTranslation("gallery");
+  const categories = useAppSelector((state) => state.gallery.categories);
 
-  const [activeTab, setActiveTab] = useState<"list" | "add" | "stats" | "categories">("list");
-  const [editCategory, setEditCategory] = useState<GalleryCategory | null>(null);
+ const { i18n, t } = useI18nNamespace("gallery", translations);
+     const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+
+  const [activeTab, setActiveTab] = useState<
+    "list" | "add" | "stats" | "categories"
+  >("list");
+  const [editCategory, setEditCategory] = useState<IGalleryCategory | null>(
+    null
+  );
   const [showCategoryForm, setShowCategoryForm] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchGalleryItems({}));
     dispatch(getGalleryStats());
-    dispatch(fetchGalleryCategories());
   }, [dispatch]);
 
   const handleUpdate = async () => {
-    await dispatch(fetchGalleryItems({}));
     await dispatch(getGalleryStats());
-    await dispatch(fetchGalleryCategories());
   };
 
   return (
@@ -49,16 +51,28 @@ const AdminGalleryPage: React.FC = () => {
       <Title>{t("title")}</Title>
 
       <TabButtons>
-        <TabButton $active={activeTab === "stats"} onClick={() => setActiveTab("stats")}>
+        <TabButton
+          $active={activeTab === "stats"}
+          onClick={() => setActiveTab("stats")}
+        >
           {t("tab.stats")}
         </TabButton>
-        <TabButton $active={activeTab === "add"} onClick={() => setActiveTab("add")}>
+        <TabButton
+          $active={activeTab === "add"}
+          onClick={() => setActiveTab("add")}
+        >
           {t("tab.add")}
         </TabButton>
-        <TabButton $active={activeTab === "list"} onClick={() => setActiveTab("list")}>
+        <TabButton
+          $active={activeTab === "list"}
+          onClick={() => setActiveTab("list")}
+        >
           {t("tab.list")}
         </TabButton>
-        <TabButton $active={activeTab === "categories"} onClick={() => setActiveTab("categories")}>
+        <TabButton
+          $active={activeTab === "categories"}
+          onClick={() => setActiveTab("categories")}
+        >
           {t("tab.categories", "Categories")}
         </TabButton>
       </TabButtons>
@@ -98,9 +112,9 @@ const AdminGalleryPage: React.FC = () => {
           >
             {loading ? (
               <EmptyMessage>{t("loading")}</EmptyMessage>
-            ) : items.length > 0 ? (
+            ) : images.length > 0 ? (
               <GalleryList
-                items={items}
+                images={images}
                 categories={categories}
                 onUpdate={handleUpdate}
               />
@@ -155,10 +169,11 @@ const AdminGalleryPage: React.FC = () => {
 
 export default AdminGalleryPage;
 
-// Styles 
+// Styles
 
 const Container = styled.div`
-  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
   background: ${({ theme }) => theme.colors.sectionBackground};
   color: ${({ theme }) => theme.colors.text};
   min-height: 70vh;
@@ -173,16 +188,16 @@ const Title = styled.h1`
   font-family: ${({ theme }) => theme.fonts.heading};
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
   color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   text-align: left;
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  letter-spacing: 0.02em;
+  letter-spacings: 0.02em;
 `;
 
 const TabButtons = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  gap: ${({ theme }) => theme.spacings.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   justify-content: flex-start;
   flex-wrap: wrap;
 `;
@@ -200,10 +215,7 @@ const TabButton = styled.button<{ $active: boolean }>`
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   cursor: pointer;
   box-shadow: ${({ theme }) => theme.shadows.button};
-  transition: 
-    background 0.22s,
-    color 0.22s,
-    box-shadow 0.22s;
+  transition: background 0.22s, color 0.22s, box-shadow 0.22s;
 
   &:hover {
     background: ${({ $active, theme }) =>
@@ -216,7 +228,7 @@ const TabButton = styled.button<{ $active: boolean }>`
 const EmptyMessage = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.lg};
   color: ${({ theme }) => theme.colors.textSecondary};
-  margin: ${({ theme }) => theme.spacing.xl} 0;
+  margin: ${({ theme }) => theme.spacings.xl} 0;
   text-align: center;
   font-family: ${({ theme }) => theme.fonts.body};
   opacity: 0.75;
@@ -241,15 +253,16 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.xl};
   min-width: 340px;
   max-width: 90vw;
 
   @media (max-width: 600px) {
-    padding: ${({ theme }) => theme.spacing.lg} ${({ theme }) => theme.spacing.sm};
+    padding: ${({ theme }) => theme.spacings.lg}
+      ${({ theme }) => theme.spacings.sm};
     min-width: 0;
   }
 `;
-

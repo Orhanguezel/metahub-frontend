@@ -1,24 +1,17 @@
 "use client";
+
 import React from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
-
-export interface GalleryStatsData {
-  total: number;
-  published: number;
-  archived: number;
-  active?: number;
-  inactive?: number;
-  images?: number;
-  videos?: number;
-  [key: string]: number | undefined;
-}
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import type { IGalleryStats } from "@/modules/gallery/types";
 
 interface Props {
-  stats: GalleryStatsData | null;
+  stats: IGalleryStats | null;
 }
 
-const statOrder: { key: keyof GalleryStatsData; label: string }[] = [
+// Gösterilecek istatistikler ve dil anahtarları
+const statOrder: { key: keyof IGalleryStats; label: string }[] = [
   { key: "total", label: "stats.total" },
   { key: "published", label: "stats.published" },
   { key: "archived", label: "stats.archived" },
@@ -29,7 +22,8 @@ const statOrder: { key: keyof GalleryStatsData; label: string }[] = [
 ];
 
 const GalleryDashboard: React.FC<Props> = ({ stats }) => {
-  const { t } = useTranslation("gallery");
+  const { t } = useI18nNamespace("gallery", translations);
+
   if (!stats) return null;
 
   return (
@@ -38,7 +32,7 @@ const GalleryDashboard: React.FC<Props> = ({ stats }) => {
         .filter(({ key }) => stats[key] !== undefined)
         .map(({ key, label }) => (
           <Card key={key}>
-            <Label>{t(label)}</Label>
+            <Label>{t(label, label)}</Label>
             <Value>{stats[key] ?? 0}</Value>
           </Card>
         ))}
@@ -48,43 +42,43 @@ const GalleryDashboard: React.FC<Props> = ({ stats }) => {
 
 export default GalleryDashboard;
 
-// Styled Components (100% theme compliant)
+// 💅 Styled Components
 
 const StatsContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: ${({ theme }) => theme.spacing.lg};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-  padding: ${({ theme }) => theme.spacing.sm} 0;
+  gap: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+  padding: ${({ theme }) => theme.spacings.sm} 0;
 
   @media ${({ theme }) => theme.media.mobile} {
-    gap: ${({ theme }) => theme.spacing.md};
+    gap: ${({ theme }) => theme.spacings.md};
     grid-template-columns: 1fr 1fr;
   }
 `;
 
 const Card = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.md};
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   min-width: 0;
+  cursor: default;
   transition: background ${({ theme }) => theme.transition.normal},
     box-shadow ${({ theme }) => theme.transition.normal},
     transform ${({ theme }) => theme.transition.normal};
-  cursor: default;
 
   &:hover {
     background: ${({ theme }) => theme.colors.hoverBackground};
     box-shadow: ${({ theme }) => theme.shadows.lg};
-    transform: translateY(-2px) scale(1.025);
+    transform: translateY(-2px) scale(1.02);
   }
 
   @media ${({ theme }) => theme.media.mobile} {
-    padding: ${({ theme }) => theme.spacing.lg} ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.md};
     border-radius: ${({ theme }) => theme.radii.md};
   }
 `;
@@ -93,7 +87,7 @@ const Label = styled.p`
   font-family: ${({ theme }) => theme.fonts.body};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   letter-spacing: 0.01em;
 `;
@@ -107,3 +101,4 @@ const Value = styled.h4`
   letter-spacing: 0.01em;
 `;
 
+export { StatsContainer, Card, Label, Value };

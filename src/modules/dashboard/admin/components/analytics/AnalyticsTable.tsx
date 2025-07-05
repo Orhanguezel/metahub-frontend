@@ -46,7 +46,9 @@ export default function AnalyticsTable({ data, onExportClick }: Props) {
             if (log.timestamp) {
               const date = new Date(log.timestamp);
               if (!isNaN(date.getTime())) {
-                formatted = `${date.toLocaleDateString(i18n.language)} ${date.toLocaleTimeString(i18n.language, {
+                formatted = `${date.toLocaleDateString(
+                  i18n.language
+                )} ${date.toLocaleTimeString(i18n.language, {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}`;
@@ -56,11 +58,15 @@ export default function AnalyticsTable({ data, onExportClick }: Props) {
             const moduleLabel =
               t(`modules.${log.module}`, log.module) || log.module || "-";
             const eventLabel =
-              t(`events.${log.eventType}`, log.eventType) || log.eventType || "-";
+              t(`events.${log.eventType}`, log.eventType) ||
+              log.eventType ||
+              "-";
 
             const latLon =
               log.location?.coordinates && log.location.coordinates.length === 2
-                ? `${log.location.coordinates[1].toFixed(4)}, ${log.location.coordinates[0].toFixed(4)}`
+                ? `${log.location.coordinates[1].toFixed(
+                    4
+                  )}, ${log.location.coordinates[0].toFixed(4)}`
                 : "-";
 
             return (
@@ -90,16 +96,18 @@ export default function AnalyticsTable({ data, onExportClick }: Props) {
 
 const TableWrapper = styled.div`
   overflow-x: auto;
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderLight};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.colors.borderLight};
   border-radius: ${({ theme }) => theme.radii.md};
   background: ${({ theme }) => theme.colors.cardBackground};
   box-shadow: ${({ theme }) => theme.cards.shadow};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
 `;
 
 const ExportBtn = styled.button`
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
+  padding: ${({ theme }) => theme.spacings.xs}
+    ${({ theme }) => theme.spacings.md};
   background: ${({ theme }) => theme.colors.primary};
   color: #fff;
   border: none;
@@ -121,8 +129,10 @@ const Table = styled.table`
 
   th,
   td {
-    padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
-    border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderLight};
+    padding: ${({ theme }) => theme.spacings.sm}
+      ${({ theme }) => theme.spacings.md};
+    border-bottom: ${({ theme }) => theme.borders.thin}
+      ${({ theme }) => theme.colors.borderLight};
     text-align: left;
     white-space: nowrap;
   }
@@ -138,8 +148,8 @@ const Table = styled.table`
 `;
 
 const NoData = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.md};
   color: ${({ theme }) => theme.colors.textMuted};
   font-size: ${({ theme }) => theme.fontSizes.small};
   text-align: center;

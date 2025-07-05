@@ -126,26 +126,27 @@ const Wrapper = styled.div`
   width: 100%;
   min-height: 100vh;
   background: ${({ theme }) => theme.colors.sectionBackground};
-  padding: ${({ theme }) => theme.spacing.xxl} 0;
+  padding: ${({ theme }) => theme.spacings.xxl} 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxl};
+  gap: ${({ theme }) => theme.spacings.xxl};
 
   @media ${({ theme }) => theme.media.mobile} {
-    padding: ${({ theme }) => theme.spacing.lg} 0;
-    gap: ${({ theme }) => theme.spacing.lg};
+    padding: ${({ theme }) => theme.spacings.lg} 0;
+    gap: ${({ theme }) => theme.spacings.lg};
   }
 `;
 
 const Tabs = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  gap: ${({ theme }) => theme.spacings.md};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
 `;
 
 const TabButton = styled.button<{ $active: boolean }>`
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.lg};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
@@ -155,12 +156,11 @@ const TabButton = styled.button<{ $active: boolean }>`
     $active ? theme.colors.cardBackground : "transparent"};
   border: none;
   border-bottom: 2px solid
-    ${({ $active, theme }) =>
-      $active ? theme.colors.primary : "transparent"};
+    ${({ $active, theme }) => ($active ? theme.colors.primary : "transparent")};
   cursor: pointer;
-  border-radius: ${({ theme }) => theme.radii.md} ${({ theme }) => theme.radii.md} 0 0;
-  box-shadow: ${({ $active, theme }) =>
-    $active ? theme.shadows.sm : "none"};
+  border-radius: ${({ theme }) => theme.radii.md}
+    ${({ theme }) => theme.radii.md} 0 0;
+  box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.sm : "none")};
   transition: all ${({ theme }) => theme.transition.normal};
   outline: none;
 
@@ -184,11 +184,11 @@ const Card = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.lg};
-  padding: ${({ theme }) => theme.spacing.xxl};
+  padding: ${({ theme }) => theme.spacings.xxl};
   margin: 0 auto;
 
   @media ${({ theme }) => theme.media.mobile} {
-    padding: ${({ theme }) => theme.spacing.lg};
+    padding: ${({ theme }) => theme.spacings.lg};
     border-radius: ${({ theme }) => theme.radii.lg};
   }
 `;
@@ -199,11 +199,11 @@ const Title = styled.h1`
   color: ${({ theme }) => theme.colors.primary};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
 
   @media ${({ theme }) => theme.media.mobile} {
     font-size: ${({ theme }) => theme.fontSizes.lg};
-    margin-bottom: ${({ theme }) => theme.spacing.lg};
+    margin-bottom: ${({ theme }) => theme.spacings.lg};
   }
 `;
 

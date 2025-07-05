@@ -1,19 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
-import { INews } from "@/modules/news/types/news";
-import { NewsCategory } from "@/modules/news/slice/newsCategorySlice";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import type { SupportedLocale } from "@/types/common";
+
 import {
-  fetchAllNewsAdmin,
-  clearNewsMessages,
   createNews,
   updateNews,
   deleteNews,
   togglePublishNews,
 } from "@/modules/news/slice/newsSlice";
-import Modal from "@/shared/Modal";
+import {
+  createNewsCategory,
+  updateNewsCategory,
+} from "@/modules/news/slice/newsCategorySlice";
+
 import {
   NewsFormModal,
   CategoryForm,
@@ -21,36 +25,31 @@ import {
   NewsList,
   NewsTabs,
 } from "@/modules/news";
-import { useTranslation } from "react-i18next";
+
+import { Modal } from "@/shared";
+import { INews } from "@/modules/news/types";
+import { NewsCategory } from "@/modules/news/types";
 
 export default function AdminNewsPage() {
+const { i18n, t } = useI18nNamespace("news", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
+  const { news, loading, error } = useAppSelector((state) => state.news);
+
+
+
   const [activeTab, setActiveTab] = useState<"list" | "create" | "categories">(
     "list"
   );
   const [editingItem, setEditingItem] = useState<INews | null>(null);
-  const [editingCategory, setEditingCategory] = useState<NewsCategory | null>(
-    null
-  );
+  const [editingCategory, setEditingCategory] =
+    useState<NewsCategory | null>(null);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
   const dispatch = useAppDispatch();
-  const { news, loading, error } = useAppSelector((state) => state.news);
-  const { i18n, t } = useTranslation("adminNews");
 
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
+  // ---- FETCH YOK! ----
 
-  // ✅ fetch admin news
-  useEffect(() => {
-    dispatch(fetchAllNewsAdmin(lang));
-    return () => {
-      dispatch(clearNewsMessages());
-    };
-  }, [dispatch, lang]);
-
-  // ✅ create or update news
-  const handleCreateOrUpdate = async (formData: FormData, id?: string) => {
+  const handleSubmit = async (formData: FormData, id?: string) => {
     if (id) {
       await dispatch(updateNews({ id, formData }));
     } else {
@@ -59,37 +58,35 @@ export default function AdminNewsPage() {
     setActiveTab("list");
   };
 
-  // ✅ delete news
   const handleDelete = async (id: string) => {
-    const confirmMessage = t(
-      "confirm.delete_news",
-      "Haberi silmek istediğinizden emin misiniz?"
+    const confirmMsg = t(
+      "confirm.delete_article",
+      "Bu makaleyi silmek istediğinize emin misiniz?"
     );
-    if (confirm(confirmMessage)) {
+    if (confirm(confirmMsg)) {
       await dispatch(deleteNews(id));
     }
   };
 
-  // ✅ publish toggle
-  const handleTogglePublish = async (id: string, currentStatus: boolean) => {
-    await dispatch(togglePublishNews({ id, isPublished: !currentStatus }));
+  const handleTogglePublish = (id: string, isPublished: boolean) => {
+    dispatch(togglePublishNews({ id, isPublished: !isPublished }));
   };
 
-  // ✅ category modal ops
-  const handleOpenAddCategory = () => {
-    setEditingCategory(null);
-    setCategoryModalOpen(true);
-  };
+  // Create/Update Category
+const handleCategorySubmit = async (
+  data: { name: Record<SupportedLocale, string>; description?: Record<SupportedLocale, string> },
+  id?: string
+) => {
+  if (id) {
+    await dispatch(updateNewsCategory({ id, data }));
+  } else {
+    await dispatch(createNewsCategory(data));
+  }
+  setEditingCategory(null);
+  setCategoryModalOpen(false);
+};
 
-  const handleEditCategory = (category: NewsCategory) => {
-    setEditingCategory(category);
-    setCategoryModalOpen(true);
-  };
-
-  const handleEditNews = (item: INews) => {
-    setEditingItem(item);
-    setActiveTab("create");
-  };
+  
 
   return (
     <Wrapper>
@@ -102,7 +99,10 @@ export default function AdminNewsPage() {
             lang={lang}
             loading={loading}
             error={error}
-            onEdit={handleEditNews}
+            onEdit={(item) => {
+              setEditingItem(item);
+              setActiveTab("create");
+            }}
             onDelete={handleDelete}
             onTogglePublish={handleTogglePublish}
           />
@@ -110,29 +110,37 @@ export default function AdminNewsPage() {
 
         {activeTab === "create" && (
           <NewsFormModal
-            isOpen={true}
+            isOpen
             onClose={() => {
-              setEditingItem(null); // temizle
+              setEditingItem(null);
               setActiveTab("list");
             }}
             editingItem={editingItem}
-            onSubmit={handleCreateOrUpdate}
+            onSubmit={handleSubmit}
           />
         )}
 
         {activeTab === "categories" && (
           <>
             <CategoryListPage
-              onAdd={handleOpenAddCategory}
-              onEdit={handleEditCategory}
+              onAdd={() => {
+                setEditingCategory(null);
+                setCategoryModalOpen(true);
+              }}
+              onEdit={(category) => {
+                setEditingCategory(category);
+                setCategoryModalOpen(true);
+              }}
             />
             <Modal
               isOpen={categoryModalOpen}
               onClose={() => setCategoryModalOpen(false)}
             >
               <CategoryForm
+                isOpen={categoryModalOpen}
                 onClose={() => setCategoryModalOpen(false)}
                 editingItem={editingCategory}
+                onSubmit={handleCategorySubmit}
               />
             </Modal>
           </>
@@ -145,13 +153,13 @@ export default function AdminNewsPage() {
 const Wrapper = styled.div`
   max-width: 1200px;
   margin: auto;
-  padding: ${({ theme }) => theme.layout.sectionSpacing}
-    ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.layout.sectionspacings}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const TabContent = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.md};
 `;

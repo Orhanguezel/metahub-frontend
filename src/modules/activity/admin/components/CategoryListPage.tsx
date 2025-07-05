@@ -1,95 +1,95 @@
 "use client";
 
-import React, { useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  fetchActivityCategories,
-  deleteActivityCategory,
-  ActivityCategory,
-} from "@/modules/activity/slice/activityCategorySlice";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import i18n from "@/i18n";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import type { ActivityCategory } from "@/modules/activity/types";
+import { LANG_LABELS, SupportedLocale } from "@/types/common";
+import { deleteActivityCategory } from "@/modules/activity/slice/activityCategorySlice";
 
-interface Props {
+interface ProductCategoryListPageProps {
   onAdd: () => void;
   onEdit: (category: ActivityCategory) => void;
 }
 
-export default function ActivityCategoryListPage({ onAdd, onEdit }: Props) {
-  const { t } = useTranslation("adminActivity");
+export default function ProductCategoryListPage({
+  onAdd,
+  onEdit,
+}: ProductCategoryListPageProps) {
   const dispatch = useAppDispatch();
+  const { i18n, t } = useI18nNamespace("activity", translations);
+
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
+
+  // Merkezi fetch ile gelen slice'ı okuyoruz
   const { categories, loading, error } = useAppSelector(
     (state) => state.activityCategory
   );
 
-  useEffect(() => {
-    dispatch(fetchActivityCategories());
-  }, [dispatch]);
-
-  const handleDelete = useCallback(
-    (id: string) => {
-      const confirmed = confirm(
-        t("confirm.delete", "Are you sure you want to delete this category?")
-      );
-      if (confirmed) dispatch(deleteActivityCategory(id));
-    },
-    [dispatch, t]
-  );
+  // Silme işlemi
+  const handleDelete = (id: string) => {
+    const confirmMessage = t(
+      "admin.confirm.delete",
+      "Are you sure you want to delete this category?"
+    );
+    if (window.confirm(confirmMessage)) {
+      dispatch(deleteActivityCategory(id));
+    }
+  };
 
   return (
     <Wrapper>
       <Header>
-        <h2>{t("categories.title", "Activity Categories")}</h2>
-        <PrimaryButton onClick={onAdd}>
-          {t("categories.add", "Add Category")}
-        </PrimaryButton>
+        <h2>{t("admin.categories.title", "Product Categories")}</h2>
+        <AddButton onClick={onAdd}>
+          {t("admin.categories.add", "Add Category")}
+        </AddButton>
       </Header>
 
       {loading ? (
-        <Status>{t("loading", "Loading...")}</Status>
+        <StatusMessage>{t("admin.loading", "Loading...")}</StatusMessage>
       ) : error ? (
-        <Error>{error}</Error>
-      ) : categories.length === 0 ? (
-        <Status>{t("categories.empty", "No categories found.")}</Status>
+        <ErrorMessage>❌ {error}</ErrorMessage>
+      ) : !categories || categories.length === 0 ? (
+        <StatusMessage>
+          {t("admin.categories.empty", "No categories found.")}
+        </StatusMessage>
       ) : (
-        <StyledTable>
+        <Table>
           <thead>
             <tr>
               <th>#</th>
-              <th>{t("language.en", "EN")}</th>
-              <th>{t("language.tr", "TR")}</th>
-              <th>{t("language.de", "DE")}</th>
-              <th>{t("slug", "Slug")}</th>
-              <th>{t("actions", "Actions")}</th>
+              <th>{t(`admin.language.${lang}`, LANG_LABELS[lang])}</th>
+              <th>{t("admin.slug", "Slug")}</th>
+              <th>{t("admin.actions", "Actions")}</th>
             </tr>
           </thead>
           <tbody>
-            {categories.map((cat, i) => (
+            {categories.map((cat: ActivityCategory, i: number) => (
               <tr key={cat._id}>
                 <td>{i + 1}</td>
-                <td>{cat.name.en}</td>
-                <td>{cat.name.tr}</td>
-                <td>{cat.name.de}</td>
+                <td>{cat.name?.[lang] || "—"}</td>
                 <td>{cat.slug}</td>
                 <td>
-                  <ActionGroup>
-                    <WarningButton onClick={() => onEdit(cat)}>
-                      {t("edit", "Edit")}
-                    </WarningButton>
-                    <DangerButton onClick={() => handleDelete(cat._id)}>
-                      {t("delete", "Delete")}
-                    </DangerButton>
-                  </ActionGroup>
+                  <ActionButton onClick={() => onEdit(cat)}>
+                    {t("admin.edit", "Edit")}
+                  </ActionButton>
+                  <DeleteButton onClick={() => handleDelete(cat._id)}>
+                    {t("admin.delete", "Delete")}
+                  </DeleteButton>
                 </td>
               </tr>
             ))}
           </tbody>
-        </StyledTable>
+        </Table>
       )}
     </Wrapper>
   );
 }
 
+// --- Styled Components ---
 const Wrapper = styled.div`
   margin-top: 1rem;
 `;
@@ -99,7 +99,6 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-
   h2 {
     margin: 0;
     font-size: 1.25rem;
@@ -107,67 +106,62 @@ const Header = styled.div`
   }
 `;
 
-const PrimaryButton = styled.button`
+const AddButton = styled.button`
   padding: 0.5rem 1rem;
-  background: ${({ theme }) => theme.colors.primary || "#007bff"};
+  background: ${({ theme }) => theme.colors.primary};
   color: white;
   border: none;
-  border-radius: ${({ theme }) => theme.radii.sm || "4px"};
+  border-radius: ${({ theme }) => theme.radii.sm};
   cursor: pointer;
-
   &:hover {
-    background: ${({ theme }) => theme.colors.primaryHover || "#0056b3"};
+    background: ${({ theme }) => theme.colors.primaryHover};
   }
 `;
 
-const StyledTable = styled.table`
+const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.95rem;
-
-  th,
-  td {
+  th, td {
     padding: 0.75rem;
-    border: 1px solid ${({ theme }) => theme.colors.border || "#ddd"};
+    border: 1px solid ${({ theme }) => theme.colors.border};
     text-align: left;
+    font-size: 0.95rem;
   }
-
   th {
-    background: ${({ theme }) => theme.colors.tableHeader || "#f0f0f0"};
-    color: ${({ theme }) => theme.colors.text || "#333"};
+    background: ${({ theme }) => theme.colors.tableHeader};
+    color: ${({ theme }) => theme.colors.text};
   }
 `;
 
-const Status = styled.p`
+const StatusMessage = styled.p`
   text-align: center;
-  color: ${({ theme }) => theme.colors.textSecondary || "#666"};
+  color: ${({ theme }) => theme.colors.textSecondary};
   font-size: 0.95rem;
 `;
 
-const Error = styled.p`
+const ErrorMessage = styled.p`
   text-align: center;
-  color: ${({ theme }) => theme.colors.danger || "red"};
+  color: red;
   font-size: 0.95rem;
 `;
 
-const ActionGroup = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`;
-
-const BaseButton = styled.button`
+const ActionButton = styled.button`
+  margin-right: 0.5rem;
   padding: 0.4rem 0.8rem;
-  color: #fff;
+  background: ${({ theme }) => theme.colors.warning};
+  color: white;
   border: none;
   border-radius: 4px;
   font-size: 0.85rem;
   cursor: pointer;
 `;
 
-const WarningButton = styled(BaseButton)`
-  background: ${({ theme }) => theme.colors.warning || "#f0ad4e"};
-`;
-
-const DangerButton = styled(BaseButton)`
-  background: ${({ theme }) => theme.colors.danger || "#d9534f"};
+const DeleteButton = styled.button`
+  padding: 0.4rem 0.8rem;
+  background: ${({ theme }) => theme.colors.danger};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
 `;

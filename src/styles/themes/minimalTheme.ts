@@ -48,7 +48,7 @@ const minimalTheme: DefaultTheme = {
     loose: "2",
   },
 
-  spacing: {
+  spacings: {
     xs: "4px",
     sm: "8px",
     md: "16px",
@@ -97,7 +97,7 @@ const minimalTheme: DefaultTheme = {
 
   layout: {
     containerWidth: "1280px",
-    sectionSpacing: "3rem",
+    sectionspacings: "3rem",
   },
 
   zIndex: {
@@ -134,7 +134,8 @@ const minimalTheme: DefaultTheme = {
     desktop: "@media (min-width: 1025px)",
     landscape: "@media (orientation: landscape)",
     portrait: "@media (orientation: portrait)",
-    retina: "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
+    retina:
+      "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
   },
 
   colors: {
@@ -171,6 +172,12 @@ const minimalTheme: DefaultTheme = {
     primaryHover: "#222222",
     primaryDark: "#000000",
     primaryTransparent: "rgba(51, 51, 51, 0.1)",
+
+    secondary: "#52404b",
+    secondaryLight: "#f3d9e5",
+    secondaryHover: "#40333d",
+    secondaryDark: "#32272a",
+    secondaryTransparent: "rgba(82,64,75,0.1)",
 
     accent: "#666666",
     accentHover: "#444444",
@@ -222,6 +229,8 @@ const minimalTheme: DefaultTheme = {
     white: "#ffffff",
     whiteColor: "#ffffff",
     darkColor: "#000000",
+    disabledBg: "#d6d6d6",
+    lightGrey: "#f7f7f7",
   },
 
   buttons: {

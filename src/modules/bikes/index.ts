@@ -1,17 +1,17 @@
 // Pages
-export { default as AdminBikePage } from "./admin/pages/AdminBikePage";
-export { default as BikePage } from "./public/pages/BikePage";
+export { default as AdminBikesPage } from "./admin/pages/AdminBikesPage";
+export { default as BikesPage } from "./public/pages/BikesPage";
 
 // Admin Components
-export { default as BikeTabs } from "./admin/components/BikeTabs";
-export { default as BikeList } from "./admin/components/BikeList";
-export { default as BikeFormModal } from "./admin/components/BikeFormModal";
+export { default as BikesTabs } from "./admin/components/BikesTabs";
+export { default as BikesList } from "./admin/components/BikesList";
+export { default as BikesFormModal } from "./admin/components/BikesFormModal";
 export { default as CategoryListPage } from "./admin/components/CategoryListPage";
 export { default as CategoryForm } from "./admin/components/CategoryForm";
 
 // Public Components
-export { default as BikeSection } from "./public/components/BikeSection";
-export { default as BikeDetailSection } from "./public/components/BikeDetailSection";
+export { default as BikesSection } from "./public/components/BikesSection";
+export { default as BikesDetailSection } from "./public/components/BikesDetailSection";
 
 // Redux Slice
 export { default as bikeCategoryReducer } from "./slice/bikeCategorySlice";

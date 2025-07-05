@@ -32,28 +32,40 @@ function formatDate(entry: TrendEntry, lang: string): string {
   const { year, month, day } = entry._id;
   // Dil desteğini koddan değil, tanımdan al
   // ex: "yyyy-MM-dd" / "dd.MM.yyyy" / "dd/MM/yyyy"
-  const format = DATE_FORMATS[lang as keyof typeof DATE_FORMATS] || "yyyy-MM-dd";
+  const format =
+    DATE_FORMATS[lang as keyof typeof DATE_FORMATS] || "yyyy-MM-dd";
   if (format === "yyyy-MM-dd") {
-    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(
+      2,
+      "0"
+    )}`;
   }
   if (format === "dd.MM.yyyy") {
-    return `${String(day).padStart(2, "0")}.${String(month).padStart(2, "0")}.${year}`;
+    return `${String(day).padStart(2, "0")}.${String(month).padStart(
+      2,
+      "0"
+    )}.${year}`;
   }
   if (format === "dd/MM/yyyy") {
-    return `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year}`;
+    return `${String(day).padStart(2, "0")}/${String(month).padStart(
+      2,
+      "0"
+    )}/${year}`;
   }
   // Fallback
-  return `${String(day).padStart(2, "0")}.${String(month).padStart(2, "0")}.${year}`;
+  return `${String(day).padStart(2, "0")}.${String(month).padStart(
+    2,
+    "0"
+  )}.${year}`;
 }
 
 export default function LineChart({ data }: Props) {
   const { t, i18n } = useTranslation("admin-dashboard");
   const theme = useTheme();
   // Locale güvenli şekilde SupportedLocale'e düşür
-  const lang =
-    (SUPPORTED_LOCALES.includes(i18n.language as any)
-      ? i18n.language
-      : "en") as keyof typeof DATE_FORMATS;
+  const lang = (
+    SUPPORTED_LOCALES.includes(i18n.language as any) ? i18n.language : "en"
+  ) as keyof typeof DATE_FORMATS;
 
   // Güvenli veri kontrolü
   const safeData = Array.isArray(data) ? data : [];
@@ -74,7 +86,10 @@ export default function LineChart({ data }: Props) {
           data={chartData}
           margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
           role="img"
-          aria-label={t("analytics.trendChartLabel", "Günlük etkinlik trendi çizgi grafiği")}
+          aria-label={t(
+            "analytics.trendChartLabel",
+            "Günlük etkinlik trendi çizgi grafiği"
+          )}
         >
           <CartesianGrid stroke={theme.colors.border} strokeDasharray="3 3" />
           <XAxis
@@ -139,14 +154,14 @@ export default function LineChart({ data }: Props) {
 
 const ChartWrapper = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.md};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.cards.shadow};
 `;
 
 const NoData = styled.div`
-  margin: ${({ theme }) => theme.spacing.lg} 0;
-  padding: ${({ theme }) => theme.spacing.md};
+  margin: ${({ theme }) => theme.spacings.lg} 0;
+  padding: ${({ theme }) => theme.spacings.md};
   color: ${({ theme }) => theme.colors.textMuted};
   text-align: center;
   font-size: ${({ theme }) => theme.fontSizes.md};

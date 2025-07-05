@@ -1,42 +1,41 @@
 "use client";
 
+import React, { useEffect } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import {
-  AdminSiteTemplateSelector,
   NestedValueEditor,
   NestedSocialLinksEditor,
   MultiLangObjectEditor,
 } from "@/modules/settings";
-import { upsertSetting } from "@/modules/settings/slice/settingSlice";
-import { AppDispatch } from "@/store";
+import { SUPPORTED_LOCALES } from "@/i18n";
+import { completeLocales } from "@/utils/completeLocales";
 
-interface Props {
+// Props tipi
+interface ValueInputSectionProps {
   keyValue: string;
   value: any;
-  setValue: (val: any) => void;
-  availableThemes: string[];
-  onAvailableThemesUpdate: (newThemes: string[]) => void;
-  dispatch: AppDispatch;
+  setValue: (v: any) => void;
+  availableThemes?: string[];
   isMultiLang: boolean;
   isNestedObject: boolean;
   isImage: boolean;
-  file: File | null;
-  setFile: (file: File | null) => void;
+  file?: File | null;
+  setFile?: (f: File | null) => void;
   lightFile?: File | null;
   setLightFile?: (f: File | null) => void;
   darkFile?: File | null;
   setDarkFile?: (f: File | null) => void;
-  isEditing?: boolean; // <-- EDIT MODU EKLENDİ!
+  isEditing?: boolean;
+  supportedLocales?: readonly string[];
 }
 
-export default function ValueInputSection({
+const ValueInputSection: React.FC<ValueInputSectionProps> = ({
   keyValue,
   value,
   setValue,
   availableThemes,
-  onAvailableThemesUpdate,
-  dispatch,
   isMultiLang,
   isNestedObject,
   isImage,
@@ -46,27 +45,76 @@ export default function ValueInputSection({
   setLightFile,
   darkFile,
   setDarkFile,
-  isEditing = false, // default
-}: Props) {
-  const { t } = useTranslation("settings");
+  isEditing = false,
+  supportedLocales = SUPPORTED_LOCALES,
+}) => {
+  const { t } = useI18nNamespace("settings", translations);
   const isLogoUpload =
     keyValue === "navbar_logos" || keyValue === "footer_logos";
 
-  // Edit modunda, hangi tip geldiyse sadece o input renderlanır!
-  // (Çakışan tipler false olur ve UI'da input çıkmaz.)
+  // MultiLang normalizasyon
+  useEffect(() => {
+    if (
+      isMultiLang &&
+      !isNestedObject &&
+      !isImage &&
+      !isLogoUpload &&
+      typeof value === "object" &&
+      value !== null
+    ) {
+      setValue(completeLocales(value));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMultiLang, isNestedObject, isImage, isLogoUpload, keyValue]);
 
-  // Çoklu Dil Object (ör: navbar_logo_text)
+  // MultiLang (tek katmanlı)
+  if (isMultiLang && !isNestedObject && !isImage && !isLogoUpload) {
+    const val =
+      typeof value === "object" && value !== null
+        ? completeLocales(value)
+        : supportedLocales.reduce(
+            (acc, lng) => ({ ...acc, [lng]: "" }),
+            {} as Record<string, string>
+          );
+
+    return (
+      <>
+        {supportedLocales.map((lng) => (
+          <div key={lng}>
+            <Label>
+              {t("value", "Value")} ({lng.toUpperCase()})
+            </Label>
+            <Input
+              value={val[lng] || ""}
+              onChange={(e) => setValue({ ...val, [lng]: e.target.value })}
+              disabled={isEditing}
+            />
+          </div>
+        ))}
+      </>
+    );
+  }
+
+  // MultiLang Nested Object (navbar_logo_text, footer_contact, footer_label)
   if (
-    keyValue === "navbar_logo_text" &&
+    (keyValue === "navbar_logo_text" ||
+      keyValue === "footer_contact" ||
+      keyValue === "footer_label") &&
     isMultiLang &&
     !isNestedObject &&
     !isImage
   ) {
     const safeVal = typeof value === "object" && value !== null ? value : {};
-    return <MultiLangObjectEditor value={safeVal} setValue={setValue} />;
+    return (
+      <MultiLangObjectEditor
+        value={safeVal}
+        setValue={setValue}
+        supportedLocales={supportedLocales}
+      />
+    );
   }
 
-  // Logo (Light/Dark) Upload
+  // Logo Upload (light/dark)
   if (isLogoUpload && !isMultiLang && !isNestedObject && !isImage) {
     return (
       <LogoUploadWrapper>
@@ -75,11 +123,7 @@ export default function ValueInputSection({
           <Input
             type="file"
             accept="image/*"
-            onChange={
-              isEditing
-                ? undefined
-                : (e) => setLightFile?.(e.target.files?.[0] || null)
-            }
+            onChange={(e) => setLightFile && setLightFile(e.target.files?.[0] || null)}
             disabled={isEditing}
           />
           {lightFile && <FileInfo>{lightFile.name}</FileInfo>}
@@ -89,11 +133,7 @@ export default function ValueInputSection({
           <Input
             type="file"
             accept="image/*"
-            onChange={
-              isEditing
-                ? undefined
-                : (e) => setDarkFile?.(e.target.files?.[0] || null)
-            }
+            onChange={(e) => setDarkFile && setDarkFile(e.target.files?.[0] || null)}
             disabled={isEditing}
           />
           {darkFile && <FileInfo>{darkFile.name}</FileInfo>}
@@ -102,7 +142,7 @@ export default function ValueInputSection({
     );
   }
 
-  // Tekil Image Upload
+  // Single Image Upload
   if (isImage && !isMultiLang && !isNestedObject && !isLogoUpload) {
     return (
       <>
@@ -110,9 +150,7 @@ export default function ValueInputSection({
         <Input
           type="file"
           accept="image/*"
-          onChange={
-            isEditing ? undefined : (e) => setFile(e.target.files?.[0] || null)
-          }
+          onChange={(e) => setFile && setFile(e.target.files?.[0] || null)}
           disabled={isEditing}
         />
         {file && <FileInfo>{file.name}</FileInfo>}
@@ -120,14 +158,8 @@ export default function ValueInputSection({
     );
   }
 
-  // Tema Listesi
-  if (
-    keyValue === "available_themes" &&
-    !isImage &&
-    !isMultiLang &&
-    !isNestedObject &&
-    !isLogoUpload
-  ) {
+  // Available Themes (comma separated list)
+  if (keyValue === "available_themes") {
     return (
       <>
         <Label>{t("themeList", "Theme List (comma separated)")}</Label>
@@ -141,144 +173,82 @@ export default function ValueInputSection({
     );
   }
 
-  // Tema Seçimi
-  if (
-    keyValue === "site_template" &&
-    !isImage &&
-    !isMultiLang &&
-    !isNestedObject &&
-    !isLogoUpload
-  ) {
+  // Theme Selection (site_template)
+  if (keyValue === "site_template") {
     return (
       <>
         <Label>{t("selectTheme", "Select Theme")}</Label>
-        <AdminSiteTemplateSelector
-          availableThemes={availableThemes}
-          selectedTheme={value}
-          onChange={isEditing ? () => {} : setValue}
-          onAddTheme={
-            isEditing
-              ? () => {}
-              : (newTheme) => {
-                  const trimmed = newTheme.trim();
-                  if (!trimmed || availableThemes.includes(trimmed)) return;
-                  const updatedThemes = [...availableThemes, trimmed];
-                  onAvailableThemesUpdate(updatedThemes);
-                  dispatch(
-                    upsertSetting({
-                      key: "available_themes",
-                      value: updatedThemes,
-                    })
-                  );
-                  setValue(trimmed);
-                }
-          }
-          onDeleteTheme={
-            isEditing
-              ? () => {}
-              : (themeToDelete) => {
-                  const updatedThemes = availableThemes.filter(
-                    (t) => t !== themeToDelete
-                  );
-                  onAvailableThemesUpdate(updatedThemes);
-                  dispatch(
-                    upsertSetting({
-                      key: "available_themes",
-                      value: updatedThemes,
-                    })
-                  );
-                  if (value === themeToDelete) setValue("");
-                }
-          }
-        />
+        <Select
+          value={value || ""}
+          onChange={(e) => setValue(e.target.value)}
+          disabled={isEditing || !availableThemes?.length}
+        >
+          <option value="" disabled>
+            {t("selectTheme", "Select Theme")}
+          </option>
+          {(availableThemes || []).map((theme) => (
+            <option key={theme} value={theme}>
+              {theme}
+            </option>
+          ))}
+        </Select>
       </>
     );
   }
 
-  // Sosyal Linkler
-  if (
-    keyValue === "footer_social_links" &&
-    isNestedObject &&
-    !isImage &&
-    !isMultiLang
-  ) {
+  // Footer Social Links
+  if (keyValue === "footer_social_links" && isNestedObject) {
     const socialLinks =
       typeof value === "object" && !Array.isArray(value) ? value : {};
-    return <NestedSocialLinksEditor value={socialLinks} setValue={setValue} />;
+    return (
+      <NestedSocialLinksEditor
+        value={socialLinks}
+        setValue={setValue}
+      />
+    );
   }
 
-  // Nested Object (örn: footer_links)
+  // Generic Nested Object
   if (isNestedObject && !isMultiLang && !isImage && !isLogoUpload) {
     const nestedValue =
       typeof value === "object" && value !== null ? value : {};
-    return <NestedValueEditor value={nestedValue} setValue={setValue} />;
-  }
-
-  // Çoklu Dil (tr, en, de)
-  if (isMultiLang && !isNestedObject && !isImage && !isLogoUpload) {
-    const val =
-      typeof value === "object" && value !== null
-        ? value
-        : { tr: "", en: "", de: "" };
     return (
-      <>
-        <Label>{t("valueTr", "Value (Turkish)")}</Label>
-        <Input
-          value={val.tr || ""}
-          onChange={(e) => setValue({ ...val, tr: e.target.value })}
-          disabled={isEditing}
-        />
-        <Label>{t("valueEn", "Value (English)")}</Label>
-        <Input
-          value={val.en || ""}
-          onChange={(e) => setValue({ ...val, en: e.target.value })}
-          disabled={isEditing}
-        />
-        <Label>{t("valueDe", "Value (German)")}</Label>
-        <Input
-          value={val.de || ""}
-          onChange={(e) => setValue({ ...val, de: e.target.value })}
-          disabled={isEditing}
-        />
-      </>
+      <NestedValueEditor
+        value={nestedValue}
+        setValue={setValue}
+        supportedLocales={supportedLocales}
+      />
     );
   }
 
-  // Default: Tek Satırlık String Value
-  if (!isImage && !isMultiLang && !isNestedObject && !isLogoUpload) {
-    return (
-      <>
-        <Label>{t("value", "Value")}</Label>
-        <Input
-          type="text"
-          value={typeof value === "string" ? value : ""}
-          onChange={(e) => setValue(e.target.value)}
-          disabled={isEditing}
-        />
-      </>
-    );
-  }
-
-  // --- Eğer inputu hiç renderlamaması gereken bir durumda iseniz, sadece bilgi gösterin:
+  // Plain String Input
   return (
-    <ReadOnlyMessage>
-      {t("notEditable", "This field type cannot be edited.")}
-    </ReadOnlyMessage>
+    <>
+      <Label>{t("value", "Value")}</Label>
+      <Input
+        type="text"
+        value={typeof value === "string" ? value : ""}
+        onChange={(e) => setValue(e.target.value)}
+        disabled={isEditing}
+      />
+    </>
   );
-}
+};
 
-// 🎨 Styled Components
+export default ValueInputSection;
+
+// --- Styled Components ---
+
 const Label = styled.label`
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   color: ${({ theme }) => theme.colors.text};
   font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
 const Input = styled.input`
-  padding: ${({ theme }) => theme.spacing.sm};
-  border: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
+  padding: ${({ theme }) => theme.spacings.sm};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.sm};
   background: ${({ theme }) => theme.inputs.background};
   color: ${({ theme }) => theme.inputs.text};
@@ -292,26 +262,27 @@ const Input = styled.input`
   }
 `;
 
+const Select = styled.select`
+  padding: ${({ theme }) => theme.spacings.sm};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  background: ${({ theme }) => theme.inputs.background};
+  color: ${({ theme }) => theme.inputs.text};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  width: 100%;
+`;
+
 const FileInfo = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.sm};
+  margin-top: ${({ theme }) => theme.spacings.sm};
   font-size: ${({ theme }) => theme.fontSizes.xs};
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const LogoUploadWrapper = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.md};
   flex-wrap: wrap;
   > div {
     flex: 1 1 200px;
   }
-`;
-
-const ReadOnlyMessage = styled.div`
-  color: ${({ theme }) => theme.colors.textSecondary};
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  padding: ${({ theme }) => theme.spacing.md};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  text-align: center;
 `;

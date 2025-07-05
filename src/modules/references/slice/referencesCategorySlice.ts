@@ -1,26 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-
-export interface ReferenceCategory {
-  _id: string;
-  name: {
-    tr: string;
-    en: string;
-    de: string;
-  };
-  slug: string;
-  description?: {
-    tr?: string;
-    en?: string;
-    de?: string;
-  };
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import type {
+  ReferencesCategory,
+  TranslatedField,
+} from "@/modules/references/types";
 
 interface CategoryState {
-  categories: ReferenceCategory[];
+  categories: ReferencesCategory[];
   loading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -33,34 +19,43 @@ const initialState: CategoryState = {
   successMessage: null,
 };
 
-// ✅ Fetch all categories
-export const fetchReferenceCategories = createAsyncThunk(
-  "referenceCategory/fetchAll",
+// --- Fetch ---
+export const fetchReferencesCategories = createAsyncThunk(
+  "referencesCategory/fetchAll",
   async (_, thunkAPI) => {
-    const res = await apiCall("get", "/referencescategory", null, thunkAPI.rejectWithValue);
-    // API response: { success: true, message: "...", data: [...] }
+    const res = await apiCall(
+      "get",
+      "/referencescategory",
+      null,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
 
-// ✅ Create category
-export const createReferenceCategory = createAsyncThunk(
-  "referenceCategory/create",
+// --- Create ---
+export const createReferencesCategory = createAsyncThunk(
+  "referencesCategory/create",
   async (
     data: {
-      name: { tr: string; en: string; de: string };
-      description?: { tr?: string; en?: string; de?: string };
+      name: TranslatedField;
+      description?: TranslatedField;
     },
     thunkAPI
   ) => {
-    const res = await apiCall("post", "/referencescategory", data, thunkAPI.rejectWithValue);
+    const res = await apiCall(
+      "post",
+      "/referencescategory",
+      data,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
 
-// ✅ Update category
-export const updateReferenceCategory = createAsyncThunk(
-  "referenceCategory/update",
+// --- Update ---
+export const updateReferencesCategory = createAsyncThunk(
+  "referencesCategory/update",
   async (
     {
       id,
@@ -68,32 +63,41 @@ export const updateReferenceCategory = createAsyncThunk(
     }: {
       id: string;
       data: {
-        name?: { tr?: string; en?: string; de?: string };
-        description?: { tr?: string; en?: string; de?: string };
-        isActive?: boolean;
+        name: TranslatedField;
+        description?: TranslatedField;
       };
     },
     thunkAPI
   ) => {
-    const res = await apiCall("put", `/referencescategory/${id}`, data, thunkAPI.rejectWithValue);
+    const res = await apiCall(
+      "put",
+      `/referencescategory/${id}`,
+      data,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
 
-// ✅ Delete category
-export const deleteReferenceCategory = createAsyncThunk(
-  "referenceCategory/delete",
+// --- Delete ---
+export const deleteReferencesCategory = createAsyncThunk(
+  "referencesCategory/delete",
   async (id: string, thunkAPI) => {
-    await apiCall("delete", `/referencescategory/${id}`, null, thunkAPI.rejectWithValue);
-    return id; // Yalnızca id dönüyoruz
+    const res = await apiCall(
+      "delete",
+      `/referencescategory/${id}`,
+      null,
+      thunkAPI.rejectWithValue
+    );
+    return { id, message: res.message }; // backend response.message
   }
 );
 
-const referenceCategorySlice = createSlice({
-  name: "referenceCategory",
+const referencesCategorySlice = createSlice({
+  name: "referencesCategory",
   initialState,
   reducers: {
-    clearCategoryMessages: (state) => {
+    clearReferencesCategoryMessages: (state) => {
       state.error = null;
       state.successMessage = null;
     },
@@ -104,54 +108,55 @@ const referenceCategorySlice = createSlice({
       state.error = null;
     };
 
-    const onError = (state: CategoryState, action: PayloadAction<any>) => {
+    const setError = (state: CategoryState, action: PayloadAction<any>) => {
       state.loading = false;
       state.error = action.payload?.message || "Something went wrong.";
     };
 
     builder
-      // 🔄 Fetch
-      .addCase(fetchReferenceCategories.pending, startLoading)
-      .addCase(fetchReferenceCategories.fulfilled, (state, action) => {
+      // Fetch
+      .addCase(fetchReferencesCategories.pending, startLoading)
+      .addCase(fetchReferencesCategories.fulfilled, (state, action) => {
         state.loading = false;
-        state.categories = action.payload || [];
+        state.categories = action.payload;
       })
-      .addCase(fetchReferenceCategories.rejected, onError)
-
-      // ➕ Create
-      .addCase(createReferenceCategory.pending, startLoading)
-      .addCase(createReferenceCategory.fulfilled, (state, action) => {
+      .addCase(fetchReferencesCategories.rejected, setError)
+      // Create
+      .addCase(createReferencesCategory.pending, startLoading)
+      .addCase(createReferencesCategory.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Category created successfully.";
-        if (action.payload && action.payload._id) {
-          state.categories.unshift(action.payload);
+        state.successMessage = action.payload?.message;
+        if (action.payload?.data?._id) {
+          state.categories.unshift(action.payload.data);
         }
       })
-      .addCase(createReferenceCategory.rejected, onError)
-
-      // ✏️ Update
-      .addCase(updateReferenceCategory.pending, startLoading)
-      .addCase(updateReferenceCategory.fulfilled, (state, action) => {
+      .addCase(createReferencesCategory.rejected, setError)
+      // Update
+      .addCase(updateReferencesCategory.pending, startLoading)
+      .addCase(updateReferencesCategory.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Category updated successfully.";
-        const updated = action.payload;
-        const index = state.categories.findIndex((cat) => cat._id === updated._id);
+        state.successMessage = action.payload?.message;
+        const updated = action.payload?.data || action.payload;
+        const index = state.categories.findIndex(
+          (cat) => cat._id === updated._id
+        );
         if (index !== -1) {
           state.categories[index] = updated;
         }
       })
-      .addCase(updateReferenceCategory.rejected, onError)
-
-      // ❌ Delete
-      .addCase(deleteReferenceCategory.pending, startLoading)
-      .addCase(deleteReferenceCategory.fulfilled, (state, action) => {
+      .addCase(updateReferencesCategory.rejected, setError)
+      // Delete
+      .addCase(deleteReferencesCategory.pending, startLoading)
+      .addCase(deleteReferencesCategory.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Category deleted successfully.";
-        state.categories = state.categories.filter((cat) => cat._id !== action.payload);
+        state.successMessage = action.payload?.message;
+        state.categories = state.categories.filter(
+          (cat) => cat._id !== action.payload.id
+        );
       })
-      .addCase(deleteReferenceCategory.rejected, onError);
+      .addCase(deleteReferencesCategory.rejected, setError);
   },
 });
 
-export const { clearCategoryMessages } = referenceCategorySlice.actions;
-export default referenceCategorySlice.reducer;
+export const { clearReferencesCategoryMessages } = referencesCategorySlice.actions;
+export default referencesCategorySlice.reducer;

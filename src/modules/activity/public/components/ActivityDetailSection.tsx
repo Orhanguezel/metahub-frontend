@@ -1,58 +1,78 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
+import i18n from "@/i18n";
+import translations from "../../locales";
 import { useTranslation } from "react-i18next";
-import dynamic from "next/dynamic";
 import Link from "next/link";
-import "react-image-lightbox/style.css";
+import Image from "next/image";
 import { Skeleton, ErrorMessage } from "@/shared";
-
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  fetchActivity,
+  clearActivityMessages,
   fetchActivityBySlug,
+  setSelectedActivity,
 } from "@/modules/activity/slice/activitySlice";
-
-const Lightbox = dynamic(() => import("react-image-lightbox"), { ssr: false });
+import { CommentForm, CommentList } from "@/modules/comment";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import type { IActivity } from "@/modules/activity/types";
 
 export default function ActivityDetailSection() {
   const { slug } = useParams() as { slug: string };
+  const { t } = useTranslation("activity");
   const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("activity");
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
+  const lang = getCurrentLocale();
+
+  // Locale dosyalarını i18n'e yükle
+  Object.entries(translations).forEach(([locale, resources]) => {
+    if (!i18n.hasResourceBundle(locale, "activity")) {
+      i18n.addResourceBundle(locale, "activity", resources, true, true);
+    }
+  });
 
   const {
     selected: activity,
-    activities,
+    activity: allActivity,
     loading,
     error,
   } = useAppSelector((state) => state.activity);
-  const [lightbox, setLightbox] = useState({ isOpen: false, index: 0 });
 
   useEffect(() => {
-    dispatch(fetchActivityBySlug(slug));
-    dispatch(fetchActivity(lang));
-  }, [dispatch, slug, lang]);
+    if (allActivity && allActivity.length > 0) {
+      const found = allActivity.find((item: IActivity) => item.slug === slug);
+      if (found) {
+        dispatch(setSelectedActivity(found));
+      } else {
+        dispatch(fetchActivityBySlug(slug));
+      }
+    } else {
+      dispatch(fetchActivityBySlug(slug));
+    }
+    return () => {
+      dispatch(clearActivityMessages());
+    };
+  }, [dispatch, allActivity, slug]);
 
-  const otherActivities = activities.filter((a) => a.slug !== slug).slice(0, 2);
-
-  if (loading)
+  if (loading) {
     return (
       <Container>
         <Skeleton />
       </Container>
     );
-  if (error || !activity)
+  }
+
+  if (error || !activity) {
     return (
       <Container>
         <ErrorMessage />
       </Container>
     );
+  }
+
+  const otherActivity = allActivity.filter((item: IActivity) => item.slug !== slug).slice(0, 2);
 
   return (
     <Container
@@ -60,76 +80,41 @@ export default function ActivityDetailSection() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <Title>{activity.title?.[lang]}</Title>
+      <Title>{activity.title?.[lang] || t("page.noTitle", "Başlık yok")}</Title>
 
-      {activity.images?.length > 0 && (
-        <Gallery>
-          {activity.images.map((img, idx) => (
-            <ImageWrapper
-              key={idx}
-              onClick={() => setLightbox({ isOpen: true, index: idx })}
-            >
-              <img
-                src={img.url}
-                alt={activity.title?.[lang] || `image-${idx}`}
-              />
-            </ImageWrapper>
-          ))}
-        </Gallery>
+      {activity.images?.[0]?.url && (
+        <ImageWrapper>
+          <Image
+            src={activity.images[0].url}
+            alt={activity.title?.[lang] || ""}
+            width={800}
+            height={400}
+            style={{ width: "100%", height: "auto", objectFit: "cover" }}
+          />
+        </ImageWrapper>
       )}
 
-      <Content
-        dangerouslySetInnerHTML={{ __html: activity.content?.[lang] || "" }}
-      />
-
-      {lightbox.isOpen && (
-        <Lightbox
-          mainSrc={activity.images[lightbox.index].url}
-          nextSrc={
-            activity.images[(lightbox.index + 1) % activity.images.length].url
-          }
-          prevSrc={
-            activity.images[
-              (lightbox.index + activity.images.length - 1) %
-                activity.images.length
-            ].url
-          }
-          onCloseRequest={() => setLightbox({ ...lightbox, isOpen: false })}
-          onMovePrevRequest={() =>
-            setLightbox({
-              ...lightbox,
-              index:
-                (lightbox.index + activity.images.length - 1) %
-                activity.images.length,
-            })
-          }
-          onMoveNextRequest={() =>
-            setLightbox({
-              ...lightbox,
-              index: (lightbox.index + 1) % activity.images.length,
-            })
-          }
-          imageCaption={activity.title?.[lang]}
-        />
+      {activity.summary?.[lang] && (
+        <SummaryBox>
+          <h3>{t("page.summary")}</h3>
+          <div>{activity.summary?.[lang]}</div>
+        </SummaryBox>
       )}
 
-      {!!activity.tags?.length && (
-        <Tags>
-          {activity.tags.map((tag, i) => (
-            <Tag key={i}>#{tag}</Tag>
-          ))}
-        </Tags>
+      {activity.content?.[lang] && (
+        <ContentBox>
+          <h3>{t("page.detail")}</h3>
+          <div dangerouslySetInnerHTML={{ __html: activity.content[lang] }} />
+        </ContentBox>
       )}
 
-      {!!otherActivities.length && (
+      {otherActivity?.length > 0 && (
         <OtherSection>
-          <h3>{t("page.other", "Other Activities")}</h3>
+          <h3>{t("page.other")}</h3>
           <OtherList>
-            {otherActivities.map((item) => (
+            {otherActivity.map((item: IActivity) => (
               <OtherItem key={item._id}>
-                <Link href={`/activity/${item.slug}`}>
-                  {item.title?.[lang]}
-                </Link>
+                <Link href={`/activity/${item.slug}`}>{item.title?.[lang]}</Link>
               </OtherItem>
             ))}
           </OtherList>
@@ -139,88 +124,66 @@ export default function ActivityDetailSection() {
   );
 }
 
-// Styled Components
+// --------- STYLES -----------
 const Container = styled(motion.section)`
   max-width: 900px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xxl}
-    ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const Title = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
-const Gallery = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-`;
-
 const ImageWrapper = styled.div`
-  flex: 1 1 280px;
-  border-radius: ${({ theme }) => theme.radii.md};
-  overflow: hidden;
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  transition: transform 0.3s ease;
-  cursor: pointer;
-
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   img {
     width: 100%;
     height: auto;
     object-fit: cover;
     border-radius: ${({ theme }) => theme.radii.sm};
-  }
-
-  &:hover {
-    transform: scale(1.02);
+    box-shadow: ${({ theme }) => theme.shadows.sm};
   }
 `;
 
-const Content = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  color: ${({ theme }) => theme.colors.text};
-  line-height: 1.7;
-
-  p {
-    margin-bottom: ${({ theme }) => theme.spacing.md};
-  }
-`;
-
-const Tags = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xs};
-`;
-
-const Tag = styled.span`
-  background: ${({ theme }) => theme.colors.tagBackground || "#eee"};
-  color: ${({ theme }) => theme.colors.text};
-  padding: 4px 8px;
+const SummaryBox = styled.div`
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-left: 4px solid ${({ theme }) => theme.colors.primary};
+  padding: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.sm};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  font-weight: 500;
+`;
+
+const ContentBox = styled.div`
+  background: ${({ theme }) => theme.colors.background};
+  padding: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  h3 {
+    margin-bottom: ${({ theme }) => theme.spacings.md};
+    color: ${({ theme }) => theme.colors.primary};
+  }
 `;
 
 const OtherSection = styled.div`
-  margin-top:  ${({ theme }) => theme.spacing.xxl};
+  margin-top: ${({ theme }) => theme.spacings.xxl};
   border-top: 1px solid ${({ theme }) => theme.colors.border};
-  padding-top: ${({ theme }) => theme.spacing.lg};
+  padding-top: ${({ theme }) => theme.spacings.lg};
 `;
 
 const OtherList = styled.ul`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
 `;
 
 const OtherItem = styled.li`
   font-size: ${({ theme }) => theme.fontSizes.base};
-
   a {
     color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;

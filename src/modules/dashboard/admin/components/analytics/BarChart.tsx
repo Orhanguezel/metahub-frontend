@@ -48,11 +48,7 @@ export default function BarChart({ data }: Props) {
       .sort((a, b) => b.count - a.count) || [];
 
   if (chartData.length === 0) {
-    return (
-      <EmptyInfo>
-        {t("noData", "Veri bulunamadı.")}
-      </EmptyInfo>
-    );
+    return <EmptyInfo>{t("noData", "Veri bulunamadı.")}</EmptyInfo>;
   }
 
   return (
@@ -140,7 +136,7 @@ export default function BarChart({ data }: Props) {
 
 const ChartWrapper = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.md};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.cards.shadow};
 `;

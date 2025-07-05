@@ -2,7 +2,14 @@
 import styled from "styled-components";
 import type { ReactNode } from "react";
 import { useAppSelector } from "@/store/hooks";
-import { FaInstagram, FaTiktok, FaPinterestP, FaFacebook, FaLinkedin, FaTwitter } from "react-icons/fa";
+import {
+  FaInstagram,
+  FaTiktok,
+  FaPinterestP,
+  FaFacebook,
+  FaLinkedin,
+  FaTwitter,
+} from "react-icons/fa";
 
 // 🔑 Desteklenen ikonlar (string -> gerçek ikon)
 const ICON_MAP: Record<string, ReactNode> = {
@@ -16,10 +23,13 @@ const ICON_MAP: Record<string, ReactNode> = {
 
 export default function SocialLinks() {
   const settings = useAppSelector((state) => state.setting.settings) || [];
-  const socialLinksSetting = settings.find((s) => s.key === "navbar_social_links");
-  const socialLinks = socialLinksSetting?.value && typeof socialLinksSetting.value === "object"
-    ? socialLinksSetting.value
-    : {};
+  const socialLinksSetting = settings.find(
+    (s) => s.key === "navbar_social_links"
+  );
+  const socialLinks =
+    socialLinksSetting?.value && typeof socialLinksSetting.value === "object"
+      ? socialLinksSetting.value
+      : {};
 
   return (
     <SocialLinksWrapper>
@@ -40,7 +50,7 @@ export default function SocialLinks() {
 
 const SocialLinksWrapper = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
   a {
     color: inherit;
     font-size: ${({ theme }) => theme.fontSizes.md};

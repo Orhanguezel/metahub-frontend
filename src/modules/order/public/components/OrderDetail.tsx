@@ -1,119 +1,162 @@
 "use client";
-
-import React, { useEffect } from "react";
-import { useParams } from "next/navigation";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  getOrderById,
-  clearOrderMessages,
-} from "@/modules/order/slice/ordersSlice";
-import styled from "styled-components";
+import React from "react";
 import { useTranslation } from "react-i18next";
-import { Message } from "@/shared";
-import OrderItemList from "@/modules/order/public/components/OrderItemList";
+import styled from "styled-components";
+import type { OrderStatus, IOrderItem, IOrder } from "@/modules/order/types";
 
-export default function OrderDetail() {
-  const dispatch = useAppDispatch();
-  const params = useParams<{ id: string }>();
-  const { order, loading, error } = useAppSelector((s) => s.orders);
-  const { t } = useTranslation("order");
-
-  useEffect(() => {
-    if (params.id) dispatch(getOrderById(params.id));
-    return () => {
-      dispatch(clearOrderMessages());
-    };
-  }, [dispatch, params.id]);
-
-  if (loading) return <Message>{t("order.loading", "Loading...")}</Message>;
-  if (error) return <Message $error>{error}</Message>;
-  if (!order)
-    return <Message>{t("order.notfound", "Order not found.")}</Message>;
-
-  return (
-    <DetailWrapper>
-      <Header>
-        <OrderId>
-          {t("order.number", "Order #")} {order._id?.slice(-6)}
-        </OrderId>
-        <Status status={order.status}>
-          {t(
-            `order.status.${order.status || "undefined"}`,
-            order.status ? order.status : t("order.status.undefined", "Unknown")
-          )}
-        </Status>
-      </Header>
-
-      <Section>
-        <b>{t("order.date", "Order Date")}:</b>{" "}
-        {order.createdAt ? new Date(order.createdAt).toLocaleString() : "-"}
-      </Section>
-
-      <Section>
-        <b>{t("order.total", "Total Price")}:</b> €
-        {order.totalPrice?.toFixed(2)}
-      </Section>
-
-      <Section>
-        <b>{t("order.shippingAddress", "Shipping Address")}:</b>
-        <AddressBlock>
-          {order.shippingAddress?.name} <br />
-          {order.shippingAddress?.street}, {order.shippingAddress?.city}{" "}
-          {order.shippingAddress?.postalCode} <br />
-          {order.shippingAddress?.country} <br />
-          {order.shippingAddress?.phone} <br />
-          {order.shippingAddress?.email}
-        </AddressBlock>
-      </Section>
-
-      <Section>
-        <b>{t("order.items", "Ordered Items")}:</b>
-        <OrderItemList items={order.items} />
-      </Section>
-    </DetailWrapper>
-  );
+interface OrderDetailProps {
+  order: IOrder;
 }
 
-// Styled Components
-const DetailWrapper = styled.div`
-  max-width: 600px;
-  margin: 48px auto;
-  padding: ${({ theme }) => theme.spacing.xl};
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.md};
+const OrderDetail: React.FC<OrderDetailProps> = ({ order }) => {
+  const { t, i18n } = useTranslation("order");
+  if (!order) return null;
+
+  // Kullanıcı diline göre ürün açıklamaları
+  const lang = i18n.language || "en";
+  const productDescription = order.items.map(
+    (item: IOrderItem) => (item.product as any)?.description?.[lang] ?? "-"
+  );
+
+  return (
+    <Container>
+      <h1>{t("detail.title", "Order Detail")}</h1>
+
+      {/* Order ID ve User Bilgisi */}
+      <SectionTitle>{t("orderInfo", "Order Information")}</SectionTitle>
+      <Details>
+        <DetailItem>
+          <strong>{t("orderId", "Order ID")}: </strong> {order._id}
+        </DetailItem>
+        <DetailItem>
+          <strong>{t("user", "User")}: </strong> {String(order.user)}
+        </DetailItem>
+        <DetailItem>
+          <strong>{t("createdAt", "Created At")}: </strong>{" "}
+          {order.createdAt ? new Date(order.createdAt).toLocaleString() : "-"}
+        </DetailItem>
+      </Details>
+
+      {/* Product Details */}
+      <SectionTitle>{t("productDetails", "Product Details")}</SectionTitle>
+      {order.items.map((item: IOrderItem, index: number) => (
+        <ProductDetails key={index}>
+          <DetailItem>
+            <strong>{t("productName", "Product Name")}: </strong>{" "}
+            {(item.product as any)?.name?.[lang] ?? "-"}
+          </DetailItem>
+          <DetailItem>
+            <strong>{t("productDescription", "Description")}: </strong>{" "}
+            {productDescription[index]}
+          </DetailItem>
+          <DetailItem>
+            <strong>{t("quantity", "Quantity")}: </strong> {item.quantity}
+          </DetailItem>
+          <DetailItem>
+            <strong>{t("unitPrice", "Unit Price")}: </strong> {item.unitPrice}{" "}
+            EUR
+          </DetailItem>
+        </ProductDetails>
+      ))}
+
+      {/* Total Price */}
+      <SectionTitle>{t("total", "Total Price")}</SectionTitle>
+      <TotalPrice>{order.totalPrice} EUR</TotalPrice>
+
+      {/* Shipping Address */}
+      <SectionTitle>{t("shippingAddress", "Shipping Address")}</SectionTitle>
+      <Details>
+        <DetailItem>
+          <strong>{t("name", "Name")}: </strong> {order.shippingAddress?.name}
+        </DetailItem>
+        <DetailItem>
+          <strong>{t("phone", "Phone")}: </strong>{" "}
+          {order.shippingAddress?.phone}
+        </DetailItem>
+        <DetailItem>
+          <strong>{t("address", "Address")}: </strong>
+          {order.shippingAddress?.street}, {order.shippingAddress?.city},{" "}
+          {order.shippingAddress?.country}
+        </DetailItem>
+        <DetailItem>
+          <strong>{t("postalCode", "Postal Code")}: </strong>{" "}
+          {order.shippingAddress?.postalCode}
+        </DetailItem>
+      </Details>
+
+      {/* Payment Method */}
+      <SectionTitle>{t("paymentMethod", "Payment Method")}</SectionTitle>
+      <Details>
+        <DetailItem>
+          <strong>{t("method", "Method")}: </strong> {order.paymentMethod}
+        </DetailItem>
+      </Details>
+
+      {/* Status */}
+      <SectionTitle>{t("status", "Order Status")}</SectionTitle>
+      <Status $status={order.status}>{order.status}</Status>
+    </Container>
+  );
+};
+
+export default OrderDetail;
+
+// --- Styled Components ---
+const Container = styled.div`
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
 `;
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+const SectionTitle = styled.h3`
+  font-size: 1.2rem;
+  color: #333;
+  margin-top: 20px;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 10px;
 `;
 
-const OrderId = styled.span`
-  font-size: 1.14rem;
-  font-weight: 600;
+const Details = styled.div`
+  margin-top: 10px;
 `;
 
-const Status = styled.span<{ status?: string }>`
-  font-weight: 700;
-  color: ${({ status, theme }) =>
-    status === "completed"
-      ? theme.colors.success
-      : status === "pending"
-      ? theme.colors.warning
-      : theme.colors.textSecondary};
+const DetailItem = styled.div`
+  margin: 8px 0;
+  font-size: 1rem;
+  color: #555;
 `;
 
-const Section = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-  font-size: 1.05rem;
+const ProductDetails = styled.div`
+  margin-top: 15px;
+  padding-left: 20px;
 `;
 
-const AddressBlock = styled.div`
-  padding-left: 6px;
-  margin-top: 2px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 0.97rem;
+const TotalPrice = styled.div`
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #1d7d1d;
+  margin-top: 15px;
+`;
+
+const Status = styled.div<{ $status: OrderStatus }>`
+  font-size: 1.2rem;
+  padding: 10px 15px;
+  border-radius: 4px;
+  color: white;
+  background-color: ${({ $status }) =>
+    $status === "completed"
+      ? "#4CAF50"
+      : $status === "pending"
+      ? "#FF9800"
+      : $status === "shipped"
+      ? "#2196F3"
+      : $status === "preparing"
+      ? "#9C27B0"
+      : $status === "cancelled"
+      ? "#F44336"
+      : "#8d8d8d"};
+  text-align: center;
+  margin-top: 15px;
 `;

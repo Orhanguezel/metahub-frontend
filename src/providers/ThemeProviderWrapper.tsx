@@ -19,7 +19,11 @@ export const ThemeContext = createContext<ThemeContextType>({
   mode: "light",
 });
 
-export default function ThemeProviderWrapper({ children }: { children: React.ReactNode }) {
+export default function ThemeProviderWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const settings = useAppSelector((state) => state.setting.settings);
 
   const [themeMode, toggleThemeMode] = useThemeMode();
@@ -61,7 +65,7 @@ export default function ThemeProviderWrapper({ children }: { children: React.Rea
         fontSizes: { ...templateTheme.fontSizes },
         fontWeights: { ...templateTheme.fontWeights },
         lineHeights: { ...templateTheme.lineHeights },
-        spacing: { ...templateTheme.spacing },
+        spacings: { ...templateTheme.spacings },
         radii: { ...templateTheme.radii },
         borders: { ...templateTheme.borders },
         shadows: { ...templateTheme.shadows },
@@ -77,7 +81,9 @@ export default function ThemeProviderWrapper({ children }: { children: React.Rea
     : templateTheme;
 
   return (
-    <ThemeContext.Provider value={{ toggle: toggleThemeMode, isDark, mode: themeMode }}>
+    <ThemeContext.Provider
+      value={{ toggle: toggleThemeMode, isDark, mode: themeMode }}
+    >
       <ThemeProvider theme={finalTheme}>{children}</ThemeProvider>
     </ThemeContext.Provider>
   );

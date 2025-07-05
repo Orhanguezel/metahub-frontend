@@ -2,20 +2,20 @@
 
 import styled from "styled-components";
 
-
 export const InputIconWrapper = styled.div<{ $hasError?: boolean }>`
   position: relative;
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
-  padding: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.xs};
+  padding: ${({ theme }) => theme.spacings.sm};
   width: 100%;
   border: 1.5px solid
     ${({ $hasError, theme }) =>
       $hasError ? theme.colors.danger : theme.colors.inputBorder};
   border-radius: ${({ theme }) => theme.radii.md};
   background: ${({ theme }) => theme.colors.inputBackground};
-  transition: border-color ${({ theme }) => theme.transition.fast}, box-shadow ${({ theme }) => theme.transition.fast};
+  transition: border-color ${({ theme }) => theme.transition.fast},
+    box-shadow ${({ theme }) => theme.transition.fast};
   &:focus-within {
     border-color: ${({ $hasError, theme }) =>
       $hasError ? theme.colors.danger : theme.colors.primary};
@@ -49,12 +49,12 @@ export const OptionsRow = styled.div`
   justify-content: space-between;
   align-items: center;
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-  gap: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+  gap: ${({ theme }) => theme.spacings.xs};
   @media (max-width: 480px) {
     flex-direction: column;
     align-items: flex-start;
-    gap: ${({ theme }) => theme.spacing.sm};
+    gap: ${({ theme }) => theme.spacings.sm};
   }
 `;
 
@@ -99,26 +99,26 @@ export const ActionLink = styled.button`
 
 export const AltAction = styled.div`
   text-align: center;
-  margin-top: ${({ theme }) => theme.spacing.lg};
-  padding-top: ${({ theme }) => theme.spacing.lg};
+  margin-top: ${({ theme }) => theme.spacings.lg};
+  padding-top: ${({ theme }) => theme.spacings.lg};
   border-top: 1px dashed ${({ theme }) => theme.colors.border};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
-  letter-spacing: 0.01em;
+  letter-spacings: 0.01em;
 `;
 
 export const InputIcon = styled.span`
   color: ${({ theme }) => theme.colors.textSecondary};
   opacity: 0.56;
   font-size: 1.08em;
-  margin-right: ${({ theme }) => theme.spacing.xs};
+  margin-right: ${({ theme }) => theme.spacings.xs};
 `;
 
 export const Terms = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.xs};
   color: ${({ theme }) => theme.colors.textSecondary};
   text-align: center;
-  margin: ${({ theme }) => `${theme.spacing.md} 0`};
+  margin: ${({ theme }) => `${theme.spacings.md} 0`};
 
   a {
     color: ${({ theme }) => theme.colors.primary};
@@ -133,8 +133,8 @@ export const Terms = styled.div`
 export const InputWrapper = styled.div<{ $hasError?: boolean }>`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
-  padding: 0 ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.xs};
+  padding: 0 ${({ theme }) => theme.spacings.sm};
   border-radius: ${({ theme }) => theme.radii.md};
   border: 1.5px solid
     ${({ $hasError, theme }) =>
@@ -148,13 +148,12 @@ export const InputWrapper = styled.div<{ $hasError?: boolean }>`
   }
 `;
 
-
 export const StepperBar = styled.div`
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  gap: ${({ theme }) => theme.spacing.xl};
-  margin: ${({ theme }) => `${theme.spacing.xl} 0 ${theme.spacing.lg} 0`};
+  gap: ${({ theme }) => theme.spacings.xl};
+  margin: ${({ theme }) => `${theme.spacings.xl} 0 ${theme.spacings.lg} 0`};
   position: relative;
 `;
 
@@ -170,8 +169,9 @@ export const Step = styled.button<{ $active?: boolean; $clickable?: boolean }>`
   outline: none;
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
-  padding: 0 ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.xs};
+  gap: ${({ theme }) => theme.spacings.xs};
+  padding: 0 ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.xs};
   font-size: ${({ theme }) => theme.fontSizes.base};
   font-weight: ${({ $active, theme }) =>
     $active ? theme.fontWeights.bold : theme.fontWeights.regular};
@@ -190,7 +190,6 @@ export const Step = styled.button<{ $active?: boolean; $clickable?: boolean }>`
   }
 `;
 
-
 export const StepIndex = styled.span<{ $active?: boolean }>`
   display: inline-flex;
   align-items: center;
@@ -207,20 +206,19 @@ export const StepIndex = styled.span<{ $active?: boolean }>`
   font-size: 1em;
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.sm : "none")};
-  margin-right: ${({ theme }) => theme.spacing.xs};
+  margin-right: ${({ theme }) => theme.spacings.xs};
   border: 2px solid
     ${({ $active, theme }) =>
       $active ? theme.colors.primary : theme.colors.border};
   transition: background 0.17s, color 0.17s, border 0.16s, box-shadow 0.18s;
 `;
 
-
 export const StepLabelText = styled.span<{ $active?: boolean }>`
   font-weight: ${({ $active, theme }) =>
     $active ? theme.fontWeights.bold : theme.fontWeights.regular};
   color: ${({ $active, theme }) =>
     $active ? theme.colors.primary : theme.colors.textSecondary};
-  letter-spacing: 0.02em;
+  letter-spacings: 0.02em;
   transition: color 0.17s;
 `;
 
@@ -228,7 +226,7 @@ export const StepConnector = styled.span`
   width: 2.6rem;
   height: 2px;
   background: ${({ theme }) => theme.colors.border};
-  margin: 0 ${({ theme }) => theme.spacing.sm};
+  margin: 0 ${({ theme }) => theme.spacings.sm};
   border-radius: 1px;
   opacity: 0.45;
 `;
@@ -245,10 +243,9 @@ export const ActiveBar = styled.div`
   box-shadow: 0 2px 8px ${({ theme }) => theme.colors.primaryTransparent};
 `;
 
-
 export const IconWrap = styled.div`
   color: ${({ theme }) => theme.colors.success};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -259,24 +256,22 @@ export const IconWrap = styled.div`
 
 export const RedirectMsg = styled.div`
   color: ${({ theme }) => theme.colors.info};
-  margin-top: ${({ theme }) => theme.spacing.lg};
+  margin-top: ${({ theme }) => theme.spacings.lg};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   opacity: 0.75;
   text-align: center;
 `;
 
-
-
 export const InfoTooltip = styled.div`
   display: flex;
   align-items: flex-start;
-  gap: ${({ theme }) => theme.spacing.xs};
+  gap: ${({ theme }) => theme.spacings.xs};
   color: ${({ theme }) => theme.colors.info || theme.colors.primary};
   background: ${({ theme }) => theme.colors.primaryTransparent};
   font-size: ${({ theme }) => theme.fontSizes.xs};
   border-radius: ${({ theme }) => theme.radii.sm};
-  padding: ${({ theme }) => `${theme.spacing.xs} ${theme.spacing.md}`};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  padding: ${({ theme }) => `${theme.spacings.xs} ${theme.spacings.md}`};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   min-height: 2em;
   width: 100%;
   box-sizing: border-box;
@@ -299,17 +294,15 @@ export const InfoTooltip = styled.div`
   }
 `;
 
-
-
 export const BarContainer = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.xs};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  margin-top: ${({ theme }) => theme.spacings.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   width: 100%;
 `;
 
 export const StrengthBar = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.xs};
+  gap: ${({ theme }) => theme.spacings.xs};
   height: 0.85em;
   width: 100%;
 `;
@@ -334,9 +327,9 @@ export const StrengthBlock = styled.div<{ $active: boolean; $score: number }>`
 export const PwLabel = styled.div<{ $score: number }>`
   font-size: ${({ theme }) => theme.fontSizes.xs};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  margin-top: ${({ theme }) => theme.spacing.xs};
+  margin-top: ${({ theme }) => theme.spacings.xs};
   min-height: 1.2em;
-  letter-spacing: 0.03em;
+  letter-spacings: 0.03em;
   text-align: left;
   color: ${({ $score, theme }) =>
     $score === 0
@@ -351,21 +344,20 @@ export const PwLabel = styled.div<{ $score: number }>`
   opacity: 0.92;
 `;
 
-
 export const Desc = styled.p`
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: ${({ theme }) => theme.fontSizes.base};
 `;
 
 export const OtpInput = styled.input`
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.md};
   border-radius: ${({ theme }) => theme.radii.md};
   border: 1.5px solid ${({ theme }) => theme.colors.inputBorder};
   background: ${({ theme }) => theme.colors.inputBackground};
   color: ${({ theme }) => theme.colors.text};
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  letter-spacing: 7px;
+  letter-spacings: 7px;
   text-align: center;
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   outline: none;
@@ -373,25 +365,25 @@ export const OtpInput = styled.input`
   max-width: 240px;
   margin: 0 auto;
   box-shadow: none;
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
 
   &::placeholder {
     color: ${({ theme }) => theme.colors.textSecondary};
     opacity: 0.7;
-    letter-spacing: 4px;
+    letter-spacings: 4px;
     font-size: ${({ theme }) => theme.fontSizes.base};
     font-weight: 500;
   }
 `;
 
 export const ResendBox = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.lg};
+  margin-top: ${({ theme }) => theme.spacings.lg};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
 `;
 
 export const ResendButton = styled.button`
@@ -402,7 +394,7 @@ export const ResendButton = styled.button`
   cursor: pointer;
   text-decoration: underline;
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  margin-left: ${({ theme }) => theme.spacing.xs};
+  margin-left: ${({ theme }) => theme.spacings.xs};
   transition: color 0.17s;
   padding: 0;
 
@@ -412,10 +404,9 @@ export const ResendButton = styled.button`
   }
 `;
 
-
 export const ButtonGroup = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.md};
   justify-content: center;
   flex-wrap: wrap;
   width: 100%;
@@ -423,7 +414,7 @@ export const ButtonGroup = styled.div`
 
 export const ActionButton = styled.button`
   flex: 1 1 170px;
-  padding: ${({ theme }) => `${theme.spacing.md} ${theme.spacing.xl}`};
+  padding: ${({ theme }) => `${theme.spacings.md} ${theme.spacings.xl}`};
   background: linear-gradient(
     90deg,
     ${({ theme }) => theme.colors.primary},
@@ -466,7 +457,7 @@ export const ActionButton = styled.button`
 
 export const AltButton = styled.button`
   flex: 1 1 170px;
-  padding: ${({ theme }) => `${theme.spacing.md} ${theme.spacing.xl}`};
+  padding: ${({ theme }) => `${theme.spacings.md} ${theme.spacings.xl}`};
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.primary};
   border: 1.5px solid ${({ theme }) => theme.colors.primary};
@@ -482,10 +473,3 @@ export const AltButton = styled.button`
     color: ${({ theme }) => theme.colors.buttonText};
   }
 `;
-
-
-
-
-
-
-

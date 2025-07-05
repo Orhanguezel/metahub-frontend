@@ -1,32 +1,30 @@
 "use client";
 
-import { useEffect } from "react";
 import styled from "styled-components";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchNews, clearNewsMessages } from "@/modules/news/slice/newsSlice";
+import { useAppSelector } from "@/store/hooks";
+import i18n from "@/i18n";
 import { useTranslation } from "react-i18next";
-import {
-  Skeleton,
-  ErrorMessage
- } from "@/shared";
+import translations from "../../locales";
+import { Skeleton, ErrorMessage } from "@/shared";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
+import type { SupportedLocale } from "@/types/common";
+import type { INews } from "../../types";
+
 
 export default function NewsPage() {
-  const dispatch = useAppDispatch();
-  const { i18n, t } = useTranslation("news");
-
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
+const { i18n, t } = useTranslation("news");
+  const lang = (i18n.language?.slice(0, 2) || "tr") as SupportedLocale; 
   const { news, loading, error } = useAppSelector((state) => state.news);
 
-  useEffect(() => {
-    dispatch(fetchNews(lang));
-    return () => {
-      dispatch(clearNewsMessages());
-    };
-  }, [dispatch, lang]);
+      Object.entries(translations).forEach(([lang, resources]) => {
+  if (!i18n.hasResourceBundle(lang, "news")) {
+    i18n.addResourceBundle(lang, "news", resources, true, true);
+  }
+});
+
+  
 
   if (loading) {
     return (
@@ -41,7 +39,7 @@ export default function NewsPage() {
   if (error) {
     return (
       <PageWrapper>
-        <ErrorMessage />
+        <ErrorMessage message={error} />
       </PageWrapper>
     );
   }
@@ -49,68 +47,79 @@ export default function NewsPage() {
   if (!news || news.length === 0) {
     return (
       <PageWrapper>
-        <p>{t("noNews", "Haber bulunamadı.")}</p>
+        <p>{t("page.noNews")}</p>
       </PageWrapper>
     );
   }
 
+  
+
   return (
     <PageWrapper>
-      <PageTitle>{t("allNews", "Tüm Haberler")}</PageTitle>
-
+      <PageTitle>{t("page.allNews")}</PageTitle>
       <NewsGrid>
-        {news.map((item, index) => (
+        {news.map((item: INews, index: number) => (
           <NewsCard
             key={item._id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * 0.07 }}
+
           >
-            {item.images?.[0]?.url && (
-              <ImageWrapper>
-                <img src={item.images[0].url} alt={item.title?.[lang]} />
-              </ImageWrapper>
-            )}
-            <CardContent>
-              <h2>{item.title?.[lang] || "Untitled"}</h2>
-              <p>{item.summary?.[lang] || "No summary available."}</p>
-              <Meta>
-                <span>
-                  {t("author", "Yazar")}:{" "}
-                  {item.author || t("unknown", "Bilinmiyor")}
-                </span>
-                <span>
-                  {t("tags", "Etiketler")}: {item.tags?.join(", ") || "-"}
-                </span>
-              </Meta>
-              <ReadMore href={`/news/${item.slug}`}>
-                {t("readMore", "Devamını Oku →")}
-              </ReadMore>
-            </CardContent>
-          </NewsCard>
-        ))}
+
+             {item.images?.[0]?.url && (
+                           <ImageWrapper>
+                             <Image
+                               src={item.images[0].url}
+                               alt={item.title?.[lang] || "News Image"}
+                               width={780}
+                               height={420}
+                               style={{ objectFit: "cover" }}
+                               loading="lazy"
+                             />
+                           </ImageWrapper>
+                         )}
+                         <CardContent>
+                           <h2>{item.title?.[lang] || "Untitled"}</h2>
+                           <p>{item.summary?.[lang] || "No summary available."}</p>
+                           <Meta>
+                             <span>
+                               {t("author", "Yazar")}:{" "}
+                               {item.author || t("unknown", "Bilinmiyor")}
+                             </span>
+                             <span>
+                               {t("tags", "Etiketler")}: {item.tags?.join(", ") || "-"}
+                             </span>
+                           </Meta>
+                           <ReadMore href={`/news/${item.slug}`}>
+                             {t("readMore", "Devamını Oku →")}
+                           </ReadMore>
+                         </CardContent>
+                       </NewsCard>
+                     ))}
       </NewsGrid>
     </PageWrapper>
   );
 }
 
+// Styled Components aynı kalabilir
 const PageWrapper = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xxl}
-    ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const PageTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   color: ${({ theme }) => theme.colors.primary};
   text-align: center;
 `;
 
 const NewsGrid = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.spacing.lg};
+  gap: ${({ theme }) => theme.spacings.lg};
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 `;
 
@@ -128,22 +137,24 @@ const ImageWrapper = styled.div`
     width: 100%;
     height: 200px;
     object-fit: cover;
+    background: #f2f2f2;
+    display: block;
   }
 `;
 
 const CardContent = styled.div`
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.md};
 
   h2 {
     font-size: ${({ theme }) => theme.fontSizes.lg};
-    margin-bottom: ${({ theme }) => theme.spacing.sm};
+    margin-bottom: ${({ theme }) => theme.spacings.sm};
     color: ${({ theme }) => theme.colors.text};
   }
 
   p {
     font-size: ${({ theme }) => theme.fontSizes.base};
     color: ${({ theme }) => theme.colors.textSecondary};
-    margin-bottom: ${({ theme }) => theme.spacing.md};
+    margin-bottom: ${({ theme }) => theme.spacings.md};
   }
 `;
 
@@ -153,7 +164,7 @@ const Meta = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
 const ReadMore = styled(Link)`

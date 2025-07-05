@@ -48,7 +48,7 @@ const radanorTheme: DefaultTheme = {
     loose: "1.8",
   },
 
-  spacing: {
+  spacings: {
     xs: "4px",
     sm: "8px",
     md: "16px",
@@ -97,7 +97,7 @@ const radanorTheme: DefaultTheme = {
 
   layout: {
     containerWidth: "1380px",
-    sectionSpacing: "4rem",
+    sectionspacings: "4rem",
   },
 
   zIndex: {
@@ -134,7 +134,8 @@ const radanorTheme: DefaultTheme = {
     desktop: "@media (min-width: 1025px)",
     landscape: "@media (orientation: landscape)",
     portrait: "@media (orientation: portrait)",
-    retina: "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
+    retina:
+      "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
   },
 
   colors: {
@@ -170,6 +171,12 @@ const radanorTheme: DefaultTheme = {
     primaryHover: "#00CCCC",
     primaryDark: "#008B8B",
     primaryTransparent: "rgba(0,255,247,0.1)",
+
+    secondary: "#52404b",
+    secondaryLight: "#f3d9e5",
+    secondaryHover: "#40333d",
+    secondaryDark: "#32272a",
+    secondaryTransparent: "rgba(82,64,75,0.1)",
 
     accent: "#FF007F",
     accentHover: "#E60073",
@@ -211,7 +218,7 @@ const radanorTheme: DefaultTheme = {
     inputIcon: "#AAA",
     inputBackgroundLight: "#1C1C1C",
     inputBackgroundSofter: "#222",
-    inputBorder: "#444", 
+    inputBorder: "#444",
 
     tableHeader: "#1C1F26",
     tagBackground: "#333",
@@ -221,6 +228,8 @@ const radanorTheme: DefaultTheme = {
     white: "#fff",
     whiteColor: "#fff",
     darkColor: "#0B0E14",
+    disabledBg: "#333333",
+    lightGrey: "#f7f7f7",
   },
 
   buttons: {

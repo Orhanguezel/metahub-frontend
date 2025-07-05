@@ -13,11 +13,7 @@ export { default as CategoryForm } from "./admin/components/CategoryForm";
 export { default as NewsSection } from "./public/components/NewsSection";
 export { default as NewsDetailSection } from "./public/components/NewsDetailSection";
 
-// Redux Slice
-export { default as newsReducer } from "./slice/newsSlice";
-export { default as newsCategoryReducer } from "./slice/newsCategorySlice";
-
 // Types (if any)
-export * from "./types/news";
+export * from "./types";
 
 // Optionally: i18n can be loaded in page-level or via config

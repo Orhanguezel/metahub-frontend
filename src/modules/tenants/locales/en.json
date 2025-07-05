@@ -1,0 +1,42 @@
+{
+  "admin": {
+    "title": "Tenant Management",
+    "create": "Add New Tenant",
+    "update": "Update",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": {
+      "delete_tenant": "Are you sure you want to delete this tenant?"
+    },
+    "tenant": {
+      "edit": "Edit Tenant",
+      "create": "Add New Tenant",
+      "name": "Tenant Name",
+      "description": "Description",
+      "slug": "Tenant Slug",
+      "mongoUri": "MongoDB URI",
+      "domainMain": "Main Domain",
+      "phone": "Phone",
+      "theme": "Theme",
+      "isActive": "Active",
+      "metaTitle": "Meta Title",
+      "metaDescription": "Meta Description",
+      "address": "Address",
+      "emailSettings": "Email Settings (SMTP)",
+      "social": "Social Media Links",
+      "images": "Images",
+      "empty": "No tenant found.",
+      "domain": "Domain",
+      "email": "Email",
+      "active": "Active",
+      "no_images": "No images"
+    },
+    "tabs": {
+      "tenant": "Tenants",
+      "create": "Add New"
+    }
+  },
+  "yes": "Yes",
+  "no": "No"
+}

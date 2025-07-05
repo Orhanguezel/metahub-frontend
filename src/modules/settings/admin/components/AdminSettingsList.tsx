@@ -1,42 +1,45 @@
 "use client";
-
-import React from "react";
+import React, { useMemo, ChangeEvent } from "react";
 import styled from "styled-components";
-import {
-  Setting,
-  deleteSetting,
-  upsertSetting,
-} from "@/modules/settings/slice/settingSlice";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { useAppDispatch } from "@/store/hooks";
+import {
+  deleteSettings,
+  upsertSettings,
+} from "@/modules/settings/slice/settingsSlice";
 import { toast } from "react-toastify";
-import { useTranslation } from "react-i18next";
 import { getImageSrc } from "@/shared/getImageSrc";
-import { MultiLangValue, NestedLinkItem } from "@/modules/settings";
+import type { ISetting } from "@/modules/settings/types";
+import Image from "next/image";
 
+// --- Props tipi
 interface AdminSettingsListProps {
-  settings: Setting[];
-  onEdit: (setting: Setting) => void;
+  settings: ISetting[];
+  onEdit: (setting: ISetting) => void;
+  supportedLocales: readonly string[];
 }
 
-export default function AdminSettingsList({
+const AdminSettingsList: React.FC<AdminSettingsListProps> = ({
   settings,
   onEdit,
-}: AdminSettingsListProps) {
+}) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("settings");
+  const { i18n, t } = useI18nNamespace("settings", translations);
 
-  const availableThemes = React.useMemo(() => {
+  const availableThemes = useMemo<string[]>(() => {
     const themeSetting = settings.find((s) => s.key === "available_themes");
-    if (Array.isArray(themeSetting?.value)) return themeSetting.value;
+    if (Array.isArray(themeSetting?.value))
+      return themeSetting.value as string[];
     if (typeof themeSetting?.value === "string")
       return themeSetting.value.split(",").map((v) => v.trim());
     return [];
   }, [settings]);
 
   const handleDelete = async (key: string) => {
-    if (confirm(t("confirmDelete"))) {
+    if (window.confirm(t("confirmDelete"))) {
       try {
-        await dispatch(deleteSetting(key)).unwrap();
+        await dispatch(deleteSettings(key)).unwrap();
         toast.success(t("settingDeleted"));
       } catch (error: any) {
         toast.error(error?.message || t("deleteError"));
@@ -44,11 +47,11 @@ export default function AdminSettingsList({
     }
   };
 
-  const handleThemeChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleThemeChange = async (e: ChangeEvent<HTMLSelectElement>) => {
     const newTheme = e.target.value;
     try {
       await dispatch(
-        upsertSetting({ key: "site_template", value: newTheme })
+        upsertSettings({ key: "site_template", value: newTheme })
       ).unwrap();
       toast.success(t("themeChanged"));
     } catch (error: any) {
@@ -59,9 +62,7 @@ export default function AdminSettingsList({
   const isLogoKey = (key: string) =>
     ["navbar_logos", "footer_logos"].includes(key);
 
-  // --- GÜNCEL: LOGO DEĞERİNİ CLOUDINARY DESTEKLİ OKU ---
   const renderLogo = (val: any) => {
-    // Eğer obje ve içinde light/dark varsa
     const lightLogoUrl =
       val?.light?.url ||
       (typeof val?.light === "string" && getImageSrc(val.light, "setting"));
@@ -73,24 +74,37 @@ export default function AdminSettingsList({
       <LogoGroup>
         {lightLogoUrl && (
           <LogoPreview>
-            <span>Light</span>
-            <img src={lightLogoUrl} alt="Light Logo" />
+            <span>{t("lightLogo", "Light")}</span>
+            <Image
+  src={lightLogoUrl}
+  alt="Light Logo"
+  width={80}              // istediğin sabit değer veya dinamik değer
+  height={40}             // oranlı sabit değer veya dinamik değer
+  style={{ height: "auto" }} // aspect ratio korunur
+/>
+
           </LogoPreview>
         )}
         {darkLogoUrl && (
           <LogoPreview>
-            <span>Dark</span>
-            <img src={darkLogoUrl} alt="Dark Logo" />
+            <span>{t("darkLogo", "Dark")}</span>
+            <Image
+  src={darkLogoUrl}
+  alt="Dark Logo"
+  width={80}
+  height={40}
+  style={{ height: "auto" }}
+/>
+
           </LogoPreview>
         )}
       </LogoGroup>
     );
   };
 
-  const renderValue = (setting: Setting) => {
+  const renderValue = (setting: ISetting) => {
     const val = setting.value;
 
-    // Tema seçici
     if (setting.key === "site_template" && typeof val === "string") {
       return (
         <Select value={val} onChange={handleThemeChange}>
@@ -103,49 +117,39 @@ export default function AdminSettingsList({
       );
     }
 
-    // LOGO key
-    if (isLogoKey(setting.key) && typeof val === "object" && val !== null) {
+    if (isLogoKey(setting.key) && val && typeof val === "object") {
       return renderLogo(val);
     }
 
-    // String
     if (typeof val === "string") return <SingleValue>{val}</SingleValue>;
-    // Array
     if (Array.isArray(val)) return <SingleValue>{val.join(", ")}</SingleValue>;
 
-    // MultiLang veya nested object
-    if (typeof val === "object" && val !== null) {
-      // Çoklu dil
+    if (val && typeof val === "object") {
+      // TranslatedLabel kontrolü
       if ("tr" in val || "en" in val || "de" in val) {
-        const langVal = val as MultiLangValue;
         return (
-          <div>
-            {`${langVal.tr || "-"} / ${langVal.en || "-"} / ${
-              langVal.de || "-"
-            }`}
-          </div>
+          <div>{`${val.tr || "-"} / ${val.en || "-"} / ${val.de || "-"}`}</div>
         );
       }
 
-      // NestedLinkItem
+      // LabeledLink objesi
       if ("label" in val && "url" in val) {
-        const nestedVal = val as NestedLinkItem;
         return (
           <div>
-            {`${nestedVal.label.tr || "-"} / ${nestedVal.label.en || "-"} / ${
-              nestedVal.label.de || "-"
+            {`${val.label.tr || "-"} / ${val.label.en || "-"} / ${
+              val.label.de || "-"
             }`}{" "}
-            → {nestedVal.url}
+            → {val.url}
           </div>
         );
       }
 
-      // Herhangi başka bir object
+      // Diğer nested objectler
       return (
         <NestedList>
-          {Object.entries(val).map(([fieldKey, fieldVal]) => (
-            <NestedItem key={fieldKey}>
-              <strong>{fieldKey}:</strong>{" "}
+          {Object.entries(val).map(([key, fieldVal]) => (
+            <NestedItem key={key}>
+              <strong>{key}:</strong>{" "}
               {typeof fieldVal === "object"
                 ? JSON.stringify(fieldVal)
                 : String(fieldVal)}
@@ -158,7 +162,7 @@ export default function AdminSettingsList({
     return <SingleValue>-</SingleValue>;
   };
 
-  if (settings.length === 0) {
+  if (!settings.length) {
     return <EmptyMessage>{t("noSettings")}</EmptyMessage>;
   }
 
@@ -174,7 +178,7 @@ export default function AdminSettingsList({
         </thead>
         <tbody>
           {settings.map((setting) => (
-            <tr key={setting._id || setting.key}>
+            <tr key={(setting as any)._id || setting.key}>
               <TableCell>{setting.key}</TableCell>
               <TableCell>{renderValue(setting)}</TableCell>
               <TableCell>
@@ -194,9 +198,11 @@ export default function AdminSettingsList({
       </Table>
     </TableWrapper>
   );
-}
+};
 
-// 🎨 Styled Components
+export default AdminSettingsList;
+
+// --- Styled Components ---
 
 const TableWrapper = styled.div`
   width: 100%;
@@ -216,13 +222,13 @@ const TableHeader = styled.th`
   background: ${({ theme }) => theme.colors.sectionBackground};
   color: ${({ theme }) => theme.colors.text};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.md};
   text-align: left;
   font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
 const TableCell = styled.td`
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.md};
   border-bottom: ${({ theme }) => theme.borders.thin}
     ${({ theme }) => theme.colors.border};
   color: ${({ theme }) => theme.colors.textSecondary};
@@ -245,7 +251,7 @@ const Select = styled.select`
 `;
 
 const ActionButton = styled.button`
-  margin-right: ${({ theme }) => theme.spacing.xs};
+  margin-right: ${({ theme }) => theme.spacings.xs};
   padding: 0.4rem 0.8rem;
   background: ${({ theme }) => theme.buttons.secondary.background};
   color: ${({ theme }) => theme.buttons.secondary.text};
@@ -272,13 +278,13 @@ const ActionButtonDelete = styled(ActionButton)`
 const EmptyMessage = styled.div`
   text-align: center;
   color: ${({ theme }) => theme.colors.warning};
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   font-size: ${({ theme }) => theme.fontSizes.lg};
 `;
 
 const NestedList = styled.ul`
   list-style: disc;
-  padding-left: ${({ theme }) => theme.spacing.md};
+  padding-left: ${({ theme }) => theme.spacings.md};
 `;
 
 const NestedItem = styled.li`
@@ -289,7 +295,7 @@ const NestedItem = styled.li`
 
 const LogoGroup = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
   flex-wrap: wrap;
   align-items: center;
 `;
@@ -304,12 +310,12 @@ const LogoPreview = styled.div`
     height: auto;
     border-radius: ${({ theme }) => theme.radii.sm};
     box-shadow: ${({ theme }) => theme.shadows.sm};
-    margin-top: ${({ theme }) => theme.spacing.xs};
+    margin-top: ${({ theme }) => theme.spacings.xs};
   }
 
   span {
     font-size: ${({ theme }) => theme.fontSizes.xs};
-    margin-top: ${({ theme }) => theme.spacing.xs};
+    margin-top: ${({ theme }) => theme.spacings.xs};
     color: ${({ theme }) => theme.colors.textSecondary};
   }
 `;

@@ -1,68 +1,73 @@
 {
-  "admin": {
-    "tabs": {
-      "activity": "Aktivitäten",
-      "create": "Neue Aktivität",
-      "categories": "Kategorien"
-    },
+  "page": {
+    "noActivity": "Keine Artikel gefunden.",
+    "allActivity": "Alle Artikel",
     "activity": {
+      "title": "Über",
+      "all": "Alle anzeigen"
+    },
+    "other": "Weitere Bereiche",
+    "summary": "Zusammenfassung",
+    "detail": "Detail",
+    "noTitle": "Kein Titel"
+  },
+  "readMore": "Mehr lesen →",
+  "author": "Autor",
+  "tags": "Tags",
+  "unknown": "Unbekannt",
+  "tabs": {
+    "activity": "Über",
+    "create": "Neuer Artikel",
+    "categories": "Kategorien"
+  },
+  "activity": {
+    "empty": "Keine Artikel verfügbar.",
+    "no_images": "Keine Bilder",
+    "author": "Autor",
+    "tags": "Tags",
+    "publish_status": "Veröffentlicht",
+    "unpublish": "Veröffentlichung aufheben",
+    "publish": "Veröffentlichen",
+    "unknown": "Unbekannt",
+    "none": "Keine"
+  },
+  "edit": "Bearbeiten",
+  "delete": "Löschen",
+  "yes": "Ja",
+  "no": "Nein",
+  "admin": {
+    "activity": {
+      "edit": "Artikel bearbeiten",
+      "create": "Neuen Artikel erstellen",
       "title": "Titel",
       "summary": "Zusammenfassung",
       "content": "Inhalt",
+      "author": "Autor",
       "tags": "Tags",
+      "image": "Bilder",
       "category": "Kategorie",
-      "select_category": "Kategorie auswählen",
-      "image": "Bild",
-      "publish_status": "Veröffentlicht",
-      "publish": "Veröffentlichen",
-      "unpublish": "Zurückziehen",
-      "readMore": "Mehr lesen",
-      "all": "Alle Aktivitäten",
-      "create": "Erstellen",
-      "edit": "Aktivität bearbeiten",
-      "update": "Aktualisieren",
-      "cancel": "Abbrechen",
-      "empty": "Keine Aktivitäten verfügbar.",
-      "no_images": "Keine Bilder",
-      "edit_category": "Kategorie bearbeiten",
-      "new_category": "Neue Kategorie",
-      "category_name": "Kategoriename ({{lng}})",
-      "description_optional": "Beschreibung (optional)",
-      "category_description_placeholder": "Worum geht es in dieser Kategorie?",
-      "success_create": "Aktivität erfolgreich erstellt.",
-      "success_update": "Aktivität erfolgreich aktualisiert.",
-      "success_delete": "Aktivität erfolgreich gelöscht.",
-      "success_publish": "Aktivität erfolgreich veröffentlicht.",
-      "success_unpublish": "Aktivität erfolgreich zurückgezogen."
+      "select_category": "Kategorie auswählen"
     },
     "categories": {
-      "title": "Aktivitätskategorien",
+      "title": "Produktkategorien",
       "add": "Kategorie hinzufügen",
-      "empty": "Keine Kategorien gefunden."
+      "name": "Kategoriename"
     },
+    "editCategory": "Kategorie bearbeiten",
+    "newCategory": "Neue Kategorie",
+    "optional_description": "Optionale Beschreibung",
+    "category_info": "Worum geht es in dieser Kategorie?",
+    "update": "Aktualisieren",
+    "update2": "Aktualisieren",
+    "save": "Speichern",
+    "saving": "Speichert...",
+    "cancel": "Abbrechen",
     "confirm": {
       "delete": "Möchten Sie diese Kategorie wirklich löschen?",
-      "delete_Activity": "Möchten Sie diese Aktivität wirklich löschen?"
+      "delete_article": "Möchten Sie diesen Artikel wirklich löschen?"
     },
-    "language": {
-      "en": "Englisch",
-      "tr": "Türkisch",
-      "de": "Deutsch"
-    },
+    "loading": "Lädt...",
     "actions": "Aktionen",
-    "loading": "Wird geladen..."
-  },
-  "page": {
-    "empty": "Keine Aktivitäten gefunden.",
-    "all": "Alle Aktivitäten",
-    "noTitle": "Ohne Titel",
-    "noSummary": "Keine Zusammenfassung verfügbar.",
-    "tags": "Stichworte",
-    "readMore": "Mehr erfahren →"
-  },
-  "seo": {
-    "title": "Aktivitäten",
-    "description": "Aktivitätenbeschreibung",
-    "keywords": "Aktivitäten, Schlüsselwörter"
+    "slug": "Kurzname"
   }
 }

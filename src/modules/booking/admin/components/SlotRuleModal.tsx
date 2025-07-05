@@ -8,7 +8,13 @@ import { toast } from "react-toastify";
 
 // Haftanın günleri
 const weekDays = [
-  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
 ];
 
 interface SlotRule {
@@ -55,7 +61,6 @@ export default function SlotRuleModal({ rule, onClose }: Props) {
     const { name, value, type, checked } = e.target as any;
     setForm((prev) => {
       if (name === "appliesToAll") {
-
         return {
           ...prev,
           appliesToAll: checked,
@@ -104,7 +109,9 @@ export default function SlotRuleModal({ rule, onClose }: Props) {
                 disabled={!!form.appliesToAll}
               >
                 {weekDays.map((d, i) => (
-                  <option value={i} key={i}>{d}</option>
+                  <option value={i} key={i}>
+                    {d}
+                  </option>
                 ))}
               </Select>
             </Label>
@@ -177,17 +184,17 @@ const Overlay = styled.div`
 const Modal = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.text};
-  padding: ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacings.xl};
   width: 100%;
   max-width: 430px;
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.lg};
-  margin: ${({ theme }) => theme.spacing.lg};
+  margin: ${({ theme }) => theme.spacings.lg};
 
   @media ${({ theme }) => theme.media.mobile} {
-    padding: ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => theme.spacings.md};
     border-radius: ${({ theme }) => theme.radii.md};
-    margin: ${({ theme }) => theme.spacing.sm};
+    margin: ${({ theme }) => theme.spacings.sm};
   }
 `;
 
@@ -196,25 +203,25 @@ const ModalTitle = styled.h3`
   font-family: ${({ theme }) => theme.fonts.heading};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
   text-align: center;
 `;
 
 const Fields = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  gap: ${({ theme }) => theme.spacings.md};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
 `;
 
 const Label = styled.label`
   font-family: ${({ theme }) => theme.fonts.body};
   font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
+  gap: ${({ theme }) => theme.spacings.xs};
 `;
 
 const Select = styled.select`
@@ -222,9 +229,10 @@ const Select = styled.select`
   font-size: ${({ theme }) => theme.fontSizes.md};
   background: ${({ theme }) => theme.inputs.background};
   color: ${({ theme }) => theme.inputs.text};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.inputs.border};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.inputs.border};
   border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   transition: border ${({ theme }) => theme.transition.normal};
 
   &:focus {
@@ -239,9 +247,10 @@ const Input = styled.input`
   font-size: ${({ theme }) => theme.fontSizes.md};
   background: ${({ theme }) => theme.inputs.background};
   color: ${({ theme }) => theme.inputs.text};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.inputs.border};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.inputs.border};
   border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   transition: border ${({ theme }) => theme.transition.normal};
 
   &:focus {
@@ -254,7 +263,7 @@ const Input = styled.input`
 const CheckboxLabel = styled.label`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
+  gap: ${({ theme }) => theme.spacings.xs};
   font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.textSecondary};
   font-family: ${({ theme }) => theme.fonts.body};
@@ -269,7 +278,7 @@ const Checkbox = styled.input`
 const ButtonGroup = styled.div`
   display: flex;
   justify-content: flex-end;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.md};
 `;
 
 const PrimaryButton = styled.button`
@@ -280,7 +289,8 @@ const PrimaryButton = styled.button`
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-family: ${({ theme }) => theme.fonts.body};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.xl};
   box-shadow: ${({ theme }) => theme.shadows.button};
   cursor: pointer;
   transition: background ${({ theme }) => theme.transition.normal},

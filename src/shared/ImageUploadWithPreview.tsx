@@ -26,10 +26,10 @@ const ImageUploadWithPreview: React.FC<Props> = ({
   const [existingImages, setExistingImages] = useState<string[]>(defaultImages);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
 
+  // ✅ defaultImages güncel kalması için editingItem değişiminde güncelle
   React.useEffect(() => {
-  setExistingImages(defaultImages || []);
-}, []);
-
+    setExistingImages(defaultImages || []);
+  }, [defaultImages]);
 
   React.useEffect(() => {
     if (onChange) {
@@ -39,8 +39,7 @@ const ImageUploadWithPreview: React.FC<Props> = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newFiles = Array.from(e.target.files || []);
-    const total = files.length + existingImages.length + newFiles.length;
-    if (total > max) return;
+    if (files.length + existingImages.length + newFiles.length > max) return;
     const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
     setFiles((prev) => [...prev, ...newFiles]);
     setPreviews((prev) => [...prev, ...newPreviews]);
@@ -95,21 +94,23 @@ const ImageUploadWithPreview: React.FC<Props> = ({
   );
 };
 
+
 export default ImageUploadWithPreview;
 
 // Styled Components (aynı kalabilir)
 const Wrapper = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacings.md};
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.md};
 `;
 const FileInput = styled.input``;
 const UploadButton = styled.button<{ disabled?: boolean }>`
   background: ${({ theme, disabled }) =>
     disabled ? theme.colors.disabled : theme.buttons.primary.background};
   color: ${({ theme }) => theme.buttons.primary.text};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.md};
   border: none;
   border-radius: ${({ theme }) => theme.radii.sm};
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
@@ -122,7 +123,7 @@ const UploadButton = styled.button<{ disabled?: boolean }>`
 `;
 const PreviewGrid = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
   flex-wrap: wrap;
 `;
 const PreviewBox = styled.div`
@@ -161,4 +162,3 @@ const ImagePreview = styled.img`
   height: 100%;
   object-fit: cover;
 `;
-

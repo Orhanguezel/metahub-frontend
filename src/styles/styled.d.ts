@@ -48,7 +48,7 @@ declare module "styled-components" {
       loose: string;
     };
 
-    spacing: {
+    spacings: {
       xs: string;
       sm: string;
       md: string;
@@ -97,7 +97,7 @@ declare module "styled-components" {
 
     layout: {
       containerWidth: string;
-      sectionSpacing: string;
+      sectionspacings: string;
     };
 
     zIndex: {
@@ -166,6 +166,11 @@ declare module "styled-components" {
       primaryHover: string;
       primaryDark: string;
       primaryTransparent: string;
+      secondary: string;
+      secondaryLight: string;
+      secondaryHover: string;
+      secondaryDark: string;
+      secondaryTransparent: string;
       accent: string;
       accentHover: string;
       accentText: string;
@@ -208,6 +213,8 @@ declare module "styled-components" {
       white: string;
       whiteColor: string;
       darkColor: string;
+      disabledBg: string;
+      lightGrey: string;
     };
 
     buttons: {

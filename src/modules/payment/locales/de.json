@@ -1,0 +1,13 @@
+{
+  "addToCart": "In den Warenkorb",
+  "remove": "Entfernen",
+  "increase": "Erhöhen",
+  "decrease": "Verringern",
+  "clearCart": "Warenkorb leeren",
+  "continueShopping": "Weiter einkaufen",
+  "checkout": "Zur Kasse",
+  "empty": "Ihr Warenkorb ist leer.",
+  "title": "Warenkorb",
+  "size": "Größe",
+  "oneSize": "Einheitsgröße"
+}

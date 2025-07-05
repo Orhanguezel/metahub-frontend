@@ -17,12 +17,20 @@ import type { IBookingSlotRule } from "@/modules/booking";
 
 // Haftanın günleri isimleri
 const weekDays = [
-  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
 ];
 
 export default function SlotManager() {
   const dispatch = useAppDispatch();
-  const { rules, overrides, loading } = useAppSelector((state) => state.bookingSlot);
+  const { rules, overrides, loading } = useAppSelector(
+    (state) => state.bookingSlot
+  );
 
   // appliesToAll (genel kural) ve diğerleri ayrımı
   const allRule = useMemo(
@@ -63,11 +71,15 @@ export default function SlotManager() {
           toast.error("There is already a general rule for all days.");
           return;
         }
-        await dispatch(createSlotRule({ ...newRule, appliesToAll: true })).unwrap();
+        await dispatch(
+          createSlotRule({ ...newRule, appliesToAll: true })
+        ).unwrap();
         toast.success("General rule created.");
       } else {
         // Günlük kural için (aynı güne iki tane eklenemez)
-        const exists = dailyRules.find((r) => r.dayOfWeek === newRule.dayOfWeek);
+        const exists = dailyRules.find(
+          (r) => r.dayOfWeek === newRule.dayOfWeek
+        );
         if (exists) {
           toast.error("There is already a rule for this day.");
           return;
@@ -88,7 +100,9 @@ export default function SlotManager() {
       return;
     }
     try {
-      await dispatch(createSlotOverride({ date: overrideDate, fullDayOff })).unwrap();
+      await dispatch(
+        createSlotOverride({ date: overrideDate, fullDayOff })
+      ).unwrap();
       toast.success("Override created.");
       setOverrideDate("");
       setFullDayOff(false);
@@ -127,30 +141,40 @@ export default function SlotManager() {
           {!newRule.appliesToAll && (
             <Select
               value={newRule.dayOfWeek}
-              onChange={(e) => setNewRule((p) => ({ ...p, dayOfWeek: +e.target.value }))}
+              onChange={(e) =>
+                setNewRule((p) => ({ ...p, dayOfWeek: +e.target.value }))
+              }
             >
               {weekDays.map((d, i) => (
-                <option value={i} key={i}>{d}</option>
+                <option value={i} key={i}>
+                  {d}
+                </option>
               ))}
             </Select>
           )}
           <Input
             type="time"
             value={newRule.startTime}
-            onChange={(e) => setNewRule((p) => ({ ...p, startTime: e.target.value }))}
+            onChange={(e) =>
+              setNewRule((p) => ({ ...p, startTime: e.target.value }))
+            }
             placeholder="Start"
           />
           <Input
             type="time"
             value={newRule.endTime}
-            onChange={(e) => setNewRule((p) => ({ ...p, endTime: e.target.value }))}
+            onChange={(e) =>
+              setNewRule((p) => ({ ...p, endTime: e.target.value }))
+            }
             placeholder="End"
           />
           <Input
             type="number"
             value={newRule.intervalMinutes}
             min={1}
-            onChange={(e) => setNewRule((p) => ({ ...p, intervalMinutes: +e.target.value }))}
+            onChange={(e) =>
+              setNewRule((p) => ({ ...p, intervalMinutes: +e.target.value }))
+            }
             placeholder="Interval"
           />
           <Input
@@ -158,11 +182,18 @@ export default function SlotManager() {
             value={newRule.breakBetweenAppointments}
             min={0}
             onChange={(e) =>
-              setNewRule((p) => ({ ...p, breakBetweenAppointments: +e.target.value }))
+              setNewRule((p) => ({
+                ...p,
+                breakBetweenAppointments: +e.target.value,
+              }))
             }
             placeholder="Break"
           />
-          <PrimaryButton type="button" onClick={handleRuleCreate} disabled={loading}>
+          <PrimaryButton
+            type="button"
+            onClick={handleRuleCreate}
+            disabled={loading}
+          >
             {newRule.appliesToAll ? "Add General Rule" : "Add Rule"}
           </PrimaryButton>
         </RuleForm>
@@ -172,9 +203,13 @@ export default function SlotManager() {
           <List>
             <ListItem>
               <b>All Days</b>: {allRule.startTime} - {allRule.endTime} (
-              {allRule.intervalMinutes}min, break: {allRule.breakBetweenAppointments}min)
+              {allRule.intervalMinutes}min, break:{" "}
+              {allRule.breakBetweenAppointments}min)
               <ActionButtons>
-                <DangerButton type="button" onClick={() => handleRuleDelete(allRule._id)}>
+                <DangerButton
+                  type="button"
+                  onClick={() => handleRuleDelete(allRule._id)}
+                >
                   ❌
                 </DangerButton>
               </ActionButtons>
@@ -190,8 +225,15 @@ export default function SlotManager() {
                 <b>{weekDays[r.dayOfWeek]}</b>: {r.startTime} - {r.endTime} (
                 {r.intervalMinutes}min, break: {r.breakBetweenAppointments}min)
                 <ActionButtons>
-                  <EditButton type="button" onClick={() => setEditRule(r)}>✏️</EditButton>
-                  <DangerButton type="button" onClick={() => handleRuleDelete(r._id)}>❌</DangerButton>
+                  <EditButton type="button" onClick={() => setEditRule(r)}>
+                    ✏️
+                  </EditButton>
+                  <DangerButton
+                    type="button"
+                    onClick={() => handleRuleDelete(r._id)}
+                  >
+                    ❌
+                  </DangerButton>
                 </ActionButtons>
               </ListItem>
             ))}
@@ -219,7 +261,11 @@ export default function SlotManager() {
             />
             Full Day Off
           </CheckboxLabel>
-          <PrimaryButton type="button" onClick={handleOverrideCreate} disabled={loading}>
+          <PrimaryButton
+            type="button"
+            onClick={handleOverrideCreate}
+            disabled={loading}
+          >
             Add
           </PrimaryButton>
         </OverrideForm>
@@ -229,9 +275,16 @@ export default function SlotManager() {
             {overrides.map((o) => (
               <ListItem key={o._id}>
                 <b>{o.date}</b>
-                {o.fullDayOff && <span style={{ marginLeft: 8, color: "#c96" }}>(Full Day Off)</span>}
+                {o.fullDayOff && (
+                  <span style={{ marginLeft: 8, color: "#c96" }}>
+                    (Full Day Off)
+                  </span>
+                )}
                 <ActionButtons>
-                  <DangerButton type="button" onClick={() => handleOverrideDelete(o._id)}>
+                  <DangerButton
+                    type="button"
+                    onClick={() => handleOverrideDelete(o._id)}
+                  >
                     ❌
                   </DangerButton>
                 </ActionButtons>
@@ -251,10 +304,10 @@ export default function SlotManager() {
   );
 }
 
-// 💅 Styled Components 
+// 💅 Styled Components
 
 const Container = styled.div`
-  padding: ${({ theme }) => theme.spacing.xxl};
+  padding: ${({ theme }) => theme.spacings.xxl};
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.md};
@@ -262,13 +315,13 @@ const Container = styled.div`
   margin: 0 auto;
 
   @media ${({ theme }) => theme.media.mobile} {
-    padding: ${({ theme }) => theme.spacing.lg};
+    padding: ${({ theme }) => theme.spacings.lg};
     border-radius: ${({ theme }) => theme.radii.lg};
   }
 `;
 
 const Section = styled.section`
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
 `;
 
 const SectionTitle = styled.h2`
@@ -276,14 +329,14 @@ const SectionTitle = styled.h2`
   font-size: ${({ theme }) => theme.fontSizes.xl};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
 `;
 
 const RuleForm = styled.form`
   display: flex;
   flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.sm};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  gap: ${({ theme }) => theme.spacings.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   align-items: flex-end;
 `;
 
@@ -296,9 +349,10 @@ const Input = styled.input`
   font-size: ${({ theme }) => theme.fontSizes.md};
   background: ${({ theme }) => theme.inputs.background};
   color: ${({ theme }) => theme.inputs.text};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.inputs.border};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.inputs.border};
   border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   transition: border ${({ theme }) => theme.transition.normal};
   min-width: 110px;
 
@@ -319,9 +373,10 @@ const Select = styled.select`
   font-size: ${({ theme }) => theme.fontSizes.md};
   background: ${({ theme }) => theme.inputs.background};
   color: ${({ theme }) => theme.inputs.text};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.inputs.border};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.inputs.border};
   border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   transition: border ${({ theme }) => theme.transition.normal};
   min-width: 110px;
 
@@ -335,7 +390,7 @@ const Select = styled.select`
 const CheckboxLabel = styled.label`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
+  gap: ${({ theme }) => theme.spacings.xs};
   font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.textSecondary};
   font-family: ${({ theme }) => theme.fonts.body};
@@ -355,7 +410,8 @@ const PrimaryButton = styled.button`
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-family: ${({ theme }) => theme.fonts.body};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.xs}
+    ${({ theme }) => theme.spacings.lg};
   box-shadow: ${({ theme }) => theme.shadows.button};
   cursor: pointer;
   transition: background ${({ theme }) => theme.transition.normal},
@@ -395,8 +451,8 @@ const EditButton = styled(PrimaryButton)`
 
 const ActionButtons = styled.span`
   display: inline-flex;
-  gap: ${({ theme }) => theme.spacing.xs};
-  margin-left: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.xs};
+  margin-left: ${({ theme }) => theme.spacings.sm};
 `;
 
 const List = styled.ul`
@@ -408,8 +464,9 @@ const List = styled.ul`
 const ListItem = styled.li`
   background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.md};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -422,6 +479,6 @@ const ListItem = styled.li`
 const MutedText = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  margin-top: ${({ theme }) => theme.spacing.sm};
+  margin-top: ${({ theme }) => theme.spacings.sm};
   font-family: ${({ theme }) => theme.fonts.body};
 `;

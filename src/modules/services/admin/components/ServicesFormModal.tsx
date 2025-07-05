@@ -2,14 +2,15 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  fetchServiceCategories,
-  clearCategoryMessages,
-} from "@/modules/services/slice/serviceCategorySlice";
-import { IServices } from "@/modules/services";
-import { useTranslation } from "react-i18next";
-import ImageUploadWithPreview from "@/shared/ImageUploadWithPreview";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { ServicesCategory, IServices } from "@/modules/services/types";
+import { ImageUploadWithPreview } from "@/shared";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import { toast } from "react-toastify";
+import { clearServicesMessages } from "@/modules/services/slice/servicesSlice"; // Mutlaka doğru import et!
 
 interface Props {
   isOpen: boolean;
@@ -18,74 +19,95 @@ interface Props {
   onSubmit: (formData: FormData, id?: string) => Promise<void>;
 }
 
-const LANGUAGES: ("tr" | "en" | "de")[] = ["tr", "en", "de"];
-
 export default function ServicesFormModal({
   isOpen,
   onClose,
   editingItem,
   onSubmit,
 }: Props) {
-  const { t, i18n } = useTranslation("services");
-  const currentLang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
-
+  // --- DİL ve ÇEVİRİ ---
+  const { t } = useI18nNamespace("services", translations);
+  const lang = getCurrentLocale();
   const dispatch = useAppDispatch();
-  const { categories } = useAppSelector((state) => state.serviceCategory);
 
-  // Çok dilli alanlar ve resim state
-  const [titles, setTitles] = useState<Record<string, string>>({ tr: "", en: "", de: "" });
-  const [summaries, setSummaries] = useState<Record<string, string>>({ tr: "", en: "", de: "" });
-  const [contents, setContents] = useState<Record<string, string>>({ tr: "", en: "", de: "" });
+  // --- STATE ---
+  const { categories } = useAppSelector((state) => state.servicesCategory);
+  const { successMessage, error } = useAppSelector((state) => state.services);
+  const currentUser = useAppSelector((state) => state.account.profile);
+
+  const [titles, setTitles] = useState<Record<SupportedLocale, string>>(() =>
+    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
+  );
+  const [summaries, setSummaries] = useState<Record<SupportedLocale, string>>(() =>
+    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
+  );
+  const [contents, setContents] = useState<Record<SupportedLocale, string>>(() =>
+    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
+  );
+  const [author, setAuthor] = useState("");
   const [tags, setTags] = useState("");
-  const [category, setCategory] = useState<string>("");
-  const [price, setPrice] = useState<number | "">("");
-  const [durationMinutes, setDurationMinutes] = useState<number | "">("");
-
-  // Çoklu görsel için state
+  const [category, setCategory] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
 
-  useEffect(() => {
-    dispatch(fetchServiceCategories());
-    return () => {
-      dispatch(clearCategoryMessages());
-    };
-  }, [dispatch]);
-
+  // --- FILL ON EDIT ---
   useEffect(() => {
     if (editingItem) {
-      setTitles(editingItem.title || { tr: "", en: "", de: "" });
-      setSummaries(editingItem.summary || { tr: "", en: "", de: "" });
-      setContents(editingItem.content || { tr: "", en: "", de: "" });
+      setTitles(
+        SUPPORTED_LOCALES.reduce((acc, lang) => {
+          acc[lang] = editingItem.title?.[lang] || "";
+          return acc;
+        }, {} as Record<SupportedLocale, string>)
+      );
+      setSummaries(
+        SUPPORTED_LOCALES.reduce((acc, lang) => {
+          acc[lang] = editingItem.summary?.[lang] || "";
+          return acc;
+        }, {} as Record<SupportedLocale, string>)
+      );
+      setContents(
+        SUPPORTED_LOCALES.reduce((acc, lang) => {
+          acc[lang] = editingItem.content?.[lang] || "";
+          return acc;
+        }, {} as Record<SupportedLocale, string>)
+      );
+      setAuthor(editingItem.author || currentUser?.name || "");
       setTags(editingItem.tags?.join(", ") || "");
       setCategory(
         typeof editingItem.category === "string"
           ? editingItem.category
           : editingItem.category?._id || ""
       );
-      setPrice(editingItem.price ?? "");
-      setDurationMinutes(editingItem.durationMinutes ?? "");
       setExistingImages(editingItem.images?.map((img) => img.url) || []);
-      setSelectedFiles([]);
-      setRemovedImages([]);
     } else {
-      setTitles({ tr: "", en: "", de: "" });
-      setSummaries({ tr: "", en: "", de: "" });
-      setContents({ tr: "", en: "", de: "" });
+      // Reset
+      setTitles(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
+      setSummaries(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
+      setContents(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
+      setAuthor(currentUser?.name || "");
       setTags("");
       setCategory("");
-      setPrice("");
-      setDurationMinutes("");
       setExistingImages([]);
       setSelectedFiles([]);
       setRemovedImages([]);
     }
   }, [editingItem, isOpen]);
 
-  // Çoklu görsel bileşeninden değişiklikleri al
+  // --- TOAST Mesajları ---
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearServicesMessages());
+      onClose(); // Başarılı kayıttan sonra modalı kapat
+    } else if (error) {
+      toast.error(error);
+      dispatch(clearServicesMessages());
+      // Modal açık kalsın, kullanıcı tekrar deneyebilsin
+    }
+  }, [successMessage, error, dispatch, onClose]);
+
+  // --- IMAGE HANDLER ---
   const handleImagesChange = useCallback(
     (files: File[], removed: string[], current: string[]) => {
       setSelectedFiles(files);
@@ -95,37 +117,36 @@ export default function ServicesFormModal({
     []
   );
 
+  // --- SUBMIT ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const formData = new FormData();
+
     formData.append("title", JSON.stringify(titles));
     formData.append("summary", JSON.stringify(summaries));
     formData.append("content", JSON.stringify(contents));
+    formData.append("author", author.trim());
     formData.append(
       "tags",
       JSON.stringify(
         tags
           .split(",")
-          .map((tag) => tag.trim())
+          .map((t) => t.trim())
           .filter(Boolean)
       )
     );
     formData.append("category", category);
     formData.append("isPublished", "true");
-    formData.append("price", price ? price.toString() : "");
-    formData.append("durationMinutes", durationMinutes ? durationMinutes.toString() : "");
 
-    // Çoklu dosya ekleme
     for (const file of selectedFiles) {
       formData.append("images", file);
     }
-    // Silinen görseller
     if (removedImages.length > 0) {
       formData.append("removedImages", JSON.stringify(removedImages));
     }
 
     await onSubmit(formData, editingItem?._id);
+    // Başarı durumunu useEffect ile handle edeceğiz
   };
 
   if (!isOpen) return null;
@@ -133,24 +154,24 @@ export default function ServicesFormModal({
   return (
     <FormWrapper>
       <h2>
-        {editingItem ? t("admin.services.edit", "Edit Service") : t("admin.services.create", "Add Service")}
+        {editingItem
+          ? t("admin.services.edit", "Edit Article")
+          : t("admin.services.create", "Create New Article")}
       </h2>
       <form onSubmit={handleSubmit}>
-        {LANGUAGES.map((lng) => (
+        {SUPPORTED_LOCALES.map((lng) => (
           <div key={lng}>
             <label htmlFor={`title-${lng}`}>
-              {t("admin.services.title")} ({lng.toUpperCase()})
+              {t("admin.services.title", "Title")} ({lng.toUpperCase()})
             </label>
             <input
               id={`title-${lng}`}
-              type="text"
               value={titles[lng]}
               onChange={(e) => setTitles({ ...titles, [lng]: e.target.value })}
-              required
             />
 
             <label htmlFor={`summary-${lng}`}>
-              {t("admin.services.summary")} ({lng.toUpperCase()})
+              {t("admin.services.summary", "Summary")} ({lng.toUpperCase()})
             </label>
             <textarea
               id={`summary-${lng}`}
@@ -158,11 +179,10 @@ export default function ServicesFormModal({
               onChange={(e) =>
                 setSummaries({ ...summaries, [lng]: e.target.value })
               }
-              required
             />
 
             <label htmlFor={`content-${lng}`}>
-              {t("admin.services.content")} ({lng.toUpperCase()})
+              {t("admin.services.content", "Content")} ({lng.toUpperCase()})
             </label>
             <textarea
               id={`content-${lng}`}
@@ -170,30 +190,20 @@ export default function ServicesFormModal({
               onChange={(e) =>
                 setContents({ ...contents, [lng]: e.target.value })
               }
-              required
             />
           </div>
         ))}
 
-        <label htmlFor="price">{t("admin.services.price")}</label>
+        <label htmlFor="author">{t("admin.services.author", "Author")}</label>
         <input
-          id="price"
-          type="number"
-          value={price}
-          onChange={(e) => setPrice(Number(e.target.value))}
-          placeholder="€"
+          id="author"
+          type="text"
+          value={author}
+          onChange={(e) => setAuthor(e.target.value)}
+          required
         />
 
-        <label htmlFor="duration">{t("admin.services.duration")}</label>
-        <input
-          id="duration"
-          type="number"
-          value={durationMinutes}
-          onChange={(e) => setDurationMinutes(Number(e.target.value))}
-          placeholder={t("admin.services.duration_placeholder", "Minutes")}
-        />
-
-        <label htmlFor="tags">{t("admin.services.tags")}</label>
+        <label htmlFor="tags">{t("admin.services.tags", "Tags")}</label>
         <input
           id="tags"
           type="text"
@@ -207,10 +217,12 @@ export default function ServicesFormModal({
           max={5}
           defaultImages={existingImages}
           onChange={handleImagesChange}
-          folder="service"
+          folder="article"
         />
 
-        <label htmlFor="category">{t("admin.services.category")}</label>
+        <label htmlFor="category">
+          {t("admin.services.category", "Category")}
+        </label>
         <select
           id="category"
           value={category}
@@ -218,18 +230,20 @@ export default function ServicesFormModal({
           required
         >
           <option value="" disabled>
-            {t("admin.services.select_category")}
+            {t("admin.services.select_category", "Select a category")}
           </option>
-          {categories.map((cat) => (
+          {categories.map((cat: ServicesCategory) => (
             <option key={cat._id} value={cat._id}>
-              {cat.name[currentLang]} ({cat.slug})
+              {cat.name?.[lang] || cat.name?.en || Object.values(cat.name || {})[0] || cat.slug}
             </option>
           ))}
         </select>
 
         <ButtonGroup>
           <button type="submit">
-            {editingItem ? t("admin.update", "Update") : t("admin.create", "Create")}
+            {editingItem
+              ? t("admin.update", "Update")
+              : t("admin.create", "Create")}
           </button>
           <button type="button" onClick={onClose}>
             {t("admin.cancel", "Cancel")}
@@ -240,7 +254,7 @@ export default function ServicesFormModal({
   );
 }
 
-// Styled Components
+// --- Styled Components ---
 const FormWrapper = styled.div`
   max-width: 600px;
   margin: auto;

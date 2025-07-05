@@ -1,147 +1,146 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
 import styled from "styled-components";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  createAboutCategory,
-  updateAboutCategory,
-  clearCategoryMessages,
-  AboutCategory,
-} from "@/modules/about/slice/aboutCategorySlice";
-import { useTranslation } from "react-i18next";
+import { useState, useEffect } from "react";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import type { AboutCategory } from "@/modules/about/types";
+import { useAppDispatch } from "@/store/hooks";
 
 interface Props {
+  isOpen: boolean;
   onClose: () => void;
-  editingItem?: AboutCategory | null;
+  editingItem: AboutCategory | null;
+  onSubmit: (
+    data: { name: Record<SupportedLocale, string>; description?: Record<SupportedLocale, string> },
+    id?: string
+  ) => Promise<void>;
 }
 
-export default function AboutCategoryForm({ onClose, editingItem }: Props) {
+export default function AboutCategoryForm({
+  isOpen,
+  onClose,
+  editingItem,
+  onSubmit,
+}: Props) {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("about");
-  const { loading, error, successMessage } = useAppSelector(
-    (state) => state.aboutCategory
-  );
+  const { i18n, t } = useI18nNamespace("about", translations);
+  const lang = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
 
-  const [name, setName] = useState({ tr: "", en: "", de: "" });
-  const [description, setDescription] = useState("");
+  const emptyLabel = SUPPORTED_LOCALES.reduce((acc, lng) => {
+    acc[lng] = "";
+    return acc;
+  }, {} as Record<SupportedLocale, string>);
 
-  const languages = useMemo(() => ["tr", "en", "de"] as const, []);
+  const [name, setName] = useState<Record<SupportedLocale, string>>(emptyLabel);
+  const [description, setDescription] = useState<Record<SupportedLocale, string>>(emptyLabel);
 
   useEffect(() => {
     if (editingItem) {
-      setName(editingItem.name || { tr: "", en: "", de: "" });
-      setDescription(editingItem.description || "");
+      setName({ ...emptyLabel, ...editingItem.name });
+      setDescription(editingItem.description ? { ...emptyLabel, ...editingItem.description } : emptyLabel);
     } else {
-      setName({ tr: "", en: "", de: "" });
-      setDescription("");
+      setName(emptyLabel);
+      setDescription(emptyLabel);
     }
-  }, [editingItem]);
-
-  useEffect(() => {
-    if (successMessage || error) {
-      const timer = setTimeout(() => dispatch(clearCategoryMessages()), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [successMessage, error, dispatch]);
-
-  const handleChange = useCallback(
-    (lang: "tr" | "en" | "de", value: string) => {
-      setName((prev) => ({ ...prev, [lang]: value }));
-    },
-    []
-  );
+  }, [editingItem, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = { name, description };
 
-    try {
-      if (editingItem?._id) {
-        await dispatch(
-          updateAboutCategory({ id: editingItem._id, data: payload })
-        ).unwrap();
-      } else {
-        await dispatch(createAboutCategory(payload)).unwrap();
-      }
-      onClose();
-    } catch (err) {
-      console.error("❌ Category operation failed:", err);
+    // Name fill
+    const firstName = Object.values(name).find((v) => v.trim());
+    const filledName = { ...name };
+    if (firstName) {
+      SUPPORTED_LOCALES.forEach((lng) => {
+        if (!filledName[lng]) filledName[lng] = firstName;
+      });
     }
+
+    // Description fill
+    const firstDesc = Object.values(description).find((v) => v.trim());
+    const filledDescription = { ...description };
+    if (firstDesc) {
+      SUPPORTED_LOCALES.forEach((lng) => {
+        if (!filledDescription[lng]) filledDescription[lng] = firstDesc;
+      });
+    }
+
+    await onSubmit({ name: filledName, description: filledDescription }, editingItem?._id);
+
+
+    onClose();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Form onSubmit={handleSubmit}>
-      <h3>
+    <FormWrapper>
+      <h2>
         {editingItem
-          ? t("admin.edit_category", "Edit Category")
-          : t("admin.new_category", "New Category")}
-      </h3>
+          ? t("admin.aboutcategory.edit", "Edit About Category")
+          : t("admin.aboutcategory.create", "Add New About Category")}
+      </h2>
+      <form onSubmit={handleSubmit}>
+        {SUPPORTED_LOCALES.map((lng) => (
+          <div key={lng}>
+            <label>
+              {t("admin.aboutcategory.name", "Category Name")} ({lng.toUpperCase()})
+            </label>
+            <input
+              type="text"
+              value={name[lng]}
+              onChange={(e) => setName({ ...name, [lng]: e.target.value })}
+              required={lng === lang}
+            />
 
-      {languages.map((lng) => (
-        <FieldGroup key={lng}>
-          <label htmlFor={`name-${lng}`}>{lng.toUpperCase()}</label>
-          <input
-            id={`name-${lng}`}
-            type="text"
-            value={name[lng]}
-            onChange={(e) => handleChange(lng, e.target.value)}
-            placeholder={t("admin.category_name_placeholder", {
-              lng: lng.toUpperCase(),
-            })}
-            required
-          />
-        </FieldGroup>
-      ))}
+            <label>
+              {t("admin.aboutcategory.description", "Description")} ({lng.toUpperCase()})
+            </label>
+            <textarea
+              value={description[lng]}
+              onChange={(e) => setDescription({ ...description, [lng]: e.target.value })}
+              required={lng === lang}
+            />
+          </div>
+        ))}
 
-      <FieldGroup>
-        <label htmlFor="desc">
-          {t("admin.description_optional", "Description (optional)")}
-        </label>
-        <textarea
-          id="desc"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder={t(
-            "admin.category_description_placeholder",
-            "What is this category about?"
-          )}
-        />
-      </FieldGroup>
-
-      {error && <ErrorText>❌ {error}</ErrorText>}
-      {successMessage && <SuccessText>✅ {successMessage}</SuccessText>}
-
-      <SubmitButton type="submit" disabled={loading}>
-        {loading
-          ? t("admin.loading", "Saving...")
-          : editingItem
-          ? t("admin.update", "Update")
-          : t("admin.create", "Create")}
-      </SubmitButton>
-    </Form>
+        <ButtonGroup>
+          <button type="submit">
+            {editingItem ? t("admin.update", "Update") : t("admin.create", "Create")}
+          </button>
+          <button type="button" onClick={onClose}>
+            {t("admin.cancel", "Cancel")}
+          </button>
+        </ButtonGroup>
+      </form>
+    </FormWrapper>
   );
 }
 
-// 💅 Styles
+const FormWrapper = styled.div`
+  max-width: 600px;
+  margin: auto;
+  padding: 1.5rem;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.md};
 
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const FieldGroup = styled.div`
-  display: flex;
-  flex-direction: column;
+  h2 {
+    margin-bottom: 1rem;
+  }
 
   label {
+    display: block;
+    margin-top: 1rem;
     font-weight: 600;
-    margin-bottom: 0.25rem;
   }
 
   input,
   textarea {
+    width: 100%;
+    margin-top: 0.25rem;
     padding: 0.5rem;
     border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: 4px;
@@ -151,36 +150,33 @@ const FieldGroup = styled.div`
   }
 
   textarea {
-    min-height: 80px;
+    min-height: 100px;
     resize: vertical;
   }
 `;
 
-const SubmitButton = styled.button`
-  align-self: flex-end;
-  padding: 0.5rem 1.25rem;
-  background: ${({ theme }) => theme.colors.primary};
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+const ButtonGroup = styled.div`
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
 
-  &:hover {
-    background: ${({ theme }) => theme.colors.primaryHover};
+  button {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:first-child {
+      background: ${({ theme }) => theme.colors.primary};
+      color: #fff;
+    }
+    &:last-child {
+      background: ${({ theme }) => theme.colors.danger};
+      color: #fff;
+    }
+    &:hover {
+      opacity: 0.9;
+    }
   }
-
-  &:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-  }
-`;
-
-const ErrorText = styled.p`
-  color: red;
-  font-size: 0.9rem;
-`;
-
-const SuccessText = styled.p`
-  color: green;
-  font-size: 0.9rem;
 `;

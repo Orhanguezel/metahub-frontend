@@ -6,31 +6,24 @@ import { useTranslation } from "react-i18next";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import ImageUploadWithPreview from "@/shared/ImageUploadWithPreview";
-import type {
-  CompanyFormValues,
-  CompanyLogo,
-} from "@/modules/company/types/company";
+import type { ICompany, ICompanyImage } from "@/modules/company/types";
 
 interface Props {
-  initialValues: CompanyFormValues;
+  initialValues: ICompany;
   onSubmit: (
-    values: CompanyFormValues,
+    values: ICompany,
     newLogos: File[],
     removedLogos?: string[]
   ) => void;
 }
 
+const getUrlArray = (logos?: ICompanyImage[]): string[] =>
+  Array.isArray(logos) ? logos.map((img) => img.url) : [];
+
 export default function CompanyForm({ initialValues, onSubmit }: Props) {
   const { t } = useTranslation("company");
 
-  // Logo değerini string veya objeden array'e çevir
-  const getUrlArray = (logos?: CompanyLogo[] | string[]): string[] => {
-    if (!logos) return [];
-    if (typeof logos[0] === "string") return logos as string[];
-    return (logos as CompanyLogo[]).map((img) => img.url);
-  };
-
-  // Local UI state'ler
+  // Logo state
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(
@@ -46,34 +39,36 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
 
   // Validasyon
   const schema = yup.object().shape({
-    companyName: yup.string().required(t("required", "Bu alan zorunludur")),
+    companyName: yup.string().required(t("required", "Required")),
     email: yup
       .string()
-      .email(t("invalidEmail", "Geçersiz e-posta"))
-      .required(t("required", "Bu alan zorunludur")),
-    phone: yup.string().required(t("required", "Bu alan zorunludur")),
-    taxNumber: yup.string().required(t("required", "Bu alan zorunludur")),
+      .email(t("invalidEmail", "Invalid email"))
+      .required(t("required", "Required")),
+    phone: yup.string().required(t("required", "Required")),
+    taxNumber: yup.string().required(t("required", "Required")),
+    handelsregisterNumber: yup.string(),
     address: yup.object().shape({
-      street: yup.string().required(t("required", "Bu alan zorunludur")),
-      city: yup.string().required(t("required", "Bu alan zorunludur")),
-      postalCode: yup.string().required(t("required", "Bu alan zorunludur")),
-      country: yup.string().required(t("required", "Bu alan zorunludur")),
+      street: yup.string().required(t("required", "Required")),
+      city: yup.string().required(t("required", "Required")),
+      postalCode: yup.string().required(t("required", "Required")),
+      country: yup.string().required(t("required", "Required")),
     }),
     bankDetails: yup.object().shape({
-      bankName: yup.string().required(t("required", "Bu alan zorunludur")),
-      iban: yup.string().required(t("required", "Bu alan zorunludur")),
-      swiftCode: yup.string().required(t("required", "Bu alan zorunludur")),
+      bankName: yup.string().required(t("required", "Required")),
+      iban: yup.string().required(t("required", "Required")),
+      swiftCode: yup.string().required(t("required", "Required")),
     }),
     socialLinks: yup.object().shape({
-      facebook: yup.string().url(t("invalidUrl", "Geçersiz URL")).nullable(),
-      instagram: yup.string().url(t("invalidUrl", "Geçersiz URL")).nullable(),
-      twitter: yup.string().url(t("invalidUrl", "Geçersiz URL")).nullable(),
-      linkedin: yup.string().url(t("invalidUrl", "Geçersiz URL")).nullable(),
-      youtube: yup.string().url(t("invalidUrl", "Geçersiz URL")).nullable(),
+      facebook: yup.string().url(t("invalidUrl", "Invalid URL")).nullable(),
+      instagram: yup.string().url(t("invalidUrl", "Invalid URL")).nullable(),
+      twitter: yup.string().url(t("invalidUrl", "Invalid URL")).nullable(),
+      linkedin: yup.string().url(t("invalidUrl", "Invalid URL")).nullable(),
+      youtube: yup.string().url(t("invalidUrl", "Invalid URL")).nullable(),
     }),
   });
 
-  const formik = useFormik({
+  // --- Formik ---
+  const formik = useFormik<ICompany>({
     initialValues: {
       ...initialValues,
       socialLinks: {
@@ -86,12 +81,12 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
     },
     enableReinitialize: true,
     validationSchema: schema,
-    onSubmit: (values) => {
+    onSubmit: (values: ICompany) => {
       onSubmit(values, selectedFiles, removedImages);
     },
   });
 
-  // Dosya değişimini işle
+  // Dosya değişimi
   const handleLogoChange = useCallback(
     (files: File[], removed: string[], current: string[]) => {
       setSelectedFiles(files);
@@ -101,6 +96,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
     []
   );
 
+  // UI
   return (
     <FormStyled onSubmit={formik.handleSubmit} autoComplete="off" noValidate>
       <SectionTitle>{t("companyInfo", "Company Info")}</SectionTitle>
@@ -159,7 +155,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
       <Input
         id="handelsregisterNumber"
         name="handelsregisterNumber"
-        value={formik.values.handelsregisterNumber}
+        value={formik.values.handelsregisterNumber || ""}
         onChange={formik.handleChange}
       />
 
@@ -286,35 +282,35 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
       <Input
         id="socialLinks.facebook"
         name="socialLinks.facebook"
-        value={formik.values.socialLinks.facebook}
+        value={formik.values.socialLinks?.facebook || ""}
         onChange={formik.handleChange}
       />
       <Label htmlFor="socialLinks.instagram">Instagram</Label>
       <Input
         id="socialLinks.instagram"
         name="socialLinks.instagram"
-        value={formik.values.socialLinks.instagram}
+        value={formik.values.socialLinks?.instagram || ""}
         onChange={formik.handleChange}
       />
       <Label htmlFor="socialLinks.twitter">Twitter</Label>
       <Input
         id="socialLinks.twitter"
         name="socialLinks.twitter"
-        value={formik.values.socialLinks.twitter}
+        value={formik.values.socialLinks?.twitter || ""}
         onChange={formik.handleChange}
       />
       <Label htmlFor="socialLinks.linkedin">LinkedIn</Label>
       <Input
         id="socialLinks.linkedin"
         name="socialLinks.linkedin"
-        value={formik.values.socialLinks.linkedin}
+        value={formik.values.socialLinks?.linkedin || ""}
         onChange={formik.handleChange}
       />
       <Label htmlFor="socialLinks.youtube">YouTube</Label>
       <Input
         id="socialLinks.youtube"
         name="socialLinks.youtube"
-        value={formik.values.socialLinks.youtube}
+        value={formik.values.socialLinks?.youtube || ""}
         onChange={formik.handleChange}
       />
 
@@ -337,27 +333,27 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
   );
 }
 
-// 🎨 Styled Components - Tema odaklı ve erişilebilir
+// 🎨 Styled Components
 const FormStyled = styled.form`
   max-width: 600px;
   margin: 0 auto;
   background: ${({ theme }) => theme.colors.cardBackground};
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.sm};
 `;
 
 const Label = styled.label`
   display: block;
-  margin-top: ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  margin-top: ${({ theme }) => theme.spacings.md};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
 const Input = styled.input<{ $hasError?: boolean }>`
-  padding: ${({ theme }) => theme.spacing.sm};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  padding: ${({ theme }) => theme.spacings.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   width: 100%;
   border-radius: ${({ theme }) => theme.radii.sm};
   border: 1px solid
@@ -375,16 +371,17 @@ const Input = styled.input<{ $hasError?: boolean }>`
 `;
 
 const SectionTitle = styled.h4`
-  margin-top: ${({ theme }) => theme.spacing.lg};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   font-size: ${({ theme }) => theme.fontSizes.md};
 `;
 
 const Button = styled.button.attrs({ type: "submit" })`
-  margin-top: ${({ theme }) => theme.spacing.lg};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.lg};
+  margin-top: ${({ theme }) => theme.spacings.lg};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.lg};
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.buttonText};
   border: none;
@@ -407,6 +404,6 @@ const Button = styled.button.attrs({ type: "submit" })`
 const FieldError = styled.div`
   color: ${({ theme }) => theme.colors.danger};
   font-size: ${({ theme }) => theme.fontSizes.xs};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   min-height: 18px;
 `;

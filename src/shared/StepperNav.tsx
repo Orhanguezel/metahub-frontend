@@ -38,30 +38,29 @@ export default function StepperNav({ currentStep, steps }: StepperNavProps) {
 // --- Styled Components ---
 const StepperBar = styled.div`
   display: flex;
-  flex-direction: row;  
-  flex-wrap: wrap;  
+  flex-direction: row;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: flex-end;
-  gap: ${({ theme }) => theme.spacing.xl};
-  padding: ${({ theme }) => `${theme.spacing.md} ${theme.spacing.lg}`};
+  gap: ${({ theme }) => theme.spacings.xl};
+  padding: ${({ theme }) => `${theme.spacings.md} ${theme.spacings.lg}`};
   background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.md};
-  margin: ${({ theme }) => `${theme.spacing.xl} 0 ${theme.spacing.lg} 0`};
+  margin: ${({ theme }) => `${theme.spacings.xl} 0 ${theme.spacings.lg} 0`};
   min-width: 220px;
   max-width: 100vw;
   overflow-x: auto;
-  row-gap: ${({ theme }) => theme.spacing.lg};
+  row-gap: ${({ theme }) => theme.spacings.lg};
 
   @media ${({ theme }) => theme.media.small} {
-    gap: ${({ theme }) => theme.spacing.md};
-    padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.sm}`};
-    margin: ${({ theme }) => `${theme.spacing.lg} 0 ${theme.spacing.md} 0`};
+    gap: ${({ theme }) => theme.spacings.md};
+    padding: ${({ theme }) => `${theme.spacings.sm} ${theme.spacings.sm}`};
+    margin: ${({ theme }) => `${theme.spacings.lg} 0 ${theme.spacings.md} 0`};
     border-radius: ${({ theme }) => theme.radii.md};
-    row-gap: ${({ theme }) => theme.spacing.md};
+    row-gap: ${({ theme }) => theme.spacings.md};
   }
 `;
-
 
 const StepCircle = styled.span<{ $active?: boolean }>`
   display: flex;
@@ -85,8 +84,7 @@ const StepCircle = styled.span<{ $active?: boolean }>`
     $active
       ? `0 2px 12px ${theme.colors.primaryTransparent}, 0 0 0 2.5px #fff7`
       : theme.shadows.xs};
-  transition:
-    background ${({ theme }) => theme.transition.fast},
+  transition: background ${({ theme }) => theme.transition.fast},
     border ${({ theme }) => theme.transition.fast},
     color ${({ theme }) => theme.transition.fast},
     box-shadow ${({ theme }) => theme.transition.fast};
@@ -109,13 +107,11 @@ const StepLabel = styled.span<{ $active?: boolean }>`
     $active ? theme.colors.primaryTransparent : "transparent"};
   padding: 0.13em 0.75em;
   border-radius: ${({ theme }) => theme.radii.md};
-  letter-spacing: 0.018em;
+  letter-spacings: 0.018em;
   user-select: none;
   transition: color 0.18s, background 0.16s, font-weight 0.13s;
   text-shadow: ${({ $active }) =>
-    $active
-      ? "0 1px 8px #fff6, 0 0 4px #fff5"
-      : "0 1px 4px rgba(0,0,0,0.12)"};
+    $active ? "0 1px 8px #fff6, 0 0 4px #fff5" : "0 1px 4px rgba(0,0,0,0.12)"};
 
   @media ${({ theme }) => theme.media.small} {
     font-size: ${({ theme }) => theme.fontSizes.sm};
@@ -127,7 +123,7 @@ const Step = styled.div<{ $active?: boolean }>`
   position: relative;
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
   cursor: pointer;
   opacity: ${({ $active }) => ($active ? 1 : 0.85)};
   background: transparent;
@@ -144,7 +140,6 @@ const Step = styled.div<{ $active?: boolean }>`
     }
   }
 `;
-
 
 const ActiveBar = styled.div`
   position: absolute;

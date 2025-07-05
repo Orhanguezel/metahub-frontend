@@ -29,7 +29,10 @@ export default function TimeSlotPicker({
       <option value="">{t("form.selectTime", "Please select a time")}</option>
       {availableSlots.map((slot) => (
         <option key={slot} value={slot} disabled={bookedSlots.includes(slot)}>
-          {slot} {bookedSlots.includes(slot) ? "— " + t("form.fullyBooked", "Fully Booked") : ""}
+          {slot}{" "}
+          {bookedSlots.includes(slot)
+            ? "— " + t("form.fullyBooked", "Fully Booked")
+            : ""}
         </option>
       ))}
     </Select>
@@ -41,9 +44,10 @@ const Select = styled.select`
   font-size: ${({ theme }) => theme.fontSizes.md};
   background: ${({ theme }) => theme.inputs.background};
   color: ${({ theme }) => theme.inputs.text};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.inputs.border};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.inputs.border};
   border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   width: 100%;
   &:focus {
     outline: none;

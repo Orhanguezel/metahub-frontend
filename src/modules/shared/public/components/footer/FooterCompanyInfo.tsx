@@ -44,7 +44,7 @@ export default function FooterCompanyInfo() {
 }
 
 const InfoWrapper = styled.div`
-  margin: ${({ theme }) => theme.spacing.md} 0;
+  margin: ${({ theme }) => theme.spacings.md} 0;
   color: ${({ theme }) => theme.colors.textSecondary};
   text-align: center;
 `;
@@ -53,8 +53,8 @@ const FooterBlockTitle = css`
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  letter-spacing: 0.5px;
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  letter-spacings: 0.5px;
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
 `;
 
 const CompanyName = styled.div`

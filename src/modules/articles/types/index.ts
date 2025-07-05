@@ -1,4 +1,4 @@
-// src/types/article.ts
+// src/types/articles.ts
 import type { SupportedLocale } from "@/types/common";
 
 // Çok dilli alanlar için merkezi tanım
@@ -22,7 +22,7 @@ export interface IArticles {
   slug: string;
   summary: TranslatedField;
   content: TranslatedField;
-  label: TranslatedField;
+  tenant: string;
   tags: string[];
   images: IArticlesImage[];
   category:
@@ -35,7 +35,7 @@ export interface IArticles {
   isPublished: boolean;
   isActive: boolean;
   publishedAt?: string;
-  comments: string[]; // populate edilirse genişletilebilir
+  comments: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -45,7 +45,7 @@ export interface ArticlesCategory {
   _id: string;
   name: TranslatedField;
   slug: string;
-  description?: string;
+  description?: TranslatedField;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

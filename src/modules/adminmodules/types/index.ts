@@ -1,55 +1,45 @@
-// src/modules/adminmodules/types/index.ts
-
 import type { SupportedLocale, TranslatedLabel } from "@/types/common";
 
-export interface RouteMeta {
+export type RouteMeta = {
   method: string;
   path: string;
   auth?: boolean;
   summary?: string;
-}
+  body?: any;
+};
 
-export interface HistoryEntry {
+// types.ts
+export interface IModuleMeta {
+  name: string; // unique
+  label: TranslatedLabel; // çoklu dil
+  icon: string; // global default icon
+  roles: string[]; // default global yetkiler
+  enabled: boolean; // global olarak aktif/pasif
+  language: SupportedLocale; // ana dil
   version: string;
-  by: string;
-  date: string;
-  note: string;
-}
-
-export interface UpdatedBy {
-  username: string;
-  commitHash: string;
-}
-
-export interface AdminModule {
-  name: string;
-  label: TranslatedLabel;
-  icon?: string;
-  roles: string[];
-  enabled: boolean;
-  visibleInSidebar?: boolean;
-  useAnalytics?: boolean;
-  version?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  routes?: RouteMeta[];
-  history?: HistoryEntry[];
-  language?: SupportedLocale;
-  order?: number;
-  updatedBy?: UpdatedBy;
+  order: number;
   statsKey?: string;
-  showInDashboard?: boolean;
-  stats?: Record<string, { count: number; lastUpdatedAt: string }>;
-  [key: string]: any;
+  history: Array<{
+    version: string;
+    by: string;
+    date: string;
+    note: string;
+  }>;
+  routes: RouteMeta[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-export interface ModuleAnalyticsItem {
-  name: string;
-  label: TranslatedLabel;
-  icon?: string;
-  count: number;
-}
-
-export interface EnabledModuleQuery {
-  project: string;
+export interface IModuleSetting {
+  module: string; // FK (ModuleMeta.name)
+  tenant: string;
+  enabled?: boolean; // override
+  visibleInSidebar?: boolean; // override
+  useAnalytics?: boolean; // override
+  showInDashboard?: boolean; // override
+  roles?: string[]; // override (sadece gerekirse!)
+  order?: number; // override (sıralama değişikliği için)
+  // icon, label, language gibi alanlar SADECE meta’da!
+  createdAt?: Date;
+  updatedAt?: Date;
 }

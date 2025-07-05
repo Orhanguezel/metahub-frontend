@@ -8,9 +8,6 @@ import {
   fetchAnalyticsEvents,
 } from "@/modules/dashboard/slice/analyticsSlice";
 import {
-  setSelectedProject,
-} from "@/modules/adminmodules/slice/adminModuleSlice";
-import {
   LineChart,
   BarChart,
   MapChart,
@@ -22,14 +19,16 @@ import { useTranslation } from "react-i18next";
 import { Loader } from "@/shared";
 import { Download, FileText } from "lucide-react";
 
-// --- CSV export helper ---
+// --- CSV helper ---
 function exportToCSV(data: any[], filename = "export.csv") {
   if (!data || !data.length) return;
   const keys = Object.keys(data[0]);
   const csvRows = [
     keys.join(","),
     ...data.map((row) =>
-      keys.map((k) => `"${(row[k] ?? "").toString().replace(/"/g, '""')}"`).join(",")
+      keys
+        .map((k) => `"${(row[k] ?? "").toString().replace(/"/g, '""')}"`)
+        .join(",")
     ),
   ];
   const csvContent = csvRows.join("\n");
@@ -45,89 +44,98 @@ function exportToCSV(data: any[], filename = "export.csv") {
 export default function AnalyticsPanel() {
   const { t, i18n } = useTranslation("admin-dashboard");
   const dispatch = useAppDispatch();
-  // Redux states
-  const analytics = useAppSelector((state) => state.analytics);
-  const admin = useAppSelector((state) => state.admin);
 
-  // Güvenli array fallback
-  const trends = Array.isArray(analytics.trends) ? analytics.trends : [];
-  const events = Array.isArray(analytics.events) ? analytics.events : [];
+  // Redux State
+  const analytics = useAppSelector((state) => state.analytics);
+  const moduleMetaState = useAppSelector((state) => state.moduleMeta);
+  const moduleSettingState = useAppSelector((state) => state.moduleSetting);
+
+  // Arrayler
+  const modules = useMemo(
+    () =>
+      Array.isArray(moduleMetaState.modules) ? moduleMetaState.modules : [],
+    [moduleMetaState.modules]
+  );
+  // SADECE BU: settings yerine tenantModules!
+  const tenantModules = useMemo(
+    () =>
+      Array.isArray(moduleSettingState.tenantModules)
+        ? moduleSettingState.tenantModules
+        : [],
+    [moduleSettingState.tenantModules]
+  );
+  const trends = useMemo(
+    () => (Array.isArray(analytics.trends) ? analytics.trends : []),
+    [analytics.trends]
+  );
+  const events = useMemo(
+    () => (Array.isArray(analytics.events) ? analytics.events : []),
+    [analytics.events]
+  );
   const loading = analytics.loading;
   const error = analytics.error;
-  const modules = Array.isArray(admin.modules) ? admin.modules : [];
-  const selectedProject = admin.selectedProject;
-  const availableProjects = Array.isArray(admin.availableProjects) ? admin.availableProjects : [];
-  const modulesLoading = admin.loading;
+  const modulesLoading = moduleMetaState.loading || moduleSettingState.loading;
 
-  // State
+  // Filtreler
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [selectedModule, setSelectedModule] = useState<string>("");
   const [selectedEventType, setSelectedEventType] = useState<string>("");
 
-  // 2. Seçilen projeye göre, aktif ve useAnalytics modülleri filtrele
+  // --- Aktif analytics modülleri (meta + tenant setting merge) ---
   const activeAnalyticsModules = useMemo(() => {
     return modules
-      .filter((m) => m.enabled && m.useAnalytics)
-      .map((m) => ({
-        value: m.name,
-        label: m.label?.[i18n.language as keyof typeof m.label] || m.name,
+      .filter((mod) => {
+        const setting = tenantModules.find((set) => set.module === mod.name);
+        // useAnalytics ve enabled sadece settingte override edilir
+        // Setting yoksa default: aktif değil.
+        return setting?.enabled !== false && setting?.useAnalytics === true;
+      })
+      .map((mod) => ({
+        value: mod.name,
+        label: mod.label?.[i18n.language as keyof typeof mod.label] || mod.name,
       }));
-  }, [modules, i18n.language]);
+  }, [modules, tenantModules, i18n.language]);
 
-  // 3. Event tiplerini çıkar
+  // Event tipleri
   const availableEventTypes = useMemo(() => {
     const set = new Set(events.map((e) => e.eventType).filter(Boolean));
     return Array.from(set);
   }, [events]);
 
-  // 4. Event verilerini fetch et
-  useEffect(() => {
-    if (!selectedProject) return;
-    const filters: any = {
-      project: selectedProject,
-      period: "day",
-      ...(selectedModule && { module: selectedModule }),
-      ...(selectedEventType && { eventType: selectedEventType }),
-      ...(startDate && { startDate: startDate.toISOString() }),
-      ...(endDate && { endDate: endDate.toISOString() }),
-    };
-
-    dispatch(fetchAnalyticsTrends(filters));
-    dispatch(fetchAnalyticsEvents({ ...filters, limit: 1000 }));
-  }, [dispatch, selectedProject, startDate, endDate, selectedModule, selectedEventType]);
-
-  // 5. Sadece lokasyon içeren eventler
-  const eventsWithLocation = useMemo(
-    () => events.filter((e) => e.location?.coordinates?.length === 2),
-    [events]
-  );
-
-  // Tüm modül ve event listesini tek noktadan çekmek için (FilterBar vs için kullanılabilir)
+  // Modül isimleri (event içindeki module)
   const availableModules = useMemo(() => {
     const set = new Set(events.map((e) => e.module).filter(Boolean));
     return Array.from(set);
   }, [events]);
 
-  const handleResetFilters = () => {
-    setStartDate(null);
-    setEndDate(null);
-    setSelectedModule("");
-    setSelectedEventType("");
-  };
+  // Sadece lokasyon içeren eventler
+  const eventsWithLocation = useMemo(
+    () => events.filter((e) => e.location?.coordinates?.length === 2),
+    [events]
+  );
 
-  const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const project = e.target.value;
-    dispatch(setSelectedProject(project));
-    setSelectedModule("");
-    setSelectedEventType("");
-  };
+  // NOT: useEffect ile module/setting fetch yok! Parent'ta çağrıldığı için burada yok.
 
-  // --- Export handler ---
+  useEffect(() => {
+    const filters: any = {
+      ...(selectedModule && { module: selectedModule }),
+      ...(selectedEventType && { eventType: selectedEventType }),
+      ...(startDate && { startDate: startDate.toISOString() }),
+      ...(endDate && { endDate: endDate.toISOString() }),
+      period: "day",
+    };
+    dispatch(fetchAnalyticsTrends(filters));
+    dispatch(fetchAnalyticsEvents({ ...filters, limit: 1000 }));
+  }, [dispatch, selectedModule, selectedEventType, startDate, endDate]);
+
+  // Export
   const handleExport = (format: "csv" | "json" = "csv") => {
     if (!events || !events.length) return;
     if (format === "json") {
-      const blob = new Blob([JSON.stringify(events, null, 2)], { type: "application/json" });
+      const blob = new Blob([JSON.stringify(events, null, 2)], {
+        type: "application/json",
+      });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.setAttribute("download", "analytics-export.json");
@@ -139,15 +147,31 @@ export default function AnalyticsPanel() {
     }
   };
 
+  // Filtreleri Sıfırla
+  const handleResetFilters = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setSelectedModule("");
+    setSelectedEventType("");
+  };
+
   return (
     <PanelWrapper>
       <Header>
-        <Title>{t("analytics.title", "Log Analizi ve Etkinlik Trendleri")}</Title>
+        <Title>
+          {t("analytics.title", "Log Analizi ve Etkinlik Trendleri")}
+        </Title>
         <BtnGroup>
-          <ExportBtn onClick={() => handleExport("csv")} title={t("exportCSV", "CSV Dışa Aktar")}>
+          <ExportBtn
+            onClick={() => handleExport("csv")}
+            title={t("exportCSV", "CSV Dışa Aktar")}
+          >
             <Download size={18} /> CSV
           </ExportBtn>
-          <ExportBtn onClick={() => handleExport("json")} title={t("exportJSON", "JSON Dışa Aktar")}>
+          <ExportBtn
+            onClick={() => handleExport("json")}
+            title={t("exportJSON", "JSON Dışa Aktar")}
+          >
             <FileText size={18} /> JSON
           </ExportBtn>
           <ResetBtn onClick={handleResetFilters}>
@@ -155,24 +179,6 @@ export default function AnalyticsPanel() {
           </ResetBtn>
         </BtnGroup>
       </Header>
-
-      {/* --- Proje Select --- */}
-      <Row>
-        <label htmlFor="projectSelect">{t("selectProject", "Proje Seç")}</label>
-        <select
-          id="projectSelect"
-          value={selectedProject || ""}
-          onChange={handleProjectChange}
-          disabled={modulesLoading}
-        >
-          <option value="">{t("chooseProject", "Proje seçiniz...")}</option>
-          {availableProjects.map((proj) => (
-            <option key={proj} value={proj}>
-              {proj}
-            </option>
-          ))}
-        </select>
-      </Row>
 
       {/* --- Modül ve Event Tipi Filtreleri --- */}
       <Row>
@@ -216,7 +222,6 @@ export default function AnalyticsPanel() {
         }}
       />
 
-      {/* Dilersen filter bar da ekleyebilirsin */}
       <FilterBar
         module={selectedModule}
         eventType={selectedEventType}
@@ -229,7 +234,6 @@ export default function AnalyticsPanel() {
       />
 
       {(loading || modulesLoading) && <Loader />}
-
       {error && <Error>{error}</Error>}
 
       {!loading && !modulesLoading && (
@@ -263,7 +267,9 @@ export default function AnalyticsPanel() {
             {eventsWithLocation.length ? (
               <MapChart data={eventsWithLocation} />
             ) : (
-              <NoData>{t("noGeoData", "Konum verisi içeren kayıt yok.")}</NoData>
+              <NoData>
+                {t("noGeoData", "Konum verisi içeren kayıt yok.")}
+              </NoData>
             )}
           </Section>
 
@@ -281,22 +287,19 @@ export default function AnalyticsPanel() {
 
 // --- Styled Components ---
 const PanelWrapper = styled.div`
-  padding: ${({ theme }) => theme.spacing.xxl};
+  padding: ${({ theme }) => theme.spacings.xxl};
 `;
-
 const Header = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
 `;
-
 const BtnGroup = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacings.sm};
   align-items: center;
 `;
-
 const ExportBtn = styled.button`
   display: flex;
   align-items: center;
@@ -305,7 +308,8 @@ const ExportBtn = styled.button`
   color: ${({ theme }) => theme.colors.whiteColor};
   border: none;
   border-radius: ${({ theme }) => theme.radii.sm};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.md};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   cursor: pointer;
   transition: background ${({ theme }) => theme.transition.fast};
@@ -314,12 +318,13 @@ const ExportBtn = styled.button`
     background: ${({ theme }) => theme.colors.primaryHover};
   }
 `;
-
 const ResetBtn = styled.button`
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.md};
   font-size: ${({ theme }) => theme.fontSizes.small};
   border-radius: ${({ theme }) => theme.radii.md};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.textPrimary};
   cursor: pointer;
@@ -329,12 +334,11 @@ const ResetBtn = styled.button`
     color: ${({ theme }) => theme.colors.buttonText};
   }
 `;
-
 const Row = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.md};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
 
   label {
     font-size: ${({ theme }) => theme.fontSizes.sm};
@@ -342,37 +346,33 @@ const Row = styled.div`
   }
 
   select {
-    padding: ${({ theme }) => theme.spacing.sm};
+    padding: ${({ theme }) => theme.spacings.sm};
     border-radius: ${({ theme }) => theme.radii.sm};
-    border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+    border: ${({ theme }) => theme.borders.thin}
+      ${({ theme }) => theme.colors.border};
     font-size: ${({ theme }) => theme.fontSizes.sm};
     background: ${({ theme }) => theme.inputs.background};
     color: ${({ theme }) => theme.inputs.text};
   }
 `;
-
 const Title = styled.h2`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
   color: ${({ theme }) => theme.colors.title};
 `;
-
 const Section = styled.section`
-  margin-bottom: ${({ theme }) => theme.spacing.xxl};
+  margin-bottom: ${({ theme }) => theme.spacings.xxl};
 `;
-
 const SectionTitle = styled.h3`
   font-size: ${({ theme }) => theme.fontSizes.large};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
-
 const Error = styled.div`
   color: ${({ theme }) => theme.colors.danger};
-  margin-top: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacings.md};
 `;
-
 const NoData = styled.div`
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.md};
   color: ${({ theme }) => theme.colors.textMuted};
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.md};

@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 
 import { AdminFaqPage } from "@/modules/faq";
 

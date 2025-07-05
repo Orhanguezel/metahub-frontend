@@ -16,7 +16,16 @@ interface Props {
     | "radonarprod"
     | "bike"
     | "articles"
-    | "services";
+    | "services"
+    | "about"
+    | "customProduct"
+    | "references"
+    | "library"
+    | "faq"
+    | "contact"
+    | "company"
+    | "tenant";
+
 }
 
 export default function CommentList({ contentId, contentType }: Props) {

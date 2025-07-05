@@ -2,30 +2,61 @@
 
 import styled from "styled-components";
 import Link from "next/link";
+import i18n from "@/i18n";
+import translations from "../../locales";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchServices } from "@/modules/services/slice/servicesSlice";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import { useAppSelector } from "@/store/hooks";
 import { Skeleton, ErrorMessage } from "@/shared";
+import type { IServices } from "../../types";
+
+
 
 export default function ServicesSection() {
-  const { t, i18n } = useTranslation("services");
-  const dispatch = useAppDispatch();
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
-  const { services, loading, error } = useAppSelector(
-    (state) => state.services
-  );
-  const [mounted, setMounted] = useState(false);
+  const { t } = useTranslation("services");
+  const lang = getCurrentLocale();
 
-  useEffect(() => {
-    setMounted(true);
-    dispatch(fetchServices(lang));
-  }, [dispatch, lang]);
+    Object.entries(translations).forEach(([lang, resources]) => {
+  if (!i18n.hasResourceBundle(lang, "services")) {
+    i18n.addResourceBundle(lang, "services", resources, true, true);
+  }
+});
 
-  if (!mounted) return null;
+  // Store’dan sadece tüketici (stateless)
+  const { services, loading, error } = useAppSelector((state) => state.services);
+
+ 
+  if (loading) {
+    return (
+      <Section>
+        <Title>📰 {t("page.services.title")}</Title>
+        <Grid>
+          <Skeleton />
+          <Skeleton />
+          <Skeleton />
+        </Grid>
+      </Section>
+    );
+  }
+
+  if (error) {
+    return (
+      <Section>
+        <Title>📰 {t("page.services.title")}</Title>
+        <ErrorMessage />
+      </Section>
+    );
+  }
+
+  if (!services || services.length === 0) {
+    return (
+      <Section>
+        <Title>📰 {t("page.services.title")}</Title>
+        <p>{t("page.services.noServices", "Haber bulunamadı.")}</p>
+      </Section>
+    );
+  }
 
   const latestServices = services.slice(0, 3);
 
@@ -38,89 +69,60 @@ export default function ServicesSection() {
     >
       <Title>📰 {t("page.services.title")}</Title>
 
-      {loading && (
-        <Grid>
-          <Skeleton />
-          <Skeleton />
-          <Skeleton />
-        </Grid>
-      )}
-
-      {!loading && error && <ErrorMessage />}
-
-      {!loading && !error && (
-        <>
-          <Grid>
-            {latestServices.map((item, index) => (
-              <CardLink
-                key={item._id}
-                href={`/services/${item.slug}`}
-                passHref
-              >
-                <Card
-                  as={motion.div}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.15 }}
+      <Grid>
+        {latestServices.map((item: IServices, index: number) => (
+          <CardLink key={item._id} href={`/services/${item.slug}`} passHref>
+            <Card
+              as={motion.div}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.2 }}
+              viewport={{ once: true }}
+            >
+              <Content>
+                <ServicesTitle>{item.title?.[lang] || "-"}
+                </ServicesTitle>
+                <Excerpt>{item.summary?.[lang] || "-"}</Excerpt>
+              </Content>
+              {item.images?.[0]?.url && (
+                <StyledImage
+                  src={item.images[0].url}
+                  alt={item.title?.[lang] || "Services"}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
                   viewport={{ once: true }}
-                >
-                  <ImageWrapper>
-                    {item.images?.[0]?.url ? (
-                      <StyledImage
-                        src={item.images[0].url}
-                        alt={item.title?.[lang]}
-                        initial={{ opacity: 0, scale: 0.96 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.5, delay: 0.08 }}
-                        viewport={{ once: true }}
-                      />
-                    ) : (
-                      <ImagePlaceholder>
-                        <span>📷</span>
-                      </ImagePlaceholder>
-                    )}
-                  </ImageWrapper>
-                  <Content>
-                    <ServiceTitle>{item.title?.[lang]}</ServiceTitle>
-                    <Excerpt>{item.summary?.[lang]}</Excerpt>
-                  </Content>
-                </Card>
-              </CardLink>
-            ))}
-          </Grid>
+                />
+              )}
+            </Card>
+          </CardLink>
+        ))}
+      </Grid>
 
-          <SeeAll href="/services">{t("page.services.all")}</SeeAll>
-        </>
-      )}
+      <SeeAll href="/services">{t("page.services.all")}</SeeAll>
     </Section>
   );
 }
 
-// Styled Components
-
+// Styled Components (değişmeden bırakılabilir)
 const Section = styled(motion.section)`
-  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.md};
-  background: ${({ theme }) => theme.colors.sectionBackground};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
+  background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   text-align: center;
-  border-radius: ${({ theme }) => theme.radii.xl};
 `;
 
 const Title = styled.h2`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   color: ${({ theme }) => theme.colors.primary};
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-  letter-spacing: 0.02em;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
 const Grid = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.spacing.xxl};
-  justify-content: center;
-  align-items: stretch;
-
+  gap: ${({ theme }) => theme.spacings.xl};
   @media (min-width: 1024px) {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -142,113 +144,61 @@ const CardLink = styled(Link)`
 
 const Card = styled(motion.div)`
   background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: ${({ theme }) => theme.shadows.xl};
+  padding: ${({ theme }) => theme.spacings.lg};
+  border-radius: ${({ theme }) => theme.radii.md};
+  box-shadow: ${({ theme }) => theme.shadows.md};
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 0 ${({ theme }) => theme.spacing.lg} ${({ theme }) => theme.spacing.lg};
-  transition: box-shadow 0.18s, transform 0.18s;
-  min-height: 510px;
+  justify-content: space-between;
+  transition: transform ${({ theme }) => theme.transition.fast};
   cursor: pointer;
-
   &:hover {
-    box-shadow: ${({ theme }) => theme.shadows.xl}, 0 0 0 3px ${({ theme }) => theme.colors.primaryTransparent};
-    transform: translateY(-5px) scale(1.025);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: ${({ theme }) => theme.shadows.lg};
   }
-
-  @media (max-width: 900px) {
-    min-height: 410px;
-  }
-`;
-
-const ImageWrapper = styled.div`
-  width: 100%;
-  max-width: 440px;
-  aspect-ratio: 16/9;
-  border-radius: ${({ theme }) => theme.radii.lg};
-  overflow: hidden;
-  margin: ${({ theme }) => theme.spacing.lg} 0 ${({ theme }) => theme.spacing.md} 0;
-  box-shadow: ${({ theme }) => theme.shadows.lg};
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  @media (max-width: 1024px) {
-    max-width: 100%;
-    aspect-ratio: 16/10;
-    min-height: 180px;
-  }
-  @media (max-width: 767px) {
-    aspect-ratio: 16/12;
-    min-height: 140px;
-    margin: ${({ theme }) => theme.spacing.md} 0 ${({ theme }) => theme.spacing.sm} 0;
-  }
-`;
-
-const StyledImage = styled(motion.img)`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: ${({ theme }) => theme.radii.lg};
-  transition: transform 0.3s;
-  display: block;
-`;
-
-const ImagePlaceholder = styled.div`
-  width: 100%;
-  height: 100%;
-  min-height: 130px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3.2rem;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const Content = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
+  text-align: left;
 `;
 
-const ServiceTitle = styled.h3`
-  font-size: ${({ theme }) => theme.fontSizes.xl};
+const ServicesTitle = styled.h3`
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
   color: ${({ theme }) => theme.colors.text};
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin: ${({ theme }) => theme.spacing.md} 0 0 0;
-  text-align: center;
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 `;
 
 const Excerpt = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-size: ${({ theme }) => theme.fontSizes.base};
   color: ${({ theme }) => theme.colors.textSecondary};
-  margin-top: ${({ theme }) => theme.spacing.sm};
-  text-align: center;
-  line-height: ${({ theme }) => theme.lineHeights.relaxed};
-  max-width: 96%;
+`;
+
+const StyledImage = styled(motion.img)`
+  width: 220px;
+  height: auto;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  object-fit: cover;
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  transition: transform 0.3s ease;
+  margin-top: ${({ theme }) => theme.spacings.md};
+  &:hover {
+    transform: scale(1.02);
+  }
+  @media (max-width: 767px) {
+    width: 100%;
+  }
 `;
 
 const SeeAll = styled(Link)`
   display: inline-block;
-  margin-top: ${({ theme }) => theme.spacing.xl};
+  margin-top: ${({ theme }) => theme.spacings.xl};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  padding: 0.7em 1.8em;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  background: ${({ theme }) => theme.colors.primaryTransparent};
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  letter-spacing: 0.01em;
-  transition: background 0.18s, color 0.18s;
-
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  transition: color ${({ theme }) => theme.transition.fast};
   &:hover {
-    background: ${({ theme }) => theme.colors.primary};
-    color: ${({ theme }) => theme.colors.buttonText};
-    text-decoration: none;
+    text-decoration: underline;
+    color: ${({ theme }) => theme.colors.primaryHover};
   }
 `;

@@ -1,18 +1,22 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import { GalleryItem, GalleryCategory } from "@/modules/gallery/types/gallery";
+import {
+  IGallery,
+  IGalleryCategory,
+  IGalleryStats,
+} from "@/modules/gallery/types";
 
 interface GalleryState {
-  items: GalleryItem[];
-  categories: GalleryCategory[];
-  stats: any;
+  images: IGallery[];
+  categories: IGalleryCategory[];
+  stats: IGalleryStats | null;
   loading: boolean;
   error: string | null;
   successMessage: string | null;
 }
 
 const initialState: GalleryState = {
-  items: [],
+  images: [],
   stats: null,
   categories: [],
   loading: false,
@@ -21,16 +25,23 @@ const initialState: GalleryState = {
 };
 
 // ✅ Async thunks
-export const fetchGalleryItems = createAsyncThunk(
-  "gallery/fetchGalleryItems",
-  async (params: any, thunkAPI) =>
-    await apiCall("get", "/gallery", params, thunkAPI.rejectWithValue)
+export const fetchGallery = createAsyncThunk(
+  "gallery/fetchGallery",
+  async (_, thunkAPI) =>
+    await apiCall("get", "/gallery", null, thunkAPI.rejectWithValue)
 );
 
 export const fetchPublishedGalleryItems = createAsyncThunk(
   "gallery/fetchPublishedGalleryItems",
+  async (_, thunkAPI) =>
+    await apiCall("get", "/gallery/published", null, thunkAPI.rejectWithValue)
+);
+
+
+export const searchGalleryItems = createAsyncThunk(
+  "gallery/searchGalleryItems",
   async (params: any, thunkAPI) =>
-    await apiCall("get", "/gallery/published", params, thunkAPI.rejectWithValue)
+    await apiCall("get", `/gallery/search`, params, thunkAPI.rejectWithValue)
 );
 
 export const uploadGalleryItem = createAsyncThunk(
@@ -111,19 +122,17 @@ export const batchDeleteGalleryItems = createAsyncThunk(
     await apiCall("delete", `/gallery/batch`, ids, thunkAPI.rejectWithValue)
 );
 
-export const searchGalleryItems = createAsyncThunk(
-  "gallery/searchGalleryItems",
-  async (params: any, thunkAPI) =>
-    await apiCall("get", `/gallery/search`, params, thunkAPI.rejectWithValue)
-);
-
 export const getGalleryStats = createAsyncThunk(
   "gallery/getGalleryStats",
   async (_, thunkAPI) =>
     await apiCall("get", `/gallery/stats`, null, thunkAPI.rejectWithValue)
 );
 
-export const fetchPublishedGalleryCategories = createAsyncThunk(
+export const fetchPublishedGalleryCategories = createAsyncThunk<
+  IGalleryCategory[],
+  void,
+  { rejectValue: string }
+>(
   "gallery/fetchPublishedGalleryCategories",
   async (_, thunkAPI) =>
     await apiCall("get", "/gallery/categories", null, thunkAPI.rejectWithValue)
@@ -154,18 +163,18 @@ const gallerySlice = createSlice({
     };
 
     builder
-      .addCase(fetchGalleryItems.pending, loadingReducer)
-      .addCase(fetchGalleryItems.fulfilled, (state, action) => {
+      .addCase(fetchGallery.pending, loadingReducer)
+      .addCase(fetchGallery.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload.data;
+        state.images = action.payload.data;
       })
-      .addCase(fetchGalleryItems.rejected, errorReducer);
+      .addCase(fetchGallery.rejected, errorReducer);
 
     builder
       .addCase(fetchPublishedGalleryItems.pending, loadingReducer)
       .addCase(fetchPublishedGalleryItems.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload.data;
+        state.images = action.payload.data;
       })
       .addCase(fetchPublishedGalleryItems.rejected, errorReducer);
 
@@ -174,7 +183,7 @@ const gallerySlice = createSlice({
       .addCase(uploadGalleryItem.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = "upload.success";
-        state.items.unshift(action.payload.data);
+        state.images.unshift(action.payload.data);
       })
       .addCase(uploadGalleryItem.rejected, errorReducer);
 
@@ -184,9 +193,11 @@ const gallerySlice = createSlice({
         state.loading = false;
         state.successMessage = "update.success";
         const updated = action.payload.data;
-        const index = state.items.findIndex((item) => item._id === updated._id);
+        const index = state.images.findIndex(
+          (item) => item._id === updated._id
+        );
         if (index !== -1) {
-          state.items[index] = updated;
+          state.images[index] = updated;
         }
       })
       .addCase(updateGalleryItem.rejected, errorReducer);
@@ -196,7 +207,7 @@ const gallerySlice = createSlice({
       .addCase(deleteGalleryItem.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = "delete.success";
-        state.items = state.items.filter(
+        state.images = state.images.filter(
           (item) => item._id !== action.meta.arg
         );
       })
@@ -246,7 +257,7 @@ const gallerySlice = createSlice({
       .addCase(searchGalleryItems.pending, loadingReducer)
       .addCase(searchGalleryItems.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload.data;
+        state.images = action.payload.data;
       })
       .addCase(searchGalleryItems.rejected, errorReducer);
 
@@ -262,7 +273,7 @@ const gallerySlice = createSlice({
       .addCase(fetchPublishedGalleryCategories.pending, loadingReducer)
       .addCase(fetchPublishedGalleryCategories.fulfilled, (state, action) => {
         state.loading = false;
-        state.categories = action.payload.data;
+        state.categories = action.payload;
       })
       .addCase(fetchPublishedGalleryCategories.rejected, errorReducer);
   },

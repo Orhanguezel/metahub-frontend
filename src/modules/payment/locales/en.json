@@ -1,0 +1,13 @@
+{
+  "addToCart": "Add to Cart",
+  "remove": "Remove",
+  "increase": "Increase",
+  "decrease": "Decrease",
+  "clearCart": "Clear Cart",
+  "continueShopping": "Continue Shopping",
+  "checkout": "Checkout",
+  "empty": "Your cart is empty.",
+  "title": "Shopping Cart",
+  "size": "Size",
+  "oneSize": "One Size"
+}

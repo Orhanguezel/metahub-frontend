@@ -1,21 +1,8 @@
-import dotenv from "dotenv";
-
-const tenant = process.env.TENANT || "local";
-dotenv.config({ path: `.env.${tenant}` });
-
+/** @type {import('next').NextConfig} */
 const isDev = process.env.NODE_ENV !== "production";
 const devHost = "localhost";
-const devPort = "5019";
-
-// Tenant-specific hostnames
-const tenantHosts: Record<string, string[]> = {
-  anastasia: ["koenigsmassage.com", "www.koenigsmassage.com"],
-  metahub: ["guezelwebdesign.com", "www.guezelwebdesign.com"],
-  ensotek: ["ensotek.de", "www.ensotek.de"],
-  local: ["localhost"],
-};
-
-const prodHosts = tenantHosts[tenant] || ["localhost"];
+const devPort = "5014";
+const prodHosts = ["ensotek.de", "www.ensotek.de"];
 
 const imageDomains = isDev
   ? [
@@ -31,7 +18,7 @@ const imageDomains = isDev
     }));
 
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -74,13 +61,6 @@ const nextConfig = {
       },
     ],
   },
-
-  env: {
-    TENANT_NAME: process.env.TENANT_NAME,
-    API_BASE_URL: process.env.API_BASE_URL,
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
-  },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

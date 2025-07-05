@@ -14,6 +14,6 @@ export { default as AboutSection } from "./public/components/AboutSection";
 export { default as AboutDetailSection } from "./public/components/AboutDetailSection";
 
 // Types (if any)
-export * from "./types/about";
+export * from "./types";
 
 // Optionally: i18n can be loaded in page-level or via config

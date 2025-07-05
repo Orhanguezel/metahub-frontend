@@ -38,7 +38,7 @@ export interface Account {
   name: string;
   email: string;
   phone?: string;
-  role: "admin" | "user" | "moderator" | "staff" | "customer";
+  role: "superadmin" | "admin" | "user" | "moderator" | "staff" | "customer";
   profileImage?: string | ProfileImageObj;
   addresses?: Address[];
   notifications?: NotificationSettings;

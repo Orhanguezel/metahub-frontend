@@ -1,19 +1,28 @@
 // Pages
-export { default as AdminModulesPage } from "./admin/pages/AdminModulePage";
+export { default as AdminModulePage } from "./admin/pages/AdminModulePage";
 
 // Admin Components
-export { default as ModuleDetailModal } from "./admin/components/ModuleDetailModal";
-export { default as ModuleCard } from "./admin/components/ModuleCard";
-export { default as EditModuleModal } from "./admin/components/EditModuleModal";
-export { default as CreateModuleModal } from "./admin/components/CreateModuleModal";
-export { default as ConfirmDeleteModal } from "./admin/components/ConfirmDeleteModal";
-export { default as ModuleStatusToggle } from "./admin/components/ModuleStatusToggle";
+export { default as ModuleCard } from "./admin/components/modulemanagement/ModuleCard";
+export { default as CreateModuleModal } from "./admin/components/modulemanagement/CreateModuleModal";
+export { default as ConfirmDeleteModal } from "./admin/components/modulemanagement/ConfirmDeleteModal";
+export { default as ModuleStatusToggle } from "./admin/components/modulemanagement/ModuleStatusToggle";
+export { default as GlobalModuleDetailModal } from "./admin/components/modulemanagement/GlobalModuleDetailModal";
+export { default as TenantModuleDetailModal } from "./admin/components/modulemanagement/TenantModuleDetailModal";
+export { default as EditTenantModuleModal } from "./admin/components/modulemanagement/EditTenantModuleModal";
+export { default as EditGlobalModuleModal } from "./admin/components/modulemanagement/EditGlobalModuleModal";
 
+// Admin Maintenance Components
+export { default as BatchAddTenantsForm } from "./admin/components/maintenance/BatchAddTenantsForm";
+export { default as BatchAssignModuleForm } from "./admin/components/maintenance/BatchAssignModuleForm";
+export { default as BatchCleanupOrphanSettings } from "./admin/components/maintenance/BatchCleanupOrphanSettings";
+export { default as BatchDeleteModulesForm } from "./admin/components/maintenance/BatchDeleteModulesForm";
+export { default as BatchUpdateModuleForm } from "./admin/components/maintenance/BatchUpdateModuleForm";
+export { default as MaintenanceLogBox } from "./admin/components/maintenance/MaintenanceLogBox";
+export { default as ModuleJsonImportExportPanel } from "./admin/components/maintenance/ModuleJsonImportExportPanel";
+export { default as ModuleMaintenancePanel } from "./admin/components/maintenance/ModuleMaintenancePanel";
+export { default as ModuleTenantMatrixTable } from "./admin/components/maintenance/ModuleTenantMatrixTable";
 
-// Admin Slice
-export { default as adminModuleSlice } from "./slice/adminModuleSlice";
-
-// Types (if any)
-//export * from "./types/Module";
-
-// Optionally: i18n can be loaded in page-level or via config
+// Admin Slices
+export { default as moduleSettingSlice } from "./slices/moduleSettingSlice";
+export { default as moduleMetaSlice } from "./slices/moduleMetaSlice";
+export { default as moduleMaintenanceSlice } from "./slices/moduleMaintenanceSlice";

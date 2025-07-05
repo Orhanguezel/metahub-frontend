@@ -46,7 +46,7 @@ const ensotekTheme: DefaultTheme = {
     loose: "2",
   },
 
-  spacing: {
+  spacings: {
     xs: "4px",
     sm: "8px",
     md: "16px",
@@ -95,7 +95,7 @@ const ensotekTheme: DefaultTheme = {
 
   layout: {
     containerWidth: "1280px",
-    sectionSpacing: "3rem",
+    sectionspacings: "3rem",
   },
 
   zIndex: {
@@ -132,7 +132,8 @@ const ensotekTheme: DefaultTheme = {
     desktop: "@media (min-width: 1025px)",
     landscape: "@media (orientation: landscape)",
     portrait: "@media (orientation: portrait)",
-    retina: "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
+    retina:
+      "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
   },
 
   colors: {
@@ -164,6 +165,11 @@ const ensotekTheme: DefaultTheme = {
     primaryHover: "#0014A8",
     primaryDark: "#001080",
     primaryTransparent: "rgba(1,24,216,0.1)",
+    secondary: "#52404b",
+    secondaryLight: "#f3d9e5",
+    secondaryHover: "#40333d",
+    secondaryDark: "#32272a",
+    secondaryTransparent: "rgba(82,64,75,0.1)",
     accent: "#1B56FD",
     accentHover: "#0014A8",
     accentText: "#FFFFFF",
@@ -206,6 +212,8 @@ const ensotekTheme: DefaultTheme = {
     white: "#FFFFFF",
     whiteColor: "#FFFFFF",
     darkColor: "#0118D8",
+    disabledBg: "#333333",
+    lightGrey: "#f7f7f7",
   },
 
   buttons: {

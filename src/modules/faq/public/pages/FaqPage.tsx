@@ -24,8 +24,8 @@ export default function FaqPage() {
 const Wrapper = styled.main`
   max-width: 1000px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.xxl}
-    ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.xxl}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const PageTitle = styled.h1`
@@ -33,11 +33,11 @@ const PageTitle = styled.h1`
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   text-align: center;
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
 `;
 
 const Separator = styled.hr`
-  margin: ${({ theme }) => theme.spacing.xl} 0;
+  margin: ${({ theme }) => theme.spacings.xl} 0;
   border: none;
   height: 1px;
   background-color: ${({ theme }) => theme.colors.border};

@@ -48,7 +48,8 @@ const MenuItem1 = styled.li`
   list-style: none;
   display: flex;
   align-items: center;
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.xs};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.xs};
   font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
@@ -60,7 +61,7 @@ const MenuLink = styled(Link)`
   display: inline-block;
   font-family: ${({ theme }) => theme.fonts.body};
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacings: 0.5px;
   transition: all 0.3s ease;
   position: relative;
 

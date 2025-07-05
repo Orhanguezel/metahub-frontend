@@ -10,10 +10,7 @@ import {
   deleteCoupon,
   clearCouponMessages,
 } from "@/modules/coupon/slice/couponSlice";
-import { 
-  CouponForm,
-  CouponTable 
-} from "@/modules/coupon";
+import { CouponForm, CouponTable } from "@/modules/coupon";
 import { Message } from "@/shared";
 import { useTranslation } from "react-i18next";
 
@@ -56,8 +53,16 @@ const AdminCouponPage: React.FC = () => {
       {error && <Message $error>{error}</Message>}
       {successMessage && <Message $success>{successMessage}</Message>}
 
-      <CouponForm onSubmit={handleSubmit} editing={editing} onCancel={() => setEditing(null)} />
-      <CouponTable coupons={coupons} onEdit={handleEdit} onDelete={handleDelete} />
+      <CouponForm
+        onSubmit={handleSubmit}
+        editing={editing}
+        onCancel={() => setEditing(null)}
+      />
+      <CouponTable
+        coupons={coupons}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
     </Wrapper>
   );
 };
@@ -70,11 +75,11 @@ const Wrapper = styled.div`
   background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.md};
-  padding: ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacings.xl};
 `;
 
 const Header = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
 `;
 
 const Title = styled.h1`

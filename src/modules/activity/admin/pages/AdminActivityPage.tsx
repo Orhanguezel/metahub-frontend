@@ -1,39 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import type { SupportedLocale } from "@/types/common";
+
 import {
-  fetchAllActivitiesAdmin,
-  clearActivityMessages,
   createActivity,
   updateActivity,
   deleteActivity,
   togglePublishActivity,
 } from "@/modules/activity/slice/activitySlice";
 import {
-  ActivityTabs,
-  ActivityList,
+  createActivityCategory,
+  updateActivityCategory,
+} from "@/modules/activity/slice/activityCategorySlice";
+
+import {
   ActivityFormModal,
-  CategoryListPage,
   CategoryForm,
+  CategoryListPage,
+  ActivityList,
+  ActivityTabs,
 } from "@/modules/activity";
+
 import { Modal } from "@/shared";
-import type { IActivity } from "@/modules/activity/types/activity";
-import type { ActivityCategory } from "@/modules/activity/slice/activityCategorySlice";
+import { IActivity } from "@/modules/activity/types";
+import { ActivityCategory } from "@/modules/activity/types";
 
 export default function AdminActivityPage() {
-  const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("adminActivity");
+const { i18n, t } = useI18nNamespace("activity", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
+  const { activity, loading, error } = useAppSelector((state) => state.activity);
 
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
 
-  const { activities, loading, error } = useAppSelector(
-    (state) => state.activity
-  );
 
   const [activeTab, setActiveTab] = useState<"list" | "create" | "categories">(
     "list"
@@ -43,50 +45,48 @@ export default function AdminActivityPage() {
     useState<ActivityCategory | null>(null);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
-  useEffect(() => {
-    dispatch(fetchAllActivitiesAdmin(lang));
-    return () => {
-      dispatch(clearActivityMessages());
-    };
-  }, [dispatch, lang]);
+  const dispatch = useAppDispatch();
 
-  const resetForm = () => {
-    setEditingItem(null);
-    setActiveTab("list");
-  };
+  // ---- FETCH YOK! ----
 
-  const resetCategoryModal = () => {
-    setEditingCategory(null);
-    setCategoryModalOpen(false);
-  };
-
-  const handleCreateOrUpdate = async (formData: FormData, id?: string) => {
+  const handleSubmit = async (formData: FormData, id?: string) => {
     if (id) {
       await dispatch(updateActivity({ id, formData }));
     } else {
       await dispatch(createActivity(formData));
     }
-    resetForm();
+    setActiveTab("list");
   };
 
   const handleDelete = async (id: string) => {
     const confirmMsg = t(
-      "confirm.delete_Activity",
-      "Are you sure you want to delete this activity?"
+      "confirm.delete_article",
+      "Bu makaleyi silmek istediğinize emin misiniz?"
     );
     if (confirm(confirmMsg)) {
       await dispatch(deleteActivity(id));
     }
   };
 
-  const handleTogglePublish = async (id: string, currentStatus: boolean) => {
-    await dispatch(togglePublishActivity({ id, isPublished: !currentStatus }));
+  const handleTogglePublish = (id: string, isPublished: boolean) => {
+    dispatch(togglePublishActivity({ id, isPublished: !isPublished }));
   };
 
-  const handleEdit = (item: IActivity) => {
-    setEditingItem(item);
-    setActiveTab("create");
-  };
+  // Create/Update Category
+const handleCategorySubmit = async (
+  data: { name: Record<SupportedLocale, string>; description?: Record<SupportedLocale, string> },
+  id?: string
+) => {
+  if (id) {
+    await dispatch(updateActivityCategory({ id, data }));
+  } else {
+    await dispatch(createActivityCategory(data));
+  }
+  setEditingCategory(null);
+  setCategoryModalOpen(false);
+};
+
+  
 
   return (
     <Wrapper>
@@ -95,11 +95,14 @@ export default function AdminActivityPage() {
       <TabContent>
         {activeTab === "list" && (
           <ActivityList
-            activities={activities}
+            activity={activity}
             lang={lang}
             loading={loading}
             error={error}
-            onEdit={handleEdit}
+            onEdit={(item) => {
+              setEditingItem(item);
+              setActiveTab("create");
+            }}
             onDelete={handleDelete}
             onTogglePublish={handleTogglePublish}
           />
@@ -108,9 +111,12 @@ export default function AdminActivityPage() {
         {activeTab === "create" && (
           <ActivityFormModal
             isOpen
-            onClose={resetForm}
+            onClose={() => {
+              setEditingItem(null);
+              setActiveTab("list");
+            }}
             editingItem={editingItem}
-            onSubmit={handleCreateOrUpdate}
+            onSubmit={handleSubmit}
           />
         )}
 
@@ -126,10 +132,15 @@ export default function AdminActivityPage() {
                 setCategoryModalOpen(true);
               }}
             />
-            <Modal isOpen={categoryModalOpen} onClose={resetCategoryModal}>
+            <Modal
+              isOpen={categoryModalOpen}
+              onClose={() => setCategoryModalOpen(false)}
+            >
               <CategoryForm
-                onClose={resetCategoryModal}
+                isOpen={categoryModalOpen}
+                onClose={() => setCategoryModalOpen(false)}
                 editingItem={editingCategory}
+                onSubmit={handleCategorySubmit}
               />
             </Modal>
           </>
@@ -142,13 +153,13 @@ export default function AdminActivityPage() {
 const Wrapper = styled.div`
   max-width: 1200px;
   margin: auto;
-  padding: ${({ theme }) => theme.layout.sectionSpacing}
-    ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.layout.sectionspacings}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const TabContent = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.md};
 `;

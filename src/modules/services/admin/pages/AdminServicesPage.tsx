@@ -1,19 +1,23 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
-import { IServices } from "@/modules/services/types/services";
-import { ServiceCategory } from "@/modules/services/slice/serviceCategorySlice";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import type { SupportedLocale } from "@/types/common";
+
 import {
-  fetchAllServicesAdmin,
-  clearServicesMessages,
   createServices,
   updateServices,
   deleteServices,
   togglePublishServices,
 } from "@/modules/services/slice/servicesSlice";
-import Modal from "@/shared/Modal";
+import {
+  createServicesCategory,
+  updateServicesCategory,
+} from "@/modules/services/slice/servicesCategorySlice";
+
 import {
   ServicesFormModal,
   CategoryForm,
@@ -21,85 +25,68 @@ import {
   ServicesList,
   ServicesTabs,
 } from "@/modules/services";
-import { useTranslation } from "react-i18next";
+
+import { Modal } from "@/shared";
+import { IServices } from "@/modules/services/types";
+import { ServicesCategory } from "@/modules/services/types";
 
 export default function AdminServicesPage() {
-  const dispatch = useAppDispatch();
-  const { i18n, t } = useTranslation("services");
+const { i18n, t } = useI18nNamespace("services", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
+  const { services, loading, error } = useAppSelector((state) => state.services);
 
-  const lang = useMemo(
-    () =>
-      (["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en") as
-        | "tr"
-        | "en"
-        | "de",
-    [i18n.language]
-  );
 
-  const { services, loading, error } = useAppSelector(
-    (state) => state.services
-  );
 
   const [activeTab, setActiveTab] = useState<"list" | "create" | "categories">(
     "list"
   );
   const [editingItem, setEditingItem] = useState<IServices | null>(null);
   const [editingCategory, setEditingCategory] =
-    useState<ServiceCategory | null>(null);
+    useState<ServicesCategory | null>(null);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
-  useEffect(() => {
-    dispatch(fetchAllServicesAdmin(lang));
-    return () => {
-      dispatch(clearServicesMessages());
-    };
-  }, [dispatch, lang]);
+  const dispatch = useAppDispatch();
 
-  const resetEditState = () => {
-    setEditingItem(null);
-    setActiveTab("list");
-  };
+  // ---- FETCH YOK! ----
 
-  const handleCreateOrUpdate = async (formData: FormData, id?: string) => {
+  const handleSubmit = async (formData: FormData, id?: string) => {
     if (id) {
       await dispatch(updateServices({ id, formData }));
     } else {
       await dispatch(createServices(formData));
     }
-    resetEditState();
+    setActiveTab("list");
   };
 
   const handleDelete = async (id: string) => {
-    if (
-      confirm(
-        t(
-          "admin.confirm.delete_Services",
-          "Are you sure you want to delete this service?"
-        )
-      )
-    ) {
+    const confirmMsg = t(
+      "confirm.delete_article",
+      "Bu makaleyi silmek istediğinize emin misiniz?"
+    );
+    if (confirm(confirmMsg)) {
       await dispatch(deleteServices(id));
     }
   };
 
-  const handleTogglePublish = async (id: string, currentStatus: boolean) => {
-    await dispatch(togglePublishServices({ id, isPublished: !currentStatus }));
+  const handleTogglePublish = (id: string, isPublished: boolean) => {
+    dispatch(togglePublishServices({ id, isPublished: !isPublished }));
   };
 
-  const handleOpenAddCategory = () => {
-    setEditingCategory(null);
-    setCategoryModalOpen(true);
-  };
+  // Create/Update Category
+const handleCategorySubmit = async (
+  data: { name: Record<SupportedLocale, string>; description?: Record<SupportedLocale, string> },
+  id?: string
+) => {
+  if (id) {
+    await dispatch(updateServicesCategory({ id, data }));
+  } else {
+    await dispatch(createServicesCategory(data));
+  }
+  setEditingCategory(null);
+  setCategoryModalOpen(false);
+};
 
-  const handleEditCategory = (category: ServiceCategory) => {
-    setEditingCategory(category);
-    setCategoryModalOpen(true);
-  };
-
-  const handleEdit = (item: IServices) => {
-    setEditingItem(item);
-    setActiveTab("create");
-  };
+  
 
   return (
     <Wrapper>
@@ -112,7 +99,10 @@ export default function AdminServicesPage() {
             lang={lang}
             loading={loading}
             error={error}
-            onEdit={handleEdit}
+            onEdit={(item) => {
+              setEditingItem(item);
+              setActiveTab("create");
+            }}
             onDelete={handleDelete}
             onTogglePublish={handleTogglePublish}
           />
@@ -120,29 +110,37 @@ export default function AdminServicesPage() {
 
         {activeTab === "create" && (
           <ServicesFormModal
-            isOpen={true}
+            isOpen
             onClose={() => {
               setEditingItem(null);
               setActiveTab("list");
             }}
             editingItem={editingItem}
-            onSubmit={handleCreateOrUpdate}
+            onSubmit={handleSubmit}
           />
         )}
 
         {activeTab === "categories" && (
           <>
             <CategoryListPage
-              onAdd={handleOpenAddCategory}
-              onEdit={handleEditCategory}
+              onAdd={() => {
+                setEditingCategory(null);
+                setCategoryModalOpen(true);
+              }}
+              onEdit={(category) => {
+                setEditingCategory(category);
+                setCategoryModalOpen(true);
+              }}
             />
             <Modal
               isOpen={categoryModalOpen}
               onClose={() => setCategoryModalOpen(false)}
             >
               <CategoryForm
+                isOpen={categoryModalOpen}
                 onClose={() => setCategoryModalOpen(false)}
                 editingItem={editingCategory}
+                onSubmit={handleCategorySubmit}
               />
             </Modal>
           </>
@@ -155,13 +153,13 @@ export default function AdminServicesPage() {
 const Wrapper = styled.div`
   max-width: 1200px;
   margin: auto;
-  padding: ${({ theme }) => theme.layout.sectionSpacing}
-    ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.layout.sectionspacings}
+    ${({ theme }) => theme.spacings.md};
 `;
 
 const TabContent = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.md};
 `;

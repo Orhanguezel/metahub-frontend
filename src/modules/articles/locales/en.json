@@ -1,70 +1,73 @@
 {
   "page": {
-    "allArticles": "All Articles",
     "noArticles": "No articles found.",
-    "untitled": "Untitled",
-    "noSummary": "No summary available.",
+    "allArticles": "All Articles",
+    "articles": {
+      "title": "Articles",
+      "all": "See All"
+    },
+    "other": "Other Sections",
+    "summary": "Summary",
+    "detail": "Detail",
+    "noTitle": "No Title"
+  },
+  "readMore": "Read More →",
+  "author": "Author",
+  "tags": "Tags",
+  "unknown": "Unknown",
+  "tabs": {
+    "articles": "Articles",
+    "create": "New Article",
+    "categories": "Categories"
+  },
+  "articles": {
+    "empty": "No articles available.",
+    "no_images": "No images",
     "author": "Author",
     "tags": "Tags",
+    "publish_status": "Published",
+    "unpublish": "Unpublish",
+    "publish": "Publish",
     "unknown": "Unknown",
-    "readMore": "Read More →",
-    "other": "Other Articles"
+    "none": "None"
   },
+  "edit": "Edit",
+  "delete": "Delete",
+  "yes": "Yes",
+  "no": "No",
   "admin": {
-    "tabs": {
-      "articles": "Articles",
-      "create": "New Article",
-      "categories": "Categories"
-    },
     "articles": {
-      "create": "Create New Article",
       "edit": "Edit Article",
+      "create": "Create New Article",
       "title": "Title",
       "summary": "Summary",
       "content": "Content",
       "author": "Author",
       "tags": "Tags",
-      "image": "Image",
+      "image": "Images",
       "category": "Category",
-      "select_category": "Select a category",
-      "publish_status": "Publish Status",
-      "publish": "Publish",
-      "unpublish": "Unpublish",
-      "no_images": "No images",
-      "empty": "No articles available."
+      "select_category": "Select a category"
     },
     "categories": {
-      "title": "Article Categories",
+      "title": "Product Categories",
       "add": "Add Category",
-      "edit": "Edit Category",
-      "create": "New Category",
-      "confirm_delete": "Are you sure you want to delete this category?",
-      "description": "Description (optional)",
-      "description_placeholder": "What is this category about?",
-      "name_placeholder": "Category name"
+      "name": "Category Name"
     },
-    "languages": {
-      "tr": "Turkish",
-      "en": "English",
-      "de": "German"
-    },
-    "confirm": {
-      "delete_articles": "Are you sure you want to delete this article?"
-    },
-    "saving": "Saving...",
-    "save": "Save",
+    "editCategory": "Edit Category",
+    "newCategory": "New Category",
+    "optional_description": "Optional description",
+    "category_info": "What is this category articles?",
     "update": "Update",
-    "create": "Create",
+    "update2": "Update",
+    "save": "Save",
+    "saving": "Saving...",
     "cancel": "Cancel",
-    "edit": "Edit",
-    "delete": "Delete",
-    "yes": "Yes",
-    "no": "No",
-    "unknown": "Unknown",
-    "none": "None"
-  },
-  "seo": {
-    "title": "Articles",
-    "description": " Read the latest articles and news."
+    "confirm": {
+      "delete": "Are you sure you want to delete this category?",
+      "delete_article": "Are you sure you want to delete this article?"
+    },
+    "loading": "Loading...",
+    "actions": "Actions",
+    "slug": "Slug"
   }
 }

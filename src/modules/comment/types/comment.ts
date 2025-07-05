@@ -5,7 +5,23 @@ export interface IComment {
   name: string;
   email: string;
   label: { tr: string; en: string; de: string };
-  contentType: "news" | "blog" | "product" | "articles" | "services" | "radonarprod" | "bike";
+  contentType:
+    | "news"
+    | "blog"
+    | "product"
+    | "articles"
+    | "services"
+    | "radonarprod"
+    | "bike"
+    | "bikeCategory"
+    | "about"
+    | "customProduct"
+    | "references"
+    | "library"
+    | "faq"
+    | "contact"
+    | "company"
+    | "tenant";
   contentId: string | { _id: string; title?: any; slug?: string };
   userId?: string | { _id: string; name: string; email: string };
   isPublished: boolean;
@@ -22,6 +38,3 @@ export interface IComment {
   };
   rating?: number;
 }
-
-
-  

@@ -1,275 +1,211 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   createGalleryCategory,
   updateGalleryCategory,
-  clearCategoryMessages,
+  clearGalleryCategoryMessages,
 } from "@/modules/gallery/slice/galleryCategorySlice";
-import type { GalleryCategory } from "@/modules/gallery/types/gallery";
-import { useTranslation } from "react-i18next";
+import type { IGalleryCategory } from "@/modules/gallery/types";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import translations from "../../locales";
+
+const LANGUAGES = SUPPORTED_LOCALES;
 
 interface Props {
   onClose: () => void;
-  editingItem?: GalleryCategory | null;
+  editingItem?: IGalleryCategory | null;
 }
 
 export default function GalleryCategoryForm({ onClose, editingItem }: Props) {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("gallery");
+  const { i18n, t } = useI18nNamespace("gallery", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+
   const { loading, error, successMessage } = useAppSelector(
     (state) => state.galleryCategory
   );
 
-  const [name, setName] = useState({ tr: "", en: "", de: "" });
-  const [description, setDescription] = useState("");
+  const emptyLabel = LANGUAGES.reduce(
+    (acc, l) => ({ ...acc, [l]: "" }),
+    {} as Record<SupportedLocale, string>
+  );
 
-  const languages = useMemo(() => ["tr", "en", "de"] as const, []);
+  const [name, setName] = useState<Record<SupportedLocale, string>>(emptyLabel);
+  const [description, setDescription] = useState<Record<SupportedLocale, string>>(emptyLabel);
+  const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
     if (editingItem) {
-      setName(editingItem.name || { tr: "", en: "", de: "" });
-      setDescription(editingItem.description || "");
+      setName({ ...emptyLabel, ...editingItem.name });
+      setDescription({ ...emptyLabel, ...editingItem.description });
+      setIsActive(editingItem.isActive ?? true);
     } else {
-      setName({ tr: "", en: "", de: "" });
-      setDescription("");
+      setName(emptyLabel);
+      setDescription(emptyLabel);
+      setIsActive(true);
     }
   }, [editingItem]);
 
-  useEffect(() => {
-    if (successMessage || error) {
-      const timer = setTimeout(() => dispatch(clearCategoryMessages()), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [successMessage, error, dispatch]);
-
-  const handleChange = useCallback(
-    (lang: "tr" | "en" | "de", value: string) => {
-      setName((prev) => ({ ...prev, [lang]: value }));
-    },
-    []
-  );
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = { name, description };
 
-    try {
-      if (editingItem?._id) {
-        await dispatch(
-          updateGalleryCategory({ id: editingItem._id, data: payload })
-        ).unwrap();
-      } else {
-        await dispatch(createGalleryCategory(payload)).unwrap();
-      }
-      onClose();
-    } catch (err) {
-      console.error("❌ Category operation failed:", err);
+    const filledName = { ...name };
+    const firstName = Object.values(name).find((v) => v.trim());
+    if (firstName) LANGUAGES.forEach((l) => { if (!filledName[l]) filledName[l] = firstName; });
+
+    const filledDesc = { ...description };
+    const firstDesc = Object.values(description).find((v) => v.trim());
+    if (firstDesc) LANGUAGES.forEach((l) => { if (!filledDesc[l]) filledDesc[l] = firstDesc; });
+
+    const data = {
+      name: filledName,
+      description: filledDesc,
+      isActive,
+    };
+
+    if (editingItem?._id) {
+      await dispatch(updateGalleryCategory({ id: editingItem._id, data })).unwrap();
+    } else {
+      await dispatch(createGalleryCategory(data)).unwrap();
     }
+
+    dispatch(clearGalleryCategoryMessages());
+    onClose();
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <FormTitle>
+    <FormWrapper>
+      <h2>
         {editingItem
-          ? t("admin.edit_category", "Edit Category")
-          : t("admin.new_category", "New Category")}
-      </FormTitle>
+          ? t("admin.gallerycategory.edit", "Edit Gallery Category")
+          : t("admin.gallerycategory.create", "Add New Gallery Category")}
+      </h2>
+      <form onSubmit={handleSubmit}>
+        {LANGUAGES.map((lng) => (
+          <div key={lng}>
+            <label>{t("admin.gallerycategory.name", "Name")} ({lng.toUpperCase()})</label>
+            <input
+              type="text"
+              value={name[lng]}
+              onChange={(e) => setName({ ...name, [lng]: e.target.value })}
+              required={lng === lang}
+            />
+            <label>{t("admin.gallerycategory.description", "Description")} ({lng.toUpperCase()})</label>
+            <textarea
+              value={description[lng]}
+              onChange={(e) => setDescription({ ...description, [lng]: e.target.value })}
+              required={lng === lang}
+            />
+          </div>
+        ))}
 
-      {languages.map((lng) => (
-        <FieldGroup key={lng}>
-          <StyledLabel htmlFor={`name-${lng}`}>{lng.toUpperCase()}</StyledLabel>
-          <StyledInput
-            id={`name-${lng}`}
-            type="text"
-            value={name[lng]}
-            onChange={(e) => handleChange(lng, e.target.value)}
-            placeholder={t("admin.category_name_placeholder", {
-              lng: lng.toUpperCase(),
-            })}
-            required
-          />
-        </FieldGroup>
-      ))}
+        <label>
+          <input
+            type="checkbox"
+            checked={isActive}
+            onChange={(e) => setIsActive(e.target.checked)}
+          />{" "}
+          {t("admin.gallerycategory.isActive", "Active")}
+        </label>
 
-      <FieldGroup>
-        <StyledLabel htmlFor="desc">
-          {t("admin.description_optional", "Description (optional)")}
-        </StyledLabel>
-        <StyledTextarea
-          id="desc"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder={t(
-            "admin.category_description_placeholder",
-            "What is this category gallery?"
-          )}
-        />
-      </FieldGroup>
+        {error && <ErrorMessage>❌ {error}</ErrorMessage>}
+        {successMessage && <SuccessMessage>✅ {successMessage}</SuccessMessage>}
 
-      {error && <ErrorText>❌ {error}</ErrorText>}
-      {successMessage && <SuccessText>✅ {successMessage}</SuccessText>}
-
-      <SubmitButton type="submit" disabled={loading}>
-        {loading
-          ? t("admin.loading", "Saving...")
-          : editingItem
-          ? t("admin.update", "Update")
-          : t("admin.create", "Create")}
-      </SubmitButton>
-    </Form>
+        <ButtonGroup>
+          <button type="submit" disabled={loading}>
+            {loading
+              ? t("admin.saving", "Saving...")
+              : editingItem
+              ? t("admin.update", "Update")
+              : t("admin.create", "Create")}
+          </button>
+          <button type="button" onClick={onClose}>
+            {t("admin.cancel", "Cancel")}
+          </button>
+        </ButtonGroup>
+      </form>
+    </FormWrapper>
   );
 }
 
-// 💅 STYLES %100 ANASTASIA THEME UYUMLU
-
-const Form = styled.form`
+const FormWrapper = styled.div`
+  max-width: 600px;
+  margin: auto;
+  padding: 1.5rem;
   background: ${({ theme }) => theme.colors.cardBackground};
-  box-shadow: ${({ theme }) => theme.shadows.lg};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  padding: ${({ theme }) => theme.spacing.xl};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
-  width: 100%;
-  max-width: 480px;
-  margin: 0 auto;
-  transition: box-shadow ${({ theme }) => theme.transition.normal},
-    background ${({ theme }) => theme.transition.normal};
-
-  @media ${({ theme }) => theme.media.mobile} {
-    padding: ${({ theme }) => theme.spacing.md};
-    border-radius: ${({ theme }) => theme.radii.md};
-    max-width: 100%;
-    gap: ${({ theme }) => theme.spacing.md};
-  }
-`;
-
-const FormTitle = styled.h3`
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-size: ${({ theme }) => theme.fontSizes.xl};
-  color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  letter-spacing: 0.02em;
-`;
-
-const FieldGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-`;
-
-const StyledLabel = styled.label`
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
-`;
-
-const StyledInput = styled.input`
-  background: ${({ theme }) => theme.inputs.background};
-  color: ${({ theme }) => theme.inputs.text};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-family: ${({ theme }) => theme.fonts.body};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.inputs.border};
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
-  transition: border ${({ theme }) => theme.transition.normal},
-    box-shadow ${({ theme }) => theme.transition.normal};
 
-  &::placeholder {
-    color: ${({ theme }) => theme.inputs.placeholder};
-    opacity: 1;
-    font-size: ${({ theme }) => theme.fontSizes.sm};
+  h2 {
+    margin-bottom: 1rem;
   }
 
-  &:focus {
-    border: ${({ theme }) => theme.borders.thick} ${({ theme }) => theme.inputs.borderFocus};
-    outline: none;
-    box-shadow: ${({ theme }) => theme.shadows.form};
-    background: ${({ theme }) => theme.colors.inputBackgroundLight};
-  }
-`;
-
-const StyledTextarea = styled.textarea`
-  background: ${({ theme }) => theme.inputs.background};
-  color: ${({ theme }) => theme.inputs.text};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-family: ${({ theme }) => theme.fonts.body};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.inputs.border};
-  border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
-  min-height: 90px;
-  resize: vertical;
-  transition: border ${({ theme }) => theme.transition.normal},
-    box-shadow ${({ theme }) => theme.transition.normal};
-
-  &::placeholder {
-    color: ${({ theme }) => theme.inputs.placeholder};
-    opacity: 1;
-    font-size: ${({ theme }) => theme.fontSizes.sm};
+  label {
+    display: block;
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
   }
 
-  &:focus {
-    border: ${({ theme }) => theme.borders.thick} ${({ theme }) => theme.inputs.borderFocus};
-    outline: none;
-    box-shadow: ${({ theme }) => theme.shadows.form};
-    background: ${({ theme }) => theme.colors.inputBackgroundLight};
+  input[type="text"],
+  textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    border-radius: 4px;
+    background-color: ${({ theme }) => theme.colors.inputBackground};
+    color: ${({ theme }) => theme.colors.text};
+    font-size: 0.95rem;
+  }
+
+  textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  input[type="checkbox"] {
+    margin-right: 0.5rem;
   }
 `;
 
-const SubmitButton = styled.button`
-  align-self: flex-end;
-  background: ${({ theme }) => theme.buttons.primary.background};
-  color: ${({ theme }) => theme.buttons.primary.text};
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.xl};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  box-shadow: ${({ theme }) => theme.shadows.button};
-  cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.normal},
-    color ${({ theme }) => theme.transition.normal},
-    box-shadow ${({ theme }) => theme.transition.normal};
+const ButtonGroup = styled.div`
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
 
-  &:hover,
-  &:focus {
-    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
-    color: ${({ theme }) => theme.buttons.primary.textHover};
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-  }
+  button {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
 
-  &:disabled {
-    background: ${({ theme }) => theme.colors.disabled};
-    color: ${({ theme }) => theme.colors.textMuted};
-    cursor: not-allowed;
-    opacity: ${({ theme }) => theme.opacity.disabled};
-    box-shadow: none;
+    &:first-child {
+      background: ${({ theme }) => theme.colors.primary};
+      color: #fff;
+    }
+
+    &:last-child {
+      background: ${({ theme }) => theme.colors.danger};
+      color: #fff;
+    }
+
+    &:hover {
+      opacity: 0.9;
+    }
   }
 `;
 
-const ErrorText = styled.p`
-  color: ${({ theme }) => theme.colors.danger};
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
-  font-family: ${({ theme }) => theme.fonts.body};
+const ErrorMessage = styled.p`
+  color: red;
+  font-size: 0.9rem;
 `;
 
-const SuccessText = styled.p`
-  color: ${({ theme }) => theme.colors.success};
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
-  font-family: ${({ theme }) => theme.fonts.body};
+const SuccessMessage = styled.p`
+  color: green;
+  font-size: 0.9rem;
 `;

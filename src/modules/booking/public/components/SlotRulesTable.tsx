@@ -8,7 +8,13 @@ import { useTranslation } from "react-i18next";
 
 // Haftanın günleri (çeviriler için anahtarlar var)
 const weekDays = [
-  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
 ];
 
 export default function SlotRulesTable() {
@@ -40,9 +46,14 @@ export default function SlotRulesTable() {
     );
   }).filter(Boolean);
 
-  if (loading) return <Loader>{t("form.loading", "Loading working hours...")}</Loader>;
+  if (loading)
+    return <Loader>{t("form.loading", "Loading working hours...")}</Loader>;
   if (!rules || (!allDaysRule && rows.length === 0))
-    return <NoData>{t("form.noWorkingHours", "No working hours defined yet.")}</NoData>;
+    return (
+      <NoData>
+        {t("form.noWorkingHours", "No working hours defined yet.")}
+      </NoData>
+    );
 
   return (
     <TableWrapper>
@@ -67,15 +78,15 @@ export default function SlotRulesTable() {
 
 // Styled Components %100 Temaya Uyumlu
 const TableWrapper = styled.section`
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.md};
-  padding: ${({ theme }) => theme.spacing.xl};
+  padding: ${({ theme }) => theme.spacings.xl};
   overflow-x: auto;
 
   @media ${({ theme }) => theme.media.mobile} {
-    padding: ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => theme.spacings.md};
     border-radius: ${({ theme }) => theme.radii.lg};
   }
 `;
@@ -85,7 +96,7 @@ const TableTitle = styled.h3`
   font-family: ${({ theme }) => theme.fonts.heading};
   font-size: ${({ theme }) => theme.fontSizes.xl};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
   text-align: center;
 `;
 
@@ -97,8 +108,9 @@ const StyledTable = styled.table`
   color: ${({ theme }) => theme.colors.text};
   margin: 0 auto;
 
-  th, td {
-    padding: ${({ theme }) => theme.spacing.md};
+  th,
+  td {
+    padding: ${({ theme }) => theme.spacings.md};
     text-align: center;
     border-bottom: ${({ theme }) => theme.borders.thin}
       ${({ theme }) => theme.colors.border};
@@ -126,14 +138,14 @@ const Loader = styled.div`
   color: ${({ theme }) => theme.colors.primary};
   font-size: ${({ theme }) => theme.fontSizes.md};
   text-align: center;
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.md} 0;
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.md} 0;
 `;
 
 const NoData = styled.div`
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: ${({ theme }) => theme.fontSizes.md};
   text-align: center;
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.md} 0;
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.md} 0;
 `;

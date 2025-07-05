@@ -1,7 +1,8 @@
 "use client";
+import React from "react";
 
-import { AdminBikePage } from "@/modules/bikes";
+import { AdminBikesPage } from "@/modules/bikes";
 
-export default function AdminBikeRoutePage() {
-  return <AdminBikePage />;
+export default function AdminBikesRoutePage() {
+  return <AdminBikesPage />;
 }

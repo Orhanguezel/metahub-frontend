@@ -3,7 +3,11 @@
 import React from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
-import { SUPPORTED_LOCALES, LANG_LABELS, SupportedLocale } from "@/types/common";
+import {
+  SUPPORTED_LOCALES,
+  LANG_LABELS,
+  SupportedLocale,
+} from "@/types/common";
 
 // Eğer mevcut değilse, 'en' fallback!
 function getValidLang(lang: string): SupportedLocale {
@@ -41,11 +45,8 @@ const LangSelect: React.FC<Props> = ({
 
   return (
     <LangSelectWrapper style={style} className={className}>
-      {!hideLabel }
-      <Select
-        value={currentLang}
-        onChange={handleChange}
-      >
+      {!hideLabel}
+      <Select value={currentLang} onChange={handleChange}>
         {SUPPORTED_LOCALES.map((code) => (
           <option key={code} value={code}>
             {LANG_LABELS[code]}
@@ -67,7 +68,8 @@ const LangSelectWrapper = styled.div`
 const Select = styled.select`
   background: ${({ theme }) => theme.inputs.background};
   border: ${({ theme }) => `${theme.borders.thin} ${theme.colors.border}`};
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.xs}
+    ${({ theme }) => theme.spacings.sm};
   border-radius: ${({ theme }) => theme.radii.sm};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.inputs.text};

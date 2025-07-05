@@ -1,0 +1,13 @@
+{
+  "addToCart": "Ajouter au panier",
+  "remove": "Retirer",
+  "increase": "Augmenter",
+  "decrease": "Diminuer",
+  "clearCart": "Vider le panier",
+  "continueShopping": "Continuer vos achats",
+  "checkout": "Commander",
+  "empty": "Votre panier est vide.",
+  "title": "Panier d'achat",
+  "size": "Taille",
+  "oneSize": "Taille unique"
+}

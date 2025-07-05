@@ -1,9 +1,10 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import { GalleryCategory } from "@/modules/gallery/types/gallery";
+import { IGalleryCategory } from "@/modules/gallery/types";
+import { TranslatedLabel } from "@/types/common";
 
 interface CategoryState {
-  categories: GalleryCategory[];
+  categories: IGalleryCategory[];
   loading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -35,8 +36,9 @@ export const createGalleryCategory = createAsyncThunk(
   "galleryCategory/create",
   async (
     data: {
-      name: { tr: string; en: string; de: string };
-      description?: string;
+      name: TranslatedLabel;
+      description?: TranslatedLabel;
+      isActive?: boolean;
     },
     thunkAPI
   ) => {
@@ -60,8 +62,9 @@ export const updateGalleryCategory = createAsyncThunk(
     }: {
       id: string;
       data: {
-        name: { tr: string; en: string; de: string };
-        description?: string;
+        name: TranslatedLabel;
+        description?: TranslatedLabel;
+        isActive?: boolean;
       };
     },
     thunkAPI
@@ -94,7 +97,7 @@ const galleryCategorySlice = createSlice({
   name: "galleryCategory",
   initialState,
   reducers: {
-    clearCategoryMessages: (state) => {
+    clearGalleryCategoryMessages: (state) => {
       state.error = null;
       state.successMessage = null;
     },
@@ -158,5 +161,5 @@ const galleryCategorySlice = createSlice({
   },
 });
 
-export const { clearCategoryMessages } = galleryCategorySlice.actions;
+export const { clearGalleryCategoryMessages } = galleryCategorySlice.actions;
 export default galleryCategorySlice.reducer;

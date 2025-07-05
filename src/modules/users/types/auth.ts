@@ -8,7 +8,7 @@ export interface AuthUser {
   _id: string;
   name: string;
   email: string;
-  role: "admin" | "user" | "moderator" | "staff" | "customer";
+  role: "superadmin" | "admin" | "user" | "moderator" | "staff" | "customer";
   profileImage: string | ProfileImageObj;
 }
 

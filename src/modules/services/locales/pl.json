@@ -1,80 +1,73 @@
 {
   "page": {
-    "allBike": "Wszystkie rowery",
-    "noBike": "Nie znaleziono rowerów.",
-    "price": "Cena",
-    "stock": "Stan",
-    "brand": "Marka",
-    "readMore": "Zobacz szczegóły →",
-    "other": "Inne produkty",
-    "untitled": "Bez tytułu",
-    "noSummary": "Brak opisu.",
-    "bike": {
-      "title": "Najnowszy rower",
-      "readMore": "Zobacz szczegóły",
-      "all": "Wszystkie rowery"
-    }
-  },
-  "admin": {
-    "tabs": {
-      "bike": "Rowery",
-      "create": "Nowy rower",
-      "categories": "Kategorie"
+    "noServices": "Nie znaleziono żadnych artykułów.",
+    "allServices": "Wszystkie artykuły",
+    "services": {
+      "title": "O nas",
+      "all": "Zobacz wszystkie"
     },
-    "bike": {
-      "create": "Dodaj nowy rower",
-      "edit": "Edytuj rower",
-      "name": "Nazwa roweru",
-      "description": "Opis",
-      "brand": "Marka",
-      "price": "Cena",
-      "stock": "Stan",
+    "other": "Inne sekcje",
+    "summary": "Podsumowanie",
+    "detail": "Szczegóły",
+    "noTitle": "Brak tytułu"
+  },
+  "readMore": "Czytaj więcej →",
+  "author": "Autor",
+  "tags": "Tagi",
+  "unknown": "Nieznany",
+  "tabs": {
+    "services": "O nas",
+    "create": "Nowy artykuł",
+    "categories": "Kategorie"
+  },
+  "services": {
+    "empty": "Brak dostępnych artykułów.",
+    "no_images": "Brak zdjęć",
+    "author": "Autor",
+    "tags": "Tagi",
+    "publish_status": "Opublikowano",
+    "unpublish": "Cofnij publikację",
+    "publish": "Opublikuj",
+    "unknown": "Nieznany",
+    "none": "Brak"
+  },
+  "edit": "Edytuj",
+  "delete": "Usuń",
+  "yes": "Tak",
+  "no": "Nie",
+  "admin": {
+    "services": {
+      "edit": "Edytuj artykuł",
+      "create": "Utwórz nowy artykuł",
+      "title": "Tytuł",
+      "summary": "Podsumowanie",
+      "content": "Treść",
+      "author": "Autor",
       "tags": "Tagi",
-      "image": "Obraz",
+      "image": "Zdjęcia",
       "category": "Kategoria",
-      "select_category": "Wybierz kategorię",
-      "publish_status": "Opublikowano?",
-      "no_images": "Brak zdjęć",
-      "publish": "Opublikuj",
-      "unpublish": "Ukryj",
-      "empty": "Brak dostępnych rowerów."
+      "select_category": "Wybierz kategorię"
     },
     "categories": {
-      "title": "Kategorie rowerów",
-      "add": "Nowa kategoria",
-      "empty": "Nie znaleziono kategorii."
+      "title": "Kategorie produktów",
+      "add": "Dodaj kategorię",
+      "name": "Nazwa kategorii"
     },
-    "language": {
-      "en": "Angielski",
-      "tr": "Turecki",
-      "de": "Niemiecki"
-    },
-    "slug": "Slug",
-    "actions": "Akcje",
-    "edit": "Edytuj",
-    "delete": "Usuń",
-    "cancel": "Anuluj",
+    "editCategory": "Edytuj kategorię",
+    "newCategory": "Nowa kategoria",
+    "optional_description": "Opcjonalny opis",
+    "category_info": "O czym jest ta kategoria?",
     "update": "Aktualizuj",
-    "create": "Utwórz",
-    "yes": "Tak",
-    "no": "Nie",
-    "loading": "Ładowanie...",
+    "update2": "Aktualizuj",
+    "save": "Zapisz",
+    "saving": "Zapisywanie...",
+    "cancel": "Anuluj",
     "confirm": {
       "delete": "Czy na pewno chcesz usunąć tę kategorię?",
-      "delete_bike": "Czy na pewno chcesz usunąć ten rower?"
+      "delete_article": "Czy na pewno chcesz usunąć ten artykuł?"
     },
-    "optional_description": "Opis (opcjonalnie)",
-    "category_info": "Czego dotyczy ta kategoria?",
-    "saving": "Zapisywanie...",
-    "save": "Zapisz",
-    "update2": "Aktualizuj",
-    "editCategory": "Edytuj kategorię",
-    "newCategory": "Nowa kategoria"
-  },
-  "seo": {
-    "title": "Tytuł SEO",
-    "description": "Opis SEO"
-  },
-  "none": "Brak",
-  "delete_confirm": "Czy na pewno chcesz usunąć?"
+    "loading": "Ładowanie...",
+    "actions": "Akcje",
+    "slug": "Alias"
+  }
 }

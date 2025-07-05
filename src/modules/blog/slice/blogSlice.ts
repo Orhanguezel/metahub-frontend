@@ -1,10 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { IBlog } from "@/modules/blog/types/blog";
-import type { SupportedLocale } from "@/types/common";
+import type { IBlog } from "@/modules/blog/types";
 
 interface BlogState {
-  blogs: IBlog[];
+  blog: IBlog[];
   selected: IBlog | null;
   loading: boolean;
   error: string | null;
@@ -12,28 +11,33 @@ interface BlogState {
 }
 
 const initialState: BlogState = {
-  blogs: [],
+  blog: [],
   selected: null,
   loading: false,
   error: null,
   successMessage: null,
 };
 
-// 🌐 Public - fetch by language
-export const fetchBlogs = createAsyncThunk(
+const extractErrorMessage = (payload: unknown): string => {
+  if (typeof payload === "string") return payload;
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    "message" in payload &&
+    typeof (payload as any).message === "string"
+  )
+    return (payload as any).message;
+  return "An error occurred.";
+};
+
+export const fetchBlog = createAsyncThunk<IBlog[]>(
   "blog/fetchAll",
-  async (lang: SupportedLocale, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      `/blog?language=${lang}`,
-      null,
-      thunkAPI.rejectWithValue
-    );
+  async (_, thunkAPI) => {
+    const res = await apiCall("get", `/blog`, null, thunkAPI.rejectWithValue);
     return res.data;
   }
 );
 
-// ➕ Create blog
 export const createBlog = createAsyncThunk(
   "blog/create",
   async (formData: FormData, thunkAPI) => {
@@ -46,11 +50,10 @@ export const createBlog = createAsyncThunk(
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
-    return res.data;
+    return res.data; // backend: { success: true, message: "..." }
   }
 );
 
-// ✏️ Update blog
 export const updateBlog = createAsyncThunk(
   "blog/update",
   async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) => {
@@ -67,7 +70,6 @@ export const updateBlog = createAsyncThunk(
   }
 );
 
-// ❌ Delete blog
 export const deleteBlog = createAsyncThunk(
   "blog/delete",
   async (id: string, thunkAPI) => {
@@ -81,13 +83,12 @@ export const deleteBlog = createAsyncThunk(
   }
 );
 
-// 🛠 Admin - fetch all blogs
-export const fetchAllBlogsAdmin = createAsyncThunk(
+export const fetchAllBlogAdmin = createAsyncThunk(
   "blog/fetchAllAdmin",
-  async (lang: SupportedLocale, thunkAPI) => {
+  async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/blog/admin?language=${lang}`,
+      `/blog/admin`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -95,7 +96,6 @@ export const fetchAllBlogsAdmin = createAsyncThunk(
   }
 );
 
-// 🔁 Admin - publish toggle
 export const togglePublishBlog = createAsyncThunk(
   "blog/togglePublish",
   async (
@@ -104,7 +104,6 @@ export const togglePublishBlog = createAsyncThunk(
   ) => {
     const formData = new FormData();
     formData.append("isPublished", String(isPublished));
-
     const res = await apiCall(
       "put",
       `/blog/admin/${id}`,
@@ -118,7 +117,6 @@ export const togglePublishBlog = createAsyncThunk(
   }
 );
 
-// 🌐 Public - Fetch By Slug
 export const fetchBlogBySlug = createAsyncThunk(
   "blog/fetchBySlug",
   async (slug: string, thunkAPI) => {
@@ -132,100 +130,94 @@ export const fetchBlogBySlug = createAsyncThunk(
   }
 );
 
+// --- Slice ---
 const blogSlice = createSlice({
   name: "blog",
   initialState,
   reducers: {
-    clearBlogMessages: (state) => {
+    clearBlogMessages(state) {
       state.error = null;
       state.successMessage = null;
     },
+    setSelectedBlog(state, action: PayloadAction<IBlog | null>) {
+      state.selected = action.payload;
+    },
   },
   extraReducers: (builder) => {
-    const loading = (state: BlogState) => {
+    const startLoading = (state: BlogState) => {
       state.loading = true;
       state.error = null;
     };
 
-    const failed = (state: BlogState, action: PayloadAction<any>) => {
+    const setError = (state: BlogState, action: PayloadAction<any>) => {
       state.loading = false;
-      state.error = action.payload?.message || "An error occurred.";
+      state.error = extractErrorMessage(action.payload);
     };
 
     builder
-      // 🌐 Fetch Public
-      .addCase(fetchBlogs.pending, loading)
-      .addCase(fetchBlogs.fulfilled, (state, action) => {
+      .addCase(fetchBlog.pending, startLoading)
+      .addCase(fetchBlog.fulfilled, (state, action) => {
         state.loading = false;
-        state.blogs = action.payload;
+        state.blog = action.payload;
       })
-      .addCase(fetchBlogs.rejected, failed)
+      .addCase(fetchBlog.rejected, setError)
 
-      // ➕ Create
-      .addCase(createBlog.pending, loading)
+      .addCase(fetchAllBlogAdmin.pending, startLoading)
+      .addCase(fetchAllBlogAdmin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.blog = action.payload;
+      })
+      .addCase(fetchAllBlogAdmin.rejected, setError)
+
+      .addCase(createBlog.pending, startLoading)
       .addCase(createBlog.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Blog created successfully.";
-        const item = action.payload;
-        if (item && item._id) state.blogs.unshift(item);
+        state.successMessage =
+          action.payload?.message || "Article created successfully.";
+        if (action.payload?.data) {
+          state.blog.unshift(action.payload.data);
+        }
       })
-      .addCase(createBlog.rejected, failed)
+      .addCase(createBlog.rejected, setError)
 
-      // ✏️ Update
-      .addCase(updateBlog.pending, loading)
+      .addCase(updateBlog.pending, startLoading)
       .addCase(updateBlog.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload;
-        const index = state.blogs.findIndex((n) => n._id === updated._id);
-        if (index !== -1) state.blogs[index] = updated;
-        if (state.selected?._id === updated._id) {
-          state.selected = updated;
-        }
-        state.successMessage = "Blog updated successfully.";
+        const updated = action.payload?.data || action.payload;
+        const index = state.blog.findIndex((a) => a._id === updated._id);
+        if (index !== -1) state.blog[index] = updated;
+        if (state.selected?._id === updated._id) state.selected = updated;
+        state.successMessage = action.payload?.message;
       })
-      .addCase(updateBlog.rejected, failed)
+      .addCase(updateBlog.rejected, setError)
 
-      // ❌ Delete
-      .addCase(deleteBlog.pending, loading)
+      .addCase(deleteBlog.pending, startLoading)
       .addCase(deleteBlog.fulfilled, (state, action) => {
         state.loading = false;
-        state.blogs = state.blogs.filter((n) => n._id !== action.payload.id);
-        state.successMessage = "Blog deleted successfully.";
+        state.blog = state.blog.filter((a) => a._id !== action.payload.id);
+        state.successMessage = action.payload?.message;
       })
-      .addCase(deleteBlog.rejected, failed)
+      .addCase(deleteBlog.rejected, setError)
 
-      // 🛠 Fetch All Admin
-      .addCase(fetchAllBlogsAdmin.pending, loading)
-      .addCase(fetchAllBlogsAdmin.fulfilled, (state, action) => {
-        state.loading = false;
-        state.blogs = action.payload;
-      })
-      .addCase(fetchAllBlogsAdmin.rejected, failed)
-
-      // 🔁 Toggle Publish
-      .addCase(togglePublishBlog.pending, loading)
+      .addCase(togglePublishBlog.pending, startLoading)
       .addCase(togglePublishBlog.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload;
-        const index = state.blogs.findIndex((n) => n._id === updated._id);
-        if (index !== -1) state.blogs[index] = updated;
-        if (state.selected?._id === updated._id) {
-          state.selected = updated;
-        }
-        state.successMessage = updated.isPublished
-          ? "Blog published successfully."
-          : "Blog unpublished successfully.";
+        const updated = action.payload?.data || action.payload;
+        const index = state.blog.findIndex((a) => a._id === updated._id);
+        if (index !== -1) state.blog[index] = updated;
+        if (state.selected?._id === updated._id) state.selected = updated;
+        state.successMessage = action.payload?.message;
       })
-      .addCase(togglePublishBlog.rejected, failed)
+      .addCase(togglePublishBlog.rejected, setError)
 
-      .addCase(fetchBlogBySlug.pending, loading)
+      .addCase(fetchBlogBySlug.pending, startLoading)
       .addCase(fetchBlogBySlug.fulfilled, (state, action) => {
         state.loading = false;
         state.selected = action.payload;
       })
-      .addCase(fetchBlogBySlug.rejected, failed);
+      .addCase(fetchBlogBySlug.rejected, setError);
   },
 });
 
-export const { clearBlogMessages } = blogSlice.actions;
+export const { clearBlogMessages, setSelectedBlog } = blogSlice.actions;
 export default blogSlice.reducer;

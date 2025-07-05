@@ -47,7 +47,7 @@ const futuristicTheme: DefaultTheme = {
     loose: "2",
   },
 
-  spacing: {
+  spacings: {
     xs: "4px",
     sm: "8px",
     md: "16px",
@@ -96,7 +96,7 @@ const futuristicTheme: DefaultTheme = {
 
   layout: {
     containerWidth: "1280px",
-    sectionSpacing: "3rem",
+    sectionspacings: "3rem",
   },
 
   zIndex: {
@@ -133,7 +133,8 @@ const futuristicTheme: DefaultTheme = {
     desktop: "@media (min-width: 1025px)",
     landscape: "@media (orientation: landscape)",
     portrait: "@media (orientation: portrait)",
-    retina: "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
+    retina:
+      "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
   },
 
   colors: {
@@ -166,6 +167,12 @@ const futuristicTheme: DefaultTheme = {
     primaryHover: "#00cccc",
     primaryDark: "#007777",
     primaryTransparent: "rgba(0, 255, 247, 0.1)",
+
+    secondary: "#52404b",
+    secondaryLight: "#f3d9e5",
+    secondaryHover: "#40333d",
+    secondaryDark: "#32272a",
+    secondaryTransparent: "rgba(82,64,75,0.1)",
 
     accent: "#7D00FF",
     accentHover: "#9933FF",
@@ -217,6 +224,8 @@ const futuristicTheme: DefaultTheme = {
     white: "#ffffff",
     whiteColor: "#ffffff",
     darkColor: "#000000",
+    disabledBg: "#333333",
+    lightGrey: "#f7f7f7",
   },
 
   buttons: {

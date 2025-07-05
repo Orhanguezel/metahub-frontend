@@ -2,16 +2,15 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  fetchArticlesCategories,
-  clearCategoryMessages,
-} from "@/modules/articles/slice/articlesCategorySlice";
-import { IArticles } from "@/modules/articles/types";
-import { useTranslation } from "react-i18next";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { ArticlesCategory, IArticles } from "@/modules/articles/types";
 import { ImageUploadWithPreview } from "@/shared";
 import { getCurrentLocale } from "@/utils/getCurrentLocale";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import { toast } from "react-toastify";
+import { clearArticlesMessages } from "@/modules/articles/slice/articlesSlice"; // Mutlaka doğru import et!
 
 interface Props {
   isOpen: boolean;
@@ -26,20 +25,24 @@ export default function ArticlesFormModal({
   editingItem,
   onSubmit,
 }: Props) {
+  // --- DİL ve ÇEVİRİ ---
+  const { t } = useI18nNamespace("articles", translations);
+  const lang = getCurrentLocale();
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("articles");
-  const currentLang = getCurrentLocale();
 
+  // --- STATE ---
   const { categories } = useAppSelector((state) => state.articlesCategory);
+  const { successMessage, error } = useAppSelector((state) => state.articles);
+  const currentUser = useAppSelector((state) => state.account.profile);
 
-  const [titles, setTitles] = useState<Record<SupportedLocale, string>>(
-    {} as Record<SupportedLocale, string>
+  const [titles, setTitles] = useState<Record<SupportedLocale, string>>(() =>
+    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
   );
-  const [summaries, setSummaries] = useState<Record<SupportedLocale, string>>(
-    {} as Record<SupportedLocale, string>
+  const [summaries, setSummaries] = useState<Record<SupportedLocale, string>>(() =>
+    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
   );
-  const [contents, setContents] = useState<Record<SupportedLocale, string>>(
-    {} as Record<SupportedLocale, string>
+  const [contents, setContents] = useState<Record<SupportedLocale, string>>(() =>
+    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
   );
   const [author, setAuthor] = useState("");
   const [tags, setTags] = useState("");
@@ -48,37 +51,28 @@ export default function ArticlesFormModal({
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
 
-  useEffect(() => {
-    dispatch(fetchArticlesCategories());
-    return () => {
-      dispatch(clearCategoryMessages());
-    };
-  }, [dispatch]);
-
+  // --- FILL ON EDIT ---
   useEffect(() => {
     if (editingItem) {
       setTitles(
-        (SUPPORTED_LOCALES as SupportedLocale[]).reduce((acc, lang) => {
+        SUPPORTED_LOCALES.reduce((acc, lang) => {
           acc[lang] = editingItem.title?.[lang] || "";
           return acc;
         }, {} as Record<SupportedLocale, string>)
       );
-
       setSummaries(
-        (SUPPORTED_LOCALES as SupportedLocale[]).reduce((acc, lang) => {
+        SUPPORTED_LOCALES.reduce((acc, lang) => {
           acc[lang] = editingItem.summary?.[lang] || "";
           return acc;
         }, {} as Record<SupportedLocale, string>)
       );
-
       setContents(
-        (SUPPORTED_LOCALES as SupportedLocale[]).reduce((acc, lang) => {
+        SUPPORTED_LOCALES.reduce((acc, lang) => {
           acc[lang] = editingItem.content?.[lang] || "";
           return acc;
         }, {} as Record<SupportedLocale, string>)
       );
-
-      setAuthor(editingItem.author || "");
+      setAuthor(editingItem.author || currentUser?.name || "");
       setTags(editingItem.tags?.join(", ") || "");
       setCategory(
         typeof editingItem.category === "string"
@@ -87,25 +81,11 @@ export default function ArticlesFormModal({
       );
       setExistingImages(editingItem.images?.map((img) => img.url) || []);
     } else {
-      setTitles(
-        SUPPORTED_LOCALES.reduce(
-          (acc, lang) => ({ ...acc, [lang]: "" }),
-          {} as Record<SupportedLocale, string>
-        )
-      );
-      setSummaries(
-        SUPPORTED_LOCALES.reduce(
-          (acc, lang) => ({ ...acc, [lang]: "" }),
-          {} as Record<SupportedLocale, string>
-        )
-      );
-      setContents(
-        SUPPORTED_LOCALES.reduce(
-          (acc, lang) => ({ ...acc, [lang]: "" }),
-          {} as Record<SupportedLocale, string>
-        )
-      );
-      setAuthor("");
+      // Reset
+      setTitles(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
+      setSummaries(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
+      setContents(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
+      setAuthor(currentUser?.name || "");
       setTags("");
       setCategory("");
       setExistingImages([]);
@@ -114,6 +94,20 @@ export default function ArticlesFormModal({
     }
   }, [editingItem, isOpen]);
 
+  // --- TOAST Mesajları ---
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearArticlesMessages());
+      onClose(); // Başarılı kayıttan sonra modalı kapat
+    } else if (error) {
+      toast.error(error);
+      dispatch(clearArticlesMessages());
+      // Modal açık kalsın, kullanıcı tekrar deneyebilsin
+    }
+  }, [successMessage, error, dispatch, onClose]);
+
+  // --- IMAGE HANDLER ---
   const handleImagesChange = useCallback(
     (files: File[], removed: string[], current: string[]) => {
       setSelectedFiles(files);
@@ -123,6 +117,7 @@ export default function ArticlesFormModal({
     []
   );
 
+  // --- SUBMIT ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData();
@@ -146,12 +141,12 @@ export default function ArticlesFormModal({
     for (const file of selectedFiles) {
       formData.append("images", file);
     }
-
     if (removedImages.length > 0) {
       formData.append("removedImages", JSON.stringify(removedImages));
     }
 
     await onSubmit(formData, editingItem?._id);
+    // Başarı durumunu useEffect ile handle edeceğiz
   };
 
   if (!isOpen) return null;
@@ -163,7 +158,6 @@ export default function ArticlesFormModal({
           ? t("admin.articles.edit", "Edit Article")
           : t("admin.articles.create", "Create New Article")}
       </h2>
-
       <form onSubmit={handleSubmit}>
         {SUPPORTED_LOCALES.map((lng) => (
           <div key={lng}>
@@ -174,7 +168,6 @@ export default function ArticlesFormModal({
               id={`title-${lng}`}
               value={titles[lng]}
               onChange={(e) => setTitles({ ...titles, [lng]: e.target.value })}
-              required
             />
 
             <label htmlFor={`summary-${lng}`}>
@@ -186,7 +179,6 @@ export default function ArticlesFormModal({
               onChange={(e) =>
                 setSummaries({ ...summaries, [lng]: e.target.value })
               }
-              required
             />
 
             <label htmlFor={`content-${lng}`}>
@@ -198,7 +190,6 @@ export default function ArticlesFormModal({
               onChange={(e) =>
                 setContents({ ...contents, [lng]: e.target.value })
               }
-              required
             />
           </div>
         ))}
@@ -241,9 +232,9 @@ export default function ArticlesFormModal({
           <option value="" disabled>
             {t("admin.articles.select_category", "Select a category")}
           </option>
-          {categories.map((cat) => (
+          {categories.map((cat: ArticlesCategory) => (
             <option key={cat._id} value={cat._id}>
-              {cat.name?.[currentLang]} ({cat.slug})
+              {cat.name?.[lang] || cat.name?.en || Object.values(cat.name || {})[0] || cat.slug}
             </option>
           ))}
         </select>
@@ -263,7 +254,7 @@ export default function ArticlesFormModal({
   );
 }
 
-// 💅 Styled Components
+// --- Styled Components ---
 const FormWrapper = styled.div`
   max-width: 600px;
   margin: auto;

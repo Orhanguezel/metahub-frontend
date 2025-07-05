@@ -1,39 +1,37 @@
-// src/modules/order/public/components/OrderList.tsx
+"use client";
 import React from "react";
-import type { Order } from "@/modules/order/types";
-import { OrderCard } from "@/modules/order";
 import styled from "styled-components";
+import { OrderCard } from "@/modules/order";
 import { useTranslation } from "react-i18next";
+import type { IOrder } from "@/modules/order/types";
 
-interface Props {
-  orders: Order[];
-}
+type OrderListProps = {
+  orders: IOrder[];
+};
 
-export default function OrderList({ orders }: Props) {
+const OrderList: React.FC<OrderListProps> = ({ orders = [] }) => {
   const { t } = useTranslation("order");
 
-  if (!orders || orders.length === 0) {
-    return <EmptyMsg>{t("order.empty", "You have no orders yet.")}</EmptyMsg>;
-  }
+  if (!orders.length) return <Empty>{t("empty", "No orders found.")}</Empty>;
 
   return (
-    <List>
+    <ListWrapper>
       {orders.map((order) => (
-        <OrderCard key={order._id} order={order} />
+        <OrderCard key={order._id || (order as any).id} order={order} />
       ))}
-    </List>
+    </ListWrapper>
   );
 };
 
-const List = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
+export default OrderList;
+
+const Empty = styled.div`
+  text-align: center;
+  color: ${({ theme }) => theme.colors.grey || "#888"};
 `;
 
-const EmptyMsg = styled.div`
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 1.05rem;
-  margin-top: 24px;
-  text-align: center;
+const ListWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 `;

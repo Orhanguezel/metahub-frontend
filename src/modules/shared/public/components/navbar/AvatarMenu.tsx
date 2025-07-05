@@ -10,7 +10,6 @@ import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logoutUser, resetAuthState } from "@/modules/users/slice/authSlice";
 import { resetProfile } from "@/modules/users/slice/accountSlice";
-import { persistor } from "@/store";
 
 interface AvatarMenuProps {
   isAuthenticated: boolean;
@@ -30,7 +29,9 @@ export default function AvatarMenu({
   const dispatch = useAppDispatch();
 
   // User objesi slice'tan alınır, role kontrolü için
-  const user = useAppSelector((state) => state.auth.user);
+const user = useAppSelector((state) => state.account.profile);
+
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -57,7 +58,7 @@ export default function AvatarMenu({
     dispatch(resetAuthState());
     dispatch(resetProfile());
     // Persisti tamamen sıfırla
-    await persistor.purge();
+    // await persistor.purge();
     // Hızlıca login sayfasına yönlendir
     window.location.replace("/login");
     setShowDropdown(false);
@@ -96,7 +97,7 @@ export default function AvatarMenu({
             <DropdownItem as={Link} href="/account">
               {t("account")}
             </DropdownItem>
-            {user?.role === "admin" && (
+            {(user?.role === "admin" || user?.role === "superadmin") && (
               <DropdownItem as={Link} href="/admin">
                 {t("adminDashboard", "Admin Paneli")}
               </DropdownItem>
@@ -130,14 +131,15 @@ const AvatarDropdown = styled(motion.div)`
   border: ${({ theme }) => `${theme.borders.thin} ${theme.colors.border}`};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.md};
-  padding: ${({ theme }) => theme.spacing.sm} 0;
+  padding: ${({ theme }) => theme.spacings.sm} 0;
   z-index: ${({ theme }) => theme.zIndex.dropdown};
   min-width: 170px;
 `;
 
 const DropdownItem = styled.a`
   display: block;
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.md};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.text};
   background: none;

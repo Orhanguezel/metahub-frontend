@@ -1,66 +1,46 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import {
-  fetchPublishedGalleryItems,
-  fetchPublishedGalleryCategories,
-} from "@/modules/gallery/slice/gallerySlice";
 
+import { useMemo, useEffect } from "react";
+import { useAppSelector } from "@/store/hooks";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { SupportedLocale } from "@/types/common";
 import { FaArrowLeft, FaArrowRight, FaExpand } from "react-icons/fa";
 import SkeletonBox from "@/shared/Skeleton";
 import Image from "next/image";
 import useModal from "@/hooks/useModal";
 import Modal from "./Modal";
 import Link from "next/link";
+import type { IGallery } from "@/modules/gallery/types";
 
 export default function HeroProductSliderSection() {
-  const dispatch = useAppDispatch();
-  const { items, loading } = useAppSelector((state) => state.gallery);
-  const { categories } = useAppSelector((state) => state.gallery);
+  const { images, loading } = useAppSelector((state) => state.gallery);
+ const { i18n, t } = useI18nNamespace("home", translations);
+   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  useEffect(() => {
-    dispatch(fetchPublishedGalleryCategories());
-  }, [dispatch]);
-
-  useEffect(() => {
-  if (!categories?.length) return;
-  const massageTypesCat = categories.find(
-    (cat) => cat.slug === "massage-types"
-  );
-  if (massageTypesCat?._id) {
-    dispatch(
-      fetchPublishedGalleryItems({ category: massageTypesCat._id })
-    );
-  }
-}, [dispatch, categories]);
-
-
-  const [flatItems, setFlatItems] = useState<any[]>([]);
-  useEffect(() => {
-    if (!items || !Array.isArray(items)) return setFlatItems([]);
-    const flatted = items
-      .map((item) =>
-        item.items && item.items.length > 0
-          ? {
-              ...item.items[0],
-              category: item.category,
-              _galleryId: item._id,
-            }
-          : null
-      )
+  // ✅ FlatItems doğrudan useMemo ile oluşturuluyor (her render'da değil, sadece images değişirse)
+  const flatItems = useMemo(() => {
+    if (!images || !Array.isArray(images)) return [];
+    return images
+      .map((gallery: IGallery) => {
+        const firstImage = gallery.images?.[0];
+        if (!firstImage) return null;
+        return {
+          ...firstImage,
+          _galleryId: gallery._id,
+          category: gallery.category,
+          type: gallery.type,
+          tenant: gallery.tenant,
+        };
+      })
       .filter(Boolean);
-    setFlatItems(flatted);
-  }, [items]);
+  }, [images]);
 
-  const { t, i18n } = useTranslation("home");
-  const currentLang = ["tr", "en", "de"].includes(i18n.language)
-    ? i18n.language
-    : "en";
-  const { isOpen, open, close, next, prev, currentIndex, currentItem } =
-    useModal(flatItems);
+  // Modal ve slider state
+  const { isOpen, open, close, next, prev, currentIndex, currentItem } = useModal(flatItems);
 
+  // ✅ Sadece slider için timer effect (gerekli olan tek useEffect)
   useEffect(() => {
     if (flatItems.length === 0) return;
     const timer = setInterval(() => {
@@ -79,18 +59,22 @@ export default function HeroProductSliderSection() {
   }
 
   if (flatItems.length === 0) {
-    return <HeroContainer>No massage type items found.</HeroContainer>;
+    return <HeroContainer>{t("noItemsFound", "No items found.")}</HeroContainer>;
   }
 
   const currentHero = flatItems[currentIndex];
-  const title = currentHero?.title?.[currentLang] || "No title";
-  const description =
-    currentHero?.description?.[currentLang] || "No description";
-  const imageSrc =
+  const title = currentHero?.name?.[lang] || "No title";
+  const description = currentHero?.description?.[lang] || "No description";
+  let imageSrc =
     currentHero?.webp ||
-    currentHero?.image ||
+    currentHero?.url ||
     currentHero?.thumbnail ||
     "/placeholder.jpg";
+
+  // Cloudinary CDN optimizasyonu için query string eklemek istersen:
+  if (imageSrc.startsWith("https://res.cloudinary.com/")) {
+    imageSrc = `${imageSrc}?w=800&h=450&c_fill&q_auto,f_auto`;
+  }
 
   return (
     <>
@@ -99,17 +83,17 @@ export default function HeroProductSliderSection() {
           <h2>{title}</h2>
           <p>{description}</p>
           <ArrowControls>
-            <SliderButton onClick={prev} aria-label="Önceki">
+            <SliderButton onClick={prev} aria-label="Previous">
               <FaArrowLeft />
             </SliderButton>
-            <SliderButton onClick={next} aria-label="Sonraki">
+            <SliderButton onClick={next} aria-label="Next">
               <FaArrowRight />
             </SliderButton>
-            <SliderButton onClick={() => open(currentIndex)} aria-label="Büyüt">
+            <SliderButton onClick={() => open(currentIndex)} aria-label="Expand">
               <FaExpand />
             </SliderButton>
             <AppointmentButton as={Link} href="/booking">
-              {t("hero.bookAppointment")}
+              {t("hero.bookAppointment", "Book Appointment")}
             </AppointmentButton>
           </ArrowControls>
         </HeroContent>
@@ -119,14 +103,15 @@ export default function HeroProductSliderSection() {
             alt={title}
             width={800}
             height={450}
-            unoptimized
+            priority={currentIndex === 0} // LCP boost!
+            placeholder="blur"
+            blurDataURL="/placeholder.jpg" // istersen base64 küçük bir image ile değiştir
             sizes="(max-width: 768px) 100vw, 70vw"
             style={{
               objectFit: "cover",
               width: "100%",
               height: "100%",
               borderRadius: "inherit",
-              background: "#fff0f6",
             }}
             onClick={() => open(currentIndex)}
           />
@@ -137,6 +122,7 @@ export default function HeroProductSliderSection() {
           </Dots>
         </HeroImageWrapper>
       </HeroContainer>
+
       <Modal isOpen={isOpen} onClose={close} onNext={next} onPrev={prev}>
         <div style={{ textAlign: "center" }}>
           <Image
@@ -144,7 +130,8 @@ export default function HeroProductSliderSection() {
             alt={title}
             width={800}
             height={500}
-            unoptimized
+            placeholder="blur"
+            blurDataURL="/placeholder.jpg"
             sizes="(max-width: 768px) 100vw, 70vw"
             style={{
               objectFit: "cover",
@@ -152,16 +139,13 @@ export default function HeroProductSliderSection() {
               height: "100%",
               cursor: "pointer",
               borderRadius: "inherit",
-              background: "#fff0f6",
             }}
             onClick={() => open(currentIndex)}
           />
           <h2 style={{ color: "white", marginTop: "10px" }}>
-            {currentItem?.title?.[currentLang]}
+            {currentItem?.name?.[lang]}
           </h2>
-          <p style={{ color: "white" }}>
-            {currentItem?.description?.[currentLang]}
-          </p>
+          <p style={{ color: "white" }}>{currentItem?.description?.[lang]}</p>
           <Dots style={{ justifyContent: "center", marginTop: "10px" }}>
             {flatItems.map((_, index) => (
               <Dot key={index} $active={index === currentIndex} />
@@ -173,6 +157,9 @@ export default function HeroProductSliderSection() {
   );
 }
 
+// styled-components kodun aynen kalabilir!
+
+
 
 const HeroContainer = styled.div`
   background: ${({ theme }) => theme.colors.background};
@@ -180,8 +167,8 @@ const HeroContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.xxl};
-  padding: ${({ theme }) => theme.spacing.xxl};
+  gap: ${({ theme }) => theme.spacings.xxl};
+  padding: ${({ theme }) => theme.spacings.xxl};
   max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
   overflow: hidden;
@@ -189,8 +176,8 @@ const HeroContainer = styled.div`
   @media (max-width: 1024px) {
     flex-direction: column-reverse;
     text-align: center;
-    gap: ${({ theme }) => theme.spacing.lg};
-    padding: ${({ theme }) => theme.spacing.lg};
+    gap: ${({ theme }) => theme.spacings.lg};
+    padding: ${({ theme }) => theme.spacings.lg};
   }
 `;
 
@@ -201,7 +188,7 @@ const HeroContent = styled.div`
   h2 {
     font-size: ${({ theme }) => theme.fontSizes["2xl"]};
     color: ${({ theme }) => theme.colors.primary};
-    margin-bottom: ${({ theme }) => theme.spacing.sm};
+    margin-bottom: ${({ theme }) => theme.spacings.sm};
     font-family: ${({ theme }) => theme.fonts.heading};
     font-weight: ${({ theme }) => theme.fontWeights.bold};
   }
@@ -209,7 +196,7 @@ const HeroContent = styled.div`
   p {
     font-size: ${({ theme }) => theme.fontSizes.md};
     color: ${({ theme }) => theme.colors.text};
-    margin-bottom: ${({ theme }) => theme.spacing.md};
+    margin-bottom: ${({ theme }) => theme.spacings.md};
     font-family: ${({ theme }) => theme.fonts.body};
   }
 `;
@@ -217,15 +204,15 @@ const HeroContent = styled.div`
 const ArrowControls = styled.div`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  margin-top: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.md};
+  margin-top: ${({ theme }) => theme.spacings.md};
 
   button {
     background: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.buttons.primary.text};
     border: none;
     border-radius: ${({ theme }) => theme.radii.circle};
-    padding: ${({ theme }) => theme.spacing.sm};
+    padding: ${({ theme }) => theme.spacings.sm};
     width: 40px;
     height: 40px;
     display: flex;
@@ -271,15 +258,15 @@ const HeroImageWrapper = styled.div`
 
 const Dots = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.xs};
-  margin-top: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.xs};
+  margin-top: ${({ theme }) => theme.spacings.md};
   justify-content: center;
   text-align: center;
 `;
 
 const Dot = styled.div<{ $active: boolean }>`
-  width: ${({ theme }) => theme.spacing.lg};
-  height: ${({ theme }) => theme.spacing.lg};
+  width: ${({ theme }) => theme.spacings.lg};
+  height: ${({ theme }) => theme.spacings.lg};
   background: ${({ $active, theme }) =>
     $active ? theme.colors.primary : theme.colors.skeleton};
   border-radius: ${({ theme }) => theme.radii.circle};
@@ -289,14 +276,12 @@ const Dot = styled.div<{ $active: boolean }>`
   transition: background ${({ theme }) => theme.transition.normal};
 `;
 
-
-
 const SliderButton = styled.button`
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.buttons.primary.text};
   border: none;
   border-radius: ${({ theme }) => theme.radii.circle};
-  padding: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacings.sm};
   width: 40px;
   height: 40px;
   display: flex;
@@ -322,15 +307,17 @@ const AppointmentButton = styled.a`
   font-family: ${({ theme }) => theme.fonts.body};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.xl};
-  margin-left: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.xl};
+  margin-left: ${({ theme }) => theme.spacings.md};
   box-shadow: ${({ theme }) => theme.shadows.button};
   cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.normal}, color ${({ theme }) => theme.transition.normal};
+  transition: background ${({ theme }) => theme.transition.normal},
+    color ${({ theme }) => theme.transition.normal};
 
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
+  gap: ${({ theme }) => theme.spacings.xs};
 
   &:hover,
   &:focus {
@@ -342,7 +329,7 @@ const AppointmentButton = styled.a`
 
   @media ${({ theme }) => theme.media.mobile} {
     margin-left: 0;
-    margin-top: ${({ theme }) => theme.spacing.md};
+    margin-top: ${({ theme }) => theme.spacings.md};
     width: 100%;
     justify-content: center;
   }

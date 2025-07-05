@@ -2,14 +2,15 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  fetchActivityCategories,
-  clearCategoryMessages,
-} from "@/modules/activity/slice/activityCategorySlice";
-import { IActivity } from "@/modules/activity/types/activity";
-import { useTranslation } from "react-i18next";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { ActivityCategory, IActivity } from "@/modules/activity/types";
 import { ImageUploadWithPreview } from "@/shared";
+import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import { toast } from "react-toastify";
+import { clearActivityMessages } from "@/modules/activity/slice/activitySlice"; // Mutlaka doğru import et!
 
 interface Props {
   isOpen: boolean;
@@ -18,59 +19,60 @@ interface Props {
   onSubmit: (formData: FormData, id?: string) => Promise<void>;
 }
 
-const LANGUAGES: ("tr" | "en" | "de")[] = ["tr", "en", "de"];
-
 export default function ActivityFormModal({
   isOpen,
   onClose,
   editingItem,
   onSubmit,
 }: Props) {
+  // --- DİL ve ÇEVİRİ ---
+  const { t } = useI18nNamespace("activity", translations);
+  const lang = getCurrentLocale();
   const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("activity");
-  const currentLang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
+
+  // --- STATE ---
   const { categories } = useAppSelector((state) => state.activityCategory);
+  const { successMessage, error } = useAppSelector((state) => state.activity);
+  const currentUser = useAppSelector((state) => state.account.profile);
 
-  // Çok dilli alanlar
-  const [titles, setTitles] = useState<Record<string, string>>({
-    tr: "",
-    en: "",
-    de: "",
-  });
-  const [summaries, setSummaries] = useState<Record<string, string>>({
-    tr: "",
-    en: "",
-    de: "",
-  });
-  const [contents, setContents] = useState<Record<string, string>>({
-    tr: "",
-    en: "",
-    de: "",
-  });
+  const [titles, setTitles] = useState<Record<SupportedLocale, string>>(() =>
+    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
+  );
+  const [summaries, setSummaries] = useState<Record<SupportedLocale, string>>(() =>
+    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
+  );
+  const [contents, setContents] = useState<Record<SupportedLocale, string>>(() =>
+    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
+  );
+  const [author, setAuthor] = useState("");
   const [tags, setTags] = useState("");
-  const [category, setCategory] = useState<string>("");
-
-  // Görsel yönetimi
+  const [category, setCategory] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
 
-  // Kategorileri yükle
-  useEffect(() => {
-    dispatch(fetchActivityCategories());
-    return () => {
-      dispatch(clearCategoryMessages());
-    };
-  }, [dispatch]);
-
-  // editingItem değişirse formu ve görselleri güncelle
+  // --- FILL ON EDIT ---
   useEffect(() => {
     if (editingItem) {
-      setTitles(editingItem.title || { tr: "", en: "", de: "" });
-      setSummaries(editingItem.summary || { tr: "", en: "", de: "" });
-      setContents(editingItem.content || { tr: "", en: "", de: "" });
+      setTitles(
+        SUPPORTED_LOCALES.reduce((acc, lang) => {
+          acc[lang] = editingItem.title?.[lang] || "";
+          return acc;
+        }, {} as Record<SupportedLocale, string>)
+      );
+      setSummaries(
+        SUPPORTED_LOCALES.reduce((acc, lang) => {
+          acc[lang] = editingItem.summary?.[lang] || "";
+          return acc;
+        }, {} as Record<SupportedLocale, string>)
+      );
+      setContents(
+        SUPPORTED_LOCALES.reduce((acc, lang) => {
+          acc[lang] = editingItem.content?.[lang] || "";
+          return acc;
+        }, {} as Record<SupportedLocale, string>)
+      );
+      setAuthor(editingItem.author || currentUser?.name || "");
       setTags(editingItem.tags?.join(", ") || "");
       setCategory(
         typeof editingItem.category === "string"
@@ -78,12 +80,12 @@ export default function ActivityFormModal({
           : editingItem.category?._id || ""
       );
       setExistingImages(editingItem.images?.map((img) => img.url) || []);
-      setSelectedFiles([]);
-      setRemovedImages([]);
     } else {
-      setTitles({ tr: "", en: "", de: "" });
-      setSummaries({ tr: "", en: "", de: "" });
-      setContents({ tr: "", en: "", de: "" });
+      // Reset
+      setTitles(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
+      setSummaries(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
+      setContents(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
+      setAuthor(currentUser?.name || "");
       setTags("");
       setCategory("");
       setExistingImages([]);
@@ -92,7 +94,20 @@ export default function ActivityFormModal({
     }
   }, [editingItem, isOpen]);
 
-  // Resim bileşeni parent’ın state’ini günceller
+  // --- TOAST Mesajları ---
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearActivityMessages());
+      onClose(); // Başarılı kayıttan sonra modalı kapat
+    } else if (error) {
+      toast.error(error);
+      dispatch(clearActivityMessages());
+      // Modal açık kalsın, kullanıcı tekrar deneyebilsin
+    }
+  }, [successMessage, error, dispatch, onClose]);
+
+  // --- IMAGE HANDLER ---
   const handleImagesChange = useCallback(
     (files: File[], removed: string[], current: string[]) => {
       setSelectedFiles(files);
@@ -102,13 +117,15 @@ export default function ActivityFormModal({
     []
   );
 
+  // --- SUBMIT ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const formData = new FormData();
+
     formData.append("title", JSON.stringify(titles));
     formData.append("summary", JSON.stringify(summaries));
     formData.append("content", JSON.stringify(contents));
+    formData.append("author", author.trim());
     formData.append(
       "tags",
       JSON.stringify(
@@ -121,40 +138,36 @@ export default function ActivityFormModal({
     formData.append("category", category);
     formData.append("isPublished", "true");
 
-    // Yeni eklenen dosyalar
     for (const file of selectedFiles) {
       formData.append("images", file);
     }
-
-    // Silinmek istenen eski görseller
     if (removedImages.length > 0) {
       formData.append("removedImages", JSON.stringify(removedImages));
     }
 
     await onSubmit(formData, editingItem?._id);
+    // Başarı durumunu useEffect ile handle edeceğiz
   };
 
   if (!isOpen) return null;
 
   return (
-    <Container>
+    <FormWrapper>
       <h2>
         {editingItem
-          ? t("admin.activity.edit", "Edit Activity")
-          : t("admin.activity.create", "New Activity")}
+          ? t("admin.activity.edit", "Edit Article")
+          : t("admin.activity.create", "Create New Article")}
       </h2>
       <form onSubmit={handleSubmit}>
-        {LANGUAGES.map((lng) => (
+        {SUPPORTED_LOCALES.map((lng) => (
           <div key={lng}>
             <label htmlFor={`title-${lng}`}>
               {t("admin.activity.title", "Title")} ({lng.toUpperCase()})
             </label>
             <input
               id={`title-${lng}`}
-              type="text"
               value={titles[lng]}
               onChange={(e) => setTitles({ ...titles, [lng]: e.target.value })}
-              required
             />
 
             <label htmlFor={`summary-${lng}`}>
@@ -166,7 +179,6 @@ export default function ActivityFormModal({
               onChange={(e) =>
                 setSummaries({ ...summaries, [lng]: e.target.value })
               }
-              required
             />
 
             <label htmlFor={`content-${lng}`}>
@@ -178,17 +190,34 @@ export default function ActivityFormModal({
               onChange={(e) =>
                 setContents({ ...contents, [lng]: e.target.value })
               }
-              required
             />
           </div>
         ))}
+
+        <label htmlFor="author">{t("admin.activity.author", "Author")}</label>
+        <input
+          id="author"
+          type="text"
+          value={author}
+          onChange={(e) => setAuthor(e.target.value)}
+          required
+        />
+
+        <label htmlFor="tags">{t("admin.activity.tags", "Tags")}</label>
+        <input
+          id="tags"
+          type="text"
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+          placeholder="tag1, tag2, tag3"
+        />
 
         <label>{t("admin.activity.image", "Images")}</label>
         <ImageUploadWithPreview
           max={5}
           defaultImages={existingImages}
           onChange={handleImagesChange}
-          folder="activity"
+          folder="article"
         />
 
         <label htmlFor="category">
@@ -201,11 +230,11 @@ export default function ActivityFormModal({
           required
         >
           <option value="" disabled>
-            {t("admin.activity.select_category", "Select category")}
+            {t("admin.activity.select_category", "Select a category")}
           </option>
-          {categories.map((cat) => (
+          {categories.map((cat: ActivityCategory) => (
             <option key={cat._id} value={cat._id}>
-              {cat.name?.[currentLang]} ({cat.slug})
+              {cat.name?.[lang] || cat.name?.en || Object.values(cat.name || {})[0] || cat.slug}
             </option>
           ))}
         </select>
@@ -221,38 +250,42 @@ export default function ActivityFormModal({
           </button>
         </ButtonGroup>
       </form>
-    </Container>
+    </FormWrapper>
   );
 }
 
-// Styled Components aynen kullanılabilir
-const Container = styled.div`
+// --- Styled Components ---
+const FormWrapper = styled.div`
   max-width: 600px;
   margin: auto;
   padding: 1.5rem;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.md};
+  background: ${({ theme }) => theme.colors.cardBackground || "#fff"};
+  border: 1px solid ${({ theme }) => theme.colors.border || "#ccc"};
+  border-radius: ${({ theme }) => theme.radii.md || "6px"};
+
   h2 {
     margin-bottom: 1rem;
   }
+
   label {
     display: block;
     margin-top: 1rem;
     margin-bottom: 0.25rem;
     font-weight: 600;
   }
+
   input,
   textarea,
   select {
     width: 100%;
     padding: 0.5rem;
-    border: 1px solid ${({ theme }) => theme.colors.border};
+    border: 1px solid ${({ theme }) => theme.colors.border || "#ccc"};
     border-radius: 4px;
-    background-color: ${({ theme }) => theme.colors.inputBackground};
-    color: ${({ theme }) => theme.colors.text};
+    background-color: ${({ theme }) => theme.colors.inputBackground || "#fff"};
+    color: ${({ theme }) => theme.colors.text || "#000"};
     font-size: 0.95rem;
   }
+
   textarea {
     min-height: 100px;
     resize: vertical;
@@ -263,20 +296,24 @@ const ButtonGroup = styled.div`
   margin-top: 1.5rem;
   display: flex;
   gap: 1rem;
+
   button {
     padding: 0.5rem 1rem;
     font-weight: 500;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+
     &:first-child {
-      background: ${({ theme }) => theme.colors.primary};
+      background: ${({ theme }) => theme.colors.primary || "#007bff"};
       color: #fff;
     }
+
     &:last-child {
-      background: ${({ theme }) => theme.colors.danger};
+      background: ${({ theme }) => theme.colors.danger || "#dc3545"};
       color: #fff;
     }
+
     &:hover {
       opacity: 0.9;
     }

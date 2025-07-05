@@ -1,15 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-
-export interface NewsCategory {
-  _id: string;
-  name: { tr: string; en: string; de: string };
-  slug: string;
-  description?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import type { NewsCategory, TranslatedField } from "@/modules/news/types";
 
 interface CategoryState {
   categories: NewsCategory[];
@@ -25,28 +16,41 @@ const initialState: CategoryState = {
   successMessage: null,
 };
 
-// ✅ Fetch All
+// --- Fetch ---
 export const fetchNewsCategories = createAsyncThunk(
   "newsCategory/fetchAll",
   async (_, thunkAPI) => {
-    const res = await apiCall("get", "/newscategory", null, thunkAPI.rejectWithValue);
+    const res = await apiCall(
+      "get",
+      "/newscategory",
+      null,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
 
-// ✅ Create
+// --- Create ---
 export const createNewsCategory = createAsyncThunk(
   "newsCategory/create",
   async (
-    data: { name: { tr: string; en: string; de: string }; description?: string },
+    data: {
+      name: TranslatedField;
+      description?: TranslatedField;
+    },
     thunkAPI
   ) => {
-    const res = await apiCall("post", "/newscategory", data, thunkAPI.rejectWithValue);
+    const res = await apiCall(
+      "post",
+      "/newscategory",
+      data,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
 
-// ✅ Update
+// --- Update ---
 export const updateNewsCategory = createAsyncThunk(
   "newsCategory/update",
   async (
@@ -55,21 +59,34 @@ export const updateNewsCategory = createAsyncThunk(
       data,
     }: {
       id: string;
-      data: { name: { tr: string; en: string; de: string }; description?: string };
+      data: {
+        name: TranslatedField;
+        description?: TranslatedField;
+      };
     },
     thunkAPI
   ) => {
-    const res = await apiCall("put", `/newscategory/${id}`, data, thunkAPI.rejectWithValue);
+    const res = await apiCall(
+      "put",
+      `/newscategory/${id}`,
+      data,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
 
-// ✅ Delete
+// --- Delete ---
 export const deleteNewsCategory = createAsyncThunk(
   "newsCategory/delete",
   async (id: string, thunkAPI) => {
-    await apiCall("delete", `/newscategory/${id}`, null, thunkAPI.rejectWithValue);
-    return id;
+    const res = await apiCall(
+      "delete",
+      `/newscategory/${id}`,
+      null,
+      thunkAPI.rejectWithValue
+    );
+    return { id, message: res.message }; // backend response.message
   }
 );
 
@@ -77,76 +94,66 @@ const newsCategorySlice = createSlice({
   name: "newsCategory",
   initialState,
   reducers: {
-    clearCategoryMessages(state) {
+    clearNewsCategoryMessages: (state) => {
       state.error = null;
       state.successMessage = null;
     },
   },
   extraReducers: (builder) => {
-    builder
+    const startLoading = (state: CategoryState) => {
+      state.loading = true;
+      state.error = null;
+    };
 
-      // FETCH
-      .addCase(fetchNewsCategories.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+    const setError = (state: CategoryState, action: PayloadAction<any>) => {
+      state.loading = false;
+      state.error = action.payload?.message || "Something went wrong.";
+    };
+
+    builder
+      // Fetch
+      .addCase(fetchNewsCategories.pending, startLoading)
       .addCase(fetchNewsCategories.fulfilled, (state, action) => {
         state.loading = false;
         state.categories = action.payload;
       })
-      .addCase(fetchNewsCategories.rejected, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        state.error = action.payload?.message || "Failed to fetch categories.";
-      })
-
-      // CREATE
-      .addCase(createNewsCategory.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(fetchNewsCategories.rejected, setError)
+      // Create
+      .addCase(createNewsCategory.pending, startLoading)
       .addCase(createNewsCategory.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Category created successfully.";
-        state.categories.unshift(action.payload);
+        state.successMessage = action.payload?.message;
+        if (action.payload?.data?._id) {
+          state.categories.unshift(action.payload.data);
+        }
       })
-      .addCase(createNewsCategory.rejected, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        state.error = action.payload?.message || "Failed to create category.";
-      })
-
-      // UPDATE
-      .addCase(updateNewsCategory.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(createNewsCategory.rejected, setError)
+      // Update
+      .addCase(updateNewsCategory.pending, startLoading)
       .addCase(updateNewsCategory.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Category updated successfully.";
-        const updated = action.payload;
-        const index = state.categories.findIndex((cat) => cat._id === updated._id);
-        if (index !== -1) state.categories[index] = updated;
+        state.successMessage = action.payload?.message;
+        const updated = action.payload?.data || action.payload;
+        const index = state.categories.findIndex(
+          (cat) => cat._id === updated._id
+        );
+        if (index !== -1) {
+          state.categories[index] = updated;
+        }
       })
-      .addCase(updateNewsCategory.rejected, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        state.error = action.payload?.message || "Failed to update category.";
-      })
-
-      // DELETE
-      .addCase(deleteNewsCategory.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(updateNewsCategory.rejected, setError)
+      // Delete
+      .addCase(deleteNewsCategory.pending, startLoading)
       .addCase(deleteNewsCategory.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Category deleted successfully.";
-        state.categories = state.categories.filter((cat) => cat._id !== action.payload);
+        state.successMessage = action.payload?.message;
+        state.categories = state.categories.filter(
+          (cat) => cat._id !== action.payload.id
+        );
       })
-      .addCase(deleteNewsCategory.rejected, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        state.error = action.payload?.message || "Failed to delete category.";
-      });
+      .addCase(deleteNewsCategory.rejected, setError);
   },
 });
 
-export const { clearCategoryMessages } = newsCategorySlice.actions;
+export const { clearNewsCategoryMessages } = newsCategorySlice.actions;
 export default newsCategorySlice.reducer;

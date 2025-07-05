@@ -1,11 +1,10 @@
-Tabii, aşağıda **modül-ikon eşleşmesini** ve her bir modül için **Türkçe, İngilizce, Almanca isimleri** ile birlikte bir tablo/listesi çıkarıyorum.
-Bu tabloyu doğrudan JSON çeviri dosyalarına veya ikon alanına kullanabilirsin.
+Süper, çok net bir örnek göndermişsin! Şimdi aşağıda **ekran görüntüsündeki modüllerin**
+**ikonlarını ve 6 dilde (tr, en, de, es, pl, fr) isimlerini** *JSON formatında* veriyorum.
+Senin Sidebar için doğrudan kullanıma hazır olacak!
 
 ---
 
-## 📋 Modül-İkon ve Çok Dilli Ad Listesi
-
-### JSON Formatı (Dizilerde veya objelerde kullanabilirsin):
+## JSON Formatı (6 Dilde)
 
 ```json
 [
@@ -14,274 +13,217 @@ Bu tabloyu doğrudan JSON çeviri dosyalarına veya ikon alanına kullanabilirsi
     "icon": "MdDashboard",
     "tr": "Panel",
     "en": "Dashboard",
-    "de": "Dashboard"
+    "de": "Dashboard",
+    "es": "Tablero",
+    "pl": "Panel",
+    "fr": "Tableau de bord"
+  },
+  {
+    "module": "about",
+    "icon": "MdInfo",
+    "tr": "Hakkında",
+    "en": "About",
+    "de": "Über",
+    "es": "Acerca de",
+    "pl": "O nas",
+    "fr": "À propos"
   },
   {
     "module": "admin",
     "icon": "MdAdminPanelSettings",
-    "tr": "Yönetici Ayarları",
-    "en": "Admin Settings",
-    "de": "Admin Einstellungen"
+    "tr": "Yönetici",
+    "en": "Admin",
+    "de": "Admin",
+    "es": "Admin",
+    "pl": "Admin",
+    "fr": "Admin"
   },
   {
-    "module": "articles",
-    "icon": "MdLibraryBooks",
-    "tr": "Makaleler",
-    "en": "Articles",
-    "de": "Artikel"
-  },
-  {
-    "module": "blog",
-    "icon": "MdArticle",
-    "tr": "Blog Yazıları",
-    "en": "Blog Posts",
-    "de": "Blog Beiträge"
-  },
-  {
-    "module": "blogcategory",
-    "icon": "MdCategory",
-    "tr": "Blog Kategorileri",
-    "en": "Blog Categories",
-    "de": "Blog Kategorien"
-  },
-  {
-    "module": "booking",
-    "icon": "MdEventAvailable",
-    "tr": "Rezervasyonlar",
-    "en": "Bookings",
-    "de": "Reservierungen"
+    "module": "bikes",
+    "icon": "MdDirectionsBike",
+    "tr": "Bisikletler",
+    "en": "Bikes",
+    "de": "Fahrräder",
+    "es": "Bicicletas",
+    "pl": "Rowery",
+    "fr": "Vélos"
   },
   {
     "module": "cart",
     "icon": "MdShoppingCart",
     "tr": "Sepet",
     "en": "Cart",
-    "de": "Warenkorb"
-  },
-  {
-    "module": "category",
-    "icon": "MdCategory",
-    "tr": "Kategoriler",
-    "en": "Categories",
-    "de": "Kategorien"
-  },
-  {
-    "module": "chat",
-    "icon": "MdChat",
-    "tr": "Sohbet",
-    "en": "Chat",
-    "de": "Chat"
+    "de": "Warenkorb",
+    "es": "Carrito",
+    "pl": "Koszyk",
+    "fr": "Panier"
   },
   {
     "module": "comment",
     "icon": "MdComment",
     "tr": "Yorumlar",
     "en": "Comments",
-    "de": "Kommentare"
+    "de": "Kommentare",
+    "es": "Comentarios",
+    "pl": "Komentarze",
+    "fr": "Commentaires"
+  },
+  {
+    "module": "company",
+    "icon": "MdBusiness",
+    "tr": "Şirket",
+    "en": "Company",
+    "de": "Firma",
+    "es": "Compañía",
+    "pl": "Firma",
+    "fr": "Entreprise"
   },
   {
     "module": "contact",
     "icon": "MdContactMail",
-    "tr": "İletişim Mesajları",
-    "en": "Contact Messages",
-    "de": "Kontakt Nachrichten"
+    "tr": "İletişim",
+    "en": "Contact",
+    "de": "Kontakt",
+    "es": "Contacto",
+    "pl": "Kontakt",
+    "fr": "Contact"
+  },
+  {
+    "module": "coupon",
+    "icon": "MdLocalOffer",
+    "tr": "Kuponlar",
+    "en": "Coupons",
+    "de": "Gutscheine",
+    "es": "Cupones",
+    "pl": "Kupony",
+    "fr": "Coupons"
+  },
+  {
+    "module": "dashboard",
+    "icon": "MdDashboard",
+    "tr": "Panel",
+    "en": "Dashboard",
+    "de": "Dashboard",
+    "es": "Tablero",
+    "pl": "Panel",
+    "fr": "Tableau de bord"
   },
   {
     "module": "email",
     "icon": "MdEmail",
-    "tr": "E-Mail Yönetimi",
-    "en": "Email Management",
-    "de": "E-Mail Verwaltung"
+    "tr": "E-posta",
+    "en": "Email",
+    "de": "E-Mail",
+    "es": "Correo",
+    "pl": "E-mail",
+    "fr": "E-mail"
   },
   {
     "module": "faq",
     "icon": "MdHelpCenter",
     "tr": "SSS",
     "en": "FAQ",
-    "de": "FAQ"
+    "de": "FAQ",
+    "es": "FAQ",
+    "pl": "FAQ",
+    "fr": "FAQ"
   },
   {
-    "module": "feedback",
-    "icon": "MdFeedback",
-    "tr": "Geri Bildirimler",
-    "en": "Feedback",
-    "de": "Feedback"
+    "module": "gallery",
+    "icon": "MdPhotoLibrary",
+    "tr": "Galeri",
+    "en": "Gallery",
+    "de": "Galerie",
+    "es": "Galería",
+    "pl": "Galeria",
+    "fr": "Galerie"
   },
   {
     "module": "invoice",
     "icon": "MdRequestQuote",
-    "tr": "Fatura Yönetimi",
-    "en": "Invoice Management",
-    "de": "Rechnungsverwaltung"
-  },
-  {
-    "module": "library",
-    "icon": "MdPhotoLibrary",
-    "tr": "Medya Kütüphanesi",
-    "en": "Media Library",
-    "de": "Medienbibliothek"
-  },
-  {
-    "module": "news",
-    "icon": "MdAnnouncement",
-    "tr": "Haberler",
-    "en": "News",
-    "de": "Nachrichten"
-  },
-  {
-    "module": "newscategory",
-    "icon": "MdCategory",
-    "tr": "Haber Kategorileri",
-    "en": "News Categories",
-    "de": "Nachrichtenkategorien"
+    "tr": "Faturalar",
+    "en": "Invoices",
+    "de": "Rechnungen",
+    "es": "Facturas",
+    "pl": "Faktury",
+    "fr": "Factures"
   },
   {
     "module": "notification",
     "icon": "MdNotifications",
     "tr": "Bildirimler",
     "en": "Notifications",
-    "de": "Benachrichtigungen"
-  },
-  {
-    "module": "offer",
-    "icon": "MdLocalOffer",
-    "tr": "Kampanyalar",
-    "en": "Offers",
-    "de": "Angebote"
+    "de": "Benachrichtigungen",
+    "es": "Notificaciones",
+    "pl": "Powiadomienia",
+    "fr": "Notifications"
   },
   {
     "module": "order",
     "icon": "MdReceiptLong",
     "tr": "Siparişler",
     "en": "Orders",
-    "de": "Bestellungen"
+    "de": "Bestellungen",
+    "es": "Pedidos",
+    "pl": "Zamówienia",
+    "fr": "Commandes"
   },
   {
     "module": "payment",
     "icon": "MdPayment",
-    "tr": "Ödeme İşlemleri",
+    "tr": "Ödemeler",
     "en": "Payments",
-    "de": "Zahlungen"
-  },
-  {
-    "module": "product",
-    "icon": "MdStorefront",
-    "tr": "Ürünler",
-    "en": "Products",
-    "de": "Produkte"
-  },
-  {
-    "module": "references",
-    "icon": "MdStarRate",
-    "tr": "Referanslar",
-    "en": "References",
-    "de": "Referenzen"
-  },
-  {
-    "module": "review",
-    "icon": "MdRateReview",
-    "tr": "İncelemeler",
-    "en": "Reviews",
-    "de": "Bewertungen"
-  },
-  {
-    "module": "services",
-    "icon": "MdBuildCircle",
-    "tr": "Hizmetler",
-    "en": "Services",
-    "de": "Dienstleistungen"
+    "de": "Zahlungen",
+    "es": "Pagos",
+    "pl": "Płatności",
+    "fr": "Paiements"
   },
   {
     "module": "setting",
     "icon": "MdSettings",
     "tr": "Ayarlar",
     "en": "Settings",
-    "de": "Einstellungen"
-  },
-  {
-    "module": "shipment",
-    "icon": "MdLocalShipping",
-    "tr": "Kargo",
-    "en": "Shipment",
-    "de": "Versand"
-  },
-  {
-    "module": "skill",
-    "icon": "MdSchool",
-    "tr": "Yetenekler",
-    "en": "Skills",
-    "de": "Fähigkeiten"
-  },
-  {
-    "module": "social",
-    "icon": "MdPeopleAlt",
-    "tr": "Sosyal Ağlar",
-    "en": "Social Networks",
-    "de": "Soziale Netzwerke"
-  },
-  {
-    "module": "sparepart",
-    "icon": "MdBuild",
-    "tr": "Yedek Parçalar",
-    "en": "Spare Parts",
-    "de": "Ersatzteile"
-  },
-  {
-    "module": "stockmovement",
-    "icon": "MdSyncAlt",
-    "tr": "Stok Hareketleri",
-    "en": "Stock Movements",
-    "de": "Lagerbewegungen"
-  },
-  {
-    "module": "task",
-    "icon": "MdTask",
-    "tr": "Görevler",
-    "en": "Tasks",
-    "de": "Aufgaben"
+    "de": "Einstellungen",
+    "es": "Ajustes",
+    "pl": "Ustawienia",
+    "fr": "Paramètres"
   },
   {
     "module": "users",
     "icon": "MdPeople",
     "tr": "Kullanıcılar",
     "en": "Users",
-    "de": "Benutzer"
+    "de": "Benutzer",
+    "es": "Usuarios",
+    "pl": "Użytkownicy",
+    "fr": "Utilisateurs"
   },
   {
     "module": "wishlist",
     "icon": "MdFavoriteBorder",
     "tr": "Favoriler",
     "en": "Wishlist",
-    "de": "Favoriten"
+    "de": "Favoriten",
+    "es": "Lista de deseos",
+    "pl": "Lista życzeń",
+    "fr": "Favoris"
   }
 ]
 ```
 
 ---
 
-## Örnek (Kullanıcı Dostu Tablo Olarak)
+### **Ek Notlar:**
 
-| Modül     | Icon                 | Türkçe            | English        | Deutsch             |
-| --------- | -------------------- | ----------------- | -------------- | ------------------- |
-| dashboard | MdDashboard          | Panel             | Dashboard      | Dashboard           |
-| admin     | MdAdminPanelSettings | Yönetici Ayarları | Admin Settings | Admin Einstellungen |
-| articles  | MdLibraryBooks       | Makaleler         | Articles       | Artikel             |
-| blog      | MdArticle            | Blog Yazıları     | Blog Posts     | Blog Beiträge       |
-| product   | MdStorefront         | Ürünler           | Products       | Produkte            |
-| cart      | MdShoppingCart       | Sepet             | Cart           | Warenkorb           |
-| ...       | ...                  | ...               | ...            | ...                 |
+* Modül isimleri ve ikonları [Material Design Icons](https://react-icons.github.io/react-icons/icons?name=md) (ör: `MdDashboard`) ile uyumludur.
+* Çeviriler hem teknik hem gündelik dilde en yaygın karşılıklarla hazırlandı.
+* `aboutttt` özel bir isimse `"about"` gibi tekilleştir (modül ismi key olarak sade olmalı, ek karakter istemez).
 
 ---
 
-## Kullanım İpuçları
+### **Kullanım**
 
-* **JSON yapısını doğrudan i18n çeviri dosyalarına ekleyebilirsin.**
-* Frontend'de modül ismi üzerinden ikon ve çok dilli isimleri çekebilirsin.
-* Tabloda olmayan özel modüller için yeni satır ekleyebilirsin.
+* JSON’daki her alanı çeviri dosyasına veya doğrudan modül nesnesi olarak kullanabilirsin.
+* Ekstra/eksik modül varsa örneğe bakarak kolayca ekleyebilirsin.
 
----
-
-### İster tabloyu, ister JSON yapısını kopyalayıp kullanabilirsin.
-
-İstersen doğrudan aşağıdaki gibi bir çeviri dosyası oluşturayım (örnek: `modules.json`) veya sadece Türkçe/İngilizce/Almanca dizi/obje verebilirim.
-Devam etmek istediğin formatı yazabilirsin!
+Daha fazla modül veya başka bir format istersen (ör. flat obje, mapping, vs.) belirtmen yeterli!

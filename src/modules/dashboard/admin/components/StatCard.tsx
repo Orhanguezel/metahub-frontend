@@ -9,7 +9,12 @@ interface StatCardProps {
   highlight?: boolean;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ label, value, icon, highlight }) => (
+const StatCard: React.FC<StatCardProps> = ({
+  label,
+  value,
+  icon,
+  highlight,
+}) => (
   <Card $highlight={!!highlight} tabIndex={0} aria-label={label}>
     {icon && <IconWrapper>{icon}</IconWrapper>}
     <Label>{label}</Label>
@@ -26,7 +31,7 @@ const Card = styled.div<{ $highlight: boolean }>`
   border-radius: 1.2rem;
   padding: 1.5rem 1.2rem;
   text-align: center;
-  box-shadow: 0 3px 16px rgba(0,0,0,0.07);
+  box-shadow: 0 3px 16px rgba(0, 0, 0, 0.07);
   border: ${({ $highlight, theme }) =>
     $highlight ? `2px solid ${theme.colors.primary}` : "none"};
   transition: background 0.22s, border 0.22s;
@@ -57,6 +62,6 @@ const Value = styled.div<{ $highlight: boolean }>`
   font-weight: bold;
   color: ${({ theme, $highlight }) =>
     $highlight ? theme.colors.primary : theme.colors.textPrimary};
-  letter-spacing: 0.5px;
+  letter-spacings: 0.5px;
   transition: color 0.15s;
 `;

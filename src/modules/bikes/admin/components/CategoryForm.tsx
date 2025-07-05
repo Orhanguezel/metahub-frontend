@@ -1,178 +1,224 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  createBikeCategory,
-  updateBikeCategory,
-  clearCategoryMessages,
-} from "@/modules/bikes/slice/bikeCategorySlice";
-import { useTranslation } from "react-i18next";
+import { useAppDispatch } from "@/store/hooks";
 import type { BikeCategory } from "@/modules/bikes/types";
-import type { SupportedLocale, TranslatedLabel } from "@/types/common";
-import { SUPPORTED_LOCALES } from "@/types/common";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import ImageUploadWithPreview from "@/shared/ImageUploadWithPreview";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 
-interface BikeCategoryFormProps {
+const LANGUAGES = SUPPORTED_LOCALES;
+
+interface Props {
+  isOpen: boolean;
   onClose: () => void;
-  editingItem?: BikeCategory | null;
+  editingItem: BikeCategory | null;
+  onSubmit: (formData: FormData, id?: string) => Promise<void>;
 }
 
-// Her dil için otomatik alan başlatıcı
-function initLabel(): Partial<TranslatedLabel> {
-  const obj: Partial<TranslatedLabel> = {};
-  for (const lng of SUPPORTED_LOCALES) obj[lng] = "";
-  return obj;
-}
-
-export default function BikeCategoryForm({
+export default function BikesCategoryFormModal({
+  isOpen,
   onClose,
   editingItem,
-}: BikeCategoryFormProps) {
+  onSubmit,
+}: Props) {
+  const { i18n, t } = useI18nNamespace("bikes", translations);
+    const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+
+
   const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("bike");
-  const { loading, error, successMessage } = useAppSelector(
-    (state) => state.bikeCategory
+
+  const emptyLabel = SUPPORTED_LOCALES.reduce(
+    (acc, lang) => ({ ...acc, [lang]: "" }),
+    {} as Record<SupportedLocale, string>
   );
 
-  const [name, setName] = useState<Partial<TranslatedLabel>>(initLabel());
-  const [description, setDescription] = useState<Partial<TranslatedLabel>>(initLabel());
+  const [name, setName] = useState<Record<SupportedLocale, string>>(emptyLabel);
+  const [description, setDescription] = useState<Record<SupportedLocale, string>>(emptyLabel);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [removedImages, setRemovedImages] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
 
   useEffect(() => {
     if (editingItem) {
-      setName(editingItem.name || initLabel());
-      setDescription(editingItem.description || initLabel());
+      setName({ ...emptyLabel, ...editingItem.name });
+      setDescription({ ...emptyLabel, ...editingItem.description });
+      setExistingImages(editingItem.images?.map((img) => img.url) || []);
+      setSelectedFiles([]);
+      setRemovedImages([]);
     } else {
-      setName(initLabel());
-      setDescription(initLabel());
+      setName(emptyLabel);
+      setDescription(emptyLabel);
+      setExistingImages([]);
+      setSelectedFiles([]);
+      setRemovedImages([]);
     }
-  }, [editingItem]);
+  }, [editingItem, isOpen]);
 
-  useEffect(() => {
-    if (successMessage || error) {
-      const timer = setTimeout(() => {
-        dispatch(clearCategoryMessages());
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [successMessage, error, dispatch]);
-
-  const handleChange = (
-    field: "name" | "description",
-    lang: SupportedLocale,
-    value: string
-  ) => {
-    if (field === "name") setName((prev) => ({ ...prev, [lang]: value }));
-    else setDescription((prev) => ({ ...prev, [lang]: value }));
-  };
+  const handleImagesChange = useCallback(
+    (files: File[], removed: string[], current: string[]) => {
+      setSelectedFiles(files);
+      setRemovedImages(removed);
+      setExistingImages(current);
+    },
+    []
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const payload = { name, description };
-      if (editingItem?._id) {
-        await dispatch(
-          updateBikeCategory({ id: editingItem._id, data: payload })
-        ).unwrap();
-      } else {
-        await dispatch(createBikeCategory(payload)).unwrap();
-      }
-      onClose();
-    } catch (err) {
-      console.error("❌ Category operation failed:", err);
+
+    const filledName = { ...name };
+    const firstNameValue = Object.values(name).find((v) => v.trim());
+    if (firstNameValue)
+      SUPPORTED_LOCALES.forEach((lng) => {
+        if (!filledName[lng]) filledName[lng] = firstNameValue;
+      });
+
+    const filledDesc = { ...description };
+    const firstDescValue = Object.values(description).find((v) => v.trim());
+    if (firstDescValue)
+      SUPPORTED_LOCALES.forEach((lng) => {
+        if (!filledDesc[lng]) filledDesc[lng] = firstDescValue;
+      });
+
+    const formData = new FormData();
+    formData.append("name", JSON.stringify(filledName));
+    formData.append("description", JSON.stringify(filledDesc));
+
+    for (const file of selectedFiles) {
+      formData.append("images", file);
     }
+    if (removedImages.length > 0) {
+      formData.append("removedImages", JSON.stringify(removedImages));
+    }
+
+    await onSubmit(formData, editingItem?._id);
+    onClose();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Form onSubmit={handleSubmit}>
-      <h3>
+    <FormWrapper>
+      <h2>
         {editingItem
-          ? t("admin.editCategory", "Edit Category")
-          : t("admin.newCategory", "New Category")}
-      </h3>
+          ? t("admin.bikecategory.edit", "Edit Bike Category")
+          : t("admin.bikecategory.create", "Add New Bike Category")}
+      </h2>
+      <form onSubmit={handleSubmit}>
+        {LANGUAGES.map((lng) => (
+          <div key={lng}>
+            <label htmlFor={`name-${lng}`}>
+              {t("admin.bikecategory.name", "Category Name")} ({lng.toUpperCase()})
+            </label>
+            <input
+              id={`name-${lng}`}
+              type="text"
+              value={name[lng]}
+              onChange={(e) => setName({ ...name, [lng]: e.target.value })}
+              required={lng === lang}
+            />
 
-      {SUPPORTED_LOCALES.map((lng) => (
-        <div key={lng}>
-          <label htmlFor={`name-${lng}`}>{t("admin.categories.name", "Category Name")} ({lng.toUpperCase()})</label>
-          <input
-            id={`name-${lng}`}
-            type="text"
-            value={name[lng] ?? ""}
-            onChange={(e) => handleChange("name", lng, e.target.value)}
-            placeholder={t(
-              "admin.categories.add",
-              `Category name (${lng.toUpperCase()})`
-            )}
-            required={lng === (i18n.language as SupportedLocale) || lng === "en"}
-          />
-          <label htmlFor={`desc-${lng}`}>{t("admin.optional_description", "Optional description")} ({lng.toUpperCase()})</label>
-          <textarea
-            id={`desc-${lng}`}
-            value={description[lng] ?? ""}
-            onChange={(e) => handleChange("description", lng, e.target.value)}
-            placeholder={t("admin.category_info", "What is this category about?")}
-          />
-        </div>
-      ))}
+            <label htmlFor={`desc-${lng}`}>
+              {t("admin.bikecategory.description", "Description")} ({lng.toUpperCase()})
+            </label>
+            <textarea
+              id={`desc-${lng}`}
+              value={description[lng]}
+              onChange={(e) =>
+                setDescription({ ...description, [lng]: e.target.value })
+              }
+              required={lng === lang}
+            />
+          </div>
+        ))}
 
-      {error && <ErrorMessage>❌ {error}</ErrorMessage>}
-      {successMessage && <SuccessMessage>✅ {successMessage}</SuccessMessage>}
+        <label>{t("admin.bikecategory.image", "Images")}</label>
+        <ImageUploadWithPreview
+          max={5}
+          defaultImages={existingImages}
+          onChange={handleImagesChange}
+          folder="bikeCategory"
+        />
 
-      <Button type="submit" disabled={loading}>
-        {loading
-          ? t("admin.saving", "Saving...")
-          : editingItem
-          ? t("admin.update2", "Update")
-          : t("admin.save", "Save")}
-      </Button>
-    </Form>
+        <ButtonGroup>
+          <button type="submit">
+            {editingItem
+              ? t("admin.update", "Update")
+              : t("admin.create", "Create")}
+          </button>
+          <button type="button" onClick={onClose}>
+            {t("admin.cancel", "Cancel")}
+          </button>
+        </ButtonGroup>
+      </form>
+    </FormWrapper>
   );
 }
 
-// --- Styled Components ---
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+const FormWrapper = styled.div`
+  max-width: 600px;
+  margin: auto;
+  padding: 1.5rem;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.md};
+
+  h2 {
+    margin-bottom: 1rem;
+  }
+
+  label {
+    display: block;
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+  }
 
   input,
-  textarea {
+  textarea,
+  select {
+    width: 100%;
     padding: 0.5rem;
     border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: 4px;
+    background-color: ${({ theme }) => theme.colors.inputBackground};
+    color: ${({ theme }) => theme.colors.text};
+    font-size: 0.95rem;
   }
 
   textarea {
-    min-height: 80px;
+    min-height: 100px;
     resize: vertical;
   }
 `;
 
-const Button = styled.button`
-  align-self: flex-end;
-  padding: 0.5rem 1.25rem;
-  background: ${({ theme }) => theme.colors.primary};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+const ButtonGroup = styled.div`
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
 
-  &:hover {
-    background: ${({ theme }) => theme.colors.primaryHover};
+  button {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:first-child {
+      background: ${({ theme }) => theme.colors.primary};
+      color: #fff;
+    }
+
+    &:last-child {
+      background: ${({ theme }) => theme.colors.danger};
+      color: #fff;
+    }
+
+    &:hover {
+      opacity: 0.9;
+    }
   }
-
-  &:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-  }
-`;
-
-const ErrorMessage = styled.p`
-  color: red;
-  font-size: 0.9rem;
-`;
-
-const SuccessMessage = styled.p`
-  color: green;
-  font-size: 0.9rem;
 `;

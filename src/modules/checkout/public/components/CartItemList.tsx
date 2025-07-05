@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import {CartItem} from "@/modules/cart";
+import { CartItem } from "@/modules/cart";
 import type { ICartItem } from "@/modules/cart/types";
 //import { useTranslation } from "react-i18next";
 
@@ -15,8 +15,14 @@ export default function CartItemList({ items }: Props) {
         let key: string;
         if (typeof item.product === "string") {
           key = item.product;
-        } else if (item.product && typeof item.product === "object" && "_id" in item.product) {
-          key = (item.product as any)._id?.toString?.() || JSON.stringify(item.product);
+        } else if (
+          item.product &&
+          typeof item.product === "object" &&
+          "_id" in item.product
+        ) {
+          key =
+            (item.product as any)._id?.toString?.() ||
+            JSON.stringify(item.product);
         } else {
           key = JSON.stringify(item.product);
         }
@@ -26,15 +32,14 @@ export default function CartItemList({ items }: Props) {
   );
 }
 
-
 const ListContainer = styled.div`
   flex: 2;
   min-width: 340px;
   background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.md};
-  padding: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacings.md};
 `;
