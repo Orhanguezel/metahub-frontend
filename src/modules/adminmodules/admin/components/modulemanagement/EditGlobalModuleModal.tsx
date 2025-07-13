@@ -3,7 +3,8 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import styled from "styled-components";
 import { XCircle } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales";
 import { useAppDispatch } from "@/store/hooks";
 import { updateModuleMeta } from "@/modules/adminmodules/slices/moduleMetaSlice";
 import { SUPPORTED_LOCALES } from "@/i18n";
@@ -31,7 +32,7 @@ const EditGlobalModuleModal: React.FC<EditGlobalModuleModalProps> = ({
   onAfterAction,
 }) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("adminModules");
+  const { t } = useI18nNamespace("adminModules", translations);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // label’ı her dilde başlat (TranslatedLabel garantili)

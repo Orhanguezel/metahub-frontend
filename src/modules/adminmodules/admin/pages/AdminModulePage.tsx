@@ -1,29 +1,23 @@
 "use client";
 import React, { useState } from "react";
 import styled from "styled-components";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  fetchModuleMetas,
-  deleteModuleMeta,
-} from "@/modules/adminmodules/slices/moduleMetaSlice";
-import { fetchTenantModuleSettings } from "@/modules/adminmodules/slices/moduleSettingSlice";
-import {
-  repairModuleSettings,
-  cleanupOrphanModuleSettings,
-} from "@/modules/adminmodules/slices/moduleMaintenanceSlice";
-
+import { useAppDispatch } from "@/store/hooks";
+import { deleteModuleMeta } from "@/modules/adminmodules/slices/moduleMetaSlice";
 import {
   ModuleCard,
   CreateModuleModal,
   ConfirmDeleteModal,
   GlobalModuleDetailModal,
   TenantModuleDetailModal,
+   ModuleMaintenancePanel
 } from "@/modules/adminmodules";
 import MessageBox from "@/shared/Message";
-import { useTranslation } from "react-i18next";
-import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { SupportedLocale } from "@/types/common";
 import { toast } from "react-toastify";
 import type { IModuleMeta, IModuleSetting } from "@/modules/adminmodules/types";
+import { useLayoutInit } from "@/hooks/useLayoutInit";
 
 // Tablar
 const TABS = [
@@ -33,7 +27,6 @@ const TABS = [
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
-
 type SelectedDetail =
   | { module: IModuleMeta; type: "meta" }
   | { module: IModuleSetting; type: "tenant" }
@@ -41,48 +34,38 @@ type SelectedDetail =
 
 export default function AdminModulePage() {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("adminModules");
-  const lang = getCurrentLocale();
+  const { i18n, t } = useI18nNamespace("adminModules", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  // UI State
-  const [activeTab, setActiveTab] = useState<TabKey>(TABS[0].key);
+  // Sadece UI için state
+  const [activeTab, setActiveTab] = useState(TABS[0].key as TabKey);
   const [search, setSearch] = useState<string>("");
-  const [isCreateModalOpen, setCreateModalOpen] = useState<boolean>(false);
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState<boolean>(false);
-
-  // { module, type: "meta" | "tenant" }
+  const [isDeleting, setIsDeleting] = useState(false);
   const [selectedDetail, setSelectedDetail] = useState<SelectedDetail>(null);
 
-  // Redux slices
-  const selectedTenant = useAppSelector((state) => state.tenant.selectedTenant);
-
-  // Meta (global module) state
+  // 🔥 Merkezi slice state'leri çek (sadece selector, hook içinde fetch otomatik!)
   const {
-    modules = [],
-    loading: metaLoading,
-    error: metaError,
-    successMessage: metaSuccess,
-  } = useAppSelector((state) => state.moduleMeta);
+    moduleMeta,
+    moduleSetting,
+    tenants,
+  } = useLayoutInit();
 
-  // Tenant module settings state
-  const {
-    tenantModules = [],
-    loading: settingsLoading,
-    error: settingsError,
-    successMessage: settingsSuccess,
-  } = useAppSelector((state) => state.moduleSetting);
+  const modules = moduleMeta.modules || [];
+  const metaLoading = moduleMeta.loading;
+  const metaError = moduleMeta.error;
+  const metaSuccess = moduleMeta.successMessage;
 
-  // Maintenance
-  const {
-    moduleTenantMatrix,
-    maintenanceLogs,
-    repaired,
-    deletedCount,
-    maintenanceLoading,
-    maintenanceError,
-    lastAction,
-  } = useAppSelector((state) => state.moduleMaintenance);
+  const tenantModules = moduleSetting.tenantModules || [];
+  const settingsLoading = moduleSetting.loading;
+  const settingsError = moduleSetting.error;
+  const settingsSuccess = moduleSetting.successMessage;
+
+  const tenantList = tenants.tenants || [];
+  const selectedTenantId = tenants.selectedTenantId;
+  const selectedTenant = tenantList.find((t: any) => t._id === selectedTenantId) || null;
+
 
   // Çoklu dil helper
   const getTextByLocale = (obj: any): string =>
@@ -99,83 +82,69 @@ export default function AdminModulePage() {
     try {
       await dispatch(deleteModuleMeta(deleteTarget)).unwrap();
       toast.success(t("deleteSuccess", "Module deleted"));
-      dispatch(fetchModuleMetas());
     } catch (err: any) {
-      toast.error(
-        getTextByLocale(err?.data?.message) || t("deleteError", "Delete failed")
-      );
+      toast.error(getTextByLocale(err?.data?.message) || t("deleteError", "Delete failed"));
     } finally {
       setDeleteTarget(null);
       setIsDeleting(false);
     }
   };
 
-  // --- Filtrelenmiş meta/setting listesi ---
+  function handleShowDetail(
+  module: IModuleMeta | IModuleSetting,
+  type: "meta" | "tenant"
+) {
+  if (type === "meta" && "name" in module) {
+    setSelectedDetail({ module, type });
+  } else if (type === "tenant" && "module" in module) {
+    setSelectedDetail({ module, type });
+  }
+}
+
+
+
+  // Filtreler
   let filteredMeta: IModuleMeta[] = [];
   if (activeTab === "meta") {
-    filteredMeta = (modules || [])
-      .filter((m) => {
-        const labelText = (
-          m.label?.[lang] ||
-          m.label?.en ||
-          m.name ||
-          ""
-        ).toLowerCase();
+    filteredMeta = modules
+      .filter((m: IModuleMeta) => {
+        const labelText = (m.label?.[lang] || m.label?.en || m.name || "").toLowerCase();
         const nameText = (m.name || "").toLowerCase();
         const searchText = search.toLowerCase();
         return labelText.includes(searchText) || nameText.includes(searchText);
       })
-      .sort((a, b) => (a.order || 0) - (b.order || 0));
+      .sort((a: IModuleMeta, b: IModuleMeta) => (a.order || 0) - (b.order || 0));
   }
 
   let filteredTenantModules: IModuleSetting[] = [];
   if (activeTab === "tenant") {
-    filteredTenantModules = (tenantModules || [])
-      .filter((m) => {
-        const moduleText = (m.module || "").toLowerCase();
-        return moduleText.includes(search.toLowerCase());
-      })
-      .sort((a, b) => (a.order || 0) - (b.order || 0));
+    filteredTenantModules = tenantModules
+      .filter((m: IModuleSetting) => (m.module || "").toLowerCase().includes(search.toLowerCase()))
+      .sort((a: IModuleSetting, b: IModuleSetting) => (a.order || 0) - (b.order || 0));
   }
 
-  // --- Modal açılınca doğru prop ilet ---
-  const handleShowDetail = (
-    module: IModuleMeta | IModuleSetting,
-    type: "meta" | "tenant"
-  ) => {
-    setSelectedDetail({ module, type } as SelectedDetail);
-  };
-
+  // --- Render
   return (
     <Container>
       <Header>
         <Title>{t("title", "Module Management")}</Title>
         <TabBar>
           {TABS.map((tab) => (
-            <Tab
-              key={tab.key}
-              $active={activeTab === tab.key}
-              onClick={() => setActiveTab(tab.key)}
-            >
+            <Tab key={tab.key} $active={activeTab === tab.key} onClick={() => setActiveTab(tab.key)}>
               {t(tab.label, tab.label)}
             </Tab>
           ))}
         </TabBar>
       </Header>
-
-      {/* Tenant Info */}
       <TenantInfo>
         <b>{t("tenant", "Tenant")}:</b>{" "}
-        {selectedTenant ? (
-          selectedTenant.name?.[lang] || selectedTenant.slug
-        ) : (
-          <span style={{ color: "gray" }}>
-            {t("notSelected", "Not selected")}
-          </span>
-        )}
+        {selectedTenant
+          ? selectedTenant.name?.[lang] || selectedTenant.slug
+          : <span style={{ color: "gray" }}>{t("notSelected", "Not selected")}</span>
+        }
       </TenantInfo>
 
-      {/* --- Meta (Global Module) Tab --- */}
+      {/* Meta Tab */}
       {activeTab === "meta" && (
         <>
           <ButtonGroup>
@@ -189,15 +158,9 @@ export default function AdminModulePage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </ButtonGroup>
-
-          {metaError && (
-            <MessageBox $error>{getTextByLocale(metaError)}</MessageBox>
-          )}
-          {metaSuccess && (
-            <MessageBox $success>{getTextByLocale(metaSuccess)}</MessageBox>
-          )}
+          {metaError && <MessageBox $error>{getTextByLocale(metaError)}</MessageBox>}
+          {metaSuccess && <MessageBox $success>{getTextByLocale(metaSuccess)}</MessageBox>}
           {metaLoading && <MessageBox>{t("loading", "Loading...")}</MessageBox>}
-
           <Grid>
             {filteredMeta.length > 0 ? (
               filteredMeta.map((mod) => (
@@ -207,28 +170,28 @@ export default function AdminModulePage() {
                   type="meta"
                   search={search}
                   onShowDetail={handleShowDetail}
-                  onDelete={(name: string) => setDeleteTarget(name)}
+                  onDelete={setDeleteTarget}
                 />
               ))
             ) : (
-              <EmptyResult>
-                {t("noModulesFound", "No modules found.")}
-              </EmptyResult>
+              <EmptyResult>{t("noModulesFound", "No modules found.")}</EmptyResult>
             )}
           </Grid>
-
-          {/* Detay modalları */}
           {selectedDetail?.type === "meta" && (
-            <GlobalModuleDetailModal
-              module={selectedDetail.module as IModuleMeta}
-              onClose={() => setSelectedDetail(null)}
-            />
-          )}
-
+  <GlobalModuleDetailModal
+    module={selectedDetail.module as IModuleMeta}
+    onClose={() => setSelectedDetail(null)}
+  />
+)}
+{selectedDetail?.type === "tenant" && (
+  <TenantModuleDetailModal
+    module={selectedDetail.module as IModuleSetting}
+    onClose={() => setSelectedDetail(null)}
+  />
+)}
           {isCreateModalOpen && (
             <CreateModuleModal onClose={() => setCreateModalOpen(false)} />
           )}
-
           {deleteTarget && (
             <ConfirmDeleteModal
               moduleName={deleteTarget}
@@ -240,7 +203,7 @@ export default function AdminModulePage() {
         </>
       )}
 
-      {/* --- Tenant Settings Tab --- */}
+      {/* Tenant Tab */}
       {activeTab === "tenant" && (
         <>
           <ButtonGroup>
@@ -251,17 +214,9 @@ export default function AdminModulePage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </ButtonGroup>
-
-          {settingsError && (
-            <MessageBox $error>{getTextByLocale(settingsError)}</MessageBox>
-          )}
-          {settingsSuccess && (
-            <MessageBox $success>{getTextByLocale(settingsSuccess)}</MessageBox>
-          )}
-          {settingsLoading && (
-            <MessageBox>{t("loading", "Loading...")}</MessageBox>
-          )}
-
+          {settingsError && <MessageBox $error>{getTextByLocale(settingsError)}</MessageBox>}
+          {settingsSuccess && <MessageBox $success>{getTextByLocale(settingsSuccess)}</MessageBox>}
+          {settingsLoading && <MessageBox>{t("loading", "Loading...")}</MessageBox>}
           <Grid>
             {filteredTenantModules.length > 0 ? (
               filteredTenantModules.map((tm) => (
@@ -274,95 +229,26 @@ export default function AdminModulePage() {
                 />
               ))
             ) : (
-              <EmptyResult>
-                {t("noModulesFound", "No modules found.")}
-              </EmptyResult>
+              <EmptyResult>{t("noModulesFound", "No modules found.")}</EmptyResult>
             )}
           </Grid>
-          {/* Tenant module ayarı detay */}
           {selectedDetail?.type === "tenant" && (
             <TenantModuleDetailModal
               module={selectedDetail.module as IModuleSetting}
               onClose={() => setSelectedDetail(null)}
-              onAfterAction={() =>
-                dispatch(fetchTenantModuleSettings(selectedTenant?.slug ?? ""))
-              }
+              // onAfterAction gerekmez, otomatik fetch!
             />
           )}
         </>
       )}
 
-      {/* --- Maintenance Tab --- */}
+      {/* Maintenance Tab */}
       {activeTab === "maintenance" && (
-        <ModuleMaintenancePanel>
-          <h3>{t("maintenance", "Maintenance & Batch Actions")}</h3>
-          <ButtonRow>
-            <MaintButton
-              disabled={maintenanceLoading}
-              onClick={() => dispatch(repairModuleSettings())}
-            >
-              {t("repairSettings", "Repair Missing Settings")}
-            </MaintButton>
-            <MaintButton
-              disabled={maintenanceLoading}
-              onClick={() =>
-                selectedTenant &&
-                dispatch(fetchTenantModuleSettings(selectedTenant?.slug ?? ""))
-              }
-            >
-              {t("assignAllToTenant", "Assign All To Tenant")}
-            </MaintButton>
-            <MaintButton
-              disabled={maintenanceLoading}
-              onClick={() => dispatch(cleanupOrphanModuleSettings())}
-            >
-              {t("cleanupOrphan", "Cleanup Orphan Settings")}
-            </MaintButton>
-          </ButtonRow>
-          {maintenanceError && (
-            <MessageBox $error>{maintenanceError}</MessageBox>
-          )}
-          {maintenanceLoading && (
-            <MessageBox>{t("loading", "Loading...")}</MessageBox>
-          )}
-          {lastAction && (
-            <small>
-              {t("lastAction", "Last action")}: {lastAction}
-            </small>
-          )}
-          {maintenanceLogs && maintenanceLogs.length > 0 && (
-            <LogBox>
-              <b>{t("logs", "Logs / Results")}:</b>
-              <pre>{JSON.stringify(maintenanceLogs, null, 2)}</pre>
-            </LogBox>
-          )}
-          {repaired && repaired.length > 0 && (
-            <LogBox>
-              <b>{t("repaired", "Repaired Settings")}:</b>
-              <pre>{JSON.stringify(repaired, null, 2)}</pre>
-            </LogBox>
-          )}
-          {deletedCount > 0 && (
-            <LogBox>
-              <b>
-                {t("deletedCount", "Deleted Records")}: {deletedCount}
-              </b>
-            </LogBox>
-          )}
-          {moduleTenantMatrix && (
-            <LogBox>
-              <b>{t("tenantMatrix", "Module-Tenant Matrix")}:</b>
-              <pre>{JSON.stringify(moduleTenantMatrix, null, 2)}</pre>
-            </LogBox>
-          )}
-        </ModuleMaintenancePanel>
+        <ModuleMaintenancePanel selectedTenant={selectedTenantId || undefined} />
       )}
     </Container>
   );
 }
-
-// --- Styled Components ---
-// (Tümü orijinalle birebir; tipli eklemede problem yok)
 
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacings.lg};
@@ -399,14 +285,6 @@ const Tab = styled.button<{ $active: boolean }>`
 const TenantInfo = styled.div`
   margin: 18px 0 10px 0;
   font-size: ${({ theme }) => theme.fontSizes.sm};
-`;
-
-const ModuleMaintenancePanel = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacings.md};
-  margin-top: ${({ theme }) => theme.spacings.md};
 `;
 
 const ButtonGroup = styled.div`
@@ -455,37 +333,4 @@ const EmptyResult = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.textSecondary};
   padding: ${({ theme }) => theme.spacings.xl} 0;
-`;
-
-const ButtonRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacings.sm};
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-`;
-
-const MaintButton = styled.button`
-  background: ${({ theme }) => theme.buttons.secondary.background};
-  color: ${({ theme }) => theme.buttons.secondary.text};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.md};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  cursor: pointer;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  transition: background ${({ theme }) => theme.transition.fast};
-  &:hover {
-    background: ${({ theme }) => theme.buttons.secondary.backgroundHover};
-  }
-`;
-
-const LogBox = styled.div`
-  background: #fafbfc;
-  border-radius: 7px;
-  padding: 16px;
-  margin-top: 18px;
-  font-size: 15px;
-  color: #333;
-  overflow-x: auto;
-  border: 1px solid #eee;
 `;

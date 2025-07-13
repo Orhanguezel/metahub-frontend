@@ -1,9 +1,9 @@
 "use client";
 import React from "react";
-import NewsPage from "@/modules/news/public/pages/NewsPage";
+import Page from "@/modules/news/public/pages/Page";
 
 export default function NewsRouterPage() {
 
 
-  return <NewsPage />;
+  return <Page />;
 }

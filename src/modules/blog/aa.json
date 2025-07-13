@@ -1,0 +1,112 @@
+{
+  "_id": {
+    "$oid": "683da32a58675a043b762545"
+  },
+  "title": {
+    "tr": "Sıcak Taş Masajı",
+    "en": "Hot Stone Massage",
+    "de": "Hot Stone Massage"
+  },
+  "slug": "hot-stone-massage",
+  "summary": {
+    "tr": "Vücudu rahatlatan, sıcak taşlarla yapılan özel bir masaj.",
+    "en": "A special massage with hot stones to relax the body.",
+    "de": "Eine spezielle Massage mit warmen Steinen zur Entspannung des Körpers."
+  },
+  "content": {
+    "tr": "Sıcak taş masajı, kas gerginliğini azaltmak ve stresi hafifletmek için sırt, boyun ve omuz bölgelerine yerleştirilen ısıtılmış taşlarla uygulanır. Kan dolaşımını hızlandırır ve derin bir gevşeme sağlar.",
+    "en": " Hot stone massage uses heated stones placed on the back, neck, and shoulders to relieve muscle tension and reduce stress. It boosts blood circulation and provides deep relaxation.",
+    "de": "Bei der Hot Stone Massage werden erhitzte Steine auf Rücken, Nacken und Schultern gelegt, um Muskelverspannungen zu lösen und Stress abzubauen. Die Durchblutung wird gefördert und tiefe Entspannung erreicht."
+  },
+  "images": [
+    {
+      "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748869929/uploads/anastasia/service-images/adsaz-tasaram-1748869922929-121118628.webp",
+      "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748869929/uploads/anastasia/service-images/adsaz-tasaram-1748869922929-121118628.webp",
+      "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748869929/uploads/anastasia/service-images/adsaz-tasaram-1748869922929-121118628.webp"
+    }
+  ],
+  "tags": [
+    "hot stone",
+    "relaxation",
+    "deep relaxation"
+  ],
+  "category": {
+    "$oid": "683da0b058675a043b76252e"
+  },
+  "isPublished": true,
+  "publishedAt": {
+    "$date": "2025-06-02T13:12:10.578Z"
+  },
+  "isActive": true,
+  "price": 60,
+  "durationMinutes": 60,
+  "createdAt": {
+    "$date": "2025-06-02T13:12:10.586Z"
+  },
+  "updatedAt": {
+    "$date": "2025-06-02T13:12:10.586Z"
+  },
+  "__v": 0,
+  "tenant": "metahub"
+},
+
+{
+  "_id": {
+    "$oid": "686466aebf7e59c758b3dea1"
+  },
+  "title": {
+    "tr": "Makale Başlığı3",
+    "en": "Article Title3",
+    "de": "Artikel Titel3",
+    "pl": "Article Title3",
+    "fr": "Article Title3",
+    "es": "Article Title3"
+  },
+  "tenant": "metahub",
+  "summary": {
+    "tr": "Özet",
+    "en": "Summary",
+    "de": "Zusammenfassung",
+    "pl": "Summary",
+    "fr": "Summary",
+    "es": "Summary"
+  },
+  "content": {
+    "tr": "İçerik",
+    "en": "Content",
+    "de": "Inhalt",
+    "pl": "Content",
+    "fr": "Content",
+    "es": "Content"
+  },
+  "slug": "makale-basligi3",
+  "images": [
+    {
+      "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751410350/uploads/metahub/blog-images/web-logo-1751410349150-66842911.webp",
+      "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751410350/uploads/metahub/blog-images/web-logo-1751410349150-66842911.webp",
+      "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751410350/uploads/metahub/blog-images/web-logo-1751410349150-66842911.webp"
+    }
+  ],
+  "tags": [
+    "example",
+    "tag"
+  ],
+  "author": "Orhan Güzel",
+  "category": {
+    "$oid": "68475f382688a31bccfd1e9e"
+  },
+  "isPublished": true,
+  "publishedAt": {
+    "$date": "2025-07-01T22:52:30.835Z"
+  },
+  "comments": [],
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-07-01T22:52:30.847Z"
+  },
+  "updatedAt": {
+    "$date": "2025-07-01T22:52:30.847Z"
+  },
+  "__v": 0
+},
+

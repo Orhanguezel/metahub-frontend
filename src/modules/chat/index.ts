@@ -11,7 +11,6 @@ export { default as ChatSessionList } from "./admin/components/ChatSessionList";
 export { default as ChatInput } from "./admin/components/ChatInput";
 export { default as ArchivedSessions } from "./admin/components/ArchivedSessions";
 
-
 // Public Components
 export { default as PublicMessageList } from "./public/components/PublicMessageList";
 export { default as PublicChatInput } from "./public/components/PublicChatInput";
@@ -21,6 +20,6 @@ export { default as ChatBox } from "./public/components/ChatBox";
 export { default as chatReducer } from "./slice/chatSlice";
 
 // Types (if any)
-export * from "./types/chat";
+export * from "./types";
 
 // Optionally: i18n can be loaded in page-level or via config

@@ -48,7 +48,7 @@ export default function GalleryCategoryForm({ onClose, editingItem }: Props) {
       setDescription(emptyLabel);
       setIsActive(true);
     }
-  }, [editingItem]);
+  }, [editingItem, emptyLabel]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

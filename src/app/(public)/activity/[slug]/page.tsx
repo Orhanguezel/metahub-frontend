@@ -1,6 +1,6 @@
-import ActivityDetailSection from "@/modules/activity/public/components/ActivityDetailSection";
+import DetailSection from "@/modules/activity/public/components/DetailSection";
 
 export default function Page() {
-  return <ActivityDetailSection />;
+  return <DetailSection />;
 }
 

@@ -1,22 +1,23 @@
 "use client";
 
-import styled, { css } from "styled-components";
-
+import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales/footer";
 
+
+// Başlığı parentten prop ile göndermek de mümkündür, şimdilik component içinde sabit tutuldu.
 export default function FooterCompanyInfo() {
-  const company = useAppSelector((state) => state.company?.company);
-  const { t } = useTranslation("footer");
+  const company = useAppSelector((state) => state.company.company);
+   const { t } = useI18nNamespace("footer", translations);
 
   if (!company) return null;
 
-  const { companyName, email, phone, address } = company;
+  const { email, phone, address } = company;
 
-  // Label'lar çok dilli (footer.json'da: email, phone, address anahtarları olmalı)
   return (
-    <InfoWrapper>
-      <CompanyName>{companyName}</CompanyName>
+    <FooterBlock>
+      <FooterTitle>{t("companyInfo", "Company Info")}</FooterTitle>
       <CompanyLine>
         {email && (
           <InfoRow>
@@ -26,39 +27,42 @@ export default function FooterCompanyInfo() {
         )}
         {phone && (
           <InfoRow>
-            <span>{t("phone", "Tel")}:</span>
+            <span>{t("phone", "Telefon")}:</span>
             <a href={`tel:${phone}`}>{phone}</a>
           </InfoRow>
         )}
         {address && (
           <InfoRow>
-            <span>{t("address", "Adres")}:</span>
+            <span>{t("address", "Address")}:</span>
             <span>
-              {address.street}, {address.postalCode} {address.city}
+              {/* Adresin her bir alanını güvenli şekilde birleştiriyoruz */}
+              {[
+                address.street,
+                address.postalCode,
+                address.city,
+              ]
+                .filter(Boolean)
+                .join(" ")}
             </span>
           </InfoRow>
         )}
       </CompanyLine>
-    </InfoWrapper>
+    </FooterBlock>
   );
 }
 
-const InfoWrapper = styled.div`
-  margin: ${({ theme }) => theme.spacings.md} 0;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  text-align: center;
-`;
-
-const FooterBlockTitle = css`
+// --- Styled Components (footer linkleriyle aynı başlık formatı) ---
+const FooterTitle = styled.h3`
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  letter-spacings: 0.5px;
   margin-bottom: ${({ theme }) => theme.spacings.xs};
 `;
 
-const CompanyName = styled.div`
-  ${FooterBlockTitle}
+const FooterBlock = styled.div`
+  margin: ${({ theme }) => theme.spacings.md};
+  max-width: 300px;
+  text-align: center;
 `;
 
 const CompanyLine = styled.div`

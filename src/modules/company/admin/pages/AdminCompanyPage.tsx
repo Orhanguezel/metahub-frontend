@@ -1,58 +1,40 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  createCompany,
-  updateCompanyInfo,
-  resetMessages,
+  createCompanyAdmin,
+  updateCompanyAdmin,
+  clearCompanyMessages,
 } from "@/modules/company/slice/companySlice";
 import { toast } from "react-toastify";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { CompanyForm, CompanyInfoCard } from "@/modules/company";
 import styled from "styled-components";
 import type { ICompany } from "@/modules/company/types";
 
 export default function AdminCompanyPage() {
+  const { t } = useI18nNamespace("company", translations);
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("company");
 
-  const { company, error, successMessage } = useAppSelector(
-    (state) => state.company
-  );
+  // --- Merkezi company admin slice ---
+  const company = useAppSelector((state) => state.company.companyAdmin);
+const loading = useAppSelector((state) => state.company.loading);
+  const successMessage = useAppSelector((state) => state.company.successMessage);
+  const error = useAppSelector((state) => state.company.error);
 
-  // Toast feedback
+
+
+  // --- Toast feedback ---
   useEffect(() => {
-    if (error) {
-      toast.error(typeof error === "string" ? error : "An error occurred.");
-      dispatch(resetMessages());
-    }
-    if (successMessage) {
-      toast.success(successMessage);
-      dispatch(resetMessages());
-    }
-  }, [error, successMessage, dispatch]);
+    if (successMessage) toast.success(successMessage);
+    if (error) toast.error(error);
+    if (successMessage || error) dispatch(clearCompanyMessages());
+  }, [successMessage, error, dispatch]);
 
-  // Company form submit
-  const handleSubmit = (
-    values: ICompany,
-    newLogos: File[],
-    removedLogos?: string[]
-  ) => {
-    const payload: any = {
-      ...values,
-      newLogos, // File[]
-      removedLogos: removedLogos ?? [],
-    };
-    if (company) {
-      dispatch(updateCompanyInfo(payload));
-    } else {
-      dispatch(createCompany(payload));
-    }
-  };
-
-  // Tüm zorunlu ICompany alanlarını dolduruyoruz
-  const initialValues: ICompany = {
+  // --- Form başlangıç değerleri (memoized) ---
+  const initialValues: ICompany = useMemo(() => ({
     companyName: company?.companyName ?? "",
     email: company?.email ?? "",
     phone: company?.phone ?? "",
@@ -76,17 +58,40 @@ export default function AdminCompanyPage() {
       linkedin: company?.socialLinks?.linkedin ?? "",
       youtube: company?.socialLinks?.youtube ?? "",
     },
-    logos: company?.logos ?? [],
+    images: company?.images ?? [],
     tenant: company?.tenant ?? "",
     createdAt: company?.createdAt ?? new Date(),
     updatedAt: company?.updatedAt ?? new Date(),
-  };
+  }), [company]);
 
+  // --- Form submit handler ---
+  const handleSubmit = (
+  values: ICompany,
+  newImages: File[],
+  removedImages?: string[]
+) => {
+  const payload: any = {
+    ...values,
+    images: newImages,                 // <-- Sadece images
+    removedImages: removedImages ?? [],// <-- Sadece removedImages
+  };
+  if (company && company._id) {
+    dispatch(updateCompanyAdmin({ ...payload, _id: company._id }));
+  } else {
+    dispatch(createCompanyAdmin(payload));
+  }
+};
+
+  // --- Render ---
   return (
     <Container>
       <Title>{t("title", "Company Information")}</Title>
       <CompanyInfoCard company={company} />
-      <CompanyForm initialValues={initialValues} onSubmit={handleSubmit} />
+      <CompanyForm
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        loading={loading}
+      />
     </Container>
   );
 }

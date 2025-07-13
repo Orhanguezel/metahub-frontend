@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import styled from "styled-components";
 import Link from "next/link";
 import { useAppSelector } from "@/store/hooks";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import {
   FeedbacksCard,
   RevenueCard,
@@ -15,7 +16,8 @@ import {
 import type { SupportedLocale } from "@/types/common";
 
 export default function AdminDashboardPage() {
-  const { t } = useTranslation("admin-dashboard");
+  const { i18n, t } = useI18nNamespace("dashboard", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const [tab, setTab] = useState<
     "modules" | "stats" | "users" | "revenue" | "feedbacks" | "analytics"
   >("modules");
@@ -90,9 +92,9 @@ export default function AdminDashboardPage() {
 
 // --- Module grid sadece selector ile state çeker ---
 function ModulesGrid() {
-  const { i18n } = useTranslation("admin-dashboard");
+  const { i18n, t } = useI18nNamespace("dashboard", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const modules = useAppSelector((state) => state.moduleSetting); // moduleSetting slice!
-  const lang = (i18n.language as SupportedLocale) || "en";
 
   const dashboardModules = Array.isArray(modules)
     ? modules

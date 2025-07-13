@@ -1,27 +1,28 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import styled from "styled-components";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  fetchAnalyticsTrends,
-  fetchAnalyticsEvents,
-} from "@/modules/dashboard/slice/analyticsSlice";
+import { useAppSelector } from "@/store/hooks";
 import {
   LineChart,
   BarChart,
-  MapChart,
   AnalyticsTable,
   FilterBar,
   DateRangeSelector,
 } from "@/modules/dashboard";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales";
 import { Loader } from "@/shared";
 import { Download, FileText } from "lucide-react";
+import dynamic from "next/dynamic";
 
-// --- CSV helper ---
+const MapChart = dynamic(
+  () => import("@/modules/dashboard/admin/components/analytics/MapChart"),
+  { ssr: false }
+);
+
 function exportToCSV(data: any[], filename = "export.csv") {
-  if (!data || !data.length) return;
+  if (!data?.length) return;
   const keys = Object.keys(data[0]);
   const csvRows = [
     keys.join(","),
@@ -42,39 +43,12 @@ function exportToCSV(data: any[], filename = "export.csv") {
 }
 
 export default function AnalyticsPanel() {
-  const { t, i18n } = useTranslation("admin-dashboard");
-  const dispatch = useAppDispatch();
+  const { t, i18n } = useI18nNamespace("dashboard", translations);
 
-  // Redux State
+  // Redux State: (Parent’ta fetch edilmiş olmalı!)
   const analytics = useAppSelector((state) => state.analytics);
-  const moduleMetaState = useAppSelector((state) => state.moduleMeta);
-  const moduleSettingState = useAppSelector((state) => state.moduleSetting);
-
-  // Arrayler
-  const modules = useMemo(
-    () =>
-      Array.isArray(moduleMetaState.modules) ? moduleMetaState.modules : [],
-    [moduleMetaState.modules]
-  );
-  // SADECE BU: settings yerine tenantModules!
-  const tenantModules = useMemo(
-    () =>
-      Array.isArray(moduleSettingState.tenantModules)
-        ? moduleSettingState.tenantModules
-        : [],
-    [moduleSettingState.tenantModules]
-  );
-  const trends = useMemo(
-    () => (Array.isArray(analytics.trends) ? analytics.trends : []),
-    [analytics.trends]
-  );
-  const events = useMemo(
-    () => (Array.isArray(analytics.events) ? analytics.events : []),
-    [analytics.events]
-  );
-  const loading = analytics.loading;
-  const error = analytics.error;
-  const modulesLoading = moduleMetaState.loading || moduleSettingState.loading;
+  const { modules = [], loading: modulesLoading } = useAppSelector((state) => state.moduleMeta);
+  const { tenantModules = [], loading: settingsLoading } = useAppSelector((state) => state.moduleSetting);
 
   // Filtreler
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -82,13 +56,12 @@ export default function AnalyticsPanel() {
   const [selectedModule, setSelectedModule] = useState<string>("");
   const [selectedEventType, setSelectedEventType] = useState<string>("");
 
-  // --- Aktif analytics modülleri (meta + tenant setting merge) ---
+  // Memo: Aktif analytics modülleri (tenant + meta merge)
   const activeAnalyticsModules = useMemo(() => {
+    if (!Array.isArray(modules) || !Array.isArray(tenantModules)) return [];
     return modules
       .filter((mod) => {
         const setting = tenantModules.find((set) => set.module === mod.name);
-        // useAnalytics ve enabled sadece settingte override edilir
-        // Setting yoksa default: aktif değil.
         return setting?.enabled !== false && setting?.useAnalytics === true;
       })
       .map((mod) => ({
@@ -97,43 +70,64 @@ export default function AnalyticsPanel() {
       }));
   }, [modules, tenantModules, i18n.language]);
 
-  // Event tipleri
+  // Tüm veriler (parent’tan)
+  const trends = analytics.trends ?? [];
+  const events = analytics.events ?? [];
+  const loading = analytics.loading || modulesLoading || settingsLoading;
+  const error = analytics.error;
+
+  // Otomatik event tipleri/modül listesi
   const availableEventTypes = useMemo(() => {
-    const set = new Set(events.map((e) => e.eventType).filter(Boolean));
-    return Array.from(set);
+    return Array.from(new Set(events.map((e) => e.eventType).filter(Boolean)));
   }, [events]);
-
-  // Modül isimleri (event içindeki module)
   const availableModules = useMemo(() => {
-    const set = new Set(events.map((e) => e.module).filter(Boolean));
-    return Array.from(set);
+    return Array.from(new Set(events.map((e) => e.module).filter(Boolean)));
   }, [events]);
 
-  // Sadece lokasyon içeren eventler
+  // Sadece location içeren eventler
   const eventsWithLocation = useMemo(
     () => events.filter((e) => e.location?.coordinates?.length === 2),
     [events]
   );
 
-  // NOT: useEffect ile module/setting fetch yok! Parent'ta çağrıldığı için burada yok.
+  // --- Local filter logic: UI için data’yı filtrele (isteğe bağlı) ---
+  const filteredTrends = useMemo(() => {
+    if (!selectedModule && !selectedEventType && !startDate && !endDate)
+      return trends;
+    // Trendler genelde backend filtreli gelir, gerekirse burada da filtre yapılır.
+    return trends.filter((t: any) => {
+      let ok = true;
+      if (selectedModule && t.module !== selectedModule) ok = false;
+      if (selectedEventType && t.eventType !== selectedEventType) ok = false;
+      // Trendlerde tarih varsa burada date check de eklenebilir.
+      return ok;
+    });
+  }, [trends, selectedModule, selectedEventType, startDate, endDate]);
 
-  useEffect(() => {
-    const filters: any = {
-      ...(selectedModule && { module: selectedModule }),
-      ...(selectedEventType && { eventType: selectedEventType }),
-      ...(startDate && { startDate: startDate.toISOString() }),
-      ...(endDate && { endDate: endDate.toISOString() }),
-      period: "day",
-    };
-    dispatch(fetchAnalyticsTrends(filters));
-    dispatch(fetchAnalyticsEvents({ ...filters, limit: 1000 }));
-  }, [dispatch, selectedModule, selectedEventType, startDate, endDate]);
+  const filteredEvents = useMemo(() => {
+    let result = events;
+    if (selectedModule)
+      result = result.filter((e: any) => e.module === selectedModule);
+    if (selectedEventType)
+      result = result.filter((e: any) => e.eventType === selectedEventType);
+    if (startDate)
+      result = result.filter(
+        (e: any) =>
+          e.timestamp && new Date(e.timestamp) >= new Date(startDate)
+      );
+    if (endDate)
+      result = result.filter(
+        (e: any) =>
+          e.timestamp && new Date(e.timestamp) <= new Date(endDate)
+      );
+    return result;
+  }, [events, selectedModule, selectedEventType, startDate, endDate]);
 
   // Export
   const handleExport = (format: "csv" | "json" = "csv") => {
-    if (!events || !events.length) return;
+    if (!filteredEvents?.length) return;
     if (format === "json") {
-      const blob = new Blob([JSON.stringify(events, null, 2)], {
+      const blob = new Blob([JSON.stringify(filteredEvents, null, 2)], {
         type: "application/json",
       });
       const link = document.createElement("a");
@@ -143,11 +137,10 @@ export default function AnalyticsPanel() {
       link.click();
       document.body.removeChild(link);
     } else {
-      exportToCSV(events, "analytics-export.csv");
+      exportToCSV(filteredEvents, "analytics-export.csv");
     }
   };
 
-  // Filtreleri Sıfırla
   const handleResetFilters = () => {
     setStartDate(null);
     setEndDate(null);
@@ -162,16 +155,10 @@ export default function AnalyticsPanel() {
           {t("analytics.title", "Log Analizi ve Etkinlik Trendleri")}
         </Title>
         <BtnGroup>
-          <ExportBtn
-            onClick={() => handleExport("csv")}
-            title={t("exportCSV", "CSV Dışa Aktar")}
-          >
+          <ExportBtn onClick={() => handleExport("csv")} title={t("exportCSV", "CSV Dışa Aktar")}>
             <Download size={18} /> CSV
           </ExportBtn>
-          <ExportBtn
-            onClick={() => handleExport("json")}
-            title={t("exportJSON", "JSON Dışa Aktar")}
-          >
+          <ExportBtn onClick={() => handleExport("json")} title={t("exportJSON", "JSON Dışa Aktar")}>
             <FileText size={18} /> JSON
           </ExportBtn>
           <ResetBtn onClick={handleResetFilters}>
@@ -233,17 +220,17 @@ export default function AnalyticsPanel() {
         availableEventTypes={availableEventTypes}
       />
 
-      {(loading || modulesLoading) && <Loader />}
+      {loading && <Loader />}
       {error && <Error>{error}</Error>}
 
-      {!loading && !modulesLoading && (
+      {!loading && (
         <>
           <Section>
             <SectionTitle>
               {t("analytics.dailyTrends", "Günlük Event Trendleri")}
             </SectionTitle>
-            {trends.length ? (
-              <LineChart data={trends} />
+            {filteredTrends.length ? (
+              <LineChart data={filteredTrends} />
             ) : (
               <NoData>{t("noData")}</NoData>
             )}
@@ -253,8 +240,8 @@ export default function AnalyticsPanel() {
             <SectionTitle>
               {t("analytics.moduleDistribution", "Modül Bazlı Yoğunluk")}
             </SectionTitle>
-            {events.length ? (
-              <BarChart data={events} />
+            {filteredEvents.length ? (
+              <BarChart data={filteredEvents} />
             ) : (
               <NoData>{t("noData")}</NoData>
             )}
@@ -264,8 +251,8 @@ export default function AnalyticsPanel() {
             <SectionTitle>
               {t("analytics.geoMap", "Coğrafi Dağılım")}
             </SectionTitle>
-            {eventsWithLocation.length ? (
-              <MapChart data={eventsWithLocation} />
+            {filteredEvents.filter((e: any) => e.location?.coordinates?.length === 2).length ? (
+              <MapChart data={filteredEvents.filter((e: any) => e.location?.coordinates?.length === 2)} />
             ) : (
               <NoData>
                 {t("noGeoData", "Konum verisi içeren kayıt yok.")}
@@ -277,7 +264,7 @@ export default function AnalyticsPanel() {
             <SectionTitle>
               {t("analytics.logTable", "Log Detayları")}
             </SectionTitle>
-            <AnalyticsTable data={events.slice(0, 20)} />
+            <AnalyticsTable data={filteredEvents.slice(0, 20)} />
           </Section>
         </>
       )}

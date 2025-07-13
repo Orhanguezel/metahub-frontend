@@ -19,7 +19,7 @@ import articlesReducer from "@/modules/articles/slice/articlesSlice";
 import articlesCategoryReducer from "@/modules/articles/slice/articlesCategorySlice";
 import commentsReducer from "@/modules/comment/slice/commentSlice";
 import companyReducer from "@/modules/company/slice/companySlice";
-import settingReducer from "@/modules/settings/slice/settingsSlice";
+import settingsReducer from "@/modules/settings/slice/settingsSlice";
 import galleryReducer from "@/modules/gallery/slice/gallerySlice";
 import galleryCategoryReducer from "@/modules/gallery/slice/galleryCategorySlice";
 import faqReducer from "@/modules/faq/slice/faqSlice";
@@ -42,10 +42,13 @@ import referencesCategoryReducer from "@/modules/references/slice/referencesCate
 import cartReducer from "@/modules/cart/slice/cartSlice";
 import ordersReducer from "@/modules/order/slice/ordersSlice";
 import couponReducer from "@/modules/coupon/slice/couponSlice";
-import bikeReducer from "@/modules/bikes/slice/bikeSlice";
-import bikeCategoryReducer from "@/modules/bikes/slice/bikeCategorySlice";
+import bikesReducer from "@/modules/bikes/slice/bikesSlice";
+import bikesCategoryReducer from "@/modules/bikes/slice/bikesCategorySlice";
 import paymentReducer from "@/modules/payment/slice/paymentSlice";
-import tenantReducer from "@/modules/tenants/slice/tenantSlice";
+import tenantsReducer from "@/modules/tenants/slice/tenantSlice";
+import contactReducer from "@/modules/contact/slice/contactSlice";
+import sectionMetaReducer from "@/modules/section/slices/sectionMetaSlice";
+import sectionSettingReducer from "@/modules/section/slices/sectionSettingSlice";
 
 // --- Combine reducers ---
 // Sadece slice bazında persistReducer uygula!
@@ -71,7 +74,7 @@ const rootReducer = combineReducers({
   company: companyReducer,
   booking: bookingReducer,
   bookingSlot: bookingSlotReducer,
-  setting: settingReducer,
+  settings: settingsReducer,
   gallery: galleryReducer,
   galleryCategory: galleryCategoryReducer,
   faq: faqReducer,
@@ -88,12 +91,15 @@ const rootReducer = combineReducers({
   aboutCategory: aboutCategoryReducer,
   chat: chatReducer,
   coupon: couponReducer,
-  bike: bikeReducer,
-  bikeCategory: bikeCategoryReducer,
+  bikes: bikesReducer,
+  bikesCategory: bikesCategoryReducer,
   payment: paymentReducer,
-  tenant: tenantReducer,
+  tenants: tenantsReducer,
   auth: authReducer,
   account: accountReducer,
+  contact: contactReducer,
+  sectionMeta: sectionMetaReducer,
+  sectionSetting: sectionSettingReducer,
 });
 
 // --- Store ---

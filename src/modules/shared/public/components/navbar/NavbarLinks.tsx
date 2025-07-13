@@ -1,26 +1,34 @@
 "use client";
 import styled from "styled-components";
 import Link from "next/link";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales/navbar";
+import { SupportedLocale } from "@/types/common";
 import { useAppSelector } from "@/store/hooks";
 import { SPECIAL_NAV_LINK } from "./navigationLinks";
 
 export default function NavbarLinks() {
-  const { i18n } = useTranslation();
-  const currentLang = i18n.language;
+  const { i18n} = useI18nNamespace("navbar", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  const { settings = [] } = useAppSelector((state) => state.setting || {});
-  const navbarLinksSetting = settings.find(
-    (s) => s.key === "navbar_main_links"
-  );
+  const settings = useAppSelector((state) => state.settings.settings || []);
+  const navbarLinksSetting = settings.find((s: any) => s.key === "navbar_main_links");
 
-  const links: any = navbarLinksSetting?.value || {};
+  // Her bir link için url (json’da url), label ve fallback
+  const links = navbarLinksSetting?.value || {};
 
   return (
     <>
       {Object.entries(links).map(([key, link]: any) => {
-        const label = link.label?.[currentLang] || key;
-        const url = link.url || "#";
+        const label =
+          link.label?.[lang] ||
+          link.label?.en ||
+          link.label?.tr ||
+          key;
+        const url = link.url || "/"; // **DOĞRU: url**
+
+        // Eğer url boşsa, link göstermeyelim!
+        if (!url.trim()) return null;
 
         return (
           <MenuItem key={key}>
@@ -29,6 +37,7 @@ export default function NavbarLinks() {
         );
       })}
 
+      {/* Eğer özel bir ikonlu link varsa */}
       <MenuItem1>
         <MenuLink href={SPECIAL_NAV_LINK.href}>
           {SPECIAL_NAV_LINK.icon}
@@ -37,6 +46,8 @@ export default function NavbarLinks() {
     </>
   );
 }
+
+// --- Styled Components ---
 
 const MenuItem = styled.li`
   list-style: none;
@@ -61,7 +72,7 @@ const MenuLink = styled(Link)`
   display: inline-block;
   font-family: ${({ theme }) => theme.fonts.body};
   text-transform: uppercase;
-  letter-spacings: 0.5px;
+  letter-spacing: 0.5px;
   transition: all 0.3s ease;
   position: relative;
 

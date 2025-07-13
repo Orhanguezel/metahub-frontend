@@ -1,9 +1,13 @@
 {
-  "aboutUs": "Über uns",
-  "ourServices": "Unsere Leistungen",
-  "contact": "Kontakt",
+  "companyInfo": "Unsere Infos",
   "email": "E-Mail",
-  "phone": "Telefon"
+  "phone": "Telefon",
+  "address": "Adresse",
+  "mainLinks": "Hauptlinks",
+  "massageTypes": "Massagearten",
+  "rightsText": "Alle Rechte vorbehalten.",
+  "designedBy": "Design von OG"
 }
+
 
  

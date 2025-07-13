@@ -1,9 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type {
-  ArticlesCategory,
-  TranslatedField,
-} from "@/modules/articles/types";
+import type { ArticlesCategory, TranslatedField } from "@/modules/articles";
 
 interface CategoryState {
   categories: ArticlesCategory[];

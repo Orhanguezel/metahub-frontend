@@ -1,17 +1,17 @@
 // Pages
-export { default as AdminBlogPage } from "./admin/pages/AdminBlogPage";
-export { default as BlogPage } from "./public/pages/BlogPage";
+export { default as AdminPage } from "./admin/pages/AdminPage";
+export { default as Page } from "./public/pages/Page";
 
 // Admin Components
-export { default as BlogTabs } from "./admin/components/BlogTabs";
-export { default as BlogList } from "./admin/components/BlogList";
-export { default as BlogFormModal } from "./admin/components/BlogFormModal";
+export { default as Tabs } from "./admin/components/Tabs";
+export { default as List } from "./admin/components/List";
+export { default as FormModal } from "./admin/components/FormModal";
 export { default as CategoryListPage } from "./admin/components/CategoryListPage";
 export { default as CategoryForm } from "./admin/components/CategoryForm";
 
 // Public Components
-export { default as BlogSection } from "./public/components/BlogSection";
-export { default as BlogDetailSection } from "./public/components/BlogDetailSection";
+export { default as BlogSection } from "./public/components/Section";
+export { default as DetailSection } from "./public/components/DetailSection";
 
 // Types (if any)
 export * from "./types";

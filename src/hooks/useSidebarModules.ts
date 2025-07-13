@@ -1,9 +1,11 @@
 import { useAppSelector } from "@/store/hooks";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "./locales";
 import * as MdIcons from "react-icons/md";
 import type { IModuleMeta, IModuleSetting } from "@/modules/adminmodules/types";
 import type { IconType } from "react-icons";
 import type { SupportedLocale } from "@/types/common";
+//import { useLayoutInit } from "@/hooks/useLayoutInit";
 
 interface SidebarModule {
   key: string;
@@ -13,6 +15,7 @@ interface SidebarModule {
 }
 
 export const useSidebarModules = () => {
+  //useLayoutInit();
   // Tenant’a özel ayarlar (sadece override’lar!)
   const tenantModules: IModuleSetting[] = useAppSelector(
     (state) => state.moduleSetting.tenantModules || []
@@ -24,8 +27,8 @@ export const useSidebarModules = () => {
   const loading: boolean =
     useAppSelector((state) => state.moduleSetting.loading) || false;
 
-  const { i18n } = useTranslation();
-  const lang = i18n.language as SupportedLocale;
+  const { i18n } = useI18nNamespace("common", translations);
+  const lang = i18n.language?.slice(0, 2) as SupportedLocale;
 
   // Sidebar’da gösterilecek modüller (enabled & visibleInSidebar)
   const sidebarModules: SidebarModule[] = tenantModules

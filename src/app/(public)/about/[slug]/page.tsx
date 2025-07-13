@@ -1,4 +1,4 @@
-import AboutDetailSection from "@/modules/about/public/components/AboutDetailSection";
+import AboutDetailSection from "@/modules/about/public/components/DetailSection";
 
 export default function Page() {
   return <AboutDetailSection />;

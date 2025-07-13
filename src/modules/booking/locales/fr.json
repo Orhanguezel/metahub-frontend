@@ -1,80 +1,124 @@
 {
   "page": {
-    "allBike": "Tous les vélos",
-    "noBike": "Aucun vélo trouvé.",
-    "price": "Prix",
-    "stock": "Stock",
-    "brand": "Marque",
-    "readMore": "Voir les détails →",
-    "other": "Autres produits",
-    "untitled": "Sans titre",
-    "noSummary": "Pas de description.",
-    "bike": {
-      "title": "Dernier vélo",
-      "readMore": "Voir les détails",
-      "all": "Tous les vélos"
-    }
+    "title": "Prendre Rendez-vous",
+    "description": "Remplissez le formulaire ci-dessous pour planifier votre rendez-vous."
+  },
+  "form": {
+    "noAvailableTimes": "Aucun créneau disponible",
+    "selectTime": "Sélectionner une heure",
+    "loading": "Chargement des créneaux disponibles...",
+    "noAvailableSlots": "Aucun créneau disponible trouvé.",
+    "availableSlots": "Créneaux Disponibles",
+    "name": "Nom Prénom",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "service": "Service",
+    "serviceType": "Type de Service",
+    "note": "Note",
+    "date": "Date",
+    "time": "Heure",
+    "submit": "Prendre Rendez-vous",
+    "selectService": "Sélectionner un service",
+    "selectDate": "Sélectionner une date",
+    "required": "Veuillez remplir tous les champs obligatoires.",
+    "success": "Votre rendez-vous a été créé avec succès !",
+    "error": "Une erreur s'est produite. Veuillez réessayer.",
+    "fullyBooked": "Complet",
+    "title": "Horaires de Travail",
+    "closed": "Fermé",
+    "todayClosed": "Aujourd'hui, fermé toute la journée."
   },
   "admin": {
     "tabs": {
-      "bike": "Vélos",
-      "create": "Nouveau vélo",
-      "categories": "Catégories"
+      "bookings": "Rendez-vous",
+      "slots": "Gestion des créneaux"
     },
-    "bike": {
-      "create": "Ajouter un nouveau vélo",
-      "edit": "Modifier le vélo",
-      "name": "Nom du vélo",
-      "description": "Description",
-      "brand": "Marque",
-      "price": "Prix",
-      "stock": "Stock",
-      "tags": "Tags",
-      "image": "Image",
-      "category": "Catégorie",
-      "select_category": "Sélectionner une catégorie",
-      "publish_status": "Publié ?",
-      "no_images": "Aucune image",
-      "publish": "Publier",
-      "unpublish": "Dépublier",
-      "empty": "Aucun vélo disponible."
+    "title": "Gérer les Rendez-vous",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce rendez-vous ?",
+    "noBookings": "Aucun rendez-vous trouvé.",
+    "columns": {
+      "name": "Nom",
+      "email": "E-mail",
+      "service": "Service",
+      "datetime": "Date / Heure",
+      "status": "Statut",
+      "actions": "Actions"
     },
-    "categories": {
-      "title": "Catégories de vélos",
-      "add": "Nouvelle catégorie",
-      "empty": "Aucune catégorie trouvée."
+    "modal": {
+      "title": "Mettre à jour le statut du rendez-vous",
+      "statusInfo": "« En attente » signifie que le rendez-vous attend l'approbation de l'administrateur. Le client ne recevra un e-mail qu'après votre confirmation.",
+      "select": "Sélectionner le statut",
+      "updated": "Statut mis à jour avec succès.",
+      "updateError": "La mise à jour du statut a échoué."
     },
-    "language": {
-      "en": "Anglais",
-      "tr": "Turc",
-      "de": "Allemand"
+    "status": {
+      "pending": "En attente",
+      "confirmed": "Confirmé",
+      "cancelled": "Annulé"
     },
-    "slug": "Slug",
-    "actions": "Actions",
+    "statusDescription": {
+      "pending": "En attente de validation par l'administrateur. Aucun e-mail envoyé au client pour le moment.",
+      "confirmed": "Rendez-vous confirmé. Un e-mail de confirmation a été envoyé au client.",
+      "cancelled": "Rendez-vous annulé. Le créneau est à nouveau disponible."
+    },
+    "slotRule": {
+      "updateSuccess": "Règle mise à jour avec succès.",
+      "updateError": "Échec de la mise à jour de la règle.",
+      "editGeneral": "Modifier la règle générale de créneau",
+      "edit": "Modifier la règle de créneau",
+      "applyAll": "Appliquer à tous les jours",
+      "dayOfWeek": "Jour de la semaine",
+      "startTime": "Heure de début",
+      "endTime": "Heure de fin",
+      "intervalMinutes": "Intervalle entre les rendez-vous (min)",
+      "break": "Pause entre les rendez-vous (min)"
+    }
+  },
+  "slot": {
+    "title": {
+      "rules": "📅 Règles des créneaux",
+      "overrides": "📌 Exceptions"
+    },
+    "form": {
+      "applyAllDays": "Appliquer à tous les jours",
+      "addGeneralRule": "Ajouter une règle générale",
+      "addRule": "Ajouter une règle",
+      "addOverride": "Ajouter une exception",
+      "fullDayOff": "Fermé toute la journée"
+    },
+    "success": {
+      "generalCreated": "Règle générale créée avec succès.",
+      "created": "Règle créée avec succès.",
+      "overrideCreated": "Exception créée avec succès."
+    },
+    "error": {
+      "generalExists": "Une règle générale existe déjà.",
+      "dayExists": "Une règle existe déjà pour ce jour.",
+      "create": "Impossible de créer la règle.",
+      "dateRequired": "Veuillez sélectionner une date.",
+      "overrideCreate": "Impossible de créer l'exception."
+    },
+    "weekdays": {
+      "0": "Dimanche",
+      "1": "Lundi",
+      "2": "Mardi",
+      "3": "Mercredi",
+      "4": "Jeudi",
+      "5": "Vendredi",
+      "6": "Samedi",
+      "all": "Tous les jours"
+    },
+    "info": {
+      "noDayRules": "Aucune règle spécifique au jour n'est définie.",
+      "noOverrides": "Aucune exception définie."
+    }
+  },
+  "common": {
+    "loading": "Chargement...",
     "edit": "Modifier",
     "delete": "Supprimer",
-    "cancel": "Annuler",
     "update": "Mettre à jour",
-    "create": "Créer",
-    "yes": "Oui",
-    "no": "Non",
-    "loading": "Chargement...",
-    "confirm": {
-      "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
-      "delete_bike": "Êtes-vous sûr de vouloir supprimer ce vélo ?"
-    },
-    "optional_description": "Description (optionnel)",
-    "category_info": "À propos de cette catégorie ?",
-    "saving": "Enregistrement...",
-    "save": "Enregistrer",
-    "update2": "Mettre à jour",
-    "editCategory": "Modifier la catégorie",
-    "newCategory": "Nouvelle catégorie"
-  },
-  "seo": {
-    "title": "Titre SEO",
-    "description": "Description SEO"
-  },
-  "none": "Aucun",
-  "delete_confirm": "Êtes-vous sûr de vouloir supprimer ?"
+    "updating": "Mise à jour...",
+    "cancel": "Annuler"
+  }
 }

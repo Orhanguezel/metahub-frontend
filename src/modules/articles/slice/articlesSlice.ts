@@ -1,10 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { IArticles } from "@/modules/articles/types";
+import type { IArticles } from "@/modules/articles";
 
 interface ArticlesState {
-  articles: IArticles[];
+  articles: IArticles[]; // Public (site) için
+  articlesAdmin: IArticles[]; // Admin panel için
   selected: IArticles | null;
+  status: "idle" | "loading" | "succeeded" | "failed";
   loading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -12,7 +14,9 @@ interface ArticlesState {
 
 const initialState: ArticlesState = {
   articles: [],
+  articlesAdmin: [],
   selected: null,
+  status: "idle",
   loading: false,
   error: null,
   successMessage: null,
@@ -30,12 +34,27 @@ const extractErrorMessage = (payload: unknown): string => {
   return "An error occurred.";
 };
 
+// --- Async Thunks ---
+
 export const fetchArticles = createAsyncThunk<IArticles[]>(
   "articles/fetchAll",
   async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/articles`,
+      null,
+      thunkAPI.rejectWithValue
+    );
+    return res.data;
+  }
+);
+
+export const fetchAllArticlesAdmin = createAsyncThunk<IArticles[]>(
+  "articles/fetchAllAdmin",
+  async (_, thunkAPI) => {
+    const res = await apiCall(
+      "get",
+      `/articles/admin`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -55,7 +74,7 @@ export const createArticles = createAsyncThunk(
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
-    return res.data; // backend: { success: true, message: "..." }
+    return res.data;
   }
 );
 
@@ -85,19 +104,6 @@ export const deleteArticles = createAsyncThunk(
       thunkAPI.rejectWithValue
     );
     return { id, message: res.message };
-  }
-);
-
-export const fetchAllArticlesAdmin = createAsyncThunk(
-  "articles/fetchAllAdmin",
-  async (_, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      `/articles/admin`,
-      null,
-      thunkAPI.rejectWithValue
-    );
-    return res.data;
   }
 );
 
@@ -136,6 +142,7 @@ export const fetchArticlesBySlug = createAsyncThunk(
 );
 
 // --- Slice ---
+
 const articlesSlice = createSlice({
   name: "articles",
   initialState,
@@ -159,64 +166,81 @@ const articlesSlice = createSlice({
       state.error = extractErrorMessage(action.payload);
     };
 
+    // --- Public List ---
     builder
       .addCase(fetchArticles.pending, startLoading)
       .addCase(fetchArticles.fulfilled, (state, action) => {
         state.loading = false;
         state.articles = action.payload;
       })
-      .addCase(fetchArticles.rejected, setError)
+      .addCase(fetchArticles.rejected, setError);
 
+    // --- Admin List ---
+    builder
       .addCase(fetchAllArticlesAdmin.pending, startLoading)
       .addCase(fetchAllArticlesAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.articles = action.payload;
+        state.articlesAdmin = action.payload;
       })
-      .addCase(fetchAllArticlesAdmin.rejected, setError)
+      .addCase(fetchAllArticlesAdmin.rejected, setError);
 
+    // --- Admin Create ---
+    builder
       .addCase(createArticles.pending, startLoading)
       .addCase(createArticles.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage =
           action.payload?.message || "Article created successfully.";
         if (action.payload?.data) {
-          state.articles.unshift(action.payload.data);
+          state.articlesAdmin.unshift(action.payload.data);
         }
       })
-      .addCase(createArticles.rejected, setError)
+      .addCase(createArticles.rejected, setError);
 
+    // --- Admin Update ---
+    builder
       .addCase(updateArticles.pending, startLoading)
       .addCase(updateArticles.fulfilled, (state, action) => {
         state.loading = false;
         const updated = action.payload?.data || action.payload;
-        const index = state.articles.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.articles[index] = updated;
+        const index = state.articlesAdmin.findIndex(
+          (a) => a._id === updated._id
+        );
+        if (index !== -1) state.articlesAdmin[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
         state.successMessage = action.payload?.message;
       })
-      .addCase(updateArticles.rejected, setError)
+      .addCase(updateArticles.rejected, setError);
 
+    // --- Admin Delete ---
+    builder
       .addCase(deleteArticles.pending, startLoading)
       .addCase(deleteArticles.fulfilled, (state, action) => {
         state.loading = false;
-        state.articles = state.articles.filter(
+        state.articlesAdmin = state.articlesAdmin.filter(
           (a) => a._id !== action.payload.id
         );
         state.successMessage = action.payload?.message;
       })
-      .addCase(deleteArticles.rejected, setError)
+      .addCase(deleteArticles.rejected, setError);
 
+    // --- Admin Toggle Publish ---
+    builder
       .addCase(togglePublishArticles.pending, startLoading)
       .addCase(togglePublishArticles.fulfilled, (state, action) => {
         state.loading = false;
         const updated = action.payload?.data || action.payload;
-        const index = state.articles.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.articles[index] = updated;
+        const index = state.articlesAdmin.findIndex(
+          (a) => a._id === updated._id
+        );
+        if (index !== -1) state.articlesAdmin[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
         state.successMessage = action.payload?.message;
       })
-      .addCase(togglePublishArticles.rejected, setError)
+      .addCase(togglePublishArticles.rejected, setError);
 
+    // --- Single Fetch (slug) ---
+    builder
       .addCase(fetchArticlesBySlug.pending, startLoading)
       .addCase(fetchArticlesBySlug.fulfilled, (state, action) => {
         state.loading = false;

@@ -1,28 +1,36 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+
 import {
-  fetchCoupons,
-  createCoupon,
-  updateCoupon,
-  deleteCoupon,
+  createCouponAdmin,
+  updateCouponAdmin,
+  deleteCouponAdmin,
   clearCouponMessages,
 } from "@/modules/coupon/slice/couponSlice";
 import { CouponForm, CouponTable } from "@/modules/coupon";
 import { Message } from "@/shared";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 
 const AdminCouponPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("coupon");
-  const { coupons, error, successMessage } = useAppSelector((s) => s.coupon);
+  const { t } = useI18nNamespace("coupon", translations);
+
+  // Merkezi fetch edilen coupon slice!
+  const { coupons } = useAppSelector((s) => s.coupon);
+  // Slice yapısı: { coupons: Coupon[], loading, error, successMessage }
+  const couponList = coupons?.coupons || [];
+  const loading = coupons?.loading;
+  const error = coupons?.error;
+  const successMessage = coupons?.successMessage;
 
   const [editing, setEditing] = useState<any | null>(null);
 
-  useEffect(() => {
-    dispatch(fetchCoupons());
+  // Temizlik sadece sayfa unmount'ta yapılır!
+  React.useEffect(() => {
     return () => {
       dispatch(clearCouponMessages());
     };
@@ -31,15 +39,15 @@ const AdminCouponPage: React.FC = () => {
   const handleEdit = (coupon: any) => setEditing(coupon);
 
   const handleDelete = async (id: string) => {
-    await dispatch(deleteCoupon(id));
+    await dispatch(deleteCouponAdmin(id));
     setEditing(null);
   };
 
   const handleSubmit = async (data: any) => {
     if (editing) {
-      await dispatch(updateCoupon({ id: editing._id, data }));
+      await dispatch(updateCouponAdmin({ id: editing._id, data }));
     } else {
-      await dispatch(createCoupon(data));
+      await dispatch(createCouponAdmin(data));
     }
     setEditing(null);
   };
@@ -57,11 +65,13 @@ const AdminCouponPage: React.FC = () => {
         onSubmit={handleSubmit}
         editing={editing}
         onCancel={() => setEditing(null)}
+        loading={loading}
       />
       <CouponTable
-        coupons={coupons}
+        coupons={couponList}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        loading={loading}
       />
     </Wrapper>
   );
@@ -69,6 +79,7 @@ const AdminCouponPage: React.FC = () => {
 
 export default AdminCouponPage;
 
+// --- Styled Components ---
 const Wrapper = styled.div`
   max-width: 900px;
   margin: 32px auto;

@@ -1,21 +1,21 @@
 // Pages
-export { default as AdminBikesPage } from "./admin/pages/AdminBikesPage";
-export { default as BikesPage } from "./public/pages/BikesPage";
+export { default as AdminPage } from "./admin/pages/AdminPage";
+export { default as Page } from "./public/pages/Page";
 
 // Admin Components
-export { default as BikesTabs } from "./admin/components/BikesTabs";
-export { default as BikesList } from "./admin/components/BikesList";
-export { default as BikesFormModal } from "./admin/components/BikesFormModal";
+export { default as Tabs } from "./admin/components/Tabs";
+export { default as List } from "./admin/components/List";
+export { default as FormModal } from "./admin/components/FormModal";
 export { default as CategoryListPage } from "./admin/components/CategoryListPage";
 export { default as CategoryForm } from "./admin/components/CategoryForm";
 
 // Public Components
-export { default as BikesSection } from "./public/components/BikesSection";
-export { default as BikesDetailSection } from "./public/components/BikesDetailSection";
+export { default as BikesSection } from "./public/components/Section";
+export { default as DetailSection } from "./public/components/DetailSection";
 
 // Redux Slice
-export { default as bikeCategoryReducer } from "./slice/bikeCategorySlice";
-export { default as bikeProdReducer } from "./slice/bikeSlice";
+export { default as bikeCategoryReducer } from "./slice/bikesCategorySlice";
+export { default as bikeProdReducer } from "./slice/bikesSlice";
 
 // Types (if any)
 export * from "./types";

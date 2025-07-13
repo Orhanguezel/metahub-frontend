@@ -6,13 +6,24 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
 import {
   NestedValueEditor,
-  NestedSocialLinksEditor,
   MultiLangObjectEditor,
 } from "@/modules/settings";
 import { SUPPORTED_LOCALES } from "@/i18n";
 import { completeLocales } from "@/utils/completeLocales";
 
-// Props tipi
+// Çoklu görsel destekleyen keyler
+const IMAGE_KEYS = [
+  "navbar_images",
+  "footer_images",
+  "logo_images",
+  "images",
+];
+const MULTILANG_OBJECT_KEYS = [
+  "navbar_logo_text",
+  "footer_contact",
+  "footer_label",
+];
+
 interface ValueInputSectionProps {
   keyValue: string;
   value: any;
@@ -21,14 +32,11 @@ interface ValueInputSectionProps {
   isMultiLang: boolean;
   isNestedObject: boolean;
   isImage: boolean;
-  file?: File | null;
-  setFile?: (f: File | null) => void;
-  lightFile?: File | null;
-  setLightFile?: (f: File | null) => void;
-  darkFile?: File | null;
-  setDarkFile?: (f: File | null) => void;
-  isEditing?: boolean;
   supportedLocales?: readonly string[];
+  files?: File[];
+  setFiles?: (files: File[]) => void;
+  removedImages?: string[];
+  setRemovedImages?: (ids: string[]) => void;
 }
 
 const ValueInputSection: React.FC<ValueInputSectionProps> = ({
@@ -39,18 +47,14 @@ const ValueInputSection: React.FC<ValueInputSectionProps> = ({
   isMultiLang,
   isNestedObject,
   isImage,
-  file,
-  setFile,
-  lightFile,
-  setLightFile,
-  darkFile,
-  setDarkFile,
-  isEditing = false,
   supportedLocales = SUPPORTED_LOCALES,
+  files = [],
+  setFiles,
+  removedImages = [],
+  setRemovedImages,
 }) => {
   const { t } = useI18nNamespace("settings", translations);
-  const isLogoUpload =
-    keyValue === "navbar_logos" || keyValue === "footer_logos";
+  const isImageKey = IMAGE_KEYS.includes(keyValue);
 
   // MultiLang normalizasyon
   useEffect(() => {
@@ -58,17 +62,17 @@ const ValueInputSection: React.FC<ValueInputSectionProps> = ({
       isMultiLang &&
       !isNestedObject &&
       !isImage &&
-      !isLogoUpload &&
+      !isImageKey &&
       typeof value === "object" &&
       value !== null
     ) {
       setValue(completeLocales(value));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMultiLang, isNestedObject, isImage, isLogoUpload, keyValue]);
+    // eslint-disable-next-line
+  }, [isMultiLang, isNestedObject, isImage, isImageKey, keyValue]);
 
-  // MultiLang (tek katmanlı)
-  if (isMultiLang && !isNestedObject && !isImage && !isLogoUpload) {
+  // 1) MultiLang (tek katmanlı TranslatedLabel)
+  if (isMultiLang && !isNestedObject && !isImage && !isImageKey) {
     const val =
       typeof value === "object" && value !== null
         ? completeLocales(value)
@@ -76,7 +80,6 @@ const ValueInputSection: React.FC<ValueInputSectionProps> = ({
             (acc, lng) => ({ ...acc, [lng]: "" }),
             {} as Record<string, string>
           );
-
     return (
       <>
         {supportedLocales.map((lng) => (
@@ -87,7 +90,6 @@ const ValueInputSection: React.FC<ValueInputSectionProps> = ({
             <Input
               value={val[lng] || ""}
               onChange={(e) => setValue({ ...val, [lng]: e.target.value })}
-              disabled={isEditing}
             />
           </div>
         ))}
@@ -95,13 +97,11 @@ const ValueInputSection: React.FC<ValueInputSectionProps> = ({
     );
   }
 
-  // MultiLang Nested Object (navbar_logo_text, footer_contact, footer_label)
+  // 2) MultiLang Nested Object (örn: navbar_logo_text) **DÜZELTİLDİ**
   if (
-    (keyValue === "navbar_logo_text" ||
-      keyValue === "footer_contact" ||
-      keyValue === "footer_label") &&
+    MULTILANG_OBJECT_KEYS.includes(keyValue) &&
     isMultiLang &&
-    !isNestedObject &&
+    isNestedObject &&        // <-- burada !isNestedObject yerine isNestedObject olmalı
     !isImage
   ) {
     const safeVal = typeof value === "object" && value !== null ? value : {};
@@ -114,51 +114,62 @@ const ValueInputSection: React.FC<ValueInputSectionProps> = ({
     );
   }
 
-  // Logo Upload (light/dark)
-  if (isLogoUpload && !isMultiLang && !isNestedObject && !isImage) {
+  // 3) Çoklu image upload (logo, navbar, footer, images vs)
+  if (isImageKey && !isMultiLang && !isNestedObject) {
+    // Mevcut görselleri (API’den gelen value) ve yeni yüklenen dosyaları (files) göster
+    const currentImages = (value && Array.isArray(value) ? value : value?.images) || [];
+    const handleRemoveImage = (img: any) => {
+      if ((img.publicId || img._id) && setRemovedImages) {
+        setRemovedImages([...(removedImages || []), img.publicId || img._id]);
+      }
+    };
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFiles?.(e.target.files ? Array.from(e.target.files) : []);
+    };
+
     return (
-      <LogoUploadWrapper>
-        <div>
-          <Label>{t("lightLogo", "Light Logo")}</Label>
-          <Input
+      <ImageWrapper>
+        <Label>
+          {t("images", "Images")}
+          <input
             type="file"
             accept="image/*"
-            onChange={(e) => setLightFile && setLightFile(e.target.files?.[0] || null)}
-            disabled={isEditing}
+            multiple
+            onChange={handleFileChange}
           />
-          {lightFile && <FileInfo>{lightFile.name}</FileInfo>}
-        </div>
-        <div>
-          <Label>{t("darkLogo", "Dark Logo")}</Label>
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setDarkFile && setDarkFile(e.target.files?.[0] || null)}
-            disabled={isEditing}
-          />
-          {darkFile && <FileInfo>{darkFile.name}</FileInfo>}
-        </div>
-      </LogoUploadWrapper>
+        </Label>
+        <ImagePreviews>
+          {/* Mevcut görseller (kaldırılabilir) */}
+          {currentImages
+            .filter(
+              (img: any) =>
+                !removedImages?.includes(img.publicId || img._id || "")
+            )
+            .map((img: any, idx: number) => (
+              <PreviewBox key={img.publicId || img._id || img.url || idx}>
+                <PreviewImg src={img.url} alt={img.publicId || img._id || `img-${idx}`} />
+                {setRemovedImages && (
+                  <RemoveImgBtn
+                    type="button"
+                    onClick={() => handleRemoveImage(img)}
+                  >
+                    ×
+                  </RemoveImgBtn>
+                )}
+              </PreviewBox>
+            ))}
+          {/* Yeni eklenen dosyalar (henüz yüklenmemiş) */}
+          {files?.map((file, idx) => (
+            <PreviewBox key={file.name + idx}>
+              <PreviewImg src={URL.createObjectURL(file)} alt={file.name} />
+            </PreviewBox>
+          ))}
+        </ImagePreviews>
+      </ImageWrapper>
     );
   }
 
-  // Single Image Upload
-  if (isImage && !isMultiLang && !isNestedObject && !isLogoUpload) {
-    return (
-      <>
-        <Label>{t("uploadImage", "Upload Image")}</Label>
-        <Input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setFile && setFile(e.target.files?.[0] || null)}
-          disabled={isEditing}
-        />
-        {file && <FileInfo>{file.name}</FileInfo>}
-      </>
-    );
-  }
-
-  // Available Themes (comma separated list)
+  // 4) Available Themes (comma separated veya array)
   if (keyValue === "available_themes") {
     return (
       <>
@@ -167,13 +178,12 @@ const ValueInputSection: React.FC<ValueInputSectionProps> = ({
           type="text"
           value={Array.isArray(value) ? value.join(", ") : value || ""}
           onChange={(e) => setValue(e.target.value)}
-          disabled={isEditing}
         />
       </>
     );
   }
 
-  // Theme Selection (site_template)
+  // 5) Theme Selection (site_template)
   if (keyValue === "site_template") {
     return (
       <>
@@ -181,7 +191,7 @@ const ValueInputSection: React.FC<ValueInputSectionProps> = ({
         <Select
           value={value || ""}
           onChange={(e) => setValue(e.target.value)}
-          disabled={isEditing || !availableThemes?.length}
+          disabled={!availableThemes?.length}
         >
           <option value="" disabled>
             {t("selectTheme", "Select Theme")}
@@ -196,20 +206,8 @@ const ValueInputSection: React.FC<ValueInputSectionProps> = ({
     );
   }
 
-  // Footer Social Links
-  if (keyValue === "footer_social_links" && isNestedObject) {
-    const socialLinks =
-      typeof value === "object" && !Array.isArray(value) ? value : {};
-    return (
-      <NestedSocialLinksEditor
-        value={socialLinks}
-        setValue={setValue}
-      />
-    );
-  }
-
-  // Generic Nested Object
-  if (isNestedObject && !isMultiLang && !isImage && !isLogoUpload) {
+  // 6) Generic Nested Object (herhangi bir anahtar için json object)
+  if (isNestedObject && !isMultiLang && !isImage && !isImageKey) {
     const nestedValue =
       typeof value === "object" && value !== null ? value : {};
     return (
@@ -221,7 +219,7 @@ const ValueInputSection: React.FC<ValueInputSectionProps> = ({
     );
   }
 
-  // Plain String Input
+  // 7) Plain String Input (default fallback)
   return (
     <>
       <Label>{t("value", "Value")}</Label>
@@ -229,7 +227,6 @@ const ValueInputSection: React.FC<ValueInputSectionProps> = ({
         type="text"
         value={typeof value === "string" ? value : ""}
         onChange={(e) => setValue(e.target.value)}
-        disabled={isEditing}
       />
     </>
   );
@@ -238,7 +235,6 @@ const ValueInputSection: React.FC<ValueInputSectionProps> = ({
 export default ValueInputSection;
 
 // --- Styled Components ---
-
 const Label = styled.label`
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   margin-bottom: ${({ theme }) => theme.spacings.xs};
@@ -272,17 +268,52 @@ const Select = styled.select`
   width: 100%;
 `;
 
-const FileInfo = styled.div`
-  margin-top: ${({ theme }) => theme.spacings.sm};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  color: ${({ theme }) => theme.colors.textSecondary};
+const ImageWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacings.sm};
 `;
 
-const LogoUploadWrapper = styled.div`
+const ImagePreviews = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacings.md};
+  gap: ${({ theme }) => theme.spacings.sm};
   flex-wrap: wrap;
-  > div {
-    flex: 1 1 200px;
+`;
+
+const PreviewBox = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const PreviewImg = styled.img`
+  margin-top: ${({ theme }) => theme.spacings.xs};
+  max-width: 120px;
+  max-height: 80px;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  object-fit: contain;
+`;
+
+const RemoveImgBtn = styled.button`
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ff4d4f;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.11);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  &:hover {
+    background: #f5222d;
   }
 `;

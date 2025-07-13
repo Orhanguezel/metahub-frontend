@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import styled from "styled-components";
-import { ChatMessage } from "@/modules/chat/types/chat";
+import { ChatMessage } from "@/modules/chat/types";
 
 interface Props {
   chatMessages: Array<ChatMessage & { lang?: "tr" | "en" | "de" }>;

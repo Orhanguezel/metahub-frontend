@@ -2,10 +2,11 @@
 import React from "react";
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 
 const FeedbacksCard = () => {
-  const { t } = useTranslation("admin-dashboard");
+  const { t } = useI18nNamespace("dashboard", translations);
   // Stat grid ile aynı key, future-proof:
   const count = useAppSelector((s) => s.dashboard.stats?.feedbacks ?? 0);
 

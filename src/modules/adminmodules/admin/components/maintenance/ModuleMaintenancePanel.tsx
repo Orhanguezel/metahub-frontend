@@ -6,18 +6,21 @@ import {
   repairModuleSettings,
   assignAllModulesToTenant,
   cleanupOrphanModuleSettings,
-  fetchModuleTenantMatrix,
 } from "@/modules/adminmodules/slices/moduleMaintenanceSlice";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales";
 
-import MaintenanceLogBox from "./MaintenanceLogBox";
-import ModuleTenantMatrixTable from "./ModuleTenantMatrixTable";
-import BatchUpdateModuleForm from "./BatchUpdateModuleForm";
-import BatchCleanupOrphanSettings from "./BatchCleanupOrphanSettings";
-import BatchAssignModuleForm from "./BatchAssignModuleForm";
-import BatchDeleteModulesForm from "./BatchDeleteModulesForm";
-import BatchAddTenantsForm from "./BatchAddTenantsForm";
-import ModuleJsonImportExportPanel from "./ModuleJsonImportExportPanel";
+import {
+  ModuleTenantMatrixTable,
+  BatchUpdateModuleForm,
+  BatchCleanupOrphanSettings,
+  BatchAssignModuleForm,
+  BatchDeleteModulesForm,
+  BatchAddTenantsForm,
+  ModuleJsonImportExportPanel,
+  MaintenanceLogBox,
+} from "@/modules/adminmodules";
+
 
 interface ModuleMaintenancePanelProps {
   selectedTenant?: string;
@@ -27,7 +30,7 @@ const ModuleMaintenancePanel: React.FC<ModuleMaintenancePanelProps> = ({
   selectedTenant,
 }) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("adminModules");
+   const { t } = useI18nNamespace("adminModules", translations);
   const { maintenanceLoading, maintenanceError, lastAction } = useAppSelector(
     (state) => state.moduleMaintenance
   );
@@ -59,7 +62,7 @@ const ModuleMaintenancePanel: React.FC<ModuleMaintenancePanelProps> = ({
           {t("cleanupOrphan", "Cleanup Orphan Settings")}
         </MaintButton>
         <MaintButton
-          onClick={() => dispatch(fetchModuleTenantMatrix())}
+          onClick={() => {}}
           disabled={maintenanceLoading}
         >
           {t("fetchMatrix", "Fetch Module-Tenant Matrix")}
@@ -81,24 +84,24 @@ const ModuleMaintenancePanel: React.FC<ModuleMaintenancePanelProps> = ({
       )}
 
       <CardSection>
-        <Card>
+        <MaintCard>
           <BatchUpdateModuleForm />
-        </Card>
-        <Card>
+        </MaintCard>
+        <MaintCard>
           <BatchCleanupOrphanSettings />
-        </Card>
-        <Card>
+        </MaintCard>
+        <MaintCard>
           <BatchAssignModuleForm />
-        </Card>
-        <Card>
+        </MaintCard>
+        <MaintCard>
           <BatchDeleteModulesForm />
-        </Card>
-        <Card>
+        </MaintCard>
+        <MaintCard>
           <BatchAddTenantsForm />
-        </Card>
-        <Card>
+        </MaintCard>
+        <MaintCard>
           <ModuleJsonImportExportPanel />
-        </Card>
+        </MaintCard>
       </CardSection>
 
       <LogSection>
@@ -165,7 +168,7 @@ const CardSection = styled.div`
   margin-bottom: 24px;
 `;
 
-const Card = styled.div`
+const MaintCard = styled.div`
   background: #222b3d;
   border-radius: 11px;
   padding: 24px 18px 18px 18px;

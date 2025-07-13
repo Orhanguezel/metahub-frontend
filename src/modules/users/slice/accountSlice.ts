@@ -191,15 +191,24 @@ const accountSlice = createSlice({
       })
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.loading = false;
+        // Eğer hata 401/unauthorized ise, error alanını null bırak!
+        const payload = action.payload as any;
+        const isAuthError =
+          (typeof payload === "object" &&
+            (payload.status === 401 || payload.statusCode === 401)) ||
+          (typeof payload === "string" &&
+            payload.toLowerCase().includes("unauthorized"));
         state.profile = null;
-        if (typeof action.payload === "string") {
-          state.error = action.payload;
+        if (isAuthError) {
+          state.error = null;
+        } else if (typeof payload === "string") {
+          state.error = payload;
         } else if (
-          action.payload &&
-          typeof action.payload === "object" &&
-          "message" in action.payload
+          payload &&
+          typeof payload === "object" &&
+          "message" in payload
         ) {
-          state.error = (action.payload as any).message;
+          state.error = payload.message;
         } else {
           state.error = "User profile could not be loaded.";
         }

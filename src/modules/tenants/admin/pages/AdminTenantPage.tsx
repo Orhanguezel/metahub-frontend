@@ -1,29 +1,55 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+
 import {
   createTenant,
   updateTenant,
   deleteTenant,
   setSelectedTenant,
   clearSelectedTenant,
+  clearTenantMessages, // Ekledik!
+  fetchTenants,        // Lazy fetch için öneri
 } from "@/modules/tenants/slice/tenantSlice";
 import { ITenant } from "@/modules/tenants/types";
 import { TenantFormModal, TenantList, TenantTabs } from "@/modules/tenants";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import type { SupportedLocale } from "@/types/common";
 
 type ActiveTab = "list" | "form";
 
 export default function AdminTenantPage() {
   const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("tenants");
-  const lang = i18n.language || "en";
+  const { i18n, t } = useI18nNamespace("tenant", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  const { tenants, loading, error, selectedTenant } = useAppSelector(
-    (state) => state.tenant
+  const { tenants, loading, error, selectedTenant, successMessage } = useAppSelector(
+    (state) => state.tenants
   );
   const [activeTab, setActiveTab] = useState<ActiveTab>("list");
+
+  // --- Merkezi fetch: ilk açılışta ve tenant değiştiğinde sadece bir kez fetchle
+  useEffect(() => {
+    if (!tenants.length) dispatch(fetchTenants());
+    // Unmount'ta mesajları sıfırla (geri dönünce eski error/success mesajı kalmaz)
+    return () => {
+      dispatch(clearTenantMessages());
+    };
+  }, [dispatch, tenants.length]);
+
+  // --- Toast ile mesaj göstermek için öneri
+  useEffect(() => {
+    if (successMessage) {
+      // toast.success(successMessage); // toastify entegre ise açabilirsin
+      dispatch(clearTenantMessages());
+    }
+    if (error) {
+      // toast.error(error);
+      dispatch(clearTenantMessages());
+    }
+  }, [successMessage, error, dispatch]);
 
   // Modal Submit
   const handleFormSubmit = async (formData: FormData, id?: string) => {
@@ -101,9 +127,8 @@ export default function AdminTenantPage() {
     </Wrapper>
   );
 }
-// ...styled-components aynı kalabilir
 
-// ----------------- Styled Components -----------------
+// ------------- Styled Components aynı kalabilir -----------------
 const Wrapper = styled.div`
   max-width: 1200px;
   margin: auto;

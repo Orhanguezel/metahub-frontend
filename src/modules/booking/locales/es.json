@@ -1,80 +1,124 @@
 {
   "page": {
-    "allBike": "Todas las bicicletas",
-    "noBike": "No se encontraron bicicletas.",
-    "price": "Precio",
-    "stock": "Stock",
-    "brand": "Marca",
-    "readMore": "Ver detalles →",
-    "other": "Otros productos",
-    "untitled": "Sin título",
-    "noSummary": "Sin descripción.",
-    "bike": {
-      "title": "Bicicleta destacada",
-      "readMore": "Ver detalles",
-      "all": "Todas las bicicletas"
-    }
+    "title": "Reservar Cita",
+    "description": "Rellena el siguiente formulario para programar tu cita."
+  },
+  "form": {
+    "noAvailableTimes": "No hay horarios disponibles",
+    "selectTime": "Seleccionar hora",
+    "loading": "Cargando horarios disponibles...",
+    "noAvailableSlots": "No se encontraron horarios disponibles.",
+    "availableSlots": "Horarios Disponibles",
+    "name": "Nombre Apellido",
+    "email": "Correo electrónico",
+    "phone": "Teléfono",
+    "service": "Servicio",
+    "serviceType": "Tipo de Servicio",
+    "note": "Nota",
+    "date": "Fecha",
+    "time": "Hora",
+    "submit": "Reservar Cita",
+    "selectService": "Seleccionar servicio",
+    "selectDate": "Seleccionar fecha",
+    "required": "Por favor, completa todos los campos obligatorios.",
+    "success": "¡Tu cita ha sido creada con éxito!",
+    "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+    "fullyBooked": "Completo",
+    "title": "Horarios de Trabajo",
+    "closed": "Cerrado",
+    "todayClosed": "Hoy, cerrado todo el día."
   },
   "admin": {
     "tabs": {
-      "bike": "Bicicletas",
-      "create": "Nueva bicicleta",
-      "categories": "Categorías"
+      "bookings": "Citas",
+      "slots": "Gestión de horarios"
     },
-    "bike": {
-      "create": "Agregar nueva bicicleta",
-      "edit": "Editar bicicleta",
-      "name": "Nombre de la bicicleta",
-      "description": "Descripción",
-      "brand": "Marca",
-      "price": "Precio",
-      "stock": "Stock",
-      "tags": "Etiquetas",
-      "image": "Imagen",
-      "category": "Categoría",
-      "select_category": "Seleccionar categoría",
-      "publish_status": "¿Publicado?",
-      "no_images": "Sin imágenes",
-      "publish": "Publicar",
-      "unpublish": "Ocultar",
-      "empty": "No hay bicicletas disponibles."
+    "title": "Gestionar Citas",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar esta cita?",
+    "noBookings": "No se encontraron citas.",
+    "columns": {
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "service": "Servicio",
+      "datetime": "Fecha / Hora",
+      "status": "Estado",
+      "actions": "Acciones"
     },
-    "categories": {
-      "title": "Categorías de bicicletas",
-      "add": "Nueva categoría",
-      "empty": "No se encontraron categorías."
+    "modal": {
+      "title": "Actualizar Estado de la Cita",
+      "statusInfo": "'Pendiente' significa que la cita está esperando la aprobación del administrador. El cliente solo recibirá un correo electrónico después de la confirmación.",
+      "select": "Seleccionar estado",
+      "updated": "Estado actualizado correctamente.",
+      "updateError": "Error al actualizar el estado."
     },
-    "language": {
-      "en": "Inglés",
-      "tr": "Turco",
-      "de": "Alemán"
+    "status": {
+      "pending": "Pendiente",
+      "confirmed": "Confirmado",
+      "cancelled": "Cancelado"
     },
-    "slug": "Slug",
-    "actions": "Acciones",
+    "statusDescription": {
+      "pending": "Esperando aprobación del administrador. Aún no se ha enviado un correo electrónico al cliente.",
+      "confirmed": "Cita confirmada. Se ha enviado un correo electrónico de confirmación al cliente.",
+      "cancelled": "Cita cancelada. El horario ahora está disponible para otros."
+    },
+    "slotRule": {
+      "updateSuccess": "Regla actualizada correctamente.",
+      "updateError": "No se pudo actualizar la regla.",
+      "editGeneral": "Editar Regla General de Horario",
+      "edit": "Editar Regla de Horario",
+      "applyAll": "Aplicar a todos los días",
+      "dayOfWeek": "Día de la semana",
+      "startTime": "Hora de inicio",
+      "endTime": "Hora de fin",
+      "intervalMinutes": "Intervalo entre citas (min)",
+      "break": "Pausa entre citas (min)"
+    }
+  },
+  "slot": {
+    "title": {
+      "rules": "📅 Reglas de Horarios",
+      "overrides": "📌 Excepciones"
+    },
+    "form": {
+      "applyAllDays": "Aplicar a todos los días",
+      "addGeneralRule": "Agregar Regla General",
+      "addRule": "Agregar Regla",
+      "addOverride": "Agregar Excepción",
+      "fullDayOff": "Cerrado Todo el Día"
+    },
+    "success": {
+      "generalCreated": "Regla general creada con éxito.",
+      "created": "Regla creada con éxito.",
+      "overrideCreated": "Excepción creada con éxito."
+    },
+    "error": {
+      "generalExists": "Ya existe una regla general.",
+      "dayExists": "Ya existe una regla para este día.",
+      "create": "No se pudo crear la regla.",
+      "dateRequired": "Por favor, selecciona una fecha.",
+      "overrideCreate": "No se pudo crear la excepción."
+    },
+    "weekdays": {
+      "0": "Domingo",
+      "1": "Lunes",
+      "2": "Martes",
+      "3": "Miércoles",
+      "4": "Jueves",
+      "5": "Viernes",
+      "6": "Sábado",
+      "all": "Todos los días"
+    },
+    "info": {
+      "noDayRules": "No hay reglas específicas por día definidas.",
+      "noOverrides": "No hay excepciones definidas."
+    }
+  },
+  "common": {
+    "loading": "Cargando...",
     "edit": "Editar",
     "delete": "Eliminar",
-    "cancel": "Cancelar",
     "update": "Actualizar",
-    "create": "Crear",
-    "yes": "Sí",
-    "no": "No",
-    "loading": "Cargando...",
-    "confirm": {
-      "delete": "¿Estás seguro de que quieres eliminar esta categoría?",
-      "delete_bike": "¿Estás seguro de que quieres eliminar esta bicicleta?"
-    },
-    "optional_description": "Descripción (opcional)",
-    "category_info": "¿De qué trata esta categoría?",
-    "saving": "Guardando...",
-    "save": "Guardar",
-    "update2": "Actualizar",
-    "editCategory": "Editar categoría",
-    "newCategory": "Nueva categoría"
-  },
-  "seo": {
-    "title": "Título SEO",
-    "description": "Descripción SEO"
-  },
-  "none": "Ninguno",
-  "delete_confirm": "¿Estás seguro de que quieres eliminar?"
+    "updating": "Actualizando...",
+    "cancel": "Cancelar"
+  }
 }

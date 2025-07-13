@@ -4,6 +4,11 @@
     "description": "Aşağıdaki formu doldurarak randevunuzu planlayabilirsiniz."
   },
   "form": {
+    "noAvailableTimes": "Mevcut zaman dilimi yok",
+    "selectTime": "Saat seçiniz",
+    "loading": "Mevcut slotlar yükleniyor...",
+    "noAvailableSlots": "Mevcut slot bulunamadı.",
+    "availableSlots": "Mevcut Slotlar",
     "name": "Ad Soyad",
     "email": "E-posta",
     "phone": "Telefon",
@@ -15,15 +20,22 @@
     "submit": "Randevu Oluştur",
     "selectService": "Hizmet seçiniz",
     "selectDate": "Tarih seçiniz",
-    "selectTime": "Saat seçiniz",
     "required": "Lütfen tüm zorunlu alanları doldurunuz.",
     "success": "Randevunuz başarıyla oluşturuldu!",
-    "error": "Bir hata oluştu. Lütfen tekrar deneyin."
+    "error": "Bir hata oluştu. Lütfen tekrar deneyin.",
+    "fullyBooked": "Dolu",
+    "title": "Çalışma Saatleri",
+    "closed": "Kapalı",
+    "todayClosed": "Bugün tüm gün kapalı."
   },
   "admin": {
+    "tabs": {
+      "bookings": "Randevular",
+      "slots": "Slot Yönetimi"
+    },
     "title": "Randevuları Yönet",
-    "noBookings": "Herhangi bir randevu bulunamadı.",
     "confirmDelete": "Bu randevuyu silmek istediğinize emin misiniz?",
+    "noBookings": "Herhangi bir randevu bulunamadı.",
     "columns": {
       "name": "Ad",
       "email": "E-posta",
@@ -34,6 +46,7 @@
     },
     "modal": {
       "title": "Randevu Durumunu Güncelle",
+      "statusInfo": "‘Bekliyor’ durumu, randevunun onay beklediğini belirtir. Müşteri yalnızca onayladığınızda bir e-posta alacaktır.",
       "select": "Durum Seçiniz",
       "updated": "Durum başarıyla güncellendi.",
       "updateError": "Durum güncellenemedi."
@@ -42,24 +55,70 @@
       "pending": "Bekliyor",
       "confirmed": "Onaylandı",
       "cancelled": "İptal Edildi"
+    },
+    "statusDescription": {
+      "pending": "Yönetici onayı bekliyor. Müşteriye henüz e-posta gönderilmedi.",
+      "confirmed": "Randevu onaylandı. Müşteriye onay e-postası gönderildi.",
+      "cancelled": "Randevu iptal edildi. Slot tekrar kullanılabilir hale geldi."
+    },
+    "slotRule": {
+      "updateSuccess": "Kural başarıyla güncellendi.",
+      "updateError": "Kural güncellenemedi.",
+      "editGeneral": "Genel Slot Kuralını Düzenle",
+      "edit": "Slot Kuralını Düzenle",
+      "applyAll": "Tüm günlere uygula",
+      "dayOfWeek": "Haftanın Günü",
+      "startTime": "Başlangıç Saati",
+      "endTime": "Bitiş Saati",
+      "intervalMinutes": "Randevu Aralığı (dk)",
+      "break": "Randevu Arası (dk)"
     }
   },
   "slot": {
-    "rules": "Slot Kuralları",
-    "overrides": "İstisnalar",
-    "addRule": "Kural Ekle",
-    "addOverride": "İstisna Ekle",
-    "fullDayOff": "Tüm Gün Kapalı",
-    "interval": "Aralık (dk)",
-    "break": "Randevu Arası (dk)",
-    "edit": "Düzenle",
-    "delete": "Sil"
+    "title": {
+      "rules": "📅 Slot Kuralları",
+      "overrides": "📌 İstisnalar"
+    },
+    "form": {
+      "applyAllDays": "Tüm günlere uygula",
+      "addGeneralRule": "Genel Kural Ekle",
+      "addRule": "Kural Ekle",
+      "addOverride": "İstisna Ekle",
+      "fullDayOff": "Tüm Gün Kapalı"
+    },
+    "success": {
+      "generalCreated": "Genel kural başarıyla oluşturuldu.",
+      "created": "Kural başarıyla oluşturuldu.",
+      "overrideCreated": "İstisna başarıyla oluşturuldu."
+    },
+    "error": {
+      "generalExists": "Zaten bir genel kural mevcut.",
+      "dayExists": "Bu gün için zaten bir kural mevcut.",
+      "create": "Kural oluşturulamadı.",
+      "dateRequired": "Lütfen bir tarih seçiniz.",
+      "overrideCreate": "İstisna oluşturulamadı."
+    },
+    "weekdays": {
+      "0": "Pazar",
+      "1": "Pazartesi",
+      "2": "Salı",
+      "3": "Çarşamba",
+      "4": "Perşembe",
+      "5": "Cuma",
+      "6": "Cumartesi",
+      "all": "Tüm Günler"
+    },
+    "info": {
+      "noDayRules": "Güne özel tanımlı kural yok.",
+      "noOverrides": "Tanımlı istisna bulunamadı."
+    }
   },
   "common": {
     "loading": "Yükleniyor...",
     "edit": "Düzenle",
     "delete": "Sil",
     "update": "Güncelle",
+    "updating": "Güncelleniyor...",
     "cancel": "İptal"
   }
 }

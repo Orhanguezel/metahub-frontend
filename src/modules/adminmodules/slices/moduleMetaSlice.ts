@@ -148,7 +148,7 @@ const moduleMetaSlice = createSlice({
   name: "moduleMeta",
   initialState,
   reducers: {
-    clearMetaMessages: (state) => {
+    clearModuleMetaMessages: (state) => {
       state.error = null;
       state.successMessage = null;
     },
@@ -282,6 +282,6 @@ const moduleMetaSlice = createSlice({
   },
 });
 
-export const { clearMetaMessages, clearSelectedModule } =
+export const { clearModuleMetaMessages, clearSelectedModule } =
   moduleMetaSlice.actions;
 export default moduleMetaSlice.reducer;

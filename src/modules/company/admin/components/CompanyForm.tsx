@@ -1,8 +1,8 @@
 "use client";
-
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import ImageUploadWithPreview from "@/shared/ImageUploadWithPreview";
@@ -15,35 +15,30 @@ interface Props {
     newLogos: File[],
     removedLogos?: string[]
   ) => void;
+  loading?: boolean;
 }
 
-const getUrlArray = (logos?: ICompanyImage[]): string[] =>
-  Array.isArray(logos) ? logos.map((img) => img.url) : [];
+const getUrlArray = (images?: ICompanyImage[]): string[] =>
+  Array.isArray(images) ? images.map((img) => img.url) : [];
 
-export default function CompanyForm({ initialValues, onSubmit }: Props) {
-  const { t } = useTranslation("company");
+export default function CompanyForm({ initialValues, onSubmit, loading }: Props) {
+  const { t } = useI18nNamespace("company", translations);
 
-  // Logo state
+  // Logo state'leri initialValues değiştikçe resetlenir!
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
-  const [existingImages, setExistingImages] = useState<string[]>(
-    getUrlArray(initialValues.logos)
-  );
+  const [existingImages, setExistingImages] = useState<string[]>(getUrlArray(initialValues.images));
 
   useEffect(() => {
-    setExistingImages(getUrlArray(initialValues.logos));
+    setExistingImages(getUrlArray(initialValues.images));
     setSelectedFiles([]);
     setRemovedImages([]);
-    // eslint-disable-next-line
-  }, [JSON.stringify(initialValues.logos)]);
+  }, [JSON.stringify(initialValues.images)]);
 
-  // Validasyon
+  // Formik validasyon şeması
   const schema = yup.object().shape({
     companyName: yup.string().required(t("required", "Required")),
-    email: yup
-      .string()
-      .email(t("invalidEmail", "Invalid email"))
-      .required(t("required", "Required")),
+    email: yup.string().email(t("invalidEmail", "Invalid email")).required(t("required", "Required")),
     phone: yup.string().required(t("required", "Required")),
     taxNumber: yup.string().required(t("required", "Required")),
     handelsregisterNumber: yup.string(),
@@ -67,7 +62,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
     }),
   });
 
-  // --- Formik ---
+  // Formik config
   const formik = useFormik<ICompany>({
     initialValues: {
       ...initialValues,
@@ -86,7 +81,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
     },
   });
 
-  // Dosya değişimi
+  // Resim değişimini formik state dışı yönet
   const handleLogoChange = useCallback(
     (files: File[], removed: string[], current: string[]) => {
       setSelectedFiles(files);
@@ -96,7 +91,6 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
     []
   );
 
-  // UI
   return (
     <FormStyled onSubmit={formik.handleSubmit} autoComplete="off" noValidate>
       <SectionTitle>{t("companyInfo", "Company Info")}</SectionTitle>
@@ -109,6 +103,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
         onChange={formik.handleChange}
         autoComplete="organization"
         $hasError={!!formik.errors.companyName && !!formik.touched.companyName}
+        disabled={loading}
       />
       <FieldError>
         {formik.touched.companyName && formik.errors.companyName}
@@ -123,6 +118,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
         onChange={formik.handleChange}
         autoComplete="email"
         $hasError={!!formik.errors.email && !!formik.touched.email}
+        disabled={loading}
       />
       <FieldError>{formik.touched.email && formik.errors.email}</FieldError>
 
@@ -134,6 +130,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
         onChange={formik.handleChange}
         autoComplete="tel"
         $hasError={!!formik.errors.phone && !!formik.touched.phone}
+        disabled={loading}
       />
       <FieldError>{formik.touched.phone && formik.errors.phone}</FieldError>
 
@@ -144,6 +141,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
         value={formik.values.taxNumber}
         onChange={formik.handleChange}
         $hasError={!!formik.errors.taxNumber && !!formik.touched.taxNumber}
+        disabled={loading}
       />
       <FieldError>
         {formik.touched.taxNumber && formik.errors.taxNumber}
@@ -157,6 +155,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
         name="handelsregisterNumber"
         value={formik.values.handelsregisterNumber || ""}
         onChange={formik.handleChange}
+        disabled={loading}
       />
 
       <SectionTitle>{t("address", "Address")}</SectionTitle>
@@ -170,6 +169,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
         $hasError={
           !!formik.errors.address?.street && !!formik.touched.address?.street
         }
+        disabled={loading}
       />
       <FieldError>
         {formik.touched.address?.street &&
@@ -186,6 +186,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
         $hasError={
           !!formik.errors.address?.city && !!formik.touched.address?.city
         }
+        disabled={loading}
       />
       <FieldError>
         {formik.touched.address?.city && (formik.errors.address as any)?.city}
@@ -204,6 +205,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
           !!formik.errors.address?.postalCode &&
           !!formik.touched.address?.postalCode
         }
+        disabled={loading}
       />
       <FieldError>
         {formik.touched.address?.postalCode &&
@@ -220,6 +222,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
         $hasError={
           !!formik.errors.address?.country && !!formik.touched.address?.country
         }
+        disabled={loading}
       />
       <FieldError>
         {formik.touched.address?.country &&
@@ -237,6 +240,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
           !!formik.errors.bankDetails?.bankName &&
           !!formik.touched.bankDetails?.bankName
         }
+        disabled={loading}
       />
       <FieldError>
         {formik.touched.bankDetails?.bankName &&
@@ -253,6 +257,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
           !!formik.errors.bankDetails?.iban &&
           !!formik.touched.bankDetails?.iban
         }
+        disabled={loading}
       />
       <FieldError>
         {formik.touched.bankDetails?.iban &&
@@ -271,6 +276,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
           !!formik.errors.bankDetails?.swiftCode &&
           !!formik.touched.bankDetails?.swiftCode
         }
+        disabled={loading}
       />
       <FieldError>
         {formik.touched.bankDetails?.swiftCode &&
@@ -284,6 +290,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
         name="socialLinks.facebook"
         value={formik.values.socialLinks?.facebook || ""}
         onChange={formik.handleChange}
+        disabled={loading}
       />
       <Label htmlFor="socialLinks.instagram">Instagram</Label>
       <Input
@@ -291,6 +298,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
         name="socialLinks.instagram"
         value={formik.values.socialLinks?.instagram || ""}
         onChange={formik.handleChange}
+        disabled={loading}
       />
       <Label htmlFor="socialLinks.twitter">Twitter</Label>
       <Input
@@ -298,6 +306,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
         name="socialLinks.twitter"
         value={formik.values.socialLinks?.twitter || ""}
         onChange={formik.handleChange}
+        disabled={loading}
       />
       <Label htmlFor="socialLinks.linkedin">LinkedIn</Label>
       <Input
@@ -305,6 +314,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
         name="socialLinks.linkedin"
         value={formik.values.socialLinks?.linkedin || ""}
         onChange={formik.handleChange}
+        disabled={loading}
       />
       <Label htmlFor="socialLinks.youtube">YouTube</Label>
       <Input
@@ -312,6 +322,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
         name="socialLinks.youtube"
         value={formik.values.socialLinks?.youtube || ""}
         onChange={formik.handleChange}
+        disabled={loading}
       />
 
       <SectionTitle>{t("logoUpload", "Upload Logo(s)")}</SectionTitle>
@@ -325,7 +336,7 @@ export default function CompanyForm({ initialValues, onSubmit }: Props) {
       <Button
         type="submit"
         aria-label={t("save", "Save Company")}
-        disabled={formik.isSubmitting}
+        disabled={formik.isSubmitting || loading}
       >
         {t("save", "Save Company")}
       </Button>

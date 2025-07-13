@@ -1,153 +1,125 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import styled from "styled-components";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  fetchSlotRules,
-  fetchSlotOverrides,
-  deleteSlotRule,
-  deleteSlotOverride,
-  createSlotRule,
-  createSlotOverride,
+  deleteSlotRuleAdmin,
+  deleteSlotOverrideAdmin,
+  createSlotRuleAdmin,
+  createSlotOverrideAdmin,
 } from "@/modules/booking/slice/bookingSlotSlice";
 import { toast } from "react-toastify";
 import { SlotRuleModal } from "@/modules/booking";
 import type { IBookingSlotRule } from "@/modules/booking";
 
-// Haftanın günleri isimleri
+// Haftanın günleri
 const weekDays = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 ];
 
 export default function SlotManager() {
+  const { t } = useI18nNamespace("booking", translations);
   const dispatch = useAppDispatch();
-  const { rules, overrides, loading } = useAppSelector(
+
+  const { rulesAdmin: rules, overridesAdmin: overrides, loading } = useAppSelector(
     (state) => state.bookingSlot
   );
 
-  // appliesToAll (genel kural) ve diğerleri ayrımı
-  const allRule = useMemo(
-    () => rules.find((r) => (r as any).appliesToAll),
-    [rules]
-  );
-  const dailyRules = useMemo(
-    () => rules.filter((r) => !(r as any).appliesToAll),
-    [rules]
-  );
+  const allRule = useMemo(() => rules.find((r) => r.appliesToAll), [rules]);
+  const dailyRules = useMemo(() => rules.filter((r) => !r.appliesToAll), [rules]);
 
-  // Form state
-  const [newRule, setNewRule] = useState({
+  const [newRule, setNewRule] = useState<Omit<IBookingSlotRule, "_id" | "createdAt" | "updatedAt" | "isActive"> & { isActive?: boolean }>({
+    tenant: "",
     dayOfWeek: 1,
     startTime: "09:00",
     endTime: "23:00",
     intervalMinutes: 60,
     breakBetweenAppointments: 15,
     appliesToAll: false,
+    isActive: true,
   });
 
   const [overrideDate, setOverrideDate] = useState("");
   const [fullDayOff, setFullDayOff] = useState(false);
-
   const [editRule, setEditRule] = useState<IBookingSlotRule | null>(null);
 
-  useEffect(() => {
-    dispatch(fetchSlotRules());
-    dispatch(fetchSlotOverrides());
-  }, [dispatch]);
-
-  // Kural ekleme: appliesToAll ise unique, dayOfWeek ise unique
   const handleRuleCreate = async () => {
     try {
-      // Genel (appliesToAll) için
       if (newRule.appliesToAll) {
         if (allRule) {
-          toast.error("There is already a general rule for all days.");
+          toast.error(t("slot.error.generalExists", "There is already a general rule for all days."));
           return;
         }
-        await dispatch(
-          createSlotRule({ ...newRule, appliesToAll: true })
-        ).unwrap();
-        toast.success("General rule created.");
+        await dispatch(createSlotRuleAdmin({ ...newRule, appliesToAll: true, dayOfWeek: undefined })).unwrap();
+        toast.success(t("slot.success.generalCreated", "General rule created."));
       } else {
-        // Günlük kural için (aynı güne iki tane eklenemez)
-        const exists = dailyRules.find(
-          (r) => r.dayOfWeek === newRule.dayOfWeek
-        );
+        const exists = dailyRules.find((r) => r.dayOfWeek === newRule.dayOfWeek);
         if (exists) {
-          toast.error("There is already a rule for this day.");
+          toast.error(t("slot.error.dayExists", "There is already a rule for this day."));
           return;
         }
-        await dispatch(createSlotRule(newRule)).unwrap();
-        toast.success("Rule created.");
+        await dispatch(createSlotRuleAdmin(newRule)).unwrap();
+        toast.success(t("slot.success.created", "Rule created."));
       }
-      setNewRule((p) => ({ ...p, appliesToAll: false })); // formu resetle
+      setNewRule((prev) => ({ ...prev, appliesToAll: false }));
     } catch {
-      toast.error("Failed to create rule.");
+      toast.error(t("slot.error.create", "Failed to create rule."));
     }
   };
 
-  // Override ekleme
   const handleOverrideCreate = async () => {
     if (!overrideDate) {
-      toast.error("Please select a date.");
+      toast.error(t("slot.error.dateRequired", "Please select a date."));
       return;
     }
     try {
-      await dispatch(
-        createSlotOverride({ date: overrideDate, fullDayOff })
-      ).unwrap();
-      toast.success("Override created.");
+      await dispatch(createSlotOverrideAdmin({ date: overrideDate, fullDayOff })).unwrap();
+      toast.success(t("slot.success.overrideCreated", "Override created."));
       setOverrideDate("");
       setFullDayOff(false);
     } catch {
-      toast.error("Failed to create override.");
+      toast.error(t("slot.error.overrideCreate", "Failed to create override."));
     }
   };
 
   const handleRuleDelete = async (id: string) => {
-    await dispatch(deleteSlotRule(id));
+    await dispatch(deleteSlotRuleAdmin(id));
   };
 
   const handleOverrideDelete = async (id: string) => {
-    await dispatch(deleteSlotOverride(id));
+    await dispatch(deleteSlotOverrideAdmin(id));
   };
 
   return (
     <Container>
-      {/* GENEL KURAL */}
+      {/* Slot Rule Section */}
       <Section>
-        <SectionTitle>📅 Slot Rules</SectionTitle>
-        <RuleForm>
+        <SectionTitle>{t("slot.title.rules", "📅 Slot Rules")}</SectionTitle>
+        <RuleForm
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleRuleCreate();
+          }}
+        >
           <CheckboxLabel>
             <Checkbox
               type="checkbox"
-              checked={newRule.appliesToAll}
-              onChange={(e) =>
-                setNewRule((prev) => ({
-                  ...prev,
-                  appliesToAll: e.target.checked,
-                }))
-              }
+              checked={!!newRule.appliesToAll}
+              onChange={(e) => setNewRule((prev) => ({ ...prev, appliesToAll: e.target.checked }))}
             />
-            <span>Apply to all days</span>
+            <span>{t("slot.form.applyAllDays", "Apply to all days")}</span>
           </CheckboxLabel>
           {!newRule.appliesToAll && (
             <Select
               value={newRule.dayOfWeek}
-              onChange={(e) =>
-                setNewRule((p) => ({ ...p, dayOfWeek: +e.target.value }))
-              }
+              onChange={(e) => setNewRule((prev) => ({ ...prev, dayOfWeek: +e.target.value }))}
             >
-              {weekDays.map((d, i) => (
-                <option value={i} key={i}>
-                  {d}
+              {weekDays.map((day, index) => (
+                <option key={index} value={index}>
+                  {t(`slot.weekdays.${index}`, day)}
                 </option>
               ))}
             </Select>
@@ -155,103 +127,73 @@ export default function SlotManager() {
           <Input
             type="time"
             value={newRule.startTime}
-            onChange={(e) =>
-              setNewRule((p) => ({ ...p, startTime: e.target.value }))
-            }
-            placeholder="Start"
+            onChange={(e) => setNewRule((prev) => ({ ...prev, startTime: e.target.value }))}
           />
           <Input
             type="time"
             value={newRule.endTime}
-            onChange={(e) =>
-              setNewRule((p) => ({ ...p, endTime: e.target.value }))
-            }
-            placeholder="End"
+            onChange={(e) => setNewRule((prev) => ({ ...prev, endTime: e.target.value }))}
           />
           <Input
             type="number"
-            value={newRule.intervalMinutes}
             min={1}
-            onChange={(e) =>
-              setNewRule((p) => ({ ...p, intervalMinutes: +e.target.value }))
-            }
-            placeholder="Interval"
+            value={newRule.intervalMinutes}
+            onChange={(e) => setNewRule((prev) => ({ ...prev, intervalMinutes: +e.target.value }))}
           />
           <Input
             type="number"
-            value={newRule.breakBetweenAppointments}
             min={0}
-            onChange={(e) =>
-              setNewRule((p) => ({
-                ...p,
-                breakBetweenAppointments: +e.target.value,
-              }))
-            }
-            placeholder="Break"
+            value={newRule.breakBetweenAppointments}
+            onChange={(e) => setNewRule((prev) => ({ ...prev, breakBetweenAppointments: +e.target.value }))}
           />
-          <PrimaryButton
-            type="button"
-            onClick={handleRuleCreate}
-            disabled={loading}
-          >
-            {newRule.appliesToAll ? "Add General Rule" : "Add Rule"}
+          <PrimaryButton type="submit" disabled={loading}>
+            {newRule.appliesToAll
+              ? t("slot.form.addGeneralRule", "Add General Rule")
+              : t("slot.form.addRule", "Add Rule")}
           </PrimaryButton>
         </RuleForm>
 
-        {/* General Rule */}
         {allRule && (
           <List>
             <ListItem>
-              <b>All Days</b>: {allRule.startTime} - {allRule.endTime} (
-              {allRule.intervalMinutes}min, break:{" "}
-              {allRule.breakBetweenAppointments}min)
+              <b>{t("slot.weekdays.all", "All Days")}</b>: {allRule.startTime} - {allRule.endTime} ({allRule.intervalMinutes}min, break: {allRule.breakBetweenAppointments}min)
               <ActionButtons>
-                <DangerButton
-                  type="button"
-                  onClick={() => handleRuleDelete(allRule._id)}
-                >
-                  ❌
-                </DangerButton>
+                <DangerButton type="button" onClick={() => handleRuleDelete(allRule._id)}>❌</DangerButton>
               </ActionButtons>
             </ListItem>
           </List>
         )}
 
-        {/* Daily Rules */}
         {dailyRules.length > 0 ? (
           <List>
-            {dailyRules.map((r) => (
-              <ListItem key={r._id}>
-                <b>{weekDays[r.dayOfWeek]}</b>: {r.startTime} - {r.endTime} (
-                {r.intervalMinutes}min, break: {r.breakBetweenAppointments}min)
+            {dailyRules.map((rule) => (
+              <ListItem key={rule._id}>
+                <b>{t(`slot.weekdays.${rule.dayOfWeek}`, weekDays[rule.dayOfWeek])}</b>: {rule.startTime} - {rule.endTime} ({rule.intervalMinutes}min, break: {rule.breakBetweenAppointments}min)
                 <ActionButtons>
-                  <EditButton type="button" onClick={() => setEditRule(r)}>
-                    ✏️
-                  </EditButton>
-                  <DangerButton
-                    type="button"
-                    onClick={() => handleRuleDelete(r._id)}
-                  >
-                    ❌
-                  </DangerButton>
+                  <EditButton type="button" onClick={() => setEditRule(rule)}>✏️</EditButton>
+                  <DangerButton type="button" onClick={() => handleRuleDelete(rule._id)}>❌</DangerButton>
                 </ActionButtons>
               </ListItem>
             ))}
           </List>
         ) : (
-          <MutedText>No day-specific rules defined.</MutedText>
+          <MutedText>{t("slot.info.noDayRules", "No day-specific rules defined.")}</MutedText>
         )}
       </Section>
 
-      {/* OVERRIDES */}
+      {/* Overrides Section */}
       <Section>
-        <SectionTitle>📌 Overrides</SectionTitle>
-        <OverrideForm>
+        <SectionTitle>{t("slot.title.overrides", "📌 Overrides")}</SectionTitle>
+        <OverrideForm
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleOverrideCreate();
+          }}
+        >
           <Input
             type="date"
             value={overrideDate}
             onChange={(e) => setOverrideDate(e.target.value)}
-            placeholder="Date"
           />
           <CheckboxLabel>
             <Checkbox
@@ -259,14 +201,10 @@ export default function SlotManager() {
               checked={fullDayOff}
               onChange={(e) => setFullDayOff(e.target.checked)}
             />
-            Full Day Off
+            {t("slot.form.fullDayOff", "Full Day Off")}
           </CheckboxLabel>
-          <PrimaryButton
-            type="button"
-            onClick={handleOverrideCreate}
-            disabled={loading}
-          >
-            Add
+          <PrimaryButton type="submit" disabled={loading}>
+            {t("slot.form.addOverride", "Add")}
           </PrimaryButton>
         </OverrideForm>
 
@@ -277,35 +215,26 @@ export default function SlotManager() {
                 <b>{o.date}</b>
                 {o.fullDayOff && (
                   <span style={{ marginLeft: 8, color: "#c96" }}>
-                    (Full Day Off)
+                    ({t("slot.form.fullDayOff", "Full Day Off")})
                   </span>
                 )}
                 <ActionButtons>
-                  <DangerButton
-                    type="button"
-                    onClick={() => handleOverrideDelete(o._id)}
-                  >
-                    ❌
-                  </DangerButton>
+                  <DangerButton type="button" onClick={() => handleOverrideDelete(o._id)}>❌</DangerButton>
                 </ActionButtons>
               </ListItem>
             ))}
           </List>
         ) : (
-          <MutedText>No overrides defined.</MutedText>
+          <MutedText>{t("slot.info.noOverrides", "No overrides defined.")}</MutedText>
         )}
       </Section>
 
-      {/* SlotRuleModal ile düzenleme */}
-      {editRule && (
-        <SlotRuleModal rule={editRule} onClose={() => setEditRule(null)} />
-      )}
+      {editRule && <SlotRuleModal rule={editRule} onClose={() => setEditRule(null)} />}
     </Container>
   );
 }
 
-// 💅 Styled Components
-
+// --- Styled Components ---
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacings.xxl};
   background: ${({ theme }) => theme.colors.cardBackground};

@@ -7,8 +7,10 @@ import translations from "../../locales";
 const SYSTEM_KEYS = [
   "available_themes",
   "site_template",
-  "navbar_logos",
-  "footer_logos",
+  "navbar_images",
+  "footer_images",
+  "logo_images",
+  "images",
 ];
 
 interface KeyInputSectionProps {
@@ -35,23 +37,48 @@ const KeyInputSection: React.FC<KeyInputSectionProps> = ({
   setIsNestedObject,
   isEditing,
 }) => {
-  const { i18n, t } = useI18nNamespace("settings", translations);
+  const { t } = useI18nNamespace("settings", translations);
 
+  // System key logic
   const isSystemKey = SYSTEM_KEYS.includes(keyValue);
+
+  // Anahtar image key mi?
+  const isImageKey =
+    ["navbar_images", "footer_images", "logo_images", "images"].includes(
+      keyValue
+    );
+
+  // State mantığını tekilleştir:
+  const canMultiLang = !isImageKey && !isSystemKey;
+  const canNested = !isImageKey && !isSystemKey;
+  const canImage = !isMultiLang && !isNestedObject && !isSystemKey && !isImageKey;
 
   const handleNestedChange = () => {
     const newVal = !isNestedObject;
     setIsNestedObject(newVal);
-    if (newVal) setIsMultiLang(false);
+    if (newVal) {
+      setIsMultiLang(false);
+      setIsImage(false);
+    }
   };
 
   const handleMultiLangChange = () => {
     const newVal = !isMultiLang;
     setIsMultiLang(newVal);
-    if (newVal) setIsNestedObject(false);
+    if (newVal) {
+      setIsNestedObject(false);
+      setIsImage(false);
+    }
   };
 
-  const canImage = !isMultiLang && !isNestedObject && !isSystemKey;
+  const handleImageChange = () => {
+    const newVal = !isImage;
+    setIsImage(newVal);
+    if (newVal) {
+      setIsMultiLang(false);
+      setIsNestedObject(false);
+    }
+  };
 
   return (
     <>
@@ -65,7 +92,8 @@ const KeyInputSection: React.FC<KeyInputSectionProps> = ({
         disabled={isEditing || isSystemKey}
         autoComplete="off"
       />
-      {!isSystemKey && (
+      {/* Sadece sistem keyleri ve image keyleri için check'ler gösterilmez */}
+      {!isSystemKey && !isImageKey && (
         <>
           <CheckboxWrapper>
             <input
@@ -73,7 +101,7 @@ const KeyInputSection: React.FC<KeyInputSectionProps> = ({
               checked={isMultiLang}
               onChange={handleMultiLangChange}
               id="multiLang"
-              disabled={isNestedObject}
+              disabled={!canMultiLang || isEditing}
             />
             <label htmlFor="multiLang">
               {t("multiLanguage", "Multi-Language?")}
@@ -85,7 +113,7 @@ const KeyInputSection: React.FC<KeyInputSectionProps> = ({
               checked={isNestedObject}
               onChange={handleNestedChange}
               id="nestedObject"
-              disabled={isMultiLang}
+              disabled={!canNested || isEditing}
             />
             <label htmlFor="nestedObject">
               {t("nestedObject", "Is Nested Object?")}
@@ -95,15 +123,24 @@ const KeyInputSection: React.FC<KeyInputSectionProps> = ({
             <input
               type="checkbox"
               checked={isImage}
-              onChange={() => setIsImage(!isImage)}
+              onChange={handleImageChange}
               id="isImage"
-              disabled={!canImage}
+              disabled={!canImage || isEditing}
             />
             <label htmlFor="isImage">
               {t("isImage", "Is this a file/image?")}
             </label>
           </CheckboxWrapper>
         </>
+      )}
+      {/* Eğer anahtar image key ise sadece bilgi mesajı ver */}
+      {isImageKey && (
+        <InfoText>
+          {t(
+            "systemImageKeyInfo",
+            "This key accepts multiple image uploads. Value will be managed as images array."
+          )}
+        </InfoText>
       )}
     </>
   );
@@ -135,3 +172,10 @@ const CheckboxWrapper = styled.div`
   gap: ${({ theme }) => theme.spacings.sm};
   margin: ${({ theme }) => theme.spacings.sm} 0;
 `;
+
+const InfoText = styled.div`
+  margin-top: ${({ theme }) => theme.spacings.sm};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.info};
+`;
+

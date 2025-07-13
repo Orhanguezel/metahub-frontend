@@ -1,0 +1,281 @@
+[
+  {
+    "_id": {
+      "$oid": "684ac8ef5339ce2639c16c34"
+    },
+    "title": {
+      "tr": "Updated Title",
+      "en": "Updated Title",
+      "de": "Updated Title",
+      "pl": "Updated Title",
+      "fr": "Updated Title",
+      "es": "Updated Title"
+    },
+    "summary": {
+      "tr": "Özet",
+      "en": "Summary",
+      "de": "Zusammenfassung",
+      "pl": "Özet",
+      "fr": "Özet",
+      "es": "Özet"
+    },
+    "content": {
+      "tr": "İçerik",
+      "en": "Content",
+      "de": "Inhalt",
+      "pl": "İçerik",
+      "fr": "İçerik",
+      "es": "İçerik"
+    },
+    "slug": "makale-basligi",
+    "images": [],
+    "tags": ["example", "tag"],
+    "author": "Orhan Güzel",
+    "category": {
+      "$oid": "684ac8785339ce2639c16c2a"
+    },
+    "isPublished": true,
+    "publishedAt": {
+      "$date": "2025-06-12T12:32:47.978Z"
+    },
+    "comments": [],
+    "isActive": true,
+    "createdAt": {
+      "$date": "2025-06-12T12:32:47.982Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-12T12:34:44.702Z"
+    },
+    "__v": 0,
+    "tenant": "anastasia"
+  },
+  {
+    "_id": {
+      "$oid": "684ac9e85339ce2639c16c40"
+    },
+    "title": {
+      "tr": "Makale Başlığı2",
+      "en": "Article Title2",
+      "de": "Artikel Titel2",
+      "pl": "Makale Başlığı2",
+      "fr": "Makale Başlığı2",
+      "es": "Makale Başlığı2"
+    },
+    "summary": {
+      "tr": "Özet",
+      "en": "Summary",
+      "de": "Zusammenfassung",
+      "pl": "Özet",
+      "fr": "Özet",
+      "es": "Özet"
+    },
+    "content": {
+      "tr": "İçerik",
+      "en": "Content",
+      "de": "Inhalt",
+      "pl": "İçerik",
+      "fr": "İçerik",
+      "es": "İçerik"
+    },
+    "slug": "makale-basligi2",
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1749731816/uploads/metahub/articles-images/web-logo-1749731815522-464159597.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1749731816/uploads/metahub/articles-images/web-logo-1749731815522-464159597.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1749731816/uploads/metahub/articles-images/web-logo-1749731815522-464159597.webp"
+      }
+    ],
+    "tags": ["example", "tag"],
+    "author": "Orhan Güzel",
+    "category": {
+      "$oid": "684ac8785339ce2639c16c2a"
+    },
+    "isPublished": true,
+    "publishedAt": {
+      "$date": "2025-06-12T12:36:56.797Z"
+    },
+    "comments": [],
+    "isActive": true,
+    "createdAt": {
+      "$date": "2025-06-12T12:36:56.800Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-12T12:36:56.800Z"
+    },
+    "__v": 0,
+    "tenant": "anastasia"
+  },
+  {
+    "_id": {
+      "$oid": "685488c66a050fb927eb2c2c"
+    },
+    "title": {
+      "tr": "Makale Başlığı3",
+      "en": "Article Title3",
+      "de": "Artikel Titel3",
+      "pl": "Article Title3",
+      "fr": "Article Title3",
+      "es": "Article Title3"
+    },
+    "tenant": "anastasia",
+    "summary": {
+      "tr": "Özet",
+      "en": "Summary",
+      "de": "Zusammenfassung",
+      "pl": "Summary",
+      "fr": "Summary",
+      "es": "Summary"
+    },
+    "content": {
+      "tr": "İçerik",
+      "en": "Content",
+      "de": "Inhalt",
+      "pl": "Content",
+      "fr": "Content",
+      "es": "Content"
+    },
+    "slug": "makale-basligi3",
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1750370501/uploads/metahub/articles-images/web-logo-1750370501052-53888106.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1750370501/uploads/metahub/articles-images/web-logo-1750370501052-53888106.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1750370501/uploads/metahub/articles-images/web-logo-1750370501052-53888106.webp"
+      }
+    ],
+    "tags": ["example", "tag"],
+    "author": "Orhan Güzel",
+    "category": {
+      "$oid": "685488af6a050fb927eb2c29"
+    },
+    "isPublished": true,
+    "publishedAt": {
+      "$date": "2025-06-19T22:01:42.510Z"
+    },
+    "comments": [],
+    "isActive": true,
+    "createdAt": {
+      "$date": "2025-06-19T22:01:42.514Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-19T22:01:42.514Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6861f1b9daae48523b03c545"
+    },
+    "title": {
+      "tr": "Makale Başlığı5",
+      "en": "Article Title5",
+      "de": "Artikel Titel5",
+      "pl": "Article Title5",
+      "fr": "Article Title5",
+      "es": "Article Title5"
+    },
+    "tenant": "anastasia",
+    "summary": {
+      "tr": "Özet",
+      "en": "Summary",
+      "de": "Zusammenfassung",
+      "pl": "Summary",
+      "fr": "Summary",
+      "es": "Summary"
+    },
+    "content": {
+      "tr": "İçerik",
+      "en": "Content",
+      "de": "Inhalt",
+      "pl": "Content",
+      "fr": "Content",
+      "es": "Content"
+    },
+    "slug": "makale-basligi5",
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751249336/uploads/metahub/articles-images/web-logo-1751249335908-201686725.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751249336/uploads/metahub/articles-images/web-logo-1751249335908-201686725.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751249336/uploads/metahub/articles-images/web-logo-1751249335908-201686725.webp"
+      }
+    ],
+    "tags": ["example", "tag"],
+    "author": "Orhan Güzel",
+    "category": {
+      "$oid": "685488af6a050fb927eb2c29"
+    },
+    "isPublished": true,
+    "publishedAt": {
+      "$date": "2025-06-30T02:08:57.297Z"
+    },
+    "comments": [],
+    "isActive": true,
+    "createdAt": {
+      "$date": "2025-06-30T02:08:57.298Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-30T02:08:57.298Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "68641b6052669bff34b5f098"
+    },
+    "title": {
+      "tr": "Makale Başlığı8",
+      "en": "Article Title8",
+      "de": "Artikel Titel8",
+      "pl": "Article Title8",
+      "fr": "Article Title8",
+      "es": "Article Title8"
+    },
+    "tenant": "anastasia",
+    "summary": {
+      "tr": "Özet",
+      "en": "Summary",
+      "de": "Zusammenfassung",
+      "pl": "Summary",
+      "fr": "Summary",
+      "es": "Summary"
+    },
+    "content": {
+      "tr": "İçerik",
+      "en": "Content",
+      "de": "Inhalt",
+      "pl": "Content",
+      "fr": "Content",
+      "es": "Content"
+    },
+    "slug": "makale-basligi8",
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751391071/uploads/metahub/articles-images/web-logo-1751391070952-413193128.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751391071/uploads/metahub/articles-images/web-logo-1751391070952-413193128.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751391071/uploads/metahub/articles-images/web-logo-1751391070952-413193128.webp"
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751540622/uploads/metahub/articles-images/metahub-1751540621087-922475111.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751540622/uploads/metahub/articles-images/metahub-1751540621087-922475111.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751540622/uploads/metahub/articles-images/metahub-1751540621087-922475111.webp"
+      }
+    ],
+    "tags": ["example", "tag"],
+    "author": "Orhan Güzel",
+    "category": {
+      "$oid": "685488af6a050fb927eb2c29"
+    },
+    "isPublished": true,
+    "publishedAt": {
+      "$date": "2025-07-01T17:31:12.433Z"
+    },
+    "comments": [],
+    "isActive": true,
+    "createdAt": {
+      "$date": "2025-07-01T17:31:12.434Z"
+    },
+    "updatedAt": {
+      "$date": "2025-07-03T11:03:43.849Z"
+    },
+    "__v": 1
+  }
+]

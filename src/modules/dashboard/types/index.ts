@@ -23,6 +23,7 @@ export interface AnalyticsEvent {
   uploadedFiles?: string[];
   language: string;
   timestamp?: string;
+  tenant?: string;
 }
 
 export interface AnalyticsState {
@@ -32,3 +33,4 @@ export interface AnalyticsState {
   loading: boolean;
   error: string | null;
 }
+

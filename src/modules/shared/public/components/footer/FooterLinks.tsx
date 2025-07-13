@@ -1,8 +1,8 @@
 "use client";
-
 import styled from "styled-components";
 import Link from "next/link";
 
+// Footer veya herhangi bir yerde tekrar tekrar kullanılabilir!
 export interface LinkItem {
   label: string;
   href: string;
@@ -14,9 +14,13 @@ interface FooterLinksProps {
 }
 
 export default function FooterLinks({ title, links }: FooterLinksProps) {
-  const validLinks = links.filter(
-    (item) => item.label?.trim() && item.href?.trim()
-  );
+  const validLinks = Array.isArray(links)
+    ? links.filter(
+        (item) =>
+          !!item.label?.trim() && !!item.href?.trim() && item.href !== "#"
+      )
+    : [];
+
   if (validLinks.length === 0) return null;
 
   return (
@@ -33,13 +37,11 @@ export default function FooterLinks({ title, links }: FooterLinksProps) {
   );
 }
 
-// 🎨 Styled Components (firma adıyla aynı başlık ve text formatı!)
-
+// 🎨 Styled Components
 const FooterTitle = styled.h3`
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  letter-spacings: 0.5px;
   margin-bottom: ${({ theme }) => theme.spacings.xs};
 `;
 
@@ -60,7 +62,6 @@ const FooterListItem = styled.li`
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: 400;
-
   &:last-child {
     margin-bottom: 0;
   }

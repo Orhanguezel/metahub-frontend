@@ -1,0 +1,42 @@
+[
+  {
+    "_id": {
+      "$oid": "681f964627379dba02c2545d"
+    },
+    "name": {
+      "tr": "Haberler",
+      "en": "News",
+      "de": "Nachrichten"
+    },
+    "slug": "news",
+    "isActive": true,
+    "createdAt": {
+      "$date": "2025-05-10T18:09:10.095Z"
+    },
+    "updatedAt": {
+      "$date": "2025-05-10T18:09:10.095Z"
+    },
+    "__v": 0,
+    "tenant": "anastasia"
+  },
+  {
+    "_id": {
+      "$oid": "682206c3fedb6bb3fa08d90a"
+    },
+    "name": {
+      "tr": "abcaa",
+      "en": "abcas",
+      "de": "abcdasd"
+    },
+    "slug": "abcas",
+    "isActive": true,
+    "createdAt": {
+      "$date": "2025-05-12T14:33:39.275Z"
+    },
+    "updatedAt": {
+      "$date": "2025-05-14T12:01:42.329Z"
+    },
+    "__v": 0,
+    "tenant": "anastasia"
+  }
+]

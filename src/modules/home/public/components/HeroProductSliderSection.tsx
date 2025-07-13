@@ -15,14 +15,14 @@ import Link from "next/link";
 import type { IGallery } from "@/modules/gallery/types";
 
 export default function HeroProductSliderSection() {
-  const { images, loading } = useAppSelector((state) => state.gallery);
- const { i18n, t } = useI18nNamespace("home", translations);
-   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const { publicImages, loading } = useAppSelector((state) => state.gallery);
+  const { i18n, t } = useI18nNamespace("home", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   // ✅ FlatItems doğrudan useMemo ile oluşturuluyor (her render'da değil, sadece images değişirse)
   const flatItems = useMemo(() => {
-    if (!images || !Array.isArray(images)) return [];
-    return images
+    if (!publicImages || !Array.isArray(publicImages)) return [];
+    return publicImages
       .map((gallery: IGallery) => {
         const firstImage = gallery.images?.[0];
         if (!firstImage) return null;
@@ -35,7 +35,7 @@ export default function HeroProductSliderSection() {
         };
       })
       .filter(Boolean);
-  }, [images]);
+  }, [publicImages]);
 
   // Modal ve slider state
   const { isOpen, open, close, next, prev, currentIndex, currentItem } = useModal(flatItems);

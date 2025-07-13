@@ -20,7 +20,4 @@ export { default as bookingReducer } from "./slice/bookingSlice";
 export { default as bookingslotReducer } from "./slice/bookingSlotSlice";
 
 // ✅ Types (Artık `@/modules/booking` içinden import edebilirsin)
-export * from "./types/types";
-
-
-
+export * from "./types";

@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import AboutPage from "@/modules/about/public/pages/AboutPage";
+import Page from "@/modules/about/public/pages/Page";
 
 export default function AboutRouterPage() {
-  return <AboutPage />;
+  return <Page />;
 }

@@ -14,7 +14,7 @@ const folderMap: Record<ImageType, string> = {
   email: "email-attachments",
   gallery: "gallery-images",
   faq: "faq-images",
-  service: "service-images",
+  services: "services-images",
   notification: "notification-images",
   setting: "setting-images",
   contact: "contact-files",
@@ -30,8 +30,8 @@ const folderMap: Record<ImageType, string> = {
   about: "about-images",
   activity: "activity-images",
   company: "company-images",
-  bike: "bike-images",
-  bikeCategory: "bikeCategory-images",
+  bikes: "bikes-images",
+  bikesCategory: "bikesCategory-images",
   tenant: "tenant-images",
   misc: "misc",
 };
@@ -50,7 +50,7 @@ const defaultImageMap: Record<ImageType, string> = {
   email: "email.png",
   gallery: "gallery.png",
   faq: "faq.png",
-  service: "service.png",
+  services: "service.png",
   notification: "notification.png",
   setting: "setting.png",
   contact: "contact.png",
@@ -66,14 +66,14 @@ const defaultImageMap: Record<ImageType, string> = {
   about: "about.png",
   activity: "activity.png",
   company: "company.png",
-  bike: "bike.png",
-  bikeCategory: "bikeCategory.png",
+  bikes: "bikes.png",
+  bikesCategory: "bikeCategory.png",
   tenant: "tenant.png",
   misc: "default.png",
 };
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5014";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5019";
 const PROJECT_ENV = process.env.NEXT_PUBLIC_APP_ENV || "ensotek";
 
 export function getImageSrc(
@@ -87,12 +87,21 @@ export function getImageSrc(
     return `${BASE_URL}/uploads/${PROJECT_ENV}/misc/default.png`;
   }
 
-  // ⛔️ Önce string mi diye kontrol et
+  // 1. ⛔️ Önce string mi diye kontrol et
   if (typeof imagePath !== "string" || imagePath.trim() === "") {
-    return `${BASE_URL}/uploads/${PROJECT_ENV}/${defaultImage}`;
+    // Not: default profil resmi için public yolunu kullan
+    return `/defaults/${defaultImage}`;
   }
 
-  // Cloudinary ya da http ile başlıyorsa
+  // 2. Eğer zaten /defaults/ ile başlıyorsa, direkt ver (Next.js public folder)
+  if (imagePath.startsWith("/defaults/")) {
+    return imagePath;
+  }
+  if (imagePath === "/default-avatar.png") {
+    return imagePath;
+  }
+
+  // 3. Cloudinary ya da http ile başlıyorsa
   if (imagePath.startsWith("http")) {
     if (imagePath.includes("cloudinary.com")) {
       return imagePath;
@@ -111,6 +120,7 @@ export function getImageSrc(
     }
   }
 
-  // Dosya yolu ise
+  // 4. Dosya yolu ise (ör: 64a1e3...jpg)
   return `${BASE_URL}/uploads/${PROJECT_ENV}/${folder}/${imagePath}`;
 }
+

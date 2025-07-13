@@ -1,17 +1,12 @@
+// src/shared/DateRangeSelector.tsx
 "use client";
-
 import React, { useId } from "react";
 import styled from "styled-components";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { useTranslation } from "react-i18next";
-import {
-  SUPPORTED_LOCALES,
-  DATE_FORMATS,
-  type SupportedLocale,
-} from "@/types/common";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales";
+import { SUPPORTED_LOCALES, SupportedLocale, DATE_FORMATS } from "@/types/common";
 
-interface Props {
+interface DateRangeSelectorProps {
   startDate: Date | null;
   endDate: Date | null;
   onChange: (range: { startDate: Date | null; endDate: Date | null }) => void;
@@ -27,106 +22,70 @@ export default function DateRangeSelector({
   dateFormat,
   minDate,
   maxDate,
-}: Props) {
-  const { t, i18n } = useTranslation("admin-dashboard");
+}: DateRangeSelectorProps) {
+  const { i18n, t } = useI18nNamespace("dashboard", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const pickerId = useId();
 
-  // Her zaman SUPPORTED_LOCALES ile kontrol
-  const locale: SupportedLocale = SUPPORTED_LOCALES.includes(
-    i18n.language as SupportedLocale
-  )
-    ? (i18n.language as SupportedLocale)
-    : "en";
+  // date-fns ya da başka bir datepicker locale eklemeye gerek yok, düz input[type=date]
+  const resolvedFormat = dateFormat || DATE_FORMATS[lang] || "yyyy-MM-dd";
 
-  // Merkezden format
-  const resolvedFormat = dateFormat || DATE_FORMATS[locale];
-
-  // Değer güvenliği
   const safeStart = startDate instanceof Date ? startDate : null;
   const safeEnd = endDate instanceof Date ? endDate : null;
 
-  const handleChange = (dates: [Date | null, Date | null]) => {
-    const [start, end] = dates;
-    onChange({ startDate: start, endDate: end });
+  // Değişiklikleri parent'a aktar
+  const handleStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value ? new Date(e.target.value) : null;
+    onChange({ startDate: val, endDate: safeEnd });
+  };
+  const handleEndChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value ? new Date(e.target.value) : null;
+    onChange({ startDate: safeStart, endDate: val });
   };
 
   return (
     <Wrapper>
-      <Label htmlFor={pickerId}>
+      <Label htmlFor={`${pickerId}-start`}>
         {t("analytics.dateRange", "Tarih Aralığı")}
       </Label>
-      <StyledPicker>
-        <DatePicker
-          id={pickerId}
-          aria-label={t("analytics.dateRangeAria", "Tarih aralığı seçici")}
-          selected={safeStart}
-          onChange={handleChange}
-          startDate={safeStart}
-          endDate={safeEnd}
-          selectsRange
-          isClearable
-          dateFormat={resolvedFormat}
-          placeholderText={t("analytics.datePlaceholder", "Tarih aralığı seçiniz")}
-          className="date-input"
-          locale={locale}
-          minDate={minDate}
-          maxDate={maxDate}
+      <Row>
+        <input
+          id={`${pickerId}-start`}
+          type="date"
+          value={safeStart ? safeStart.toISOString().split("T")[0] : ""}
+          onChange={handleStartChange}
+          min={minDate ? minDate.toISOString().split("T")[0] : undefined}
+          max={maxDate ? maxDate.toISOString().split("T")[0] : undefined}
+          placeholder={t("analytics.startDate", "Başlangıç")}
+          pattern={resolvedFormat.replace(/[dMy]/g, "\\d")}
         />
-      </StyledPicker>
+        <span>—</span>
+        <input
+          id={`${pickerId}-end`}
+          type="date"
+          value={safeEnd ? safeEnd.toISOString().split("T")[0] : ""}
+          onChange={handleEndChange}
+          min={minDate ? minDate.toISOString().split("T")[0] : undefined}
+          max={maxDate ? maxDate.toISOString().split("T")[0] : undefined}
+          placeholder={t("analytics.endDate", "Bitiş")}
+          pattern={resolvedFormat.replace(/[dMy]/g, "\\d")}
+        />
+      </Row>
     </Wrapper>
   );
 }
 
-// --- Styled Components ---
 const Wrapper = styled.div`
   margin-bottom: 2rem;
 `;
-
+const Row = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
 const Label = styled.label`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   margin-bottom: 0.5rem;
   color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const StyledPicker = styled.div`
-  .date-input {
-    width: 100%;
-    max-width: 300px;
-    padding: 0.65rem 1rem;
-    font-size: ${({ theme }) => theme.fontSizes.md};
-    background-color: ${({ theme }) => theme.colors.inputBackground};
-    color: ${({ theme }) => theme.colors.textPrimary};
-    border: 1px solid ${({ theme }) => theme.colors.borderInput};
-    border-radius: ${({ theme }) => theme.radii.md};
-    outline: none;
-    transition: border-color 0.2s ease;
-
-    &::placeholder {
-      color: ${({ theme }) => theme.colors.placeholder};
-    }
-
-    &:focus {
-      border-color: ${({ theme }) => theme.colors.primary};
-      box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.shadowHighlight};
-    }
-  }
-
-  .react-datepicker {
-    background-color: ${({ theme }) => theme.colors.background};
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    color: ${({ theme }) => theme.colors.textPrimary};
-    font-size: 0.9rem;
-  }
-
-  .react-datepicker__day--selected,
-  .react-datepicker__day--in-selecting-range,
-  .react-datepicker__day--in-range {
-    background-color: ${({ theme }) => theme.colors.primary};
-    color: ${({ theme }) => theme.colors.textOnSuccess};
-  }
-
-  .react-datepicker__day:hover {
-    background-color: ${({ theme }) => theme.colors.primaryHover};
-  }
 `;

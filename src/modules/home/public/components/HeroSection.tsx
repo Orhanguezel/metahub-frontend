@@ -9,47 +9,54 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState, useMemo } from "react";
 import { useAppSelector } from "@/store/hooks";
-import type { IGallery } from "@/modules/gallery/types";
+import type { IGallery, IGalleryItem } from "@/modules/gallery/types";
 
 export default function HeroSection() {
-   const { i18n, t } = useI18nNamespace("home", translations);
-     const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-  const { images } = useAppSelector((state) => state.gallery);
+  const { i18n, t } = useI18nNamespace("home", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const { publicImages } = useAppSelector((state) => state.gallery);
+
   const [current, setCurrent] = useState(0);
 
-  // ✅ flatItems artık useMemo ile mapping, sadece images değişirse hesaplanır
-  const flatItems = useMemo(() => {
-    if (!images || !images.length) return [];
-    return images
-      .map((gallery: IGallery) => {
-        const firstImage = gallery.images?.[0];
-        if (!firstImage) return null;
-        return {
-          ...firstImage,
-          _galleryId: gallery._id,
-          category: gallery.category,
-          type: gallery.type,
-          tenant: gallery.tenant,
-        };
-      })
-      .filter(Boolean);
-  }, [images]);
+  console.log("HeroSection images:", publicImages);
 
+  // Gallery'den ilk resmi ve detayları düzleştir
+ const flatItems = useMemo(() => {
+  if (!publicImages || !Array.isArray(publicImages)) return [];
+  return publicImages
+    .map((gallery: IGallery) => {
+      const firstImage = gallery.images?.[0];
+      if (!firstImage) return null;
+      return {
+        ...firstImage,
+        _galleryId: gallery._id,
+        category: gallery.category,
+        type: gallery.type,
+        tenant: gallery.tenant,
+      };
+    })
+    .filter(Boolean);
+}, [publicImages]);
+
+
+
+  // Dil veya flatItems değişirse slider'ı başa sar
   useEffect(() => {
-    if (flatItems.length === 0) return;
+    setCurrent(0);
+  }, [lang, flatItems.length]);
+
+  // Otomatik slider
+  useEffect(() => {
+    if (flatItems.length <= 1) return;
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % flatItems.length);
     }, 7000);
     return () => clearInterval(timer);
-  }, [flatItems]);
-
-  // Eğer dil veya images değişirse slider ilk karta dönsün istiyorsan (opsiyonel):
-  // useEffect(() => setCurrent(0), [flatItems, currentLang]);
+  }, [flatItems.length]);
 
   const goTo = (idx: number) => setCurrent(idx);
 
- const currentHero = flatItems[current] as IGallery["images"][0] | undefined; // Tipi daha net
-
+  const currentHero = flatItems[current];
 const backgroundImage =
   currentHero?.webp || currentHero?.url || currentHero?.thumbnail || "/placeholder.jpg";
 const title =
@@ -119,6 +126,9 @@ const description =
     </Hero>
   );
 }
+
+// Styled components ... (değişmedi)
+
 
 const Hero = styled.section`
   position: relative;

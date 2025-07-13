@@ -2,7 +2,8 @@
 
 import React from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { Booking } from "@/modules/booking";
 
 interface Props {
@@ -18,10 +19,8 @@ const BookingTable: React.FC<Props> = React.memo(function BookingTable({
   onEdit,
   onDelete,
 }) {
-  const { t, i18n } = useTranslation("booking");
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
+  const { t,i18n } = useI18nNamespace("booking", translations);
+  const lang = i18n.language?.slice(0, 2) || "en"; 
 
   if (loading) {
     return <Paragraph>{t("common.loading", "Loading...")}</Paragraph>;
@@ -47,9 +46,18 @@ const BookingTable: React.FC<Props> = React.memo(function BookingTable({
         <tbody>
           {bookings.map((booking, idx) => (
             <TableRow key={booking._id} $zebra={idx % 2 === 1}>
-              <td>{booking.name?.[lang] || "-"}</td>
+              <td>{booking.name || "-"}</td>
               <td>{booking.email}</td>
-              <td>{booking.serviceType}</td>
+              <td>
+                 {/* Çoklu dil desteği */}
+                {typeof booking.service === "object" && booking.service?.title
+                  ? typeof booking.service.title === "object"
+                    ? booking.service.title[lang] ||
+                      booking.service.title["en"] ||
+                      Object.values(booking.service.title)[0]
+                    : booking.service.title
+                  : booking.serviceType}
+              </td>
               <td>
                 <Datetime>
                   {booking.date}
@@ -59,7 +67,10 @@ const BookingTable: React.FC<Props> = React.memo(function BookingTable({
               <td>
                 <StatusTag
                   $status={booking.status}
-                  title={statusDescriptions[booking.status]}
+                  title={t(
+                    `admin.statusDescription.${booking.status}`,
+                    defaultStatusDescriptions[booking.status]
+                  )}
                 >
                   {t(`admin.status.${booking.status}`, booking.status)}
                 </StatusTag>
@@ -92,8 +103,8 @@ const BookingTable: React.FC<Props> = React.memo(function BookingTable({
 
 export default BookingTable;
 
-// 🏷️ Status açıklamaları (tooltip için)
-const statusDescriptions: Record<string, string> = {
+// 🏷️ Varsayılan status açıklamaları (i18n fallback için)
+const defaultStatusDescriptions: Record<string, string> = {
   pending: "Waiting for admin approval. No email sent to customer yet.",
   confirmed: "Booking confirmed. Customer has received a confirmation email.",
   cancelled: "Booking cancelled. The slot is now available for others.",
@@ -119,7 +130,7 @@ const TableWrapper = styled.div`
 const StyledTable = styled.table`
   width: 100%;
   border-collapse: separate;
-  border-spacings: 0;
+  border-spacing: 0;
   background: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.text};
   min-width: 650px;

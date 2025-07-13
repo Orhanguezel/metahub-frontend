@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { BlogCategory, TranslatedField } from "@/modules/blog/types";
+import type { BlogCategory, TranslatedField } from "@/modules/blog";
 
 interface CategoryState {
   categories: BlogCategory[];

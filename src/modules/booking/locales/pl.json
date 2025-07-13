@@ -1,80 +1,124 @@
 {
   "page": {
-    "allBike": "Wszystkie rowery",
-    "noBike": "Nie znaleziono rowerów.",
-    "price": "Cena",
-    "stock": "Stan",
-    "brand": "Marka",
-    "readMore": "Zobacz szczegóły →",
-    "other": "Inne produkty",
-    "untitled": "Bez tytułu",
-    "noSummary": "Brak opisu.",
-    "bike": {
-      "title": "Najnowszy rower",
-      "readMore": "Zobacz szczegóły",
-      "all": "Wszystkie rowery"
-    }
+    "title": "Umów Wizytę",
+    "description": "Wypełnij poniższy formularz, aby zaplanować wizytę."
+  },
+  "form": {
+    "noAvailableTimes": "Brak dostępnych terminów",
+    "selectTime": "Wybierz godzinę",
+    "loading": "Ładowanie dostępnych terminów...",
+    "noAvailableSlots": "Nie znaleziono dostępnych terminów.",
+    "availableSlots": "Dostępne Terminy",
+    "name": "Imię i Nazwisko",
+    "email": "E-mail",
+    "phone": "Telefon",
+    "service": "Usługa",
+    "serviceType": "Typ Usługi",
+    "note": "Notatka",
+    "date": "Data",
+    "time": "Godzina",
+    "submit": "Umów Wizytę",
+    "selectService": "Wybierz usługę",
+    "selectDate": "Wybierz datę",
+    "required": "Proszę wypełnić wszystkie wymagane pola.",
+    "success": "Twoja wizyta została pomyślnie zaplanowana!",
+    "error": "Wystąpił błąd. Spróbuj ponownie.",
+    "fullyBooked": "Brak miejsc",
+    "title": "Godziny Pracy",
+    "closed": "Zamknięte",
+    "todayClosed": "Dzisiaj cały dzień zamknięte."
   },
   "admin": {
     "tabs": {
-      "bike": "Rowery",
-      "create": "Nowy rower",
-      "categories": "Kategorie"
+      "bookings": "Wizyty",
+      "slots": "Zarządzanie Terminami"
     },
-    "bike": {
-      "create": "Dodaj nowy rower",
-      "edit": "Edytuj rower",
-      "name": "Nazwa roweru",
-      "description": "Opis",
-      "brand": "Marka",
-      "price": "Cena",
-      "stock": "Stan",
-      "tags": "Tagi",
-      "image": "Obraz",
-      "category": "Kategoria",
-      "select_category": "Wybierz kategorię",
-      "publish_status": "Opublikowano?",
-      "no_images": "Brak zdjęć",
-      "publish": "Opublikuj",
-      "unpublish": "Ukryj",
-      "empty": "Brak dostępnych rowerów."
+    "title": "Zarządzaj Wizytami",
+    "confirmDelete": "Czy na pewno chcesz usunąć tę wizytę?",
+    "noBookings": "Nie znaleziono wizyt.",
+    "columns": {
+      "name": "Imię",
+      "email": "E-mail",
+      "service": "Usługa",
+      "datetime": "Data / Godzina",
+      "status": "Status",
+      "actions": "Akcje"
     },
-    "categories": {
-      "title": "Kategorie rowerów",
-      "add": "Nowa kategoria",
-      "empty": "Nie znaleziono kategorii."
+    "modal": {
+      "title": "Aktualizuj Status Wizyty",
+      "statusInfo": "'Oczekuje' oznacza, że wizyta czeka na zatwierdzenie przez administratora. Klient otrzyma e-mail dopiero po potwierdzeniu.",
+      "select": "Wybierz status",
+      "updated": "Status został pomyślnie zaktualizowany.",
+      "updateError": "Nie udało się zaktualizować statusu."
     },
-    "language": {
-      "en": "Angielski",
-      "tr": "Turecki",
-      "de": "Niemiecki"
+    "status": {
+      "pending": "Oczekuje",
+      "confirmed": "Potwierdzona",
+      "cancelled": "Anulowana"
     },
-    "slug": "Slug",
-    "actions": "Akcje",
+    "statusDescription": {
+      "pending": "Oczekuje na zatwierdzenie przez administratora. Klient nie otrzymał jeszcze e-maila.",
+      "confirmed": "Wizyta potwierdzona. Klient otrzymał e-mail potwierdzający.",
+      "cancelled": "Wizyta anulowana. Termin jest ponownie dostępny."
+    },
+    "slotRule": {
+      "updateSuccess": "Reguła została zaktualizowana.",
+      "updateError": "Nie udało się zaktualizować reguły.",
+      "editGeneral": "Edytuj Ogólną Regułę Terminu",
+      "edit": "Edytuj Regułę Terminu",
+      "applyAll": "Zastosuj do wszystkich dni",
+      "dayOfWeek": "Dzień tygodnia",
+      "startTime": "Godzina rozpoczęcia",
+      "endTime": "Godzina zakończenia",
+      "intervalMinutes": "Interwał wizyty (min)",
+      "break": "Przerwa między wizytami (min)"
+    }
+  },
+  "slot": {
+    "title": {
+      "rules": "📅 Reguły Terminów",
+      "overrides": "📌 Wyjątki"
+    },
+    "form": {
+      "applyAllDays": "Zastosuj do wszystkich dni",
+      "addGeneralRule": "Dodaj Ogólną Regułę",
+      "addRule": "Dodaj Regułę",
+      "addOverride": "Dodaj Wyjątek",
+      "fullDayOff": "Cały Dzień Wolny"
+    },
+    "success": {
+      "generalCreated": "Ogólna reguła została utworzona.",
+      "created": "Reguła została utworzona.",
+      "overrideCreated": "Wyjątek został utworzony."
+    },
+    "error": {
+      "generalExists": "Ogólna reguła już istnieje.",
+      "dayExists": "Reguła dla tego dnia już istnieje.",
+      "create": "Nie udało się utworzyć reguły.",
+      "dateRequired": "Proszę wybrać datę.",
+      "overrideCreate": "Nie udało się utworzyć wyjątku."
+    },
+    "weekdays": {
+      "0": "Niedziela",
+      "1": "Poniedziałek",
+      "2": "Wtorek",
+      "3": "Środa",
+      "4": "Czwartek",
+      "5": "Piątek",
+      "6": "Sobota",
+      "all": "Wszystkie dni"
+    },
+    "info": {
+      "noDayRules": "Brak zdefiniowanych reguł dziennych.",
+      "noOverrides": "Brak zdefiniowanych wyjątków."
+    }
+  },
+  "common": {
+    "loading": "Ładowanie...",
     "edit": "Edytuj",
     "delete": "Usuń",
-    "cancel": "Anuluj",
     "update": "Aktualizuj",
-    "create": "Utwórz",
-    "yes": "Tak",
-    "no": "Nie",
-    "loading": "Ładowanie...",
-    "confirm": {
-      "delete": "Czy na pewno chcesz usunąć tę kategorię?",
-      "delete_bike": "Czy na pewno chcesz usunąć ten rower?"
-    },
-    "optional_description": "Opis (opcjonalnie)",
-    "category_info": "Czego dotyczy ta kategoria?",
-    "saving": "Zapisywanie...",
-    "save": "Zapisz",
-    "update2": "Aktualizuj",
-    "editCategory": "Edytuj kategorię",
-    "newCategory": "Nowa kategoria"
-  },
-  "seo": {
-    "title": "Tytuł SEO",
-    "description": "Opis SEO"
-  },
-  "none": "Brak",
-  "delete_confirm": "Czy na pewno chcesz usunąć?"
+    "updating": "Aktualizowanie...",
+    "cancel": "Anuluj"
+  }
 }

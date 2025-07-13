@@ -1,28 +1,32 @@
 "use client";
 
 import { useState } from "react";
-import { IComment } from "@/modules/comment/types/comment";
-import { useTranslation } from "react-i18next";
+import { IComment } from "@/modules/comment/types";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { Modal } from "@/shared";
 import styled from "styled-components";
 import { useAppDispatch } from "@/store/hooks";
 import { replyToComment } from "@/modules/comment/slice/commentSlice";
+import { SupportedLocale, SUPPORTED_LOCALES } from "@/types/common";
 
 interface Props {
   comment: IComment;
-  lang: "tr" | "en" | "de";
+  lang: SupportedLocale;
   onClose: () => void;
 }
 
 export default function CommentDetailsModal({ comment, lang, onClose }: Props) {
-  const { t } = useTranslation("adminComment");
+  const { t } = useI18nNamespace("comment", translations);
   const dispatch = useAppDispatch();
 
-  const [reply, setReply] = useState({
-    tr: comment.reply?.text?.tr || "",
-    en: comment.reply?.text?.en || "",
-    de: comment.reply?.text?.de || "",
-  });
+  // --- Dinamik reply state: Mevcut tüm desteklenen diller için doldur ---
+  const [reply, setReply] = useState<Record<SupportedLocale, string>>(
+    () => SUPPORTED_LOCALES.reduce((acc, lng) => {
+      acc[lng] = comment.reply?.text?.[lng] || "";
+      return acc;
+    }, {} as Record<SupportedLocale, string>)
+  );
 
   const [sending, setSending] = useState(false);
 
@@ -83,36 +87,28 @@ export default function CommentDetailsModal({ comment, lang, onClose }: Props) {
 
         <Divider />
 
-        <Row>
-          <strong>TR:</strong> {comment.label?.tr}
-        </Row>
-        <Row>
-          <strong>EN:</strong> {comment.label?.en}
-        </Row>
-        <Row>
-          <strong>DE:</strong> {comment.label?.de}
-        </Row>
+        {/* --- YORUMU TÜM DİLLERDE GÖSTER --- */}
+        {SUPPORTED_LOCALES.map((lng) => (
+          <Row key={lng}>
+            <strong>{lng.toUpperCase()}:</strong> {comment.label?.[lng] || "-"}
+          </Row>
+        ))}
 
         <Divider />
 
         <h3>{t("details.replyTitle")}</h3>
 
         <form onSubmit={handleSubmit}>
-          <ReplyField
-            placeholder="TR"
-            value={reply.tr}
-            onChange={(e) => setReply({ ...reply, tr: e.target.value })}
-          />
-          <ReplyField
-            placeholder="EN"
-            value={reply.en}
-            onChange={(e) => setReply({ ...reply, en: e.target.value })}
-          />
-          <ReplyField
-            placeholder="DE"
-            value={reply.de}
-            onChange={(e) => setReply({ ...reply, de: e.target.value })}
-          />
+          {SUPPORTED_LOCALES.map((lng) => (
+            <ReplyField
+              key={lng}
+              placeholder={lng.toUpperCase()}
+              value={reply[lng]}
+              onChange={(e) =>
+                setReply({ ...reply, [lng]: e.target.value })
+              }
+            />
+          ))}
           <SubmitButton type="submit" disabled={sending}>
             {sending ? t("sending") : t("sendReply")}
           </SubmitButton>

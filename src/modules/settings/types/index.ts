@@ -1,24 +1,18 @@
-// src/modules/setting/types/index.ts
+import type { SupportedLocale, TranslatedLabel } from "@/types/common";
 
-import type { TranslatedLabel } from "@/types/common";
+// Çoklu dil desteği için tekrar kullanılabilir type
+export type TranslatedField = { [lang in SupportedLocale]?: string };
 
-// Logo değeri tipi
-export interface ILogoSettingValue {
-  light?: {
-    url: string;
-    publicId?: string;
-    thumbnail?: string;
-    webp?: string;
-  };
-  dark?: {
-    url: string;
-    publicId?: string;
-    thumbnail?: string;
-    webp?: string;
-  };
+// Görsel nesne tipi (Backend ile birebir uyumlu)
+export interface ISettingsImage {
+  url: string;
+  thumbnail: string;
+  webp?: string;
+  publicId?: string;
+  _id?: string;
 }
 
-// Labeled link (örn: sosyal link)
+// Labeled link
 export interface ILabeledLink {
   label: TranslatedLabel;
   href?: string;
@@ -27,40 +21,29 @@ export interface ILabeledLink {
   tenant?: string;
 }
 
-// Sosyal link tipi
-export interface ISocialLink {
-  url: string;
-  icon: string;
-  tenant: string;
+// --- EKLEDİK: Nested TranslatedField tipi ---
+export interface INavbarLogoTextValue {
+  title: { label: TranslatedLabel; url?: string };
+  slogan: { label: TranslatedLabel; url?: string };
 }
 
-// Value union
 export type ISettingValue =
   | string
   | string[]
   | TranslatedLabel
-  | ILogoSettingValue
   | Record<string, ILabeledLink>
-  | Record<string, ISocialLink>
-  | {
-      title: TranslatedLabel;
-      slogan: TranslatedLabel;
-    }
-  | {
-      href: string;
-      icon: string;
-    }
-  | {
-      phone: string;
-    }
-  | Record<string, any>;
+  | Record<string, any>
+  | INavbarLogoTextValue // BUNU EKLEDİK
+  | { href: string; icon: string }
+  | { phone: string };
 
-// Asıl Setting Modeli
+// Asıl Settings Modeli
 export interface ISetting {
   key: string;
   tenant: string;
   value: ISettingValue;
   isActive: boolean;
-  createdAt: string; // Date yerine string, API’dan öyle geliyor
+  createdAt: string;
   updatedAt: string;
+  images?: ISettingsImage[];
 }

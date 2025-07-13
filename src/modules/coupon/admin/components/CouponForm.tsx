@@ -1,69 +1,79 @@
 "use client";
+
 import React from "react";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { SUPPORTED_LOCALES } from "@/types/common";
+import type { Coupon, TranslatedField } from "../../types";
 
 interface CouponFormProps {
-  editing?: any | null;
-  onSubmit: (data: any) => void;
+  editing?: Coupon | null;
+  loading?: boolean;
+  onSubmit: (data: Coupon) => void;
   onCancel?: () => void;
 }
 
 export default function CouponForm({
   editing,
+  loading,
   onSubmit,
   onCancel,
 }: CouponFormProps) {
-  const { t } = useTranslation("coupon");
+  const { t } = useI18nNamespace("coupon", translations);
 
-  // HER DİL ZORUNLU → boş değer girilmeye izin verme
-  const defaultValues = {
-    code: editing?.code || "",
-    discount: editing?.discount || "",
-    expiresAt: editing?.expiresAt?.slice?.(0, 10) || "",
-    "label.title.tr": editing?.label?.title?.tr || "",
-    "label.title.en": editing?.label?.title?.en || "",
-    "label.title.de": editing?.label?.title?.de || "",
-    "label.description.tr": editing?.label?.description?.tr || "",
-    "label.description.en": editing?.label?.description?.en || "",
-    "label.description.de": editing?.label?.description?.de || "",
-  };
+  const expiresAtValue =
+  editing?.expiresAt
+    ? typeof editing.expiresAt === "string"
+      ? (editing.expiresAt as string).slice(0, 10)
+      : editing.expiresAt instanceof Date
+        ? editing.expiresAt.toISOString().slice(0, 10)
+        : ""
+    : "";
+
+  // Tüm diller için dinamik initial değerler
+  const defaultValues: Record<string, string | number> = {
+  code: editing?.code || "",
+  discount: editing?.discount || "",
+  expiresAt: expiresAtValue,
+  ...Object.fromEntries(
+    SUPPORTED_LOCALES.flatMap((lang) => [
+      [`title.${lang}`, editing?.title?.[lang] || ""],
+      [`description.${lang}`, editing?.description?.[lang] || ""],
+    ])
+  ),
+};
 
   const { register, handleSubmit, reset, formState } = useForm({
     defaultValues,
   });
 
+  // Dinamik alanları Coupon tipine uygun şekilde derle
   const submitHandler = (data: any) => {
     data.discount = parseFloat(data.discount);
     if (data.expiresAt) data.expiresAt = new Date(data.expiresAt);
 
-    data.label = {
-      title: {
-        tr: data["label.title.tr"].trim(),
-        en: data["label.title.en"].trim(),
-        de: data["label.title.de"].trim(),
-      },
-      description: {
-        tr: data["label.description.tr"].trim(),
-        en: data["label.description.en"].trim(),
-        de: data["label.description.de"].trim(),
-      },
-    };
-
-    // Temizle
-    Object.keys(data).forEach((k) => {
-      if (k.startsWith("label.")) delete data[k];
+    // Dinamik TranslatedField için toplayıcı
+    const title: TranslatedField = {};
+    const description: TranslatedField = {};
+    SUPPORTED_LOCALES.forEach((lang) => {
+      title[lang] = (data[`title.${lang}`] || "").trim();
+      description[lang] = (data[`description.${lang}`] || "").trim();
+      delete data[`title.${lang}`];
+      delete data[`description.${lang}`];
     });
+    data.title = title;
+    data.description = description;
 
     // Boş alan kontrolü
-    const missingFields = [];
+    const missingFields: string[] = [];
     if (!data.code) missingFields.push("code");
     if (!data.discount) missingFields.push("discount");
     if (!data.expiresAt) missingFields.push("expiresAt");
-    ["tr", "en", "de"].forEach((lang) => {
-      if (!data.label.title[lang]) missingFields.push(`title.${lang}`);
-      if (!data.label.description[lang]) missingFields.push(`desc.${lang}`);
+    SUPPORTED_LOCALES.forEach((lang) => {
+      if (!title[lang]) missingFields.push(`title.${lang}`);
+      if (!description[lang]) missingFields.push(`description.${lang}`);
     });
     if (missingFields.length) {
       alert(
@@ -74,7 +84,7 @@ export default function CouponForm({
       return;
     }
 
-    onSubmit(data);
+    onSubmit(data as Coupon);
     reset();
   };
 
@@ -99,36 +109,23 @@ export default function CouponForm({
           placeholder={t("form.expiresAt", "Expiration")}
         />
       </Row>
+
+      {/* Dinamik dil inputları */}
+      {SUPPORTED_LOCALES.map((lang) => (
+        <Row key={lang}>
+          <Input
+            {...register(`title.${lang}`, { required: true })}
+            placeholder={`${t("form.title", "Title")} (${lang.toUpperCase()})`}
+          />
+          <Input
+            {...register(`description.${lang}`, { required: true })}
+            placeholder={`${t("form.description", "Description")} (${lang.toUpperCase()})`}
+          />
+        </Row>
+      ))}
+
       <Row>
-        <Input
-          {...register("label.title.tr", { required: true })}
-          placeholder="Başlık (TR)"
-        />
-        <Input
-          {...register("label.title.en", { required: true })}
-          placeholder="Title (EN)"
-        />
-        <Input
-          {...register("label.title.de", { required: true })}
-          placeholder="Titel (DE)"
-        />
-      </Row>
-      <Row>
-        <Input
-          {...register("label.description.tr", { required: true })}
-          placeholder="Açıklama (TR)"
-        />
-        <Input
-          {...register("label.description.en", { required: true })}
-          placeholder="Description (EN)"
-        />
-        <Input
-          {...register("label.description.de", { required: true })}
-          placeholder="Beschreibung (DE)"
-        />
-      </Row>
-      <Row>
-        <Button type="submit">
+        <Button type="submit" disabled={loading}>
           {editing ? t("form.update", "Update") : t("form.create", "Create")}
         </Button>
         {editing && onCancel && (
@@ -149,7 +146,7 @@ export default function CouponForm({
   );
 }
 
-// Styled Components ... (değişmedi, senin kodun aynen kullanılabilir)
+// Styled Components ... (değişmedi)
 const Form = styled.form`
   margin-bottom: 36px;
   padding: ${({ theme }) => theme.spacings.md};

@@ -2,11 +2,11 @@
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { Booking, BookingFormInput } from "@/modules/booking";
-import type { SupportedLocale } from "@/types/common";
+import type { Booking, BookingFormInput, BookingStatus } from "../types";
 
 interface BookingState {
-  bookings: Booking[];
+  bookings: Booking[];// 🌍 Public bookings (Müşteri kendi rezervasyonlarını görür)
+  bookingsAdmin: Booking[];// 🛠️ Admin bookings (Tüm rezervasyonlar)
   booking?: Booking;
   loading: boolean;
   error: string | null;
@@ -15,32 +15,41 @@ interface BookingState {
 
 const initialState: BookingState = {
   bookings: [],
+  bookingsAdmin: [],
   booking: undefined,
   loading: false,
   error: null,
   successMessage: null,
 };
 
-// ✅ 1. Create Booking (Public)
+// ✅ Create Booking
 export const createBooking = createAsyncThunk(
   "booking/createBooking",
   async (data: BookingFormInput, { rejectWithValue }) => {
     const res = await apiCall("post", "/booking", data, rejectWithValue);
-    // Backend: { success, message, booking }
-    return { ...res.booking, successMessage: res.message };
+    return res; // direkt backend response döndür
   }
 );
 
-// ✅ 2. Get All Bookings (Admin)
-export const fetchBookings = createAsyncThunk(
-  "booking/fetchBookings",
-  async (params: { language: SupportedLocale }, { rejectWithValue }) => {
-    const res = await apiCall("get", "/booking/admin", params, rejectWithValue);
+// 2️⃣ Get All Bookings (Admin)
+export const fetchBookingsAdmin = createAsyncThunk(
+  "booking/fetchBookingsAdmin",
+  async (_, { rejectWithValue }) => {
+    const res = await apiCall("get", "/booking/admin", null, rejectWithValue);
     return Array.isArray(res.data) ? res.data : [];
   }
 );
 
-// ✅ 3. Get Booking by ID (Admin)
+// 3️⃣ Get All Bookings (Public - user'a özel veya public) — gerekiyorsa
+export const fetchBookings = createAsyncThunk(
+  "booking/fetchBookings",
+  async (_, { rejectWithValue }) => {
+    const res = await apiCall("get", "/booking", null, rejectWithValue);
+    return Array.isArray(res.data) ? res.data : [];
+  }
+);
+
+// 4️⃣ Get Booking by ID (Admin)
 export const fetchBookingById = createAsyncThunk(
   "booking/fetchBookingById",
   async (id: string, { rejectWithValue }) => {
@@ -54,14 +63,14 @@ export const fetchBookingById = createAsyncThunk(
   }
 );
 
-// ✅ 4. Update Booking Status (Admin)
+// 5️⃣ Update Booking Status (Admin)
 export const updateBookingStatus = createAsyncThunk(
   "booking/updateBookingStatus",
   async (
     {
       id,
       status,
-    }: { id: string; status: "pending" | "confirmed" | "cancelled" },
+    }: { id: string; status: BookingStatus },
     { rejectWithValue }
   ) => {
     const res = await apiCall(
@@ -70,12 +79,11 @@ export const updateBookingStatus = createAsyncThunk(
       { status },
       rejectWithValue
     );
-    // Backend: { success, message, booking }
     return { ...res.booking, successMessage: res.message };
   }
 );
 
-// ✅ 5. Delete Booking (Admin)
+// 6️⃣ Delete Booking (Admin)
 export const deleteBooking = createAsyncThunk(
   "booking/deleteBooking",
   async (id: string, { rejectWithValue }) => {
@@ -85,7 +93,6 @@ export const deleteBooking = createAsyncThunk(
       null,
       rejectWithValue
     );
-    // Backend: { success, message }
     return { id, successMessage: res.message };
   }
 );
@@ -100,8 +107,8 @@ const bookingSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    // Public booking işlemleri
     builder
-      // Create Booking
       .addCase(createBooking.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -109,19 +116,17 @@ const bookingSlice = createSlice({
       })
       .addCase(createBooking.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage =
-          action.payload?.successMessage || "Booking created successfully.";
-        if (action.payload && action.payload._id) {
-          state.bookings.unshift(action.payload);
+        state.successMessage = action.payload?.message || null; // backend mesajı
+        if (action.payload?.booking?._id) {
+          state.bookings.unshift(action.payload.booking);
         }
       })
       .addCase(createBooking.rejected, (state, action) => {
         state.loading = false;
         state.error =
-          (action.payload as any)?.message || "Booking could not be created.";
+          (action.payload as any)?.message ||
+          (typeof action.error?.message === "string" ? action.error.message : null);
       })
-
-      // Fetch Bookings
       .addCase(fetchBookings.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -134,9 +139,24 @@ const bookingSlice = createSlice({
         state.loading = false;
         state.error =
           (action.payload as any)?.message || "Could not fetch bookings.";
+      });
+
+    // Admin booking işlemleri
+    builder
+      .addCase(fetchBookingsAdmin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchBookingsAdmin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.bookingsAdmin = action.payload || [];
+      })
+      .addCase(fetchBookingsAdmin.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          (action.payload as any)?.message || "Could not fetch admin bookings.";
       })
 
-      // Fetch Booking by ID
       .addCase(fetchBookingById.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -151,7 +171,6 @@ const bookingSlice = createSlice({
           (action.payload as any)?.message || "Could not fetch booking.";
       })
 
-      // Update Booking Status
       .addCase(updateBookingStatus.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -162,8 +181,8 @@ const bookingSlice = createSlice({
         state.successMessage =
           action.payload?.successMessage || "Booking status updated.";
         const updated = action.payload;
-        const index = state.bookings.findIndex((b) => b._id === updated._id);
-        if (index !== -1) state.bookings[index] = updated;
+        const index = state.bookingsAdmin.findIndex((b) => b._id === updated._id);
+        if (index !== -1) state.bookingsAdmin[index] = updated;
         if (state.booking && state.booking._id === updated._id) {
           state.booking = updated;
         }
@@ -175,7 +194,6 @@ const bookingSlice = createSlice({
           "Could not update booking status.";
       })
 
-      // Delete Booking
       .addCase(deleteBooking.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -185,7 +203,7 @@ const bookingSlice = createSlice({
         state.loading = false;
         state.successMessage =
           action.payload?.successMessage || "Booking deleted successfully.";
-        state.bookings = state.bookings.filter(
+        state.bookingsAdmin = state.bookingsAdmin.filter(
           (b) => b._id !== action.payload.id
         );
         if (state.booking && state.booking._id === action.payload.id) {

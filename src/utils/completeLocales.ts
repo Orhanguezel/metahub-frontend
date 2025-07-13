@@ -3,7 +3,6 @@ import { SUPPORTED_LOCALES } from "@/i18n";
 
 export const completeLocales = (
   value: Record<string, string> = {},
-  fallback: string = ""
 ): Record<string, string> => {
   if (!value || typeof value !== "object" || Array.isArray(value)) return value;
 

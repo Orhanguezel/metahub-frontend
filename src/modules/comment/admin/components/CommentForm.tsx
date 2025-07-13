@@ -16,19 +16,20 @@ interface Props {
   contentType:
     | "news"
     | "blog"
-    | "product"
+    | "activity"
+    | "news"
+    | "blog"
     | "radonarprod"
+    | "customProduct"
+    | "product"
     | "bike"
     | "articles"
     | "services"
     | "about"
-    | "customProduct"
-    | "references"
     | "library"
-    | "faq"
-    | "contact"
+    | "product"
+    | "references"
     | "company"
-    | "tenant";
   // contentType: "news" | "blog" | "product" | "radonarprod" | "bike" | "articles" | "services" | "about" | "customProduct" | "references" | "library" | "faq" | "contact" | "company" | "tenant";
 }
 

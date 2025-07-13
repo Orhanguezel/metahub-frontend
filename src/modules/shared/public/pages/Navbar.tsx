@@ -1,6 +1,7 @@
+// Navbar.tsx
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { FaMoon, FaSun, FaBars, FaTimes } from "react-icons/fa";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales/navbar";
@@ -18,42 +19,32 @@ import {
   CartButton,
   LangSelect,
 } from "@/modules/shared";
-import { getImageSrc } from "@/shared/getImageSrc";
-import type { ProfileImageObj } from "@/modules/users/types/auth";
+import { Loading, ErrorMessage } from "@/shared";
 
 export default function Navbar() {
-  const { profile: user } = useAppSelector((state) => state.account);
   const dispatch = useAppDispatch();
-  const isAuthenticated = !!user;
+
+  const { profile: user, loading: userLoading, error: userError } = useAppSelector((state) => state.account);
+  const isAuthenticated = !!user && !!user._id;
+
+  // Sepet
+  const { cart, status: cartStatus } = useAppSelector((state) => state.cart);
+
   const { toggle, isDark } = useThemeContext();
-   const { i18n, t } = useI18nNamespace("navbar", translations);
+  const { t } = useI18nNamespace("navbar", translations);
 
   const [hasMounted, setHasMounted] = useState(false);
   const [showStickyMenu, setShowStickyMenu] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // Profil resmi belirleme
-  const resolvedProfileImage = useMemo(() => {
-    if (!user?.profileImage) return "/default-avatar.png";
-    if (typeof user.profileImage === "object") {
-      const img = user.profileImage as ProfileImageObj;
-      return img.thumbnail || img.url || "/default-avatar.png";
-    }
-    if (typeof user.profileImage === "string") {
-      if (user.profileImage.startsWith("http")) return user.profileImage;
-      return getImageSrc(user.profileImage, "profile");
-    }
-    return "/default-avatar.png";
-  }, [user?.profileImage]);
-
-  // Mount olduğunda sepeti yükle
+  // --- Yalnızca login olduğunda, sadece bir kere cart fetch ---
   useEffect(() => {
     setHasMounted(true);
-    if (isAuthenticated && user?._id) {
+    if (isAuthenticated && user?._id && cartStatus === "idle") {
       dispatch(fetchCart());
     }
-  }, [dispatch, isAuthenticated, user?._id]);
+  }, [dispatch, isAuthenticated, user?._id, cartStatus]);
 
   // Sticky Navbar için scroll takibi
   useEffect(() => {
@@ -64,8 +55,17 @@ export default function Navbar() {
   }, [hasMounted]);
 
   if (!hasMounted) return null;
+  if (userLoading) return <Loading />;
+  if (userError) return <ErrorMessage message={userError} />;
 
   const handleHamburgerClick = () => setMobileOpen((prev) => !prev);
+
+  // Sepetin görünürlüğü: login + dolu
+  const shouldShowCart =
+    isAuthenticated &&
+    cart &&
+    Array.isArray(cart.items) &&
+    cart.items.length > 0;
 
   return (
     <>
@@ -90,12 +90,10 @@ export default function Navbar() {
                 {isDark ? <FaSun /> : <FaMoon />}
               </ThemeToggle>
               <LangSelect />
-              {isAuthenticated && (
+              {shouldShowCart && (
                 <CartButton ariaLabel={t("navbar.cart", "Sepetim")} />
               )}
               <AvatarMenu
-                isAuthenticated={isAuthenticated}
-                profileImage={resolvedProfileImage}
                 showDropdown={showDropdown}
                 setShowDropdown={setShowDropdown}
               />
@@ -123,12 +121,10 @@ export default function Navbar() {
               {isDark ? <FaSun /> : <FaMoon />}
             </ThemeToggle>
             <LangSelect />
-            {isAuthenticated && (
+            {shouldShowCart && (
               <CartButton ariaLabel={t("navbar.cart", "Sepetim")} />
             )}
             <AvatarMenu
-              isAuthenticated={isAuthenticated}
-              profileImage={resolvedProfileImage}
               showDropdown={showDropdown}
               setShowDropdown={setShowDropdown}
             />
@@ -158,6 +154,7 @@ export default function Navbar() {
     </>
   );
 }
+
 
 // --- Styled Components ---
 const NavbarWrapper = styled.nav`

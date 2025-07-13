@@ -1,69 +1,57 @@
+"use client";
 import styled from "styled-components";
 import Link from "next/link";
 import Image from "next/image";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales/navbar";
+import { SupportedLocale } from "@/types/common";
 import { useAppSelector } from "@/store/hooks";
-import { getImageSrc } from "@/shared/getImageSrc";
-import { useThemeContext } from "@/providers/ThemeProviderWrapper";
 
-function resolveLogoSrc(
-  value: any,
-  themeMode: "light" | "dark" | undefined
-): string {
-  if (!value) return "";
+// Type guard: value object mi? (title ve slogan içeriyor mu)
+function isLogoTextValue(val: any): val is { title: any; slogan: any } {
+  return (
+    val &&
+    typeof val === "object" &&
+    "title" in val &&
+    "slogan" in val
+  );
+}
 
-  if (typeof value === "string") return getImageSrc(value, "setting");
-  if (typeof value === "object") {
-    // Cloudinary gibi: {light: {url}, dark: {url}}
-    const light = value.light?.url || value.light;
-    const dark = value.dark?.url || value.dark;
-    if (themeMode === "dark")
-      return dark
-        ? getImageSrc(dark, "setting")
-        : light
-        ? getImageSrc(light, "setting")
-        : "";
-    return light
-      ? getImageSrc(light, "setting")
-      : dark
-      ? getImageSrc(dark, "setting")
-      : "";
+// Her türlü image field'dan (string | array | object) güvenli logo url'si çek
+function resolveLogoSrc(images: any): string {
+  if (!images) return "";
+  if (typeof images === "string") return images;
+  if (Array.isArray(images) && images.length > 0) {
+    return images[0].url || images[0].thumbnail || images[0].webp || "";
   }
-
+  if (typeof images === "object" && images.url) return images.url;
   return "";
 }
 
-export default function Logo({
-  width = 60,
-  height = 60,
-}: {
-  width?: number;
-  height?: number;
-}) {
-  const { i18n } = useTranslation();
-  const currentLang = i18n.language;
-  const { settings = [] } = useAppSelector((state) => state.setting || {});
-  const { mode: themeMode } = useThemeContext();
+export default function Logo({ width = 60, height = 60 }: { width?: number; height?: number }) {
+  const { i18n } = useI18nNamespace("navbar", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const settings = useAppSelector((state) => state.settings.settings || []);
 
-  const navbarLogos = settings.find((s) => s.key === "navbar_logos");
-  const navbarLogoSetting = settings.find((s) => s.key === "navbar_logo_text");
+  // 1. Logo görseli (cloudinary çoklu resim yapısı: navbar_images)
+  const navbarImagesSetting = settings.find((s: any) => s.key === "navbar_images");
+  const logoSrc = resolveLogoSrc(navbarImagesSetting?.images || navbarImagesSetting?.value);
 
-  const title =
-    (navbarLogoSetting?.value &&
-      typeof navbarLogoSetting.value === "object" &&
-      "title" in navbarLogoSetting.value &&
-      (navbarLogoSetting.value as any).title?.[currentLang]) ||
-    "Logo";
+  // 2. Logo metni ve sloganı (çoklu dil destekli, type safe extraction)
+  const navbarLogoText = settings.find((s: any) => s.key === "navbar_logo_text");
+  let title = "Logo";
+  let slogan = "";
 
-  const slogan =
-    (navbarLogoSetting?.value &&
-      typeof navbarLogoSetting.value === "object" &&
-      "slogan" in navbarLogoSetting.value &&
-      (navbarLogoSetting.value as any).slogan?.[currentLang]) ||
-    "";
-
-  // Modern: resolveLogoSrc ile hem Cloudinary hem eski string hem yeni object desteği!
-  const logoSrc = resolveLogoSrc(navbarLogos?.value, themeMode);
+  if (isLogoTextValue(navbarLogoText?.value)) {
+    title =
+      navbarLogoText.value.title?.label?.[lang] ||
+      navbarLogoText.value.title?.label?.en ||
+      "Logo";
+    slogan =
+      navbarLogoText.value.slogan?.label?.[lang] ||
+      navbarLogoText.value.slogan?.label?.en ||
+      "";
+  }
 
   return (
     <LogoWrapper href="/">
@@ -80,13 +68,13 @@ export default function Logo({
       )}
       <LogoTextWrapper>
         <LogoText>{title}</LogoText>
-        <LogoText2>{slogan}</LogoText2>
+        {slogan && <LogoText2>{slogan}</LogoText2>}
       </LogoTextWrapper>
     </LogoWrapper>
   );
 }
 
-// 🎨 Styled Components
+// --- Styled Components ---
 const LogoWrapper = styled(Link)`
   display: flex;
   align-items: center;
@@ -98,6 +86,8 @@ const LogoImage = styled(Image)`
   height: 60px;
   width: auto;
   object-fit: contain;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
 `;
 
 const Fallback = styled.div`
@@ -115,6 +105,7 @@ const Fallback = styled.div`
 const LogoTextWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  min-width: 0;
 `;
 
 const LogoText = styled.span`
@@ -122,6 +113,9 @@ const LogoText = styled.span`
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   color: ${({ theme }) => theme.colors.primary};
   font-family: ${({ theme }) => theme.fonts.heading};
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 `;
 
 const LogoText2 = styled.span`
@@ -129,4 +123,7 @@ const LogoText2 = styled.span`
   font-style: italic;
   color: ${({ theme }) => theme.colors.textSecondary};
   font-family: ${({ theme }) => theme.fonts.body};
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 `;

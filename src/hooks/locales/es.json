@@ -1,0 +1,73 @@
+{
+  "page": {
+    "noAbout": "No se encontraron artículos.",
+    "allAbout": "Todos los artículos",
+    "about": {
+      "title": "Acerca de",
+      "all": "Ver todo"
+    },
+    "other": "Otras secciones",
+    "summary": "Resumen",
+    "detail": "Detalle",
+    "noTitle": "Sin título"
+  },
+  "readMore": "Leer más →",
+  "author": "Autor",
+  "tags": "Etiquetas",
+  "unknown": "Desconocido",
+  "tabs": {
+    "about": "Acerca de",
+    "create": "Nuevo artículo",
+    "categories": "Categorías"
+  },
+  "about": {
+    "empty": "No hay artículos disponibles.",
+    "no_images": "Sin imágenes",
+    "author": "Autor",
+    "tags": "Etiquetas",
+    "publish_status": "Publicado",
+    "unpublish": "Despublicar",
+    "publish": "Publicar",
+    "unknown": "Desconocido",
+    "none": "Ninguno"
+  },
+  "edit": "Editar",
+  "delete": "Eliminar",
+  "yes": "Sí",
+  "no": "No",
+  "admin": {
+    "about": {
+      "edit": "Editar artículo",
+      "create": "Crear nuevo artículo",
+      "title": "Título",
+      "summary": "Resumen",
+      "content": "Contenido",
+      "author": "Autor",
+      "tags": "Etiquetas",
+      "image": "Imágenes",
+      "category": "Categoría",
+      "select_category": "Selecciona una categoría"
+    },
+    "categories": {
+      "title": "Categorías de productos",
+      "add": "Agregar categoría",
+      "name": "Nombre de la categoría"
+    },
+    "editCategory": "Editar categoría",
+    "newCategory": "Nueva categoría",
+    "optional_description": "Descripción opcional",
+    "category_info": "¿De qué trata esta categoría?",
+    "update": "Actualizar",
+    "update2": "Actualizar",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "cancel": "Cancelar",
+    "confirm": {
+      "delete": "¿Está seguro de que desea eliminar esta categoría?",
+      "delete_article": "¿Está seguro de que desea eliminar este artículo?"
+    },
+    "loading": "Cargando...",
+    "actions": "Acciones",
+    "slug": "Slug"
+  }
+}

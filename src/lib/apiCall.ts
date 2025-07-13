@@ -1,19 +1,31 @@
-// src/lib/apiCall.ts
 import API from "./api";
 
-// Dinamik dil seçici
+// Dil seçici
 const getLang = (): string => {
   if (typeof window === "undefined") return "de";
-  return (
-    localStorage.getItem("lang") ||
-    (window.navigator.language && window.navigator.language.split("-")[0]) ||
-    "de"
-  );
+  const storedLang = localStorage.getItem("lang");
+  if (storedLang) return storedLang;
+  const navLang = window.navigator.language || (window.navigator as any).userLanguage || "";
+  return navLang.split("-")[0] || "de";
 };
 
 const isDev = process.env.NODE_ENV === "development";
 
-// **Universal API Call**
+// .env'den tenantı oku (sadece dev ortamında geçerli)
+const getDevTenantSlug = (): string | undefined => {
+  if (isDev) {
+    // Next.js için:
+    // .env.local veya .env.development'da "NEXT_PUBLIC_APP_ENV" veya "TENANT_NAME" yazmalı!
+    return (
+      process.env.NEXT_PUBLIC_APP_ENV ||
+      process.env.NEXT_PUBLIC_TENANT_NAME ||
+      process.env.TENANT_NAME ||
+      "metahub"
+    );
+  }
+  return undefined;
+};
+
 const apiCall = async (
   method: "get" | "post" | "put" | "delete" | "patch",
   url: string,
@@ -27,11 +39,8 @@ const apiCall = async (
       if (data) console.log("📤 Payload:", data);
     }
 
-    // TENANT OVERRIDE: Vite ile aynı şekilde, localStorage'dan tenant yakala
-    let tenantOverride: string | null = null;
-    if (typeof window !== "undefined") {
-      tenantOverride = localStorage.getItem("selectedTenantOverride");
-    }
+    // Dev'de .env ile, prod'da hiç tenant header eklenmez!
+    const tenantSlug = getDevTenantSlug();
 
     // FormData kontrolü
     const isFormData =
@@ -42,9 +51,7 @@ const apiCall = async (
       withCredentials: true,
       headers: {
         ...(config?.headers || {}),
-        ...(typeof tenantOverride === "string" && tenantOverride
-          ? { "x-tenant": tenantOverride }
-          : {}),
+        ...(tenantSlug ? { "x-tenant": tenantSlug } : {}),
         ...(isFormData ? {} : { "Content-Type": "application/json" }),
         "Accept-Language": getLang(),
       },
@@ -94,12 +101,17 @@ const apiCall = async (
       const isEmptyObj = Object.values(logObj).every(
         (v) => v === "-" || v === "" || v == null
       );
-      if (!isEmptyObj) {
+      if (!isEmptyObj && isDev) {
+        // Sadece development'da detaylı error logla
         console.error("❌ API Fehler / Error Details:", logObj);
-      } else {
-        console.error("❌ API Fehler / Error: Empty or invalid error object.");
+      } else if (isDev) {
+        // Sadece development'da minik uyarı logla, production'da hiçbir şey loglama
+        console.warn(
+          "⚠️ API Warn: No details from API error object (muhtemelen unauthorized/public fetch)."
+        );
       }
-    } else {
+    } else if (isDev) {
+      // Sadece dev'de network hatalarını yaz
       console.error("❌ API Network/Error:", {
         url,
         message: error?.message || message,

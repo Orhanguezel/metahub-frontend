@@ -1,0 +1,35 @@
+{
+  "form": {
+    "title": "Contáctanos",
+    "name": "Tu nombre",
+    "email": "Tu correo electrónico",
+    "subject": "Asunto",
+    "message": "Tu mensaje",
+    "send": "Enviar",
+    "sending": "Enviando...",
+    "success": "¡Tu mensaje ha sido enviado!",
+    "error": "Ocurrió un error al enviar tu mensaje."
+  },
+  "location": {
+    "title": "Nuestra ubicación"
+  },
+  "admin": {
+    "title": "Mensajes de contacto",
+    "loading": "Cargando...",
+    "searchPlaceholder": "Buscar (nombre, correo, asunto)",
+    "reload": "Actualizar",
+    "name": "Nombre",
+    "email": "Correo",
+    "subject": "Asunto",
+    "isRead": "Leído",
+    "yes": "Sí",
+    "no": "No",
+    "date": "Fecha",
+    "delete": "Eliminar",
+    "close": "Cerrar",
+    "from": "De",
+    "message": "Mensaje",
+    "noResults": "No se encontraron resultados.",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar este mensaje?"
+  }
+}

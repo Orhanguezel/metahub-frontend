@@ -1,10 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { IReferences } from "@/modules/references/types";
+import type { IReferences } from "@/modules/references";
 
 interface ReferencesState {
-  references: IReferences[];
+  references: IReferences[]; // Public (site) için
+  referencesAdmin: IReferences[]; // Admin panel için
   selected: IReferences | null;
+  status: "idle" | "loading" | "succeeded" | "failed";
   loading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -12,7 +14,9 @@ interface ReferencesState {
 
 const initialState: ReferencesState = {
   references: [],
+  referencesAdmin: [],
   selected: null,
+  status: "idle",
   loading: false,
   error: null,
   successMessage: null,
@@ -30,12 +34,27 @@ const extractErrorMessage = (payload: unknown): string => {
   return "An error occurred.";
 };
 
+// --- Async Thunks ---
+
 export const fetchReferences = createAsyncThunk<IReferences[]>(
   "references/fetchAll",
   async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/references`,
+      null,
+      thunkAPI.rejectWithValue
+    );
+    return res.data;
+  }
+);
+
+export const fetchAllReferencesAdmin = createAsyncThunk<IReferences[]>(
+  "references/fetchAllAdmin",
+  async (_, thunkAPI) => {
+    const res = await apiCall(
+      "get",
+      `/references/admin`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -55,7 +74,7 @@ export const createReferences = createAsyncThunk(
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
-    return res.data; // backend: { success: true, message: "..." }
+    return res.data;
   }
 );
 
@@ -85,19 +104,6 @@ export const deleteReferences = createAsyncThunk(
       thunkAPI.rejectWithValue
     );
     return { id, message: res.message };
-  }
-);
-
-export const fetchAllReferencesAdmin = createAsyncThunk(
-  "references/fetchAllAdmin",
-  async (_, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      `/references/admin`,
-      null,
-      thunkAPI.rejectWithValue
-    );
-    return res.data;
   }
 );
 
@@ -136,6 +142,7 @@ export const fetchReferencesBySlug = createAsyncThunk(
 );
 
 // --- Slice ---
+
 const referencesSlice = createSlice({
   name: "references",
   initialState,
@@ -159,64 +166,81 @@ const referencesSlice = createSlice({
       state.error = extractErrorMessage(action.payload);
     };
 
+    // --- Public List ---
     builder
       .addCase(fetchReferences.pending, startLoading)
       .addCase(fetchReferences.fulfilled, (state, action) => {
         state.loading = false;
         state.references = action.payload;
       })
-      .addCase(fetchReferences.rejected, setError)
+      .addCase(fetchReferences.rejected, setError);
 
+    // --- Admin List ---
+    builder
       .addCase(fetchAllReferencesAdmin.pending, startLoading)
       .addCase(fetchAllReferencesAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.references = action.payload;
+        state.referencesAdmin = action.payload;
       })
-      .addCase(fetchAllReferencesAdmin.rejected, setError)
+      .addCase(fetchAllReferencesAdmin.rejected, setError);
 
+    // --- Admin Create ---
+    builder
       .addCase(createReferences.pending, startLoading)
       .addCase(createReferences.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage =
           action.payload?.message || "Article created successfully.";
         if (action.payload?.data) {
-          state.references.unshift(action.payload.data);
+          state.referencesAdmin.unshift(action.payload.data);
         }
       })
-      .addCase(createReferences.rejected, setError)
+      .addCase(createReferences.rejected, setError);
 
+    // --- Admin Update ---
+    builder
       .addCase(updateReferences.pending, startLoading)
       .addCase(updateReferences.fulfilled, (state, action) => {
         state.loading = false;
         const updated = action.payload?.data || action.payload;
-        const index = state.references.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.references[index] = updated;
+        const index = state.referencesAdmin.findIndex(
+          (a) => a._id === updated._id
+        );
+        if (index !== -1) state.referencesAdmin[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
         state.successMessage = action.payload?.message;
       })
-      .addCase(updateReferences.rejected, setError)
+      .addCase(updateReferences.rejected, setError);
 
+    // --- Admin Delete ---
+    builder
       .addCase(deleteReferences.pending, startLoading)
       .addCase(deleteReferences.fulfilled, (state, action) => {
         state.loading = false;
-        state.references = state.references.filter(
+        state.referencesAdmin = state.referencesAdmin.filter(
           (a) => a._id !== action.payload.id
         );
         state.successMessage = action.payload?.message;
       })
-      .addCase(deleteReferences.rejected, setError)
+      .addCase(deleteReferences.rejected, setError);
 
+    // --- Admin Toggle Publish ---
+    builder
       .addCase(togglePublishReferences.pending, startLoading)
       .addCase(togglePublishReferences.fulfilled, (state, action) => {
         state.loading = false;
         const updated = action.payload?.data || action.payload;
-        const index = state.references.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.references[index] = updated;
+        const index = state.referencesAdmin.findIndex(
+          (a) => a._id === updated._id
+        );
+        if (index !== -1) state.referencesAdmin[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
         state.successMessage = action.payload?.message;
       })
-      .addCase(togglePublishReferences.rejected, setError)
+      .addCase(togglePublishReferences.rejected, setError);
 
+    // --- Single Fetch (slug) ---
+    builder
       .addCase(fetchReferencesBySlug.pending, startLoading)
       .addCase(fetchReferencesBySlug.fulfilled, (state, action) => {
         state.loading = false;

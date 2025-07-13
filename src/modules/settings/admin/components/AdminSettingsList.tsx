@@ -9,8 +9,8 @@ import {
   upsertSettings,
 } from "@/modules/settings/slice/settingsSlice";
 import { toast } from "react-toastify";
-import { getImageSrc } from "@/shared/getImageSrc";
 import type { ISetting } from "@/modules/settings/types";
+import { SUPPORTED_LOCALES } from "@/i18n";
 import Image from "next/image";
 
 // --- Props tipi
@@ -20,13 +20,16 @@ interface AdminSettingsListProps {
   supportedLocales: readonly string[];
 }
 
+const LOGO_KEYS = ["navbar_images", "footer_images", "logo_images", "images"];
+
 const AdminSettingsList: React.FC<AdminSettingsListProps> = ({
   settings,
   onEdit,
 }) => {
   const dispatch = useAppDispatch();
-  const { i18n, t } = useI18nNamespace("settings", translations);
+  const { t } = useI18nNamespace("settings", translations);
 
+  // Temaları bul
   const availableThemes = useMemo<string[]>(() => {
     const themeSetting = settings.find((s) => s.key === "available_themes");
     if (Array.isArray(themeSetting?.value))
@@ -36,75 +39,75 @@ const AdminSettingsList: React.FC<AdminSettingsListProps> = ({
     return [];
   }, [settings]);
 
+  // Silme işlemi
   const handleDelete = async (key: string) => {
-    if (window.confirm(t("confirmDelete"))) {
+    if (window.confirm(t("confirmDelete", "Are you sure?"))) {
       try {
         await dispatch(deleteSettings(key)).unwrap();
-        toast.success(t("settingDeleted"));
+        toast.success(t("settingDeleted", "Setting deleted"));
       } catch (error: any) {
-        toast.error(error?.message || t("deleteError"));
+        toast.error(error?.message || t("deleteError", "Delete failed"));
       }
     }
   };
 
+  // Tema değiştir
   const handleThemeChange = async (e: ChangeEvent<HTMLSelectElement>) => {
     const newTheme = e.target.value;
     try {
       await dispatch(
-        upsertSettings({ key: "site_template", value: newTheme })
+        upsertSettings({ key: "site_template", value: newTheme, isActive: true })
       ).unwrap();
-      toast.success(t("themeChanged"));
+      toast.success(t("themeChanged", "Theme changed"));
     } catch (error: any) {
-      toast.error(error?.message || t("updateError"));
+      toast.error(error?.message || t("updateError", "Update failed"));
     }
   };
 
-  const isLogoKey = (key: string) =>
-    ["navbar_logos", "footer_logos"].includes(key);
+  // Görsel key mi
+  const isImageKey = (key: string) => LOGO_KEYS.includes(key);
 
-  const renderLogo = (val: any) => {
-    const lightLogoUrl =
-      val?.light?.url ||
-      (typeof val?.light === "string" && getImageSrc(val.light, "setting"));
-    const darkLogoUrl =
-      val?.dark?.url ||
-      (typeof val?.dark === "string" && getImageSrc(val.dark, "setting"));
-
-    return (
-      <LogoGroup>
-        {lightLogoUrl && (
-          <LogoPreview>
-            <span>{t("lightLogo", "Light")}</span>
+  // Çoklu image array render
+  const renderImages = (images: any[] = []) => (
+    <LogoGroup>
+      {images.map((img, idx) =>
+        img?.url ? (
+          <LogoPreview key={img.url + idx}>
             <Image
-  src={lightLogoUrl}
-  alt="Light Logo"
-  width={80}              // istediğin sabit değer veya dinamik değer
-  height={40}             // oranlı sabit değer veya dinamik değer
-  style={{ height: "auto" }} // aspect ratio korunur
-/>
-
+              src={img.url}
+              alt={img.publicId || `image-${idx}`}
+              width={80}
+              height={40}
+              style={{ height: "auto" }}
+            />
+            {img.publicId && (
+              <span style={{ opacity: 0.7, fontSize: "10px" }}>{img.publicId}</span>
+            )}
           </LogoPreview>
-        )}
-        {darkLogoUrl && (
-          <LogoPreview>
-            <span>{t("darkLogo", "Dark")}</span>
-            <Image
-  src={darkLogoUrl}
-  alt="Dark Logo"
-  width={80}
-  height={40}
-  style={{ height: "auto" }}
-/>
+        ) : null
+      )}
+    </LogoGroup>
+  );
 
-          </LogoPreview>
-        )}
-      </LogoGroup>
-    );
-  };
+  // Çoklu dil label gösterimi
+  const renderTranslatedLabel = (label: Record<string, string | undefined>) => (
+    <div>
+      {SUPPORTED_LOCALES.map(
+        (lng) =>
+          label[lng] && (
+            <span key={lng} style={{ marginRight: 8 }}>
+              <b>{lng}:</b> {label[lng]}
+            </span>
+          )
+      )}
+    </div>
+  );
 
+  // Main value render logic
   const renderValue = (setting: ISetting) => {
     const val = setting.value;
 
+    // Tema dropdown
     if (setting.key === "site_template" && typeof val === "string") {
       return (
         <Select value={val} onChange={handleThemeChange}>
@@ -117,34 +120,73 @@ const AdminSettingsList: React.FC<AdminSettingsListProps> = ({
       );
     }
 
-    if (isLogoKey(setting.key) && val && typeof val === "object") {
-      return renderLogo(val);
+    // Images array (çoklu görsel)
+    if (isImageKey(setting.key) && Array.isArray(setting.images) && setting.images.length > 0) {
+      return renderImages(setting.images);
     }
 
+    // TranslatedLabel
+    if (
+      val &&
+      typeof val === "object" &&
+      SUPPORTED_LOCALES.some((lng) => lng in val)
+    ) {
+      return renderTranslatedLabel(val as Record<string, string>);
+    }
+
+    // Labeled link record
+    if (
+      val &&
+      typeof val === "object" &&
+      Object.values(val).some(
+        (v: any) => v && typeof v === "object" && "label" in v && "url" in v
+      )
+    ) {
+      // Record<string, ILabeledLink>
+      return (
+        <NestedList>
+          {Object.entries(val).map(([k, v]: any) =>
+            v && typeof v === "object" && "label" in v && "url" in v ? (
+              <NestedItem key={k}>
+                <b>{k}:</b> {renderTranslatedLabel(v.label)} → <span>{v.url}</span>
+              </NestedItem>
+            ) : null
+          )}
+        </NestedList>
+      );
+    }
+
+    // Custom object (ör: {title, slogan})
+    if (
+      val &&
+      typeof val === "object" &&
+      ("title" in val || "slogan" in val)
+    ) {
+      return (
+        <div>
+          {"title" in val && (
+            <>
+              <b>{t("title", "Title")}:</b> {renderTranslatedLabel(val.title)}
+              <br />
+            </>
+          )}
+          {"slogan" in val && (
+            <>
+              <b>{t("slogan", "Slogan")}:</b> {renderTranslatedLabel(val.slogan)}
+            </>
+          )}
+        </div>
+      );
+    }
+
+    // Düz string
     if (typeof val === "string") return <SingleValue>{val}</SingleValue>;
+
+    // Array (string[])
     if (Array.isArray(val)) return <SingleValue>{val.join(", ")}</SingleValue>;
 
+    // Diğer nesne/dictionary
     if (val && typeof val === "object") {
-      // TranslatedLabel kontrolü
-      if ("tr" in val || "en" in val || "de" in val) {
-        return (
-          <div>{`${val.tr || "-"} / ${val.en || "-"} / ${val.de || "-"}`}</div>
-        );
-      }
-
-      // LabeledLink objesi
-      if ("label" in val && "url" in val) {
-        return (
-          <div>
-            {`${val.label.tr || "-"} / ${val.label.en || "-"} / ${
-              val.label.de || "-"
-            }`}{" "}
-            → {val.url}
-          </div>
-        );
-      }
-
-      // Diğer nested objectler
       return (
         <NestedList>
           {Object.entries(val).map(([key, fieldVal]) => (
@@ -163,7 +205,7 @@ const AdminSettingsList: React.FC<AdminSettingsListProps> = ({
   };
 
   if (!settings.length) {
-    return <EmptyMessage>{t("noSettings")}</EmptyMessage>;
+    return <EmptyMessage>{t("noSettings", "No settings found.")}</EmptyMessage>;
   }
 
   return (
@@ -171,9 +213,9 @@ const AdminSettingsList: React.FC<AdminSettingsListProps> = ({
       <Table>
         <thead>
           <tr>
-            <TableHeader>{t("key")}</TableHeader>
-            <TableHeader>{t("value")}</TableHeader>
-            <TableHeader>{t("actions")}</TableHeader>
+            <TableHeader>{t("key", "Key")}</TableHeader>
+            <TableHeader>{t("value", "Value")}</TableHeader>
+            <TableHeader>{t("actions", "Actions")}</TableHeader>
           </tr>
         </thead>
         <tbody>
@@ -183,13 +225,13 @@ const AdminSettingsList: React.FC<AdminSettingsListProps> = ({
               <TableCell>{renderValue(setting)}</TableCell>
               <TableCell>
                 <ActionButton type="button" onClick={() => onEdit(setting)}>
-                  {t("edit")}
+                  {t("edit", "Edit")}
                 </ActionButton>
                 <ActionButtonDelete
                   type="button"
                   onClick={() => handleDelete(setting.key)}
                 >
-                  {t("delete")}
+                  {t("delete", "Delete")}
                 </ActionButtonDelete>
               </TableCell>
             </tr>
@@ -317,5 +359,6 @@ const LogoPreview = styled.div`
     font-size: ${({ theme }) => theme.fontSizes.xs};
     margin-top: ${({ theme }) => theme.spacings.xs};
     color: ${({ theme }) => theme.colors.textSecondary};
+    opacity: 0.7;
   }
 `;

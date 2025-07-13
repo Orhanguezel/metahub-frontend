@@ -2,23 +2,15 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import ImageUploadWithPreview from "@/shared/ImageUploadWithPreview";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/i18n";
-import { ITenant } from "../../types";
+import { ITenant,EmailSettings } from "../../types";
 import { ImageType } from "@/types/image";
 
 type TranslatedLabel = Record<string, string>;
 type SocialLinks = Record<string, string>;
-
-interface EmailSettings {
-  smtpHost: string;
-  smtpPort: string | number;
-  smtpUser: string;
-  smtpPass: string;
-  senderName: string;
-  senderEmail: string;
-}
 
 interface TenantFormModalProps {
   isOpen: boolean;
@@ -35,16 +27,12 @@ export default function TenantFormModal({
   editingItem,
   onSubmit,
 }: TenantFormModalProps) {
-  const { t, i18n } = useTranslation("bike");
-  const currentLang = (
-    SUPPORTED_LOCALES.includes(i18n.language as SupportedLocale)
-      ? i18n.language
-      : "en"
-  ) as SupportedLocale;
+  const { i18n, t } = useI18nNamespace("tenant", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   // Çok dilli boş state
   const emptyLabel: TranslatedLabel = LANGUAGES.reduce(
-    (acc, lang) => ({ ...acc, [lang]: "" }),
+    (acc, lng) => ({ ...acc, [lng]: "" }),
     {} as TranslatedLabel
   );
 
@@ -52,8 +40,7 @@ export default function TenantFormModal({
   const [name, setName] = useState<TranslatedLabel>(emptyLabel);
   const [description, setDescription] = useState<TranslatedLabel>(emptyLabel);
   const [metaTitle, setMetaTitle] = useState<TranslatedLabel>(emptyLabel);
-  const [metaDescription, setMetaDescription] =
-    useState<TranslatedLabel>(emptyLabel);
+  const [metaDescription, setMetaDescription] = useState<TranslatedLabel>(emptyLabel);
   const [address, setAddress] = useState<TranslatedLabel>(emptyLabel);
 
   // Diğer alanlar
@@ -103,7 +90,7 @@ export default function TenantFormModal({
       setDomainMain(editingItem.domain?.main || "");
       setPhone(editingItem.phone || "");
       setTheme(editingItem.theme || "default");
-      setIsActive(!!editingItem.isActive);
+      setIsActive(Boolean(editingItem.isActive));
 
       setEmailSettings({
         smtpHost: editingItem.emailSettings?.smtpHost || "",
@@ -162,7 +149,8 @@ export default function TenantFormModal({
       setSelectedFiles([]);
       setRemovedImages([]);
     }
-  }, [editingItem, isOpen, emptyLabel]);
+    // eslint-disable-next-line
+  }, [editingItem, isOpen]);
 
   // Görsel yükleme callback
   const handleImagesChange = useCallback(
@@ -190,7 +178,7 @@ export default function TenantFormModal({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Tüm çoklu dil alanları doldur (boş olanlara ilk girilen değer kopyalanır)
+    // Çoklu dil: boş olanlara ilk dolu value’yu kopyala (tek dil doldursa da backend’e full gider)
     const fillMultilang = (obj: TranslatedLabel) => {
       const filled: TranslatedLabel = { ...obj };
       const first = Object.values(obj).find((v) => v && v.trim());
@@ -205,14 +193,11 @@ export default function TenantFormModal({
     formData.append("name", JSON.stringify(fillMultilang(name)));
     formData.append("description", JSON.stringify(fillMultilang(description)));
     formData.append("metaTitle", JSON.stringify(fillMultilang(metaTitle)));
-    formData.append(
-      "metaDescription",
-      JSON.stringify(fillMultilang(metaDescription))
-    );
+    formData.append("metaDescription", JSON.stringify(fillMultilang(metaDescription)));
     formData.append("address", JSON.stringify(fillMultilang(address)));
     formData.append("slug", slug.trim());
     formData.append("mongoUri", mongoUri.trim());
-    formData.append("theme", theme);
+    formData.append("theme", theme.trim());
     formData.append("isActive", isActive ? "true" : "false");
     formData.append("domain", JSON.stringify({ main: domainMain.trim() }));
     formData.append("phone", phone.trim());
@@ -220,10 +205,11 @@ export default function TenantFormModal({
     formData.append("social", JSON.stringify(social));
 
     for (const file of selectedFiles) formData.append("images", file);
-    if (removedImages.length > 0)
-      formData.append("removedImages", JSON.stringify(removedImages));
+    if (removedImages.length > 0) formData.append("removedImages", JSON.stringify(removedImages));
 
-    await onSubmit(formData, editingItem && (editingItem as any)._id);
+    const id = editingItem && editingItem._id ? editingItem._id : undefined;
+await onSubmit(formData, id);
+
   };
 
   if (!isOpen) return null;
@@ -235,69 +221,76 @@ export default function TenantFormModal({
           ? t("admin.tenant.edit", "Edit Tenant")
           : t("admin.tenant.create", "Add New Tenant")}
       </h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} autoComplete="off">
         <Row>
           <Column>
             {/* Çoklu Dil İsim */}
             {LANGUAGES.map((lng) => (
               <div key={lng}>
-                <label>
+                <label htmlFor={`name-${lng}`}>
                   {t("admin.tenant.name", "Tenant Name")} ({lng.toUpperCase()})
                 </label>
                 <input
+                  id={`name-${lng}`}
                   type="text"
                   value={name[lng]}
+                  autoFocus={lng === lang}
                   onChange={(e) => setName({ ...name, [lng]: e.target.value })}
-                  required={lng === currentLang}
+                  required={lng === lang}
                 />
               </div>
             ))}
             {/* Çoklu Dil Açıklama */}
             {LANGUAGES.map((lng) => (
               <div key={lng + "-desc"}>
-                <label>
-                  {t("admin.tenant.description", "Description")} (
-                  {lng.toUpperCase()})
+                <label htmlFor={`desc-${lng}`}>
+                  {t("admin.tenant.description", "Description")} ({lng.toUpperCase()})
                 </label>
                 <textarea
+                  id={`desc-${lng}`}
                   value={description[lng]}
                   onChange={(e) =>
                     setDescription({ ...description, [lng]: e.target.value })
                   }
-                  required={lng === currentLang}
+                  required={lng === lang}
                 />
               </div>
             ))}
             {/* Diğer Alanlar */}
-            <label>{t("admin.tenant.slug", "Tenant Slug")}</label>
+            <label htmlFor="slug">{t("admin.tenant.slug", "Tenant Slug")}</label>
             <input
+              id="slug"
               type="text"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
               required
             />
-            <label>{t("admin.tenant.mongoUri", "MongoDB URI")}</label>
+            <label htmlFor="mongoUri">{t("admin.tenant.mongoUri", "MongoDB URI")}</label>
             <input
+              id="mongoUri"
               type="text"
               value={mongoUri}
               onChange={(e) => setMongoUri(e.target.value)}
               required
             />
-            <label>{t("admin.tenant.domainMain", "Main Domain")}</label>
+            <label htmlFor="domainMain">{t("admin.tenant.domainMain", "Main Domain")}</label>
             <input
+              id="domainMain"
               type="text"
               value={domainMain}
               onChange={(e) => setDomainMain(e.target.value)}
               required
             />
-            <label>{t("admin.tenant.phone", "Phone")}</label>
+            <label htmlFor="phone">{t("admin.tenant.phone", "Phone")}</label>
             <input
+              id="phone"
               type="text"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
-            <label>{t("admin.tenant.theme", "Theme")}</label>
+            <label htmlFor="theme">{t("admin.tenant.theme", "Theme")}</label>
             <input
+              id="theme"
               type="text"
               value={theme}
               onChange={(e) => setTheme(e.target.value)}
@@ -317,11 +310,11 @@ export default function TenantFormModal({
             {/* Meta Title/Description */}
             {LANGUAGES.map((lng) => (
               <div key={lng + "-meta-title"}>
-                <label>
-                  {t("admin.tenant.metaTitle", "Meta Title")} (
-                  {lng.toUpperCase()})
+                <label htmlFor={`meta-title-${lng}`}>
+                  {t("admin.tenant.metaTitle", "Meta Title")} ({lng.toUpperCase()})
                 </label>
                 <input
+                  id={`meta-title-${lng}`}
                   type="text"
                   value={metaTitle[lng]}
                   onChange={(e) =>
@@ -332,11 +325,11 @@ export default function TenantFormModal({
             ))}
             {LANGUAGES.map((lng) => (
               <div key={lng + "-meta-desc"}>
-                <label>
-                  {t("admin.tenant.metaDescription", "Meta Description")} (
-                  {lng.toUpperCase()})
+                <label htmlFor={`meta-desc-${lng}`}>
+                  {t("admin.tenant.metaDescription", "Meta Description")} ({lng.toUpperCase()})
                 </label>
                 <input
+                  id={`meta-desc-${lng}`}
                   type="text"
                   value={metaDescription[lng]}
                   onChange={(e) =>
@@ -351,10 +344,11 @@ export default function TenantFormModal({
             {/* Çoklu Dil Adres */}
             {LANGUAGES.map((lng) => (
               <div key={lng + "-address"}>
-                <label>
+                <label htmlFor={`address-${lng}`}>
                   {t("admin.tenant.address", "Address")} ({lng.toUpperCase()})
                 </label>
                 <input
+                  id={`address-${lng}`}
                   type="text"
                   value={address[lng]}
                   onChange={(e) =>
@@ -368,44 +362,50 @@ export default function TenantFormModal({
               <legend>
                 {t("admin.tenant.emailSettings", "Email Settings (SMTP)")}
               </legend>
-              <label>SMTP Host</label>
+              <label htmlFor="smtpHost">SMTP Host</label>
               <input
+                id="smtpHost"
                 name="smtpHost"
                 value={emailSettings.smtpHost}
                 onChange={handleEmailChange}
                 required
               />
-              <label>SMTP Port</label>
+              <label htmlFor="smtpPort">SMTP Port</label>
               <input
+                id="smtpPort"
                 name="smtpPort"
                 type="number"
                 value={emailSettings.smtpPort}
                 onChange={handleEmailChange}
                 required
               />
-              <label>SMTP User</label>
+              <label htmlFor="smtpUser">SMTP User</label>
               <input
+                id="smtpUser"
                 name="smtpUser"
                 value={emailSettings.smtpUser}
                 onChange={handleEmailChange}
                 required
               />
-              <label>SMTP Pass</label>
+              <label htmlFor="smtpPass">SMTP Pass</label>
               <input
+                id="smtpPass"
                 name="smtpPass"
                 value={emailSettings.smtpPass}
                 onChange={handleEmailChange}
                 required
               />
-              <label>Sender Name</label>
+              <label htmlFor="senderName">Sender Name</label>
               <input
+                id="senderName"
                 name="senderName"
                 value={emailSettings.senderName}
                 onChange={handleEmailChange}
                 required
               />
-              <label>Sender Email</label>
+              <label htmlFor="senderEmail">Sender Email</label>
               <input
+                id="senderEmail"
                 name="senderEmail"
                 type="email"
                 value={emailSettings.senderEmail}
@@ -419,8 +419,11 @@ export default function TenantFormModal({
               <legend>{t("admin.tenant.social", "Social Media Links")}</legend>
               {Object.keys(social).map((k) => (
                 <React.Fragment key={k}>
-                  <label>{k.charAt(0).toUpperCase() + k.slice(1)}</label>
+                  <label htmlFor={k}>
+                    {t(`admin.tenant.social.${k}`, k.charAt(0).toUpperCase() + k.slice(1))}
+                  </label>
                   <input
+                    id={k}
                     name={k}
                     value={social[k]}
                     onChange={handleSocialChange}

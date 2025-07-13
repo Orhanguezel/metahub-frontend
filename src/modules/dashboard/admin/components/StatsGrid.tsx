@@ -1,7 +1,8 @@
 "use client";
 import React from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { StatCard } from "@/modules/dashboard";
 
 export interface GridEntry {
@@ -17,7 +18,7 @@ export interface StatsGridProps {
 }
 
 const StatsGrid: React.FC<StatsGridProps> = ({ entries }) => {
-  const { t } = useTranslation("admin-dashboard");
+  const { t } = useI18nNamespace("dashboard", translations);
 
   if (!Array.isArray(entries) || entries.length === 0) {
     return <EmptyInfo>{t("noData", "Hiç veri bulunamadı.")}</EmptyInfo>;

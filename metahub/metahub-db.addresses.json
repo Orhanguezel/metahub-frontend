@@ -1,0 +1,74 @@
+[
+  {
+    "_id": {
+      "$oid": "6841f03965bc9476e22a7bfb"
+    },
+    "userId": {
+      "$oid": "6841a7d56410cb9e81508002"
+    },
+    "street": "Buchholzer Straße",
+    "houseNumber": "2",
+    "city": "Grevenbroich",
+    "zipCode": "41517",
+    "country": "Germany",
+    "phone": "01723846068",
+    "email": "orhanguzell@gmail.com",
+    "isDefault": false,
+    "createdAt": {
+      "$date": "2025-06-05T19:30:01.682Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-05T19:30:01.682Z"
+    },
+    "__v": 0,
+    "tenant": "anastasia"
+  },
+  {
+    "_id": {
+      "$oid": "68588d07419984c63678a50a"
+    },
+    "userId": {
+      "$oid": "68588418419984c63678a482"
+    },
+    "tenant": "anastasia",
+    "street": "Daimlerstraße",
+    "houseNumber": "50",
+    "city": "Grevenbroich",
+    "zipCode": "41515",
+    "country": "Germany",
+    "phone": "01723846068",
+    "email": "oorhanguzel@gmail.com",
+    "isDefault": false,
+    "createdAt": {
+      "$date": "2025-06-22T23:08:55.959Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-22T23:08:55.959Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "68588e60419984c63678a5bb"
+    },
+    "userId": {
+      "$oid": "68588418419984c63678a482"
+    },
+    "tenant": "anastasia",
+    "street": "Daimlerstraße",
+    "houseNumber": "50",
+    "city": "Grevenbroich",
+    "zipCode": "41515",
+    "country": "Germany",
+    "phone": "01723846068",
+    "email": "oorhanguzel@gmail.com",
+    "isDefault": false,
+    "createdAt": {
+      "$date": "2025-06-22T23:14:40.472Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-22T23:14:40.472Z"
+    },
+    "__v": 0
+  }
+]

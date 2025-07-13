@@ -1,14 +1,16 @@
 "use client";
 import React from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { Skeleton } from "@/shared";
 import { ITenant } from "../../types";
 import Image from "next/image";
+import type { SupportedLocale } from "@/types/common";
 
 interface TenantListProps {
   tenants: ITenant[];
-  lang: string;
+  lang: SupportedLocale;
   loading?: boolean;
   error?: string | null;
   onEdit?: (tenant: ITenant) => void;
@@ -17,13 +19,17 @@ interface TenantListProps {
 
 export default function TenantList({
   tenants,
-  lang,
   loading,
   error,
   onEdit,
   onDelete,
 }: TenantListProps) {
-  const { t } = useTranslation("tenants");
+  const { t,i18n } = useI18nNamespace("tenant", translations);
+
+const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+const getLabel = (obj?: Partial<Record<SupportedLocale, string>>) =>
+  obj?.[lang] || obj?.en || "—";
+
 
   if (loading) {
     return (
@@ -35,14 +41,10 @@ export default function TenantList({
     );
   }
 
-  if (error) return <ErrorText>❌ {error}</ErrorText>;
+  if (error) return <ErrorText>❌ {t("admin.error", error)}</ErrorText>;
   if (!Array.isArray(tenants)) return null;
   if (tenants.length === 0)
     return <Empty>{t("admin.tenant.empty", "No tenant available.")}</Empty>;
-
-  // Çoklu dil desteği: yoksa "en" fallback
-  const getLabel = (obj?: Record<string, string>) =>
-    (obj && (obj[lang] || obj.en)) || "—";
 
   return (
     <div>
@@ -76,7 +78,7 @@ export default function TenantList({
                 <Image
                   key={i}
                   src={img.url}
-                  alt={`tenant-${i}`}
+                  alt={getLabel(item.name) + " image"}
                   width={120}
                   height={90}
                   style={{
@@ -111,7 +113,6 @@ export default function TenantList({
               "—"}
           </SmallLine>
 
-          {/* Butonlar */}
           {(onEdit || onDelete) && (
             <ButtonGroup>
               {onEdit && (
@@ -120,7 +121,7 @@ export default function TenantList({
                 </ActionButton>
               )}
               {onDelete && (
-                <DeleteButton onClick={() => onDelete(item._id ?? item.slug)}>
+                <DeleteButton onClick={() => item._id && onDelete(item._id)}>
                   {t("admin.delete", "Delete")}
                 </DeleteButton>
               )}

@@ -1,17 +1,21 @@
 "use client";
 import React from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import type { SupportedLocale } from "@/types/common";
+import type { Coupon } from "../../types";
 
 interface Props {
-  coupons: any[];
-  onEdit: (coupon: any) => void;
+  coupons: Coupon[];
+  loading?: boolean;
+  onEdit: (coupon: Coupon) => void;
   onDelete: (id: string) => void;
 }
 
-export default function CouponTable({ coupons, onEdit, onDelete }: Props) {
-  const { t, i18n } = useTranslation("coupon");
-  const lang = (i18n.language as "tr" | "en" | "de") || "en";
+export default function CouponTable({ coupons, loading, onEdit, onDelete }: Props) {
+  const { t,i18n } = useI18nNamespace("coupon", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
 
   if (!coupons?.length)
     return <EmptyMsg>{t("admin.empty", "No coupons available.")}</EmptyMsg>;
@@ -33,14 +37,24 @@ export default function CouponTable({ coupons, onEdit, onDelete }: Props) {
           <tr key={c._id}>
             <td>{c.code}</td>
             <td>{c.discount}%</td>
-            <td>{new Date(c.expiresAt).toLocaleDateString()}</td>
-            <td>{c.label.title?.[lang] || c.label.title?.en}</td>
+            <td>
+              {c.expiresAt
+                ? new Date(c.expiresAt).toLocaleDateString(lang)
+                : "-"}
+            </td>
+            <td>
+              {/* Çoklu dil desteği */}
+              {c.title?.[lang] ||
+                c.title?.en ||
+                Object.values(c.title || {})[0] ||
+                "-"}
+            </td>
             <td>{c.isActive ? "✔" : ""}</td>
             <td>
-              <EditBtn onClick={() => onEdit(c)}>
+              <EditBtn type="button" onClick={() => onEdit(c)}>
                 {t("form.edit", "Edit")}
               </EditBtn>
-              <DeleteBtn onClick={() => onDelete(c._id)}>
+              <DeleteBtn type="button" onClick={() => onDelete(c._id as string)}>
                 {t("form.delete", "Delete")}
               </DeleteBtn>
             </td>
@@ -51,6 +65,7 @@ export default function CouponTable({ coupons, onEdit, onDelete }: Props) {
   );
 }
 
+// Styled Components
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;

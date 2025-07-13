@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { XCircle, Pencil, AlertTriangle } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import translations from "../../../locales";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import type { SupportedLocale } from "@/types/common";
 import { EditTenantModuleModal } from "@/modules/adminmodules";
-import { getCurrentLocale } from "@/utils/getCurrentLocale";
 
 // --- Tipler ---
 interface ModuleSetting {
@@ -35,9 +36,9 @@ const TenantModuleDetailModal: React.FC<TenantModuleDetailModalProps> = ({
   onAfterAction,
   globalEnabled,
 }) => {
-  const { t } = useTranslation("adminModules");
+   const { i18n, t } = useI18nNamespace("adminModules", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const [isEditModalOpen, setEditModalOpen] = useState(false);
-  const lang = getCurrentLocale();
 
   // --- Tenant’a özel modül adı/tenant etiketi ---
   const tenantLabel = module.tenant || "-";

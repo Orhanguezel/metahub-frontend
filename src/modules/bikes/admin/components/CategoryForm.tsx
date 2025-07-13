@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { useAppDispatch } from "@/store/hooks";
-import type { BikeCategory } from "@/modules/bikes/types";
+import type { BikesCategory } from "@/modules/bikes/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
 import ImageUploadWithPreview from "@/shared/ImageUploadWithPreview";
@@ -14,7 +13,7 @@ const LANGUAGES = SUPPORTED_LOCALES;
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  editingItem: BikeCategory | null;
+  editingItem: BikesCategory | null;
   onSubmit: (formData: FormData, id?: string) => Promise<void>;
 }
 
@@ -28,7 +27,6 @@ export default function BikesCategoryFormModal({
     const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
 
-  const dispatch = useAppDispatch();
 
   const emptyLabel = SUPPORTED_LOCALES.reduce(
     (acc, lang) => ({ ...acc, [lang]: "" }),

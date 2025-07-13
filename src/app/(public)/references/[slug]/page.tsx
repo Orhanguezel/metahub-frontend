@@ -1,5 +1,5 @@
-import ReferencesDetailSection from "@/modules/references/public/components/ReferencesDetailSection";
+import DetailSection from "@/modules/references/public/components/DetailSection";
 
 export default function Page() {
-  return <ReferencesDetailSection />;
+  return <DetailSection />;
 }

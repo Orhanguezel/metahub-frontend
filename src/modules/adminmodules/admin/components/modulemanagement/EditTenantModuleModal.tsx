@@ -3,7 +3,8 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import styled from "styled-components";
 import { XCircle, AlertTriangle } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales";
 import { useAppDispatch } from "@/store/hooks";
 import { updateModuleSetting } from "@/modules/adminmodules/slices/moduleSettingSlice";
 import type { IModuleSetting } from "@/modules/adminmodules/types";
@@ -41,7 +42,7 @@ const EditTenantModuleModal: React.FC<EditTenantModuleModalProps> = ({
   globalEnabled = true,
 }) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("adminModules");
+  const { t } = useI18nNamespace("adminModules", translations);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [form, setForm] = useState<FormState>({

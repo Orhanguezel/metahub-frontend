@@ -13,9 +13,9 @@ export { default as PublicLayout } from "./public/pages/PublicLayout";
 
 export { default as FooterCopyright } from "./public/components/footer/FooterCopyright";
 export { default as FooterLinks } from "./public/components/footer/FooterLinks";
-export { default as FooterLogo } from "./public/components/footer/FooterLogo";
 export { default as FooterSocialLinks } from "./public/components/footer/FooterSocialLinks";
 export { default as FooterCompanyInfo } from "./public/components/footer/FooterCompanyInfo";
+export { default as FooterLogo } from "./public/components/footer/FooterLogo";
 
 // Navbar Components
 export { default as AvatarMenu } from "./public/components/navbar/AvatarMenu";

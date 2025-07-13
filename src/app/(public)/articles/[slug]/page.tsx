@@ -1,5 +1,5 @@
-import ArticlesDetailSection from "@/modules/articles/public/components/ArticlesDetailSection";
+import DetailSection from "@/modules/articles/public/components/DetailSection";
 
 export default function Page() {
-  return <ArticlesDetailSection />;
+  return <DetailSection />;
 }

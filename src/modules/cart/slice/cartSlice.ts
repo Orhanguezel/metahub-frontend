@@ -5,10 +5,10 @@ import type { ICart } from "@/modules/cart/types";
 interface CartState {
   cart: ICart | null;
   loading: boolean;
+  status?: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   successMessage: string | null;
   stockWarning: string | null;
-
 }
 
 const initialState: CartState = {
@@ -17,7 +17,7 @@ const initialState: CartState = {
   error: null,
   successMessage: null,
   stockWarning: null,
-
+  status: "idle",
 };
 
 export const EMPTY_CART: ICart = {

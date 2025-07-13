@@ -1,0 +1,73 @@
+{
+  "page": {
+    "noAbout": "Keine Artikel gefunden.",
+    "allAbout": "Alle Artikel",
+    "about": {
+      "title": "Über",
+      "all": "Alle anzeigen"
+    },
+    "other": "Weitere Bereiche",
+    "summary": "Zusammenfassung",
+    "detail": "Detail",
+    "noTitle": "Kein Titel"
+  },
+  "readMore": "Mehr lesen →",
+  "author": "Autor",
+  "tags": "Tags",
+  "unknown": "Unbekannt",
+  "tabs": {
+    "about": "Über",
+    "create": "Neuer Artikel",
+    "categories": "Kategorien"
+  },
+  "about": {
+    "empty": "Keine Artikel verfügbar.",
+    "no_images": "Keine Bilder",
+    "author": "Autor",
+    "tags": "Tags",
+    "publish_status": "Veröffentlicht",
+    "unpublish": "Veröffentlichung aufheben",
+    "publish": "Veröffentlichen",
+    "unknown": "Unbekannt",
+    "none": "Keine"
+  },
+  "edit": "Bearbeiten",
+  "delete": "Löschen",
+  "yes": "Ja",
+  "no": "Nein",
+  "admin": {
+    "about": {
+      "edit": "Artikel bearbeiten",
+      "create": "Neuen Artikel erstellen",
+      "title": "Titel",
+      "summary": "Zusammenfassung",
+      "content": "Inhalt",
+      "author": "Autor",
+      "tags": "Tags",
+      "image": "Bilder",
+      "category": "Kategorie",
+      "select_category": "Kategorie auswählen"
+    },
+    "categories": {
+      "title": "Produktkategorien",
+      "add": "Kategorie hinzufügen",
+      "name": "Kategoriename"
+    },
+    "editCategory": "Kategorie bearbeiten",
+    "newCategory": "Neue Kategorie",
+    "optional_description": "Optionale Beschreibung",
+    "category_info": "Worum geht es in dieser Kategorie?",
+    "update": "Aktualisieren",
+    "update2": "Aktualisieren",
+    "save": "Speichern",
+    "saving": "Speichert...",
+    "cancel": "Abbrechen",
+    "confirm": {
+      "delete": "Möchten Sie diese Kategorie wirklich löschen?",
+      "delete_article": "Möchten Sie diesen Artikel wirklich löschen?"
+    },
+    "loading": "Lädt...",
+    "actions": "Aktionen",
+    "slug": "Kurzname"
+  }
+}

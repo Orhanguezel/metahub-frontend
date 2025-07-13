@@ -1,12 +1,11 @@
-// src/modules/coupon/slice/couponSlice.ts
-
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { Coupon } from "../types";
 
 // State tipi
 interface CouponState {
-  coupons: Coupon[];
+  coupons: Coupon[];         // Public (kullanıcıya açık)
+  couponsAdmin: Coupon[];    // Admin (panelde tüm kuponlar)
   current: Coupon | null;
   loading: boolean;
   error: string | null;
@@ -15,18 +14,20 @@ interface CouponState {
 
 const initialState: CouponState = {
   coupons: [],
+  couponsAdmin: [],
   current: null,
   loading: false,
   error: null,
   successMessage: null,
 };
 
-
-// 📥 Tüm kuponları getir (admin)
+// --- PUBLIC --- //
+// 📥 Tüm geçerli kuponları getir (public)
 export const fetchCoupons = createAsyncThunk(
   "coupon/fetchCoupons",
   async (_, thunkAPI) => {
-    return await apiCall("get", "/coupon", null, thunkAPI.rejectWithValue);
+    const res = await apiCall("get", "/coupon", null, thunkAPI.rejectWithValue);
+    return res.data; // Coupon[]
   }
 );
 
@@ -34,31 +35,45 @@ export const fetchCoupons = createAsyncThunk(
 export const checkCouponByCode = createAsyncThunk(
   "coupon/checkCouponByCode",
   async (code: string, thunkAPI) => {
-    return await apiCall("get", `/coupon/check/${code}`, null, thunkAPI.rejectWithValue);
+    const res = await apiCall("get", `/coupon/check/${code}`, null, thunkAPI.rejectWithValue);
+    return res.data; // Coupon
+  }
+);
+
+// --- ADMIN --- //
+// 🛠️ Tüm kuponları getir (admin)
+export const fetchCouponsAdmin = createAsyncThunk(
+  "coupon/fetchCouponsAdmin",
+  async (_, thunkAPI) => {
+    const res = await apiCall("get", "/coupon/admin", null, thunkAPI.rejectWithValue);
+    return res.data; // Coupon[]
   }
 );
 
 // ➕ Yeni kupon oluştur (admin)
-export const createCoupon = createAsyncThunk(
-  "coupon/createCoupon",
+export const createCouponAdmin = createAsyncThunk(
+  "coupon/createCouponAdmin",
   async (data: Omit<Coupon, "_id" | "createdAt" | "updatedAt">, thunkAPI) => {
-    return await apiCall("post", "/coupon", data, thunkAPI.rejectWithValue);
+    const res = await apiCall("post", "/coupon/admin", data, thunkAPI.rejectWithValue);
+    return res.data; // Coupon
   }
 );
 
 // ✏️ Kupon güncelle (admin)
-export const updateCoupon = createAsyncThunk(
-  "coupon/updateCoupon",
+export const updateCouponAdmin = createAsyncThunk(
+  "coupon/updateCouponAdmin",
   async ({ id, data }: { id: string; data: Partial<Coupon> }, thunkAPI) => {
-    return await apiCall("put", `/coupon/${id}`, data, thunkAPI.rejectWithValue);
+    const res = await apiCall("put", `/coupon/admin/${id}`, data, thunkAPI.rejectWithValue);
+    return res.data; // Coupon
   }
 );
 
 // 🗑 Kupon sil (admin)
-export const deleteCoupon = createAsyncThunk(
-  "coupon/deleteCoupon",
+export const deleteCouponAdmin = createAsyncThunk(
+  "coupon/deleteCouponAdmin",
   async (id: string, thunkAPI) => {
-    return await apiCall("delete", `/coupon/${id}`, null, thunkAPI.rejectWithValue);
+    await apiCall("delete", `/coupon/admin/${id}`, null, thunkAPI.rejectWithValue);
+    return id; // sadece ID
   }
 );
 
@@ -85,58 +100,69 @@ const couponSlice = createSlice({
       state.error = action.payload?.message || "An error occurred.";
     };
 
-    // Kupon kodu kontrolü
-    builder
-      .addCase(checkCouponByCode.pending, loading)
-      .addCase(checkCouponByCode.fulfilled, (state, action) => {
-        state.loading = false;
-        state.current = action.payload.data;
-        state.successMessage = "Coupon valid!";
-      })
-      .addCase(checkCouponByCode.rejected, failed);
-
-    // Tüm kuponlar
+    // --- Public: geçerli kuponlar ---
     builder
       .addCase(fetchCoupons.pending, loading)
       .addCase(fetchCoupons.fulfilled, (state, action) => {
         state.loading = false;
-        state.coupons = action.payload.data;
+        state.coupons = action.payload; // Coupon[]
       })
       .addCase(fetchCoupons.rejected, failed);
 
-    // Kupon oluştur
+    // --- Public: kupon kodu kontrolü ---
     builder
-      .addCase(createCoupon.pending, loading)
-      .addCase(createCoupon.fulfilled, (state, action) => {
+      .addCase(checkCouponByCode.pending, loading)
+      .addCase(checkCouponByCode.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload.message;
-        state.coupons.unshift(action.payload.data);
+        state.current = action.payload; // Coupon
+        state.successMessage = "Coupon valid!";
       })
-      .addCase(createCoupon.rejected, failed);
+      .addCase(checkCouponByCode.rejected, failed);
 
-    // Kupon güncelle
+    // --- Admin: tüm kuponlar ---
     builder
-      .addCase(updateCoupon.pending, loading)
-      .addCase(updateCoupon.fulfilled, (state, action) => {
+      .addCase(fetchCouponsAdmin.pending, loading)
+      .addCase(fetchCouponsAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload.message;
+        state.couponsAdmin = action.payload; // Coupon[]
+      })
+      .addCase(fetchCouponsAdmin.rejected, failed);
+
+    // --- Admin: kupon oluştur ---
+    builder
+      .addCase(createCouponAdmin.pending, loading)
+      .addCase(createCouponAdmin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = "Coupon created successfully.";
+        state.couponsAdmin.unshift(action.payload);
+      })
+      .addCase(createCouponAdmin.rejected, failed);
+
+    // --- Admin: kupon güncelle ---
+    builder
+      .addCase(updateCouponAdmin.pending, loading)
+      .addCase(updateCouponAdmin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = "Coupon updated successfully.";
         const updated = action.payload;
-        state.coupons = state.coupons.map((c) => (c._id === updated._id ? updated : c));
+        state.couponsAdmin = state.couponsAdmin.map((c) =>
+          c._id === updated._id ? updated : c
+        );
         if (state.current && state.current._id === updated._id) state.current = updated;
       })
-      .addCase(updateCoupon.rejected, failed);
+      .addCase(updateCouponAdmin.rejected, failed);
 
-    // Kupon sil
+    // --- Admin: kupon sil ---
     builder
-      .addCase(deleteCoupon.pending, loading)
-      .addCase(deleteCoupon.fulfilled, (state, action) => {
+      .addCase(deleteCouponAdmin.pending, loading)
+      .addCase(deleteCouponAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload.message;
-        const deletedId = action.meta.arg;
-        state.coupons = state.coupons.filter((c) => c._id !== deletedId);
+        state.successMessage = "Coupon deleted successfully.";
+        const deletedId = action.payload;
+        state.couponsAdmin = state.couponsAdmin.filter((c) => c._id !== deletedId);
         if (state.current && state.current._id === deletedId) state.current = null;
       })
-      .addCase(deleteCoupon.rejected, failed);
+      .addCase(deleteCouponAdmin.rejected, failed);
   },
 });
 

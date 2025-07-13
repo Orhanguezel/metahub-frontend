@@ -1,0 +1,35 @@
+{
+  "form": {
+    "title": "Kontakt",
+    "name": "Twoje imię",
+    "email": "Twój e-mail",
+    "subject": "Temat",
+    "message": "Twoja wiadomość",
+    "send": "Wyślij",
+    "sending": "Wysyłanie...",
+    "success": "Twoja wiadomość została wysłana!",
+    "error": "Wystąpił błąd podczas wysyłania wiadomości."
+  },
+  "location": {
+    "title": "Nasza lokalizacja"
+  },
+  "admin": {
+    "title": "Wiadomości kontaktowe",
+    "loading": "Ładowanie...",
+    "searchPlaceholder": "Szukaj (imię, e-mail, temat)",
+    "reload": "Odśwież",
+    "name": "Imię i nazwisko",
+    "email": "E-mail",
+    "subject": "Temat",
+    "isRead": "Przeczytane",
+    "yes": "Tak",
+    "no": "Nie",
+    "date": "Data",
+    "delete": "Usuń",
+    "close": "Zamknij",
+    "from": "Od",
+    "message": "Wiadomość",
+    "noResults": "Brak wyników.",
+    "confirmDelete": "Czy na pewno chcesz usunąć tę wiadomość?"
+  }
+}

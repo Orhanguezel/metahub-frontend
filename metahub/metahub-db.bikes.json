@@ -1,0 +1,738 @@
+[
+  {
+    "_id": {
+      "$oid": "6837211d8902018caf84099f"
+    },
+    "slug": "touring-bike",
+    "name": {
+      "tr": "Gezi Bisikleti",
+      "en": "Touring Bike",
+      "de": "Reiserad",
+      "pl": "Rower turystyczny",
+      "fr": "Vélo de randonnée",
+      "es": "Bicicleta de turismo"
+    },
+    "description": {
+      "tr": "Uzun yolculuklar için konforlu bir bisiklet.",
+      "en": "A comfortable bike for long-distance rides.",
+      "de": "Ein komfortables Fahrrad für lange Strecken.",
+      "pl": "Wygodny rower na długie dystanse.",
+      "fr": "Un vélo confortable pour les longs trajets.",
+      "es": "Una bicicleta cómoda para trayectos largos."
+    },
+    "brand": "Radonar-TX100",
+    "tags": ["touring", "comfort", "travel"],
+    "price": 1299,
+    "stock": 25,
+    "stockThreshold": 5,
+    "category": {
+      "$oid": "6837057709da4ef78fed4850"
+    },
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748452587/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-191603-1748452585323-362362161.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748452587/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-191603-1748452585323-362362161.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748452587/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-191603-1748452585323-362362161.webp",
+        "altText": {
+          "tr": "Uzun yolculuklar için Touring bisiklet",
+          "en": "Touring bike for long rides",
+          "de": "Reiserad für lange Strecken",
+          "pl": "Rower turystyczny na długie trasy",
+          "fr": "Vélo de randonnée pour longues distances",
+          "es": "Bicicleta de turismo para recorridos largos"
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748452680/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-191732-1748452677242-512144356.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748452680/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-191732-1748452677242-512144356.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748452680/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-191732-1748452677242-512144356.webp",
+        "altText": {
+          "tr": "Uzun yolculuklar için Touring bisiklet",
+          "en": "Touring bike for long rides",
+          "de": "Reiserad für lange Strecken",
+          "pl": "Rower turystyczny na długie trasy",
+          "fr": "Vélo de randonnée pour longues distances",
+          "es": "Bicicleta de turismo para recorridos largos"
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748452741/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-191850-1748452738831-357386293.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748452741/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-191850-1748452738831-357386293.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748452741/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-191850-1748452738831-357386293.webp",
+        "altText": {
+          "tr": "Uzun yolculuklar için Touring bisiklet",
+          "en": "Touring bike for long rides",
+          "de": "Reiserad für lange Strecken",
+          "pl": "Rower turystyczny na długie trasy",
+          "fr": "Vélo de randonnée pour longues distances",
+          "es": "Bicicleta de turismo para recorridos largos"
+        }
+      }
+    ],
+    "color": [],
+    "isElectric": false,
+    "comments": [],
+    "likes": 0,
+    "isActive": true,
+    "isPublished": true,
+    "createdAt": {
+      "$date": "2025-05-28T14:39:16.263Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-21T02:51:35.403Z"
+    },
+    "__v": 3,
+    "tenant": "anastasia"
+  },
+  {
+    "_id": {
+      "$oid": "6837211d8902018caf8409a0"
+    },
+    "slug": "hybrid-bike",
+    "name": {
+      "tr": "Hibrit Bisiklet",
+      "en": "Hybrid Bike",
+      "de": "Hybridrad",
+      "pl": "Rower hybrydowy",
+      "fr": "Vélo hybride",
+      "es": "Bicicleta híbrida"
+    },
+    "description": {
+      "tr": "Yol ve arazi kullanımına uygun hibrit tasarım.",
+      "en": "Hybrid design suitable for road and off-road.",
+      "de": "Hybrid-Design für Straße und Gelände geeignet.",
+      "pl": "Projekt hybrydowy odpowiedni na drogę i teren.",
+      "fr": "Conception hybride adaptée à la route et au tout-terrain.",
+      "es": "Diseño híbrido apto para carretera y fuera de carretera."
+    },
+    "brand": "Radonar-HX700",
+    "tags": ["hybrid", "urban", "comfort"],
+    "price": 1299,
+    "stock": 25,
+    "stockThreshold": 5,
+    "category": {
+      "$oid": "6837055d09da4ef78fed484d"
+    },
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453112/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-192107-1748453110877-565105472.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453112/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-192107-1748453110877-565105472.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453112/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-192107-1748453110877-565105472.webp",
+        "altText": {
+          "tr": "Yolda ve arazide kullanılabilen hibrit bisiklet",
+          "en": "Hybrid bike for road and trail",
+          "de": "Hybridrad für Straße und Gelände",
+          "pl": "Rower hybrydowy na drogę i teren",
+          "fr": "Vélo hybride pour route et sentier",
+          "es": "Bicicleta híbrida para carretera y sendero"
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453115/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-192300-1748453112269-648113540.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453115/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-192300-1748453112269-648113540.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453115/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-192300-1748453112269-648113540.webp",
+        "altText": {
+          "tr": "Yolda ve arazide kullanılabilen hibrit bisiklet 2",
+          "en": "Hybrid bike for road and trail 2",
+          "de": "Hybridrad für Straße und Gelände 2",
+          "pl": "Rower hybrydowy na drogę i teren 2",
+          "fr": "Vélo hybride pour route et sentier 2",
+          "es": "Bicicleta híbrida para carretera y sendero 2"
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453115/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-192457-1748453114680-187002075.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453115/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-192457-1748453114680-187002075.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453115/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-192457-1748453114680-187002075.webp",
+        "altText": {
+          "tr": "Yolda ve arazide kullanılabilen hibrit bisiklet 3",
+          "en": "Hybrid bike for road and trail 3",
+          "de": "Hybridrad für Straße und Gelände 3",
+          "pl": "Rower hybrydowy na drogę i teren 3",
+          "fr": "Vélo hybride pour route et sentier 3",
+          "es": "Bicicleta híbrida para carretera y sendero 3"
+        }
+      }
+    ],
+    "color": [],
+    "isElectric": false,
+    "comments": [],
+    "likes": 0,
+    "isActive": true,
+    "isPublished": true,
+    "createdAt": {
+      "$date": "2025-05-28T14:39:16.263Z"
+    },
+    "updatedAt": {
+      "$date": "2025-05-28T17:25:16.891Z"
+    },
+    "__v": 1,
+    "tenant": "anastasia"
+  },
+  {
+    "_id": {
+      "$oid": "6837211d8902018caf8409a1"
+    },
+    "slug": "folding-bike",
+    "name": {
+      "tr": "Katlanır Bisiklet",
+      "en": "Folding Bike",
+      "de": "Klapprad",
+      "pl": "Rower składany",
+      "fr": "Vélo pliant",
+      "es": "Bicicleta plegable"
+    },
+    "description": {
+      "tr": "Taşınabilir ve pratik katlanır bisiklet.",
+      "en": "Portable and practical folding bike.",
+      "de": "Tragbares und praktisches Klapprad.",
+      "pl": "Przenośny i praktyczny rower składany.",
+      "fr": "Vélo pliant portable et pratique.",
+      "es": "Bicicleta plegable portátil y práctica."
+    },
+    "brand": "Radonar-FLDX1",
+    "tags": ["folding", "compact", "urban"],
+    "price": 1299,
+    "stock": 24,
+    "stockThreshold": 5,
+    "category": {
+      "$oid": "6837054409da4ef78fed484a"
+    },
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453439/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-192725-1748453437020-639553089.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453439/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-192725-1748453437020-639553089.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453439/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-192725-1748453437020-639553089.webp",
+        "altText": {
+          "tr": "Katlanabilir pratik bisiklet",
+          "en": "Compact folding bike",
+          "de": "Praktisches Klapprad",
+          "pl": "Kompaktowy rower składany",
+          "fr": "Vélo pliant compact",
+          "es": "Bicicleta plegable compacta"
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453440/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-192856-1748453438745-681352631.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453440/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-192856-1748453438745-681352631.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453440/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-192856-1748453438745-681352631.webp",
+        "altText": {
+          "tr": "Katlanabilir pratik bisiklet 2",
+          "en": "Compact folding bike 2",
+          "de": "Praktisches Klapprad 2",
+          "pl": "Kompaktowy rower składany 2",
+          "fr": "Vélo pliant compact 2",
+          "es": "Bicicleta plegable compacta 2"
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453442/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-193030-1748453440202-466321049.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453442/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-193030-1748453440202-466321049.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453442/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-193030-1748453440202-466321049.webp",
+        "altText": {
+          "tr": "Katlanabilir pratik bisiklet 3",
+          "en": "Compact folding bike 3",
+          "de": "Praktisches Klapprad 3",
+          "pl": "Kompaktowy rower składany 3",
+          "fr": "Vélo pliant compact 3",
+          "es": "Bicicleta plegable compacta 3"
+        }
+      }
+    ],
+    "color": [],
+    "isElectric": false,
+    "comments": [],
+    "likes": 0,
+    "isActive": true,
+    "isPublished": true,
+    "createdAt": {
+      "$date": "2025-05-28T14:39:16.263Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-22T23:18:03.332Z"
+    },
+    "__v": 1,
+    "tenant": "anastasia"
+  },
+  {
+    "_id": {
+      "$oid": "6837211d8902018caf8409a2"
+    },
+    "slug": "kids-bike",
+    "name": {
+      "tr": "Çocuk Bisikleti",
+      "en": "Kids Bike",
+      "de": "Kinderfahrrad",
+      "pl": "Rower dziecięcy",
+      "fr": "Vélo pour enfants",
+      "es": "Bicicleta infantil"
+    },
+    "description": {
+      "tr": "Çocuklar için güvenli ve eğlenceli bisiklet.",
+      "en": "A safe and fun bike for children.",
+      "de": "Ein sicheres und lustiges Fahrrad für Kinder.",
+      "pl": "Bezpieczny i zabawny rower dla dzieci.",
+      "fr": "Un vélo sûr et amusant pour les enfants.",
+      "es": "Una bicicleta segura y divertida para niños."
+    },
+    "brand": "Radonar-KD25",
+    "tags": ["kids", "safe", "lightweight"],
+    "price": 599,
+    "stock": 21,
+    "stockThreshold": 5,
+    "category": {
+      "$oid": "6837051909da4ef78fed4846"
+    },
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453880/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-193321-1748453878343-512787026.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453880/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-193321-1748453878343-512787026.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453880/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-193321-1748453878343-512787026.webp",
+        "altText": {
+          "tr": "Güvenli çocuk bisikleti",
+          "en": "Safe kids bike",
+          "de": "Sicheres Kinderfahrrad",
+          "pl": "Bezpieczny rower dziecięcy",
+          "fr": "Vélo pour enfants sûr",
+          "es": "Bicicleta infantil segura"
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453882/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-193537-1748453879943-967637779.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453882/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-193537-1748453879943-967637779.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453882/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-193537-1748453879943-967637779.webp",
+        "altText": {
+          "tr": "Güvenli çocuk bisikleti 2",
+          "en": "Safe kids bike 2",
+          "de": "Sicheres Kinderfahrrad 2",
+          "pl": "Bezpieczny rower dziecięcy 2",
+          "fr": "Vélo pour enfants sûr 2",
+          "es": "Bicicleta infantil segura 2"
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453883/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-193718-1748453881592-387822162.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453883/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-193718-1748453881592-387822162.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748453883/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-193718-1748453881592-387822162.webp",
+        "altText": {
+          "tr": "Güvenli çocuk bisikleti 3",
+          "en": "Safe kids bike 3",
+          "de": "Sicheres Kinderfahrrad 3",
+          "pl": "Bezpieczny rower dziecięcy 3",
+          "fr": "Vélo pour enfants sûr 3",
+          "es": "Bicicleta infantil segura 3"
+        }
+      }
+    ],
+    "color": [],
+    "isElectric": false,
+    "comments": [],
+    "likes": 0,
+    "isActive": true,
+    "isPublished": true,
+    "createdAt": {
+      "$date": "2025-05-28T14:39:16.263Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-24T00:30:02.741Z"
+    },
+    "__v": 1,
+    "tenant": "anastasia"
+  },
+  {
+    "_id": {
+      "$oid": "6837211d8902018caf8409a3"
+    },
+    "slug": "mtb-fully-bike",
+    "name": {
+      "tr": "Tam Süspansiyonlu MTB",
+      "en": "MTB Fully Bike",
+      "de": "MTB-Fully",
+      "pl": "MTB z pełnym zawieszeniem",
+      "fr": "VTT tout suspendu",
+      "es": "MTB doble suspensión"
+    },
+    "description": {
+      "tr": "Tam süspansiyonlu dağ bisikleti, her koşulda mükemmel kontrol.",
+      "en": "Fully suspended mountain bike for ultimate control in all conditions.",
+      "de": "Vollgefederte MTB für maximale Kontrolle bei allen Bedingungen.",
+      "pl": "Górski rower z pełnym zawieszeniem dla maksymalnej kontroli w każdych warunkach.",
+      "fr": "VTT tout suspendu pour un contrôle optimal dans toutes les conditions.",
+      "es": "MTB con suspensión total para un control máximo en todas las condiciones."
+    },
+    "brand": "Radonar-XTRail2000",
+    "tags": ["mtb", "suspension", "trail"],
+    "price": 1799,
+    "stock": 23,
+    "stockThreshold": 5,
+    "category": {
+      "$oid": "683704fb09da4ef78fed4843"
+    },
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748454382/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-194220-1748454380609-30981013.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748454382/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-194220-1748454380609-30981013.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748454382/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-194220-1748454380609-30981013.webp",
+        "altText": {
+          "tr": "Tam süspansiyonlu dağ bisikleti",
+          "en": "Fully suspended mountain bike",
+          "de": "Vollgefederte MTB",
+          "pl": "Górski rower z pełnym zawieszeniem",
+          "fr": "VTT tout suspendu",
+          "es": "MTB con suspensión total"
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748454383/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-194420-1748454381819-585923069.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748454383/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-194420-1748454381819-585923069.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748454383/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-194420-1748454381819-585923069.webp",
+        "altText": {
+          "tr": "Tam süspansiyonlu dağ bisikleti 2",
+          "en": "Fully suspended mountain bike 2",
+          "de": "Vollgefederte MTB 2",
+          "pl": "Górski rower z pełnym zawieszeniem 2",
+          "fr": "VTT tout suspendu 2",
+          "es": "MTB con suspensión total 2"
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748454384/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-194615-1748454383206-487387292.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748454384/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-194615-1748454383206-487387292.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748454384/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-194615-1748454383206-487387292.webp",
+        "altText": {
+          "tr": "Tam süspansiyonlu dağ bisikleti 3",
+          "en": "Fully suspended mountain bike 3",
+          "de": "Vollgefederte MTB 3",
+          "pl": "Górski rower z pełnym zawieszeniem 3",
+          "fr": "VTT tout suspendu 3",
+          "es": "MTB con suspensión total 3"
+        }
+      }
+    ],
+    "color": [],
+    "isElectric": false,
+    "comments": [],
+    "likes": 0,
+    "isActive": true,
+    "isPublished": true,
+    "createdAt": {
+      "$date": "2025-05-28T14:39:16.263Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-24T09:00:04.749Z"
+    },
+    "__v": 2,
+    "tenant": "anastasia"
+  },
+  {
+    "_id": {
+      "$oid": "6837270e8902018caf8409ab"
+    },
+    "slug": "gravel-bike",
+    "name": {
+      "tr": "Gravel Bisiklet",
+      "en": "Gravel Bike",
+      "de": "Gravel-Bike",
+      "pl": "Rower gravelowy",
+      "fr": "Vélo gravel",
+      "es": "Bicicleta gravel"
+    },
+    "description": {
+      "tr": "Yol ve arazide optimum kullanım.",
+      "en": "Optimal performance both on-road and off-road.",
+      "de": "Optimale Nutzung auf Straße und Gelände.",
+      "pl": "Optymalna wydajność na drodze i w terenie.",
+      "fr": "Performance optimale sur route et hors route.",
+      "es": "Rendimiento óptimo en carretera y fuera de ella."
+    },
+    "brand": "Radonar-GRX750",
+    "price": 1420,
+    "stock": 12,
+    "stockThreshold": 5,
+    "category": {
+      "$oid": "6837048709da4ef78fed4837"
+    },
+    "tags": ["gravel", "versatile", "adventure"],
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445170/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-171227-1748445167044-742121305.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445170/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-171227-1748445167044-742121305.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445170/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-171227-1748445167044-742121305.webp",
+        "altText": {
+          "tr": "Yol ve arazide optimum kullanım.",
+          "en": "Optimal performance both on-road and off-road.",
+          "de": "Optimale Nutzung auf Straße und Gelände.",
+          "pl": "Optymalna wydajność na drodze i w terenie.",
+          "fr": "Performance optimale sur route et hors route.",
+          "es": "Rendimiento óptimo en carretera y fuera de ella."
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445299/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-171445-1748445297807-597528807.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445299/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-171445-1748445297807-597528807.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445299/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-171445-1748445297807-597528807.webp",
+        "altText": {
+          "tr": "Yol ve arazide optimum kullanım.",
+          "en": "Optimal performance both on-road and off-road.",
+          "de": "Optimale Nutzung auf Straße und Gelände.",
+          "pl": "Optymalna wydajność na drodze i w terenie.",
+          "fr": "Performance optimale sur route et hors route.",
+          "es": "Rendimiento óptimo en carretera y fuera de ella."
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445404/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-171627-1748445402309-941655019.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445404/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-171627-1748445402309-941655019.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445404/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-171627-1748445402309-941655019.webp",
+        "altText": {
+          "tr": "Yol ve arazide optimum kullanım.",
+          "en": "Optimal performance both on-road and off-road.",
+          "de": "Optimale Nutzung auf Straße und Gelände.",
+          "pl": "Optymalna wydajność na drodze i w terenie.",
+          "fr": "Performance optimale sur route et hors route.",
+          "es": "Rendimiento óptimo en carretera y fuera de ella."
+        }
+      }
+    ],
+    "color": [],
+    "isElectric": false,
+    "comments": [],
+    "likes": 0,
+    "isActive": true,
+    "isPublished": true,
+    "createdAt": {
+      "$date": "2025-05-28T14:44:46.787Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-25T13:56:18.589Z"
+    },
+    "__v": 3,
+    "tenant": "anastasia"
+  },
+  {
+    "_id": {
+      "$oid": "6837270e8902018caf8409ac"
+    },
+    "name": {
+      "tr": "Yarış Bisikleti",
+      "en": "Racing Bike",
+      "de": "Rennrad",
+      "pl": "Rower wyścigowy",
+      "fr": "Vélo de course",
+      "es": "Bicicleta de carrera"
+    },
+    "description": {
+      "tr": "Hafif, hızlı ve aerodinamik yapısıyla yarışlar için üretildi.",
+      "en": "Lightweight, fast and aerodynamic, built for racing.",
+      "de": "Leicht, schnell und aerodynamisch, gebaut für Rennen.",
+      "pl": "Lekki, szybki i aerodynamiczny, stworzony do wyścigów.",
+      "fr": "Léger, rapide et aérodynamique, conçu pour la course.",
+      "es": "Ligera, rápida y aerodinámica, diseñada para carreras."
+    },
+    "brand": "Radonar-RC900",
+    "slug": "racing-bike",
+    "price": 1950,
+    "stock": 10,
+    "stockThreshold": 5,
+    "category": {
+      "$oid": "6837045109da4ef78fed4831"
+    },
+    "tags": ["racing", "speed", "aero"],
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445609/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-171926-1748445606099-312028187.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445609/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-171926-1748445606099-312028187.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445609/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-171926-1748445606099-312028187.webp",
+        "altText": {
+          "tr": "Yarışlar için hafif ve hızlı bisiklet",
+          "en": "Lightweight and fast bike for racing",
+          "de": "Leichtes und schnelles Rennrad",
+          "pl": "Lekki i szybki rower do wyścigów",
+          "fr": "Vélo léger et rapide pour la course",
+          "es": "Bicicleta ligera y rápida para carreras"
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445699/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-172127-1748445696821-952504909.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445699/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-172127-1748445696821-952504909.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445699/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-172127-1748445696821-952504909.webp",
+        "altText": {
+          "tr": "Aerodinamik yarış bisikleti",
+          "en": "Aerodynamic racing bike",
+          "de": "Aerodynamisches Rennrad",
+          "pl": "Aerodynamiczny rower wyścigowy",
+          "fr": "Vélo de course aérodynamique",
+          "es": "Bicicleta de carrera aerodinámica"
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445818/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-172314-1748445815256-294678922.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445818/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-172314-1748445815256-294678922.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445818/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-172314-1748445815256-294678922.webp",
+        "altText": {
+          "tr": "Hafif yarış bisikleti",
+          "en": "Lightweight racing bike",
+          "de": "Leichtes Rennrad",
+          "pl": "Lekki rower wyścigowy",
+          "fr": "Vélo de course léger",
+          "es": "Bicicleta de carrera ligera"
+        }
+      }
+    ],
+    "color": [],
+    "isElectric": false,
+    "comments": [],
+    "likes": 0,
+    "isActive": true,
+    "isPublished": true,
+    "createdAt": {
+      "$date": "2025-05-28T14:44:46.787Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-22T01:38:37.876Z"
+    },
+    "__v": 3,
+    "tenant": "anastasia"
+  },
+  {
+    "_id": {
+      "$oid": "6837270e8902018caf8409ad"
+    },
+    "name": {
+      "tr": "Elektrikli Bisiklet",
+      "en": "E-Bike",
+      "de": "E-Bike",
+      "pl": "Rower elektryczny",
+      "fr": "Vélo électrique",
+      "es": "Bicicleta eléctrica"
+    },
+    "description": {
+      "tr": "Şehir içi ulaşımda güç ve tarzı birleştirir.",
+      "en": "Combines power and style for urban mobility.",
+      "de": "Verbindet Kraft und Stil für die urbane Mobilität.",
+      "pl": "Łączy moc i styl w transporcie miejskim.",
+      "fr": "Allie puissance et style pour la mobilité urbaine.",
+      "es": "Combina potencia y estilo para la movilidad urbana."
+    },
+    "brand": "Radonar-EV1000",
+    "slug": "e-bike",
+    "price": 1650,
+    "stock": 11,
+    "stockThreshold": 5,
+    "category": {
+      "$oid": "68250c9a3e369cde970c93a2"
+    },
+    "tags": ["electric", "urban", "e-bike"],
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445977/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-172550-1748445975060-168850133.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445977/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-172550-1748445975060-168850133.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748445977/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-172550-1748445975060-168850133.webp",
+        "altText": {
+          "tr": "Elektrikli şehir bisikleti",
+          "en": "Electric city bike",
+          "de": "Elektrisches Stadtrad",
+          "pl": "Elektryczny rower miejski",
+          "fr": "Vélo électrique urbain",
+          "es": "Bicicleta eléctrica urbana"
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748446085/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-172743-1748446083439-338950421.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748446085/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-172743-1748446083439-338950421.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748446085/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-172743-1748446083439-338950421.webp",
+        "altText": {
+          "tr": "Modern elektrikli bisiklet",
+          "en": "Modern electric bike",
+          "de": "Modernes E-Bike",
+          "pl": "Nowoczesny rower elektryczny",
+          "fr": "Vélo électrique moderne",
+          "es": "Bicicleta eléctrica moderna"
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748446254/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-173037-1748446252027-617096648.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748446254/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-173037-1748446252027-617096648.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1748446254/uploads/radanor/radonarprod-images/chatgpt-image-28-may-2025-173037-1748446252027-617096648.webp",
+        "altText": {
+          "tr": "Uzun menzilli e-bisiklet",
+          "en": "Long-range e-bike",
+          "de": "E-Bike mit großer Reichweite",
+          "pl": "E-rower o dużym zasięgu",
+          "fr": "Vélo électrique longue portée",
+          "es": "Bicicleta eléctrica de largo alcance"
+        }
+      }
+    ],
+    "color": [],
+    "isElectric": true,
+    "comments": [],
+    "likes": 0,
+    "isActive": true,
+    "isPublished": true,
+    "createdAt": {
+      "$date": "2025-05-28T14:44:46.787Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-22T01:42:34.350Z"
+    },
+    "__v": 4,
+    "tenant": "anastasia"
+  },
+  {
+    "_id": {
+      "$oid": "68659ca424116bda8107d494"
+    },
+    "name": {
+      "tr": "Yarışçı6",
+      "en": "Yarışçı6",
+      "de": "Yarışçı6",
+      "pl": "Yarışçı6",
+      "fr": "Yarışçı6",
+      "es": "Yarışçı6"
+    },
+    "tenant": "anastasia",
+    "slug": "yarisci6",
+    "description": {
+      "tr": "Çok hızlı.3",
+      "en": "Çok hızlı.3",
+      "de": "Çok hızlı.3",
+      "pl": "Çok hızlı.3",
+      "fr": "Çok hızlı.3",
+      "es": "Çok hızlı.3"
+    },
+    "brand": "RadanoR",
+    "price": 9999.99,
+    "stock": 25,
+    "stockThreshold": 5,
+    "category": {
+      "$oid": "6865c66ac5b61c16cace1f3f"
+    },
+    "tags": ["{ \"tr\": \"hızlı7\"}", "[\"bike\"", "\"e-bike\"]"],
+    "images": [
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751545594/uploads/metahub/bikes-images/4-1751545593558-288773856.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751545594/uploads/metahub/bikes-images/4-1751545593558-288773856.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751545594/uploads/metahub/bikes-images/4-1751545593558-288773856.webp"
+      },
+      {
+        "url": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751548532/uploads/metahub/bikes-images/profil2-1751548529122-636907137.webp",
+        "thumbnail": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751548532/uploads/metahub/bikes-images/profil2-1751548529122-636907137.webp",
+        "webp": "https://res.cloudinary.com/dbozv7wqd/image/upload/v1751548532/uploads/metahub/bikes-images/profil2-1751548529122-636907137.webp"
+      }
+    ],
+    "color": [],
+    "isElectric": false,
+    "comments": [],
+    "likes": 0,
+    "isActive": true,
+    "isPublished": true,
+    "createdAt": {
+      "$date": "2025-07-02T20:55:00.119Z"
+    },
+    "updatedAt": {
+      "$date": "2025-07-03T14:13:08.406Z"
+    },
+    "__v": 5
+  }
+]

@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import styled from "styled-components";
-import { EscalatedRoom } from "@/modules/chat/types/chat";
+import { EscalatedRoom } from "@/modules/chat/types";
 
 interface Props {
   session: EscalatedRoom | null;

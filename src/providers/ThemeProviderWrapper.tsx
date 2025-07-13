@@ -24,7 +24,7 @@ export default function ThemeProviderWrapper({
 }: {
   children: React.ReactNode;
 }) {
-  const settings = useAppSelector((state) => state.setting.settings);
+  const settings = useAppSelector((state) => state.settings.settings);
 
   const [themeMode, toggleThemeMode] = useThemeMode();
   const isDark = themeMode === "dark";

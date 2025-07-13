@@ -1,9 +1,12 @@
 {
-  "aboutUs": "About Us",
-  "ourServices": "Our Services",
-  "contact": "Contact",
-  "email": "Email",
-  "phone": "Phone"
+  "companyInfo": "Company Info",
+  "email": "E-Mail",
+  "phone": "Phone",
+  "address": "Address",
+  "mainLinks": "Main Links",
+  "massageTypes": "Massage Types",
+  "rightsText": "All rights reserved.",
+  "designedBy": "Designed by OG"
 }
 
   

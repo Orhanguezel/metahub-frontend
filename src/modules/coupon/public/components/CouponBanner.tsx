@@ -1,6 +1,6 @@
 // src/shared/WelcomeCouponBanner.tsx
 "use client";
-import React from "react";
+
 import styled, { useTheme } from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";

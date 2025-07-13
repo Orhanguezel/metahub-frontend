@@ -4,45 +4,49 @@ import React from "react";
 import styled from "styled-components";
 import { BookingForm } from "@/modules/booking";
 import SlotRulesTable from "@/modules/booking/public/components/SlotRulesTable";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 
 export default function BookingPublicPage() {
-  const { t } = useTranslation("booking");
+  const { t } = useI18nNamespace("booking", translations);
 
   return (
     <Wrapper>
       <Header>
-        <Title>{t("page.title", "Book Your Appointment")}</Title>
-        <Description>
-          {t(
-            "page.description",
-            "Fill in the form below to schedule your session."
-          )}
+        <Title aria-label={t("page.title", "Book Your Appointment")}>
+          {t("page.title", "Book Your Appointment")}
+        </Title>
+        <Description aria-label={t("page.description", "Fill in the form below to schedule your session.")}>
+          {t("page.description", "Fill in the form below to schedule your session.")}
         </Description>
       </Header>
-      <Content>
-        <Left>
+      <ResponsiveContent>
+        <LeftCard>
           <SlotRulesTable />
-        </Left>
-        <Right>
+        </LeftCard>
+        <RightCard>
           <BookingForm />
-        </Right>
-      </Content>
+        </RightCard>
+      </ResponsiveContent>
     </Wrapper>
   );
 }
 
-// Styled Components ... (senin mevcut stilin zaten uygun)
+// --- Styled Components ---
 
-// Styled Components
 const Wrapper = styled.main`
   max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacings.xxl}
-    ${({ theme }) => theme.spacings.lg};
-  background: ${({ theme }) => theme.colors.cardBackground};
+  padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.lg};
+  background: ${({ theme }) => theme.colors.sectionBackground};
   border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: ${({ theme }) => theme.shadows.lg};
+  box-shadow: ${({ theme }) => theme.shadows.xl};
+
+  @media ${({ theme }) => theme.media.mobile} {
+    padding: ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.sm};
+    border-radius: ${({ theme }) => theme.radii.lg};
+    box-shadow: ${({ theme }) => theme.shadows.sm};
+  }
 `;
 
 const Header = styled.div`
@@ -56,6 +60,10 @@ const Title = styled.h1`
   margin-bottom: ${({ theme }) => theme.spacings.md};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
+
+  @media ${({ theme }) => theme.media.mobile} {
+    font-size: ${({ theme }) => theme.fontSizes.xl};
+  }
 `;
 
 const Description = styled.p`
@@ -66,33 +74,49 @@ const Description = styled.p`
   font-family: ${({ theme }) => theme.fonts.body};
 `;
 
-const Content = styled.div`
+const ResponsiveContent = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacings.xxl};
   justify-content: center;
 
-  @media ${({ theme }) => theme.media.mobile} {
+  @media (max-width: 900px) {
     flex-direction: column;
     gap: ${({ theme }) => theme.spacings.lg};
   }
 `;
 
-const Left = styled.div`
+const LeftCard = styled.section`
   flex: 1;
-  min-width: 280px;
-  max-width: 370px;
+  min-width: 260px;
+  max-width: 470px;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  padding: ${({ theme }) => theme.spacings.xl};
+  order: 1;
 
-  @media ${({ theme }) => theme.media.mobile} {
+  @media (max-width: 900px) {
     max-width: 100%;
+    padding: ${({ theme }) => theme.spacings.lg};
+    margin-bottom: ${({ theme }) => theme.spacings.md};
+    order: 2;
   }
 `;
 
-const Right = styled.div`
+const RightCard = styled.section`
   flex: 2;
-  min-width: 340px;
+  min-width: 320px;
   max-width: 600px;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  padding: ${({ theme }) => theme.spacings.xl};
+  order: 2;
 
-  @media ${({ theme }) => theme.media.mobile} {
+  @media (max-width: 900px) {
     max-width: 100%;
+    padding: ${({ theme }) => theme.spacings.lg};
+    order: 1;
   }
 `;
+

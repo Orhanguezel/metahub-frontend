@@ -2,10 +2,11 @@
 import React from "react";
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 
 const RevenueCard = () => {
-  const { t, i18n } = useTranslation("admin-dashboard");
+  const { t, i18n } = useI18nNamespace("dashboard", translations);
   const revenue = useAppSelector((s) => s.dashboard.stats?.revenue ?? 0);
 
   // Lokalize sayı formatı (isteğe bağlı)

@@ -1,9 +1,9 @@
 "use client";
 
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales";
 import { useId } from "react";
-//import type { SupportedLocale } from "@/types/common";
 
 interface Props {
   module: string;
@@ -20,7 +20,7 @@ export default function FilterBar({
   availableModules,
   availableEventTypes,
 }: Props) {
-  const { t } = useTranslation("admin-dashboard");
+  const { t } = useI18nNamespace("admin-dashboard", translations);
   const moduleSelectId = useId();
   const eventTypeSelectId = useId();
 

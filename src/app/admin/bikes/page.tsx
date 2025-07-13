@@ -1,8 +1,8 @@
 "use client";
 import React from "react";
 
-import { AdminBikesPage } from "@/modules/bikes";
+import { AdminPage } from "@/modules/bikes";
 
 export default function AdminBikesRoutePage() {
-  return <AdminBikesPage />;
+  return <AdminPage />;
 }

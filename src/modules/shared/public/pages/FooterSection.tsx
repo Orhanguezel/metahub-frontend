@@ -3,60 +3,70 @@
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import {
-  FooterLogo,
   FooterSocialLinks,
   FooterCopyright,
   FooterLinks,
   FooterCompanyInfo,
+  FooterLogo
 } from "@/modules/shared";
-import { LinkItem } from "@/modules/shared/public/components/footer/FooterLinks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales/footer";
 import { SupportedLocale } from "@/types/common";
 import { useMemo } from "react";
 import { Loading } from "@/shared";
-import { ISocialLink } from "@/modules/settings/types";
+import { ISocialLink } from "@/modules/company/types";
+import type { IServices } from "@/modules/services/types";
 
-function getLocalizedValue(value: any, currentLang: string): string {
-  if (value && typeof value === "object" && !Array.isArray(value)) {
-    return value[currentLang]?.trim() || value.tr?.trim() || "";
-  }
-  if (typeof value === "string") {
-    return value.trim();
-  }
-  return "";
-}
-
-function extractLinks(raw: any, currentLang: string): LinkItem[] {
+// --- Main Links extractor ---
+function extractLinks(raw: any, lang: string) {
   if (!raw || typeof raw !== "object") return [];
   return Object.entries(raw).map(([key, val]: any) => ({
-    label: val?.label?.[currentLang]?.trim() || val?.label?.tr?.trim() || key,
-    href: val?.url?.trim() || "#",
+    label: val?.label?.[lang]?.trim?.() || val?.label?.en || key,
+    href: val?.url?.trim?.() || "#",
   }));
 }
 
-export default function FooterSection() {
-  const rawSettings = useAppSelector((state) => state.setting.settings);
-  const settings = useMemo(() => rawSettings ?? [], [rawSettings]);
-   const { i18n, t } = useI18nNamespace("footer", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
+// --- Service Title (çoklu dil için) ---
+function getServiceTitle(srv: IServices, lang: string) {
+  return (
+    srv.title?.[lang as SupportedLocale]?.trim?.() ||
+    srv.slug ||
+    "Service"
+  );
+}
 
+
+export default function FooterSection() {
+  // Services (masaj türleri)
+  const { services, status: servicesStatus } = useAppSelector((state) => state.services);
+
+  // Settings
+  const rawSettings = useAppSelector((state) => state.settings.settings);
+  const settings = useMemo(() => rawSettings ?? [], [rawSettings]);
+  const { i18n, t } = useI18nNamespace("footer", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+
+  // Main Links
   const settingMap = useMemo(() => {
     const obj: Record<string, any> = {};
     for (const s of settings) obj[s.key] = s.value;
     return obj;
   }, [settings]);
+  const mainLinks = extractLinks(settingMap.navbar_main_links, lang);
 
-  const aboutLinks = extractLinks(settingMap.footer_about_links, lang);
-  const servicesLinks = extractLinks(
-    settingMap.footer_services_links,
-    lang
-  );
+  // Masaj türleri: ilk 5 aktif ve yayınlanmış, dil fallback ile
+  const massageLinks = (services || [])
+    .filter((s: IServices) => s.isActive && s.isPublished)
+    .slice(0, 5)
+    .map((srv: IServices) => ({
+      label: getServiceTitle(srv, lang),
+      href: srv.slug ? `/services/${srv.slug}` : "#",
+    }));
 
+  // Sosyal medya ve copyright
   const socialLinksRaw = settingMap.footer_social_links as
     | Record<string, { url: string; icon: string }>
     | undefined;
-
   const socialLinks: ISocialLink | undefined = socialLinksRaw
     ? Object.keys(socialLinksRaw).reduce((acc, key) => {
         const val = socialLinksRaw[key];
@@ -65,10 +75,15 @@ export default function FooterSection() {
         return acc;
       }, {} as ISocialLink)
     : undefined;
+  const rightsText =
+    (settingMap.footer_rights &&
+      (settingMap.footer_rights[lang] ||
+        settingMap.footer_rights.en ||
+        settingMap.footer_rights.tr)) ||
+    "";
 
-  const rightsText = getLocalizedValue(settingMap.footer_rights, lang);
-
-  if (!Array.isArray(settings) || settings.length === 0) {
+  // Loader
+  if (!Array.isArray(settings) || settings.length === 0 || servicesStatus === "loading") {
     return (
       <FooterWrapper>
         <Loading />
@@ -81,31 +96,28 @@ export default function FooterSection() {
       <FooterLogo />
       <FooterGrid>
         <InfoBlock>
+          <FooterLinks title={t("companyInfo", "Bilgilerimiz")} links={[]} />
           <FooterCompanyInfo />
         </InfoBlock>
         <InfoBlock>
-          <FooterLinks title={t("aboutUs")} links={aboutLinks} />
+          <FooterLinks title={t("massageTypes", "Massage Types")} links={massageLinks} />
         </InfoBlock>
         <InfoBlock>
-          <FooterLinks title={t("ourServices")} links={servicesLinks} />
+          <FooterLinks title={t("mainLinks", "Main Links")} links={mainLinks} />
         </InfoBlock>
       </FooterGrid>
-      {socialLinks && Object.keys(socialLinks).length > 0 && (
-        <FooterSocialLinks links={socialLinks} />
-      )}
-      <FooterCopyright rightsText={rightsText} />
+      {socialLinks && Object.keys(socialLinks).length > 0 && <FooterSocialLinks />}
+      {rightsText && <FooterCopyright />}
     </FooterWrapper>
   );
 }
 
 // --- Styled Components ---
 const FooterWrapper = styled.footer`
-  padding: ${({ theme }) => theme.spacings.xl}
-    ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.md};
   background: ${({ theme }) => theme.colors.backgroundAlt};
   color: ${({ theme }) => theme.colors.text};
-  border-top: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
+  border-top: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   text-align: center;
   width: 100%;
   box-sizing: border-box;
@@ -118,7 +130,6 @@ const FooterGrid = styled.div`
   max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: ${({ theme }) => theme.spacings.lg} auto 0 auto;
   align-items: flex-start;
-
   ${({ theme }) => theme.media.small} {
     grid-template-columns: 1fr;
     gap: ${({ theme }) => theme.spacings.md};

@@ -4,14 +4,16 @@ import styled from "styled-components";
 import { SUPPORTED_LOCALES } from "@/i18n";
 import {
   createTenant,
-  fetchTenants,
 } from "@/modules/tenants/slice/tenantSlice";
 import { useAppDispatch } from "@/store/hooks";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales";
 import { toast } from "react-toastify";
 
 const BatchAddTenantsForm: React.FC = () => {
-  const { t } = useTranslation("adminModules");
+  console.log("BatchAddTenantsForm render edildi");
+
+   const { t } = useI18nNamespace("adminModules", translations);
   const dispatch = useAppDispatch();
   const [tenantNames, setTenantNames] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -49,7 +51,6 @@ const BatchAddTenantsForm: React.FC = () => {
           await dispatch(createTenant(formData)).unwrap();
         })
       );
-      await dispatch(fetchTenants());
       setTenantNames("");
       toast.success(t("batchAddSuccess", "Tenants added successfully!"));
     } catch (err: any) {

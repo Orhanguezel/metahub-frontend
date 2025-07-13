@@ -1,10 +1,15 @@
 {
   "page": {
     "title": "Book Appointment",
-    "description": "Fill in the form below to schedule your session."
+    "description": "Fill in the form below to schedule your appointment."
   },
   "form": {
-    "name": "Full Name",
+    "noAvailableTimes": "No available time slots",
+    "selectTime": "Select a time",
+    "loading": "Loading available slots...",
+    "noAvailableSlots": "No available slots found.",
+    "availableSlots": "Available Slots",
+    "name": "Name Surname",
     "email": "Email",
     "phone": "Phone",
     "service": "Service",
@@ -13,17 +18,24 @@
     "date": "Date",
     "time": "Time",
     "submit": "Book Appointment",
-    "selectService": "Please select a service",
+    "selectService": "Select a service",
     "selectDate": "Select a date",
-    "selectTime": "Please select a time",
-    "required": "Please fill all required fields.",
-    "success": "Your booking was successfully submitted!",
-    "error": "Something went wrong. Please try again."
+    "required": "Please fill in all required fields.",
+    "success": "Your appointment has been successfully created!",
+    "error": "An error occurred. Please try again.",
+    "fullyBooked": "Fully Booked",
+    "title": "Working Hours",
+    "closed": "Closed",
+    "todayClosed": "Today, closed all day."
   },
   "admin": {
-    "title": "Manage Bookings",
-    "noBookings": "No bookings found.",
-    "confirmDelete": "Are you sure you want to delete this booking?",
+    "tabs": {
+      "bookings": "Appointments",
+      "slots": "Slot Management"
+    },
+    "title": "Manage Appointments",
+    "confirmDelete": "Are you sure you want to delete this appointment?",
+    "noBookings": "No appointments found.",
     "columns": {
       "name": "Name",
       "email": "Email",
@@ -33,7 +45,8 @@
       "actions": "Actions"
     },
     "modal": {
-      "title": "Update Booking Status",
+      "title": "Update Appointment Status",
+      "statusInfo": "'Pending' means the appointment is waiting for admin approval. The customer will only receive an email after you confirm.",
       "select": "Select Status",
       "updated": "Status updated successfully.",
       "updateError": "Failed to update status."
@@ -42,24 +55,70 @@
       "pending": "Pending",
       "confirmed": "Confirmed",
       "cancelled": "Cancelled"
+    },
+    "statusDescription": {
+      "pending": "Waiting for admin approval. No email sent to the customer yet.",
+      "confirmed": "Appointment confirmed. Confirmation email sent to the customer.",
+      "cancelled": "Appointment cancelled. Slot is now available for others."
+    },
+    "slotRule": {
+      "updateSuccess": "Rule updated successfully.",
+      "updateError": "Failed to update rule.",
+      "editGeneral": "Edit General Slot Rule",
+      "edit": "Edit Slot Rule",
+      "applyAll": "Apply to all days",
+      "dayOfWeek": "Day of Week",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "intervalMinutes": "Appointment Interval (min)",
+      "break": "Break Between Appointments (min)"
     }
   },
   "slot": {
-    "rules": "Slot Rules",
-    "overrides": "Overrides",
-    "addRule": "Add Rule",
-    "addOverride": "Add Override",
-    "fullDayOff": "Full Day Off",
-    "interval": "Interval (min)",
-    "break": "Break (min)",
-    "edit": "Edit",
-    "delete": "Delete"
+    "title": {
+      "rules": "📅 Slot Rules",
+      "overrides": "📌 Overrides"
+    },
+    "form": {
+      "applyAllDays": "Apply to all days",
+      "addGeneralRule": "Add General Rule",
+      "addRule": "Add Rule",
+      "addOverride": "Add Override",
+      "fullDayOff": "Full Day Off"
+    },
+    "success": {
+      "generalCreated": "General rule created successfully.",
+      "created": "Rule created successfully.",
+      "overrideCreated": "Override created successfully."
+    },
+    "error": {
+      "generalExists": "A general rule already exists.",
+      "dayExists": "A rule already exists for this day.",
+      "create": "Failed to create rule.",
+      "dateRequired": "Please select a date.",
+      "overrideCreate": "Failed to create override."
+    },
+    "weekdays": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday",
+      "all": "All Days"
+    },
+    "info": {
+      "noDayRules": "No day-specific rules defined.",
+      "noOverrides": "No overrides defined."
+    }
   },
   "common": {
     "loading": "Loading...",
     "edit": "Edit",
     "delete": "Delete",
     "update": "Update",
+    "updating": "Updating...",
     "cancel": "Cancel"
   }
 }

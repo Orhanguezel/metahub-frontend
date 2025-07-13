@@ -1,55 +1,45 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import styled from "styled-components";
+import { useAppDispatch } from "@/store/hooks";
+
 import {
-  fetchAllComments,
   togglePublishComment,
   deleteComment,
   clearCommentMessages,
 } from "@/modules/comment/slice/commentSlice";
-import styled from "styled-components";
-import { useTranslation } from "react-i18next";
-import { IComment } from "@/modules/comment/types/comment";
+import { IComment } from "@/modules/comment/types";
+import { SupportedLocale } from "@/types/common";
 import { CommentDetailsModal } from "@/modules/comment";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 
 export default function AdminCommentPage() {
   const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("adminComment");
-  const lang = i18n.language as "tr" | "en" | "de";
+  const { i18n, t } = useI18nNamespace("comment", translations);
+  const lang: SupportedLocale = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
 
-  const { comments, loading, error, pagination } = useAppSelector(
-    (state) => state.comments
-  );
+  // Merkezi fetch state!
+  const { comments } = useAdminModuleState();
 
+
+  // UI state
   const [typeFilter, setTypeFilter] = useState("all");
   const [publishFilter, setPublishFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedComment, setSelectedComment] = useState<IComment | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    dispatch(fetchAllComments(currentPage));
-    return () => {
-      dispatch(clearCommentMessages());
-    };
-  }, [dispatch, currentPage]);
+  // Pagination (merkezi fetch'ten geliyor)
+  const commentList = comments.comments || [];
+  const loading = comments.loading;
+  const error = comments.error;
+  const pagination = comments.pagination || { pages: 1, page: 1 };
 
-  const handleToggle = (id: string) => {
-    dispatch(togglePublishComment(id));
-  };
 
-  const handleDelete = (id: string) => {
-    if (confirm(t("confirmDelete"))) {
-      dispatch(deleteComment(id));
-    }
-  };
-
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-  };
-
-  const filteredComments = comments.filter((c) => {
+  // Filtreleme
+  const filteredComments = commentList.filter((c) => {
     const name =
       typeof c.userId === "object" && "name" in c.userId
         ? c.userId.name
@@ -70,9 +60,26 @@ export default function AdminCommentPage() {
     return matchesType && matchesStatus && matchesSearch;
   });
 
+  // Sayfa değişimi (merkezi hook otomatik fetch edecekse burada set edilebilir)
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    // Eğer merkezi hook pagination destekliyorsa, burada yeni sayfa fetch edilir.
+    // dispatch(fetchAllComments(newPage)); // Eğer gerekiyorsa!
+  };
+
+  const handleToggle = (id: string) => {
+    dispatch(togglePublishComment(id));
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm(t("confirmDelete", "Yorumu silmek istiyor musunuz?"))) {
+      dispatch(deleteComment(id));
+    }
+  };
+
   return (
     <Wrapper>
-      <h1>{t("title")}</h1>
+      <h1>{t("title", "Yorum Yönetimi")}</h1>
 
       <FilterBar>
         <label>
@@ -211,8 +218,7 @@ export default function AdminCommentPage() {
   );
 }
 
-// ✅ Styled Components
-
+// Styled Components (hiç değişmedi)
 const Wrapper = styled.div`
   padding: 2rem;
 `;

@@ -1,13 +1,13 @@
-// components/booking/TimeSlotPicker.tsx
 "use client";
 
 import React from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 
 interface Props {
   availableSlots: string[];
-  bookedSlots: string[];
+  bookedSlots: string[]; // (genelde boş array, ama ileride backend doldurabilir)
   value: string;
   onChange: (v: string) => void;
 }
@@ -18,23 +18,39 @@ export default function TimeSlotPicker({
   value,
   onChange,
 }: Props) {
-  const { t } = useTranslation("booking");
+  const { t } = useI18nNamespace("booking", translations);
+
+  // UX: Eğer hiç slot yoksa, dropdown'u disable yap
+  const isDisabled = !availableSlots || availableSlots.length === 0;
 
   return (
     <Select
       name="time"
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      disabled={isDisabled}
+      aria-disabled={isDisabled}
     >
-      <option value="">{t("form.selectTime", "Please select a time")}</option>
-      {availableSlots.map((slot) => (
-        <option key={slot} value={slot} disabled={bookedSlots.includes(slot)}>
-          {slot}{" "}
-          {bookedSlots.includes(slot)
-            ? "— " + t("form.fullyBooked", "Fully Booked")
-            : ""}
-        </option>
-      ))}
+      <option value="">
+        {isDisabled
+          ? t("form.noAvailableTimes", "No available times")
+          : t("form.selectTime", "Please select a time")}
+      </option>
+      {availableSlots.map((slot) => {
+        const isBooked = bookedSlots.includes(slot);
+        return (
+          <option
+            key={slot}
+            value={slot}
+            disabled={isBooked && value !== slot} // Seçili olan disable olamaz
+          >
+            {slot}
+            {isBooked
+              ? " — " + t("form.fullyBooked", "Fully Booked")
+              : ""}
+          </option>
+        );
+      })}
     </Select>
   );
 }
@@ -49,6 +65,8 @@ const Select = styled.select`
   border-radius: ${({ theme }) => theme.radii.md};
   padding: ${({ theme }) => theme.spacings.sm};
   width: 100%;
+  transition: border ${({ theme }) => theme.transition.normal};
+
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.inputs.borderFocus};

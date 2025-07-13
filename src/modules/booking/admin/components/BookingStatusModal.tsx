@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { useAppDispatch } from "@/store/hooks";
 import { updateBookingStatus } from "@/modules/booking/slice/bookingSlice";
-import type { Booking } from "@/modules/booking";
+import type { Booking, BookingStatus } from "@/modules/booking";
 import { toast } from "react-toastify";
 
 interface Props {
@@ -19,32 +20,31 @@ export default function BookingStatusModal({
   booking,
   onClose,
 }: Props) {
-  const { t } = useTranslation("booking");
+  const { t } = useI18nNamespace("booking", translations);
   const dispatch = useAppDispatch();
 
-  const [status, setStatus] = useState<"pending" | "confirmed" | "cancelled">(
-    "pending"
-  );
+  const [status, setStatus] = useState<BookingStatus>("pending");
   const [loading, setLoading] = useState(false);
 
-  // Statüyü booking değiştiğinde ayarla
+  // Booking değiştiğinde statüyü güncelle
   useEffect(() => {
     if (booking) setStatus(booking.status);
   }, [booking]);
 
-  // Modal dışında tıklayınca kapat
+  // Modal açık değilse veya booking yoksa hiç render etme
+  if (!isOpen || !booking) return null;
+
+  // Overlay click: modal dışı tıklandığında kapa
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+    if (e.target === e.currentTarget) onClose();
   };
 
-  // Submit işlemi
+  // Statü değiştir ve submit et
   const handleSubmit = async () => {
     setLoading(true);
     try {
       await dispatch(
-        updateBookingStatus({ id: booking!._id, status })
+        updateBookingStatus({ id: booking._id, status })
       ).unwrap();
       toast.success(t("admin.modal.updated", "Status updated successfully."));
       onClose();
@@ -54,9 +54,6 @@ export default function BookingStatusModal({
       setLoading(false);
     }
   };
-
-  // Modal açık ve booking yoksa render etme
-  if (!isOpen || !booking) return null;
 
   return (
     <Overlay onClick={handleOverlayClick} tabIndex={-1}>
@@ -78,7 +75,7 @@ export default function BookingStatusModal({
         <Select
           id="status-select"
           value={status}
-          onChange={(e) => setStatus(e.target.value as any)}
+          onChange={(e) => setStatus(e.target.value as BookingStatus)}
           disabled={loading}
         >
           <option value="pending">
@@ -107,8 +104,7 @@ export default function BookingStatusModal({
   );
 }
 
-// 💅 Styled Components
-
+// --- Styled Components ---
 const Overlay = styled.div`
   position: fixed;
   inset: 0;

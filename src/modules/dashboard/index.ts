@@ -12,7 +12,6 @@ export { default as UsersCard } from "./admin/components/UsersCard";
 export { default as AnalyticsPanel } from "./admin/components/analytics/AnalyticsPanel";
 export { default as LineChart } from "./admin/components/analytics/LineChart";
 export { default as BarChart } from "./admin/components/analytics/BarChart";
-export { default as MapChart } from "./admin/components/analytics/MapChart";
 export { default as AnalyticsTable } from "./admin/components/analytics/AnalyticsTable";
 export { default as DateRangeSelector } from "./admin/components/analytics/DateRangeSelector";
 export { default as FilterBar } from "./admin/components/analytics/FilterBar";

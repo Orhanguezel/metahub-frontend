@@ -1,10 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { IActivity } from "@/modules/activity/types";
+import type { IActivity } from "@/modules/activity";
 
 interface ActivityState {
-  activity: IActivity[];
+  activity: IActivity[]; // Public (site) için
+  activityAdmin: IActivity[]; // Admin panel için
   selected: IActivity | null;
+  status: "idle" | "loading" | "succeeded" | "failed";
   loading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -12,7 +14,9 @@ interface ActivityState {
 
 const initialState: ActivityState = {
   activity: [],
+  activityAdmin: [],
   selected: null,
+  status: "idle",
   loading: false,
   error: null,
   successMessage: null,
@@ -30,12 +34,27 @@ const extractErrorMessage = (payload: unknown): string => {
   return "An error occurred.";
 };
 
+// --- Async Thunks ---
+
 export const fetchActivity = createAsyncThunk<IActivity[]>(
   "activity/fetchAll",
   async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
       `/activity`,
+      null,
+      thunkAPI.rejectWithValue
+    );
+    return res.data;
+  }
+);
+
+export const fetchAllActivityAdmin = createAsyncThunk<IActivity[]>(
+  "activity/fetchAllAdmin",
+  async (_, thunkAPI) => {
+    const res = await apiCall(
+      "get",
+      `/activity/admin`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -55,7 +74,7 @@ export const createActivity = createAsyncThunk(
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
-    return res.data; // backend: { success: true, message: "..." }
+    return res.data;
   }
 );
 
@@ -85,19 +104,6 @@ export const deleteActivity = createAsyncThunk(
       thunkAPI.rejectWithValue
     );
     return { id, message: res.message };
-  }
-);
-
-export const fetchAllActivityAdmin = createAsyncThunk(
-  "activity/fetchAllAdmin",
-  async (_, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      `/activity/admin`,
-      null,
-      thunkAPI.rejectWithValue
-    );
-    return res.data;
   }
 );
 
@@ -136,6 +142,7 @@ export const fetchActivityBySlug = createAsyncThunk(
 );
 
 // --- Slice ---
+
 const activitySlice = createSlice({
   name: "activity",
   initialState,
@@ -159,64 +166,81 @@ const activitySlice = createSlice({
       state.error = extractErrorMessage(action.payload);
     };
 
+    // --- Public List ---
     builder
       .addCase(fetchActivity.pending, startLoading)
       .addCase(fetchActivity.fulfilled, (state, action) => {
         state.loading = false;
         state.activity = action.payload;
       })
-      .addCase(fetchActivity.rejected, setError)
+      .addCase(fetchActivity.rejected, setError);
 
+    // --- Admin List ---
+    builder
       .addCase(fetchAllActivityAdmin.pending, startLoading)
       .addCase(fetchAllActivityAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.activity = action.payload;
+        state.activityAdmin = action.payload;
       })
-      .addCase(fetchAllActivityAdmin.rejected, setError)
+      .addCase(fetchAllActivityAdmin.rejected, setError);
 
+    // --- Admin Create ---
+    builder
       .addCase(createActivity.pending, startLoading)
       .addCase(createActivity.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage =
           action.payload?.message || "Article created successfully.";
         if (action.payload?.data) {
-          state.activity.unshift(action.payload.data);
+          state.activityAdmin.unshift(action.payload.data);
         }
       })
-      .addCase(createActivity.rejected, setError)
+      .addCase(createActivity.rejected, setError);
 
+    // --- Admin Update ---
+    builder
       .addCase(updateActivity.pending, startLoading)
       .addCase(updateActivity.fulfilled, (state, action) => {
         state.loading = false;
         const updated = action.payload?.data || action.payload;
-        const index = state.activity.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.activity[index] = updated;
+        const index = state.activityAdmin.findIndex(
+          (a) => a._id === updated._id
+        );
+        if (index !== -1) state.activityAdmin[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
         state.successMessage = action.payload?.message;
       })
-      .addCase(updateActivity.rejected, setError)
+      .addCase(updateActivity.rejected, setError);
 
+    // --- Admin Delete ---
+    builder
       .addCase(deleteActivity.pending, startLoading)
       .addCase(deleteActivity.fulfilled, (state, action) => {
         state.loading = false;
-        state.activity = state.activity.filter(
+        state.activityAdmin = state.activityAdmin.filter(
           (a) => a._id !== action.payload.id
         );
         state.successMessage = action.payload?.message;
       })
-      .addCase(deleteActivity.rejected, setError)
+      .addCase(deleteActivity.rejected, setError);
 
+    // --- Admin Toggle Publish ---
+    builder
       .addCase(togglePublishActivity.pending, startLoading)
       .addCase(togglePublishActivity.fulfilled, (state, action) => {
         state.loading = false;
         const updated = action.payload?.data || action.payload;
-        const index = state.activity.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.activity[index] = updated;
+        const index = state.activityAdmin.findIndex(
+          (a) => a._id === updated._id
+        );
+        if (index !== -1) state.activityAdmin[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
         state.successMessage = action.payload?.message;
       })
-      .addCase(togglePublishActivity.rejected, setError)
+      .addCase(togglePublishActivity.rejected, setError);
 
+    // --- Single Fetch (slug) ---
+    builder
       .addCase(fetchActivityBySlug.pending, startLoading)
       .addCase(fetchActivityBySlug.fulfilled, (state, action) => {
         state.loading = false;

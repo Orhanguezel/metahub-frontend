@@ -1,45 +1,39 @@
 "use client";
-
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales/footer";
+import { SupportedLocale } from "@/types/common";
 
-interface FooterCopyrightProps {
-  rightsText?: string;
-  companyName?: string;
-}
+export default function FooterCopyright() {
+  const settings = useAppSelector((state) => state.settings.settings) ?? [];
+  const company = useAppSelector((state) => state.company.company);
+   const { i18n} = useI18nNamespace("footer", translations);
+    const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-export default function FooterCopyright({
-  rightsText,
-  companyName = "Ensotek Kühlturm GmbH",
-}: FooterCopyrightProps) {
-  const settings = useAppSelector((state) => state.setting.settings) ?? [];
-  const { i18n } = useTranslation();
-  const currentLang = i18n.language || "tr";
-
+  // Settings’ten dinamik değerler
   const getLocalizedValue = (value: any): string | undefined => {
     if (value && typeof value === "object" && !Array.isArray(value)) {
-      return value[currentLang] || value.tr || "";
+      return value[lang] || value.tr || "";
     }
     return value;
   };
 
-  const dynamicCompanyRaw = settings.find(
-    (s) => s.key === "footer_company_name"
-  )?.value;
-  const dynamicRightsRaw = settings.find(
-    (s) => s.key === "footer_rights_text"
-  )?.value;
+  const dynamicCompanyRaw = settings.find((s: any) => s.key === "footer_company_name")?.value;
+  const dynamicRightsRaw = settings.find((s: any) => s.key === "footer_rights_text")?.value;
 
-  const finalCompanyName = getLocalizedValue(dynamicCompanyRaw) || companyName;
-  const finalRightsText =
-    getLocalizedValue(dynamicRightsRaw) || rightsText || "";
+  const companyName =
+    getLocalizedValue(dynamicCompanyRaw) || company?.companyName || "";
+  const rightsText = getLocalizedValue(dynamicRightsRaw) || "";
+
+  // Eğer company veya rights yoksa, component hiç render edilmez!
+  if (!companyName && !rightsText) return null;
 
   return (
     <Copyright>
       <span>
-        &copy; {new Date().getFullYear()} <strong>{finalCompanyName}</strong>
-        {finalRightsText && <>. {finalRightsText}</>}
+        &copy; {new Date().getFullYear()} <strong>{companyName}</strong>
+        {rightsText && <>. {rightsText}</>}
       </span>
       <br />
       <DesignLink
@@ -60,12 +54,12 @@ const Copyright = styled.div`
   line-height: ${({ theme }) => theme.lineHeights.normal};
   text-align: center;
   opacity: 0.88;
-  letter-spacings: 0.02em;
+  letter-spacing: 0.02em;
 
   strong {
     color: ${({ theme }) => theme.colors.primary};
     font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-    letter-spacings: 0.04em;
+    letter-spacing: 0.04em;
   }
 `;
 

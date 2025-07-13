@@ -1,6 +1,6 @@
-import { AdminAboutPage } from "@/modules/about";
+import { AdminPage } from "@/modules/about";
 
 export default function AdminAboutRoutePage() {
-  return <AdminAboutPage />;
+  return <AdminPage />;
 }
 

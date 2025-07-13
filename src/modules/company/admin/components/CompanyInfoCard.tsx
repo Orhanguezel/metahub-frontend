@@ -1,60 +1,56 @@
 "use client";
 
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
-import type { ICompany, ICompanyImage } from "@/modules/company/types";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import type { ICompany } from "@/modules/company/types";
 
 interface CompanyInfoCardProps {
   company: ICompany | null;
+  
 }
 
 const DEFAULT_LOGO = "/default-company-logo.png";
 
-function resolveLogoUrl(logo?: ICompanyImage): string {
-  if (!logo) return DEFAULT_LOGO;
-  const url = logo.thumbnail || logo.url || "";
-  if (!url) return DEFAULT_LOGO;
-  if (
-    url.startsWith("http://") ||
-    url.startsWith("https://") ||
-    url.startsWith("blob:")
-  ) {
-    return url;
-  }
-  return url;
-}
 
 export default function CompanyInfoCard({ company }: CompanyInfoCardProps) {
-  const { t } = useTranslation("company");
+  const { t } = useI18nNamespace("company", translations);
 
   if (!company) return null;
 
-  const logos =
-    Array.isArray(company.logos) && company.logos.length > 0
-      ? company.logos
+  const images =
+    Array.isArray(company.images) && company.images.length > 0
+      ? company.images
       : [];
 
   return (
     <Card>
       <InfoBlock>
-        <CompanyName>{company.companyName}</CompanyName>
-        <Contact>{company.email}</Contact>
-        <Contact>{company.phone}</Contact>
+        <CompanyName>{company.companyName || t("companyName", "Company Name")}</CompanyName>
+        <Contact>{company.email || "-"}</Contact>
+        <Contact>{company.phone || "-"}</Contact>
         <Contact>
-          {company.address?.street}, {company.address?.city}
+          {(company.address?.street || "-") +
+            ", " +
+            (company.address?.city || "-")}
         </Contact>
       </InfoBlock>
       <LogoRow>
-        {logos.length > 0 ? (
-          logos.map((logo, idx) => (
+        {images.length > 0 ? (
+          images.map((image, idx) => (
             <Logo
-              key={(logo.url || "") + idx}
-              src={resolveLogoUrl(logo)}
-              alt={t("companyLogoAlt", "Company Logo {{n}}", { n: idx + 1 })}
-            />
+    key={(image.url || "") + idx}
+    src={image.thumbnail || image.url}
+    alt={t("companyLogoAlt", "Company Logo {{n}}", { n: idx + 1 })}
+    loading="lazy"
+  />
           ))
         ) : (
-          <Logo src={DEFAULT_LOGO} alt={t("defaultLogoAlt", "Default Logo")} />
+          <Logo
+            src={DEFAULT_LOGO}
+            alt={t("defaultLogoAlt", "Default Logo")}
+            loading="lazy"
+          />
         )}
       </LogoRow>
     </Card>
@@ -133,3 +129,4 @@ const Logo = styled.img`
     background: ${({ theme }) => theme.colors.backgroundSecondary};
   }
 `;
+

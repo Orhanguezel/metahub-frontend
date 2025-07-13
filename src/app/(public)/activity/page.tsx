@@ -1,8 +1,8 @@
 "use client";
 import React from "react";
-import ActivityPage from "@/modules/activity/public/pages/ActivityPage";
+import Page from "@/modules/activity/public/pages/Page";
 
 export default function ActivityRouterPage() {
 
-  return <ActivityPage />;
+  return <Page />;
 }

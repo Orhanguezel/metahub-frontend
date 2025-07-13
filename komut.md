@@ -108,3 +108,9 @@ systemctl reload nginx
 ---
 
 İstersen bu adımları tek satırlık bir NAT için sadeleştirilmiş versiyon da hazırlayabilirim. Ama bu defa önce **manuel işlem başarılı oldu**, buradan gidelim.
+
+
+
+https://instagram.com/company
+
+https://linkedin.com/company

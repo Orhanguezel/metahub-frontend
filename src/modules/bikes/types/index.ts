@@ -1,13 +1,13 @@
 import type { TranslatedLabel } from "@/types/common";
 
-export interface IBikeImage {
+export interface IBikesImage {
   url: string;
   thumbnail: string;
   webp?: string;
   publicId?: string;
 }
 
-export interface IBike {
+export interface IBikes {
   _id: string;
   name: Partial<TranslatedLabel>;
   slug: string;
@@ -24,7 +24,7 @@ export interface IBike {
       }
     | string;
   tags?: string[];
-  images: IBikeImage[];
+  images: IBikesImage[];
 
   frameMaterial?: string;
   brakeType?: string;
@@ -55,7 +55,7 @@ export interface CategoryImage {
   altText?: Partial<TranslatedLabel>;
 }
 
-export interface BikeCategory {
+export interface BikesCategory {
   _id: string;
   name: Partial<TranslatedLabel>;
   description?: Partial<TranslatedLabel>;

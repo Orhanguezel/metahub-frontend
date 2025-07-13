@@ -3,7 +3,8 @@
 import React, { useEffect, useRef } from "react";
 import styled from "styled-components";
 import { XCircle } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales";
 
 // --- Props tipi ---
 interface ConfirmDeleteModalProps {
@@ -23,7 +24,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
   onConfirm,
   loading = false,
 }) => {
-  const { t } = useTranslation("adminModules");
+  const { t } = useI18nNamespace("adminModules", translations);
   const confirmRef = useRef<HTMLButtonElement>(null);
 
   // Escape ile kapama & focus yönetimi

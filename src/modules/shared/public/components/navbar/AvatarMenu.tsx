@@ -1,70 +1,73 @@
+// /modules/shared/AvatarMenu.tsx
 "use client";
-
-import { useRef, useEffect } from "react";
-import { AnimatePresence } from "framer-motion";
+import { useRef, useEffect, useMemo } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
-import { useTranslation } from "react-i18next";
-import styled from "styled-components";
-import { motion } from "framer-motion";
 import Link from "next/link";
+import styled from "styled-components";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales/navbar";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logoutUser, resetAuthState } from "@/modules/users/slice/authSlice";
 import { resetProfile } from "@/modules/users/slice/accountSlice";
+import { getImageSrc } from "@/shared/getImageSrc";
+import type { ProfileImageObj } from "@/modules/users/types/auth";
+import { toast } from "react-toastify";
 
 interface AvatarMenuProps {
-  isAuthenticated: boolean;
-  profileImage: string;
   showDropdown: boolean;
   setShowDropdown: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function AvatarMenu({
-  isAuthenticated,
-  profileImage,
-  showDropdown,
-  setShowDropdown,
-}: AvatarMenuProps) {
+export default function AvatarMenu({ showDropdown, setShowDropdown }: AvatarMenuProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { t } = useTranslation("navbar");
+  const { t } = useI18nNamespace("navbar", translations);
   const dispatch = useAppDispatch();
+  const { profile: user } = useAppSelector((state) => state.account);
 
-  // User objesi slice'tan alınır, role kontrolü için
-const user = useAppSelector((state) => state.account.profile);
+  // Profil resmi çözümü
+  const resolvedProfileImage: string = useMemo(() => {
+    if (!user?.profileImage) return "/defaults/profile-thumbnail.png";
+    if (typeof user.profileImage === "object" && user.profileImage !== null) {
+      const img = user.profileImage as ProfileImageObj;
+      return getImageSrc(img.thumbnail || img.url || "", "profile");
+    }
+    if (typeof user.profileImage === "string") {
+      if (user.profileImage.trim() === "") return "/defaults/profile-thumbnail.png";
+      if (user.profileImage.startsWith("http")) return user.profileImage;
+      return getImageSrc(user.profileImage, "profile");
+    }
+    return "/defaults/profile-thumbnail.png";
+  }, [user?.profileImage]);
 
-
-
+  // Dropdown dışı tıklama ile kapanır
   useEffect(() => {
+    if (!showDropdown) return;
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [setShowDropdown]);
+  }, [showDropdown, setShowDropdown]);
 
-  // En güncel logout handler:
+  // Logout
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
     try {
       await dispatch(logoutUser()).unwrap();
     } catch (err: any) {
-      console.error("Logout işlemi başarısız:", err);
-      // Sessizce hata yönetimi (network hatası da olabilir)
+      toast.error(t("logoutError", "Çıkış yaparken bir hata oluştu."),err);
     }
     dispatch(resetAuthState());
     dispatch(resetProfile());
-    // Persisti tamamen sıfırla
-    // await persistor.purge();
-    // Hızlıca login sayfasına yönlendir
     window.location.replace("/login");
     setShowDropdown(false);
   };
 
-  if (!isAuthenticated) {
+  // user yoksa (henüz login değil), login/register döndür
+  if (!user) {
     return (
       <>
         <MenuLink href="/login">{t("login")}</MenuLink>
@@ -74,16 +77,16 @@ const user = useAppSelector((state) => state.account.profile);
   }
 
   return (
-    <AvatarWrapper onClick={() => setShowDropdown((prev) => !prev)}>
+    <AvatarWrapper>
       <Image
-        src={profileImage || "/default-avatar.png"}
+        src={resolvedProfileImage}
         alt="Profil"
         width={32}
         height={32}
         style={{ borderRadius: "50%", objectFit: "cover" }}
         priority
+        onClick={() => setShowDropdown((prev) => !prev)}
       />
-
       <AnimatePresence>
         {showDropdown && (
           <AvatarDropdown
@@ -97,7 +100,7 @@ const user = useAppSelector((state) => state.account.profile);
             <DropdownItem as={Link} href="/account">
               {t("account")}
             </DropdownItem>
-            {(user?.role === "admin" || user?.role === "superadmin") && (
+            {(user.role === "admin" || user.role === "superadmin") && (
               <DropdownItem as={Link} href="/admin">
                 {t("adminDashboard", "Admin Paneli")}
               </DropdownItem>
@@ -116,8 +119,7 @@ const user = useAppSelector((state) => state.account.profile);
   );
 }
 
-// Styled Components aynı şekilde...
-
+// --- Styled Components ---
 const AvatarWrapper = styled.div`
   position: relative;
   cursor: pointer;

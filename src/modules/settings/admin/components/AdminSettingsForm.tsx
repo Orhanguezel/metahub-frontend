@@ -1,4 +1,3 @@
-"use client";
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
@@ -12,10 +11,12 @@ import {
 import { toast } from "react-toastify";
 import { KeyInputSection, ValueInputSection } from "../..";
 import { SUPPORTED_LOCALES } from "@/i18n";
-import type { ISetting, ISettingValue } from "../../types";
+import type { ISetting, ISettingValue, ISettingsImage } from "../../types";
 import { completeLocales } from "@/utils/completeLocales";
 
-// --- Helper: Sadece çoklu dil nesnesi için çalışsın
+const IMAGE_KEYS = ["navbar_images", "footer_images", "logo_images", "images"];
+const THEMES_KEYS = ["available_themes", "site_template"];
+
 function isTranslatedLabel(val: unknown): val is Record<string, string> {
   return (
     val != null &&
@@ -26,9 +27,6 @@ function isTranslatedLabel(val: unknown): val is Record<string, string> {
     )
   );
 }
-
-const LOGO_KEYS = ["navbar_logos", "footer_logos"];
-const THEMES_KEYS = ["available_themes", "site_template"];
 
 interface AdminSettingsFormProps {
   editingSetting: ISetting | null;
@@ -42,99 +40,99 @@ const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({
   onSave,
 }) => {
   const dispatch = useAppDispatch();
-  const { i18n, t } = useI18nNamespace("settings", translations);
+  const { t } = useI18nNamespace("settings", translations);
 
+  // State
   const [key, setKey] = useState("");
   const [value, setValue] = useState<any>("");
-  const [file, setFile] = useState<File | null>(null);
-  const [lightFile, setLightFile] = useState<File | null>(null);
-  const [darkFile, setDarkFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [isMultiLang, setIsMultiLang] = useState(false);
-const [isNestedObject, setIsNestedObject] = useState(false);
-const [isImage, setIsImage] = useState(false);
+  const [isImage, setIsImage] = useState(false);
+  const [isNestedObject, setIsNestedObject] = useState(false);
 
-useEffect(() => {
-  if (editingSetting) {
-    setKey(editingSetting.key || "");
-    setValue(editingSetting.value ?? "");
-    setIsMultiLang(isTranslatedLabel(editingSetting.value));
-    setIsNestedObject(false);
-    setIsImage(false);
-  } else {
-    setKey("");
-    setValue("");
-    setIsMultiLang(false);
-    setIsNestedObject(false);
-    setIsImage(false);
-  }
-  setFile(null);
-  setLightFile(null);
-  setDarkFile(null);
-}, [editingSetting]);
+  // On edit, fill form
+  useEffect(() => {
+    if (editingSetting) {
+      setKey(editingSetting.key || "");
+      setValue(editingSetting.value ?? "");
+      setIsMultiLang(isTranslatedLabel(editingSetting.value));
+      setIsImage(IMAGE_KEYS.includes(editingSetting.key));
+      setIsNestedObject(
+        typeof editingSetting.value === "object" &&
+          !Array.isArray(editingSetting.value) &&
+          !isTranslatedLabel(editingSetting.value)
+      );
+      setRemovedImages([]);
+    } else {
+      setKey("");
+      setValue("");
+      setIsMultiLang(false);
+      setIsImage(false);
+      setIsNestedObject(false);
+      setRemovedImages([]);
+    }
+    setFiles([]);
+  }, [editingSetting]);
 
-// Sonra, derive edilen const'lar OLMASIN!
+  // Key türüne göre inputlar
+  const isTheme = THEMES_KEYS.includes(key);
+  const isImageKey = IMAGE_KEYS.includes(key);
 
+  // Görseli sil (mevcut image array’den)
+  const handleRemoveImage = (img: ISettingsImage) => {
+    setRemovedImages((prev) =>
+      img.publicId ? [...prev, img.publicId] : prev
+    );
+  };
 
-
-  // Value tipi tespiti
-  const isLogoUpload = LOGO_KEYS.includes(key);
-  const isThemes = THEMES_KEYS.includes(key);
-    isTranslatedLabel(value) && !isThemes;
-
-  // Logo url extract
-  const extractLogoUrl = (logoObj: any) =>
-    typeof logoObj === "string" ? logoObj : logoObj?.url || undefined;
-  const lightLogoUrl = extractLogoUrl(value?.light);
-  const darkLogoUrl = extractLogoUrl(value?.dark);
+  // Yeni dosya eklendiğinde
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFiles(e.target.files ? Array.from(e.target.files) : []);
+  };
 
   // Submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      // LOGO upload
-      if (isLogoUpload) {
-        if (!lightFile && !darkFile) {
-          toast.error(t("pleaseSelectFile", "Please select at least one logo file."));
+      if (isImageKey) {
+        // Sıfırdan yeni image array ekleniyor (mevcut görsel yok ve yeni dosya eklendi)
+        if ((!editingSetting?.images || editingSetting.images.length === 0) && files.length > 0) {
+          await dispatch(upsertSettingsImage({ key, files })).unwrap();
+          toast.success(t("settingSaved", "Images uploaded successfully."));
+          onSave();
           return;
         }
-        await dispatch(
-          upsertSettingsImage({
-            key,
-            lightFile: lightFile || undefined,
-            darkFile: darkFile || undefined,
-          })
-        ).unwrap();
-        toast.success(t("settingSaved", "Logos updated successfully."));
-        onSave();
-        return;
-      }
-      // IMAGE upload
-      if (isImage && !isLogoUpload) {
-        if (!file) {
-          toast.error(t("pleaseSelectFile", "Please select an image file."));
+        // Var olan görsellerde update (silinen ve/veya yeni eklenen varsa)
+        if (editingSetting?.images && (removedImages.length > 0 || files.length > 0)) {
+          await dispatch(updateSettingsImage({ key, files, removedImages })).unwrap();
+          toast.success(t("settingSaved", "Images updated successfully."));
+          onSave();
           return;
         }
-        const action = editingSetting
-          ? updateSettingsImage({ key, darkFile: file })
-          : upsertSettingsImage({ key, darkFile: file });
-        await dispatch(action).unwrap();
-        toast.success(t("settingSaved", "Image updated successfully."));
-        onSave();
-        return;
-      }
-      // Validation
-      if (!key.trim()) {
-        toast.error(t("keyRequired", "Key is required."));
+        // Sadece silinen görseller varsa (hiç yeni dosya yüklenmedi)
+        if (removedImages.length > 0 && !files.length) {
+          await dispatch(updateSettingsImage({ key, files: [], removedImages })).unwrap();
+          toast.success(t("settingSaved", "Images updated successfully."));
+          onSave();
+          return;
+        }
+        // Dosya da kaldırılmadıysa hiçbir şey yapma
+        toast.info(t("noChanges", "No changes to save."));
         return;
       }
 
-      // THEMES normalize
+      // THEMES normalize (array olarak gönder)
       let normalizedValue: ISettingValue = value;
-      if (isThemes && typeof value === "string") {
-        normalizedValue = value.split(",").map((v: string) => v.trim()).filter(Boolean);
+      if (isTheme && typeof value === "string") {
+        normalizedValue = value
+          .split(",")
+          .map((v: string) => v.trim())
+          .filter(Boolean);
       }
 
-      // Multi-lang normalize (hem string hem object için)
+      // Multi-lang normalize (object/string → completeLocales)
       if (isMultiLang && typeof value === "object") {
         normalizedValue = completeLocales(value);
       }
@@ -164,63 +162,68 @@ useEffect(() => {
     }
   };
 
-  // Render
+  // --- Render
   return (
     <FormWrapper onSubmit={handleSubmit}>
-     <KeyInputSection
-  keyValue={key}
-  setKey={setKey}
-  isMultiLang={isMultiLang}
-  setIsMultiLang={setIsMultiLang}
-  isImage={isImage}
-  setIsImage={setIsImage}
-  isNestedObject={isNestedObject}
-  setIsNestedObject={setIsNestedObject}
-  isEditing={!!editingSetting}
-  supportedLocales={SUPPORTED_LOCALES}
-/>
+      <KeyInputSection
+        keyValue={key}
+        setKey={setKey}
+        isMultiLang={isMultiLang}
+        setIsMultiLang={setIsMultiLang}
+        isImage={isImage}
+        setIsImage={setIsImage}
+        isNestedObject={isNestedObject}
+        setIsNestedObject={setIsNestedObject}
+        isEditing={!!editingSetting}
+        supportedLocales={SUPPORTED_LOCALES}
+      />
 
-      {isLogoUpload ? (
-        <LogoInputGroup>
-          <div>
-            <Label>{t("lightLogo", "Light Logo")} *</Label>
+      {isImageKey ? (
+        <FileInputGroup>
+          <Label>
+            {t("images", "Images")} *
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => setLightFile(e.target.files?.[0] || null)}
+              multiple
+              onChange={handleFileChange}
             />
-            {lightLogoUrl && <LogoPreviewImg src={lightLogoUrl} alt="Light Logo" />}
-          </div>
-          <div>
-            <Label>{t("darkLogo", "Dark Logo")}</Label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setDarkFile(e.target.files?.[0] || null)}
-            />
-            {darkLogoUrl && <LogoPreviewImg src={darkLogoUrl} alt="Dark Logo" />}
-          </div>
-        </LogoInputGroup>
+          </Label>
+          <ImagePreviews>
+            {/* Varolan mevcut görseller (silinebilir) */}
+            {editingSetting?.images?.filter(img => !removedImages.includes(img.publicId || "")).map((img, idx) => (
+              <PreviewBox key={img.publicId || img.url || idx}>
+                <PreviewImg src={img.url} alt={img.publicId || `img-${idx}`} />
+                <RemoveImgBtn type="button" onClick={() => handleRemoveImage(img)}>×</RemoveImgBtn>
+              </PreviewBox>
+            ))}
+            {/* Yeni yüklenen dosyalar (henüz kaydedilmemiş) */}
+            {files.map((file, idx) => (
+              <PreviewBox key={file.name + idx}>
+                <PreviewImg src={URL.createObjectURL(file)} alt={file.name} />
+              </PreviewBox>
+            ))}
+          </ImagePreviews>
+        </FileInputGroup>
       ) : (
         <ValueInputSection
-  keyValue={key}
-  value={value}
-  setValue={setValue}
-  availableThemes={availableThemes}
-  isMultiLang={isMultiLang}
-  isNestedObject={isNestedObject}
-  isImage={isImage}
-  file={file}
-  setFile={setFile}
-  lightFile={lightFile}
-  setLightFile={setLightFile}
-  darkFile={darkFile}
-  setDarkFile={setDarkFile}
-  isEditing={!!editingSetting}
-  supportedLocales={SUPPORTED_LOCALES}
-/>
-
+          keyValue={key}
+          value={value}
+          setValue={setValue}
+          availableThemes={availableThemes}
+          isMultiLang={isMultiLang}
+          isNestedObject={isNestedObject}
+          isImage={isImage}
+          // 👇 burada prop'u kaldırıyoruz!
+          // isEditing={!!editingSetting}  ← Bunu kaldır!
+          supportedLocales={SUPPORTED_LOCALES}
+          files={files}
+          setFiles={setFiles}
+          removedImages={removedImages}
+          setRemovedImages={setRemovedImages}
+        />
       )}
+
       <SaveButton type="submit">{t("save", "Save")}</SaveButton>
     </FormWrapper>
   );
@@ -254,26 +257,30 @@ const SaveButton = styled.button`
   }
 `;
 
-const LogoInputGroup = styled.div`
+const FileInputGroup = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacings.md};
-  > div {
-    flex: 1 1 200px;
-  }
-  input {
-    width: 100%;
-  }
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacings.sm};
 `;
 
 const Label = styled.label`
-  display: block;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   margin-bottom: ${({ theme }) => theme.spacings.xs};
 `;
 
-const LogoPreviewImg = styled.img`
+const ImagePreviews = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.sm};
+  flex-wrap: wrap;
+`;
+
+const PreviewBox = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const PreviewImg = styled.img`
   margin-top: ${({ theme }) => theme.spacings.xs};
   max-width: 120px;
   max-height: 80px;
@@ -281,5 +288,28 @@ const LogoPreviewImg = styled.img`
   background: ${({ theme }) => theme.colors.backgroundAlt};
   border: 1px solid ${({ theme }) => theme.colors.border};
   object-fit: contain;
+`;
+
+const RemoveImgBtn = styled.button`
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ff4d4f;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.11);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  &:hover {
+    background: #f5222d;
+  }
 `;
 

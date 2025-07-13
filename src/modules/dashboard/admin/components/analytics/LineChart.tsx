@@ -10,9 +10,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useTheme } from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales";
 import styled from "styled-components";
-import { SUPPORTED_LOCALES, DATE_FORMATS } from "@/types/common";
+import { SupportedLocale, DATE_FORMATS } from "@/types/common";
 
 type TrendEntry = {
   _id: {
@@ -60,12 +61,10 @@ function formatDate(entry: TrendEntry, lang: string): string {
 }
 
 export default function LineChart({ data }: Props) {
-  const { t, i18n } = useTranslation("admin-dashboard");
+  const { t, i18n } = useI18nNamespace("admin-dashboard", translations);
   const theme = useTheme();
   // Locale güvenli şekilde SupportedLocale'e düşür
-  const lang = (
-    SUPPORTED_LOCALES.includes(i18n.language as any) ? i18n.language : "en"
-  ) as keyof typeof DATE_FORMATS;
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   // Güvenli veri kontrolü
   const safeData = Array.isArray(data) ? data : [];

@@ -1,5 +1,5 @@
-import { BikesDetailSection } from "@/modules/bikes";
+import {DetailSection } from "@/modules/bikes";
 
 export default function Page() {
-  return <BikesDetailSection />;
+  return <DetailSection />;
 }

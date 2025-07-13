@@ -1,5 +1,5 @@
-import NewsDetailSection from "@/modules/news/public/components/NewsDetailSection";
+import DetailSection from "@/modules/news/public/components/DetailSection";
 
 export default function Page() {
-  return <NewsDetailSection />;
+  return <DetailSection />;
 }

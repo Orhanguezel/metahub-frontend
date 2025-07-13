@@ -7,11 +7,11 @@ import { checkCouponByCode, clearCouponMessages } from "@/modules/coupon/slice/c
 import { Message } from "@/shared";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
-import { getCurrentLocale } from "@/utils/getCurrentLocale";
+import type { SupportedLocale } from "@/types/common";
 
 const CouponPage: React.FC = () => {
-   const { t } = useI18nNamespace("about", translations);
-    const lang = getCurrentLocale();
+   const { t,i18n } = useI18nNamespace("coupon", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
   const dispatch = useAppDispatch();
   const { current, loading, error, successMessage } = useAppSelector((s) => s.coupon);
 

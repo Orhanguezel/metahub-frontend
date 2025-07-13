@@ -1,8 +1,8 @@
 "use client";
 import React from "react";
-import ArticlesPage from "@/modules/articles/public/pages/ArticlesPage";
+import Page from "@/modules/articles/public/pages/Page";
 
 export default function ArticlesRouterPage() {
 
-  return <ArticlesPage />;
+  return <Page />;
 }

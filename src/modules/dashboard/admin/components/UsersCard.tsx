@@ -2,10 +2,11 @@
 import React from "react";
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 
 const UsersCard = () => {
-  const { t } = useTranslation("admin-dashboard"); // dashboard → admin-dashboard olarak düzeltildi!
+  const { t } = useI18nNamespace("dashboard", translations);
   const userCount = useAppSelector((s) => s.dashboard.stats?.users ?? 0);
 
   return (

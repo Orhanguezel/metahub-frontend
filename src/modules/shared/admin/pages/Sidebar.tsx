@@ -1,7 +1,7 @@
 "use client";
 import styled from "styled-components";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSidebarModules } from "@/hooks/useSidebarModules";
 import { MdHome, MdLogout, MdClose, MdRefresh } from "react-icons/md";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
@@ -11,18 +11,37 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { logoutUser, resetAuthState } from "@/modules/users/slice/authSlice";
 import { resetProfile } from "@/modules/users/slice/accountSlice";
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 
-// --- TS tipi ---
 type SidebarProps = {
   isOpen: boolean;
-  onClose: () => void; // opsiyonel olmasın; zorunlu olsun, hatasızlık için.
+  onClose: () => void;
 };
 
 const isActive = (currentPath: string, linkPath: string) => {
-  if (linkPath === "/admin") return currentPath === "/admin";
+  if (linkPath === "/") return currentPath === "/";
   return currentPath.startsWith(linkPath);
 };
+
+// Utility: Güvenli extraction (type-safe)
+function getNavbarLogo(settings: any[], lang: SupportedLocale) {
+  const setting = settings.find((s) => s.key === "navbar_logo_text");
+  if (!setting?.value || typeof setting.value !== "object") {
+    return {
+      title: "E-Market",
+      slogan: "",
+    };
+  }
+  // Type-safe extraction
+  const title =
+    setting.value.title?.label?.[lang] ||
+    setting.value.title?.label?.en ||
+    "E-Market";
+  const slogan =
+    setting.value.slogan?.label?.[lang] ||
+    setting.value.slogan?.label?.en ||
+    "";
+  return { title, slogan };
+}
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const dispatch = useAppDispatch();
@@ -30,29 +49,28 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { i18n, t } = useI18nNamespace("sidebar", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { sidebarModules, isLoading } = useSidebarModules();
-  const { settings = [] } = useAppSelector((state) => state.setting || {});
-  const navbarLogoSetting = settings.find((s) => s.key === "navbar_logo_text");
-  const title =
-    (navbarLogoSetting?.value as any)?.title?.[lang] || "E-Market";
-  const slogan = (navbarLogoSetting?.value as any)?.slogan?.[lang] || "";
+
+  // Her zaman settingsAdmin!
+  const settings = useAppSelector((state) => state.settings.settingsAdmin);
+
+  // Güvenli çek
+  const { title, slogan } = getNavbarLogo(settings, lang);
 
   const router = useRouter();
 
-  // Logout işlemi
   const handleLogout = async () => {
     try {
       await dispatch(logoutUser()).unwrap();
       dispatch(resetAuthState());
       dispatch(resetProfile());
-      onClose(); // props artık zorunlu
-     router.replace("/login");
+      onClose();
+      router.replace("/login");
     } catch (err: any) {
       alert(t("logoutError"));
       console.error("Logout error:", err);
     }
   };
 
-  // Responsive sidebar kapatma
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
@@ -67,13 +85,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     <>
       <SidebarWrapper className={isOpen ? "open" : ""}>
         <LogoSection>
-          <LogoIcon>
-            <MdHome size={20} />
-          </LogoIcon>
-          <LogoTextWrapper>
-            <LogoTitle>{title}</LogoTitle>
-            {slogan && <LogoSlogan>{slogan}</LogoSlogan>}
-          </LogoTextWrapper>
+          <LogoHomeLink href="/" onClick={onClose}>
+            <LogoIcon>
+              <MdHome size={20} />
+            </LogoIcon>
+            <LogoTextWrapper>
+              <LogoTitle>{title}</LogoTitle>
+              {slogan && <LogoSlogan>{slogan}</LogoSlogan>}
+            </LogoTextWrapper>
+          </LogoHomeLink>
           <CloseButton onClick={onClose}>
             <MdClose size={20} />
           </CloseButton>
@@ -124,7 +144,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   );
 }
 
-// --- Styled Components değişmedi (TypeScript ile) ---
+// --- Styled Components ---
+
 const SidebarWrapper = styled.aside`
   width: 240px;
   position: fixed;
@@ -177,6 +198,18 @@ const LogoSection = styled.div`
     ${({ theme }) => theme.colors.border};
 `;
 
+const LogoHomeLink = styled(Link)`
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  flex: 1;
+  min-width: 0;
+  &:hover span {
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
 const LogoIcon = styled.div`
   width: 32px;
   height: 32px;
@@ -192,17 +225,24 @@ const LogoIcon = styled.div`
 const LogoTextWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  min-width: 0;
 `;
 
 const LogoTitle = styled.span`
   font-size: ${({ theme }) => theme.fontSizes.lg};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   color: ${({ theme }) => theme.colors.text};
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 `;
 
 const LogoSlogan = styled.span`
   font-size: ${({ theme }) => theme.fontSizes.xs};
   color: ${({ theme }) => theme.colors.textSecondary};
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 `;
 
 const Nav = styled.nav`

@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import { SupportedLocale } from "@/types/common";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchAvailableSlots,
@@ -16,20 +18,85 @@ import "react-datepicker/dist/react-datepicker.css";
 import { format } from "date-fns";
 import TimeSlotPicker from "./TimeSlotPicker";
 
+// --- STYLED COMPONENTS & CUSTOM INPUT ---
+
+const DatePickerWrapper = styled.div`
+  .react-datepicker__input-container {
+    width: 100%;
+  }
+  .custom-date-input {
+    width: 100%;
+    font-family: ${({ theme }) => theme.fonts.body};
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    background: ${({ theme }) => theme.inputs.background};
+    color: ${({ theme }) => theme.inputs.text};
+    border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.inputs.border};
+    border-radius: ${({ theme }) => theme.radii.md};
+    padding: ${({ theme }) => theme.spacings.sm};
+    transition: border ${({ theme }) => theme.transition.normal};
+    cursor: pointer;
+    &:focus, &:hover {
+      outline: none;
+      border-color: ${({ theme }) => theme.inputs.borderFocus};
+      box-shadow: ${({ theme }) => theme.shadows.sm};
+    }
+    &::placeholder {
+      color: ${({ theme }) => theme.inputs.placeholder};
+      opacity: 1;
+    }
+  }
+  // Takvim popup'ı
+  .react-datepicker {
+    border-radius: ${({ theme }) => theme.radii.lg};
+    border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+    font-family: ${({ theme }) => theme.fonts.body};
+    background: ${({ theme }) => theme.colors.cardBackground};
+    box-shadow: ${({ theme }) => theme.shadows.md};
+  }
+  .react-datepicker__header {
+    background: ${({ theme }) => theme.colors.backgroundAlt};
+    border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderLight};
+    border-radius: ${({ theme }) => theme.radii.lg} ${({ theme }) => theme.radii.lg} 0 0;
+  }
+  .react-datepicker__day--selected,
+  .react-datepicker__day--keyboard-selected {
+    background: ${({ theme }) => theme.colors.primary};
+    color: #fff;
+  }
+  .react-datepicker__day--today {
+    color: ${({ theme }) => theme.colors.primary};
+    font-weight: 600;
+  }
+`;
+
+const DateInput = React.forwardRef<HTMLInputElement, any>(
+  ({ value, onClick, placeholder }, ref) => (
+    <input
+      className="custom-date-input"
+      onClick={onClick}
+      value={value}
+      readOnly
+      placeholder={placeholder}
+      ref={ref}
+    />
+  )
+);
+DateInput.displayName = "DateInput";
+
+// --- BOOKING FORM ---
+
 export default function BookingForm() {
-  const { t, i18n } = useTranslation("booking");
+  const { t, i18n } = useI18nNamespace("booking", translations);
   const dispatch = useAppDispatch();
   const { services } = useAppSelector((state) => state.services);
   const { availableSlots } = useAppSelector((state) => state.bookingSlot);
 
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const [form, setForm] = useState<Omit<BookingFormInput, "language">>({
-    name: { tr: "", en: "", de: "" },
+    name: "",
     email: "",
     phone: "",
     service: "",
@@ -52,7 +119,6 @@ export default function BookingForm() {
     >
   ) => {
     const { name, value } = e.target;
-
     if (name === "service") {
       const selected = services.find((s) => s._id === value);
       setForm((prev) => ({
@@ -60,15 +126,11 @@ export default function BookingForm() {
         service: value,
         serviceType: selected?.title?.[lang] || "",
       }));
-    } else if (name === "name") {
+    } else {
       setForm((prev) => ({
         ...prev,
-        name: { ...prev.name, [lang]: value },
+        [name]: value,
       }));
-    } else if (name === "time") {
-      setForm((prev) => ({ ...prev, time: value }));
-    } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
 
@@ -82,20 +144,16 @@ export default function BookingForm() {
 
   const handleSubmit = async () => {
     const { name, email, service, date, time } = form;
-
-    if (!name[lang] || !email || !service || !date || !time) {
+    if (!name || !email || !service || !date || !time) {
       toast.error(t("form.required", "Please fill all required fields."));
       return;
     }
-
     try {
       await dispatch(createBooking({ ...form, language: lang })).unwrap();
-      toast.success(
-        t("form.success", "Your booking was successfully submitted!")
-      );
+      toast.success(t("form.success", "Your booking was successfully submitted!"));
       dispatch(clearSlotMessages());
       setForm({
-        name: { tr: "", en: "", de: "" },
+        name: "",
         email: "",
         phone: "",
         service: "",
@@ -112,10 +170,16 @@ export default function BookingForm() {
   };
 
   return (
-    <Form>
+    <Form autoComplete="off" onSubmit={e => { e.preventDefault(); handleSubmit(); }}>
       <Field>
         <Label>{t("form.name", "Name")}</Label>
-        <Input name="name" value={form.name[lang]} onChange={handleChange} />
+        <Input
+          name="name"
+          value={form.name}
+          onChange={handleChange}
+          required
+          autoComplete="name"
+        />
       </Field>
       <Field>
         <Label>{t("form.email", "Email")}</Label>
@@ -124,15 +188,22 @@ export default function BookingForm() {
           type="email"
           value={form.email}
           onChange={handleChange}
+          required
+          autoComplete="email"
         />
       </Field>
       <Field>
         <Label>{t("form.phone", "Phone")}</Label>
-        <Input name="phone" value={form.phone} onChange={handleChange} />
+        <Input
+          name="phone"
+          value={form.phone}
+          onChange={handleChange}
+          autoComplete="tel"
+        />
       </Field>
       <Field>
         <Label>{t("form.service", "Service")}</Label>
-        <Select name="service" value={form.service} onChange={handleChange}>
+        <Select name="service" value={form.service} onChange={handleChange} required>
           <option value="">
             {t("form.selectService", "Please select a service")}
           </option>
@@ -145,20 +216,24 @@ export default function BookingForm() {
       </Field>
       <Field>
         <Label>{t("form.date", "Date")}</Label>
-        <DatePicker
-          selected={selectedDate ?? undefined}
-          onChange={handleDateChange}
-          dateFormat="yyyy-MM-dd"
-          placeholderText={t("form.selectDate", "Select a date")}
-          minDate={new Date()}
-        />
+        <DatePickerWrapper>
+          <DatePicker
+            selected={selectedDate ?? undefined}
+            onChange={handleDateChange}
+            dateFormat="yyyy-MM-dd"
+            placeholderText={t("form.selectDate", "Tarih seçiniz")}
+            minDate={new Date()}
+            name="date"
+            required
+            customInput={<DateInput />}
+          />
+        </DatePickerWrapper>
       </Field>
       <Field>
         <Label>{t("form.time", "Time")}</Label>
-        {/* Eğer sadece availableSlots varsa, bookedSlots propunu kaldır */}
         <TimeSlotPicker
           availableSlots={availableSlots}
-          bookedSlots={[]} // Şimdilik boş array gönder, gerekirse slice'a eklenir
+          bookedSlots={[]} // Gerekirse buraya gerçek bookedSlots prop'u eklenir
           value={form.time}
           onChange={(time) => setForm((prev) => ({ ...prev, time }))}
         />
@@ -172,13 +247,14 @@ export default function BookingForm() {
           rows={3}
         />
       </Field>
-      <SubmitButton type="button" onClick={handleSubmit}>
+      <SubmitButton type="submit">
         {t("form.submit", "Book Appointment")}
       </SubmitButton>
     </Form>
   );
 }
 
+// --- Styled Components ---
 const Form = styled.form`
   display: flex;
   flex-direction: column;

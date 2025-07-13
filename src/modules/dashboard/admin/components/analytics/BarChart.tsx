@@ -10,7 +10,8 @@ import {
   CartesianGrid,
   LabelList,
 } from "recharts";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales";
 import styled, { useTheme } from "styled-components";
 
 interface AnalyticsEvent {
@@ -23,7 +24,7 @@ interface Props {
 }
 
 export default function BarChart({ data }: Props) {
-  const { t } = useTranslation("admin-dashboard");
+  const { t } = useI18nNamespace("dashboard", translations);
   const theme = useTheme();
 
   // Data güvenliği — undefined, null, false vs. asla hata çıkarmaz

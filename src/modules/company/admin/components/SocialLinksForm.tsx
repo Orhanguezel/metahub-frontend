@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 
 export interface SocialLinks {
   facebook?: string;
@@ -31,7 +32,7 @@ const SocialLinksForm: React.FC<Props> = ({
   onSubmit,
   loading,
 }) => {
-  const { t } = useTranslation("company");
+  const { t } = useI18nNamespace("company", translations);
   const [formData, setFormData] = useState<SocialLinks>({
     facebook: "",
     instagram: "",

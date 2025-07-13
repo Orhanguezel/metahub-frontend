@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, KeyboardEvent, ChangeEvent } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
@@ -77,7 +77,7 @@ const NestedValueEditor: React.FC<NestedValueEditorProps> = ({
 
   // Her field için label objesini tamamla
   function getLabelObj(fieldValue: NestedValue) {
-    return completeLocales(fieldValue?.label, "")
+    return completeLocales(fieldValue?.label)
 ;
   }
 

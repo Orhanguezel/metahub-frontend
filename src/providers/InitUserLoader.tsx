@@ -1,17 +1,18 @@
-"use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchCurrentUser } from "@/modules/users/slice/accountSlice";
 
 export default function InitUserLoader() {
   const dispatch = useAppDispatch();
-  const profile = useAppSelector((state) => state.account.profile);
+  const { profile, loading } = useAppSelector((state) => state.account);
+  const [hasTried, setHasTried] = useState(false);
 
   useEffect(() => {
-    if (!profile) {
+    if (!profile && !loading && !hasTried) {
       dispatch(fetchCurrentUser());
+      setHasTried(true);
     }
-  }, [dispatch, profile]);
+  }, [dispatch, profile, loading, hasTried]);
 
   return null;
 }

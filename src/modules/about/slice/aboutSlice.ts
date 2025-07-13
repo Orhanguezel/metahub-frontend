@@ -1,10 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { IAbout } from "@/modules/about/types";
+import type { IAbout } from "@/modules/about";
 
 interface AboutState {
-  about: IAbout[];
+  about: IAbout[]; // Public (site) için
+  aboutAdmin: IAbout[]; // Admin panel için
   selected: IAbout | null;
+  status: "idle" | "loading" | "succeeded" | "failed";
   loading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -12,7 +14,9 @@ interface AboutState {
 
 const initialState: AboutState = {
   about: [],
+  aboutAdmin: [],
   selected: null,
+  status: "idle",
   loading: false,
   error: null,
   successMessage: null,
@@ -30,10 +34,25 @@ const extractErrorMessage = (payload: unknown): string => {
   return "An error occurred.";
 };
 
+// --- Async Thunks ---
+
 export const fetchAbout = createAsyncThunk<IAbout[]>(
   "about/fetchAll",
   async (_, thunkAPI) => {
     const res = await apiCall("get", `/about`, null, thunkAPI.rejectWithValue);
+    return res.data;
+  }
+);
+
+export const fetchAllAboutAdmin = createAsyncThunk<IAbout[]>(
+  "about/fetchAllAdmin",
+  async (_, thunkAPI) => {
+    const res = await apiCall(
+      "get",
+      `/about/admin`,
+      null,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
@@ -50,7 +69,7 @@ export const createAbout = createAsyncThunk(
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
-    return res.data; // backend: { success: true, message: "..." }
+    return res.data;
   }
 );
 
@@ -80,19 +99,6 @@ export const deleteAbout = createAsyncThunk(
       thunkAPI.rejectWithValue
     );
     return { id, message: res.message };
-  }
-);
-
-export const fetchAllAboutAdmin = createAsyncThunk(
-  "about/fetchAllAdmin",
-  async (_, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      `/about/admin`,
-      null,
-      thunkAPI.rejectWithValue
-    );
-    return res.data;
   }
 );
 
@@ -131,6 +137,7 @@ export const fetchAboutBySlug = createAsyncThunk(
 );
 
 // --- Slice ---
+
 const aboutSlice = createSlice({
   name: "about",
   initialState,
@@ -154,62 +161,77 @@ const aboutSlice = createSlice({
       state.error = extractErrorMessage(action.payload);
     };
 
+    // --- Public List ---
     builder
       .addCase(fetchAbout.pending, startLoading)
       .addCase(fetchAbout.fulfilled, (state, action) => {
         state.loading = false;
         state.about = action.payload;
       })
-      .addCase(fetchAbout.rejected, setError)
+      .addCase(fetchAbout.rejected, setError);
 
+    // --- Admin List ---
+    builder
       .addCase(fetchAllAboutAdmin.pending, startLoading)
       .addCase(fetchAllAboutAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.about = action.payload;
+        state.aboutAdmin = action.payload;
       })
-      .addCase(fetchAllAboutAdmin.rejected, setError)
+      .addCase(fetchAllAboutAdmin.rejected, setError);
 
+    // --- Admin Create ---
+    builder
       .addCase(createAbout.pending, startLoading)
       .addCase(createAbout.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage =
           action.payload?.message || "Article created successfully.";
         if (action.payload?.data) {
-          state.about.unshift(action.payload.data);
+          state.aboutAdmin.unshift(action.payload.data);
         }
       })
-      .addCase(createAbout.rejected, setError)
+      .addCase(createAbout.rejected, setError);
 
+    // --- Admin Update ---
+    builder
       .addCase(updateAbout.pending, startLoading)
       .addCase(updateAbout.fulfilled, (state, action) => {
         state.loading = false;
         const updated = action.payload?.data || action.payload;
-        const index = state.about.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.about[index] = updated;
+        const index = state.aboutAdmin.findIndex((a) => a._id === updated._id);
+        if (index !== -1) state.aboutAdmin[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
         state.successMessage = action.payload?.message;
       })
-      .addCase(updateAbout.rejected, setError)
+      .addCase(updateAbout.rejected, setError);
 
+    // --- Admin Delete ---
+    builder
       .addCase(deleteAbout.pending, startLoading)
       .addCase(deleteAbout.fulfilled, (state, action) => {
         state.loading = false;
-        state.about = state.about.filter((a) => a._id !== action.payload.id);
+        state.aboutAdmin = state.aboutAdmin.filter(
+          (a) => a._id !== action.payload.id
+        );
         state.successMessage = action.payload?.message;
       })
-      .addCase(deleteAbout.rejected, setError)
+      .addCase(deleteAbout.rejected, setError);
 
+    // --- Admin Toggle Publish ---
+    builder
       .addCase(togglePublishAbout.pending, startLoading)
       .addCase(togglePublishAbout.fulfilled, (state, action) => {
         state.loading = false;
         const updated = action.payload?.data || action.payload;
-        const index = state.about.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.about[index] = updated;
+        const index = state.aboutAdmin.findIndex((a) => a._id === updated._id);
+        if (index !== -1) state.aboutAdmin[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
         state.successMessage = action.payload?.message;
       })
-      .addCase(togglePublishAbout.rejected, setError)
+      .addCase(togglePublishAbout.rejected, setError);
 
+    // --- Single Fetch (slug) ---
+    builder
       .addCase(fetchAboutBySlug.pending, startLoading)
       .addCase(fetchAboutBySlug.fulfilled, (state, action) => {
         state.loading = false;

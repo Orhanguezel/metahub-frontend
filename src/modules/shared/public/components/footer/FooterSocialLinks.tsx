@@ -14,13 +14,9 @@ import {
   FaWhatsapp,
 } from "react-icons/fa6";
 import React from "react";
-import { ISocialLink } from "@/modules/settings/types";
+import { useAppSelector } from "@/store/hooks";
+import { ISocialLink } from "@/modules/company/types";
 
-interface FooterSocialLinksProps {
-  links?: ISocialLink;
-}
-
-// İkon haritası
 const iconMap: { [key: string]: React.ReactNode } = {
   facebook: <FaFacebookF />,
   instagram: <FaInstagram />,
@@ -34,7 +30,11 @@ const iconMap: { [key: string]: React.ReactNode } = {
   whatsapp: <FaWhatsapp />,
 };
 
-export default function FooterSocialLinks({ links }: FooterSocialLinksProps) {
+export default function FooterSocialLinks() {
+  // --- Şirketin sosyal medya linkleri doğrudan redux store'dan alınır ---
+  const company = useAppSelector((state) => state.company.company);
+  const links: ISocialLink | undefined = company?.socialLinks;
+
   if (!links) return null;
 
   const activeLinks = Object.entries(links).filter(([key, url]) => {

@@ -1,9 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type {
-  ActivityCategory,
-  TranslatedField,
-} from "@/modules/activity/types";
+import type { ActivityCategory, TranslatedField } from "@/modules/activity";
 
 interface CategoryState {
   categories: ActivityCategory[];

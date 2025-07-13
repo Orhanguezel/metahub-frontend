@@ -1,7 +1,8 @@
 "use client";
 
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 
 export type ActiveTab = "list" | "form";
 
@@ -16,7 +17,7 @@ export interface TenantTabsProps {
 }
 
 export default function TenantTabs({ activeTab, onChange }: TenantTabsProps) {
-  const { t } = useTranslation("tenants");
+  const { t } = useI18nNamespace("tenant", translations);
 
   return (
     <Nav>

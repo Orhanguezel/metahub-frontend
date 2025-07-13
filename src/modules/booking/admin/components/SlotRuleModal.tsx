@@ -3,91 +3,93 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useAppDispatch } from "@/store/hooks";
-import { updateSlotRule } from "@/modules/booking/slice/bookingSlotSlice";
+import { updateSlotRuleAdmin } from "@/modules/booking/slice/bookingSlotSlice";
 import { toast } from "react-toastify";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
+import type { IBookingSlotRule } from "@/modules/booking/types";
 
-// Haftanın günleri
 const weekDays = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 ];
 
-interface SlotRule {
-  _id: string;
-  dayOfWeek?: number;
-  appliesToAll?: boolean;
-  startTime: string;
-  endTime: string;
-  intervalMinutes: number;
-  breakBetweenAppointments: number;
-}
-
 interface Props {
-  rule: SlotRule;
+  rule: IBookingSlotRule;
   onClose: () => void;
 }
 
 export default function SlotRuleModal({ rule, onClose }: Props) {
   const dispatch = useAppDispatch();
+  const { t } = useI18nNamespace("booking", translations);
 
-  const [form, setForm] = useState<Omit<SlotRule, "_id">>({
-    dayOfWeek: rule.dayOfWeek ?? 1,
+  const [form, setForm] = useState<Omit<IBookingSlotRule, "_id" | "createdAt" | "updatedAt" | "isActive">>({
+    dayOfWeek: rule.dayOfWeek ?? undefined,
     appliesToAll: rule.appliesToAll ?? false,
-    startTime: rule.startTime || "09:00",
-    endTime: rule.endTime || "23:00",
-    intervalMinutes: rule.intervalMinutes || 60,
-    breakBetweenAppointments: rule.breakBetweenAppointments || 15,
+    startTime: rule.startTime,
+    endTime: rule.endTime,
+    intervalMinutes: rule.intervalMinutes,
+    breakBetweenAppointments: rule.breakBetweenAppointments,
+    tenant: rule.tenant,
   });
 
   useEffect(() => {
     setForm({
-      dayOfWeek: rule.dayOfWeek ?? 1,
+      dayOfWeek: rule.dayOfWeek ?? undefined,
       appliesToAll: rule.appliesToAll ?? false,
       startTime: rule.startTime,
       endTime: rule.endTime,
       intervalMinutes: rule.intervalMinutes,
       breakBetweenAppointments: rule.breakBetweenAppointments,
+      tenant: rule.tenant,
     });
   }, [rule]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type, checked } = e.target as any;
-    setForm((prev) => {
-      if (name === "appliesToAll") {
-        return {
-          ...prev,
-          appliesToAll: checked,
-        };
-      }
-      if (type === "number") {
-        return { ...prev, [name]: +value };
-      }
-      return { ...prev, [name]: value };
-    });
-  };
+const handleChange = (
+  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+) => {
+  const { name, value, type } = e.target;
+  if (type === "checkbox") {
+    const checked = (e.target as HTMLInputElement).checked;
+    setForm((prev) => ({
+      ...prev,
+      appliesToAll: checked,
+      // appliesToAll true ise dayOfWeek'i 0 (veya herhangi bir default gün) yap
+      // (Çünkü type: number, undefined olamaz!)
+      dayOfWeek: checked ? 0 : prev.dayOfWeek,
+    }));
+    return;
+  }
+  if (type === "number") {
+    setForm((prev) => ({
+      ...prev,
+      [name]: +value,
+    }));
+    return;
+  }
+  setForm((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
+
 
   const handleSubmit = async () => {
     try {
-      await dispatch(updateSlotRule({ id: rule._id, data: form })).unwrap();
-      toast.success("Rule updated successfully.");
+      await dispatch(updateSlotRuleAdmin({ id: rule._id, data: form })).unwrap();
+      toast.success(t("admin.slotRule.updateSuccess", "Rule updated successfully."));
       onClose();
     } catch {
-      toast.error("Failed to update rule.");
+      toast.error(t("admin.slotRule.updateError", "Failed to update rule."));
     }
   };
 
   return (
-    <Overlay>
+    <Overlay tabIndex={-1} onClick={e => e.target === e.currentTarget && onClose()}>
       <Modal>
         <ModalTitle>
-          {form.appliesToAll ? "Edit General Slot Rule" : "Edit Slot Rule"}
+          {form.appliesToAll
+            ? t("admin.slotRule.editGeneral", "Edit General Slot Rule")
+            : t("admin.slotRule.edit", "Edit Slot Rule")}
         </ModalTitle>
         <Fields>
           <CheckboxLabel>
@@ -97,27 +99,25 @@ export default function SlotRuleModal({ rule, onClose }: Props) {
               checked={!!form.appliesToAll}
               onChange={handleChange}
             />
-            Apply to all days
+            {t("admin.slotRule.applyAll", "Apply to all days")}
           </CheckboxLabel>
           {!form.appliesToAll && (
             <Label>
-              Day of Week
+              {t("admin.slotRule.dayOfWeek", "Day of Week")}
               <Select
                 name="dayOfWeek"
-                value={form.dayOfWeek}
+                value={form.dayOfWeek ?? 0}
                 onChange={handleChange}
                 disabled={!!form.appliesToAll}
               >
                 {weekDays.map((d, i) => (
-                  <option value={i} key={i}>
-                    {d}
-                  </option>
+                  <option value={i} key={i}>{t(`common.weekdays.${i}`, d)}</option>
                 ))}
               </Select>
             </Label>
           )}
           <Label>
-            Start Time
+            {t("admin.slotRule.startTime", "Start Time")}
             <Input
               type="time"
               name="startTime"
@@ -126,7 +126,7 @@ export default function SlotRuleModal({ rule, onClose }: Props) {
             />
           </Label>
           <Label>
-            End Time
+            {t("admin.slotRule.endTime", "End Time")}
             <Input
               type="time"
               name="endTime"
@@ -135,7 +135,7 @@ export default function SlotRuleModal({ rule, onClose }: Props) {
             />
           </Label>
           <Label>
-            Interval Minutes
+            {t("admin.slotRule.intervalMinutes", "Interval Minutes")}
             <Input
               type="number"
               name="intervalMinutes"
@@ -145,7 +145,7 @@ export default function SlotRuleModal({ rule, onClose }: Props) {
             />
           </Label>
           <Label>
-            Break Between Appointments
+            {t("admin.slotRule.break", "Break Between Appointments")}
             <Input
               type="number"
               name="breakBetweenAppointments"
@@ -157,10 +157,10 @@ export default function SlotRuleModal({ rule, onClose }: Props) {
         </Fields>
         <ButtonGroup>
           <PrimaryButton type="button" onClick={handleSubmit}>
-            Update
+            {t("common.update", "Update")}
           </PrimaryButton>
           <DangerButton type="button" onClick={onClose}>
-            Cancel
+            {t("common.cancel", "Cancel")}
           </DangerButton>
         </ButtonGroup>
       </Modal>
@@ -168,8 +168,7 @@ export default function SlotRuleModal({ rule, onClose }: Props) {
   );
 }
 
-// 💅 Styled Components
-
+// --- Styled Components ---
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
@@ -190,7 +189,6 @@ const Modal = styled.div`
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.lg};
   margin: ${({ theme }) => theme.spacings.lg};
-
   @media ${({ theme }) => theme.media.mobile} {
     padding: ${({ theme }) => theme.spacings.md};
     border-radius: ${({ theme }) => theme.radii.md};
@@ -234,7 +232,6 @@ const Select = styled.select`
   border-radius: ${({ theme }) => theme.radii.md};
   padding: ${({ theme }) => theme.spacings.sm};
   transition: border ${({ theme }) => theme.transition.normal};
-
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.inputs.borderFocus};
@@ -252,7 +249,6 @@ const Input = styled.input`
   border-radius: ${({ theme }) => theme.radii.md};
   padding: ${({ theme }) => theme.spacings.sm};
   transition: border ${({ theme }) => theme.transition.normal};
-
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.inputs.borderFocus};
@@ -295,24 +291,34 @@ const PrimaryButton = styled.button`
   cursor: pointer;
   transition: background ${({ theme }) => theme.transition.normal},
     color ${({ theme }) => theme.transition.normal};
-
   &:hover,
   &:focus {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
     color: ${({ theme }) => theme.buttons.primary.textHover};
     box-shadow: ${({ theme }) => theme.shadows.lg};
-    opacity: ${({ theme }) => theme.opacity.hover};
-    outline: none;
+    opacity: 0.8;
   }
 `;
 
-const DangerButton = styled(PrimaryButton)`
+const DangerButton = styled.button`
   background: ${({ theme }) => theme.buttons.danger.background};
   color: ${({ theme }) => theme.buttons.danger.text};
-
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-family: ${({ theme }) => theme.fonts.body};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.xl};
+  box-shadow: ${({ theme }) => theme.shadows.button};
+  cursor: pointer;
+  transition: background ${({ theme }) => theme.transition.normal},
+    color ${({ theme }) => theme.transition.normal};
   &:hover,
   &:focus {
     background: ${({ theme }) => theme.buttons.danger.backgroundHover};
     color: ${({ theme }) => theme.buttons.danger.textHover};
+    box-shadow: ${({ theme }) => theme.shadows.lg};
+    opacity: 0.8;
   }
 `;

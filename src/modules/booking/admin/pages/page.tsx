@@ -1,23 +1,15 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  fetchBookings,
-  deleteBooking,
-  clearBookingMessages,
-} from "@/modules/booking/slice/bookingSlice";
-import {
-  Booking,
-  BookingTable,
-  BookingStatusModal,
-  SlotManager,
-} from "@/modules/booking";
+import { deleteBooking, clearBookingMessages } from "@/modules/booking/slice/bookingSlice";
+import { Booking, BookingTable, BookingStatusModal, SlotManager } from "@/modules/booking";
 import { toast } from "react-toastify";
 
-// Tablar
+// Tab constants
 const TAB_BOOKINGS = "bookings";
 const TAB_SLOTS = "slots";
 const TABS = [
@@ -26,41 +18,25 @@ const TABS = [
 ];
 
 export default function AdminBookingPage() {
-  const { t, i18n } = useTranslation("booking");
+  const { t } = useI18nNamespace("booking", translations);
   const dispatch = useAppDispatch();
-  const { bookings, loading, error, successMessage } = useAppSelector(
-    (state) => state.booking
-  );
+
+  const bookings = useAppSelector((state) => state.booking.bookingsAdmin);
+  const loading = useAppSelector((state) => state.booking.loading);
+  const successMessage = useAppSelector((state) => state.booking.successMessage);
+  const error = useAppSelector((state) => state.booking.error);
 
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(TAB_BOOKINGS);
 
-  const lang = useMemo(
-    () =>
-      (["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en") as
-        | "tr"
-        | "en"
-        | "de",
-    [i18n.language]
-  );
-
-  useEffect(() => {
-    if (activeTab === TAB_BOOKINGS) {
-      dispatch(fetchBookings({ language: lang }));
-    }
-  }, [dispatch, lang, activeTab]);
-
   useEffect(() => {
     if (successMessage) toast.success(successMessage);
     if (error) toast.error(error);
-  }, [successMessage, error]);
-
-  useEffect(() => {
-    return () => {
+    if (successMessage || error) {
       dispatch(clearBookingMessages());
-    };
-  }, [dispatch]);
+    }
+  }, [successMessage, error, dispatch]);
 
   const handleOpenModal = (booking: Booking) => {
     setSelectedBooking(booking);
@@ -68,11 +44,8 @@ export default function AdminBookingPage() {
   };
 
   const handleDelete = (id: string) => {
-    const confirmMessage = t(
-      "admin.confirmDelete",
-      "Are you sure you want to delete this booking?"
-    );
-    if (confirm(confirmMessage)) {
+    const confirmMessage = t("admin.confirmDelete", "Are you sure you want to delete this booking?");
+    if (window.confirm(confirmMessage)) {
       dispatch(deleteBooking(id));
     }
   };
@@ -87,22 +60,21 @@ export default function AdminBookingPage() {
             onClick={() => setActiveTab(tab.key)}
             type="button"
           >
-            {t(tab.labelKey, tab.fallback)}
+            {t(tab.labelKey, { defaultValue: tab.fallback })}
           </TabButton>
         ))}
       </Tabs>
+
       <TabPanel>
         {activeTab === TAB_BOOKINGS && (
           <Card>
             <Title>{t("admin.title", "Manage Bookings")}</Title>
-            {/* Ana Tablo */}
             <BookingTable
               bookings={bookings}
               loading={loading}
               onEdit={handleOpenModal}
               onDelete={handleDelete}
             />
-            {/* Modal */}
             <BookingStatusModal
               isOpen={modalOpen}
               booking={selectedBooking}
@@ -120,7 +92,7 @@ export default function AdminBookingPage() {
   );
 }
 
-// 💅 Styles
+// 💅 Styled Components
 
 const Wrapper = styled.div`
   width: 100%;
@@ -145,21 +117,16 @@ const Tabs = styled.div`
 `;
 
 const TabButton = styled.button<{ $active: boolean }>`
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.lg};
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.lg};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.textSecondary};
-  background: ${({ $active, theme }) =>
-    $active ? theme.colors.cardBackground : "transparent"};
+  color: ${({ $active, theme }) => ($active ? theme.colors.primary : theme.colors.textSecondary)};
+  background: ${({ $active, theme }) => ($active ? theme.colors.cardBackground : "transparent")};
   border: none;
-  border-bottom: 2px solid
-    ${({ $active, theme }) => ($active ? theme.colors.primary : "transparent")};
+  border-bottom: 2px solid ${({ $active, theme }) => ($active ? theme.colors.primary : "transparent")};
   cursor: pointer;
-  border-radius: ${({ theme }) => theme.radii.md}
-    ${({ theme }) => theme.radii.md} 0 0;
+  border-radius: ${({ theme }) => theme.radii.md} ${({ theme }) => theme.radii.md} 0 0;
   box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.sm : "none")};
   transition: all ${({ theme }) => theme.transition.normal};
   outline: none;

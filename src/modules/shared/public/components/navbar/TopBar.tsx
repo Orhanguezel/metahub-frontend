@@ -2,15 +2,16 @@
 import styled from "styled-components";
 import { SocialLinks } from "@/modules/shared";
 import { FaPhone } from "react-icons/fa";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales/navbar";
 import { useAppSelector } from "@/store/hooks";
 
 export default function TopBar() {
-  const { i18n } = useTranslation("navbar");
-  const { settings } = useAppSelector((state) => state.setting);
+   const { i18n } = useI18nNamespace("navbar", translations);
+  const { settings } = useAppSelector((state) => state.settings);
 
   // Setting'ten telefonu çek
-  const phoneSetting = settings?.find((s) => s.key === "navbar_contact_phone");
+  const phoneSetting = settings?.find((s: any) => s.key === "navbar_contact_phone");
 
   let phone = "+49 1764 1107158"; // varsayılan fallback
 

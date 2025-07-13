@@ -1,65 +1,124 @@
 {
   "page": {
     "title": "Termin Buchen",
-    "description": "Füllen Sie das folgende Formular aus, um Ihren Termin zu vereinbaren."
+    "description": "Füllen Sie das folgende Formular aus, um Ihren Termin zu planen."
   },
   "form": {
-    "name": "Vollständiger Name",
+    "noAvailableTimes": "Keine verfügbaren Zeitfenster",
+    "selectTime": "Zeit auswählen",
+    "loading": "Verfügbare Slots werden geladen...",
+    "noAvailableSlots": "Keine verfügbaren Slots gefunden.",
+    "availableSlots": "Verfügbare Slots",
+    "name": "Name Nachname",
     "email": "E-Mail",
     "phone": "Telefon",
-    "service": "Leistung",
-    "serviceType": "Leistungstyp",
+    "service": "Dienstleistung",
+    "serviceType": "Dienstleistungstyp",
     "note": "Notiz",
     "date": "Datum",
     "time": "Uhrzeit",
-    "submit": "Termin buchen",
-    "selectService": "Bitte eine Leistung wählen",
+    "submit": "Termin Buchen",
+    "selectService": "Dienstleistung auswählen",
     "selectDate": "Datum auswählen",
-    "selectTime": "Bitte Uhrzeit wählen",
-    "required": "Bitte füllen Sie alle Pflichtfelder aus.",
-    "success": "Ihr Termin wurde erfolgreich gebucht!",
-    "error": "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+    "required": "Bitte alle Pflichtfelder ausfüllen.",
+    "success": "Ihr Termin wurde erfolgreich erstellt!",
+    "error": "Ein Fehler ist aufgetreten. Bitte erneut versuchen.",
+    "fullyBooked": "Ausgebucht",
+    "title": "Arbeitszeiten",
+    "closed": "Geschlossen",
+    "todayClosed": "Heute, den ganzen Tag geschlossen."
   },
   "admin": {
+    "tabs": {
+      "bookings": "Termine",
+      "slots": "Slot Verwaltung"
+    },
     "title": "Termine Verwalten",
-    "noBookings": "Keine Termine gefunden.",
     "confirmDelete": "Sind Sie sicher, dass Sie diesen Termin löschen möchten?",
+    "noBookings": "Keine Termine gefunden.",
     "columns": {
       "name": "Name",
       "email": "E-Mail",
-      "service": "Leistung",
+      "service": "Dienstleistung",
       "datetime": "Datum / Uhrzeit",
       "status": "Status",
       "actions": "Aktionen"
     },
     "modal": {
-      "title": "Terminstatus aktualisieren",
+      "title": "Terminstatus Aktualisieren",
+      "statusInfo": "'Wartet' bedeutet, dass der Termin auf eine Bestätigung durch den Administrator wartet. Der Kunde erhält erst nach Bestätigung eine E-Mail.",
       "select": "Status auswählen",
       "updated": "Status erfolgreich aktualisiert.",
       "updateError": "Status konnte nicht aktualisiert werden."
     },
     "status": {
-      "pending": "Ausstehend",
+      "pending": "Wartet",
       "confirmed": "Bestätigt",
       "cancelled": "Storniert"
+    },
+    "statusDescription": {
+      "pending": "Wartet auf Administratorbestätigung. Noch keine E-Mail an den Kunden gesendet.",
+      "confirmed": "Termin bestätigt. Bestätigungs-E-Mail wurde an den Kunden gesendet.",
+      "cancelled": "Termin storniert. Slot ist wieder verfügbar."
+    },
+    "slotRule": {
+      "updateSuccess": "Regel erfolgreich aktualisiert.",
+      "updateError": "Regel konnte nicht aktualisiert werden.",
+      "editGeneral": "Allgemeine Slot-Regel Bearbeiten",
+      "edit": "Slot-Regel Bearbeiten",
+      "applyAll": "Auf alle Tage anwenden",
+      "dayOfWeek": "Wochentag",
+      "startTime": "Startzeit",
+      "endTime": "Endzeit",
+      "intervalMinutes": "Terminintervall (Min.)",
+      "break": "Pause Zwischen Terminen (Min.)"
     }
   },
   "slot": {
-    "rules": "Slot-Regeln",
-    "overrides": "Ausnahmen",
-    "addRule": "Regel hinzufügen",
-    "addOverride": "Ausnahme hinzufügen",
-    "fullDayOff": "Ganzer Tag geschlossen",
-    "interval": "Intervall (min)",
-    "break": "Pause (min)",
-    "edit": "Bearbeiten",
-    "delete": "Löschen"
+    "title": {
+      "rules": "📅 Slot-Regeln",
+      "overrides": "📌 Ausnahmen"
+    },
+    "form": {
+      "applyAllDays": "Auf alle Tage anwenden",
+      "addGeneralRule": "Allgemeine Regel Hinzufügen",
+      "addRule": "Regel Hinzufügen",
+      "addOverride": "Ausnahme Hinzufügen",
+      "fullDayOff": "Ganztägig Geschlossen"
+    },
+    "success": {
+      "generalCreated": "Allgemeine Regel erfolgreich erstellt.",
+      "created": "Regel erfolgreich erstellt.",
+      "overrideCreated": "Ausnahme erfolgreich erstellt."
+    },
+    "error": {
+      "generalExists": "Es existiert bereits eine allgemeine Regel.",
+      "dayExists": "Für diesen Tag existiert bereits eine Regel.",
+      "create": "Regel konnte nicht erstellt werden.",
+      "dateRequired": "Bitte ein Datum auswählen.",
+      "overrideCreate": "Ausnahme konnte nicht erstellt werden."
+    },
+    "weekdays": {
+      "0": "Sonntag",
+      "1": "Montag",
+      "2": "Dienstag",
+      "3": "Mittwoch",
+      "4": "Donnerstag",
+      "5": "Freitag",
+      "6": "Samstag",
+      "all": "Alle Tage"
+    },
+    "info": {
+      "noDayRules": "Keine tagesbezogenen Regeln definiert.",
+      "noOverrides": "Keine Ausnahmen definiert."
+    }
   },
   "common": {
     "loading": "Lädt...",
     "edit": "Bearbeiten",
     "delete": "Löschen",
     "update": "Aktualisieren",
+    "updating": "Aktualisierung...",
     "cancel": "Abbrechen"
   }
 }

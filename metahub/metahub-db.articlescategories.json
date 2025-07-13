@@ -1,0 +1,94 @@
+[
+  {
+    "_id": {
+      "$oid": "684ac8785339ce2639c16c2a"
+    },
+    "name": {
+      "tr": "Updated Category Name",
+      "en": "Updated Category Name",
+      "de": "Updated Category Name",
+      "pl": "Updated Category Name",
+      "fr": "Updated Category Name",
+      "es": "Updated Category Name"
+    },
+    "isActive": true,
+    "slug": "kategori-ad",
+    "createdAt": {
+      "$date": "2025-06-12T12:30:48.829Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-12T12:32:10.928Z"
+    },
+    "__v": 0,
+    "tenant": "anastasia"
+  },
+  {
+    "_id": {
+      "$oid": "684aca435339ce2639c16c4a"
+    },
+    "name": {
+      "tr": "Kategoriı",
+      "en": "Category",
+      "de": "Kategorie",
+      "pl": "Kategoriı",
+      "fr": "Kategoriı",
+      "es": "Kategoriı"
+    },
+    "isActive": true,
+    "slug": "kategori",
+    "createdAt": {
+      "$date": "2025-06-12T12:38:27.832Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-12T12:38:27.832Z"
+    },
+    "__v": 0,
+    "tenant": "anastasia"
+  },
+  {
+    "_id": {
+      "$oid": "685488af6a050fb927eb2c29"
+    },
+    "name": {
+      "tr": "Kategoriiiiı",
+      "en": "Categoryzz",
+      "de": "Kategoriee",
+      "pl": "Categoryzz",
+      "fr": "Categoryzz",
+      "es": "Categoryzz"
+    },
+    "tenant": "anastasia",
+    "isActive": true,
+    "slug": "kategoriiii",
+    "createdAt": {
+      "$date": "2025-06-19T22:01:19.283Z"
+    },
+    "updatedAt": {
+      "$date": "2025-06-19T22:01:19.283Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6867c42456e77df34f561c3e"
+    },
+    "name": {
+      "tr": "yeni",
+      "en": "yeni",
+      "de": "yeni",
+      "pl": "yeni",
+      "fr": "yeni",
+      "es": "yeni"
+    },
+    "tenant": "anastasia",
+    "isActive": true,
+    "slug": "yeni",
+    "createdAt": {
+      "$date": "2025-07-04T12:08:04.081Z"
+    },
+    "updatedAt": {
+      "$date": "2025-07-04T12:08:04.081Z"
+    },
+    "__v": 0
+  }
+]

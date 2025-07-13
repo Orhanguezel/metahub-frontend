@@ -2,7 +2,6 @@
 
 import styled from "styled-components";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import i18n from "@/i18n";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
 import type { ArticlesCategory } from "@/modules/articles/types";
@@ -24,9 +23,10 @@ export default function ProductCategoryListPage({
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
 
   // Merkezi fetch ile gelen slice'ı okuyoruz
-  const { categories, loading, error } = useAppSelector(
-    (state) => state.articlesCategory
-  );
+   const categories = useAppSelector((state) => state.articlesCategory.categories);
+  const loading = useAppSelector((state) => state.articles.loading);
+  const error = useAppSelector((state) => state.articles.error);
+  
 
   // Silme işlemi
   const handleDelete = (id: string) => {

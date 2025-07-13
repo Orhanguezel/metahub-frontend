@@ -217,6 +217,11 @@ const moduleMaintenanceSlice = createSlice({
       state.successMessage = null;
       state.lastAction = "";
     },
+    clearModuleMaintenanceMessages: (state) => {
+      state.maintenanceError = null;
+      state.successMessage = null;
+      state.lastAction = "";
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -330,5 +335,6 @@ const moduleMaintenanceSlice = createSlice({
   },
 });
 
-export const { clearMaintenanceState } = moduleMaintenanceSlice.actions;
+export const { clearMaintenanceState, clearModuleMaintenanceMessages } =
+  moduleMaintenanceSlice.actions;
 export default moduleMaintenanceSlice.reducer;

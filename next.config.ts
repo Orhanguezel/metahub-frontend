@@ -1,21 +1,27 @@
 /** @type {import('next').NextConfig} */
 const isDev = process.env.NODE_ENV !== "production";
-const devHost = "localhost";
-const devPort = "5014";
-const prodHosts = ["ensotek.de", "www.ensotek.de"];
 
-const imageDomains = isDev
-  ? [
-      {
-        protocol: "http",
-        hostname: devHost,
-        port: devPort,
-      },
-    ]
-  : prodHosts.map((host) => ({
-      protocol: "https",
-      hostname: host,
-    }));
+const devImagePatterns = [
+  {
+    protocol: "http",
+    hostname: "localhost",
+    port: "5019",
+  },
+];
+
+const prodImagePatterns = [
+  { protocol: "https", hostname: "ensotek.de" },
+  { protocol: "https", hostname: "www.ensotek.de" },
+];
+
+// Ortak (her ortamda) uzaktan görsel sağlayıcılar:
+const sharedImagePatterns = [
+  { protocol: "https", hostname: "via.placeholder.com" },
+  { protocol: "https", hostname: "res.cloudinary.com" },
+  { protocol: "https", hostname: "i.imgur.com" },
+  { protocol: "https", hostname: "images.unsplash.com" },
+  { protocol: "https", hostname: "cdn.shopify.com" },
+];
 
 const nextConfig = {
   reactStrictMode: false,
@@ -34,31 +40,8 @@ const nextConfig = {
   },
   images: {
     remotePatterns: [
-      ...imageDomains,
-      {
-        protocol: "https",
-        hostname: "via.placeholder.com",
-      },
-      {
-        protocol: "https",
-        hostname: "res.cloudinary.com",
-      },
-      {
-        protocol: "https",
-        hostname: "i.imgur.com",
-      },
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-      {
-        protocol: "https",
-        hostname: "cdn.shopify.com",
-      },
-      {
-        protocol: "https",
-        hostname: "www.ensotek.de",
-      },
+      ...(isDev ? devImagePatterns : prodImagePatterns),
+      ...sharedImagePatterns,
     ],
   },
 };

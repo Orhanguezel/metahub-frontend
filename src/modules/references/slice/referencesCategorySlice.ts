@@ -1,9 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type {
-  ReferencesCategory,
-  TranslatedField,
-} from "@/modules/references/types";
+import type { ReferencesCategory, TranslatedField } from "@/modules/references";
 
 interface CategoryState {
   categories: ReferencesCategory[];
@@ -158,5 +155,6 @@ const referencesCategorySlice = createSlice({
   },
 });
 
-export const { clearReferencesCategoryMessages } = referencesCategorySlice.actions;
+export const { clearReferencesCategoryMessages } =
+  referencesCategorySlice.actions;
 export default referencesCategorySlice.reducer;

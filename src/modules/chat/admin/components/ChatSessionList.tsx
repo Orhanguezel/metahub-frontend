@@ -1,21 +1,15 @@
 "use client";
 
-import React, { useEffect, useState, MouseEvent } from "react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  fetchActiveChatSessions,
-  selectActiveChatSessions,
-  fetchMessagesByRoom,
-  setRoom,
-  selectSelectedRoom,
-  selectChatMessages,
-} from "@/modules/chat/slice/chatSlice";
+import React, { useState } from "react";
 import styled from "styled-components";
-import { Socket } from "socket.io-client";
-import {UserDetailsModal} from "@/modules/chat";
-import { ChatMessage } from "@/modules/chat/types/chat";
+import { useAppDispatch } from "@/store/hooks";
 
-// Oturum tipi (gerekirse type dosyasından import edebilirsin)
+import { setRoom } from "@/modules/chat/slice/chatSlice";
+import { UserDetailsModal } from "@/modules/chat";
+import { Socket } from "socket.io-client";
+import { ChatMessage } from "@/modules/chat/types";
+
+// Oturum tipi
 interface ChatSession {
   roomId: string;
   user?: {
@@ -31,25 +25,21 @@ interface Props {
 
 const ChatSessionList: React.FC<Props> = ({ socket }) => {
   const dispatch = useAppDispatch();
-  const sessions = useAppSelector(selectActiveChatSessions) as ChatSession[];
-  const selectedRoom = useAppSelector(selectSelectedRoom);
-  const messages = useAppSelector(selectChatMessages) as ChatMessage[];
+  // ---- SADECE BURADAN!
+  const { chat } = useAdminModuleState();
+
+  const sessions = chat.sessions.active as ChatSession[]; // Aktif oturumlar
+  const selectedRoom = chat.selectedRoom; // Seçili oda
+  const messages = chat.chatMessages as ChatMessage[];
 
   const [selectedUser, setSelectedUser] = useState<{
     roomId: string;
     user?: { _id: string; name: string; email: string };
   } | null>(null);
 
-  // 🚀 Oturumları yükle
-  useEffect(() => {
-    dispatch(fetchActiveChatSessions());
-  }, [dispatch]);
-
   const handleSelectRoom = (roomId: string) => {
     if (!roomId || selectedRoom === roomId) return;
-
     dispatch(setRoom(roomId));
-    dispatch(fetchMessagesByRoom(roomId));
     socket.emit("join-room", roomId);
   };
 
@@ -58,7 +48,7 @@ const ChatSessionList: React.FC<Props> = ({ socket }) => {
       roomId: string;
       user?: { _id: string; name: string; email: string };
     },
-    e: MouseEvent
+    e: React.MouseEvent
   ) => {
     e.stopPropagation();
     setSelectedUser(session);
@@ -70,7 +60,7 @@ const ChatSessionList: React.FC<Props> = ({ socket }) => {
     ).length;
   };
 
-  if (!sessions.length) return null;
+  if (!sessions?.length) return null;
 
   return (
     <>
@@ -122,7 +112,7 @@ const ChatSessionList: React.FC<Props> = ({ socket }) => {
               name: "Ziyaretçi",
               email: "-",
             },
-            message: "", // detayda gerekirse daha sonra getirebiliriz
+            message: "",
             lang: "de",
             createdAt: "",
           }}
@@ -135,7 +125,7 @@ const ChatSessionList: React.FC<Props> = ({ socket }) => {
 
 export default ChatSessionList;
 
-// 💅 Styles
+// 💅 Styles (değişmedi)
 const List = styled.div`
   border: 1px solid #ccc;
   padding: 1rem;

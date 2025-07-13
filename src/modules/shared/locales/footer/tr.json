@@ -1,8 +1,12 @@
 {
-  "aboutUs": "Hakkımızda",
-  "ourServices": "Hizmetlerimiz",
-  "contact": "İletişim",
+  "companyInfo": "Bilgilerimiz",
   "email": "E-Posta",
-  "phone": "Telefon"
+  "phone": "Telefon",
+  "address": "Adres",
+  "mainLinks": "Ana Linkler",
+  "massageTypes": "Masaj Türleri",
+  "rightsText": "Tüm hakları saklıdır.",
+  "designedBy": "Tasarım: OG"
 }
+
 

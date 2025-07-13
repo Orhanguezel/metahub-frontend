@@ -1,7 +1,8 @@
 "use client";
 
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales";
 import type { AnalyticsEvent } from "@/modules/dashboard/types";
 
 interface Props {
@@ -10,8 +11,7 @@ interface Props {
 }
 
 export default function AnalyticsTable({ data, onExportClick }: Props) {
-  const { t, i18n } = useTranslation("admin-dashboard");
-  // Her ihtimale karşı array garantisi
+  const { t, i18n } = useI18nNamespace("dashboard", translations);
   const safeData: AnalyticsEvent[] = Array.isArray(data) ? data : [];
 
   if (safeData.length === 0) {

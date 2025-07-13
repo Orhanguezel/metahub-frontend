@@ -1,6 +1,6 @@
-import { AdminReferencesPage } from "@/modules/references";
+import { AdminPage } from "@/modules/references";
 
 export default function AdminReferencesRoutePage() {
-  return <AdminReferencesPage />;
+  return <AdminPage />;
 }
 

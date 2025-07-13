@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  getGalleryStats,
-} from "@/modules/gallery/slice/gallerySlice";
+import { useAppDispatch,useAppSelector } from "@/store/hooks";
 
+import { getGalleryStats, clearGalleryMessages } from "@/modules/gallery/slice/gallerySlice";
 import {
   GalleryList,
   GalleryMultiForm,
@@ -16,31 +14,38 @@ import {
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
-import type { SupportedLocale } from "@/types/common";
 import { motion, AnimatePresence } from "framer-motion";
 import { IGalleryCategory } from "@/modules/gallery/types";
+import { toast } from "react-toastify";
 
 const AdminGalleryPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const images = useAppSelector((state) => state.gallery.images);
-  const stats = useAppSelector((state) => state.gallery.stats);
+
+  const images = useAppSelector((state) => state.gallery.adminImages);
   const loading = useAppSelector((state) => state.gallery.loading);
+  const successMessage = useAppSelector((state) => state.gallery.successMessage);
+  const error = useAppSelector((state) => state.gallery.error);
+  const stats = useAppSelector((state) => state.gallery.stats);
   const categories = useAppSelector((state) => state.gallery.categories);
 
- const { i18n, t } = useI18nNamespace("gallery", translations);
-     const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const { t } = useI18nNamespace("gallery", translations);
 
-  const [activeTab, setActiveTab] = useState<
-    "list" | "add" | "stats" | "categories"
-  >("list");
-  const [editCategory, setEditCategory] = useState<IGalleryCategory | null>(
-    null
-  );
+  const [activeTab, setActiveTab] = useState<"list" | "add" | "stats" | "categories">("list");
+  const [editCategory, setEditCategory] = useState<IGalleryCategory | null>(null);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
 
+   useEffect(() => {
+      if (successMessage) toast.success(successMessage);
+      if (error) toast.error(error);
+      if (successMessage || error) {
+        dispatch(clearGalleryMessages());
+      }
+    }, [successMessage, error, dispatch]);
+
+  // Gallery stats sadece bir kere ekstra fetch edilsin
   useEffect(() => {
-    dispatch(getGalleryStats());
-  }, [dispatch]);
+    if (!stats) dispatch(getGalleryStats());
+  }, [dispatch, stats]);
 
   const handleUpdate = async () => {
     await dispatch(getGalleryStats());
@@ -51,28 +56,16 @@ const AdminGalleryPage: React.FC = () => {
       <Title>{t("title")}</Title>
 
       <TabButtons>
-        <TabButton
-          $active={activeTab === "stats"}
-          onClick={() => setActiveTab("stats")}
-        >
+        <TabButton $active={activeTab === "stats"} onClick={() => setActiveTab("stats")}>
           {t("tab.stats")}
         </TabButton>
-        <TabButton
-          $active={activeTab === "add"}
-          onClick={() => setActiveTab("add")}
-        >
+        <TabButton $active={activeTab === "add"} onClick={() => setActiveTab("add")}>
           {t("tab.add")}
         </TabButton>
-        <TabButton
-          $active={activeTab === "list"}
-          onClick={() => setActiveTab("list")}
-        >
+        <TabButton $active={activeTab === "list"} onClick={() => setActiveTab("list")}>
           {t("tab.list")}
         </TabButton>
-        <TabButton
-          $active={activeTab === "categories"}
-          onClick={() => setActiveTab("categories")}
-        >
+        <TabButton $active={activeTab === "categories"} onClick={() => setActiveTab("categories")}>
           {t("tab.categories", "Categories")}
         </TabButton>
       </TabButtons>
@@ -169,8 +162,7 @@ const AdminGalleryPage: React.FC = () => {
 
 export default AdminGalleryPage;
 
-// Styles
-
+// Styles: (değişmedi)
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacings.xxl}
     ${({ theme }) => theme.spacings.md};

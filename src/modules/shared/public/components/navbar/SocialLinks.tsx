@@ -22,9 +22,9 @@ const ICON_MAP: Record<string, ReactNode> = {
 };
 
 export default function SocialLinks() {
-  const settings = useAppSelector((state) => state.setting.settings) || [];
+  const settings = useAppSelector((state) => state.settings.settings) || [];
   const socialLinksSetting = settings.find(
-    (s) => s.key === "navbar_social_links"
+    (s: any) => s.key === "navbar_social_links"
   );
   const socialLinks =
     socialLinksSetting?.value && typeof socialLinksSetting.value === "object"

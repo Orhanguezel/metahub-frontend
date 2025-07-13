@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useEffect, useCallback } from "react";
+import React, { useCallback } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import { SUPPORTED_LOCALES } from "@/types/common";
 import translations from "../../locales";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   deleteGalleryCategory,
-  fetchGalleryCategories,
 } from "@/modules/gallery/slice/galleryCategorySlice";
 import type { IGalleryCategory } from "@/modules/gallery/types";
 
@@ -21,16 +20,12 @@ const GalleryCategoryListPage: React.FC<GalleryCategoryListPageProps> = ({
   onAdd,
   onEdit,
 }) => {
-  const { i18n, t } = useI18nNamespace("gallery", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const { t } = useI18nNamespace("gallery", translations);
   const dispatch = useAppDispatch();
   const { categories = [], loading, error } = useAppSelector(
     (state) => state.galleryCategory || {}
   );
 
-  useEffect(() => {
-    dispatch(fetchGalleryCategories());
-  }, [dispatch]);
 
   const handleDelete = useCallback(
     (id: string) => {

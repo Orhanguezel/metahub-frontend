@@ -6,17 +6,18 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
 import { useAppDispatch } from "@/store/hooks";
 import {
-  deleteBikeCategory,
-} from "@/modules/bikes/slice/bikeCategorySlice";
-import type { BikeCategory } from "@/modules/bikes/types";
+  deleteBikesCategory,
+} from "@/modules/bikes/slice/bikesCategorySlice";
+import type { BikesCategory } from "@/modules/bikes/types";
 import {
   LANG_LABELS,
   SupportedLocale,
 } from "@/types/common";
+import Image from "next/image";
 
 interface Props {
   onAdd: () => void;
-  onEdit: (category: BikeCategory) => void;
+  onEdit: (category: BikesCategory) => void;
 }
 
 export default function BikesCategoryListPage({
@@ -27,7 +28,7 @@ export default function BikesCategoryListPage({
     const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const dispatch = useAppDispatch();
   const { categories, loading, error } = useAppSelector(
-    (state) => state.bikeCategory
+    (state) => state.bikesCategory
   );
 
   const handleDelete = (id: string) => {
@@ -36,7 +37,7 @@ export default function BikesCategoryListPage({
       "Are you sure you want to delete this category?"
     );
     if (window.confirm(confirmMessage)) {
-      dispatch(deleteBikeCategory(id));
+      dispatch(deleteBikesCategory(id));
     }
   };
 
@@ -69,7 +70,7 @@ export default function BikesCategoryListPage({
             </tr>
           </thead>
           <tbody>
-            {categories.map((cat: BikeCategory, i: number) => {
+            {categories.map((cat: BikesCategory, i: number) => {
               const imageSrc =
                 cat.images && cat.images.length > 0
                   ? cat.images[0]?.thumbnail || cat.images[0]?.url || ""
@@ -82,7 +83,7 @@ export default function BikesCategoryListPage({
                   <td>{cat.slug}</td>
                   <td>
                     {imageSrc ? (
-                      <img
+                      <Image
                         src={imageSrc}
                         alt="category image"
                         width={60}

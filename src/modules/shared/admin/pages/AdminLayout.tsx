@@ -2,33 +2,45 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components";
-import { Sidebar, Header, FooterSection } from "@/modules/shared";
-import { Loading, ErrorMessage } from "@/shared";
-import { useLayoutInit } from "@/hooks/useLayoutInit"; // Merkezi hook (fetch+cleanup burada!)
+import { Sidebar, Header, Footer } from "@/modules/shared";
+import { useLayoutInit } from "@/hooks/useLayoutInit";
+import { useActiveTenant } from "@/hooks/useActiveTenant";
+import { useAppDispatch } from "@/store/hooks";
+import { fetchTenantModuleSettings } from "@/modules/adminmodules/slices/moduleSettingSlice";
 
-export default function AdminLayout({
-  children,
-}: {
+// --- Props tipini güncelle --- //
+interface AdminLayoutProps {
   children: React.ReactNode;
-}) {
-  return <AdminLayoutContent>{children}</AdminLayoutContent>;
+  isModalOpen?: boolean; // yeni ekledik!
 }
 
-function AdminLayoutContent({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({ children, isModalOpen = false }: AdminLayoutProps) {
+  return <AdminLayoutContent isModalOpen={isModalOpen}>{children}</AdminLayoutContent>;
+}
+
+function AdminLayoutContent({
+  children,
+  isModalOpen = false,
+}: {
+  children: React.ReactNode;
+  isModalOpen?: boolean;
+}) {
+  // Merkezi slice fetch (dashboard, modüller vs.)
+  useLayoutInit();
+
+  // Aktif tenant id (tek kaynaktan)
+  const tenantId = useActiveTenant();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // Slice'ları çek
-  const {
-    setting,
-    moduleMeta,
-    moduleMaintenance,
-    // ... diğer lazım olanlar
-  } = useLayoutInit({
-    isAdmin: true,
-    adminTab: "meta",
-    requireUser: true,
-  });
+  // Tenant modules fetch
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    if (tenantId) {
+      dispatch(fetchTenantModuleSettings());
+    }
+  }, [tenantId, dispatch]);
 
+  // Escape ile sidebar kapatma
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsSidebarOpen(false);
@@ -37,28 +49,14 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
+  // Sidebar aç/kapat fonksiyonları
   const handleToggleSidebar = useCallback(
     () => setIsSidebarOpen((prev) => !prev),
     []
   );
   const handleCloseSidebar = useCallback(() => setIsSidebarOpen(false), []);
 
-  // Loading ve error kontrolü
-  const loading =
-    setting.loading ||
-    moduleMeta.loading ||
-    moduleMaintenance.maintenanceLoading;
-    // + ihtiyacın olan diğer slice'lar
-
-  const error =
-    setting.error ||
-    moduleMeta.error ||
-     moduleMaintenance.maintenanceError;
-    // + ihtiyacın olan diğer slice'lar
-
-  if (loading) return <Loading />;
-  if (error) return <ErrorMessage message={error} />;
-
+  // --- Layout Render ---
   return (
     <Wrapper>
       <SidebarWrapper $isSidebarOpen={isSidebarOpen}>
@@ -66,15 +64,17 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       </SidebarWrapper>
       <ContentWrapper $isSidebarOpen={isSidebarOpen}>
         <Header onToggleSidebar={handleToggleSidebar} />
-        <Content onClick={isSidebarOpen ? handleCloseSidebar : undefined}>
+        {/* Modal state yukarıdan prop olarak gelir */}
+        <Content
+          onClick={isSidebarOpen && !isModalOpen ? handleCloseSidebar : undefined}
+        >
           {children}
         </Content>
-        <FooterSection />
+        <Footer />
       </ContentWrapper>
     </Wrapper>
   );
 }
-
 
 // --- Styled Components ---
 const Wrapper = styled.div`
@@ -113,3 +113,4 @@ const Content = styled.main`
   flex: 1;
   min-height: 0;
 `;
+

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
@@ -24,10 +24,9 @@ function completeLocales(
   }, {} as Record<string, string>);
 }
 
-// --- Props tipi
 interface MultiLangObjectEditorProps {
-  value: Record<string, Record<string, string>>;
-  setValue: (val: Record<string, Record<string, string>>) => void;
+  value: Record<string, { label: Record<string, string>; url?: string }>;
+  setValue: (val: Record<string, { label: Record<string, string>; url?: string }>) => void;
   supportedLocales?: readonly string[];
 }
 
@@ -36,61 +35,48 @@ const MultiLangObjectEditor: React.FC<MultiLangObjectEditorProps> = ({
   setValue,
   supportedLocales = SUPPORTED_LOCALES,
 }) => {
-  const { i18n, t } = useI18nNamespace("settings", translations);
+  const { t } = useI18nNamespace("settings", translations);
   const [newField, setNewField] = useState<string>("");
 
-  // Editte eksik locale'leri tamamla
-  useEffect(() => {
-    if (!value) return;
-    let updated = false;
-    const newObj: Record<string, Record<string, string>> = {};
-    for (const [fieldKey, fieldValue] of Object.entries(value)) {
-      const completed = completeLocales(fieldValue);
-      if (
-        SUPPORTED_LOCALES.some(
-          (lng) =>
-            typeof fieldValue !== "object" ||
-            !(lng in fieldValue) ||
-            fieldValue[lng] === undefined
-        )
-      ) {
-        updated = true;
-      }
-      newObj[fieldKey] = completed;
-    }
-    if (updated) setValue(newObj);
-    // eslint-disable-next-line
-  }, [value]);
-
-  // Add new field
+  // --- Field ekleme ---
   const handleAddField = () => {
     const trimmed = newField.trim();
-    if (!trimmed) return;
-    if (Object.keys(value || {}).includes(trimmed)) return;
+    if (!trimmed || value[trimmed]) return;
     setValue({
       ...value,
-      [trimmed]: SUPPORTED_LOCALES.reduce(
-        (acc, lng) => ({ ...acc, [lng]: "" }),
-        {} as Record<string, string>
-      ),
+      [trimmed]: { label: completeLocales({}, "") },
     });
     setNewField("");
   };
 
-  // Remove a field
+  // --- Field sil ---
   const handleRemoveField = (fieldKey: string) => {
-    const v = { ...value };
-    delete v[fieldKey];
-    setValue(v);
+    const newVal = { ...value };
+    delete newVal[fieldKey];
+    setValue(newVal);
   };
 
-  // Change value for a specific field and language
-  const handleChange = (fieldKey: string, lang: string, newVal: string) => {
+  // --- Dil değeri değiştir ---
+  const handleLabelChange = (fieldKey: string, lang: string, newVal: string) => {
     setValue({
       ...value,
       [fieldKey]: {
         ...value[fieldKey],
-        [lang]: newVal,
+        label: {
+          ...completeLocales(value[fieldKey]?.label),
+          [lang]: newVal,
+        },
+      },
+    });
+  };
+
+  // --- URL/href değiştir ---
+  const handleUrlChange = (fieldKey: string, newUrl: string) => {
+    setValue({
+      ...value,
+      [fieldKey]: {
+        ...value[fieldKey],
+        url: newUrl,
       },
     });
   };
@@ -103,49 +89,72 @@ const MultiLangObjectEditor: React.FC<MultiLangObjectEditorProps> = ({
           placeholder={t("addField", "Add new field (key)...")}
           value={newField}
           onChange={(e) => setNewField(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleAddField()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleAddField();
+            }
+          }}
         />
         <AddFieldButton type="button" onClick={handleAddField}>
           ➕ {t("add", "Add")}
         </AddFieldButton>
       </AddFieldRow>
 
-      {(!value || Object.entries(value).length === 0) && (
+      {!value || Object.keys(value).length === 0 ? (
         <EmptyInfo>{t("noFields", "No fields added yet.")}</EmptyInfo>
+      ) : (
+        Object.entries(value).map(([fieldKey, fieldObj]) => {
+          const label = fieldObj.label || {};
+          const url = fieldObj.url || "";
+          const completed = completeLocales(label);
+          return (
+            <FieldBlock key={fieldKey}>
+              <FieldHeader>
+                <FieldTitle>{fieldKey}</FieldTitle>
+                <RemoveButton
+                  type="button"
+                  onClick={() => handleRemoveField(fieldKey)}
+                  title={t("removeField", "Remove field")}
+                >
+                  ❌
+                </RemoveButton>
+              </FieldHeader>
+              {supportedLocales.map((lng) => (
+                <LangInput key={lng}>
+                  <Label>{lng.toUpperCase()}:</Label>
+                  <Input
+                    type="text"
+                    value={completed[lng] || ""}
+                    placeholder={t("valueLang", { lng })}
+                    onChange={(e) =>
+                      handleLabelChange(fieldKey, lng, e.target.value)
+                    }
+                  />
+                </LangInput>
+              ))}
+              <LangInput>
+                <Label>URL:</Label>
+                <Input
+                  type="text"
+                  value={url}
+                  placeholder="https://..."
+                  onChange={(e) =>
+                    handleUrlChange(fieldKey, e.target.value)
+                  }
+                />
+              </LangInput>
+            </FieldBlock>
+          );
+        })
       )}
-
-      {Object.entries(value || {}).map(([fieldKey, fieldValue]) => (
-        <FieldBlock key={fieldKey}>
-          <FieldHeader>
-            <FieldTitle>{fieldKey}</FieldTitle>
-            <RemoveButton
-              type="button"
-              onClick={() => handleRemoveField(fieldKey)}
-              title={t("removeField", "Remove field")}
-            >
-              ❌
-            </RemoveButton>
-          </FieldHeader>
-          {supportedLocales.map((lng) => (
-            <LangInput key={lng}>
-              <Label>{lng.toUpperCase()}:</Label>
-              <Input
-                type="text"
-                value={fieldValue?.[lng] || ""}
-                placeholder={t("valueLang", { lng })}
-                onChange={(e) => handleChange(fieldKey, lng, e.target.value)}
-              />
-            </LangInput>
-          ))}
-        </FieldBlock>
-      ))}
     </Wrapper>
   );
 };
 
 export default MultiLangObjectEditor;
 
-// --- Styled Components ---
+// --- Styled Components (aynen kalabilir) ---
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;

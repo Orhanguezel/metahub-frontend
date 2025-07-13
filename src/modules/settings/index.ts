@@ -4,7 +4,6 @@ export { default as AdminSettingsPage } from "./admin/pages/AdminSettingsPage";
 // Admin Components
 export { default as ValueInputSection } from "./admin/components/ValueInputSection";
 export { default as NestedValueEditor } from "./admin/components/NestedValueEditor";
-export { default as NestedSocialLinksEditor } from "./admin/components/NestedSocialLinksEditor";
 export { default as MultiLangObjectEditor } from "./admin/components/MultiLangObjectEditor";
 export { default as KeyInputSection } from "./admin/components/KeyInputSection";
 export { default as AdminSettingsList } from "./admin/components/AdminSettingsList";

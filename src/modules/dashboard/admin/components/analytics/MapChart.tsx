@@ -1,11 +1,12 @@
 "use client";
 
+import React, { useEffect, useRef } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import L, { Icon } from "leaflet";
 import "leaflet.markercluster";
 import styled, { useTheme } from "styled-components";
-import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
@@ -19,12 +20,11 @@ interface AnalyticsEvent {
   timestamp?: string;
 }
 
-// --- PROPS ---
 interface Props {
   data: AnalyticsEvent[];
 }
 
-// --- YARDIMCI: Olay tipine göre marker rengi (tamamen dinamik!) ---
+// --- Olay tipine göre marker rengi ---
 const EVENT_COLORS: Record<string, string> = {
   add: "3cba54",
   delete: "db3236",
@@ -44,11 +44,10 @@ const getIconByEvent = (eventType: string): Icon => {
 
 export default function MapChart({ data }: Props) {
   const theme = useTheme();
-  const { t, i18n } = useTranslation("admin-dashboard");
+  const { t, i18n } = useI18nNamespace("dashboard", translations);
 
-  // Default Leaflet marker'ını React ortamında tek seferde kur
+  // Leaflet default marker görsellerini sadece bir kez set et
   useEffect(() => {
-    // React 18+ ve nextjs için SSR guard
     if (typeof window === "undefined") return;
     delete (L.Icon.Default.prototype as any)._getIconUrl;
     L.Icon.Default.mergeOptions({
@@ -58,7 +57,7 @@ export default function MapChart({ data }: Props) {
     });
   }, []);
 
-  // --- Koordinatları ve tipleri güvenli filtrele ---
+  // Geçerli eventleri filtrele
   const validEvents: AnalyticsEvent[] = Array.isArray(data)
     ? data.filter(
         (e) =>
@@ -70,7 +69,7 @@ export default function MapChart({ data }: Props) {
       )
     : [];
 
-  // --- Harita merkezi: ilk geçerli koordinat, yoksa fallback (ör: İstanbul) ---
+  // Harita merkezi: ilk event veya fallback (İstanbul)
   const center: [number, number] =
     validEvents.length > 0
       ? [
@@ -84,7 +83,7 @@ export default function MapChart({ data }: Props) {
       <MapContainer
         center={center}
         zoom={3}
-        scrollWheelZoom={true}
+        scrollWheelZoom
         style={{ width: "100%", height: "100%" }}
         aria-label={t("analytics.mapAria", "Log haritası")}
       >
@@ -107,28 +106,33 @@ export default function MapChart({ data }: Props) {
   );
 }
 
-// --- Cluster bileşeni ---
-// useTranslation kullanmaz, t ve i18n parenttan gelir (güvenli)
+// --- Cluster bileşeni (memory/perf için useRef) ---
 function MarkerClusterGroupWrapper({
   events,
   t,
   i18n,
 }: {
   events: AnalyticsEvent[];
-  t: ReturnType<typeof useTranslation>["t"];
-  i18n: ReturnType<typeof useTranslation>["i18n"];
+  t: ReturnType<typeof useI18nNamespace>["t"];
+  i18n: ReturnType<typeof useI18nNamespace>["i18n"];
 }) {
   const map = useMap();
-  const markerClusterGroup = L.markerClusterGroup();
+  const markerClusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
+
+  // Sadece ilk mount'ta cluster instance oluştur
+  if (!markerClusterGroupRef.current) {
+    markerClusterGroupRef.current = L.markerClusterGroup();
+  }
 
   useEffect(() => {
+    const markerClusterGroup = markerClusterGroupRef.current!;
     markerClusterGroup.clearLayers();
 
     events.forEach((event) => {
       const [lon, lat] = event.location!.coordinates;
       const icon = getIconByEvent(event.eventType);
 
-      // Tarih ve saat tip güvenli (her zaman string)
+      // Tarih formatı (tip güvenli)
       let formattedDate = "-";
       if (event.timestamp) {
         const date = new Date(event.timestamp);
@@ -138,12 +142,10 @@ function MarkerClusterGroupWrapper({
           .padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
       }
 
-      // i18n anahtarıyla modül ve event çevirisi
       const moduleLabel = t(`modules.${event.module}`, event.module);
       const eventLabel = t(`events.${event.eventType}`, event.eventType);
 
       const marker = L.marker([lat, lon], { icon });
-
       marker.bindPopup(
         `<div style="font-size: 0.93rem">
           <strong>${moduleLabel}</strong><br/>

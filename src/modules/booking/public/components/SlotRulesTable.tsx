@@ -1,151 +1,188 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { fetchSlotRules } from "@/modules/booking/slice/bookingSlotSlice";
-import { useTranslation } from "react-i18next";
+import {
+  fetchAvailableSlots,
+  fetchSlotRulesAdmin,
+  fetchSlotOverridesAdmin,
+} from "@/modules/booking/slice/bookingSlotSlice";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../locales";
 
-// Haftanın günleri (çeviriler için anahtarlar var)
+// Haftanın günleri
 const weekDays = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  { key: 0, label: { tr: "Pazar", en: "Sunday", de: "Sonntag", pl: "Niedziela", fr: "Dimanche", es: "Domingo" } },
+  { key: 1, label: { tr: "Pazartesi", en: "Monday", de: "Montag", pl: "Poniedziałek", fr: "Lundi", es: "Lunes" } },
+  { key: 2, label: { tr: "Salı", en: "Tuesday", de: "Dienstag", pl: "Wtorek", fr: "Mardi", es: "Martes" } },
+  { key: 3, label: { tr: "Çarşamba", en: "Wednesday", de: "Mittwoch", pl: "Środa", fr: "Mercredi", es: "Miércoles" } },
+  { key: 4, label: { tr: "Perşembe", en: "Thursday", de: "Donnerstag", pl: "Czwartek", fr: "Jeudi", es: "Jueves" } },
+  { key: 5, label: { tr: "Cuma", en: "Friday", de: "Freitag", pl: "Piątek", fr: "Vendredi", es: "Viernes" } },
+  { key: 6, label: { tr: "Cumartesi", en: "Saturday", de: "Samstag", pl: "Sobota", fr: "Samedi", es: "Sábado" } },
 ];
 
 export default function SlotRulesTable() {
   const dispatch = useAppDispatch();
-  const { rules, loading } = useAppSelector((state) => state.bookingSlot);
-  const { t } = useTranslation("booking");
+  const {
+    availableSlots = [],
+    rulesAdmin: rules,
+    overridesAdmin: overrides,
+    loading,
+  } = useAppSelector((state) => state.bookingSlot);
+  const { t, i18n } = useI18nNamespace("booking", translations);
+  const lang = (i18n.language?.split("-")[0] ?? "tr") as keyof typeof weekDays[0]["label"];
+  const today = new Date().toISOString().split("T")[0];
 
+  // Kuralları ve override'ları çek
   useEffect(() => {
-    // Sadece rules boşsa fetchle!
-    if (!rules || rules.length === 0) {
-      dispatch(fetchSlotRules());
-    }
-  }, [dispatch, rules]);
+    dispatch(fetchSlotRulesAdmin());
+    dispatch(fetchSlotOverridesAdmin());
+    dispatch(fetchAvailableSlots(today));
+  }, [dispatch, today]);
 
-  const allDaysRule = rules?.find((r) => r.appliesToAll);
+  // Bugünün override'ı (tam gün kapalı mı)
+  const todayOverride = useMemo(
+    () => overrides.find((o) => o.date === today && o.fullDayOff),
+    [overrides, today]
+  );
 
-  const rows = Array.from({ length: 7 }, (_, day) => {
-    const dayRule = rules.find((r) => r.dayOfWeek === day && !r.appliesToAll);
-    const rule = dayRule || allDaysRule;
-    if (!rule) return null;
-    return (
-      <tr key={day}>
-        <td>{t(`form.weekdays.${day}`, weekDays[day])}</td>
-        <td>{rule.startTime}</td>
-        <td>{rule.endTime}</td>
-        <td>{rule.intervalMinutes}</td>
-        <td>{rule.breakBetweenAppointments}</td>
-      </tr>
-    );
-  }).filter(Boolean);
-
-  if (loading)
-    return <Loader>{t("form.loading", "Loading working hours...")}</Loader>;
-  if (!rules || (!allDaysRule && rows.length === 0))
-    return (
-      <NoData>
-        {t("form.noWorkingHours", "No working hours defined yet.")}
-      </NoData>
-    );
+  // Gün gün slot kuralları:
+  const dailyRules = useMemo(() => {
+    const result = weekDays.map((wd) => {
+      const rule = rules.find((r) => r.dayOfWeek === wd.key && r.isActive);
+      return {
+        ...wd,
+        rule,
+      };
+    });
+    return result;
+  }, [rules]);
 
   return (
-    <TableWrapper>
-      <TableTitle>
-        {t("form.openingHours", "Working Hours & Available Slots")}
-      </TableTitle>
-      <StyledTable>
-        <thead>
-          <tr>
-            <th>{t("form.day", "Day")}</th>
-            <th>{t("form.startTime", "Start")}</th>
-            <th>{t("form.endTime", "End")}</th>
-            <th>{t("form.interval", "Interval (min)")}</th>
-            <th>{t("form.break", "Break (min)")}</th>
-          </tr>
-        </thead>
-        <tbody>{rows}</tbody>
-      </StyledTable>
-    </TableWrapper>
+    <Box>
+      <Section>
+        <SectionTitle>🗓️ {t("form.title")}</SectionTitle>
+        <RulesList>
+          {dailyRules.map((d) => (
+            <RuleRow key={d.key}>
+              <Day>{d.label[lang]}</Day>
+              <Hours>
+                {d.rule
+                  ? (
+                    <>
+                      {d.rule.startTime} - {d.rule.endTime}
+                      <span style={{ color: "#bbb", fontSize: 12, marginLeft: 6 }}>
+                        ({d.rule.intervalMinutes}min, break: {d.rule.breakBetweenAppointments}min)
+                      </span>
+                    </>
+                  )
+                  : <span style={{ color: "#aaa" }}>{t("form.closed")}</span>
+                }
+              </Hours>
+            </RuleRow>
+          ))}
+        </RulesList>
+        {/* Override (bugün kapalı mı) */}
+        {todayOverride && (
+          <ClosedBanner>
+            {t("form.todayClosed")}
+          </ClosedBanner>
+        )}
+      </Section>
+      <Section>
+        <SectionTitle>⏰ {t("form.availableSlots")}</SectionTitle>
+        <SlotsGrid>
+          {loading
+            ? <Loader>{t("form.loading", "Yükleniyor...")}</Loader>
+            : availableSlots.length
+              ? availableSlots.map((slot) => (
+                  <SlotBadge key={slot}>{slot}</SlotBadge>
+                ))
+              : <NoData>{t("form.noAvailableSlots", "Uygun slot bulunamadı.")}</NoData>
+          }
+        </SlotsGrid>
+      </Section>
+    </Box>
   );
 }
 
-// Styled Components %100 Temaya Uyumlu
-const TableWrapper = styled.section`
-  margin-bottom: ${({ theme }) => theme.spacings.xl};
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: ${({ theme }) => theme.shadows.md};
-  padding: ${({ theme }) => theme.spacings.xl};
-  overflow-x: auto;
-
-  @media ${({ theme }) => theme.media.mobile} {
-    padding: ${({ theme }) => theme.spacings.md};
-    border-radius: ${({ theme }) => theme.radii.lg};
-  }
+// --- Styled Components ---
+const Box = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
 `;
 
-const TableTitle = styled.h3`
+const Section = styled.section``;
+
+const SectionTitle = styled.h3`
+  font-size: 1.12rem;
+  margin-bottom: 0.6rem;
   color: ${({ theme }) => theme.colors.primary};
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-size: ${({ theme }) => theme.fontSizes.xl};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin-bottom: ${({ theme }) => theme.spacings.md};
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const RulesList = styled.ul`
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+`;
+
+const RuleRow = styled.li`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.15rem 0.3rem;
+  border-bottom: 1px dashed ${({ theme }) => theme.colors.borderLight};
+`;
+
+const Day = styled.span`
+  font-weight: 500;
+  min-width: 100px;
+`;
+
+const Hours = styled.span`
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const ClosedBanner = styled.div`
+  margin-top: 10px;
+  background: ${({ theme }) => theme.colors.danger};
+  color: #fff;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 10px;
   text-align: center;
 `;
 
-const StyledTable = styled.table`
-  width: 100%;
-  min-width: 540px;
-  border-collapse: collapse;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0 auto;
+const SlotsGrid = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 0.6rem;
+`;
 
-  th,
-  td {
-    padding: ${({ theme }) => theme.spacings.md};
-    text-align: center;
-    border-bottom: ${({ theme }) => theme.borders.thin}
-      ${({ theme }) => theme.colors.border};
-    font-size: ${({ theme }) => theme.fontSizes.md};
-  }
-
-  th {
-    background: ${({ theme }) => theme.colors.tableHeader};
-    color: ${({ theme }) => theme.colors.text};
-    font-family: ${({ theme }) => theme.fonts.heading};
-    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-    border-bottom: ${({ theme }) => theme.borders.thick}
-      ${({ theme }) => theme.colors.borderBright};
-    position: sticky;
-    top: 0;
-    z-index: 1;
-  }
-
-  tr:last-child td {
-    border-bottom: none;
-  }
+const SlotBadge = styled.div`
+  background: ${({ theme }) => theme.colors.primary};
+  color: #222;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 0.4rem 1.2rem;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px 0 rgb(0 0 0 / 6%);
 `;
 
 const Loader = styled.div`
   color: ${({ theme }) => theme.colors.primary};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  text-align: center;
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-  padding: ${({ theme }) => theme.spacings.md} 0;
 `;
 
 const NoData = styled.div`
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  text-align: center;
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-  padding: ${({ theme }) => theme.spacings.md} 0;
+  font-size: 0.95rem;
+  padding: 0.4rem 0;
 `;

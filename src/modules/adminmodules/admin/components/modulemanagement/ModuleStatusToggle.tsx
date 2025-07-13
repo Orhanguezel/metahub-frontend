@@ -2,7 +2,8 @@
 import React from "react";
 import styled, { keyframes } from "styled-components";
 import { Check, X } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales";
 
 // Props tipi
 interface ModuleStatusToggleProps {
@@ -25,7 +26,7 @@ const ModuleStatusToggle: React.FC<ModuleStatusToggleProps> = ({
   loading = false,
   title,
 }) => {
-  const { t } = useTranslation("adminModules");
+  const { t } = useI18nNamespace("adminModules", translations);
   const label = isActive
     ? t("toggleActive", "Active")
     : t("toggleInactive", "Inactive");

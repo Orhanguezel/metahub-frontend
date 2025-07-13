@@ -6,12 +6,11 @@ import { XCircle } from "lucide-react";
 import { useAppDispatch } from "@/store/hooks";
 import {
   createModuleMeta,
-  fetchModuleMetas,
 } from "@/modules/adminmodules/slices/moduleMetaSlice";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales";
 import { toast } from "react-toastify";
 import { SUPPORTED_LOCALES } from "@/i18n";
-import { getCurrentLocale } from "@/utils/getCurrentLocale";
 import type { TranslatedLabel, SupportedLocale } from "@/types/common";
 
 // --- Props tipi
@@ -34,9 +33,9 @@ interface ModuleFormState {
 const getLangLabel = (lang: string) => lang.toUpperCase();
 
 const CreateModuleModal: React.FC<CreateModuleModalProps> = ({ onClose }) => {
-  const { t } = useTranslation("adminModules");
+   const { i18n, t } = useI18nNamespace("adminModules", translations);
+    const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const dispatch = useAppDispatch();
-  const lang = getCurrentLocale();
 
   // Çoklu dil label alanı
   const [label, setLabel] = useState<TranslatedLabel>(
@@ -106,7 +105,6 @@ const CreateModuleModal: React.FC<CreateModuleModalProps> = ({ onClose }) => {
             .filter(Boolean),
         })
       ).unwrap();
-      await dispatch(fetchModuleMetas());
       toast.success(t("success.created", "Module created successfully."));
       onClose();
     } catch (err: any) {

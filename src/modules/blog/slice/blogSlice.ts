@@ -1,10 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { IBlog } from "@/modules/blog/types";
+import type { IBlog } from "@/modules/blog";
 
 interface BlogState {
-  blog: IBlog[];
+  blog: IBlog[]; // Public (site) için
+  blogAdmin: IBlog[]; // Admin panel için
   selected: IBlog | null;
+  status: "idle" | "loading" | "succeeded" | "failed";
   loading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -12,7 +14,9 @@ interface BlogState {
 
 const initialState: BlogState = {
   blog: [],
+  blogAdmin: [],
   selected: null,
+  status: "idle",
   loading: false,
   error: null,
   successMessage: null,
@@ -30,10 +34,25 @@ const extractErrorMessage = (payload: unknown): string => {
   return "An error occurred.";
 };
 
+// --- Async Thunks ---
+
 export const fetchBlog = createAsyncThunk<IBlog[]>(
   "blog/fetchAll",
   async (_, thunkAPI) => {
     const res = await apiCall("get", `/blog`, null, thunkAPI.rejectWithValue);
+    return res.data;
+  }
+);
+
+export const fetchAllBlogAdmin = createAsyncThunk<IBlog[]>(
+  "blog/fetchAllAdmin",
+  async (_, thunkAPI) => {
+    const res = await apiCall(
+      "get",
+      `/blog/admin`,
+      null,
+      thunkAPI.rejectWithValue
+    );
     return res.data;
   }
 );
@@ -50,7 +69,7 @@ export const createBlog = createAsyncThunk(
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
-    return res.data; // backend: { success: true, message: "..." }
+    return res.data;
   }
 );
 
@@ -80,19 +99,6 @@ export const deleteBlog = createAsyncThunk(
       thunkAPI.rejectWithValue
     );
     return { id, message: res.message };
-  }
-);
-
-export const fetchAllBlogAdmin = createAsyncThunk(
-  "blog/fetchAllAdmin",
-  async (_, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      `/blog/admin`,
-      null,
-      thunkAPI.rejectWithValue
-    );
-    return res.data;
   }
 );
 
@@ -131,6 +137,7 @@ export const fetchBlogBySlug = createAsyncThunk(
 );
 
 // --- Slice ---
+
 const blogSlice = createSlice({
   name: "blog",
   initialState,
@@ -154,62 +161,77 @@ const blogSlice = createSlice({
       state.error = extractErrorMessage(action.payload);
     };
 
+    // --- Public List ---
     builder
       .addCase(fetchBlog.pending, startLoading)
       .addCase(fetchBlog.fulfilled, (state, action) => {
         state.loading = false;
         state.blog = action.payload;
       })
-      .addCase(fetchBlog.rejected, setError)
+      .addCase(fetchBlog.rejected, setError);
 
+    // --- Admin List ---
+    builder
       .addCase(fetchAllBlogAdmin.pending, startLoading)
       .addCase(fetchAllBlogAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.blog = action.payload;
+        state.blogAdmin = action.payload;
       })
-      .addCase(fetchAllBlogAdmin.rejected, setError)
+      .addCase(fetchAllBlogAdmin.rejected, setError);
 
+    // --- Admin Create ---
+    builder
       .addCase(createBlog.pending, startLoading)
       .addCase(createBlog.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage =
           action.payload?.message || "Article created successfully.";
         if (action.payload?.data) {
-          state.blog.unshift(action.payload.data);
+          state.blogAdmin.unshift(action.payload.data);
         }
       })
-      .addCase(createBlog.rejected, setError)
+      .addCase(createBlog.rejected, setError);
 
+    // --- Admin Update ---
+    builder
       .addCase(updateBlog.pending, startLoading)
       .addCase(updateBlog.fulfilled, (state, action) => {
         state.loading = false;
         const updated = action.payload?.data || action.payload;
-        const index = state.blog.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.blog[index] = updated;
+        const index = state.blogAdmin.findIndex((a) => a._id === updated._id);
+        if (index !== -1) state.blogAdmin[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
         state.successMessage = action.payload?.message;
       })
-      .addCase(updateBlog.rejected, setError)
+      .addCase(updateBlog.rejected, setError);
 
+    // --- Admin Delete ---
+    builder
       .addCase(deleteBlog.pending, startLoading)
       .addCase(deleteBlog.fulfilled, (state, action) => {
         state.loading = false;
-        state.blog = state.blog.filter((a) => a._id !== action.payload.id);
+        state.blogAdmin = state.blogAdmin.filter(
+          (a) => a._id !== action.payload.id
+        );
         state.successMessage = action.payload?.message;
       })
-      .addCase(deleteBlog.rejected, setError)
+      .addCase(deleteBlog.rejected, setError);
 
+    // --- Admin Toggle Publish ---
+    builder
       .addCase(togglePublishBlog.pending, startLoading)
       .addCase(togglePublishBlog.fulfilled, (state, action) => {
         state.loading = false;
         const updated = action.payload?.data || action.payload;
-        const index = state.blog.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.blog[index] = updated;
+        const index = state.blogAdmin.findIndex((a) => a._id === updated._id);
+        if (index !== -1) state.blogAdmin[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
         state.successMessage = action.payload?.message;
       })
-      .addCase(togglePublishBlog.rejected, setError)
+      .addCase(togglePublishBlog.rejected, setError);
 
+    // --- Single Fetch (slug) ---
+    builder
       .addCase(fetchBlogBySlug.pending, startLoading)
       .addCase(fetchBlogBySlug.fulfilled, (state, action) => {
         state.loading = false;

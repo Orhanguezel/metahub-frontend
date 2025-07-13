@@ -7,16 +7,16 @@ export interface ITenantImage {
   publicId?: string;
 }
 
-export interface TenantEmailSettings {
+export interface EmailSettings {
   smtpHost: string;
-  smtpPort: number;
+  smtpPort: string | number;
   smtpSecure?: boolean;
   smtpUser: string;
   smtpPass: string;
   senderName: string;
   senderEmail: string;
   imapHost?: string;
-  imapPort?: number;
+  imapPort?: string | number;
   imapUser?: string;
   imapPass?: string;
   imapSecure?: boolean;
@@ -35,7 +35,7 @@ export interface ITenant {
   slug: string;
   mongoUri: string;
   domain?: TenantDomain;
-  emailSettings?: TenantEmailSettings;
+  emailSettings?: EmailSettings;
   logo?: string;
   images?: ITenantImage[];
   theme?: string;

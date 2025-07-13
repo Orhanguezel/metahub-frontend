@@ -1,8 +1,8 @@
 "use client";
 import React from "react";
-import BikesPage from "@/modules/bikes/public/pages/BikesPage";
+import Page from "@/modules/bikes/public/pages/Page";
 
 export default function BikesRouterPage() {
 
-  return <BikesPage />;
+  return <Page />;
 }

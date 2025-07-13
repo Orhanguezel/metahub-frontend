@@ -1,12 +1,11 @@
 "use client";
 
 import styled from "styled-components";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import type { AboutCategory } from "@/modules/about/types";
-import { useAppDispatch } from "@/store/hooks";
 
 interface Props {
   isOpen: boolean;
@@ -24,18 +23,24 @@ export default function AboutCategoryForm({
   editingItem,
   onSubmit,
 }: Props) {
-  const dispatch = useAppDispatch();
   const { i18n, t } = useI18nNamespace("about", translations);
   const lang = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
 
-  const emptyLabel = SUPPORTED_LOCALES.reduce((acc, lng) => {
-    acc[lng] = "";
-    return acc;
-  }, {} as Record<SupportedLocale, string>);
+  // Empty state objesi (useMemo ile!)
+  const emptyLabel = useMemo(
+    () =>
+      SUPPORTED_LOCALES.reduce(
+        (acc, lng) => ({ ...acc, [lng]: "" }),
+        {} as Record<SupportedLocale, string>
+      ),
+    []
+  );
 
+  // Form state
   const [name, setName] = useState<Record<SupportedLocale, string>>(emptyLabel);
   const [description, setDescription] = useState<Record<SupportedLocale, string>>(emptyLabel);
 
+  // Edit durumunda doldur
   useEffect(() => {
     if (editingItem) {
       setName({ ...emptyLabel, ...editingItem.name });
@@ -44,31 +49,34 @@ export default function AboutCategoryForm({
       setName(emptyLabel);
       setDescription(emptyLabel);
     }
-  }, [editingItem, isOpen]);
+  }, [editingItem, isOpen, lang, emptyLabel]); // (emptyLabel artık değişmiyor!)
 
+  // Form submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Name fill
-    const firstName = Object.values(name).find((v) => v.trim());
-    const filledName = { ...name };
-    if (firstName) {
-      SUPPORTED_LOCALES.forEach((lng) => {
-        if (!filledName[lng]) filledName[lng] = firstName;
-      });
+    // En az bir dilde isim girilmiş olmalı (öncelik seçili dil)
+    const mainName = name[lang] || Object.values(name).find((v) => v.trim()) || "";
+    if (!mainName.trim()) {
+      alert(t("admin.aboutcategory.name_required", "Category name required"));
+      return;
     }
+    // Tüm boş dillere ana ismi doldur (copy fill)
+    const filledName = { ...name };
+    SUPPORTED_LOCALES.forEach((lng) => {
+      if (!filledName[lng]) filledName[lng] = mainName;
+    });
 
-    // Description fill
-    const firstDesc = Object.values(description).find((v) => v.trim());
+    // Description için de aynısı (opsiyonel)
+    const mainDesc = description[lang] || Object.values(description).find((v) => v.trim()) || "";
     const filledDescription = { ...description };
-    if (firstDesc) {
+    if (mainDesc) {
       SUPPORTED_LOCALES.forEach((lng) => {
-        if (!filledDescription[lng]) filledDescription[lng] = firstDesc;
+        if (!filledDescription[lng]) filledDescription[lng] = mainDesc;
       });
     }
 
     await onSubmit({ name: filledName, description: filledDescription }, editingItem?._id);
-
 
     onClose();
   };
@@ -93,6 +101,8 @@ export default function AboutCategoryForm({
               value={name[lng]}
               onChange={(e) => setName({ ...name, [lng]: e.target.value })}
               required={lng === lang}
+              placeholder={t("admin.aboutcategory.name_placeholder", "Enter name")}
+              autoFocus={lng === lang}
             />
 
             <label>
@@ -101,7 +111,7 @@ export default function AboutCategoryForm({
             <textarea
               value={description[lng]}
               onChange={(e) => setDescription({ ...description, [lng]: e.target.value })}
-              required={lng === lang}
+              placeholder={t("admin.aboutcategory.desc_placeholder", "Optional")}
             />
           </div>
         ))}
@@ -119,6 +129,8 @@ export default function AboutCategoryForm({
   );
 }
 
+
+// --- Styled Components ---
 const FormWrapper = styled.div`
   max-width: 600px;
   margin: auto;
@@ -178,5 +190,6 @@ const ButtonGroup = styled.div`
     &:hover {
       opacity: 0.9;
     }
+      
   }
 `;

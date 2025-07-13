@@ -3,7 +3,7 @@
 import React, { useState, KeyboardEvent, ChangeEvent } from "react";
 import styled from "styled-components";
 import { useAppDispatch } from "@/store/hooks";
-import { upsertSettings } from "@/modules/settings/slice/settingsSlice";
+import { upsertSettings, fetchSettings } from "@/modules/settings/slice/settingsSlice";
 import { toast } from "react-toastify";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
@@ -15,11 +15,6 @@ interface ThemeManagerProps {
   onSelectedThemeChange?: (theme: string) => void;
 }
 
-/**
- * ThemeManager
- * - Array olarak tema ekler/siler, virgülle çoklu ekleme destekler.
- * - Seçili tema değiştirilirse "site_template" olarak backend'e kaydeder.
- */
 const ThemeManager: React.FC<ThemeManagerProps> = ({
   availableThemes = [],
   selectedTheme = "",
@@ -30,22 +25,16 @@ const ThemeManager: React.FC<ThemeManagerProps> = ({
   const { t } = useI18nNamespace("settings", translations);
   const [newThemes, setNewThemes] = useState<string>("");
 
-  // Küçük harfe normalize
   const normalize = (str: string) => str.trim().toLowerCase();
 
-  // Tema ekle (virgül ile birden fazla destekler)
+  // Tema ekle
   const handleAddThemes = async () => {
-    const splitted = newThemes
-      .split(",")
-      .map((th) => th.trim())
-      .filter(Boolean);
+    const splitted = newThemes.split(",").map((th) => th.trim()).filter(Boolean);
 
     if (splitted.length === 0) {
       toast.error(t("themeNameRequired", "Theme name cannot be empty."));
       return;
     }
-
-    // Var olanları çıkar, yenileri ekle
     const current = availableThemes.map(normalize);
     const uniqueNew = splitted.filter((th) => !current.includes(normalize(th)));
     if (uniqueNew.length === 0) {
@@ -53,14 +42,18 @@ const ThemeManager: React.FC<ThemeManagerProps> = ({
       setNewThemes("");
       return;
     }
-
     const updatedThemes = [...availableThemes, ...uniqueNew];
 
     try {
       await dispatch(
-        upsertSettings({ key: "available_themes", value: updatedThemes })
+        upsertSettings({
+          key: "available_themes",
+          value: updatedThemes,
+          isActive: true,
+        })
       ).unwrap();
       onThemesChange(updatedThemes);
+      await dispatch(fetchSettings());
       toast.success(t("themeAdded", "Theme(s) added successfully."));
       setNewThemes("");
     } catch (error: any) {
@@ -77,17 +70,27 @@ const ThemeManager: React.FC<ThemeManagerProps> = ({
     );
     try {
       await dispatch(
-        upsertSettings({ key: "available_themes", value: updatedThemes })
+        upsertSettings({
+          key: "available_themes",
+          value: updatedThemes,
+          isActive: true,
+        })
       ).unwrap();
       onThemesChange(updatedThemes);
+      await dispatch(fetchSettings());
       toast.success(t("themeDeleted", "Theme deleted successfully."));
 
       // Eğer silinen tema seçiliyse, site_template boşlanmalı!
       if (selectedTheme === themeToDelete) {
         await dispatch(
-          upsertSettings({ key: "site_template", value: "" })
+          upsertSettings({
+            key: "site_template",
+            value: "",
+            isActive: true,
+          })
         ).unwrap();
         if (onSelectedThemeChange) onSelectedThemeChange("");
+        await dispatch(fetchSettings());
       }
     } catch (error: any) {
       toast.error(
@@ -98,11 +101,20 @@ const ThemeManager: React.FC<ThemeManagerProps> = ({
 
   // Tema seç
   const handleSelectTheme = async (theme: string) => {
+    if (!theme) {
+      toast.error(t("selectThemeError", "Please select a valid theme."));
+      return;
+    }
     try {
       await dispatch(
-        upsertSettings({ key: "site_template", value: theme })
+        upsertSettings({
+          key: "site_template",
+          value: theme,
+          isActive: true,
+        })
       ).unwrap();
       if (onSelectedThemeChange) onSelectedThemeChange(theme);
+      await dispatch(fetchSettings());
       toast.success(t("themeSelected", "Theme selected successfully."));
     } catch (error: any) {
       toast.error(
@@ -167,6 +179,7 @@ const ThemeManager: React.FC<ThemeManagerProps> = ({
 };
 
 export default ThemeManager;
+
 
 // --- Styled Components ---
 

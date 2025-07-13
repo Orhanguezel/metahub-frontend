@@ -1,0 +1,73 @@
+{
+  "page": {
+    "noAbout": "Aucun article trouvé.",
+    "allAbout": "Tous les articles",
+    "about": {
+      "title": "À propos",
+      "all": "Voir tout"
+    },
+    "other": "Autres sections",
+    "summary": "Résumé",
+    "detail": "Détail",
+    "noTitle": "Pas de titre"
+  },
+  "readMore": "Lire la suite →",
+  "author": "Auteur",
+  "tags": "Tags",
+  "unknown": "Inconnu",
+  "tabs": {
+    "about": "À propos",
+    "create": "Nouvel article",
+    "categories": "Catégories"
+  },
+  "about": {
+    "empty": "Aucun article disponible.",
+    "no_images": "Aucune image",
+    "author": "Auteur",
+    "tags": "Tags",
+    "publish_status": "Publié",
+    "unpublish": "Dépublier",
+    "publish": "Publier",
+    "unknown": "Inconnu",
+    "none": "Aucun"
+  },
+  "edit": "Modifier",
+  "delete": "Supprimer",
+  "yes": "Oui",
+  "no": "Non",
+  "admin": {
+    "about": {
+      "edit": "Modifier l'article",
+      "create": "Créer un nouvel article",
+      "title": "Titre",
+      "summary": "Résumé",
+      "content": "Contenu",
+      "author": "Auteur",
+      "tags": "Tags",
+      "image": "Images",
+      "category": "Catégorie",
+      "select_category": "Sélectionner une catégorie"
+    },
+    "categories": {
+      "title": "Catégories de produits",
+      "add": "Ajouter une catégorie",
+      "name": "Nom de la catégorie"
+    },
+    "editCategory": "Modifier la catégorie",
+    "newCategory": "Nouvelle catégorie",
+    "optional_description": "Description optionnelle",
+    "category_info": "De quoi s'agit-il dans cette catégorie ?",
+    "update": "Mettre à jour",
+    "update2": "Mettre à jour",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "cancel": "Annuler",
+    "confirm": {
+      "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
+      "delete_article": "Êtes-vous sûr de vouloir supprimer cet article ?"
+    },
+    "loading": "Chargement...",
+    "actions": "Actions",
+    "slug": "Identifiant"
+  }
+}

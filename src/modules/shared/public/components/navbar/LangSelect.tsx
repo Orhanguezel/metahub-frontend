@@ -2,7 +2,8 @@
 
 import React from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales/navbar";
 import {
   SUPPORTED_LOCALES,
   LANG_LABELS,
@@ -26,16 +27,14 @@ interface Props {
 }
 
 const LangSelect: React.FC<Props> = ({
-  value,
   onChange,
   hideLabel = false,
   style,
   className,
 }) => {
-  const { i18n } = useTranslation();
+   const { i18n } = useI18nNamespace("navbar", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  // Şu anki dili (fallback dahil)
-  const currentLang = getValidLang(value || i18n.language);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = getValidLang(e.target.value);
@@ -46,7 +45,7 @@ const LangSelect: React.FC<Props> = ({
   return (
     <LangSelectWrapper style={style} className={className}>
       {!hideLabel}
-      <Select value={currentLang} onChange={handleChange}>
+      <Select value={lang} onChange={handleChange}>
         {SUPPORTED_LOCALES.map((code) => (
           <option key={code} value={code}>
             {LANG_LABELS[code]}

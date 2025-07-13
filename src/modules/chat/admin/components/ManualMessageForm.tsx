@@ -2,20 +2,22 @@
 
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppDispatch } from "@/store/hooks";
+
 import {
-  selectSelectedRoom,
-  fetchMessagesByRoom,
-  markMessagesAsRead,
   sendManualMessage,
-  selectManualMessageState,
   clearManualMessageState,
+  markMessagesAsRead,
+  fetchMessagesByRoom,
 } from "@/modules/chat/slice/chatSlice";
 
 const ManualMessageForm = () => {
   const dispatch = useAppDispatch();
-  const selectedRoom = useAppSelector(selectSelectedRoom);
-  const { loading, success, error } = useAppSelector(selectManualMessageState);
+  // --- SADECE BURADAN!
+  const { chat } = useAdminModuleState();
+
+  const selectedRoom = chat.selectedRoom;
+  const { loading, success, error } = chat.manualMessage;
 
   const [message, setMessage] = useState("");
   const [lang] = useState<"tr" | "en" | "de">("de");
@@ -37,14 +39,16 @@ const ManualMessageForm = () => {
       setMessage("");
       setCloseSession(false);
 
+      // Son mesajları tekrar yükle (gerekirse)
       dispatch(fetchMessagesByRoom(selectedRoom));
       dispatch(markMessagesAsRead(selectedRoom));
     } catch (err) {
-      console.error("❌ Manuel mesaj gönderilemedi:", err);
+      // Hata otomatik merkezi state'e düşer
+      // (isteğe bağlı burada toast veya log eklenebilir)
     }
   };
 
-  // ✅ Başarı durumunda uyarı gösterimini geçici yap
+  // ✅ Başarı ve hata mesajını 3 saniye sonra temizle
   useEffect(() => {
     if (success || error) {
       const timer = setTimeout(() => {
@@ -65,7 +69,6 @@ const ManualMessageForm = () => {
       />
 
       <Row>
-
         <CheckboxWrapper>
           <input
             type="checkbox"
@@ -89,7 +92,7 @@ const ManualMessageForm = () => {
 
 export default ManualMessageForm;
 
-// 💅 Styles
+// 💅 Styles (değişmedi)
 const Wrapper = styled.div`
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -149,6 +152,7 @@ const Button = styled.button`
 const SuccessText = styled.p`
   margin-top: 0.6rem;
   color: green;
+  
   font-size: 0.85rem;
   font-weight: 500;
 `;

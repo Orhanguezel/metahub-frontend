@@ -5,27 +5,27 @@ import apiCall from "@/lib/apiCall";
 import type {
   IBookingSlotRule,
   IBookingSlotOverride,
-} from "@/modules/booking/types/types";
+} from "@/modules/booking/types";
 
 interface BookingSlotState {
-  rules: IBookingSlotRule[];
-  overrides: IBookingSlotOverride[];
-  availableSlots: string[];
+  availableSlots: string[];                 // 🌍 Public: Kullanıcıya açık slotlar
+  rulesAdmin: IBookingSlotRule[];           // 🛠 Admin: Slot kuralları
+  overridesAdmin: IBookingSlotOverride[];   // 🛠 Admin: Slot override'lar
   loading: boolean;
   error: string | null;
   successMessage: string | null;
 }
 
 const initialState: BookingSlotState = {
-  rules: [],
-  overrides: [],
   availableSlots: [],
+  rulesAdmin: [],
+  overridesAdmin: [],
   loading: false,
   error: null,
   successMessage: null,
 };
 
-// 🎯 Get Available Slots for a Date (Public)
+// 🌍 PUBLIC - Get Available Slots
 export const fetchAvailableSlots = createAsyncThunk(
   "bookingSlot/fetchAvailableSlots",
   async (date: string, { rejectWithValue }) => {
@@ -34,65 +34,67 @@ export const fetchAvailableSlots = createAsyncThunk(
   }
 );
 
-// 🛠 Admin - Get Slot Rules
-export const fetchSlotRules = createAsyncThunk(
-  "bookingSlot/fetchSlotRules",
+// 🛠 ADMIN - Get Rules
+export const fetchSlotRulesAdmin = createAsyncThunk(
+  "bookingSlot/fetchSlotRulesAdmin",
   async (_, { rejectWithValue }) => {
     const res = await apiCall("get", "/bookingslot/admin/rule", null, rejectWithValue);
-    // API: { success: true, data: [ ... ] }
     return res.data;
   }
 );
 
-// 🛠 Admin - Get Slot Overrides
-export const fetchSlotOverrides = createAsyncThunk(
-  "bookingSlot/fetchSlotOverrides",
+// 🛠 ADMIN - Get Overrides
+export const fetchSlotOverridesAdmin = createAsyncThunk(
+  "bookingSlot/fetchSlotOverridesAdmin",
   async (_, { rejectWithValue }) => {
     const res = await apiCall("get", "/bookingslot/admin/override", null, rejectWithValue);
     return res.data;
   }
 );
 
-// 🛠 Admin - Create Rule
-export const createSlotRule = createAsyncThunk(
-  "bookingSlot/createSlotRule",
+// 🛠 ADMIN - Create Rule
+export const createSlotRuleAdmin = createAsyncThunk(
+  "bookingSlot/createSlotRuleAdmin",
   async (data: Partial<IBookingSlotRule>, { rejectWithValue }) => {
     const res = await apiCall("post", "/bookingslot/admin/rule", data, rejectWithValue);
     return res.rule;
   }
 );
 
-// 🛠 Admin - Delete Rule
-export const deleteSlotRule = createAsyncThunk(
-  "bookingSlot/deleteSlotRule",
+// 🛠 ADMIN - Delete Rule
+export const deleteSlotRuleAdmin = createAsyncThunk(
+  "bookingSlot/deleteSlotRuleAdmin",
   async (id: string, { rejectWithValue }) => {
     await apiCall("delete", `/bookingslot/admin/rule/${id}`, null, rejectWithValue);
     return id;
   }
 );
 
-// 🛠 Admin - Create Override
-export const createSlotOverride = createAsyncThunk(
-  "bookingSlot/createSlotOverride",
+// 🛠 ADMIN - Create Override
+export const createSlotOverrideAdmin = createAsyncThunk(
+  "bookingSlot/createSlotOverrideAdmin",
   async (data: Partial<IBookingSlotOverride>, { rejectWithValue }) => {
     const res = await apiCall("post", "/bookingslot/admin/override", data, rejectWithValue);
     return res.override;
   }
 );
 
-// 🛠 Admin - Delete Override
-export const deleteSlotOverride = createAsyncThunk(
-  "bookingSlot/deleteSlotOverride",
+// 🛠 ADMIN - Delete Override
+export const deleteSlotOverrideAdmin = createAsyncThunk(
+  "bookingSlot/deleteSlotOverrideAdmin",
   async (id: string, { rejectWithValue }) => {
     await apiCall("delete", `/bookingslot/admin/override/${id}`, null, rejectWithValue);
     return id;
   }
 );
 
-// 🛠 Admin - Update Slot Rule (Opsiyonel, backend’de PATCH varsa)
-export const updateSlotRule = createAsyncThunk(
-  "bookingSlot/updateSlotRule",
-  async ({ id, data }: { id: string; data: Partial<IBookingSlotRule> }, { rejectWithValue }) => {
+// 🛠 ADMIN - Update Rule
+export const updateSlotRuleAdmin = createAsyncThunk(
+  "bookingSlot/updateSlotRuleAdmin",
+  async (
+    { id, data }: { id: string; data: Partial<IBookingSlotRule> },
+    { rejectWithValue }
+  ) => {
     const res = await apiCall("patch", `/bookingslot/admin/rule/${id}`, data, rejectWithValue);
     return res.rule;
   }
@@ -109,7 +111,7 @@ const bookingSlotSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Available Slots
+      // 🌍 PUBLIC - Available Slots
       .addCase(fetchAvailableSlots.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -123,112 +125,112 @@ const bookingSlotSlice = createSlice({
         state.error = (action.payload as any)?.message || "Could not fetch available slots.";
       })
 
-      // Slot Rules
-      .addCase(fetchSlotRules.pending, (state) => {
+      // 🛠 ADMIN - Slot Rules
+      .addCase(fetchSlotRulesAdmin.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchSlotRules.fulfilled, (state, action) => {
+      .addCase(fetchSlotRulesAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.rules = action.payload;
+        state.rulesAdmin = action.payload;
       })
-      .addCase(fetchSlotRules.rejected, (state, action) => {
+      .addCase(fetchSlotRulesAdmin.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as any)?.message || "Could not fetch slot rules.";
       })
 
-      // Slot Overrides
-      .addCase(fetchSlotOverrides.pending, (state) => {
+      // 🛠 ADMIN - Slot Overrides
+      .addCase(fetchSlotOverridesAdmin.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchSlotOverrides.fulfilled, (state, action) => {
+      .addCase(fetchSlotOverridesAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.overrides = action.payload;
+        state.overridesAdmin = action.payload;
       })
-      .addCase(fetchSlotOverrides.rejected, (state, action) => {
+      .addCase(fetchSlotOverridesAdmin.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as any)?.message || "Could not fetch slot overrides.";
       })
 
-      // Create Rule
-      .addCase(createSlotRule.pending, (state) => {
+      // 🛠 ADMIN - Create Rule
+      .addCase(createSlotRuleAdmin.pending, (state) => {
         state.loading = true;
         state.error = null;
         state.successMessage = null;
       })
-      .addCase(createSlotRule.fulfilled, (state, action) => {
+      .addCase(createSlotRuleAdmin.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = "Slot rule created.";
-        state.rules.push(action.payload);
+        state.rulesAdmin.push(action.payload);
       })
-      .addCase(createSlotRule.rejected, (state, action) => {
+      .addCase(createSlotRuleAdmin.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as any)?.message || "Could not create slot rule.";
       })
 
-      // Delete Rule
-      .addCase(deleteSlotRule.pending, (state) => {
+      // 🛠 ADMIN - Delete Rule
+      .addCase(deleteSlotRuleAdmin.pending, (state) => {
         state.loading = true;
         state.error = null;
         state.successMessage = null;
       })
-      .addCase(deleteSlotRule.fulfilled, (state, action) => {
+      .addCase(deleteSlotRuleAdmin.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = "Slot rule deleted.";
-        state.rules = state.rules.filter((r) => r._id !== action.payload);
+        state.rulesAdmin = state.rulesAdmin.filter((r) => r._id !== action.payload);
       })
-      .addCase(deleteSlotRule.rejected, (state, action) => {
+      .addCase(deleteSlotRuleAdmin.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as any)?.message || "Could not delete slot rule.";
       })
 
-      // Create Override
-      .addCase(createSlotOverride.pending, (state) => {
+      // 🛠 ADMIN - Create Override
+      .addCase(createSlotOverrideAdmin.pending, (state) => {
         state.loading = true;
         state.error = null;
         state.successMessage = null;
       })
-      .addCase(createSlotOverride.fulfilled, (state, action) => {
+      .addCase(createSlotOverrideAdmin.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = "Slot override created.";
-        state.overrides.push(action.payload);
+        state.overridesAdmin.push(action.payload);
       })
-      .addCase(createSlotOverride.rejected, (state, action) => {
+      .addCase(createSlotOverrideAdmin.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as any)?.message || "Could not create slot override.";
       })
 
-      // Delete Override
-      .addCase(deleteSlotOverride.pending, (state) => {
+      // 🛠 ADMIN - Delete Override
+      .addCase(deleteSlotOverrideAdmin.pending, (state) => {
         state.loading = true;
         state.error = null;
         state.successMessage = null;
       })
-      .addCase(deleteSlotOverride.fulfilled, (state, action) => {
+      .addCase(deleteSlotOverrideAdmin.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = "Slot override deleted.";
-        state.overrides = state.overrides.filter((r) => r._id !== action.payload);
+        state.overridesAdmin = state.overridesAdmin.filter((r) => r._id !== action.payload);
       })
-      .addCase(deleteSlotOverride.rejected, (state, action) => {
+      .addCase(deleteSlotOverrideAdmin.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as any)?.message || "Could not delete slot override.";
       })
 
-      // Update Rule (Opsiyonel)
-      .addCase(updateSlotRule.pending, (state) => {
+      // 🛠 ADMIN - Update Rule
+      .addCase(updateSlotRuleAdmin.pending, (state) => {
         state.loading = true;
         state.error = null;
         state.successMessage = null;
       })
-      .addCase(updateSlotRule.fulfilled, (state, action) => {
+      .addCase(updateSlotRuleAdmin.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = "Slot rule updated.";
         const updated = action.payload;
-        const index = state.rules.findIndex((r) => r._id === updated._id);
-        if (index !== -1) state.rules[index] = updated;
+        const index = state.rulesAdmin.findIndex((r) => r._id === updated._id);
+        if (index !== -1) state.rulesAdmin[index] = updated;
       })
-      .addCase(updateSlotRule.rejected, (state, action) => {
+      .addCase(updateSlotRuleAdmin.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as any)?.message || "Could not update slot rule.";
       });

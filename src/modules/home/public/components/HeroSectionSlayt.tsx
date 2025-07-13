@@ -24,14 +24,14 @@ export default function HeroSectionSlayt() {
   const { i18n, t } = useI18nNamespace("home", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  const { images } = useAppSelector((state) => state.gallery);
+  const {  publicImages } = useAppSelector((state) => state.gallery);
   const { categories } = useAppSelector((state) => state.galleryCategory);
 
   // FlatItems için type tanımlı state
   const [flatItems, setFlatItems] = useState<GalleryItem[]>([]);
 
   useEffect(() => {
-    if (!images || !Array.isArray(images) || !categories?.length) {
+    if (!publicImages || !Array.isArray(publicImages) || !categories?.length) {
       setFlatItems([]);
       return;
     }
@@ -42,7 +42,7 @@ export default function HeroSectionSlayt() {
       return;
     }
 
-    const filtered: GalleryItem[] = images
+    const filtered: GalleryItem[] = publicImages
       .filter(item =>
         typeof item.category === "string"
           ? item.category === targetCategory._id
@@ -59,7 +59,7 @@ export default function HeroSectionSlayt() {
       );
 
     setFlatItems(filtered);
-  }, [images, categories]);
+  }, [publicImages, categories]);
 
   const modal = useModal(flatItems);
 
@@ -82,7 +82,7 @@ export default function HeroSectionSlayt() {
     window.addEventListener("touchend", handler);
   }, [modal]);
 
-  if (!images || !categories) {
+  if (!publicImages || !categories) {
     return (
       <HeroWrapper>
         <SkeletonBox style={{ height: "60px", marginBottom: "24px" }} />

@@ -4,7 +4,8 @@ import Link from "next/link";
 import styled from "styled-components";
 import { ShoppingCart } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales/navbar";
 
 interface Props {
   ariaLabel?: string;
@@ -13,14 +14,14 @@ interface Props {
 export default function CartButton({ ariaLabel }: Props) {
   const { cart } = useAppSelector((state) => state.cart);
   const isAuthenticated = !!useAppSelector((state) => state.account.profile);
-  const { t } = useTranslation("navbar"); // "cart" olarak da ayarlanabilir
+   const { t } = useI18nNamespace("navbar", translations);
 
   // Kullanıcı login değilse hiçbir şey gösterme
   if (!isAuthenticated) return null;
 
   // Sepetteki toplam ürün adedi
   const cartCount =
-    cart?.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
+    cart?.items?.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0) || 0;
 
   return (
     <CartIconWrapper

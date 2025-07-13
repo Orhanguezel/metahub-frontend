@@ -1,14 +1,15 @@
 "use client";
 
 import React, { useEffect } from "react";
+import { useAppSelector } from "@/store/hooks";
 import ReduxProvider from "@/providers/ReduxProvider";
 import I18nProvider from "@/providers/I18nProvider";
 import ThemeProviderWrapper from "@/providers/ThemeProviderWrapper";
 import ToastProvider from "@/providers/ToastProvider";
 import GlobalStyle from "@/styles/GlobalStyle";
-import { useLayoutInit } from "@/hooks/useLayoutInit";
 import i18n from "@/i18n";
 import InitUserLoader from "@/providers/InitUserLoader";
+import { Loading, ErrorMessage } from "@/shared";
 
 export default function GlobalProviders({
   children,
@@ -23,29 +24,35 @@ export default function GlobalProviders({
 }
 
 function PostReduxProviders({ children }: { children: React.ReactNode }) {
-  // Burası her sayfa için merkezi INIT (tek store olduğu için admin ayrımı gerekmez)
-  useLayoutInit(); // Sadece bu şekilde bırakabilirsin, opsiyonları gerekirse ekle
+  // Kullanıcı slice'ı ve loading durumu globalde alınır
+  const { loading, error } = useAppSelector((state) => state.account);
 
-  return (
+
+   return (
     <>
       <InitI18n />
-      <InitUserLoader />
-      <I18nProvider>
-        <ThemeProviderWrapper>
+      <ThemeProviderWrapper>
+        <InitUserLoader />
+        <I18nProvider>
           <ToastProvider />
           <GlobalStyle />
-          {children}
-        </ThemeProviderWrapper>
-      </I18nProvider>
+          {loading
+            ? <Loading />
+            : error
+            ? <ErrorMessage message={error} />
+            : children}
+        </I18nProvider>
+      </ThemeProviderWrapper>
     </>
   );
 }
 
 function InitI18n() {
   useEffect(() => {
-    const lang = typeof window !== "undefined"
-      ? navigator.language.split("-")[0]
-      : "en";
+    const lang =
+      typeof window !== "undefined"
+        ? navigator.language.split("-")[0]
+        : "en";
     i18n.changeLanguage(lang);
   }, []);
   return null;

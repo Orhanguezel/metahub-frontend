@@ -3,14 +3,14 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { Globe, Trash2, AlertCircle } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "../../../locales";
+import { SupportedLocale } from "@/types/common";
 import * as MdIcons from "react-icons/md";
 import { ModuleStatusToggle } from "@/modules/adminmodules";
 import { useAppDispatch } from "@/store/hooks";
-import { getCurrentLocale } from "@/utils/getCurrentLocale";
 import { toast } from "react-toastify";
 
-// Slice importları
 import { updateModuleMeta } from "@/modules/adminmodules/slices/moduleMetaSlice";
 import { updateModuleSetting } from "@/modules/adminmodules/slices/moduleSettingSlice";
 import type {
@@ -56,12 +56,10 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
   onShowDetail,
   onDelete,
 }) => {
-  const { t } = useTranslation("adminModules");
-  const lang = getCurrentLocale();
+  const { i18n, t } = useI18nNamespace("adminModules", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const dispatch = useAppDispatch();
-  const [updatingModuleKey, setUpdatingModuleKey] = useState<string | null>(
-    null
-  );
+  const [updatingModuleKey, setUpdatingModuleKey] = useState<string | null>(null);
 
   const isMeta = type === "meta";
   const moduleKey = isMeta
@@ -70,8 +68,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
 
   const globalEnabled = isMeta
     ? undefined
-    : (module as IModuleSetting & { globalEnabled?: boolean }).globalEnabled ??
-      true;
+    : (module as IModuleSetting & { globalEnabled?: boolean }).globalEnabled ?? true;
 
   // Label (çoklu dil için)
   const moduleLabel = isMeta
@@ -99,9 +96,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
     try {
       // Tenant'ta, global enabled kapalıysa toggle yapma!
       if (!isMeta && globalEnabled === false) {
-        toast.warn(
-          t("globalDisabledWarn", "Globally disabled, cannot activate!")
-        );
+        toast.warn(t("globalDisabledWarn", "Globally disabled, cannot activate!"));
         return;
       }
       if (!isMeta) {
@@ -126,9 +121,10 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
     }
   };
 
+  // --- Düzgün ve doğru tiplerle çağır! ---
   const handleCardClick = () => {
     if (typeof onShowDetail === "function") {
-      onShowDetail(module, type);
+      onShowDetail(module, type as ModuleType);
     }
   };
 
