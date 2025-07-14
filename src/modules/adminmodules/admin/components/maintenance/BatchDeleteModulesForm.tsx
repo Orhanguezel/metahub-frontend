@@ -6,7 +6,7 @@ import {
   deleteModuleMeta,
 } from "@/modules/adminmodules/slices/moduleMetaSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
+import {translations} from "@/modules/adminmodules";
 import { toast } from "react-toastify";
 
 const BatchDeleteModulesForm: React.FC = () => {

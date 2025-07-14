@@ -8,6 +8,7 @@ import { RootState } from "@/store";
 interface ModuleSettingState {
   tenantModules: IModuleSetting[];
   loading: boolean;
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   successMessage: string | null;
 }
@@ -15,6 +16,7 @@ interface ModuleSettingState {
 const initialState: ModuleSettingState = {
   tenantModules: [],
   loading: false,
+  status: "idle",
   error: null,
   successMessage: null,
 };

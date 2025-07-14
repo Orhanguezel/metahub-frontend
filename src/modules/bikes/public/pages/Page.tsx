@@ -3,18 +3,18 @@
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/bikes";
 import { Skeleton, ErrorMessage } from "@/shared";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import AddToCartButton from "@/shared/AddToCartButton";
 import type { SupportedLocale } from "@/types/common";
-import { IBikes } from "../..";
+import type { IBikes } from "@/modules/bikes/types";
 
 export default function BikesPage() {
   const { i18n, t } = useI18nNamespace("bikes", translations);
-        const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { bikes, loading, error } = useAppSelector((state) => state.bikes);
 
   Object.entries(translations).forEach(([lang, resources]) => {

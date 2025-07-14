@@ -6,7 +6,7 @@ import {
   importModuleMetas,
 } from "@/modules/adminmodules/slices/moduleMetaSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
+import {translations} from "@/modules/adminmodules";
 import { toast } from "react-toastify";
 // import type { IModuleMeta } from "@/modules/adminmodules/types"; // Varsa tip dosyanı ekleyebilirsin
 

@@ -1,7 +1,7 @@
 {
   "page": {
-    "noActivity": "No articles found.",
-    "allActivity": "All Articles",
+    "noActivity": "No activitys found.",
+    "allActivity": "All Activitys",
     "activity": {
       "title": "Activity",
       "all": "See All"
@@ -17,7 +17,7 @@
   "unknown": "Unknown",
   "tabs": {
     "activity": "Activity",
-    "create": "New Article",
+    "create": "New Activity",
     "categories": "Categories"
   },
   "activity": {
@@ -37,8 +37,8 @@
   "no": "No",
   "admin": {
     "activity": {
-      "edit": "Edit Article",
-      "create": "Create New Article",
+      "edit": "Edit Activity",
+      "create": "Create New Activity",
       "title": "Title",
       "summary": "Summary",
       "content": "Content",
@@ -64,7 +64,7 @@
     "cancel": "Cancel",
     "confirm": {
       "delete": "Are you sure you want to delete this category?",
-      "delete_article": "Are you sure you want to delete this article?"
+      "delete_activity": "Are you sure you want to delete this activity?"
     },
     "loading": "Loading...",
     "actions": "Actions",

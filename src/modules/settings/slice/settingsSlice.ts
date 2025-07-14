@@ -8,6 +8,7 @@ interface SettingsState {
   settings: ISetting[];         // Public (client)
   settingsAdmin: ISetting[];    // Admin (panel)
   loading: boolean;
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   successMessage: string | null;
   fetchedSettings: boolean;
@@ -17,6 +18,7 @@ const initialState: SettingsState = {
   settings: [],
   settingsAdmin: [],
   loading: false,
+  status: "idle",
   error: null,
   successMessage: null,
   fetchedSettings: false,

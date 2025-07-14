@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
@@ -13,24 +13,23 @@ import {
 import { CouponForm, CouponTable } from "@/modules/coupon";
 import { Message } from "@/shared";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import { translations } from "@/modules/coupon";
 
 const AdminCouponPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { t } = useI18nNamespace("coupon", translations);
 
-  // Merkezi fetch edilen coupon slice!
-  const { coupons } = useAppSelector((s) => s.coupon);
-  // Slice yapısı: { coupons: Coupon[], loading, error, successMessage }
-  const couponList = coupons?.coupons || [];
-  const loading = coupons?.loading;
-  const error = coupons?.error;
-  const successMessage = coupons?.successMessage;
+  // Slice'tan admin kuponları, loading, error, successMessage direkt çek
+  const {
+    couponsAdmin,
+    loading,
+    error,
+    successMessage,
+  } = useAppSelector((s) => s.coupon);
 
   const [editing, setEditing] = useState<any | null>(null);
 
-  // Temizlik sadece sayfa unmount'ta yapılır!
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       dispatch(clearCouponMessages());
     };
@@ -68,7 +67,7 @@ const AdminCouponPage: React.FC = () => {
         loading={loading}
       />
       <CouponTable
-        coupons={couponList}
+        coupons={couponsAdmin}
         onEdit={handleEdit}
         onDelete={handleDelete}
         loading={loading}

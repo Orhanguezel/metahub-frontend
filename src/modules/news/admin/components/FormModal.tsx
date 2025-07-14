@@ -4,10 +4,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/news";
 import { NewsCategory, INews } from "@/modules/news/types";
 import { ImageUploadWithPreview } from "@/shared";
-import { getCurrentLocale } from "@/utils/getCurrentLocale";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import { toast } from "react-toastify";
 
@@ -25,8 +24,8 @@ export default function FormModal({
   onSubmit,
 }: Props) {
   // --- DİL ve ÇEVİRİ ---
-  const { t } = useI18nNamespace("news", translations);
-  const lang = getCurrentLocale();
+  const { i18n, t } = useI18nNamespace("news", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   // --- STATE ---
  // Sadece selector!
@@ -153,8 +152,8 @@ export default function FormModal({
     <FormWrapper>
       <h2>
         {editingItem
-          ? t("admin.news.edit", "Edit Article")
-          : t("admin.news.create", "Create New Article")}
+          ? t("admin.news.edit", "Edit News")
+          : t("admin.news.create", "Create New News")}
       </h2>
       <form onSubmit={handleSubmit}>
         {SUPPORTED_LOCALES.map((lng) => (
@@ -215,7 +214,7 @@ export default function FormModal({
           max={5}
           defaultImages={existingImages}
           onChange={handleImagesChange}
-          folder="article"
+          folder="news"
         />
 
         <label htmlFor="category">

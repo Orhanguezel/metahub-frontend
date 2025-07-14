@@ -24,7 +24,7 @@ import {
   Tabs,
 } from "@/modules/bikes";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/bikes";
 import type { SupportedLocale } from "@/types/common";
 
 export default function AdminBikesPage() {

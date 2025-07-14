@@ -2,20 +2,19 @@
 
 import styled from "styled-components";
 import Link from "next/link";
-import i18n from "@/i18n";
-import translations from "../../locales";
-import { useTranslation } from "react-i18next";
+import {translations} from "@/modules/services";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { motion } from "framer-motion";
-import { getCurrentLocale } from "@/utils/getCurrentLocale";
 import { useAppSelector } from "@/store/hooks";
 import { Skeleton, ErrorMessage } from "@/shared";
-import type { IServices } from "../../types";
+import type { IServices } from "@/modules/services/types";
+import type { SupportedLocale } from "@/types/common";
 
 
 
 export default function ServicesSection() {
-  const { t } = useTranslation("services");
-  const lang = getCurrentLocale();
+  const { i18n, t } = useI18nNamespace("services", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
     Object.entries(translations).forEach(([lang, resources]) => {
   if (!i18n.hasResourceBundle(lang, "services")) {

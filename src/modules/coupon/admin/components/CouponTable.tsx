@@ -2,18 +2,20 @@
 import React from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import { translations } from "@/modules/coupon";
 import type { SupportedLocale } from "@/types/common";
-import type { Coupon } from "../../types";
+import type { Coupon } from "@/modules/coupon/types";
 
 interface Props {
   coupons: Coupon[];
   loading?: boolean;
+  error?: string;
+  successMessage?: string;
   onEdit: (coupon: Coupon) => void;
   onDelete: (id: string) => void;
 }
 
-export default function CouponTable({ coupons, loading, onEdit, onDelete }: Props) {
+export default function CouponTable({ coupons, onEdit, onDelete }: Props) {
   const { t,i18n } = useI18nNamespace("coupon", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
 

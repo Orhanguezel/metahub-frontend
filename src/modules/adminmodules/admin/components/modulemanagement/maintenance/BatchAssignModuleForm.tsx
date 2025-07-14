@@ -8,7 +8,7 @@ import {
   assignModuleToAllTenants,
 } from "@/modules/adminmodules/slices/moduleMaintenanceSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
+import {translations} from "@/modules/adminmodules";
 
 const BatchAssignModuleForm: React.FC = () => {
    const { t } = useI18nNamespace("adminModules", translations);

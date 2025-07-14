@@ -4,30 +4,41 @@ import React from "react";
 import { useAppSelector } from "@/store/hooks";
 import { selectEscalatedRooms } from "@/modules/chat/slice/chatSlice";
 import styled from "styled-components";
+import { SupportedLocale } from "@/types/common";
 
-// EscalatedRoom tipi tanımla (veya import et)
-interface EscalatedRoom {
-  room: string;
-  user: {
-    name: string;
-    email: string;
-  };
-  message: string;
+// EscalatedRoom tipi merkezi bir yerde tanımlıysa oradan import et!
+import type { EscalatedRoom } from "@/modules/chat/types";
+
+interface Props {
+  lang?: SupportedLocale;
+  title?: string;
+  emptyText?: string;
 }
 
-const EscalatedSessions: React.FC = () => {
+const EscalatedSessions: React.FC<Props> = ({
+  title = "⚠️ Canlı Destek Bekleyenler",
+  emptyText = "Şu anda bekleyen bir destek talebi yok."
+}) => {
   // rooms dizisinin tipini EscalatedRoom[] olarak belirt
   const rooms = useAppSelector(selectEscalatedRooms) as EscalatedRoom[];
 
-  if (!rooms.length) return null;
+  if (!rooms?.length) {
+    return (
+      <Wrapper>
+        <h4>{title}</h4>
+        <Empty>{emptyText}</Empty>
+      </Wrapper>
+    );
+  }
 
   return (
     <Wrapper>
-      <h4>⚠️ Canlı Destek Bekleyenler</h4>
+      <h4>{title}</h4>
       <List>
         {rooms.map((r: EscalatedRoom) => (
           <Item key={r.room}>
-            <strong>{r.user.name}</strong> <Email>({r.user.email})</Email> —{" "}
+            <strong>{r.user.name}</strong>{" "}
+            <Email>({r.user.email})</Email> —{" "}
             <Message>{r.message}</Message>
           </Item>
         ))}
@@ -45,6 +56,13 @@ const Wrapper = styled.div`
   padding: 1rem;
   margin-bottom: 1.5rem;
   border-radius: 6px;
+`;
+
+const Empty = styled.div`
+  color: #666;
+  font-size: 0.96rem;
+  padding: 0.7rem 0;
+  font-style: italic;
 `;
 
 const List = styled.div`

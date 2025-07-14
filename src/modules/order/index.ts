@@ -18,4 +18,7 @@ export { default as OrderList } from "./public/components/OrderList";
 export { default as OrderDetail } from "./public/components/OrderDetail";
 export { default as OrderItemList } from "./public/components/OrderItemList";
 
+// Locales
+export { default as translations } from "./locales";
+
 

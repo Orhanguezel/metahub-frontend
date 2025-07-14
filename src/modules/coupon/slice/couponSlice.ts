@@ -8,6 +8,7 @@ interface CouponState {
   couponsAdmin: Coupon[];    // Admin (panelde tüm kuponlar)
   current: Coupon | null;
   loading: boolean;
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   successMessage: string | null;
 }
@@ -17,6 +18,7 @@ const initialState: CouponState = {
   couponsAdmin: [],
   current: null,
   loading: false,
+  status: "idle",
   error: null,
   successMessage: null,
 };

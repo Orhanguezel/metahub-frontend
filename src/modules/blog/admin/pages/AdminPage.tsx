@@ -3,7 +3,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/blog";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import type { SupportedLocale } from "@/types/common";
 
@@ -31,8 +31,8 @@ import { IBlog } from "@/modules/blog/types";
 import { BlogCategory } from "@/modules/blog/types";
 
 export default function AdminBlogPage() {
-const { i18n, t } = useI18nNamespace("adminModules", translations);
-const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
+  const { i18n, t } = useI18nNamespace("blog", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
 const blog = useAppSelector((state) => state.blog.blogAdmin);
 const loading = useAppSelector((state) => state.blog.loading);
@@ -64,7 +64,7 @@ const error = useAppSelector((state) => state.blog.error);
 
   const handleDelete = async (id: string) => {
     const confirmMsg = t(
-      "confirm.delete_article",
+      "confirm.delete_blog",
       "Bu makaleyi silmek istediğinize emin misiniz?"
     );
     if (confirm(confirmMsg)) {

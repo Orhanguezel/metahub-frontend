@@ -2,19 +2,19 @@
 
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
-import { useTranslation } from "react-i18next";
-import translations from "../../locales";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/activity";
 import { Skeleton, ErrorMessage } from "@/shared";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import type { SupportedLocale } from "@/types/common";
-import type { IActivity } from "../../types";
+import type { IActivity } from "@/modules/activity/types";
 
 
 export default function ActivityPage() {
-const { i18n, t } = useTranslation("activity");
-  const lang = (i18n.language?.slice(0, 2) || "tr") as SupportedLocale; 
+  const { i18n, t } = useI18nNamespace("activity", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { activity, loading, error } = useAppSelector((state) => state.activity);
 
       Object.entries(translations).forEach(([lang, resources]) => {

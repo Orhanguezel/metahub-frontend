@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import { IBlog } from "@/modules/blog";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/blog";
 import { Skeleton } from "@/shared";
 import { SupportedLocale } from "@/types/common";
 import Image from "next/image";
@@ -63,7 +63,7 @@ export default function BlogList({
                 <Image
                   key={i}
                   src={img.url}
-                  alt={getMultiLang(item.title) || `article-${i}`}
+                  alt={getMultiLang(item.title) || `blog-${i}`}
                   loading="lazy"
                   width={150}
                   height={100}

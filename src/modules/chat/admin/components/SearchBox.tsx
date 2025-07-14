@@ -4,9 +4,10 @@ import { Search } from "lucide-react"; // veya herhangi bir icon paketi
 
 interface Props {
   onSearch: (term: string) => void;
+  placeholder?: string;
 }
 
-const SearchBox: React.FC<Props> = ({ onSearch }) => {
+const SearchBox: React.FC<Props> = ({ onSearch, placeholder }) => {
   const [value, setValue] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,9 +21,9 @@ const SearchBox: React.FC<Props> = ({ onSearch }) => {
       <SearchIcon />
       <Input
         type="text"
+        placeholder={placeholder || "Search messages..."}
         value={value}
         onChange={handleChange}
-        placeholder="Mesajlarda ara..."
       />
     </Wrapper>
   );

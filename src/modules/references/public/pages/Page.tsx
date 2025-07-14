@@ -2,19 +2,19 @@
 
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
-import { useTranslation } from "react-i18next";
-import translations from "../../locales";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/references";
 import { Skeleton, ErrorMessage } from "@/shared";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import type { SupportedLocale } from "@/types/common";
-import type { IReferences } from "../../types";
+import type { IReferences } from "@/modules/references/types";
 
 
 export default function ReferencesPage() {
-const { i18n, t } = useTranslation("references");
-  const lang = (i18n.language?.slice(0, 2) || "tr") as SupportedLocale; 
+  const { i18n, t } = useI18nNamespace("references", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { references, loading, error } = useAppSelector((state) => state.references);
 
       Object.entries(translations).forEach(([lang, resources]) => {

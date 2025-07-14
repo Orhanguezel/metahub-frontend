@@ -3,32 +3,31 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import socket from "@/lib/socket";
-import { useTranslation } from "../../../../../node_modules/react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import { translations } from "@/modules/chat";
 import {
   ChatMessage,
   PublicMessageList,
   PublicChatInput,
 } from "@/modules/chat";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 
 const ChatBox = () => {
-  const { i18n, t } = useTranslation("chat"); // "chat" namespace örnek, isteğe göre değiştir
-  const lang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "de"
-  ) as "tr" | "en" | "de";
+  const { t } = useI18nNamespace("chat", translations);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [room, setRoom] = useState<string>("");
+  const [roomId, setRoomId] = useState<string>("");
 
   // ✅ Socket bağlantısı ve oda atama
   useEffect(() => {
     socket.connect();
 
-    const handleRoomAssigned = async (roomId: string) => {
-      setRoom(roomId);
+    const handleRoomAssigned = async (assignedRoomId: string) => {
+      setRoomId(assignedRoomId);
 
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/chat/${roomId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/chat/${assignedRoomId}`,
           { credentials: "include" }
         );
         const data = await res.json();
@@ -48,6 +47,7 @@ const ChatBox = () => {
     socket.on("room-assigned", handleRoomAssigned);
     socket.on("chat-message", handleIncomingMessage);
     socket.on("bot-message", handleIncomingMessage);
+    socket.on("admin-message", handleIncomingMessage);
 
     return () => {
       socket.off("room-assigned", handleRoomAssigned);
@@ -59,25 +59,35 @@ const ChatBox = () => {
 
   // ✅ Mesaj gönderimi
   const handleSend = (message: string) => {
-    if (!message.trim() || !room) return;
+    if (!message.trim() || !roomId) return;
 
-    socket.emit("chat-message", {
-      room,
-      message,
-      lang,
+    // BlogCategoryForm'daki gibi, seçili dil veya ilk dolu dil üzerinden language objesi oluştur
+    const filledLanguage: Record<SupportedLocale, string> = {} as any;
+    SUPPORTED_LOCALES.forEach((lng) => {
+      filledLanguage[lng] = message;
     });
 
-    // Frontend'de optimistic gösterim
+    socket.emit("chat-message", {
+      room:roomId,
+      message,
+      language: filledLanguage,
+    });
+
+    // Optimistic UI: hemen göster
     setMessages((prev) => [
       ...prev,
       {
         _id: `temp-${Date.now()}`,
         sender: null,
         message,
-        room,
+        roomId,
+        tenant: "",
         createdAt: new Date().toISOString(),
-        lang,
+        updatedAt: new Date().toISOString(),
         isFromAdmin: false,
+        isFromBot: false,
+        isRead: false,
+        language: filledLanguage,
       },
     ]);
   };
@@ -86,7 +96,6 @@ const ChatBox = () => {
     <Wrapper>
       <Header>
         <h4>🤖 {t("assistantTitle", "Ensotek Asistan")}</h4>
-        {/* Artık LanguageSelector yok. */}
       </Header>
       <PublicMessageList messages={messages} />
       <PublicChatInput onSend={handleSend} />

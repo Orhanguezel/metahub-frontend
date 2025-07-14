@@ -3,7 +3,7 @@
 import React, { useCallback, useRef } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/blog";
 
 const TABS: Array<{
   key: "list" | "create" | "categories";
@@ -11,7 +11,7 @@ const TABS: Array<{
   fallback: string;
 }> = [
   { key: "list", labelKey: "tabs.blog", fallback: "Blog" },
-  { key: "create", labelKey: "tabs.create", fallback: "New Article" },
+  { key: "create", labelKey: "tabs.create", fallback: "New Blog" },
   { key: "categories", labelKey: "tabs.categories", fallback: "Categories" },
 ];
 

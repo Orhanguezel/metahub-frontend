@@ -3,7 +3,7 @@ import React from "react";
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
+import {translations} from "@/modules/adminmodules";
 
 // Eğer tipi ayrı dosyada ise import { ModuleTenantMatrix } from "@/modules/adminmodules/types";
 // Yoksa burada tekrar tanımlayabilirsin:

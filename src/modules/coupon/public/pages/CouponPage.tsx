@@ -6,13 +6,15 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { checkCouponByCode, clearCouponMessages } from "@/modules/coupon/slice/couponSlice";
 import { Message } from "@/shared";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import { translations } from "@/modules/coupon";
 import type { SupportedLocale } from "@/types/common";
 
 const CouponPage: React.FC = () => {
-   const { t,i18n } = useI18nNamespace("coupon", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
+  const { t, i18n } = useI18nNamespace("coupon", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const dispatch = useAppDispatch();
+
+  // current'ı da slice'tan çek!
   const { current, loading, error, successMessage } = useAppSelector((s) => s.coupon);
 
   const [code, setCode] = useState("");
@@ -46,6 +48,7 @@ const CouponPage: React.FC = () => {
         {successMessage && <Message $success>{successMessage}</Message>}
       </Form>
 
+      {/* Kupon detayı */}
       {current && (
         <CouponDetail>
           <h3>{current.title?.[lang] || "-"}</h3>
@@ -54,7 +57,11 @@ const CouponPage: React.FC = () => {
           </div>
           <div>
             {t("label.expiresAt", "Expires at")}:{" "}
-            <strong>{new Date(current.expiresAt).toLocaleDateString(lang)}</strong>
+            <strong>
+              {current.expiresAt
+                ? new Date(current.expiresAt).toLocaleDateString(lang)
+                : "-"}
+            </strong>
           </div>
           {current.description && (
             <p style={{ marginTop: 8, color: "#666" }}>
@@ -69,7 +76,7 @@ const CouponPage: React.FC = () => {
 
 export default CouponPage;
 
-// 💅 Styled Components değişmedi
+// 💅 Styled Components değişmedi (kendi kodundaki haliyle bırakabilirsin)
 const Wrapper = styled.div`
   max-width: 420px;
   margin: 48px auto;

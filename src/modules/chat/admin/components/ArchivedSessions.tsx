@@ -1,129 +1,108 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import styled from "styled-components";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppSelector } from "@/store/hooks";
+import { selectArchivedSessionsAdmin } from "@/modules/chat/slice/chatSlice";
+import { SupportedLocale } from "@/types/common";
+import type { ArchivedSession } from "@/modules/chat/types";
 
-import {
-  addMessage,
-  addEscalatedRoom,
-  setRoom,
-} from "@/modules/chat/slice/chatSlice";
-import { ChatMessage } from "@/modules/chat/types";
+interface Props {
+  lang?: SupportedLocale;
+  title?: string;
+  emptyText?: string;
+}
 
-// ✅ Bileşenler
-import {
-  MessageList,
-  ManualMessageForm,
-  EscalatedSessions,
-  ChatSessionList,
-  ArchivedSessions,
-  SearchBox,
-} from "@/modules/chat";
+const ArchivedSessions: React.FC<Props> = ({
+  lang = "tr",
+  title = "🗄️ Arşivlenmiş Sohbetler",
+  emptyText = "Şu anda arşivlenmiş sohbet yok."
+}) => {
+  const archivedSessions = useAppSelector(selectArchivedSessionsAdmin) as ArchivedSession[];
 
-// ✅ Socket bağlantısı merkezi dosyadan
-import socket from "@/lib/socket";
-
-const isDev = process.env.NODE_ENV === "development";
-
-const AdminChatPage = () => {
-  const dispatch = useAppDispatch();
-  // ---- SADECE BURADAN ----
-  const { chat } = useAdminModuleState(); // merkezi tüm state
-
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // 🔌 Socket bağlantısı başlat
-  useEffect(() => {
-    socket.connect();
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
-  // 🔄 Oda değişince sohbete katıl
-  useEffect(() => {
-    if (!chat.selectedRoom) return;
-    socket.emit("join-room", chat.selectedRoom);
-  }, [chat.selectedRoom]);
-
-  // 📡 Socket event’leri
-  useEffect(() => {
-    const handleChatMessage = (chatMessage: ChatMessage) => {
-      dispatch(addMessage(chatMessage));
-    };
-
-    const handleEscalation = (data: any) => dispatch(addEscalatedRoom(data));
-
-    socket.on("connect", () => {
-      if (isDev) console.log("✅ Socket bağlı:", socket.id);
-    });
-    socket.on("chat-message", handleChatMessage);
-    socket.on("escalate-to-admin", handleEscalation);
-
-    return () => {
-      socket.off("chat-message", handleChatMessage);
-      socket.off("escalate-to-admin", handleEscalation);
-      socket.off("connect");
-    };
-  }, [dispatch]);
-
-  // 🔍 Mesaj filtreleme
-  const filteredChatMessages = (chat.chatMessages || []).filter(
-    (chatMessage: ChatMessage) =>
-      chatMessage.message.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  if (!archivedSessions || archivedSessions.length === 0) {
+    return (
+      <Wrapper>
+        <h4>{title}</h4>
+        <Empty>{emptyText}</Empty>
+      </Wrapper>
+    );
+  }
 
   return (
-    <Container>
-      <h2>💬 Admin Chat Paneli</h2>
-      <EscalatedSessions />
-
-      <Layout>
-        <Sidebar>
-          <SearchBox onSearch={setSearchTerm} />
-          <ChatSessionList socket={socket} />
-          <ArchivedSessions />
-        </Sidebar>
-
-        <Main>
-          <MessageList
-            chatMessages={filteredChatMessages}
-            loading={chat.loading}
-            error={chat.error}
-            searchTerm={searchTerm}
-          />
-          {/* 👇 Manuel Mesaj Gönderme Formu */}
-          <ManualMessageForm />
-        </Main>
-      </Layout>
-    </Container>
+    <Wrapper>
+      <h4>{title}</h4>
+      <List>
+        {archivedSessions.map((session) => (
+          <Item key={session.room}>
+            <strong>{session.user?.name || "Ziyaretçi"}</strong>
+            <span>
+              {" "}
+              ({session.user?.email || "E-posta yok"})
+            </span>
+            <Msg>
+              — {session.lastMessage}
+            </Msg>
+            <Time>
+              {session.closedAt &&
+                new Date(session.closedAt).toLocaleString(lang, {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit"
+                })}
+            </Time>
+          </Item>
+        ))}
+      </List>
+    </Wrapper>
   );
 };
 
-export default AdminChatPage;
+export default ArchivedSessions;
 
 // 💅 Styles
-const Container = styled.div`
-  padding: 2rem;
+const Wrapper = styled.div`
+  background: #f7f7f7;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
 `;
 
-const Layout = styled.div`
-  display: flex;
-  gap: 2rem;
-`;
-
-const Sidebar = styled.div`
-  width: 300px;
+const List = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0.7rem;
 `;
 
-const Main = styled.div`
-  flex: 1;
+const Item = styled.div`
+  font-size: 0.98rem;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  gap: 1rem;
+  gap: 0.2rem;
+  background: #fff;
+  border-radius: 5px;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #e4e4e4;
 `;
+
+const Msg = styled.div`
+  color: #222;
+  font-size: 0.95em;
+  margin-left: 1.1em;
+`;
+
+const Time = styled.div`
+  color: #888;
+  font-size: 0.82em;
+  margin-left: 1.1em;
+`;
+
+const Empty = styled.div`
+  color: #999;
+  font-style: italic;
+  padding: 0.5rem 0 0.5rem 0.1rem;
+`;
+

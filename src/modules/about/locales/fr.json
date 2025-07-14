@@ -1,7 +1,7 @@
 {
   "page": {
-    "noAbout": "Aucun article trouvé.",
-    "allAbout": "Tous les articles",
+    "noAbout": "Aucun about trouvé.",
+    "allAbout": "Tous les abouts",
     "about": {
       "title": "À propos",
       "all": "Voir tout"
@@ -17,11 +17,11 @@
   "unknown": "Inconnu",
   "tabs": {
     "about": "À propos",
-    "create": "Nouvel article",
+    "create": "Nouvel about",
     "categories": "Catégories"
   },
   "about": {
-    "empty": "Aucun article disponible.",
+    "empty": "Aucun about disponible.",
     "no_images": "Aucune image",
     "author": "Auteur",
     "tags": "Tags",
@@ -37,8 +37,8 @@
   "no": "Non",
   "admin": {
     "about": {
-      "edit": "Modifier l'article",
-      "create": "Créer un nouvel article",
+      "edit": "Modifier l'about",
+      "create": "Créer un nouvel about",
       "title": "Titre",
       "summary": "Résumé",
       "content": "Contenu",
@@ -64,7 +64,7 @@
     "cancel": "Annuler",
     "confirm": {
       "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
-      "delete_article": "Êtes-vous sûr de vouloir supprimer cet article ?"
+      "delete_about": "Êtes-vous sûr de vouloir supprimer cet about ?"
     },
     "loading": "Chargement...",
     "actions": "Actions",

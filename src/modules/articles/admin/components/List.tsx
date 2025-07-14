@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import { IArticles } from "@/modules/articles";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/articles";
 import { Skeleton } from "@/shared";
 import { SupportedLocale } from "@/types/common";
 import Image from "next/image";
@@ -63,7 +63,7 @@ export default function ArticlesList({
                 <Image
                   key={i}
                   src={img.url}
-                  alt={getMultiLang(item.title) || `article-${i}`}
+                  alt={getMultiLang(item.title) || `articles-${i}`}
                   loading="lazy"
                   width={150}
                   height={100}

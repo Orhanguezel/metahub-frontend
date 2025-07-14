@@ -13,7 +13,7 @@ import {
 } from "@/modules/adminmodules";
 import MessageBox from "@/shared/Message";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/adminmodules";
 import { SupportedLocale } from "@/types/common";
 import { toast } from "react-toastify";
 import type { IModuleMeta, IModuleSetting } from "@/modules/adminmodules/types";

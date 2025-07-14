@@ -5,18 +5,23 @@ import styled from "styled-components";
 
 interface Props {
   onSend: (message: string) => void;
+  sendLabel?: string;
+  placeholder?: string;
+  lang?: string;
 }
 
-const ChatInput: React.FC<Props> = ({ onSend }) => {
-  const [chatMessage, setChatMessage] = useState("");
-
+const ChatInput: React.FC<Props> = ({
+  onSend,
+  sendLabel = "Gönder",
+  placeholder = "Mesaj yaz...",
+}) => {
+  const [value, setValue] = useState("");
 
   const handleSend = () => {
-    const trimmed = chatMessage.trim();
+    const trimmed = value.trim();
     if (!trimmed) return;
-
     onSend(trimmed);
-    setChatMessage(""); // input temizle
+    setValue("");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -29,21 +34,14 @@ const ChatInput: React.FC<Props> = ({ onSend }) => {
   return (
     <Wrapper>
       <StyledTextarea
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder={placeholder}
         rows={2}
-        value={chatMessage}
-        onChange={(e) => setChatMessage(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Mesaj yazın... (Enter: gönder, Shift+Enter: satır)"
-        aria-label="Mesaj yaz"
-        title="Enter: Gönder, Shift+Enter: Yeni Satır"
       />
-      <SendButton
-        onClick={handleSend}
-        disabled={!chatMessage.trim()}
-        title="Mesajı Gönder"
-        aria-label="Gönder"
-      >
-        Gönder
+      <SendButton onClick={handleSend} disabled={!value.trim()}>
+        {sendLabel}
       </SendButton>
     </Wrapper>
   );

@@ -15,7 +15,7 @@ export interface IServicesImage {
   _id?: string;
 }
 
-// Ana makale (article) tipi
+// Ana makale (services) tipi
 export interface IServices {
   _id: string;
   title: TranslatedField;

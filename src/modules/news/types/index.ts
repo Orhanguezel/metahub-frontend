@@ -15,7 +15,7 @@ export interface INewsImage {
   _id?: string;
 }
 
-// Ana makale (article) tipi
+// Ana makale (news) tipi
 export interface INews {
   _id: string;
   title: TranslatedField;

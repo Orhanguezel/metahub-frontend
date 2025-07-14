@@ -72,13 +72,6 @@ import {
   clearCouponMessages,
 } from "@/modules/coupon/slice/couponSlice";
 import {
-  fetchAllChatSessionsAdmin,
-  fetchActiveChatSessionsAdmin,
-  fetchArchivedSessionsAdmin,
-  fetchMessagesByRoomAdmin,
-  clearChatMessagesAdmin,
-} from "@/modules/chat/slice/chatSlice";
-import {
   fetchAllReferencesAdmin,
   clearReferencesMessages,
 } from "@/modules/references/slice/referencesSlice";
@@ -131,6 +124,19 @@ import {
   fetchSectionSettingsAdmin,
   clearSectionSettingMessages,
 } from "@/modules/section/slices/sectionSettingSlice";
+// Dosyanın en üstüne ekle:
+import {
+  fetchAllOrdersAdmin,
+  clearOrderMessages,
+} from "@/modules/order/slice/ordersSlice";
+
+import {
+  fetchAllChatSessionsAdmin,
+  fetchActiveChatSessionsAdmin,
+  fetchArchivedSessionsAdmin,
+  fetchMessagesByRoomAdmin,
+  clearChatMessages,
+} from "@/modules/chat/slice/chatSlice";
 
 // -- Cleanup aksiyonları merkezi:
 const cleanupActions = [
@@ -151,7 +157,6 @@ const cleanupActions = [
   clearBookingMessages,
   clearBikesMessages,
   clearBikesCategoryMessages,
-  clearChatMessagesAdmin,
   clearCouponMessages,
   clearNewsMessages,
   clearNewsCategoryMessages,
@@ -165,6 +170,8 @@ const cleanupActions = [
   clearContactMessages,
   clearSectionMetaMessages,
   clearSectionSettingMessages,
+  clearOrderMessages,
+  clearChatMessages,
 ];
 
 // --- useLayoutInit ---
@@ -229,6 +236,7 @@ export const useLayoutInit = () => {
   const sectionSettingsAdmin = useAppSelector(
     (s) => s.sectionSetting.settingsAdmin
   );
+  const ordersAdmin = useAppSelector((state) => state.orders);
 
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
   useEffect(() => {
@@ -278,9 +286,24 @@ export const useLayoutInit = () => {
     if (!bikesCategories.categories.length && !bikesCategories.loading)
       dispatch(fetchBikesCategories());
 
-    // CHAT admin fetchleri (sadece tenant + primitive state ile tetiklenir)
-    if (chat.selectedRoom && !chat.loading && !chat.chatMessagesAdmin.length) {
-      dispatch(fetchMessagesByRoomAdmin(chat.selectedRoom));
+    if (
+      chat.roomId &&
+      !chat.loading &&
+      (!chat.chatMessagesAdmin.length || chat.chatMessagesAdmin[0]?.roomId !== chat.roomId)
+    ) {
+      dispatch(fetchMessagesByRoomAdmin(chat.roomId));
+    }
+    // Tüm chat oturumları
+    if (!chat.sessionsAdmin.length && !chat.loading) {
+      dispatch(fetchAllChatSessionsAdmin());
+    }
+    // Aktif chat oturumları
+    if (!chat.activeSessionsAdmin.length && !chat.loading) {
+      dispatch(fetchActiveChatSessionsAdmin());
+    }
+    // Arşivlenmiş chat oturumları
+    if (!chat.archivedSessionsAdmin.length && !chat.loading) {
+      dispatch(fetchArchivedSessionsAdmin());
     }
     if (!chat.sessionsAdmin.length && !chat.loading)
       dispatch(fetchAllChatSessionsAdmin());
@@ -301,7 +324,10 @@ export const useLayoutInit = () => {
       dispatch(fetchGalleryCategories());
     if (!referencesList.referencesAdmin.length && !referencesList.loading)
       dispatch(fetchAllReferencesAdmin());
-    if (!referencesCategories.categories.length && !referencesCategories.loading)
+    if (
+      !referencesCategories.categories.length &&
+      !referencesCategories.loading
+    )
       dispatch(fetchReferencesCategories());
     if (!servicesList.servicesAdmin.length && !servicesList.loading)
       dispatch(fetchAllServicesAdmin());
@@ -323,6 +349,9 @@ export const useLayoutInit = () => {
       sectionSettingsAdmin.length === 0
     ) {
       dispatch(fetchSectionSettingsAdmin());
+    }
+    if (!ordersAdmin.ordersAdmin.length && !ordersAdmin.loading) {
+      dispatch(fetchAllOrdersAdmin());
     }
     // Burada sadece tenant ve ilgili loading primitive’lerini kullanıyoruz.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -383,6 +412,7 @@ export const useLayoutInit = () => {
     contactMessagesAdmin,
     sectionMetasAdmin,
     sectionSettingsAdmin,
+    ordersAdmin,
     // gerekirse analyticsTrends vs ekleyebilirsin
   };
 };

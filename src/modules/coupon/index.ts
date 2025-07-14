@@ -12,4 +12,7 @@ export { default as couponSlice } from "./slice/couponSlice";
 // Types (if any)
 export * from "./types";
 
+// locales
+export { default as translations } from "./locales";
+
 // Optionally: i18n can be loaded in page-level or via config

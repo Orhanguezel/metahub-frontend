@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/comment";
 import styled from "styled-components";
 import { useAppDispatch } from "@/store/hooks";
 import {
@@ -19,22 +20,22 @@ interface Props {
     | "activity"
     | "news"
     | "blog"
-    | "radonarprod"
     | "customProduct"
-    | "product"
-    | "bike"
+    | "products"
+    | "bikes"
     | "articles"
     | "services"
     | "about"
     | "library"
-    | "product"
+    | "products"
     | "references"
     | "company"
-  // contentType: "news" | "blog" | "product" | "radonarprod" | "bike" | "articles" | "services" | "about" | "customProduct" | "references" | "library" | "faq" | "contact" | "company" | "tenant";
+  // contentType: "news" | "blog" | "products" | "radonarprod" | "bikes" | "articles" | "services" | "about" | "customProduct" | "references" | "library" | "faq" | "contact" | "company" | "tenant";
 }
 
 export default function CommentForm({ contentId, contentType }: Props) {
-  const { t } = useTranslation("comments");
+  const { t } = useI18nNamespace("comment", translations);
+
   const dispatch = useAppDispatch();
   const executeRecaptcha = useRecaptcha();
 

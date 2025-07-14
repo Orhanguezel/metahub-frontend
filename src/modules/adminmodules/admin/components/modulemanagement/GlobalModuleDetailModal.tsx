@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { XCircle, Pencil } from "lucide-react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
+import {translations} from "@/modules/adminmodules";
 import { SupportedLocale } from "@/types/common";
 import { EditGlobalModuleModal } from "@/modules/adminmodules";
 import { SUPPORTED_LOCALES } from "@/i18n";

@@ -2,27 +2,32 @@
 
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { useAppDispatch } from "@/store/hooks";
-
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import { translations } from "@/modules/chat";
 import {
   sendManualMessage,
   clearManualMessageState,
   markMessagesAsRead,
   fetchMessagesByRoom,
+  selectChatRoomId,
+  selectManualMessageState,
 } from "@/modules/chat/slice/chatSlice";
 
 const ManualMessageForm = () => {
   const dispatch = useAppDispatch();
-  // --- SADECE BURADAN!
-  const { chat } = useAdminModuleState();
+  const { t } = useI18nNamespace("chat", translations);
 
-  const selectedRoom = chat.selectedRoom;
-  const { loading, success, error } = chat.manualMessage;
+  // Slice state
+  const selectedRoom = useAppSelector(selectChatRoomId);
+  const manualMessage = useAppSelector(selectManualMessageState);
+  const { loading, success, error } = manualMessage;
 
+  // Local form state
   const [message, setMessage] = useState("");
-  const [lang] = useState<"tr" | "en" | "de">("de");
   const [closeSession, setCloseSession] = useState(false);
 
+  // Mesaj gönderimi
   const handleSend = async () => {
     if (!message.trim() || !selectedRoom) return;
 
@@ -31,7 +36,7 @@ const ManualMessageForm = () => {
         sendManualMessage({
           roomId: selectedRoom,
           message,
-          lang,
+          // lang slice tarafında veya backendde otomatik belirleniyorsa göndermek zorunda değilsin!
           close: closeSession,
         })
       ).unwrap();
@@ -39,16 +44,15 @@ const ManualMessageForm = () => {
       setMessage("");
       setCloseSession(false);
 
-      // Son mesajları tekrar yükle (gerekirse)
+      // Son mesajları tekrar yükle
       dispatch(fetchMessagesByRoom(selectedRoom));
       dispatch(markMessagesAsRead(selectedRoom));
     } catch (err) {
-      // Hata otomatik merkezi state'e düşer
-      // (isteğe bağlı burada toast veya log eklenebilir)
+      console.error("Mesaj gönderilirken hata oluştu:", err);
     }
   };
 
-  // ✅ Başarı ve hata mesajını 3 saniye sonra temizle
+  // Otomatik başarı/hata temizliği
   useEffect(() => {
     if (success || error) {
       const timer = setTimeout(() => {
@@ -60,12 +64,12 @@ const ManualMessageForm = () => {
 
   return (
     <Wrapper>
-      <Label>📤 Manuel Mesaj Gönder</Label>
+      <Label>{t("admin.manual_message_title", "📤 Manuel Mesaj Gönder")}</Label>
       <Textarea
         rows={2}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        placeholder="Mesaj içeriği..."
+        placeholder={t("admin.input_placeholder", "Mesaj içeriği...")}
       />
 
       <Row>
@@ -76,15 +80,19 @@ const ManualMessageForm = () => {
             checked={closeSession}
             onChange={(e) => setCloseSession(e.target.checked)}
           />
-          <label htmlFor="closeSession">Oturumu kapat</label>
+          <label htmlFor="closeSession">
+            {t("admin.close_session", "Oturumu kapat")}
+          </label>
         </CheckboxWrapper>
 
         <Button disabled={!message.trim() || loading} onClick={handleSend}>
-          {loading ? "Gönderiliyor..." : "Gönder"}
+          {loading
+            ? t("admin.sending", "Gönderiliyor...")
+            : t("admin.send", "Gönder")}
         </Button>
       </Row>
 
-      {success && <SuccessText>Mesaj gönderildi ✅</SuccessText>}
+      {success && <SuccessText>{t("admin.success", "Mesaj gönderildi ✅")}</SuccessText>}
       {error && <ErrorText>{error}</ErrorText>}
     </Wrapper>
   );
@@ -92,7 +100,7 @@ const ManualMessageForm = () => {
 
 export default ManualMessageForm;
 
-// 💅 Styles (değişmedi)
+// 💅 Styles
 const Wrapper = styled.div`
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -152,7 +160,6 @@ const Button = styled.button`
 const SuccessText = styled.p`
   margin-top: 0.6rem;
   color: green;
-  
   font-size: 0.85rem;
   font-weight: 500;
 `;

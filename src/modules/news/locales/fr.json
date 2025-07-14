@@ -1,7 +1,7 @@
 {
   "page": {
-    "noNews": "Aucun article trouvé.",
-    "allNews": "Tous les articles",
+    "noNews": "Aucun news trouvé.",
+    "allNews": "Tous les newss",
     "news": {
       "title": "À propos",
       "all": "Voir tout"
@@ -17,11 +17,11 @@
   "unknown": "Inconnu",
   "tabs": {
     "news": "À propos",
-    "create": "Nouvel article",
+    "create": "Nouvel news",
     "categories": "Catégories"
   },
   "news": {
-    "empty": "Aucun article disponible.",
+    "empty": "Aucun news disponible.",
     "no_images": "Aucune image",
     "author": "Auteur",
     "tags": "Tags",
@@ -37,8 +37,8 @@
   "no": "Non",
   "admin": {
     "news": {
-      "edit": "Modifier l'article",
-      "create": "Créer un nouvel article",
+      "edit": "Modifier l'news",
+      "create": "Créer un nouvel news",
       "title": "Titre",
       "summary": "Résumé",
       "content": "Contenu",
@@ -64,7 +64,7 @@
     "cancel": "Annuler",
     "confirm": {
       "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
-      "delete_article": "Êtes-vous sûr de vouloir supprimer cet article ?"
+      "delete_news": "Êtes-vous sûr de vouloir supprimer cet news ?"
     },
     "loading": "Chargement...",
     "actions": "Actions",

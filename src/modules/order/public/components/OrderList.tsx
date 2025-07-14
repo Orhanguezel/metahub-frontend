@@ -2,7 +2,8 @@
 import React from "react";
 import styled from "styled-components";
 import { OrderCard } from "@/modules/order";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/order";
 import type { IOrder } from "@/modules/order/types";
 
 type OrderListProps = {
@@ -10,7 +11,7 @@ type OrderListProps = {
 };
 
 const OrderList: React.FC<OrderListProps> = ({ orders = [] }) => {
-  const { t } = useTranslation("order");
+  const { t } = useI18nNamespace("order", translations);
 
   if (!orders.length) return <Empty>{t("empty", "No orders found.")}</Empty>;
 

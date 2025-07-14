@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
-import translations from "../../locales";
+import {translations} from "@/modules/bikes";
 import translations2 from "@/modules/cart/locales";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import type { SupportedLocale } from "@/types/common";
@@ -191,8 +191,8 @@ export default function BikesDetailSection() {
         </OtherProduct>
       )}
 
-      <CommentForm contentId={bike._id} contentType="bike" />
-      <CommentList contentId={bike._id} contentType="bike" />
+      <CommentForm contentId={bike._id} contentType="bikes" />
+      <CommentList contentId={bike._id} contentType="bikes" />
     </Container>
   );
 }

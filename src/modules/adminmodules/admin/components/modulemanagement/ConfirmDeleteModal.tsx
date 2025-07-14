@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from "react";
 import styled from "styled-components";
 import { XCircle } from "lucide-react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
+import {translations} from "@/modules/adminmodules";
 
 // --- Props tipi ---
 interface ConfirmDeleteModalProps {

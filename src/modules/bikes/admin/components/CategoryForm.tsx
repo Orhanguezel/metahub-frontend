@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import type { BikesCategory } from "@/modules/bikes/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/bikes";
 import ImageUploadWithPreview from "@/shared/ImageUploadWithPreview";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 
@@ -53,7 +53,7 @@ export default function BikesCategoryFormModal({
       setSelectedFiles([]);
       setRemovedImages([]);
     }
-  }, [editingItem, isOpen]);
+  }, [editingItem, isOpen, emptyLabel]);
 
   const handleImagesChange = useCallback(
     (files: File[], removed: string[], current: string[]) => {
@@ -138,7 +138,7 @@ export default function BikesCategoryFormModal({
           max={5}
           defaultImages={existingImages}
           onChange={handleImagesChange}
-          folder="bikeCategory"
+          folder="bikesCategory"
         />
 
         <ButtonGroup>

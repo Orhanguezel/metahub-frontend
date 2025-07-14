@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { Globe, Trash2, AlertCircle } from "lucide-react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
+import {translations} from "@/modules/adminmodules";
 import { SupportedLocale } from "@/types/common";
 import * as MdIcons from "react-icons/md";
 import { ModuleStatusToggle } from "@/modules/adminmodules";

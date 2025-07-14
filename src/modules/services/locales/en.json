@@ -1,7 +1,7 @@
 {
   "page": {
-    "noServices": "No articles found.",
-    "allServices": "All Articles",
+    "noServices": "No servicess found.",
+    "allServices": "All Servicess",
     "services": {
       "title": "Services",
       "all": "See All"
@@ -17,7 +17,7 @@
   "unknown": "Unknown",
   "tabs": {
     "services": "Services",
-    "create": "New Article",
+    "create": "New Services",
     "categories": "Categories"
   },
   "services": {
@@ -37,8 +37,8 @@
   "no": "No",
   "admin": {
     "services": {
-      "edit": "Edit Article",
-      "create": "Create New Article",
+      "edit": "Edit Services",
+      "create": "Create New Services",
       "title": "Title",
       "summary": "Summary",
       "content": "Content",
@@ -64,7 +64,7 @@
     "cancel": "Cancel",
     "confirm": {
       "delete": "Are you sure you want to delete this category?",
-      "delete_article": "Are you sure you want to delete this article?"
+      "delete_services": "Are you sure you want to delete this services?"
     },
     "loading": "Loading...",
     "actions": "Actions",

@@ -1,6 +1,8 @@
 "use client";
 import React from "react";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/order";
+import type { SupportedLocale } from "@/types/common";
 import styled from "styled-components";
 import type { OrderStatus, IOrderItem, IOrder } from "@/modules/order/types";
 
@@ -9,11 +11,11 @@ interface OrderDetailProps {
 }
 
 const OrderDetail: React.FC<OrderDetailProps> = ({ order }) => {
-  const { t, i18n } = useTranslation("order");
+ const { t,i18n } = useI18nNamespace("order", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
   if (!order) return null;
 
   // Kullanıcı diline göre ürün açıklamaları
-  const lang = i18n.language || "en";
   const productDescription = order.items.map(
     (item: IOrderItem) => (item.product as any)?.description?.[lang] ?? "-"
   );

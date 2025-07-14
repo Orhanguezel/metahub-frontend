@@ -53,3 +53,23 @@ export interface IOrder {
   createdAt?: string | Date;
   updatedAt?: string | Date;
 }
+interface ProductNameType {
+  [lang: string]: string;
+}
+
+
+export interface ProductType {
+  _id?: string;
+  name?: ProductNameType;
+  price?: number;
+  [key: string]: any;
+}
+
+export interface OrderItemType {
+  product?: ProductType | string;
+  name?: string;
+  quantity: number;
+  priceAtAddition?: number;
+  size?: string;
+}
+

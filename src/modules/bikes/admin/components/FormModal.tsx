@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import type { IBikes, BikesCategory } from "@/modules/bikes/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/bikes";
 import ImageUploadWithPreview from "@/shared/ImageUploadWithPreview";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import { toast } from "react-toastify";
@@ -84,7 +84,7 @@ export default function BikesFormModal({
       setSelectedFiles([]);
       setRemovedImages([]);
     }
-  }, [editingItem, isOpen]);
+  }, [editingItem, isOpen, emptyLabel]);
 
    // --- TOAST Mesajları ---
    useEffect(() => {
@@ -232,7 +232,7 @@ export default function BikesFormModal({
           max={5}
           defaultImages={existingImages}
           onChange={handleImagesChange}
-          folder="bike"
+          folder="bikes"
         />
 
         <label htmlFor="category">{t("admin.bike.category", "Category")}</label>

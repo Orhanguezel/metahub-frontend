@@ -1,11 +1,11 @@
-// src/modules/chat/types/index.ts
 import type { SupportedLocale } from "@/types/common";
 
-// Çok dilli alanlar için merkezi tanım
+// Çok dilli alan için merkezi tip
 export type TranslatedField = {
   [lang in SupportedLocale]?: string;
 };
 
+// Mesaj (kullanıcı, bot, admin)
 export interface ChatMessage {
   _id: string;
   sender: {
@@ -13,15 +13,44 @@ export interface ChatMessage {
     name: string;
     email: string;
   } | null;
+  tenant: string;
+  roomId: string;              // (backend: roomId)
   message: string;
-  room: string;
   isFromBot?: boolean;
   isFromAdmin?: boolean;
   isRead?: boolean;
-  lang: TranslatedField;
+  language: TranslatedField;   // backenddeki language ile birebir!
   createdAt: string;
+  updatedAt: string;
 }
 
+// Sohbet oturumu (session)
+export interface ChatSession {
+  _id: string;
+  roomId: string;
+  tenant: string;
+  user?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  createdAt: string;
+  closedAt?: string;
+}
+
+// Arşivlenmiş oturum
+export interface ArchivedSession {
+  room: string;
+  user: {
+    _id: string;
+    name: string;
+    email: string;
+  } | null;
+  lastMessage: string;
+  closedAt: string;
+}
+
+// Destek/Escalation (isteğe bağlı)
 export interface EscalatedRoom {
   room: string;
   user: {
@@ -33,28 +62,3 @@ export interface EscalatedRoom {
   lang: string;
   createdAt: string;
 }
-
-export interface ChatSession {
-  _id: string;
-  roomId: string;
-  user?: {
-    _id: string;
-    name: string;
-    email: string;
-  };
-  createdAt: string;
-  closedAt?: string;
-}
-
-export interface ArchivedSession {
-  room: string;
-  user: {
-    _id: string;
-    name: string;
-    email: string;
-  };
-  lastMessage: string;
-  closedAt: string;
-}
-
-  

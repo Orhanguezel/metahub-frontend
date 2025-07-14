@@ -2,19 +2,19 @@
 
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
-import { useTranslation } from "react-i18next";
-import translations from "../../locales";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/news";
 import { Skeleton, ErrorMessage } from "@/shared";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import type { SupportedLocale } from "@/types/common";
-import type { INews } from "../../types";
+import type { INews } from "@/modules/news/types";
 
 
 export default function NewsPage() {
-const { i18n, t } = useTranslation("news");
-  const lang = (i18n.language?.slice(0, 2) || "tr") as SupportedLocale; 
+  const { i18n, t } = useI18nNamespace("news", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { news, loading, error } = useAppSelector((state) => state.news);
 
       Object.entries(translations).forEach(([lang, resources]) => {

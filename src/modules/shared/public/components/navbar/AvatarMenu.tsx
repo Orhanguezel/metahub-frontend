@@ -1,6 +1,6 @@
 // /modules/shared/AvatarMenu.tsx
 "use client";
-import { useRef, useEffect, useMemo } from "react";
+import React, { useRef, useEffect, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,21 +19,27 @@ interface AvatarMenuProps {
   setShowDropdown: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function AvatarMenu({ showDropdown, setShowDropdown }: AvatarMenuProps) {
+export default function AvatarMenu({
+  showDropdown,
+  setShowDropdown,
+}: AvatarMenuProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { t } = useI18nNamespace("navbar", translations);
   const dispatch = useAppDispatch();
   const { profile: user } = useAppSelector((state) => state.account);
 
   // Profil resmi çözümü
-  const resolvedProfileImage: string = useMemo(() => {
-    if (!user?.profileImage) return "/defaults/profile-thumbnail.png";
+  const resolvedProfileImage = useMemo(() => {
+    if (!user?.profileImage)
+      return "/defaults/profile-thumbnail.png"; // <-- public/defaults/ olmalı!
     if (typeof user.profileImage === "object" && user.profileImage !== null) {
       const img = user.profileImage as ProfileImageObj;
+      if (img.thumbnail?.startsWith("http")) return img.thumbnail;
+      if (img.url?.startsWith("http")) return img.url;
       return getImageSrc(img.thumbnail || img.url || "", "profile");
     }
     if (typeof user.profileImage === "string") {
-      if (user.profileImage.trim() === "") return "/defaults/profile-thumbnail.png";
+      if (!user.profileImage.trim()) return "/defaults/profile-thumbnail.png";
       if (user.profileImage.startsWith("http")) return user.profileImage;
       return getImageSrc(user.profileImage, "profile");
     }
@@ -44,12 +50,16 @@ export default function AvatarMenu({ showDropdown, setShowDropdown }: AvatarMenu
   useEffect(() => {
     if (!showDropdown) return;
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, [showDropdown, setShowDropdown]);
 
   // Logout
@@ -58,7 +68,10 @@ export default function AvatarMenu({ showDropdown, setShowDropdown }: AvatarMenu
     try {
       await dispatch(logoutUser()).unwrap();
     } catch (err: any) {
-      toast.error(t("logoutError", "Çıkış yaparken bir hata oluştu."),err);
+      toast.error(
+        t("logoutError", "Çıkış yaparken bir hata oluştu.") +
+          (err?.message ? `: ${err.message}` : "")
+      );
     }
     dispatch(resetAuthState());
     dispatch(resetProfile());

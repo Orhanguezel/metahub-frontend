@@ -8,6 +8,7 @@ interface ModuleMetaState {
   modules: IModuleMeta[];
   selectedModule: IModuleMeta | null;
   loading: boolean;
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   successMessage: string | null;
 }
@@ -16,6 +17,7 @@ const initialState: ModuleMetaState = {
   modules: [],
   selectedModule: null,
   loading: false,
+  status: "idle",
   error: null,
   successMessage: null,
 };

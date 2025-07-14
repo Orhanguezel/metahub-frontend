@@ -1,7 +1,7 @@
 {
   "page": {
-    "noActivity": "Aucun article trouvé.",
-    "allActivity": "Tous les articles",
+    "noActivity": "Aucun activity trouvé.",
+    "allActivity": "Tous les activitys",
     "activity": {
       "title": "À propos",
       "all": "Voir tout"
@@ -17,11 +17,11 @@
   "unknown": "Inconnu",
   "tabs": {
     "activity": "À propos",
-    "create": "Nouvel article",
+    "create": "Nouvel activity",
     "categories": "Catégories"
   },
   "activity": {
-    "empty": "Aucun article disponible.",
+    "empty": "Aucun activity disponible.",
     "no_images": "Aucune image",
     "author": "Auteur",
     "tags": "Tags",
@@ -37,8 +37,8 @@
   "no": "Non",
   "admin": {
     "activity": {
-      "edit": "Modifier l'article",
-      "create": "Créer un nouvel article",
+      "edit": "Modifier l'activity",
+      "create": "Créer un nouvel activity",
       "title": "Titre",
       "summary": "Résumé",
       "content": "Contenu",
@@ -64,7 +64,7 @@
     "cancel": "Annuler",
     "confirm": {
       "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
-      "delete_article": "Êtes-vous sûr de vouloir supprimer cet article ?"
+      "delete_activity": "Êtes-vous sûr de vouloir supprimer cet activity ?"
     },
     "loading": "Chargement...",
     "actions": "Actions",

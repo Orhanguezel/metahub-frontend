@@ -3,7 +3,7 @@ import React from "react";
 import styled, { keyframes } from "styled-components";
 import { Check, X } from "lucide-react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
+import {translations} from "@/modules/adminmodules";
 
 // Props tipi
 interface ModuleStatusToggleProps {

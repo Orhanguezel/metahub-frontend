@@ -189,8 +189,7 @@ const servicesSlice = createSlice({
       .addCase(createServices.pending, startLoading)
       .addCase(createServices.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage =
-          action.payload?.message || "Article created successfully.";
+        state.successMessage = action.payload?.message;
         if (action.payload?.data) {
           state.servicesAdmin.unshift(action.payload.data);
         }

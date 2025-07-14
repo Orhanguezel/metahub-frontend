@@ -3,7 +3,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/news";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import type { SupportedLocale } from "@/types/common";
 
@@ -31,8 +31,8 @@ import { INews } from "@/modules/news/types";
 import { NewsCategory } from "@/modules/news/types";
 
 export default function AdminNewsPage() {
-const { i18n, t } = useI18nNamespace("adminModules", translations);
-const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
+  const { i18n, t } = useI18nNamespace("news", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
 const news = useAppSelector((state) => state.news.newsAdmin);
 const loading = useAppSelector((state) => state.news.loading);
@@ -64,7 +64,7 @@ const error = useAppSelector((state) => state.news.error);
 
   const handleDelete = async (id: string) => {
     const confirmMsg = t(
-      "confirm.delete_article",
+      "confirm.delete_news",
       "Bu makaleyi silmek istediğinize emin misiniz?"
     );
     if (confirm(confirmMsg)) {

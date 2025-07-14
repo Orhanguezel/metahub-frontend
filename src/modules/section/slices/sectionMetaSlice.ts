@@ -8,6 +8,7 @@ interface SectionMetaState {
   metasAdmin: ISectionMeta[];
   loading: boolean;
   loadingAdmin: boolean;
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   successMessage: string | null;
 }
@@ -17,6 +18,7 @@ const initialState: SectionMetaState = {
   metasAdmin: [],
   loading: false,
   loadingAdmin: false,
+  status: "idle",
   error: null,
   successMessage: null,
 };

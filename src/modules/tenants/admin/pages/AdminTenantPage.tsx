@@ -78,7 +78,7 @@ export default function AdminTenantPage() {
 
   // Tenant Düzenle
   const handleEdit = (tenant: ITenant) => {
-    dispatch(setSelectedTenant(tenant._id || ""));
+    dispatch(setSelectedTenant(tenant));
     setActiveTab("form");
   };
 

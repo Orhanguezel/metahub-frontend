@@ -1,11 +1,9 @@
 "use client";
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  getMyOrders,
-  clearOrderMessages,
-} from "@/modules/order/slice/ordersSlice";
-import { useTranslation } from "react-i18next";
+import { fetchMyOrders, clearOrderMessages } from "@/modules/order/slice/ordersSlice";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/order";
 import styled from "styled-components";
 import { OrderList } from "@/modules/order";
 import type { IOrder } from "@/modules/order/types";
@@ -16,30 +14,66 @@ type OrderMessageProps = {
 
 const OrderPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { myOrders, loading, error } = useAppSelector((state) => state.orders);
-  const { t } = useTranslation("order");
+  const { profile } = useAppSelector((s) => s.account);
+  const { myOrders, error, loading, status } = useAppSelector((s) => s.orders);
+  const { t } = useI18nNamespace("order", translations);
 
+  // Siparişleri sadece login olan kullanıcılar için fetch et
   useEffect(() => {
-    dispatch(getMyOrders());
+    if (profile && status === "idle") {
+      dispatch(fetchMyOrders());
+    }
+    // Temizlik: sayfa unmount olunca mesajları sil
     return () => {
       dispatch(clearOrderMessages());
     };
-  }, [dispatch]);
+  }, [dispatch, profile, status]);
 
-  const isEmpty =
-    !myOrders || !Array.isArray(myOrders) || myOrders.length === 0;
+  // error'u normalize et
+  const errorMessage =
+    typeof error === "string"
+      ? error
+      : error && typeof (error as any).message === "string"
+      ? (error as any).message
+      : error && typeof error === "object"
+      ? JSON.stringify(error)
+      : "";
+
+  // 404/noOrdersFound soft hata olarak sayılır (boş state gösterir)
+  const isNoOrders =
+    !!errorMessage &&
+    (errorMessage.includes("noOrdersFound") || errorMessage.includes("404"));
+
+  const isValidOrders = Array.isArray(myOrders) && myOrders.length > 0;
+
+  // Giriş yapılmamışsa hiçbir şey render etme (veya yönlendirme yapabilirsin)
+  if (!profile) return null;
 
   return (
     <OrderPageWrapper>
       <MainContent>
         <Title>{t("title", "My Orders")}</Title>
+
         {loading && <OrderMessage>{t("loading", "Loading...")}</OrderMessage>}
-        {error && <OrderMessage $error>{error}</OrderMessage>}
-        {isEmpty ? (
+
+        {/* API 404/noOrdersFound ise empty olarak göster */}
+        {!loading && isNoOrders && (
           <OrderMessage>{t("empty", "You have no orders yet.")}</OrderMessage>
-        ) : (
+        )}
+
+        {/* Diğer gerçek hatalar */}
+        {!loading && !isNoOrders && !!errorMessage && (
+          <OrderMessage $error>{errorMessage}</OrderMessage>
+        )}
+
+        {/* Boş ise ve hata yoksa */}
+        {!loading && !isNoOrders && !errorMessage && !isValidOrders && (
+          <OrderMessage>{t("empty", "You have no orders yet.")}</OrderMessage>
+        )}
+
+        {/* Siparişler varsa */}
+        {!loading && !isNoOrders && !errorMessage && isValidOrders && (
           <OrderListWrapper>
-            {/* TS'yi ikna etmek için as IOrder[] eklenebilir */}
             <OrderList orders={myOrders as IOrder[]} />
           </OrderListWrapper>
         )}
@@ -51,7 +85,6 @@ const OrderPage: React.FC = () => {
 export default OrderPage;
 
 // --- Styled Components ---
-
 const OrderPageWrapper = styled.div`
   width: 100%;
   min-height: 100vh;

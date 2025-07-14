@@ -3,13 +3,13 @@
 import styled from "styled-components";
 import Link from "next/link";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/bikes";
 import { motion } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
 import type { SupportedLocale } from "@/types/common";
 import { useAppSelector } from "@/store/hooks";
 import { Skeleton, ErrorMessage, AddToCartButton } from "@/shared";
-import type { IBikes } from "../../types";
+import type { IBikes } from "@/modules/bikes/types";
 
 export default function BikesSection() {
   const { i18n, t } = useI18nNamespace("bikes", translations);

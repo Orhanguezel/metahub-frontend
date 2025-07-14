@@ -2,7 +2,9 @@
 
 import React from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/order";
+import type { SupportedLocale } from "@/types/common";
 import { OrderItemList } from "@/modules/order";
 import type { IOrder, OrderStatus } from "@/modules/order/types";
 
@@ -15,8 +17,8 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   order,
   onClose,
 }) => {
-  const { t, i18n } = useTranslation("order");
-  const lang = i18n.language || "en";
+  const { t,i18n } = useI18nNamespace("order", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
   if (!order) return null;
 
   // ESC veya arka plana tıklamayla kapama vs. eklenebilir

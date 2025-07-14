@@ -184,8 +184,7 @@ const newsSlice = createSlice({
       .addCase(createNews.pending, startLoading)
       .addCase(createNews.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage =
-          action.payload?.message || "Article created successfully.";
+        state.successMessage = action.payload?.message;
         if (action.payload?.data) {
           state.newsAdmin.unshift(action.payload.data);
         }

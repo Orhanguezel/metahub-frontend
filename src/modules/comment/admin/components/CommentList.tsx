@@ -3,7 +3,9 @@
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchCommentsForContent } from "@/modules/comment/slice/commentSlice";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/comment";
+import { SupportedLocale } from "@/types/common";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 
@@ -15,15 +17,14 @@ interface Props {
     | "activity"
     | "news"
     | "blog"
-    | "radonarprod"
     | "customProduct"
-    | "product"
-    | "bike"
+    | "products"
+    | "bikes"
     | "articles"
     | "services"
     | "about"
     | "library"
-    | "product"
+    | "products"
     | "references"
     | "company"
 
@@ -31,8 +32,8 @@ interface Props {
 
 export default function CommentList({ contentId, contentType }: Props) {
   const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("comments");
-  const lang = (i18n.language as "tr" | "en" | "de") || "en";
+  const { i18n, t } = useI18nNamespace("comment", translations);
+  const lang: SupportedLocale = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
   const { comments, loading } = useAppSelector((state) => state.comments);
 
   useEffect(() => {

@@ -8,7 +8,7 @@ import {
   createModuleMeta,
 } from "@/modules/adminmodules/slices/moduleMetaSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
+import {translations} from "@/modules/adminmodules";
 import { toast } from "react-toastify";
 import { SUPPORTED_LOCALES } from "@/i18n";
 import type { TranslatedLabel, SupportedLocale } from "@/types/common";

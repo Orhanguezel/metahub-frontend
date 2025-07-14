@@ -189,8 +189,7 @@ const articlesSlice = createSlice({
       .addCase(createArticles.pending, startLoading)
       .addCase(createArticles.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage =
-          action.payload?.message || "Article created successfully.";
+        state.successMessage = action.payload?.message;
         if (action.payload?.data) {
           state.articlesAdmin.unshift(action.payload.data);
         }

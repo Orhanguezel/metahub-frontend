@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { XCircle, Pencil, AlertTriangle } from "lucide-react";
-import translations from "../../../locales";
+import {translations} from "@/modules/adminmodules";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import type { SupportedLocale } from "@/types/common";
 import { EditTenantModuleModal } from "@/modules/adminmodules";

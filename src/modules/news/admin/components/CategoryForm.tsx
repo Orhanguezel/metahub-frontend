@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import { useState, useEffect, useMemo } from "react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/news";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import type { NewsCategory } from "@/modules/news/types";
 
@@ -24,7 +24,7 @@ export default function NewsCategoryForm({
   onSubmit,
 }: Props) {
   const { i18n, t } = useI18nNamespace("news", translations);
-  const lang = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   // Empty state objesi (useMemo ile!)
   const emptyLabel = useMemo(

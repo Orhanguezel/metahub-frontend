@@ -3,7 +3,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/references";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import type { SupportedLocale } from "@/types/common";
 
@@ -31,8 +31,8 @@ import { IReferences } from "@/modules/references/types";
 import { ReferencesCategory } from "@/modules/references/types";
 
 export default function AdminReferencesPage() {
-const { i18n, t } = useI18nNamespace("adminModules", translations);
-const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
+  const { i18n, t } = useI18nNamespace("references", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
 const references = useAppSelector((state) => state.references.referencesAdmin);
 const loading = useAppSelector((state) => state.references.loading);
@@ -64,7 +64,7 @@ const error = useAppSelector((state) => state.references.error);
 
   const handleDelete = async (id: string) => {
     const confirmMsg = t(
-      "confirm.delete_article",
+      "confirm.delete_references",
       "Bu makaleyi silmek istediğinize emin misiniz?"
     );
     if (confirm(confirmMsg)) {

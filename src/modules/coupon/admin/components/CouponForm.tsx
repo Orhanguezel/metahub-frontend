@@ -4,7 +4,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import { translations } from "@/modules/coupon";
 import { SUPPORTED_LOCALES } from "@/types/common";
 import type { Coupon, TranslatedField } from "../../types";
 

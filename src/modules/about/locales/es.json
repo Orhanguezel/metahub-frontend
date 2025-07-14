@@ -64,7 +64,7 @@
     "cancel": "Cancelar",
     "confirm": {
       "delete": "¿Está seguro de que desea eliminar esta categoría?",
-      "delete_article": "¿Está seguro de que desea eliminar este artículo?"
+      "delete_about": "¿Está seguro de que desea eliminar este artículo?"
     },
     "loading": "Cargando...",
     "actions": "Acciones",

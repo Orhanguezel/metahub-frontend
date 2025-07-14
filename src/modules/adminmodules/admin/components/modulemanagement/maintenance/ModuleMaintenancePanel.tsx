@@ -8,7 +8,7 @@ import {
   cleanupOrphanModuleSettings,
 } from "@/modules/adminmodules/slices/moduleMaintenanceSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
+import {translations} from "@/modules/adminmodules";
 
 import {
   ModuleTenantMatrixTable,

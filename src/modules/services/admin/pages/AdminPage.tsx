@@ -3,7 +3,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/services";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import type { SupportedLocale } from "@/types/common";
 
@@ -31,8 +31,8 @@ import { IServices } from "@/modules/services/types";
 import { ServicesCategory } from "@/modules/services/types";
 
 export default function AdminServicesPage() {
-const { i18n, t } = useI18nNamespace("adminModules", translations);
-const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
+  const { i18n, t } = useI18nNamespace("services", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
 const services = useAppSelector((state) => state.services.servicesAdmin);
 const loading = useAppSelector((state) => state.services.loading);
@@ -64,7 +64,7 @@ const error = useAppSelector((state) => state.services.error);
 
   const handleDelete = async (id: string) => {
     const confirmMsg = t(
-      "confirm.delete_article",
+      "confirm.delete_services",
       "Bu makaleyi silmek istediğinize emin misiniz?"
     );
     if (confirm(confirmMsg)) {

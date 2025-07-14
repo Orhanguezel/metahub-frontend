@@ -3,12 +3,17 @@
 import React, { useEffect, useRef } from "react";
 import styled from "styled-components";
 import { ChatMessage } from "@/modules/chat/types";
+import { SupportedLocale } from "@/types/common";
 
 interface Props {
-  chatMessages: Array<ChatMessage & { lang?: "tr" | "en" | "de" }>;
-  loading: boolean;
-  error: string | null;
+  chatMessages: ChatMessage[];
+  loading?: boolean;
+  error?: string | null;
   searchTerm?: string;
+  lang?: SupportedLocale;
+  emptyText?: string;
+  loadingText?: string;
+  errorText?: string;
 }
 
 const MessageList: React.FC<Props> = ({
@@ -16,53 +21,60 @@ const MessageList: React.FC<Props> = ({
   loading,
   error,
   searchTerm = "",
+  lang = "tr",
+  emptyText = "Henüz mesaj yok.",
+  loadingText = "Yükleniyor...",
+  errorText = "Bir hata oluştu.",
 }) => {
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Her yeni mesajda scroll'u en alta çek
+  // Otomatik scroll to bottom
   useEffect(() => {
     if (listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight;
     }
   }, [chatMessages]);
 
-  // Kelimeyi vurgulamak için fonksiyon
+  // Çoklu dil desteği: Mesaj metnini uygun dilden çek
+  const getMessageText = (msg: ChatMessage) => {
+    if (msg.language && typeof msg.language === "object" && lang in msg.language) {
+      return msg.language[lang] || msg.message;
+    }
+    return msg.message;
+  };
+
+  // Kelimeyi vurgula
   const highlightTerm = (text: string, term: string) => {
     if (!term.trim()) return text;
-
-    // Regex kaçış karakterlerinden kaçınmak için:
     const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(`(${safeTerm})`, "gi");
     const parts = text.split(regex);
-
-    return parts.map((part, index) =>
-      regex.test(part) ? (
-        <Highlight key={index}>{part}</Highlight>
-      ) : (
-        <React.Fragment key={index}>{part}</React.Fragment>
-      )
+    return parts.map((part, i) =>
+      regex.test(part) ? <Highlight key={i}>{part}</Highlight> : <React.Fragment key={i}>{part}</React.Fragment>
     );
   };
 
-  if (loading) return <LoadingText>Yükleniyor...</LoadingText>;
-  if (error) return <ErrorText>{error}</ErrorText>;
+  // Sender (kim yazdı)
+  const renderSender = (msg: ChatMessage) => {
+    if (msg.isFromBot) return <>🤖 Bot:</>;
+    if (msg.isFromAdmin) return <>🛡️ Admin:</>;
+    if (msg.sender?.name) return <>{msg.sender.name}:</>;
+    return <>Ziyaretçi:</>;
+  };
+
+  if (loading) return <LoadingText>{loadingText}</LoadingText>;
+  if (error) return <ErrorText>{errorText} {error}</ErrorText>;
 
   return (
     <List ref={listRef}>
       {chatMessages.length === 0 ? (
-        <EmptyText>Henüz mesaj yok.</EmptyText>
+        <EmptyText>{emptyText}</EmptyText>
       ) : (
         chatMessages.map((message) => (
-          <Item key={message._id}>
-            <Sender>
-              {message.sender?.name
-                ? message.sender.name
-                : message.isFromBot
-                ? "🤖 Bot"
-                : "Sistem"}
-              :
-            </Sender>{" "}
-            {highlightTerm(message.message, searchTerm)}
+          <Item key={message._id || message.createdAt}>
+            <Sender>{renderSender(message)}</Sender>{" "}
+            {highlightTerm(getMessageText(message), searchTerm)}
+            <MsgTime>{new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</MsgTime>
           </Item>
         ))
       )}
@@ -86,6 +98,9 @@ const Item = styled.div`
   margin-bottom: 0.5rem;
   line-height: 1.5;
   word-break: break-word;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.45rem;
 `;
 
 const Sender = styled.strong`
@@ -98,6 +113,12 @@ const Highlight = styled.span`
   font-weight: bold;
   border-radius: 2px;
   padding: 0 2px;
+`;
+
+const MsgTime = styled.span`
+  color: #aaa;
+  font-size: 0.79rem;
+  margin-left: 0.35em;
 `;
 
 const LoadingText = styled.p`

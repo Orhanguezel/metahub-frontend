@@ -4,7 +4,7 @@ import React from "react";
 import styled from "styled-components";
 import { IBikes } from "@/modules/bikes/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/bikes";
 import { Skeleton } from "@/shared";
 import type { SupportedLocale } from "@/types/common";
 import Image from "next/image";

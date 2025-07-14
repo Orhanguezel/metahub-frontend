@@ -26,3 +26,5 @@ export { default as ModuleTenantMatrixTable } from "./admin/components/maintenan
 export { default as moduleSettingSlice } from "./slices/moduleSettingSlice";
 export { default as moduleMetaSlice } from "./slices/moduleMetaSlice";
 export { default as moduleMaintenanceSlice } from "./slices/moduleMaintenanceSlice";
+
+export { default as translations } from "./locales";

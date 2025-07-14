@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { IComment } from "@/modules/comment/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/comment";
 import { Modal } from "@/shared";
 import styled from "styled-components";
 import { useAppDispatch } from "@/store/hooks";

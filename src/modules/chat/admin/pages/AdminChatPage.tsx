@@ -2,18 +2,21 @@
 
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { useAppDispatch } from "@/store/hooks";
-
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import { translations } from "@/modules/chat";
+import { SupportedLocale } from "@/types/common";
 import {
-  addMessage,
-  addEscalatedRoom,
-  selectSelectedRoom,
+  addMessageAdmin,
+  selectChatRoomId,
+  selectChatMessagesAdmin,
+  selectManualMessageState,
 } from "@/modules/chat/slice/chatSlice";
 import { ChatMessage } from "@/modules/chat/types";
 import {
   MessageList,
   ChatInput,
-  EscalatedSessions,
+  // EscalatedSessions,
   ChatSessionList,
   ArchivedSessions,
   SearchBox,
@@ -23,68 +26,61 @@ import socket from "@/lib/socket";
 const isDev = process.env.NODE_ENV === "development";
 
 export default function AdminChatPage() {
+  // --- Dil & i18n ---
+  const { i18n, t } = useI18nNamespace("chat", translations);
+  const lang = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
   const dispatch = useAppDispatch();
-  // Tüm chat state’lerini merkezi hook ile alıyoruz!
-  const { chat } = useAdminModuleState();
 
-  // selector ile değil, merkezi state ile!
-  const selectedRoom = chat.selectedRoom;
-  const chatMessages = chat.chatMessages;
-  const loading = chat.loading;
-  const error = chat.error;
+  // --- SLICE STATE ---
+  const roomId = useAppSelector(selectChatRoomId);
+  const chatMessagesAdmin = useAppSelector(selectChatMessagesAdmin);
+  const manualMessageState = useAppSelector(selectManualMessageState);
+  const loading = manualMessageState.loading;
+  const error = manualMessageState.error;
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  // 🔌 Socket bağlantısı ve eventler (Oda yönetimi merkezi hook’ta olmalı!)
+  // --- SOCKET HANDLING ---
   useEffect(() => {
     socket.connect();
-    socket.on("connect", () => {
-      if (isDev) console.log("✅ Socket bağlı:", socket.id);
-    });
-    // Merkezi state’e message push
+    if (isDev) socket.on("connect", () => console.log("✅ Socket bağlı:", socket.id));
+
+    // Mesajları admin state'e ekle
     const handleChatMessage = (chatMessage: ChatMessage) => {
-      dispatch(addMessage(chatMessage));
+      dispatch(addMessageAdmin(chatMessage));
     };
-    const handleEscalation = (data: any) => dispatch(addEscalatedRoom(data));
-    socket.on("chat-message", handleChatMessage);
-    socket.on("escalate-to-admin", handleEscalation);
+    socket.on("admin-message", handleChatMessage);
 
     return () => {
-      socket.off("chat-message", handleChatMessage);
-      socket.off("escalate-to-admin", handleEscalation);
+      socket.off("admin-message", handleChatMessage);
       socket.off("connect");
       socket.disconnect();
     };
   }, [dispatch]);
 
-  // Oda değişimi — fetchMessagesByRoom çağrısı merkezi hook’ta olacak, burada değil!
-  // Eğer halen merkezi hook’ta fetch yapılmıyorsa, orada ekle (selectedRoom değişince fetch)
-
-  // ✉️ Mesaj gönder
+  // --- MESAJ GÖNDERME ---
   const handleSend = (message: string) => {
-    if (!message.trim() || !selectedRoom) return;
-    socket.emit("admin-message", { room: selectedRoom, message });
+    if (!message.trim() || !roomId) return;
+    socket.emit("admin-message", { roomId, message, lang });
   };
 
-  // 🔍 Mesaj filtreleme
-  const filteredChatMessages = (chatMessages || []).filter(
-    (chatMessage: unknown): chatMessage is ChatMessage =>
-      !!chatMessage &&
-      typeof (chatMessage as ChatMessage).message === "string" &&
-      (chatMessage as ChatMessage).message
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
+  // --- FİLTRELEME (Arama kutusu dil desteği ile) ---
+  const filteredChatMessages = chatMessagesAdmin.filter(
+    (msg: ChatMessage) => msg.message?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <Container>
-      <h2>💬 Admin Chat Paneli</h2>
-      <EscalatedSessions />
+      <h2>{t("admin.title", "💬 Admin Chat Paneli")}</h2>
+      {/* <EscalatedSessions /> */}
       <Layout>
         <Sidebar>
-          <SearchBox onSearch={setSearchTerm} />
-          <ChatSessionList socket={socket} />
-          <ArchivedSessions />
+          <SearchBox
+            onSearch={setSearchTerm}
+            placeholder={t("admin.search_placeholder", "Mesajlarda ara...")}
+          />
+          <ChatSessionList socket={socket} lang={lang} />
+          <ArchivedSessions lang={lang} />
         </Sidebar>
         <Main>
           <MessageList
@@ -92,15 +88,22 @@ export default function AdminChatPage() {
             loading={loading}
             error={error}
             searchTerm={searchTerm}
+            lang={lang}
+            emptyText={t("admin.empty", "Henüz mesaj yok.")}
           />
-          <ChatInput onSend={handleSend} />
+          <ChatInput
+            onSend={handleSend}
+            sendLabel={t("admin.send", "Gönder")}
+            placeholder={t("admin.input_placeholder", "Bir mesaj yazın...")}
+            lang={lang}
+          />
         </Main>
       </Layout>
     </Container>
   );
 }
 
-// 💅 Styles
+// --- Styles ---
 const Container = styled.div`
   padding: 2rem;
 `;

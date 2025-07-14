@@ -189,8 +189,7 @@ const activitySlice = createSlice({
       .addCase(createActivity.pending, startLoading)
       .addCase(createActivity.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage =
-          action.payload?.message || "Article created successfully.";
+        state.successMessage = action.payload?.message;
         if (action.payload?.data) {
           state.activityAdmin.unshift(action.payload.data);
         }

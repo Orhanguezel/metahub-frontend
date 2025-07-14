@@ -2,8 +2,9 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { deleteOrder } from "@/modules/order/slice/ordersSlice";
-import { useTranslation } from "react-i18next";
+import { deleteOrderAdmin } from "@/modules/order/slice/ordersSlice";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/order";
 
 interface DeleteOrderModalProps {
   id: string;
@@ -12,13 +13,13 @@ interface DeleteOrderModalProps {
 
 const DeleteOrderModal: React.FC<DeleteOrderModalProps> = ({ id, onClose }) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("order");
+  const { t } = useI18nNamespace("order", translations);
   const { loading } = useAppSelector((state) => state.orders);
   const [submitted, setSubmitted] = useState(false);
 
   const handleDelete = async () => {
     setSubmitted(true);
-    await dispatch(deleteOrder(id));
+    await dispatch(deleteOrderAdmin(id));
     onClose();
   };
 

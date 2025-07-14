@@ -2,19 +2,19 @@
 
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
-import { useTranslation } from "react-i18next";
-import translations from "../../locales";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/services";
 import { Skeleton, ErrorMessage } from "@/shared";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import type { SupportedLocale } from "@/types/common";
-import type { IServices } from "../../types";
+import type { IServices } from "@/modules/services/types";
 
 
 export default function ServicesPage() {
-const { i18n, t } = useTranslation("services");
-  const lang = (i18n.language?.slice(0, 2) || "tr") as SupportedLocale; 
+  const { i18n, t } = useI18nNamespace("services", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { services, loading, error } = useAppSelector((state) => state.services);
 
       Object.entries(translations).forEach(([lang, resources]) => {

@@ -16,4 +16,7 @@ export { default as DetailSection } from "./public/components/DetailSection";
 // Types (if any)
 export * from "./types";
 
+// Lokales
+export { default as translations } from "./locales";
+
 // Optionally: i18n can be loaded in page-level or via config

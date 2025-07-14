@@ -2,7 +2,9 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { OrderItemList, OrderDetail } from "@/modules/order";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/order";
+import type { SupportedLocale } from "@/types/common";
 import { getLocalized } from "@/shared/getLocalized";
 import type { IOrder } from "@/modules/order/types";
 
@@ -13,8 +15,8 @@ type OrderCardProps = {
 
 const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
   const [showDetail, setShowDetail] = useState(false);
-  const { i18n, t } = useTranslation("order");
-  const lang = i18n.language || "en";
+  const { t,i18n } = useI18nNamespace("order", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
 
   if (!order) return null;
 

@@ -86,7 +86,7 @@ export const deleteArticlesCategory = createAsyncThunk(
       null,
       thunkAPI.rejectWithValue
     );
-    return { id, message: res.message }; // backend response.message
+    return { id, message: res.message };
   }
 );
 
@@ -107,7 +107,7 @@ const articlesCategorySlice = createSlice({
 
     const setError = (state: CategoryState, action: PayloadAction<any>) => {
       state.loading = false;
-      state.error = action.payload?.message || "Something went wrong.";
+      state.error = action.payload?.message;
     };
 
     builder

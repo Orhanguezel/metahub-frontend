@@ -2,8 +2,9 @@
 import React from "react";
 import styled from "styled-components";
 import { useAppDispatch } from "@/store/hooks";
-import { updateOrderStatus } from "@/modules/order/slice/ordersSlice";
-import { useTranslation } from "react-i18next";
+import { updateOrderStatusAdmin } from "@/modules/order/slice/ordersSlice";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/order";
 import type { IOrder, OrderStatus } from "@/modules/order/types";
 
 // Statusler union'dan
@@ -22,14 +23,15 @@ type OrderStatusDropdownProps = {
 
 const OrderStatusDropdown: React.FC<OrderStatusDropdownProps> = ({ order }) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("order");
+  const { t } = useI18nNamespace("order", translations);
+ 
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value as OrderStatus;
     if (newStatus !== order.status) {
       // Sadece _id gönder
       if (order._id) {
-        dispatch(updateOrderStatus({ id: order._id, status: newStatus }));
+        dispatch(updateOrderStatusAdmin({ id: order._id, status: newStatus }));
       }
     }
   };

@@ -1,13 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-
-import {
-  getAllOrders,
-  clearOrderMessages,
-} from "@/modules/order/slice/ordersSlice";
-import { useTranslation } from "react-i18next";
+import React, { useState } from "react";
+import { useAppSelector } from "@/store/hooks";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/order";
 import {
   OrderTable,
   OrderDetailModal,
@@ -19,22 +15,15 @@ import type { IOrder } from "@/modules/order/types";
 
 // --- Page Component ---
 const AdminOrderPage: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const { orders, loading, error, successMessage } = useAppSelector(
+  const { ordersAdmin, loading, error, successMessage } = useAppSelector(
     (state) => state.orders
   );
-  const { t } = useTranslation("order");
+  const { t } = useI18nNamespace("order", translations);
+ 
 
   // Modal state
   const [selectedOrder, setSelectedOrder] = useState<IOrder | null>(null);
   const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
-
-  useEffect(() => {
-    dispatch(getAllOrders());
-    return () => {
-      dispatch(clearOrderMessages());
-    };
-  }, [dispatch]);
 
   return (
     <PageContainer>
@@ -48,7 +37,7 @@ const AdminOrderPage: React.FC = () => {
 
       <TableSection>
         <OrderTable
-          orders={orders}
+          orders={ordersAdmin}
           onShowDetail={setSelectedOrder}
           onDelete={setDeleteOrderId}
         />

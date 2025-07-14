@@ -1,7 +1,7 @@
 {
   "page": {
-    "noNews": "No articles found.",
-    "allNews": "All Articles",
+    "noNews": "No newss found.",
+    "allNews": "All Newss",
     "news": {
       "title": "News",
       "all": "See All"
@@ -17,7 +17,7 @@
   "unknown": "Unknown",
   "tabs": {
     "news": "News",
-    "create": "New Article",
+    "create": "New News",
     "categories": "Categories"
   },
   "news": {
@@ -37,8 +37,8 @@
   "no": "No",
   "admin": {
     "news": {
-      "edit": "Edit Article",
-      "create": "Create New Article",
+      "edit": "Edit News",
+      "create": "Create New News",
       "title": "Title",
       "summary": "Summary",
       "content": "Content",
@@ -64,7 +64,7 @@
     "cancel": "Cancel",
     "confirm": {
       "delete": "Are you sure you want to delete this category?",
-      "delete_article": "Are you sure you want to delete this article?"
+      "delete_news": "Are you sure you want to delete this news?"
     },
     "loading": "Loading...",
     "actions": "Actions",

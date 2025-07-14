@@ -1,7 +1,9 @@
 "use client";
 import React from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/order";
+import type { SupportedLocale } from "@/types/common";
 import { OrderStatusDropdown } from "@/modules/order";
 import type { IOrder } from "@/modules/order/types";
 
@@ -17,8 +19,8 @@ const OrderTable: React.FC<OrderTableProps> = ({
   onShowDetail,
   onDelete,
 }) => {
-  const { t, i18n } = useTranslation("order");
-  const lang = i18n.language || "en";
+  const { t,i18n } = useI18nNamespace("order", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
 
   if (!orders.length)
     return <Empty>{t("admin.noOrders", "No orders found.")}</Empty>;

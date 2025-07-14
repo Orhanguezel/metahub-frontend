@@ -184,8 +184,7 @@ const blogSlice = createSlice({
       .addCase(createBlog.pending, startLoading)
       .addCase(createBlog.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage =
-          action.payload?.message || "Article created successfully.";
+        state.successMessage = action.payload?.message;
         if (action.payload?.data) {
           state.blogAdmin.unshift(action.payload.data);
         }

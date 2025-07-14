@@ -64,7 +64,7 @@
     "cancel": "Abbrechen",
     "confirm": {
       "delete": "Möchten Sie diese Kategorie wirklich löschen?",
-      "delete_article": "Möchten Sie diesen Artikel wirklich löschen?"
+      "delete_activity": "Möchten Sie diesen Artikel wirklich löschen?"
     },
     "loading": "Lädt...",
     "actions": "Aktionen",

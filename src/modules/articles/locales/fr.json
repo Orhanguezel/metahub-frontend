@@ -1,7 +1,7 @@
 {
   "page": {
-    "noArticles": "Aucun article trouvé.",
-    "allArticles": "Tous les articles",
+    "noArticles": "Aucun articles trouvé.",
+    "allArticles": "Tous les articless",
     "articles": {
       "title": "À propos",
       "all": "Voir tout"
@@ -17,11 +17,11 @@
   "unknown": "Inconnu",
   "tabs": {
     "articles": "À propos",
-    "create": "Nouvel article",
+    "create": "Nouvel articles",
     "categories": "Catégories"
   },
   "articles": {
-    "empty": "Aucun article disponible.",
+    "empty": "Aucun articles disponible.",
     "no_images": "Aucune image",
     "author": "Auteur",
     "tags": "Tags",
@@ -37,8 +37,8 @@
   "no": "Non",
   "admin": {
     "articles": {
-      "edit": "Modifier l'article",
-      "create": "Créer un nouvel article",
+      "edit": "Modifier l'articles",
+      "create": "Créer un nouvel articles",
       "title": "Titre",
       "summary": "Résumé",
       "content": "Contenu",
@@ -64,7 +64,7 @@
     "cancel": "Annuler",
     "confirm": {
       "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
-      "delete_article": "Êtes-vous sûr de vouloir supprimer cet article ?"
+      "delete_articles": "Êtes-vous sûr de vouloir supprimer cet articles ?"
     },
     "loading": "Chargement...",
     "actions": "Actions",

@@ -2,44 +2,51 @@
 
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { useAppDispatch } from "@/store/hooks";
-
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { toast } from "react-toastify";
 import {
   togglePublishComment,
   deleteComment,
   clearCommentMessages,
+  // fetchAllCommentsAdmin, // Eğer backend pagination istersen aç
 } from "@/modules/comment/slice/commentSlice";
 import { IComment } from "@/modules/comment/types";
 import { SupportedLocale } from "@/types/common";
 import { CommentDetailsModal } from "@/modules/comment";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/comment";
 
 export default function AdminCommentPage() {
   const dispatch = useAppDispatch();
   const { i18n, t } = useI18nNamespace("comment", translations);
   const lang: SupportedLocale = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
 
-  // Merkezi fetch state!
-  const { comments } = useAdminModuleState();
+  // Slice’tan merkezi state
+  const {
+    commentsAdmin = [],
+    loading,
+    successMessage,
+    error,
+    pagination = { pages: 1, page: 1 },
+  } = useAppSelector((state) => state.comments);
 
-
-  // UI state
+  // Local filtre ve modal state
   const [typeFilter, setTypeFilter] = useState("all");
   const [publishFilter, setPublishFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedComment, setSelectedComment] = useState<IComment | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
 
-  // Pagination (merkezi fetch'ten geliyor)
-  const commentList = comments.comments || [];
-  const loading = comments.loading;
-  const error = comments.error;
-  const pagination = comments.pagination || { pages: 1, page: 1 };
+  // Toast ve cleanup
+  useEffect(() => {
+    if (successMessage) toast.success(successMessage);
+    if (error) toast.error(error);
+    if (successMessage || error) {
+      dispatch(clearCommentMessages());
+    }
+  }, [successMessage, error, dispatch]);
 
-
-  // Filtreleme
-  const filteredComments = commentList.filter((c) => {
+  // Filter logic
+  const filteredComments = commentsAdmin.filter((c) => {
     const name =
       typeof c.userId === "object" && "name" in c.userId
         ? c.userId.name
@@ -60,17 +67,14 @@ export default function AdminCommentPage() {
     return matchesType && matchesStatus && matchesSearch;
   });
 
-  // Sayfa değişimi (merkezi hook otomatik fetch edecekse burada set edilebilir)
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    // Eğer merkezi hook pagination destekliyorsa, burada yeni sayfa fetch edilir.
-    // dispatch(fetchAllComments(newPage)); // Eğer gerekiyorsa!
-  };
 
+
+  // Publish/unpublish işlemi
   const handleToggle = (id: string) => {
     dispatch(togglePublishComment(id));
   };
 
+  // Silme işlemi
   const handleDelete = (id: string) => {
     if (confirm(t("confirmDelete", "Yorumu silmek istiyor musunuz?"))) {
       dispatch(deleteComment(id));
@@ -84,26 +88,20 @@ export default function AdminCommentPage() {
       <FilterBar>
         <label>
           {t("filter.type")}
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-          >
+          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
             <option value="all">{t("filter.allTypes")}</option>
             <option value="blog">Blog</option>
-            <option value="product">Product</option>
-            <option value="radonarprod">Product</option>
-            <option value="service">Service</option>
+            <option value="products">Product</option>
+            <option value="bikes">Bikes</option>
+            <option value="services">Service</option>
             <option value="news">News</option>
-            <option value="article">Article</option>
+            <option value="articles">Article</option>
           </select>
         </label>
 
         <label>
           {t("filter.status")}
-          <select
-            value={publishFilter}
-            onChange={(e) => setPublishFilter(e.target.value)}
-          >
+          <select value={publishFilter} onChange={(e) => setPublishFilter(e.target.value)}>
             <option value="all">{t("filter.allStatus")}</option>
             <option value="published">{t("published")}</option>
             <option value="unpublished">{t("unpublished")}</option>
@@ -204,7 +202,7 @@ export default function AdminCommentPage() {
               {Array.from({ length: pagination.pages }, (_, i) => (
                 <button
                   key={i}
-                  onClick={() => handlePageChange(i + 1)}
+                  onClick={() => {}}
                   disabled={pagination.page === i + 1}
                 >
                   {i + 1}
@@ -218,7 +216,7 @@ export default function AdminCommentPage() {
   );
 }
 
-// Styled Components (hiç değişmedi)
+// --- Styled Components ---
 const Wrapper = styled.div`
   padding: 2rem;
 `;

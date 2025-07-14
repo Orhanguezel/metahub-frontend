@@ -15,7 +15,7 @@ export interface IBlogImage {
   _id?: string;
 }
 
-// Ana makale (article) tipi
+// Ana makale (blog) tipi
 export interface IBlog {
   _id: string;
   title: TranslatedField;

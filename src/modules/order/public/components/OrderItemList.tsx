@@ -1,68 +1,60 @@
 "use client";
 import React from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/order";
+import type { SupportedLocale } from "@/types/common";
+import type { OrderItemType, ProductType } from "@/modules/order/types";
 import { getLocalized } from "@/shared/getLocalized";
 
-// Order item ve product tiplerin burada veya dış dosyada olmalı
-interface ProductNameType {
-  [lang: string]: string;
-}
-
-interface ProductType {
-  _id?: string;
-  name?: ProductNameType;
-  price?: number;
-  [key: string]: any;
-}
-
-interface OrderItemType {
-  product?: ProductType | string;
-  name?: string;
-  quantity: number;
-  priceAtAddition?: number;
-  size?: string;
-}
-
 interface OrderItemListProps {
-  items: OrderItemType[];
-  lang?: string;
+  items?: OrderItemType[]; // optional, array olmayabilir!
+  lang?: SupportedLocale;
 }
 
 const OrderItemList: React.FC<OrderItemListProps> = ({
-  items,
+  items = [],
   lang: customLang,
 }) => {
-  const { i18n, t } = useTranslation("order");
-  const lang = customLang || i18n.language || "en";
+  const { t, i18n } = useI18nNamespace("order", translations);
+  const lang = (customLang || i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  if (!items?.length)
+  if (!Array.isArray(items) || items.length === 0)
     return <Empty>{t("detail.noItems", "No items in order")}</Empty>;
 
   return (
     <Items>
       {items.map((item, idx) => {
-        // Hem Object hem string olabilir (id olabilir)
-        const product =
-          typeof item.product === "object" && item.product ? item.product : {};
+        // product olabilir, string olabilir (id), boş olabilir
+        let product: ProductType = {};
+        if (typeof item.product === "object" && item.product !== null) {
+          product = item.product;
+        }
+        // string ise (ör: id), isim fallback'e düşecek
+
+        // İsim: Çoklu dil varsa, öncelik ver. Yoksa item.name
+        const name =
+          product.name && typeof product.name === "object"
+            ? getLocalized(product.name, lang)
+            : item.name || t("detail.unnamedProduct", "Unnamed product");
+
+        // Fiyat: Öncelik priceAtAddition (siparişteki fiyat), sonra ürün fiyatı
+        const price =
+          typeof item.priceAtAddition === "number"
+            ? item.priceAtAddition
+            : typeof product.price === "number"
+            ? product.price
+            : 0;
+
         return (
-          <Item key={(product._id as string) || String(item.product) || idx}>
+          <Item key={product._id || String(item.product) || idx}>
             <Left>
-              <ProductName>
-                {product.name ? getLocalized(product.name, lang) : item.name}
-              </ProductName>
+              <ProductName>{name}</ProductName>
               {item.size && <Size>({item.size})</Size>}
             </Left>
             <Right>
               <Qty>
-                {item.quantity} ×{" "}
-                <Price>
-                  {typeof item.priceAtAddition === "number"
-                    ? item.priceAtAddition.toFixed(2)
-                    : typeof product.price === "number"
-                    ? product.price.toFixed(2)
-                    : "0.00"}
-                </Price>
+                {item.quantity} × <Price>{price.toFixed(2)}</Price>
                 <Currency>EUR</Currency>
               </Qty>
             </Right>
@@ -90,7 +82,6 @@ const Item = styled.div`
   padding: 1rem 0.2rem;
   font-size: 1.07em;
   border-bottom: 1px solid ${({ theme }) => theme.colors.lightGrey || "#f1f1f1"};
-
   &:last-child {
     border-bottom: none;
   }

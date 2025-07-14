@@ -1,4 +1,5 @@
 import API from "./api";
+import { getTenantSlug } from "@/lib/tenant";
 
 // Dil seçici
 const getLang = (): string => {
@@ -11,20 +12,6 @@ const getLang = (): string => {
 
 const isDev = process.env.NODE_ENV === "development";
 
-// .env'den tenantı oku (sadece dev ortamında geçerli)
-const getDevTenantSlug = (): string | undefined => {
-  if (isDev) {
-    // Next.js için:
-    // .env.local veya .env.development'da "NEXT_PUBLIC_APP_ENV" veya "TENANT_NAME" yazmalı!
-    return (
-      process.env.NEXT_PUBLIC_APP_ENV ||
-      process.env.NEXT_PUBLIC_TENANT_NAME ||
-      process.env.TENANT_NAME ||
-      "metahub"
-    );
-  }
-  return undefined;
-};
 
 const apiCall = async (
   method: "get" | "post" | "put" | "delete" | "patch",
@@ -40,7 +27,7 @@ const apiCall = async (
     }
 
     // Dev'de .env ile, prod'da hiç tenant header eklenmez!
-    const tenantSlug = getDevTenantSlug();
+    const tenantSlug = getTenantSlug();
 
     // FormData kontrolü
     const isFormData =

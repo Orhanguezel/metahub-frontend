@@ -15,7 +15,7 @@ export interface IReferencesImage {
   _id?: string;
 }
 
-// Ana makale (article) tipi
+// Ana makale (references) tipi
 export interface IReferences {
   _id: string;
   title: TranslatedField;

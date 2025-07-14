@@ -2,12 +2,12 @@ import { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useActiveTenant } from "@/hooks/useActiveTenant";
 
-// Section slice'lar (public endpointler)
+// Public endpoint thunks
 import { fetchSectionMetas } from "@/modules/section/slices/sectionMetaSlice";
 import { fetchSectionSettingsByTenant } from "@/modules/section/slices/sectionSettingSlice";
 import { fetchSettings } from "@/modules/settings/slice/settingsSlice";
 import { fetchCompanyInfo } from "@/modules/company/slice/companySlice";
-import { fetchCart } from "@/modules/cart/slice/cartSlice";
+//import { fetchCart } from "@/modules/cart/slice/cartSlice";
 import { fetchServices } from "@/modules/services/slice/servicesSlice";
 import { fetchPublishedGalleryItems } from "@/modules/gallery/slice/gallerySlice";
 import { fetchGalleryCategories } from "@/modules/gallery/slice/galleryCategorySlice";
@@ -18,112 +18,37 @@ import { fetchArticles } from "@/modules/articles/slice/articlesSlice";
 import { fetchActivity } from "@/modules/activity/slice/activitySlice";
 import { fetchReferences } from "@/modules/references/slice/referencesSlice";
 import { fetchBikes } from "@/modules/bikes/slice/bikesSlice";
+import { fetchCoupons } from "@/modules/coupon/slice/couponSlice";
+import {
+  fetchAllChatSessions,
+  fetchActiveChatSessions,
+  fetchArchivedSessions,
+} from "@/modules/chat/slice/chatSlice";
 
 export const usePublicLayoutInit = () => {
   const dispatch = useAppDispatch();
   const tenant = useActiveTenant();
 
-  // --- SECTION ---
-  const {
-    metas: sectionMetas,
-    loading: sectionMetasLoading,
-    error: sectionMetasError,
-    status: sectionMetasStatus,
-  } = useAppSelector((s) => s.sectionMeta);
+  // Sadece array/selectors için ayrı alınması daha okunaklı
+  const sectionMeta = useAppSelector((s) => s.sectionMeta);
+  const sectionSetting = useAppSelector((s) => s.sectionSetting);
+  const settingsSlice = useAppSelector((s) => s.settings);
+  const companySlice = useAppSelector((s) => s.company);
+  const cartSlice = useAppSelector((s) => s.cart);
+  const servicesSlice = useAppSelector((s) => s.services);
+  const gallery = useAppSelector((s) => s.gallery);
+  const galleryCategory = useAppSelector((s) => s.galleryCategory);
+  const aboutSlice = useAppSelector((s) => s.about);
+  const newsSlice = useAppSelector((s) => s.news);
+  const blogSlice = useAppSelector((s) => s.blog);
+  const articlesSlice = useAppSelector((s) => s.articles);
+  const activitySlice = useAppSelector((s) => s.activity);
+  const referencesSlice = useAppSelector((s) => s.references);
+  const bikesSlice = useAppSelector((s) => s.bikes);
+  const couponSlice = useAppSelector((s) => s.coupon);
+  const chat = useAppSelector((s) => s.chat);
+  const profile = useAppSelector((s) => s.account.profile);
 
-  const {
-    settings: sectionSettings,
-    loading: sectionSettingsLoading,
-    error: sectionSettingsError,
-    status: sectionSettingsStatus,
-  } = useAppSelector((s) => s.sectionSetting);
-
-  const sectionLoading = sectionMetasLoading || sectionSettingsLoading;
-
-  // --- SETTINGS ---
-  const {
-    settings,
-    loading: settingsLoading,
-    error: settingsError,
-    fetchedSettings,
-    status: settingsStatus,
-  } = useAppSelector((s) => s.settings);
-
-  // --- COMPANY ---
-  const {
-    company,
-    status: companyStatus,
-    error: companyError,
-  } = useAppSelector((s) => s.company);
-
-  // --- CART ---
-  const {
-    cart,
-    status: cartStatus,
-    error: cartError,
-  } = useAppSelector((s) => s.cart);
-
-  // --- SERVICES ---
-  const {
-    services,
-    status: servicesStatus,
-    error: servicesError,
-  } = useAppSelector((s) => s.services);
-
-  // --- GALLERY ---
-  const publicImages = useAppSelector((s) => s.gallery.publicImages);
-  const galleryCategories = useAppSelector((s) => s.galleryCategory.categories);
-
-  // --- ABOUT ---
-  const {
-    about,
-    status: aboutStatus,
-    error: aboutError,
-  } = useAppSelector((s) => s.about);
-
-  // --- NEWS ---
-  const {
-    news,
-    status: newsStatus,
-    error: newsError,
-  } = useAppSelector((s) => s.news);
-
-  // --- BLOG ---
-  const {
-    blog,
-    status: blogStatus,
-    error: blogError,
-  } = useAppSelector((s) => s.blog);
-
-  // --- ARTICLES ---
-  const {
-    articles,
-    status: articlesStatus,
-    error: articlesError,
-  } = useAppSelector((s) => s.articles);
-
-  // --- ACTIVITY ---
-  const {
-    activity,
-    status: activityStatus,
-    error: activityError,
-  } = useAppSelector((s) => s.activity);
-
-  // --- REFERENCES ---
-  const {
-    references,
-    status: referencesStatus,
-    error: referencesError,
-  } = useAppSelector((s) => s.references);
-
-  // --- BIKES ---
-  const {
-    bikes,
-    status: bikesStatus,
-    error: bikesError,
-  } = useAppSelector((s) => s.bikes);
-
-  // --- INIT FLAG ---
   const didInit = useRef<string>("");
 
   useEffect(() => {
@@ -131,76 +56,111 @@ export const usePublicLayoutInit = () => {
     if (didInit.current === tenant) return;
     didInit.current = tenant;
 
-    // Section
-    if ((!Array.isArray(sectionMetas) || sectionMetas.length === 0) && !sectionMetasLoading) {
-      dispatch(fetchSectionMetas());
-    }
-    if ((!Array.isArray(sectionSettings) || sectionSettings.length === 0) && !sectionSettingsLoading) {
-      dispatch(fetchSectionSettingsByTenant());
+    // Public fetchler
+    if (
+      (!Array.isArray(sectionMeta.metas) || sectionMeta.metas.length === 0) &&
+      !sectionMeta.loading
+    ) dispatch(fetchSectionMetas());
+
+    if (
+      (!Array.isArray(sectionSetting.settings) || sectionSetting.settings.length === 0) &&
+      !sectionSetting.loading
+    ) dispatch(fetchSectionSettingsByTenant());
+
+    if (!settingsSlice.fetchedSettings) dispatch(fetchSettings());
+    if (servicesSlice.services.length === 0 && servicesSlice.status === "idle") dispatch(fetchServices());
+    if (aboutSlice.about.length === 0 && aboutSlice.status === "idle") dispatch(fetchAbout());
+    if (newsSlice.news.length === 0 && newsSlice.status === "idle") dispatch(fetchNews());
+    if (blogSlice.blog.length === 0 && blogSlice.status === "idle") dispatch(fetchBlog());
+    if (articlesSlice.articles.length === 0 && articlesSlice.status === "idle") dispatch(fetchArticles());
+    if (activitySlice.activity.length === 0 && activitySlice.status === "idle") dispatch(fetchActivity());
+    if (referencesSlice.references.length === 0 && referencesSlice.status === "idle") dispatch(fetchReferences());
+    if (bikesSlice.bikes.length === 0 && bikesSlice.status === "idle") dispatch(fetchBikes());
+    if (!companySlice.company && companySlice.status === "idle") dispatch(fetchCompanyInfo());
+    if (!couponSlice.coupons || couponSlice.coupons.length === 0) dispatch(fetchCoupons());
+
+    // --- SADECE LOGIN OLAN KULLANICIYA CHAT SESSION FETCH ---
+    if (profile) {
+      if (chat.sessions.length === 0) dispatch(fetchAllChatSessions());
+      if (chat.activeSessions.length === 0) dispatch(fetchActiveChatSessions());
+      if (chat.archivedSessions.length === 0) dispatch(fetchArchivedSessions());
     }
 
-    // Diğer modüller (hepsi array kontrolü ve status:idle)
-    if (!fetchedSettings) dispatch(fetchSettings());
-    if (services.length === 0 && servicesStatus === "idle") dispatch(fetchServices());
-    if (about.length === 0 && aboutStatus === "idle") dispatch(fetchAbout());
-    if (news.length === 0 && newsStatus === "idle") dispatch(fetchNews());
-    if (blog.length === 0 && blogStatus === "idle") dispatch(fetchBlog());
-    if (articles.length === 0 && articlesStatus === "idle") dispatch(fetchArticles());
-    if (activity.length === 0 && activityStatus === "idle") dispatch(fetchActivity());
-    if (references.length === 0 && referencesStatus === "idle") dispatch(fetchReferences());
-    if (bikes.length === 0 && bikesStatus === "idle") dispatch(fetchBikes());
-    if (!company && companyStatus === "idle") dispatch(fetchCompanyInfo());
-
-    if (!cart && cartStatus === "idle") dispatch(fetchCart());
     dispatch(fetchPublishedGalleryItems());
     dispatch(fetchGalleryCategories());
+  // eslint-disable-next-line
   }, [
     dispatch,
     tenant,
-    fetchedSettings,
-    company,
-    companyStatus,
-    cart,
-    cartStatus,
-    services,
-    servicesStatus,
-    about,
-    aboutStatus,
-    news,
-    newsStatus,
-    blog,
-    blogStatus,
-    articles,
-    articlesStatus,
-    activity,
-    activityStatus,
-    references,
-    referencesStatus,
-    bikes,
-    bikesStatus,
-    sectionMetas,
-    sectionMetasLoading,
-    sectionSettings,
-    sectionSettingsLoading,
+    profile,
+    // state'lerin tekil array veya nesne referansını ekle (tekrarlı render önlenir)
+    sectionMeta.metas, sectionMeta.loading, sectionSetting.settings, sectionSetting.loading,
+    settingsSlice.fetchedSettings,
+    servicesSlice.services, servicesSlice.status,
+    aboutSlice.about, aboutSlice.status,
+    newsSlice.news, newsSlice.status,
+    blogSlice.blog, blogSlice.status,
+    articlesSlice.articles, articlesSlice.status,
+    activitySlice.activity, activitySlice.status,
+    referencesSlice.references, referencesSlice.status,
+    bikesSlice.bikes, bikesSlice.status,
+    companySlice.company, companySlice.status,
+    couponSlice.coupons, couponSlice.status,
+    chat.sessions.length, chat.activeSessions.length, chat.archivedSessions.length,
+    gallery.publicImages, galleryCategory.categories
   ]);
 
   return {
-    sectionMetas, sectionMetasStatus, sectionMetasError,
-    sectionSettings, sectionSettingsStatus, sectionSettingsError,
-    sectionLoading,
-
-    settings, settingsStatus, settingsLoading, settingsError, fetchedSettings,
-    company, companyStatus, companyError,
-    cart, cartStatus, cartError,
-    services, servicesStatus, servicesError,
-    publicImages, galleryCategories,
-
-    about, aboutStatus, aboutError,
-    news, newsStatus, newsError,
-    blog, blogStatus, blogError,
-    articles, articlesStatus, articlesError,
-    activity, activityStatus, activityError,
-    references, referencesStatus, referencesError,
-    bikes, bikesStatus, bikesError,
+    sectionMetas: sectionMeta.metas,
+    sectionMetasStatus: sectionMeta.status,
+    sectionMetasError: sectionMeta.error,
+    sectionSettings: sectionSetting.settings,
+    sectionSettingsStatus: sectionSetting.status,
+    sectionSettingsError: sectionSetting.error,
+    sectionLoading: sectionMeta.loading || sectionSetting.loading,
+    settings: settingsSlice.settings,
+    settingsStatus: settingsSlice.status,
+    settingsLoading: settingsSlice.loading,
+    settingsError: settingsSlice.error,
+    fetchedSettings: settingsSlice.fetchedSettings,
+    company: companySlice.company,
+    companyStatus: companySlice.status,
+    companyError: companySlice.error,
+    cart: cartSlice.cart,
+    cartStatus: cartSlice.status,
+    cartError: cartSlice.error,
+    services: servicesSlice.services,
+    servicesStatus: servicesSlice.status,
+    servicesError: servicesSlice.error,
+    publicImages: gallery.publicImages,
+    galleryCategories: galleryCategory.categories,
+    coupons: couponSlice.coupons,
+    couponsStatus: couponSlice.status,
+    couponsError: couponSlice.error,
+    chatSessions: chat.sessions,
+    activeChatSessions: chat.activeSessions,
+    archivedChatSessions: chat.archivedSessions,
+    chatMessages: chat.chatMessages,
+    about: aboutSlice.about,
+    aboutStatus: aboutSlice.status,
+    aboutError: aboutSlice.error,
+    news: newsSlice.news,
+    newsStatus: newsSlice.status,
+    newsError: newsSlice.error,
+    blog: blogSlice.blog,
+    blogStatus: blogSlice.status,
+    blogError: blogSlice.error,
+    articles: articlesSlice.articles,
+    articlesStatus: articlesSlice.status,
+    articlesError: articlesSlice.error,
+    activity: activitySlice.activity,
+    activityStatus: activitySlice.status,
+    activityError: activitySlice.error,
+    references: referencesSlice.references,
+    referencesStatus: referencesSlice.status,
+    referencesError: referencesSlice.error,
+    bikes: bikesSlice.bikes,
+    bikesStatus: bikesSlice.status,
+    bikesError: bikesSlice.error,
   };
 };

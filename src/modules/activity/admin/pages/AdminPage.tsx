@@ -3,7 +3,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/activity";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import type { SupportedLocale } from "@/types/common";
 
@@ -31,8 +31,8 @@ import { IActivity } from "@/modules/activity/types";
 import { ActivityCategory } from "@/modules/activity/types";
 
 export default function AdminActivityPage() {
-const { i18n, t } = useI18nNamespace("adminModules", translations);
-const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
+  const { i18n, t } = useI18nNamespace("activity", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
 const activity = useAppSelector((state) => state.activity.activityAdmin);
 const loading = useAppSelector((state) => state.activity.loading);
@@ -64,7 +64,7 @@ const error = useAppSelector((state) => state.activity.error);
 
   const handleDelete = async (id: string) => {
     const confirmMsg = t(
-      "confirm.delete_article",
+      "confirm.delete_activity",
       "Bu makaleyi silmek istediğinize emin misiniz?"
     );
     if (confirm(confirmMsg)) {

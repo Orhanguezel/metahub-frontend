@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/articles";
 import type { ArticlesCategory } from "@/modules/articles/types";
 import { LANG_LABELS, SupportedLocale } from "@/types/common";
 import { deleteArticlesCategory } from "@/modules/articles/slice/articlesCategorySlice";
@@ -19,8 +19,7 @@ export default function ProductCategoryListPage({
 }: ProductCategoryListPageProps) {
   const dispatch = useAppDispatch();
   const { i18n, t } = useI18nNamespace("articles", translations);
-
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   // Merkezi fetch ile gelen slice'ı okuyoruz
    const categories = useAppSelector((state) => state.articlesCategory.categories);

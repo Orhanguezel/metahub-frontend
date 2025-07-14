@@ -4,9 +4,8 @@ import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
-import i18n from "@/i18n";
-import translations from "../../locales";
-import { useTranslation } from "react-i18next";
+import {translations} from "@/modules/activity";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import Link from "next/link";
 import Image from "next/image";
 import { Skeleton, ErrorMessage } from "@/shared";
@@ -17,14 +16,14 @@ import {
   setSelectedActivity,
 } from "@/modules/activity/slice/activitySlice";
 import { CommentForm, CommentList } from "@/modules/comment";
-import { getCurrentLocale } from "@/utils/getCurrentLocale";
 import type { IActivity } from "@/modules/activity";
+import type { SupportedLocale } from "@/types/common";
 
 export default function ActivityDetailSection() {
+  const { i18n, t } = useI18nNamespace("activity", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { slug } = useParams() as { slug: string };
-  const { t } = useTranslation("activity");
   const dispatch = useAppDispatch();
-  const lang = getCurrentLocale();
 
   // Locale dosyalarını i18n'e yükle
   Object.entries(translations).forEach(([locale, resources]) => {

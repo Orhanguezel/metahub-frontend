@@ -1,14 +1,10 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import { RootState } from "@/store";
-import {
-  ChatMessage,
-  ChatSession,
-  ArchivedSession,
-  EscalatedRoom,
-  TranslatedField
-} from "@/modules/chat/types";
+import type { ChatMessage, ChatSession, ArchivedSession,EscalatedRoom } from "@/modules/chat/types";
+// chatSlice.ts dosyanın SONUNDA export et:
+import type { RootState } from "@/store";
 
+// --- State ---
 interface ManualMessageState {
   loading: boolean;
   success: boolean;
@@ -16,190 +12,125 @@ interface ManualMessageState {
 }
 
 interface ChatState {
-  // PUBLIC state
-  room: string;
-  selectedRoom: string;
+  roomId: string; // aktif oda
   chatMessages: ChatMessage[];
+  sessions: ChatSession[];
+  activeSessions: ChatSession[];
+  archivedSessions: ArchivedSession[];
+  escalatedRooms: EscalatedRoom[];
 
-  // ADMIN state
+  // Admin ayrı listeler
   chatMessagesAdmin: ChatMessage[];
   sessionsAdmin: ChatSession[];
   activeSessionsAdmin: ChatSession[];
   archivedSessionsAdmin: ArchivedSession[];
 
-  // Common state
   loading: boolean;
   error: string | null;
-  escalatedRooms: EscalatedRoom[];
-
-  archived: {
-    sessions: ArchivedSession[];
-    loading: boolean;
-    error: string | null;
-  };
-  sessions: {
-    all: ChatSession[];
-    active: ChatSession[];
-    loading: boolean;
-    error: string | null;
-  };
-
   manualMessage: ManualMessageState;
 }
 
 const initialState: ChatState = {
-  room: "",
-  selectedRoom: "",
+  roomId: "",
   chatMessages: [],
+  sessions: [],
+  activeSessions: [],
+  archivedSessions: [],
   chatMessagesAdmin: [],
   sessionsAdmin: [],
   activeSessionsAdmin: [],
   archivedSessionsAdmin: [],
+  escalatedRooms: [],
   loading: false,
   error: null,
-  escalatedRooms: [],
-  archived: {
-    sessions: [],
-    loading: false,
-    error: null,
-  },
-  sessions: {
-    all: [],
-    active: [],
-    loading: false,
-    error: null,
-  },
-  manualMessage: {
-    loading: false,
-    success: false,
-    error: null,
-  },
+  manualMessage: { loading: false, success: false, error: null },
 };
 
-interface ManualMessagePayload {
-  roomId: string;
-  message: string;
-  lang: TranslatedField;
-  close?: boolean;
-}
-
-// --- Thunks ---
+// --- Async Thunks ---
 
 // PUBLIC
-export const fetchMessagesByRoom = createAsyncThunk<
-  ChatMessage[],
-  string,
-  { rejectValue: any }
->("chat/fetchMessagesByRoom", async (roomId, { rejectWithValue }) => {
-  return await apiCall("get", `/chat/${roomId}`, null, rejectWithValue);
-});
-export const fetchArchivedSessions = createAsyncThunk<
-  ArchivedSession[],
-  void,
-  { rejectValue: any }
->("chat/fetchArchivedSessions", async (_, { rejectWithValue }) => {
-  return await apiCall("get", "/chat/archived", null, rejectWithValue);
-});
-export const fetchAllChatSessions = createAsyncThunk<
-  ChatSession[],
-  void,
-  { rejectValue: any }
->("chat/fetchAllChatSessions", async (_, { rejectWithValue }) => {
-  return await apiCall("get", "/chat/sessions", null, rejectWithValue);
-});
-export const fetchActiveChatSessions = createAsyncThunk<
-  ChatSession[],
-  void,
-  { rejectValue: any }
->("chat/fetchActiveChatSessions", async (_, { rejectWithValue }) => {
-  return await apiCall("get", "/chat/sessions/active", null, rejectWithValue);
-});
-export const markMessagesAsRead = createAsyncThunk<
-  void,
-  string,
-  { rejectValue: any }
->("chat/markMessagesAsRead", async (roomId, { rejectWithValue }) => {
-  return await apiCall("patch", `/chat/read/${roomId}`, null, rejectWithValue);
-});
-export const sendManualMessage = createAsyncThunk<
-  void,
-  ManualMessagePayload,
-  { rejectValue: any }
->("chat/sendManualMessage", async (payload, { rejectWithValue }) => {
-  return await apiCall("post", "/chat/manual", payload, rejectWithValue);
-});
+export const fetchMessagesByRoom = createAsyncThunk<ChatMessage[], string, { rejectValue: any }>(
+  "chat/fetchMessagesByRoom",
+  async (roomId, { rejectWithValue }) => await apiCall("get", `/chat/${roomId}`, null, rejectWithValue)
+);
+export const fetchAllChatSessions = createAsyncThunk<ChatSession[], void, { rejectValue: any }>(
+  "chat/fetchAllChatSessions",
+  async (_, { rejectWithValue }) => await apiCall("get", "/chat/sessions", null, rejectWithValue)
+);
+export const fetchActiveChatSessions = createAsyncThunk<ChatSession[], void, { rejectValue: any }>(
+  "chat/fetchActiveChatSessions",
+  async (_, { rejectWithValue }) => await apiCall("get", "/chat/sessions/active", null, rejectWithValue)
+);
+export const fetchArchivedSessions = createAsyncThunk<ArchivedSession[], void, { rejectValue: any }>(
+  "chat/fetchArchivedSessions",
+  async (_, { rejectWithValue }) => await apiCall("get", "/chat/archived", null, rejectWithValue)
+);
+export const markMessagesAsRead = createAsyncThunk<void, string, { rejectValue: any }>(
+  "chat/markMessagesAsRead",
+  async (roomId, { rejectWithValue }) => await apiCall("patch", `/chat/read/${roomId}`, null, rejectWithValue)
+);
+export const sendUserMessage = createAsyncThunk<ChatMessage, { roomId: string; message: string }, { rejectValue: any }>(
+  "chat/sendUserMessage",
+  async (payload, { rejectWithValue }) => await apiCall("post", "/chat/message", payload, rejectWithValue)
+);
 
 // ADMIN
-export const fetchMessagesByRoomAdmin = createAsyncThunk<
-  ChatMessage[],
-  string,
-  { rejectValue: any }
->("chat/fetchMessagesByRoomAdmin", async (roomId, { rejectWithValue }) => {
-  return await apiCall("get", `/chat/admin/${roomId}`, null, rejectWithValue);
-});
-export const fetchAllChatSessionsAdmin = createAsyncThunk<
-  ChatSession[],
-  void,
-  { rejectValue: any }
->("chat/fetchAllChatSessionsAdmin", async (_, { rejectWithValue }) => {
-  return await apiCall("get", "/chat/admin/sessions", null, rejectWithValue);
-});
-export const fetchActiveChatSessionsAdmin = createAsyncThunk<
-  ChatSession[],
-  void,
-  { rejectValue: any }
->("chat/fetchActiveChatSessionsAdmin", async (_, { rejectWithValue }) => {
-  return await apiCall("get", "/chat/admin/sessions/active", null, rejectWithValue);
-});
-export const fetchArchivedSessionsAdmin = createAsyncThunk<
-  ArchivedSession[],
-  void,
-  { rejectValue: any }
->("chat/fetchArchivedSessionsAdmin", async (_, { rejectWithValue }) => {
-  return await apiCall("get", "/chat/admin/archived", null, rejectWithValue);
-});
+export const fetchMessagesByRoomAdmin = createAsyncThunk<ChatMessage[], string, { rejectValue: any }>(
+  "chat/fetchMessagesByRoomAdmin",
+  async (roomId, { rejectWithValue }) => await apiCall("get", `/chat/admin/${roomId}`, null, rejectWithValue)
+);
+export const fetchAllChatSessionsAdmin = createAsyncThunk<ChatSession[], void, { rejectValue: any }>(
+  "chat/fetchAllChatSessionsAdmin",
+  async (_, { rejectWithValue }) => await apiCall("get", "/chat/admin/sessions", null, rejectWithValue)
+);
+export const fetchActiveChatSessionsAdmin = createAsyncThunk<ChatSession[], void, { rejectValue: any }>(
+  "chat/fetchActiveChatSessionsAdmin",
+  async (_, { rejectWithValue }) => await apiCall("get", "/chat/admin/sessions/active", null, rejectWithValue)
+);
+export const fetchArchivedSessionsAdmin = createAsyncThunk<ArchivedSession[], void, { rejectValue: any }>(
+  "chat/fetchArchivedSessionsAdmin",
+  async (_, { rejectWithValue }) => await apiCall("get", "/chat/admin/archived", null, rejectWithValue)
+);
+export const sendManualMessage = createAsyncThunk<ChatMessage, {
+  roomId: string;
+  message: string;
+  close?: boolean;
+}, { rejectValue: any }>(
+  "chat/sendManualMessage",
+  async (payload, { rejectWithValue }) => await apiCall("post", "/chat/admin/manual", payload, rejectWithValue)
+);
 
 // --- SLICE ---
 const chatSlice = createSlice({
   name: "chat",
   initialState,
   reducers: {
-    setRoom(state, action: PayloadAction<string>) {
-      state.room = action.payload;
-      state.selectedRoom = action.payload;
+    setRoomId(state, action: PayloadAction<string>) {
+      state.roomId = action.payload;
       state.chatMessages = [];
     },
     addMessage(state, action: PayloadAction<ChatMessage>) {
-      const exists = state.chatMessages.some(
-        (msg) => msg._id === action.payload._id
-      );
-      if (!exists) state.chatMessages.push(action.payload);
+      if (!state.chatMessages.some((msg) => msg._id === action.payload._id)) {
+        state.chatMessages.push(action.payload);
+      }
     },
     addMessageAdmin(state, action: PayloadAction<ChatMessage>) {
-      const exists = state.chatMessagesAdmin.some(
-        (msg) => msg._id === action.payload._id
-      );
-      if (!exists) state.chatMessagesAdmin.push(action.payload);
-    },
-    addEscalatedRoom(state, action: PayloadAction<EscalatedRoom>) {
-      const exists = state.escalatedRooms.some(
-        (r) => r.room === action.payload.room
-      );
-      if (!exists) state.escalatedRooms.unshift(action.payload);
+      if (!state.chatMessagesAdmin.some((msg) => msg._id === action.payload._id)) {
+        state.chatMessagesAdmin.push(action.payload);
+      }
     },
     clearChatMessages(state) {
       state.chatMessages = [];
     },
-    clearChatMessagesAdmin(state) {
-      state.chatMessagesAdmin = [];
-    },
     clearManualMessageState(state) {
-      state.manualMessage = {
-        loading: false,
-        success: false,
-        error: null,
-      };
+      state.manualMessage = { loading: false, success: false, error: null };
     },
+    addEscalatedRoom(state, action: PayloadAction<EscalatedRoom>) {
+      state.escalatedRooms.push(action.payload);
+    },
+    clearEscalatedRooms(state) {
+      state.escalatedRooms = [];
+    }
   },
   extraReducers: (builder) => {
     // PUBLIC
@@ -216,52 +147,35 @@ const chatSlice = createSlice({
         state.loading = false;
         state.error = action.payload?.message || "Mesajlar yüklenemedi.";
       })
-      .addCase(fetchArchivedSessions.pending, (state) => {
-        state.archived.loading = true;
-        state.archived.error = null;
-      })
-      .addCase(fetchArchivedSessions.fulfilled, (state, action) => {
-        state.archived.loading = false;
-        state.archived.sessions = action.payload;
-      })
-      .addCase(fetchArchivedSessions.rejected, (state, action) => {
-        state.archived.loading = false;
-        state.archived.error = action.payload?.message || "Arşiv yüklenemedi.";
-      })
       .addCase(fetchAllChatSessions.fulfilled, (state, action) => {
-        state.sessions.all = action.payload;
+        state.sessions = action.payload;
       })
       .addCase(fetchActiveChatSessions.fulfilled, (state, action) => {
-        state.sessions.active = action.payload;
+        state.activeSessions = action.payload;
       })
-      .addCase(sendManualMessage.pending, (state) => {
+      .addCase(fetchArchivedSessions.fulfilled, (state, action) => {
+        state.archivedSessions = action.payload;
+      })
+      .addCase(sendUserMessage.pending, (state) => {
         state.manualMessage.loading = true;
         state.manualMessage.error = null;
         state.manualMessage.success = false;
       })
-      .addCase(sendManualMessage.fulfilled, (state) => {
+      .addCase(sendUserMessage.fulfilled, (state, action) => {
         state.manualMessage.loading = false;
         state.manualMessage.success = true;
+        state.chatMessages.push(action.payload);
       })
-      .addCase(sendManualMessage.rejected, (state, action) => {
+      .addCase(sendUserMessage.rejected, (state, action) => {
         state.manualMessage.loading = false;
         state.manualMessage.error =
-          action.payload?.message || "Manuel mesaj gönderilemedi.";
+          action.payload?.message || "Mesaj gönderilemedi.";
       });
 
     // ADMIN
     builder
-      .addCase(fetchMessagesByRoomAdmin.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(fetchMessagesByRoomAdmin.fulfilled, (state, action) => {
-        state.loading = false;
         state.chatMessagesAdmin = action.payload;
-      })
-      .addCase(fetchMessagesByRoomAdmin.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload?.message || "Admin mesajlar yüklenemedi.";
       })
       .addCase(fetchAllChatSessionsAdmin.fulfilled, (state, action) => {
         state.sessionsAdmin = action.payload;
@@ -271,38 +185,55 @@ const chatSlice = createSlice({
       })
       .addCase(fetchArchivedSessionsAdmin.fulfilled, (state, action) => {
         state.archivedSessionsAdmin = action.payload;
+      })
+      .addCase(sendManualMessage.fulfilled, (state, action) => {
+        state.manualMessage.success = true;
+        state.manualMessage.loading = false;
+        // adminde mesajı ekle:
+        state.chatMessagesAdmin.push(action.payload);
+      })
+      .addCase(sendManualMessage.pending, (state) => {
+        state.manualMessage.loading = true;
+        state.manualMessage.error = null;
+        state.manualMessage.success = false;
+      })
+      .addCase(sendManualMessage.rejected, (state, action) => {
+        state.manualMessage.loading = false;
+        state.manualMessage.error =
+          action.payload?.message || "Manuel mesaj gönderilemedi.";
       });
   },
 });
 
 // --- Actions ---
 export const {
-  setRoom,
+  setRoomId,
   addMessage,
   addMessageAdmin,
   addEscalatedRoom,
+  clearEscalatedRooms,
   clearChatMessages,
-  clearChatMessagesAdmin,
   clearManualMessageState,
 } = chatSlice.actions;
 
-// --- Selectors ---
-export const selectChatRoom = (state: RootState) => state.chat.room;
-export const selectSelectedRoom = (state: RootState) => state.chat.selectedRoom;
-export const selectChatMessages = (state: RootState) => state.chat.chatMessages;
-export const selectChatMessagesAdmin = (state: RootState) => state.chat.chatMessagesAdmin;
-export const selectChatLoading = (state: RootState) => state.chat.loading;
-export const selectChatError = (state: RootState) => state.chat.error;
-
-export const selectEscalatedRooms = (state: RootState) => state.chat.escalatedRooms;
-export const selectArchivedSessions = (state: RootState) => state.chat.archived.sessions;
-export const selectArchivedSessionsAdmin = (state: RootState) => state.chat.archivedSessionsAdmin;
-export const selectArchivedLoading = (state: RootState) => state.chat.archived.loading;
-export const selectArchivedError = (state: RootState) => state.chat.archived.error;
-export const selectAllChatSessions = (state: RootState) => state.chat.sessions.all;
-export const selectAllChatSessionsAdmin = (state: RootState) => state.chat.sessionsAdmin;
-export const selectActiveChatSessions = (state: RootState) => state.chat.sessions.active;
-export const selectActiveChatSessionsAdmin = (state: RootState) => state.chat.activeSessionsAdmin;
-export const selectManualMessageState = (state: RootState) => state.chat.manualMessage;
 
 export default chatSlice.reducer;
+
+
+
+export const selectChatRoomId = (state: RootState) => state.chat.roomId;
+export const selectChatMessagesAdmin = (state: RootState) => state.chat.chatMessagesAdmin;
+export const selectManualMessageState = (state: RootState) => state.chat.manualMessage;
+export const selectChatMessages = (state: RootState) => state.chat.chatMessages;
+export const selectChatSessions = (state: RootState) => state.chat.sessions;
+export const selectActiveChatSessions = (state: RootState) => state.chat.activeSessions;
+export const selectArchivedSessions = (state: RootState) => state.chat.archivedSessions;
+export const selectChatSessionsAdmin = (state: RootState) => state.chat.sessionsAdmin;
+export const selectActiveChatSessionsAdmin = (state: RootState) => state.chat.activeSessionsAdmin;
+export const selectArchivedSessionsAdmin = (state: RootState) => state.chat.archivedSessionsAdmin;
+export const selectChatLoading = (state: RootState) => state.chat.loading;
+export const selectChatError = (state: RootState) => state.chat.error;
+export const selectChatMessagesByRoom = (state: RootState) => state.chat.chatMessages;
+export const selectAllChatSessionsAdmin = (state: RootState) => state.chat.sessionsAdmin;
+export const selectEscalatedRooms = (state: RootState) => state.chat.escalatedRooms;
+

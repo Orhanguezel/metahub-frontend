@@ -1,7 +1,7 @@
 {
   "page": {
-    "noBlog": "Aucun article trouvé.",
-    "allBlog": "Tous les articles",
+    "noBlog": "Aucun blog trouvé.",
+    "allBlog": "Tous les blogs",
     "blog": {
       "title": "À propos",
       "all": "Voir tout"
@@ -17,11 +17,11 @@
   "unknown": "Inconnu",
   "tabs": {
     "blog": "À propos",
-    "create": "Nouvel article",
+    "create": "Nouvel blog",
     "categories": "Catégories"
   },
   "blog": {
-    "empty": "Aucun article disponible.",
+    "empty": "Aucun blog disponible.",
     "no_images": "Aucune image",
     "author": "Auteur",
     "tags": "Tags",
@@ -37,8 +37,8 @@
   "no": "Non",
   "admin": {
     "blog": {
-      "edit": "Modifier l'article",
-      "create": "Créer un nouvel article",
+      "edit": "Modifier l'blog",
+      "create": "Créer un nouvel blog",
       "title": "Titre",
       "summary": "Résumé",
       "content": "Contenu",
@@ -64,7 +64,7 @@
     "cancel": "Annuler",
     "confirm": {
       "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
-      "delete_article": "Êtes-vous sûr de vouloir supprimer cet article ?"
+      "delete_blog": "Êtes-vous sûr de vouloir supprimer cet blog ?"
     },
     "loading": "Chargement...",
     "actions": "Actions",

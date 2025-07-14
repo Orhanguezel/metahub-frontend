@@ -7,7 +7,7 @@ import {
 } from "@/modules/tenants/slice/tenantSlice";
 import { useAppDispatch } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
+import {translations} from "@/modules/adminmodules";
 import { toast } from "react-toastify";
 
 const BatchAddTenantsForm: React.FC = () => {

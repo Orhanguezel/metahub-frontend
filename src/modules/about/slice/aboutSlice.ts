@@ -185,7 +185,7 @@ const aboutSlice = createSlice({
       .addCase(createAbout.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage =
-          action.payload?.message || "Article created successfully.";
+          action.payload?.message;
         if (action.payload?.data) {
           state.aboutAdmin.unshift(action.payload.data);
         }

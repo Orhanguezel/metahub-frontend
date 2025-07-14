@@ -3,13 +3,14 @@
 import React from "react";
 import styled from "styled-components";
 import Link from "next/link";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/order";
 
 // İstersen react-icons kullanabilirsin, örnek:
 // import { FaCheckCircle } from "react-icons/fa";
 
 const OrderSuccessPage: React.FC = () => {
-  const { t } = useTranslation("order");
+  const { t} = useI18nNamespace("order", translations);
 
   return (
     <PageWrapper>

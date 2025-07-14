@@ -4,7 +4,7 @@ import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import styled from "styled-components";
 import { XCircle, AlertTriangle } from "lucide-react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
+import {translations} from "@/modules/adminmodules";
 import { useAppDispatch } from "@/store/hooks";
 import { updateModuleSetting } from "@/modules/adminmodules/slices/moduleSettingSlice";
 import type { IModuleSetting } from "@/modules/adminmodules/types";

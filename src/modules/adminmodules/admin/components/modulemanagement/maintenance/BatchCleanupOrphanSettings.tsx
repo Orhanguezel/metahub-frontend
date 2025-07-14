@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { cleanupOrphanModuleSettings } from "@/modules/adminmodules/slices/moduleMaintenanceSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
+import {translations} from "@/modules/adminmodules";
 
 const BatchCleanupOrphanSettings: React.FC = () => {
    const { t } = useI18nNamespace("adminModules", translations);

@@ -6,7 +6,7 @@ const folderMap: Record<ImageType, string> = {
   category: "category-images",
   blog: "blog-images",
   news: "news-images",
-  article: "article-images",
+  articles: "articles-images",
   references: "references-images",
   library: "library-images",
   comment: "comment-images",
@@ -16,7 +16,7 @@ const folderMap: Record<ImageType, string> = {
   faq: "faq-images",
   services: "services-images",
   notification: "notification-images",
-  setting: "setting-images",
+  settings: "settings-images",
   contact: "contact-files",
   stock: "stock-images",
   dashboard: "dashboard-assets",
@@ -32,7 +32,7 @@ const folderMap: Record<ImageType, string> = {
   company: "company-images",
   bikes: "bikes-images",
   bikesCategory: "bikesCategory-images",
-  tenant: "tenant-images",
+  tenants: "tenant-images",
   misc: "misc",
 };
 
@@ -42,7 +42,7 @@ const defaultImageMap: Record<ImageType, string> = {
   category: "category.png",
   blog: "blog.png",
   news: "news.png",
-  article: "article.png",
+  articles: "articles.png",
   references: "references.png",
   library: "library.png",
   comment: "comment.png",
@@ -52,7 +52,7 @@ const defaultImageMap: Record<ImageType, string> = {
   faq: "faq.png",
   services: "service.png",
   notification: "notification.png",
-  setting: "setting.png",
+  settings: "setting.png",
   contact: "contact.png",
   stock: "stock.png",
   dashboard: "dashboard.png",
@@ -68,7 +68,7 @@ const defaultImageMap: Record<ImageType, string> = {
   company: "company.png",
   bikes: "bikes.png",
   bikesCategory: "bikeCategory.png",
-  tenant: "tenant.png",
+  tenants: "tenant.png",
   misc: "default.png",
 };
 

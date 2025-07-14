@@ -15,7 +15,7 @@ export interface IActivityImage {
   _id?: string;
 }
 
-// Ana makale (article) tipi
+// Ana makale (activity) tipi
 export interface IActivity {
   _id: string;
   title: TranslatedField;

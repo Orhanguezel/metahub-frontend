@@ -64,7 +64,7 @@
     "cancel": "İptal",
     "confirm": {
       "delete": "Bu kategoriyi silmek istediğinize emin misiniz?",
-      "delete_article": "Bu makaleyi silmek istediğinize emin misiniz?"
+      "delete_references": "Bu makaleyi silmek istediğinize emin misiniz?"
     },
     "loading": "Yükleniyor...",
     "actions": "İşlemler",

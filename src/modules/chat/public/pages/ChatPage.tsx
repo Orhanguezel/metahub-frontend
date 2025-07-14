@@ -3,44 +3,87 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import socket from "@/lib/socket";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {translations} from "@/modules/chat";
+import { SupportedLocale } from "@/types/common";
 import { 
   ChatMessage,
   PublicChatInput,
   PublicMessageList
  } from "@/modules/chat";
 
-const ChatBox = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [lang] = useState<"tr" | "en" | "de">("de");
-  const [room, setRoom] = useState<string>("");
+// PROPS: parent'tan gelebilir!
+type ChatBoxProps = {
+  initialRoom?: string;
+  initialMessages?: ChatMessage[];
+  onRoomAssigned?: (roomId: string) => void; // parent state sync için
+  onNewMessage?: (msg: ChatMessage) => void; // parent state sync için
+};
 
+const ChatBox: React.FC<ChatBoxProps> = ({
+  initialRoom = "",
+  initialMessages = [],
+  onRoomAssigned,
+  onNewMessage,
+}) => {
+  const { i18n } = useI18nNamespace("chat", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const [room, setRoom] = useState<string>(initialRoom);
+
+  // Room assigned/created
   useEffect(() => {
     socket.connect();
 
     const handleRoomAssigned = async (roomId: string) => {
       setRoom(roomId);
+      onRoomAssigned?.(roomId);
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/chat/${roomId}`,
           { credentials: "include" }
         );
         const data = await res.json();
-        if (Array.isArray(data)) setMessages(data);
+        if (Array.isArray(data)) {
+          setMessages(data);
+          // Parent state sync
+          if (onNewMessage) data.forEach((msg: ChatMessage) => onNewMessage(msg));
+        }
       } catch (err) {
         console.error("❌ Geçmiş mesajlar alınamadı:", err);
       }
     };
 
     const handleIncomingMessage = (msg: ChatMessage) => {
-      setMessages((prev) => {
-        const alreadyExists = prev.some((m) => m._id === msg._id);
-        return alreadyExists ? prev : [...prev, msg];
-      });
-    };
+  setMessages((prev) => {
+    // Eğer aynı mesajı (mesaj + createdAt + sender) bulursan temp olanı sil!
+    const tempIndex = prev.findIndex(
+      (m) =>
+        m._id?.startsWith("temp-") &&
+        m.message === msg.message &&
+        m.sender === msg.sender && // ya da sender._id === msg.sender._id
+        Math.abs(new Date(m.createdAt!).getTime() - new Date(msg.createdAt!).getTime()) < 3000 // 3sn tolerans
+    );
+    let next = prev;
+    if (tempIndex !== -1) {
+      // Replace temp with real
+      next = [...prev];
+      next.splice(tempIndex, 1);
+    }
+    // Eğer zaten gerçek id ile varsa tekrar ekleme
+    if (next.some((m) => m._id === msg._id)) return next;
+    // Parent sync
+    onNewMessage?.(msg);
+    return [...next, msg];
+  });
+};
+
 
     socket.on("room-assigned", handleRoomAssigned);
     socket.on("chat-message", handleIncomingMessage);
     socket.on("bot-message", handleIncomingMessage);
+    socket.on("admin-message", handleIncomingMessage);
 
     return () => {
       socket.off("room-assigned", handleRoomAssigned);
@@ -48,24 +91,36 @@ const ChatBox = () => {
       socket.off("bot-message", handleIncomingMessage);
       socket.off("admin-message", handleIncomingMessage);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Eğer parenttan güncel messages/room gelirse (örn. parent global state yönetiyor)
+  useEffect(() => {
+    if (initialRoom && initialRoom !== room) setRoom(initialRoom);
+  }, [initialRoom, room]);
+  useEffect(() => {
+    if (initialMessages && initialMessages.length > 0) setMessages(initialMessages);
+  }, [initialMessages]);
 
   const handleSend = (message: string) => {
     if (!message.trim() || !room) return;
     socket.emit("chat-message", { room, message, lang });
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        _id: `temp-${Date.now()}`,
-        sender: null,
-        message,
-        room,
-        createdAt: new Date().toISOString(),
-        lang,
-        isFromAdmin: false,
-      },
-    ]);
+    // Localde hemen göster (optimistic UI)
+    const msgObj: ChatMessage = {
+      _id: `temp-${Date.now()}`,
+      sender: null,
+      message,
+      roomId: room,
+      tenant: "", // eğer gerekirse parenttan al
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isFromAdmin: false,
+      isFromBot: false,
+      isRead: false,
+      language: { [lang]: message },
+    };
+    setMessages((prev) => [...prev, msgObj]);
+    onNewMessage?.(msgObj); // parent sync
   };
 
   return (

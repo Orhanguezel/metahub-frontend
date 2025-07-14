@@ -15,7 +15,7 @@ export interface IArticlesImage {
   _id?: string;
 }
 
-// Ana makale (article) tipi
+// Ana makale (articles) tipi
 export interface IArticles {
   _id: string;
   title: TranslatedField;

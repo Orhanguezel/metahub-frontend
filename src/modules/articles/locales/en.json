@@ -1,7 +1,7 @@
 {
   "page": {
-    "noArticles": "No articles found.",
-    "allArticles": "All Articles",
+    "noArticles": "No articless found.",
+    "allArticles": "All Articless",
     "articles": {
       "title": "Articles",
       "all": "See All"
@@ -17,7 +17,7 @@
   "unknown": "Unknown",
   "tabs": {
     "articles": "Articles",
-    "create": "New Article",
+    "create": "New Articles",
     "categories": "Categories"
   },
   "articles": {
@@ -37,8 +37,8 @@
   "no": "No",
   "admin": {
     "articles": {
-      "edit": "Edit Article",
-      "create": "Create New Article",
+      "edit": "Edit Articles",
+      "create": "Create New Articles",
       "title": "Title",
       "summary": "Summary",
       "content": "Content",
@@ -64,7 +64,7 @@
     "cancel": "Cancel",
     "confirm": {
       "delete": "Are you sure you want to delete this category?",
-      "delete_article": "Are you sure you want to delete this article?"
+      "delete_articles": "Are you sure you want to delete this articles?"
     },
     "loading": "Loading...",
     "actions": "Actions",
