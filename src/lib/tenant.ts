@@ -6,6 +6,7 @@ const DOMAIN_TENANT_MAP: Record<string, string> = {
   "www.guezelwebdesign.com": "metahub",
   "ensotek.de": "ensotek",
   "md-hygienelogistik.de": "ensotek",
+  "www.md-hygienelogistik.de": "ensotek",
   // ... diğerleri
 };
 export function getTenantSlug() {
