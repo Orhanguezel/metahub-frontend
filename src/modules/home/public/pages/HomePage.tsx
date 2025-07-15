@@ -12,17 +12,17 @@ import { ArticlesSection } from "@/modules/articles";
 import { ActivitySection } from "@/modules/activity";
 import { ReferencesSection } from "@/modules/references";
 import { BikesSection } from "@/modules/bikes";
-import SliderProductSection from "../components/HeroProductSliderSection";
-import HeroSection from "../components/HeroSection";
-import HeroSectionSlayt from "../components/HeroSectionSlayt";
-import CouponBanner from "@/modules/coupon/public/components/CouponBanner";
+import HeroSlider from "@/modules/home/public/components/HeroSlider";
+import HeroSection from "@/modules/home/public/components/HeroSection";
+import HeroSectionSlayt from "@/modules/home/public/components/HeroSectionSlayt";
+import {WelcomeCouponBanner} from "@/modules/coupon";
 
 // Section Key -> Component Map
 const sectionComponents: Record<string, React.ComponentType<any> | undefined> = {
-  heroSlider: SliderProductSection,
+  heroSlider: HeroSlider,
   heroSection: HeroSection, // Deprecated
   heroSectionSlayt: HeroSectionSlayt, // Deprecated
-  couponBanner: CouponBanner,
+  couponBanner: WelcomeCouponBanner, 
   about: AboutSection,
   services: ServicesSection,
   news: NewsSection,

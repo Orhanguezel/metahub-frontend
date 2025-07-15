@@ -6,9 +6,8 @@ import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import useModal from "@/hooks/useModal";
-import Modal from "./Modal";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations,Modal} from "@/modules/home";
 import { SupportedLocale } from "@/types/common";
 import SkeletonBox from "@/shared/Skeleton";
 import type { IGallery } from "@/modules/gallery/types";
@@ -20,7 +19,7 @@ type GalleryItem = IGallery["images"][0] & {
   category?: any;
 };
 
-export default function HeroSectionSlayt() {
+const HeroSectionSlayt = () => {
   const { i18n, t } = useI18nNamespace("home", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
@@ -162,6 +161,10 @@ export default function HeroSectionSlayt() {
     </>
   );
 }
+
+export default HeroSectionSlayt;
+
+
 const HeroWrapper = styled.section`
   width: 100%;
   position: relative;

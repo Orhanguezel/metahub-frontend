@@ -6,6 +6,9 @@ export { default as CouponPage } from "./public/pages/CouponPage";
 export { default as CouponTable } from "./admin/components/CouponTable";
 export { default as CouponForm } from "./admin/components/CouponForm";
 
+// Public Components
+export { default as WelcomeCouponBanner } from "./public/components/CouponBanner";
+
 // Slice
 export { default as couponSlice } from "./slice/couponSlice";
 

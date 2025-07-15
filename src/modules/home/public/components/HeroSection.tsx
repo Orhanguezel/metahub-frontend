@@ -3,15 +3,15 @@
 import Link from "next/link";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/home";
 import { SupportedLocale } from "@/types/common";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState, useMemo } from "react";
 import { useAppSelector } from "@/store/hooks";
-import type { IGallery, IGalleryItem } from "@/modules/gallery/types";
+import type { IGallery} from "@/modules/gallery/types";
 
-export default function HeroSection() {
+const HeroSection = () => {
   const { i18n, t } = useI18nNamespace("home", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { publicImages } = useAppSelector((state) => state.gallery);
@@ -126,6 +126,8 @@ const description =
     </Hero>
   );
 }
+
+export default HeroSection;
 
 // Styled components ... (değişmedi)
 

@@ -4,17 +4,16 @@ import { useMemo, useEffect } from "react";
 import { useAppSelector } from "@/store/hooks";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations,Modal} from "@/modules/home";
 import { SupportedLocale } from "@/types/common";
 import { FaArrowLeft, FaArrowRight, FaExpand } from "react-icons/fa";
 import SkeletonBox from "@/shared/Skeleton";
 import Image from "next/image";
 import useModal from "@/hooks/useModal";
-import Modal from "./Modal";
 import Link from "next/link";
 import type { IGallery } from "@/modules/gallery/types";
 
-export default function HeroProductSliderSection() {
+const HeroSlider = () => {
   const { publicImages, loading } = useAppSelector((state) => state.gallery);
   const { i18n, t } = useI18nNamespace("home", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
@@ -157,7 +156,7 @@ export default function HeroProductSliderSection() {
   );
 }
 
-// styled-components kodun aynen kalabilir!
+export default HeroSlider;
 
 
 

@@ -1,7 +1,6 @@
-// src/shared/WelcomeCouponBanner.tsx
 "use client";
 
-import styled, { useTheme } from "styled-components";
+import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
@@ -9,31 +8,36 @@ import { SupportedLocale } from "@/types/common";
 import { motion } from "framer-motion";
 import { PiTicketFill } from "react-icons/pi";
 
+// 🔥 En güncel, aktif ve geçerli kuponu göstermek için filtre uygula
 export default function WelcomeCouponBanner() {
-   const { i18n, t } = useI18nNamespace("coupon", translations);
-    const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
-  // Sadece admin tarafından current'a set edilen coupon gösterilecek
-  const coupon = useAppSelector((s) => s.coupon.current);
-  const theme = useTheme();
+  const { i18n, t } = useI18nNamespace("coupon", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  // Eğer hoşgeldin kuponu yoksa veya özel gösterim kuralı varsa burada kontrol et
-  if (!coupon) return null;
+  // Tüm public couponlar slice'ta coupons dizisi olarak bulunuyor
+  const coupons = useAppSelector((s) => s.coupon.coupons);
 
-  // (Opsiyonel) — Müşteri segmentasyonu (örn. sadece üyelere göster)
-  // const isMember = useAppSelector((s) => s.account.profile?.isMember); // örnek
-  // if (!isMember) return null;
+  // Publicte aktif/geçerli bir kuponu göster (örneğin ilk aktif/valid kuponu al)
+  const now = Date.now();
+  const activeCoupon = coupons?.find(
+    (c) =>
+      c.isActive &&
+      (!c.expiresAt || new Date(c.expiresAt).getTime() > now)
+  );
 
-  // Çok dilli title/desc çek
+  if (!activeCoupon) return null; // Aktif kupon yoksa banner gösterme
+
   const title =
-    coupon.title?.[lang] ||
-    coupon.title?.en ||
+    activeCoupon.title?.[lang] ||
+    activeCoupon.title?.en ||
     t("defaultTitle", "Welcome Coupon!");
+
   const desc =
-    coupon.description?.[lang] ||
-    coupon.description?.en ||
+    activeCoupon.description?.[lang] ||
+    activeCoupon.description?.en ||
     t("defaultDesc", "Enjoy your special welcome discount!");
 
-  const bgColor = (theme.colors.primaryLight ?? "#f1e3c0") + "22";
+  // Banner için arka plan rengi (temadan alabilirsin veya sabit verebilirsin)
+  const bgColor = "#f2f6ff"; // veya theme'den theme.colors.primaryLight gibi
 
   return (
     <Banner
@@ -46,22 +50,24 @@ export default function WelcomeCouponBanner() {
     >
       <Left>
         <TicketIcon>
-          <PiTicketFill size={46} color={theme.colors.primary} />
+          <PiTicketFill size={46} />
         </TicketIcon>
         <div>
           <BannerTitle>{title}</BannerTitle>
           <BannerDesc>{desc}</BannerDesc>
           <BannerRow>
             <Code>
-              {t("code", "Code")}: <b>{coupon.code}</b>
+              {t("code", "Code")}: <b>{activeCoupon.code}</b>
             </Code>
             <Discount>
-              {t("discount", "Discount")}: <b>%{coupon.discount}</b>
+              {t("discount", "Discount")}: <b>%{activeCoupon.discount}</b>
             </Discount>
-            {coupon.expiresAt && (
+            {activeCoupon.expiresAt && (
               <Expires>
                 {t("expires", "Expires")}:{" "}
-                <b>{new Date(coupon.expiresAt).toLocaleDateString(lang)}</b>
+                <b>
+                  {new Date(activeCoupon.expiresAt).toLocaleDateString(lang)}
+                </b>
               </Expires>
             )}
           </BannerRow>
@@ -78,7 +84,6 @@ export default function WelcomeCouponBanner() {
     </Banner>
   );
 }
-
 // --- Styled Components ---
 const Banner = styled.div<{ $bg: string }>`
   display: flex;
