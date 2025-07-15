@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {loginTranslations} from "@/modules/users";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store";
 import { verifyOtp, resendOtp } from "@/modules/users/slice/advancedSlice";
@@ -23,7 +24,7 @@ interface Props {
 }
 
 export default function OtpStep({ email, onNext, channel = "sms" }: Props) {
-  const { t } = useTranslation("login");
+  const { t } = useI18nNamespace("login", loginTranslations);
   const dispatch = useDispatch<AppDispatch>();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);

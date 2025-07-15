@@ -1,5 +1,3 @@
-// src/store/bookingSlotSlice.ts
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type {
@@ -7,25 +5,56 @@ import type {
   IBookingSlotOverride,
 } from "@/modules/booking/types";
 
+// Net state: admin ve public alanları ayrı
 interface BookingSlotState {
-  availableSlots: string[];                 // 🌍 Public: Kullanıcıya açık slotlar
-  rulesAdmin: IBookingSlotRule[];           // 🛠 Admin: Slot kuralları
-  overridesAdmin: IBookingSlotOverride[];   // 🛠 Admin: Slot override'lar
+  // 🌍 Public
+  availableSlots: string[];
+  rules: IBookingSlotRule[];         // Çalışma saatleri (public)
+  overrides: IBookingSlotOverride[]; // Tatil/kapatma (public)
+
+  // 🛠️ Admin
+  rulesAdmin: IBookingSlotRule[];
+  overridesAdmin: IBookingSlotOverride[];
+
   loading: boolean;
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   successMessage: string | null;
 }
 
 const initialState: BookingSlotState = {
   availableSlots: [],
+  rules: [],
+  overrides: [],
   rulesAdmin: [],
   overridesAdmin: [],
   loading: false,
+  status: "idle",
   error: null,
   successMessage: null,
 };
 
-// 🌍 PUBLIC - Get Available Slots
+// --- PUBLIC THUNKS ---
+
+// 1️⃣ Public: Slot Kuralları (Çalışma saatleri)
+export const fetchSlotRules = createAsyncThunk(
+  "bookingSlot/fetchSlotRules",
+  async (_, { rejectWithValue }) => {
+    const res = await apiCall("get", "/bookingslot/rules", null, rejectWithValue);
+    return res.rules;
+  }
+);
+
+// 2️⃣ Public: Slot Overrides (Tatil/kapatma)
+export const fetchSlotOverrides = createAsyncThunk(
+  "bookingSlot/fetchSlotOverrides",
+  async (_, { rejectWithValue }) => {
+    const res = await apiCall("get", "/bookingslot/overrides", null, rejectWithValue);
+    return res.overrides;
+  }
+);
+
+// 3️⃣ Public: Mevcut Slotlar (Günlük)
 export const fetchAvailableSlots = createAsyncThunk(
   "bookingSlot/fetchAvailableSlots",
   async (date: string, { rejectWithValue }) => {
@@ -34,7 +63,10 @@ export const fetchAvailableSlots = createAsyncThunk(
   }
 );
 
-// 🛠 ADMIN - Get Rules
+// --- ADMIN THUNKS ---
+// (Admin panelde kullanılacak endpointler. Public sayfada asla çağrılmaz!)
+
+// Admin: Get Rules
 export const fetchSlotRulesAdmin = createAsyncThunk(
   "bookingSlot/fetchSlotRulesAdmin",
   async (_, { rejectWithValue }) => {
@@ -43,7 +75,7 @@ export const fetchSlotRulesAdmin = createAsyncThunk(
   }
 );
 
-// 🛠 ADMIN - Get Overrides
+// Admin: Get Overrides
 export const fetchSlotOverridesAdmin = createAsyncThunk(
   "bookingSlot/fetchSlotOverridesAdmin",
   async (_, { rejectWithValue }) => {
@@ -52,7 +84,7 @@ export const fetchSlotOverridesAdmin = createAsyncThunk(
   }
 );
 
-// 🛠 ADMIN - Create Rule
+// Admin: Create Rule
 export const createSlotRuleAdmin = createAsyncThunk(
   "bookingSlot/createSlotRuleAdmin",
   async (data: Partial<IBookingSlotRule>, { rejectWithValue }) => {
@@ -61,7 +93,7 @@ export const createSlotRuleAdmin = createAsyncThunk(
   }
 );
 
-// 🛠 ADMIN - Delete Rule
+// Admin: Delete Rule
 export const deleteSlotRuleAdmin = createAsyncThunk(
   "bookingSlot/deleteSlotRuleAdmin",
   async (id: string, { rejectWithValue }) => {
@@ -70,7 +102,7 @@ export const deleteSlotRuleAdmin = createAsyncThunk(
   }
 );
 
-// 🛠 ADMIN - Create Override
+// Admin: Create Override
 export const createSlotOverrideAdmin = createAsyncThunk(
   "bookingSlot/createSlotOverrideAdmin",
   async (data: Partial<IBookingSlotOverride>, { rejectWithValue }) => {
@@ -79,7 +111,7 @@ export const createSlotOverrideAdmin = createAsyncThunk(
   }
 );
 
-// 🛠 ADMIN - Delete Override
+// Admin: Delete Override
 export const deleteSlotOverrideAdmin = createAsyncThunk(
   "bookingSlot/deleteSlotOverrideAdmin",
   async (id: string, { rejectWithValue }) => {
@@ -88,7 +120,7 @@ export const deleteSlotOverrideAdmin = createAsyncThunk(
   }
 );
 
-// 🛠 ADMIN - Update Rule
+// Admin: Update Rule
 export const updateSlotRuleAdmin = createAsyncThunk(
   "bookingSlot/updateSlotRuleAdmin",
   async (
@@ -110,8 +142,34 @@ const bookingSlotSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    // --- PUBLIC ---
     builder
-      // 🌍 PUBLIC - Available Slots
+      .addCase(fetchSlotRules.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchSlotRules.fulfilled, (state, action) => {
+        state.loading = false;
+        state.rules = action.payload;
+      })
+      .addCase(fetchSlotRules.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as any)?.message || "Could not fetch slot rules.";
+      })
+
+      .addCase(fetchSlotOverrides.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchSlotOverrides.fulfilled, (state, action) => {
+        state.loading = false;
+        state.overrides = action.payload;
+      })
+      .addCase(fetchSlotOverrides.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as any)?.message || "Could not fetch slot overrides.";
+      })
+
       .addCase(fetchAvailableSlots.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -123,9 +181,10 @@ const bookingSlotSlice = createSlice({
       .addCase(fetchAvailableSlots.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as any)?.message || "Could not fetch available slots.";
-      })
+      });
 
-      // 🛠 ADMIN - Slot Rules
+    // --- ADMIN ---
+    builder
       .addCase(fetchSlotRulesAdmin.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -136,10 +195,9 @@ const bookingSlotSlice = createSlice({
       })
       .addCase(fetchSlotRulesAdmin.rejected, (state, action) => {
         state.loading = false;
-        state.error = (action.payload as any)?.message || "Could not fetch slot rules.";
+        state.error = (action.payload as any)?.message || "Could not fetch slot rules (admin).";
       })
 
-      // 🛠 ADMIN - Slot Overrides
       .addCase(fetchSlotOverridesAdmin.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -150,10 +208,9 @@ const bookingSlotSlice = createSlice({
       })
       .addCase(fetchSlotOverridesAdmin.rejected, (state, action) => {
         state.loading = false;
-        state.error = (action.payload as any)?.message || "Could not fetch slot overrides.";
+        state.error = (action.payload as any)?.message || "Could not fetch slot overrides (admin).";
       })
 
-      // 🛠 ADMIN - Create Rule
       .addCase(createSlotRuleAdmin.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -169,7 +226,6 @@ const bookingSlotSlice = createSlice({
         state.error = (action.payload as any)?.message || "Could not create slot rule.";
       })
 
-      // 🛠 ADMIN - Delete Rule
       .addCase(deleteSlotRuleAdmin.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -185,7 +241,6 @@ const bookingSlotSlice = createSlice({
         state.error = (action.payload as any)?.message || "Could not delete slot rule.";
       })
 
-      // 🛠 ADMIN - Create Override
       .addCase(createSlotOverrideAdmin.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -201,7 +256,6 @@ const bookingSlotSlice = createSlice({
         state.error = (action.payload as any)?.message || "Could not create slot override.";
       })
 
-      // 🛠 ADMIN - Delete Override
       .addCase(deleteSlotOverrideAdmin.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -217,7 +271,6 @@ const bookingSlotSlice = createSlice({
         state.error = (action.payload as any)?.message || "Could not delete slot override.";
       })
 
-      // 🛠 ADMIN - Update Rule
       .addCase(updateSlotRuleAdmin.pending, (state) => {
         state.loading = true;
         state.error = null;

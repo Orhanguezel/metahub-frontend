@@ -1,7 +1,8 @@
 "use client";
 
 import { AuthStepType } from "@/modules/users";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {loginTranslations} from "@/modules/users";
 import {
   StepperBar,
   StepItem,
@@ -28,7 +29,7 @@ interface Props {
 }
 
 export default function LoginStepperNav({ currentStep, steps }: Props) {
-  const { t } = useTranslation("login");
+ const { t } = useI18nNamespace("login", loginTranslations);
   const stepList = steps || DEFAULT_STEPS;
 
   return (

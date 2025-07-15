@@ -2,7 +2,7 @@
 import React from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/tenants";
 import { Skeleton } from "@/shared";
 import { ITenant } from "../../types";
 import Image from "next/image";

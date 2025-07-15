@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginUser } from "@/modules/users/slice/authSlice";
 import { AppDispatch } from "@/store";
-import { useTranslation } from "react-i18next";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import type { AuthStepType } from "@/modules/users";
 import { toast } from "react-toastify";
@@ -20,6 +19,8 @@ import {
   InputIcon,
   TogglePassword,
 } from "@/modules/users/styles/AuthStyles";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {loginTranslations} from "@/modules/users";
 
 interface Props {
   onNext: (step: { step: AuthStepType; payload?: any }) => void;
@@ -27,7 +28,7 @@ interface Props {
 
 export default function LoginFormStep({ onNext }: Props) {
   const dispatch = useDispatch<AppDispatch>();
-  const { t } = useTranslation("login");
+  const { t } = useI18nNamespace("login", loginTranslations);
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);

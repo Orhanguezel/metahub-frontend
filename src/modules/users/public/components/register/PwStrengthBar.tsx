@@ -1,5 +1,6 @@
 "use client";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {registerTranslations} from "@/modules/users";
 import {
   BarContainer,
   StrengthBar,
@@ -13,7 +14,7 @@ interface Props {
 }
 
 export default function PwStrengthBar({ score, className }: Props) {
-  const { t } = useTranslation("register");
+  const { t } = useI18nNamespace("register", registerTranslations);
   const labels = [
     t("pwStrength.veryWeak", "Very Weak"),
     t("pwStrength.weak", "Weak"),

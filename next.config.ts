@@ -1,3 +1,6 @@
+// next.config.ts
+import tenantDomains from "./tenantDomains.json";
+
 /** @type {import('next').NextConfig} */
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -9,12 +12,11 @@ const devImagePatterns = [
   },
 ];
 
-const prodImagePatterns = [
-  { protocol: "https", hostname: "ensotek.de" },
-  { protocol: "https", hostname: "www.ensotek.de" },
-];
+const prodImagePatterns = tenantDomains.map((host) => ({
+  protocol: "https",
+  hostname: host,
+}));
 
-// Ortak (her ortamda) uzaktan görsel sağlayıcılar:
 const sharedImagePatterns = [
   { protocol: "https", hostname: "via.placeholder.com" },
   { protocol: "https", hostname: "res.cloudinary.com" },
@@ -46,4 +48,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

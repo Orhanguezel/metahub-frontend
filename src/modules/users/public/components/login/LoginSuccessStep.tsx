@@ -1,6 +1,7 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {loginTranslations} from "@/modules/users";
 import { FaCheckCircle } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useEffect, useCallback, useMemo } from "react";
@@ -27,7 +28,7 @@ export default function LoginSuccessStep({
   autoRedirect = true,
   redirectDelayMs = 2000,
 }: Props) {
-  const { t } = useTranslation("login");
+  const { t } = useI18nNamespace("login", loginTranslations);
   const router = useRouter();
   const user = useSelector((state: RootState) => state.auth.user);
 

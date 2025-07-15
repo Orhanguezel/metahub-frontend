@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {adminUserTranslations} from "@/modules/users";
 import { UserTableFilters, UserTable } from "@/modules/users";
 
 
@@ -26,7 +27,7 @@ export interface UserFilterState {
 }
 
 export default function UsersPage() {
-  const { t } = useTranslation("admin");
+  const { t } = useI18nNamespace("adminUser", adminUserTranslations);
   const [filters, setFilters] = useState<UserFilterState>({
     query: "",
     role: "",

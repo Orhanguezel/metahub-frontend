@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { registerUser } from "@/modules/users/slice/authSlice";
 import { AppDispatch } from "@/store";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {registerTranslations} from "@/modules/users";
 import { toast } from "react-toastify";
 import zxcvbn from "zxcvbn";
 import { useRecaptcha } from "@/hooks/useRecaptcha";
@@ -33,7 +34,7 @@ interface Props {
 }
 
 export default function RegisterFormStep({ onNext }: Props) {
-  const { t } = useTranslation("register");
+  const { t } = useI18nNamespace("register", registerTranslations);
   const dispatch = useDispatch<AppDispatch>();
   const recaptcha = useRecaptcha();
 

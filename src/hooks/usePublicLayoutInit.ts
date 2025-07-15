@@ -24,7 +24,9 @@ import {
   fetchActiveChatSessions,
   fetchArchivedSessions,
 } from "@/modules/chat/slice/chatSlice";
-
+import { 
+  fetchBookings 
+} from "@/modules/booking/slice/bookingSlice";
 export const usePublicLayoutInit = () => {
   const dispatch = useAppDispatch();
   const tenant = useActiveTenant();
@@ -48,6 +50,8 @@ export const usePublicLayoutInit = () => {
   const couponSlice = useAppSelector((s) => s.coupon);
   const chat = useAppSelector((s) => s.chat);
   const profile = useAppSelector((s) => s.account.profile);
+  const bookings = useAppSelector((s) => s.booking);
+
 
   const didInit = useRef<string>("");
 
@@ -79,6 +83,10 @@ export const usePublicLayoutInit = () => {
     if (!companySlice.company && companySlice.status === "idle") dispatch(fetchCompanyInfo());
     if (!couponSlice.coupons || couponSlice.coupons.length === 0) dispatch(fetchCoupons());
 
+    if (profile && bookings.bookings.length === 0) {
+      dispatch(fetchBookings());
+    }
+
     // --- SADECE LOGIN OLAN KULLANICIYA CHAT SESSION FETCH ---
     if (profile) {
       if (chat.sessions.length === 0) dispatch(fetchAllChatSessions());
@@ -88,7 +96,6 @@ export const usePublicLayoutInit = () => {
 
     dispatch(fetchPublishedGalleryItems());
     dispatch(fetchGalleryCategories());
-  // eslint-disable-next-line
   }, [
     dispatch,
     tenant,
@@ -107,7 +114,8 @@ export const usePublicLayoutInit = () => {
     companySlice.company, companySlice.status,
     couponSlice.coupons, couponSlice.status,
     chat.sessions.length, chat.activeSessions.length, chat.archivedSessions.length,
-    gallery.publicImages, galleryCategory.categories
+    gallery.publicImages, galleryCategory.categories,
+    bookings.bookings.length
   ]);
 
   return {
@@ -162,5 +170,6 @@ export const usePublicLayoutInit = () => {
     bikes: bikesSlice.bikes,
     bikesStatus: bikesSlice.status,
     bikesError: bikesSlice.error,
+
   };
 };

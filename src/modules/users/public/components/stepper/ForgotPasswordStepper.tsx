@@ -4,7 +4,8 @@ import { useState } from "react";
 import { ForgotPasswordForm, ForgotPasswordSuccessStep } from "@/modules/users";
 import { StepperNav } from "@/shared";
 import { AuthStepType, AuthStep } from "@/modules/users";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {forgotTranslations} from "@/modules/users";
 import {
   Wrapper,
   Section,
@@ -20,7 +21,8 @@ interface Props {
 }
 
 export default function ForgotPasswordStepper({ onAuthSuccess, steps }: Props) {
-  const { t } = useTranslation("forgotPassword");
+  const { t } = useI18nNamespace("forgotPassword", forgotTranslations);
+
   const stepList = steps || [
     { key: "forgot", label: t("steps.forgot", "Şifremi Unuttum") },
     { key: "done", label: t("steps.done", "Tamamlandı") },

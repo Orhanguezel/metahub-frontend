@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { BookingForm } from "@/modules/booking";
 import SlotRulesTable from "@/modules/booking/public/components/SlotRulesTable";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/booking";
 
 export default function BookingPublicPage() {
   const { t } = useI18nNamespace("booking", translations);

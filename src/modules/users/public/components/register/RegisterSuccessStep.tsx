@@ -1,6 +1,7 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {registerTranslations} from "@/modules/users";
 import { FaCheckCircle } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -28,7 +29,7 @@ export default function RegisterSuccessStep({
   autoRedirect = false,
   redirectDelayMs = 3000,
 }: Props) {
-  const { t } = useTranslation("register");
+  const { t } = useI18nNamespace("register", registerTranslations);
   const router = useRouter();
 
   useEffect(() => {

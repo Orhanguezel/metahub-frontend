@@ -4,7 +4,8 @@ import { useState } from "react";
 import { LoginSuccessStep, OtpStep, LoginForm } from "@/modules/users";
 import { StepperNav } from "@/shared";
 import { AuthStepType, AuthStep } from "@/modules/users";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {loginTranslations} from "@/modules/users";
 import {
   Wrapper,
   Section,
@@ -21,7 +22,7 @@ interface Props {
 }
 
 export default function LoginStepper({ onAuthSuccess, steps }: Props) {
-  const { t } = useTranslation("login");
+  const { t } = useI18nNamespace("login", loginTranslations);
   const stepList = steps || [
     { key: "login", label: t("steps.login", "Giriş Yap") },
     { key: "otp", label: t("steps.otp", "Kod Onayı") },

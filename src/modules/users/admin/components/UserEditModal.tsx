@@ -6,7 +6,8 @@ import { AppDispatch } from "@/store";
 import { updateUser } from "@/modules/users/slice/userCrudSlice";
 import { toast } from "react-toastify";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {adminUserTranslations} from "@/modules/users";
 import { User } from "@/modules/users/types/user";
 
 interface Props {
@@ -16,7 +17,7 @@ interface Props {
 
 export default function UserEditModal({ user, onClose }: Props) {
   const dispatch = useDispatch<AppDispatch>();
-  const { t } = useTranslation("admin");
+  const { t } = useI18nNamespace("adminUser", adminUserTranslations);
 
   const [form, setForm] = useState({
     name: user.name,

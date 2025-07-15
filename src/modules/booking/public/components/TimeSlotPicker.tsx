@@ -3,25 +3,25 @@
 import React from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import { translations } from "@/modules/booking";
 
 interface Props {
-  availableSlots: string[];
-  bookedSlots: string[]; // (genelde boş array, ama ileride backend doldurabilir)
+  availableSlots?: string[]; // opsiyonel yaptık
+  bookedSlots?: string[];    // opsiyonel yaptık
   value: string;
   onChange: (v: string) => void;
 }
 
 export default function TimeSlotPicker({
-  availableSlots,
-  bookedSlots,
+  availableSlots = [],
+  bookedSlots = [],
   value,
   onChange,
 }: Props) {
   const { t } = useI18nNamespace("booking", translations);
 
   // UX: Eğer hiç slot yoksa, dropdown'u disable yap
-  const isDisabled = !availableSlots || availableSlots.length === 0;
+  const isDisabled = availableSlots.length === 0;
 
   return (
     <Select

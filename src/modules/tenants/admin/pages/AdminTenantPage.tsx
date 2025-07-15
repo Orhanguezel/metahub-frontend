@@ -15,7 +15,7 @@ import {
 import { ITenant } from "@/modules/tenants/types";
 import { TenantFormModal, TenantList, TenantTabs } from "@/modules/tenants";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/tenants";
 import type { SupportedLocale } from "@/types/common";
 
 type ActiveTab = "list" | "form";

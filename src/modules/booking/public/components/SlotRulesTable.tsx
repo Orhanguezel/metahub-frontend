@@ -5,11 +5,11 @@ import styled from "styled-components";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import {
   fetchAvailableSlots,
-  fetchSlotRulesAdmin,
-  fetchSlotOverridesAdmin,
+  fetchSlotRules,
+  fetchSlotOverrides,
 } from "@/modules/booking/slice/bookingSlotSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import { translations } from "@/modules/booking";
 
 // Haftanın günleri
 const weekDays = [
@@ -26,18 +26,19 @@ export default function SlotRulesTable() {
   const dispatch = useAppDispatch();
   const {
     availableSlots = [],
-    rulesAdmin: rules,
-    overridesAdmin: overrides,
+    rules = [],
+    overrides = [],
     loading,
   } = useAppSelector((state) => state.bookingSlot);
+
   const { t, i18n } = useI18nNamespace("booking", translations);
   const lang = (i18n.language?.split("-")[0] ?? "tr") as keyof typeof weekDays[0]["label"];
   const today = new Date().toISOString().split("T")[0];
 
-  // Kuralları ve override'ları çek
+  // Yalnızca PUBLIC thunks kullan
   useEffect(() => {
-    dispatch(fetchSlotRulesAdmin());
-    dispatch(fetchSlotOverridesAdmin());
+    dispatch(fetchSlotRules());
+    dispatch(fetchSlotOverrides());
     dispatch(fetchAvailableSlots(today));
   }, [dispatch, today]);
 

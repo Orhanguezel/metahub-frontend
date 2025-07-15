@@ -4,7 +4,8 @@ import { useDispatch } from "react-redux";
 import { verifyOtp, resendOtp } from "@/modules/users/slice/advancedSlice";
 import { AppDispatch } from "@/store";
 import { toast } from "react-toastify";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {registerTranslations} from "@/modules/users";
 import { FaShieldAlt } from "react-icons/fa";
 import { AuthStepType } from "@/modules/users";
 import {
@@ -32,7 +33,7 @@ export default function OtpVerifyStep({ email, onNext }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [resendLoading, setResendLoading] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
-  const { t } = useTranslation("register");
+  const { t } = useI18nNamespace("register", registerTranslations);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();

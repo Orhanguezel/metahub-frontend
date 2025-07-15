@@ -138,6 +138,7 @@ import {
   clearChatMessages,
 } from "@/modules/chat/slice/chatSlice";
 
+
 // -- Cleanup aksiyonları merkezi:
 const cleanupActions = [
   clearSettingsMessages,
@@ -305,8 +306,6 @@ export const useLayoutInit = () => {
     if (!chat.archivedSessionsAdmin.length && !chat.loading) {
       dispatch(fetchArchivedSessionsAdmin());
     }
-    if (!chat.sessionsAdmin.length && !chat.loading)
-      dispatch(fetchAllChatSessionsAdmin());
     if (!chat.activeSessionsAdmin.length && !chat.loading)
       dispatch(fetchActiveChatSessionsAdmin());
     if (!chat.archivedSessionsAdmin.length && !chat.loading)
@@ -353,18 +352,15 @@ export const useLayoutInit = () => {
     if (!ordersAdmin.ordersAdmin.length && !ordersAdmin.loading) {
       dispatch(fetchAllOrdersAdmin());
     }
-    // Burada sadece tenant ve ilgili loading primitive’lerini kullanıyoruz.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenant, dispatch]);
 
-  // Unmount'ta temizlik (opsiyonel)
   useEffect(() => {
     return () => {
       cleanupActions.forEach((action) => dispatch(action()));
     };
   }, [dispatch]);
 
-  // API KEY gibi bir ayar varsa, init et (opsiyonel)
   useEffect(() => {
     if (settingsAdmin.settings?.length) {
       const apiKeySetting = settingsAdmin.settings.find(

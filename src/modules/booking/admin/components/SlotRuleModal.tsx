@@ -6,7 +6,7 @@ import { useAppDispatch } from "@/store/hooks";
 import { updateSlotRuleAdmin } from "@/modules/booking/slice/bookingSlotSlice";
 import { toast } from "react-toastify";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/booking";
 import type { IBookingSlotRule } from "@/modules/booking/types";
 
 const weekDays = [

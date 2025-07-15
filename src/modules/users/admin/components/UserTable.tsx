@@ -6,7 +6,8 @@ import { AppDispatch, RootState } from "@/store";
 import { fetchUsers } from "@/modules/users/slice/userCrudSlice";
 import { UserTableRow } from "@/modules/users";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {adminUserTranslations} from "@/modules/users";
 import { User } from "@/modules/users/types/user";
 import { UserFilterState } from "@/app/admin/users/page";
 
@@ -15,7 +16,7 @@ interface Props {
 }
 
 export default function UserTable({ filters }: Props) {
-  const { t } = useTranslation("admin");
+  const { t } = useI18nNamespace("adminUser", adminUserTranslations);
   const dispatch = useDispatch<AppDispatch>();
   const { users, loading } = useSelector((state: RootState) => state.userCrud);
 

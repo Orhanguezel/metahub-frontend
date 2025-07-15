@@ -21,7 +21,8 @@ import {
   AddressList,
   AddressItem,
 } from "@/modules/users/styles/AccountStyles";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {accountTranslations} from "@/modules/users";;
 import { toast } from "react-toastify";
 
 
@@ -50,7 +51,7 @@ const schema = (t: any) =>
   });
 
 const AddressForm: React.FC = () => {
-  const { t } = useTranslation("account");
+  const { t } = useI18nNamespace("account", accountTranslations);
   const dispatch = useAppDispatch();
   const { addresses } = useAppSelector((state) => state.address);
 

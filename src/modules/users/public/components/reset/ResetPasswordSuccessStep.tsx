@@ -1,13 +1,14 @@
 "use client";
 import React, { useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {resetTranslations} from "@/modules/users";
 
 export default function ResetPasswordSuccessStep({
   onAuthSuccess,
 }: {
   onAuthSuccess?: () => void;
 }) {
-  const { t } = useTranslation("resetPassword");
+  const { t } = useI18nNamespace("resetPassword", resetTranslations);
 
   useEffect(() => {
     if (onAuthSuccess) {

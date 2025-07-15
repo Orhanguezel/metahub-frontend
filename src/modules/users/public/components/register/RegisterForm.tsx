@@ -6,7 +6,8 @@ import {
   clearAuthMessages,
 } from "@/modules/users/slice/authSlice";
 import { RootState, AppDispatch } from "@/store";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {registerTranslations} from "@/modules/users";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUser } from "react-icons/fa";
@@ -43,7 +44,7 @@ interface Props {
 export default function RegisterForm({ onSwitch, onAuthSuccess }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { t } = useTranslation("register");
+  const { t } = useI18nNamespace("register", registerTranslations);
   const { loading, error, successMessage } = useSelector(
     (state: RootState) => state.auth
   );

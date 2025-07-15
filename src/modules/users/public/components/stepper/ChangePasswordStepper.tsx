@@ -3,7 +3,8 @@ import { useState } from "react";
 import { ChangePasswordForm, ChangePasswordSuccessStep } from "@/modules/users";
 import { StepperNav } from "@/shared";
 import { AuthStepType, AuthStep } from "@/modules/users";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {changeTranslations} from "@/modules/users";
 import {
   Wrapper,
   Section,
@@ -19,7 +20,7 @@ interface Props {
 }
 
 export default function ChangePasswordStepper({ onAuthSuccess, steps }: Props) {
-  const { t } = useTranslation("changePassword");
+  const { t } = useI18nNamespace("changePassword", changeTranslations);
   const stepList = steps || [
     { key: "change", label: t("steps.change", "Şifre Değiştir") },
     { key: "done", label: t("steps.done", "Tamamlandı") },

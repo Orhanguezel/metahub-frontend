@@ -1,0 +1,93 @@
+{
+  "page": {
+    "title": "Account Settings",
+    "profileImage": "Profile Photo",
+    "personalInfo": "Personal Information",
+    "address": "Address Information",
+    "notifications": "Notification Settings",
+    "social": "Social Media Links",
+    "password": "Change Password",
+    "deleteAccount": "Delete Account",
+    "loading": "Loading..."
+  },
+  "form": {
+    "title": "Update My Info",
+    "name": "Name",
+    "email": "E-mail",
+    "phone": "Phone",
+    "save": "Save",
+    "saving": "Saving...",
+    "success": "Profile updated successfully.",
+    "error": "Error while updating.",
+    "errors": {
+      "name": "Please enter your name.",
+      "email": "Please enter your e-mail.",
+      "emailInvalid": "Please enter a valid e-mail address."
+    },
+    "imageSuccess": "Profile photo updated.",
+    "imageError": "Image upload failed.",
+    "loading": "Loading...",
+    "upload": "Upload Photo"
+  },
+  "address": {
+    "title": "Address Information",
+    "street": "Street",
+    "houseNumber": "House No",
+    "city": "City",
+    "zipCode": "Zip Code",
+    "add": "Add",
+    "saving": "Saving...",
+    "update": "Update",
+    "remove": "Remove",
+    "success": "Address saved.",
+    "deleted": "Address deleted.",
+    "error": "Error while processing address.",
+    "errors": {
+      "street": "Street is required.",
+      "houseNumber": "House number is required.",
+      "city": "City is required.",
+      "zipCode": "Zip code is required."
+    }
+  },
+  "notifications": {
+    "email": "E-mail Notification",
+    "sms": "SMS Notification",
+    "save": "Save",
+    "saving": "Saving...",
+    "success": "Notification settings saved.",
+    "error": "Failed to save notifications.",
+    "emailRequired": "E-mail notification is required.",
+    "smsRequired": "SMS notification is required."
+  },
+  "social": {
+    "title": "Social Media Links",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "twitter": "Twitter",
+    "instagramPlaceholder": "Enter your Instagram profile link",
+    "facebookPlaceholder": "Enter your Facebook profile link",
+    "twitterPlaceholder": "Enter your Twitter profile link",
+    "save": "Save",
+    "saving": "Saving...",
+    "success": "Social media links saved.",
+    "error": "Links could not be saved.",
+    "errors": {
+      "instagramInvalid": "Enter a valid Instagram link.",
+      "facebookInvalid": "Enter a valid Facebook link.",
+      "twitterInvalid": "Enter a valid Twitter link."
+    }
+  },
+  "delete": {
+    "title": "Delete Account",
+    "warning": "This action cannot be undone! Enter your password and type 'delete' to confirm.",
+    "loggedInAs": "Logged in as:",
+    "confirmation": "Type 'delete' to confirm",
+    "confirmationError": "Please type 'delete' to confirm.",
+    "password": "Password",
+    "passwordError": "Please enter your password.",
+    "button": "Permanently Delete Account",
+    "success": "Your account has been deleted.",
+    "error": "Account could not be deleted.",
+    "loading": "Processing..."
+  }
+}

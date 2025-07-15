@@ -21,3 +21,6 @@ export { default as bookingslotReducer } from "./slice/bookingSlotSlice";
 
 // ✅ Types (Artık `@/modules/booking` içinden import edebilirsin)
 export * from "./types";
+
+// 🌐 Translations
+export { default as translations } from "./locales";

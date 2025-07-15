@@ -1,14 +1,15 @@
 // modules/users/ChangePasswordSuccessStep.tsx
 "use client";
 import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {changeTranslations} from "@/modules/users";
 
 export default function ChangePasswordSuccessStep({
   onAuthSuccess,
 }: {
   onAuthSuccess?: () => void;
 }) {
-  const { t } = useTranslation("changePassword");
+   const { t } = useI18nNamespace("changePassword", changeTranslations);
 
   useEffect(() => {
     if (onAuthSuccess) {

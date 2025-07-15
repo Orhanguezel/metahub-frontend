@@ -11,7 +11,8 @@ import {
   AddressForm,
   ChangePasswordForm,
 } from "@/modules/users";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {accountTranslations} from "@/modules/users";
 import {
   Wrapper,
   Title,
@@ -25,7 +26,7 @@ export default function AccountForm() {
   const { profile, loading, error, successMessage } = useAppSelector(
     (state) => state.account
   );
-  const { t } = useTranslation("account");
+  const { t } = useI18nNamespace("account", accountTranslations);
 
   useEffect(() => {
     return () => {

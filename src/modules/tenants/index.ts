@@ -10,3 +10,6 @@ export { default as TenantTabs } from "./admin/components/TenantTabs";
 
 // Slice
 export { default as tenantSlice } from "./slice/tenantSlice";
+
+// Locales
+export { default as translations } from "./locales";

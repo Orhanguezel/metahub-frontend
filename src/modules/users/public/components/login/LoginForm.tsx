@@ -3,10 +3,8 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginUser, clearAuthMessages } from "@/modules/users/slice/authSlice";
-import { fetchCurrentUser } from "@/modules/users/slice/accountSlice";
 import { AppDispatch } from "@/store";
 import { toast } from "react-toastify";
-import { useTranslation } from "react-i18next";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import type { AuthStep } from "@/modules/users";
@@ -27,6 +25,8 @@ import {
   ActionLink,
   AltAction,
 } from "@/modules/users/styles/AuthStyles";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {loginTranslations} from "@/modules/users";
 
 interface Props {
   onNext?: (next: AuthStep) => void;
@@ -36,7 +36,7 @@ interface Props {
 export default function LoginForm({ onNext, onAuthSuccess }: Props) {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const { t } = useTranslation("login");
+  const { t } = useI18nNamespace("login", loginTranslations);
 
   const [form, setForm] = useState({
     email: "",
@@ -89,9 +89,6 @@ export default function LoginForm({ onNext, onAuthSuccess }: Props) {
         toast.info(t("otpRequired"));
         return;
       }
-
-      await dispatch(fetchCurrentUser()).unwrap();
-      toast.success(t("success"));
       if (onAuthSuccess) onAuthSuccess();
       else onNext?.({ step: "done" });
     } catch (err: any) {

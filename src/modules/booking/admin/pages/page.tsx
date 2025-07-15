@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/booking";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { deleteBooking, clearBookingMessages } from "@/modules/booking/slice/bookingSlice";
 import { Booking, BookingTable, BookingStatusModal, SlotManager } from "@/modules/booking";
@@ -31,24 +31,26 @@ export default function AdminBookingPage() {
   const [activeTab, setActiveTab] = useState(TAB_BOOKINGS);
 
   useEffect(() => {
+  if (successMessage || error) {
+    toast.dismiss();
     if (successMessage) toast.success(successMessage);
     if (error) toast.error(error);
-    if (successMessage || error) {
-      dispatch(clearBookingMessages());
-    }
-  }, [successMessage, error, dispatch]);
+    dispatch(clearBookingMessages());
+  }
+}, [successMessage, error, dispatch]);
 
   const handleOpenModal = (booking: Booking) => {
     setSelectedBooking(booking);
     setModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    const confirmMessage = t("admin.confirmDelete", "Are you sure you want to delete this booking?");
-    if (window.confirm(confirmMessage)) {
-      dispatch(deleteBooking(id));
-    }
-  };
+  const handleDelete = async (id: string) => {
+  const confirmMessage = t("admin.confirmDelete", "Are you sure you want to delete this booking?");
+  if (window.confirm(confirmMessage)) {
+    await dispatch(deleteBooking(id));
+  }
+};
+
 
   return (
     <Wrapper>
@@ -76,10 +78,11 @@ export default function AdminBookingPage() {
               onDelete={handleDelete}
             />
             <BookingStatusModal
-              isOpen={modalOpen}
-              booking={selectedBooking}
-              onClose={() => setModalOpen(false)}
-            />
+  isOpen={modalOpen}
+  booking={selectedBooking} 
+  onClose={() => setModalOpen(false)}
+/>
+
           </Card>
         )}
         {activeTab === TAB_SLOTS && (

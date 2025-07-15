@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {registerTranslations} from "@/modules/users";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store";
 import { resendEmailVerification } from "@/modules/users/slice/advancedSlice";
@@ -27,7 +28,7 @@ interface Props {
 }
 
 export default function EmailVerifyStep({ email, onNext }: Props) {
-  const { t } = useTranslation("register");
+  const { t } = useI18nNamespace("register", registerTranslations);
   const dispatch = useDispatch<AppDispatch>();
   const [loading, setLoading] = useState(false);
 

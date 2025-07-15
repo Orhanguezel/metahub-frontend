@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {registerTranslations} from "@/modules/users";
 import { StepperNav } from "@/shared";
 import {
   RegisterSuccessStep,
@@ -26,7 +27,7 @@ interface Props {
 }
 
 export default function RegisterStepper({ onAuthSuccess, steps }: Props) {
-  const { t } = useTranslation("register");
+  const { t } = useI18nNamespace("register", registerTranslations);
 
   const stepList = steps || [
     { key: "register", label: t("steps.register", "Kayıt Ol") },

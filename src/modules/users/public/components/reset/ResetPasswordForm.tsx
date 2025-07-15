@@ -7,7 +7,8 @@ import {
 } from "@/modules/users/slice/authSlice";
 import { RootState, AppDispatch } from "@/store";
 import { toast } from "react-toastify";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {resetTranslations} from "@/modules/users";
 import { AuthStep } from "@/modules/users";
 import {
   Wrapper,
@@ -25,7 +26,7 @@ interface Props {
 
 export default function ResetPasswordForm({ token, onNext }: Props) {
   const dispatch = useDispatch<AppDispatch>();
-  const { t } = useTranslation("resetPassword");
+  const { t } = useI18nNamespace("resetPassword", resetTranslations);
   const { loading, error, successMessage } = useSelector(
     (state: RootState) => state.auth
   );

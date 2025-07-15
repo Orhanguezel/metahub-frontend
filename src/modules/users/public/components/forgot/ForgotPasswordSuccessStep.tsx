@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {forgotTranslations} from "@/modules/users";
 
 interface Props {
   onAuthSuccess?: () => void;
 }
 
 export default function ForgotPasswordSuccessStep({ onAuthSuccess }: Props) {
-  const { t } = useTranslation("forgotPassword");
+  const { t } = useI18nNamespace("forgotPassword", forgotTranslations);
 
   useEffect(() => {
     if (onAuthSuccess) {

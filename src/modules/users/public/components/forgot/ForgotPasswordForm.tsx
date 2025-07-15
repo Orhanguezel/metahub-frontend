@@ -6,7 +6,8 @@ import {
   clearAuthMessages,
 } from "@/modules/users/slice/authSlice";
 import { RootState, AppDispatch } from "@/store";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {forgotTranslations} from "@/modules/users";
 import { toast } from "react-toastify";
 import { AuthStep } from "@/modules/users";
 import {
@@ -24,7 +25,7 @@ interface Props {
 
 export default function ForgotPasswordForm({ onNext }: Props) {
   const dispatch = useDispatch<AppDispatch>();
-  const { t } = useTranslation("forgotPassword");
+  const { t } = useI18nNamespace("forgotPassword", forgotTranslations);
   const { loading, error, successMessage } = useSelector(
     (state: RootState) => state.auth
   );

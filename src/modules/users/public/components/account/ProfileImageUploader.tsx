@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import { useAppDispatch } from "@/store/hooks";
 import { updateProfileImage } from "@/modules/users/slice/accountSlice";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {accountTranslations} from "@/modules/users";
 import { toast } from "react-toastify";
 import { getImageSrc } from "@/shared/getImageSrc";
 import type { ProfileImageObj } from "@/modules/users/types/auth";
@@ -20,7 +21,7 @@ interface Props {
 
 export default function ProfileImageUploader({ imageUrl }: Props) {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("account");
+ const { t } = useI18nNamespace("account", accountTranslations);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [filePreview, setFilePreview] = useState<string | null>(null);

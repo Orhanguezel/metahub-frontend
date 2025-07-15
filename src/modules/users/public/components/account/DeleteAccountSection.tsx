@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useAppDispatch } from "@/store/hooks";
 import { deleteUserAccount } from "@/modules/users/slice/accountSlice";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {accountTranslations} from "@/modules/users";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import {
@@ -21,7 +22,7 @@ interface Props {
 }
 
 const DeleteAccountSection = ({ profile }: Props) => {
-  const { t } = useTranslation("account");
+  const { t } = useI18nNamespace("account", accountTranslations);
   const dispatch = useAppDispatch();
   const router = useRouter();
 

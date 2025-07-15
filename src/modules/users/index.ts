@@ -68,5 +68,15 @@ export * from "./types/user";
 export * from "./types/authFlow";
 export * from "./types/auth";
 
+// Locales
+export { default as accountTranslations } from "./locales/account";
+export { default as logoutTranslations } from "./locales/logout";
+export { default as loginTranslations } from "./locales/login";
+export { default as registerTranslations } from "./locales/register";
+export { default as forgotTranslations } from "./locales/forgot";
+export { default as resetTranslations } from "./locales/reset";
+export { default as changeTranslations } from "./locales/change";
+export { default as adminUserTranslations } from "./locales/adminUser";
+
 
 // Optionally: i18n can be loaded in page-level or via config

@@ -9,7 +9,8 @@ import {
   updateUserRole,
 } from "@/modules/users/slice/userStatusSlice";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {adminUserTranslations} from "@/modules/users";
 import { User } from "@/modules/users/types/user";
 
 interface Props {
@@ -20,7 +21,7 @@ interface Props {
 
 export default function UserActions({ userId, currentRole, onRefresh }: Props) {
   const dispatch = useDispatch<AppDispatch>();
-  const { t } = useTranslation("admin");
+  const { t } = useI18nNamespace("adminUser", adminUserTranslations);
 
   const handleRoleChange = () => {
     const newRole: User["role"] =

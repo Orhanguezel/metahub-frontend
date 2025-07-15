@@ -4,7 +4,8 @@ import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useAppDispatch } from "@/store/hooks";
 import { updateNotificationSettings,Account } from "@/modules/users/slice/accountSlice";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {accountTranslations} from "@/modules/users";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { toast } from "react-toastify";
@@ -28,7 +29,7 @@ interface Props {
 }
 
 const NotificationSettingsForm = ({ profile }: Props) => {
-  const { t } = useTranslation("account");
+  const { t } = useI18nNamespace("account", accountTranslations);
   const dispatch = useAppDispatch();
 
   const {

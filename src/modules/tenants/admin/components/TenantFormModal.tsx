@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/tenants";
 import ImageUploadWithPreview from "@/shared/ImageUploadWithPreview";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/i18n";
 import { ITenant,EmailSettings } from "../../types";
