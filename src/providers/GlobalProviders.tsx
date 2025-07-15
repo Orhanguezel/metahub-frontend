@@ -8,7 +8,7 @@ import ThemeProviderWrapper from "@/providers/ThemeProviderWrapper";
 import ToastProvider from "@/providers/ToastProvider";
 import GlobalStyle from "@/styles/GlobalStyle";
 import i18n from "@/i18n";
-import InitUserLoader from "@/providers/InitUserLoader";
+//import InitUserLoader from "@/providers/InitUserLoader";
 import { Loading, ErrorMessage } from "@/shared";
 
 export default function GlobalProviders({
@@ -32,7 +32,7 @@ function PostReduxProviders({ children }: { children: React.ReactNode }) {
     <>
       <InitI18n />
       <ThemeProviderWrapper>
-        <InitUserLoader />
+        {/*<InitUserLoader />*/}
         <I18nProvider>
           <ToastProvider />
           <GlobalStyle />
