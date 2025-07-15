@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginUser, clearAuthMessages } from "@/modules/users/slice/authSlice";
+import { fetchCurrentUser } from "@/modules/users/slice/accountSlice";
 import { AppDispatch } from "@/store";
 import { toast } from "react-toastify";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
@@ -89,6 +90,9 @@ export default function LoginForm({ onNext, onAuthSuccess }: Props) {
         toast.info(t("otpRequired"));
         return;
       }
+
+      await dispatch(fetchCurrentUser()).unwrap();
+      toast.success(t("success"));
       if (onAuthSuccess) onAuthSuccess();
       else onNext?.({ step: "done" });
     } catch (err: any) {
