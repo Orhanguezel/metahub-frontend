@@ -1,7 +1,7 @@
 import API from "./api";
 import { getTenantSlug } from "@/lib/tenant";
 
-// Dil seçici
+// Language selector
 const getLang = (): string => {
   if (typeof window === "undefined") return "de";
   const storedLang = localStorage.getItem("lang");
@@ -11,7 +11,6 @@ const getLang = (): string => {
 };
 
 const isDev = process.env.NODE_ENV === "development";
-
 
 const apiCall = async (
   method: "get" | "post" | "put" | "delete" | "patch",
@@ -26,8 +25,8 @@ const apiCall = async (
       if (data) console.log("📤 Payload:", data);
     }
 
-    // Dev'de .env ile, prod'da hiç tenant header eklenmez!
-    const tenantSlug = getTenantSlug();
+    // Sadece development'da x-tenant ekle!
+    const tenantSlug = isDev ? getTenantSlug() : undefined;
 
     // FormData kontrolü
     const isFormData =
@@ -71,7 +70,7 @@ const apiCall = async (
       return null;
     }
 
-    // Hata logu ve reject
+    // Error logging (dev'de göster)
     if (error?.response) {
       const res = error.response;
       const logObj = {
@@ -89,16 +88,13 @@ const apiCall = async (
         (v) => v === "-" || v === "" || v == null
       );
       if (!isEmptyObj && isDev) {
-        // Sadece development'da detaylı error logla
         console.error("❌ API Fehler / Error Details:", logObj);
       } else if (isDev) {
-        // Sadece development'da minik uyarı logla, production'da hiçbir şey loglama
         console.warn(
           "⚠️ API Warn: No details from API error object (muhtemelen unauthorized/public fetch)."
         );
       }
     } else if (isDev) {
-      // Sadece dev'de network hatalarını yaz
       console.error("❌ API Network/Error:", {
         url,
         message: error?.message || message,

@@ -2,8 +2,8 @@
 const DOMAIN_TENANT_MAP: Record<string, string> = {
   "koenigsmassage.com": "anastasia",
   "www.koenigsmassage.com": "anastasia",
-  "guezelwebdesign.com": "metahub",
-  "www.guezelwebdesign.com": "metahub",
+  "metahub.guezelwebdesign.com": "metahub",
+  "www.metahub.guezelwebdesign.com": "metahub",
   "ensotek.de": "ensotek",
   "md-hygienelogistik.de": "ensotek",
   "www.md-hygienelogistik.de": "ensotek",
