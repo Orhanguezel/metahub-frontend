@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useActiveTenant } from "@/hooks/useActiveTenant";
 import {
   fetchSettingsAdmin,
   clearSettingsMessages,
@@ -23,10 +24,6 @@ import {
   fetchModuleTenantMatrix,
   clearModuleMaintenanceMessages,
 } from "@/modules/adminmodules/slices/moduleMaintenanceSlice";
-import {
-  fetchTenants,
-  clearTenantMessages,
-} from "@/modules/tenants/slice/tenantSlice";
 import {
   fetchAllAboutAdmin,
   clearAboutMessages,
@@ -146,7 +143,6 @@ const cleanupActions = [
   clearModuleMetaMessages,
   clearModuleSettingMessages,
   clearModuleMaintenanceMessages,
-  clearTenantMessages,
   clearAboutMessages,
   clearAboutCategoryMessages,
   clearActivityMessages,
@@ -178,25 +174,8 @@ const cleanupActions = [
 // --- useLayoutInit ---
 export const useLayoutInit = () => {
   const dispatch = useAppDispatch();
-  const [tenant, setTenant] = useState<string | undefined>(undefined);
-
-  // Tenant'ı ilk renderda asenkron oku
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const tnt =
-        localStorage.getItem("tenant") ||
-        process.env.NEXT_PUBLIC_APP_ENV ||
-        process.env.NEXT_PUBLIC_TENANT_NAME ||
-        process.env.TENANT_NAME;
-      setTenant(tnt);
-    } else {
-      const tnt =
-        process.env.NEXT_PUBLIC_APP_ENV ||
-        process.env.NEXT_PUBLIC_TENANT_NAME ||
-        process.env.TENANT_NAME;
-      setTenant(tnt);
-    }
-  }, []);
+  const { tenant, loading: tenantLoading } = useActiveTenant(); // ✅
+  const tenantLoaded = !!tenant && !tenantLoading;
 
   // Slice stateleri
   const settingsAdmin = useAppSelector((state) => state.settings);
@@ -205,6 +184,7 @@ export const useLayoutInit = () => {
   const moduleSetting = useAppSelector((state) => state.moduleSetting);
   const moduleMaintenance = useAppSelector((state) => state.moduleMaintenance);
   const tenants = useAppSelector((state) => state.tenants);
+  
   const accountProfile = useAppSelector((state) => state.account);
   const dashboard = useAppSelector((state) => state.dashboard);
   const aboutList = useAppSelector((state) => state.about);
@@ -241,7 +221,7 @@ export const useLayoutInit = () => {
 
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
   useEffect(() => {
-    if (!tenant) return;
+    if (!tenantLoaded) return;
     // Fetchler
     if (!settingsAdmin.settingsAdmin.length && !settingsAdmin.loading)
       dispatch(fetchSettingsAdmin());
@@ -259,8 +239,6 @@ export const useLayoutInit = () => {
       dispatch(fetchModuleTenantMatrix());
     }
 
-    if (!tenants.tenants?.length && !tenants.loading) dispatch(fetchTenants());
-    if (!aboutList.aboutAdmin.length && !aboutList.loading)
       dispatch(fetchAllAboutAdmin());
     if (!aboutCategories.categories.length && !aboutCategories.loading)
       dispatch(fetchAboutCategories());
@@ -353,7 +331,7 @@ export const useLayoutInit = () => {
       dispatch(fetchAllOrdersAdmin());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenant, dispatch]);
+  }, [tenantLoaded, tenant, dispatch /* diğer dep'ler gerekiyorsa ekle */]);
 
   useEffect(() => {
     return () => {

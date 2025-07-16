@@ -1,5 +1,4 @@
 "use client";
-
 import styled, { keyframes } from "styled-components";
 
 export default function Loader() {
@@ -10,10 +9,10 @@ export default function Loader() {
   );
 }
 
-// --- Styled Components ---
+// Styled
 const spin = keyframes`
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% { transform: rotate(0deg);}
+  100% { transform: rotate(360deg);}
 `;
 
 const Wrapper = styled.div`
@@ -25,7 +24,7 @@ const Wrapper = styled.div`
 
 const Spinner = styled.div`
   border: 5px solid #f3f3f3;
-  border-top: 5px solid #8884d8; // Tema rengi olabilir
+  border-top: 5px solid #8884d8;
   border-radius: 50%;
   width: 40px;
   height: 40px;

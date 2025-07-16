@@ -1,5 +1,5 @@
 import API from "./api";
-import { getTenantSlug } from "@/lib/tenant";
+import { detectTenantFromHost } from "@/lib/tenant";
 
 // Language selector
 const getLang = (): string => {
@@ -25,8 +25,8 @@ const apiCall = async (
       if (data) console.log("📤 Payload:", data);
     }
 
-    // Sadece development'da x-tenant ekle!
-    const tenantSlug = isDev ? getTenantSlug() : undefined;
+    // Sadece development'da x-tenant ekle (prod'da eklenmez)
+    const tenantSlug = isDev ? detectTenantFromHost() : undefined;
 
     // FormData kontrolü
     const isFormData =

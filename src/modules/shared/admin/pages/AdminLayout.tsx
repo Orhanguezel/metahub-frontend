@@ -8,10 +8,9 @@ import { useActiveTenant } from "@/hooks/useActiveTenant";
 import { useAppDispatch } from "@/store/hooks";
 import { fetchTenantModuleSettings } from "@/modules/adminmodules/slices/moduleSettingSlice";
 
-// --- Props tipini güncelle --- //
 interface AdminLayoutProps {
   children: React.ReactNode;
-  isModalOpen?: boolean; // yeni ekledik!
+  isModalOpen?: boolean;
 }
 
 export default function AdminLayout({ children, isModalOpen = false }: AdminLayoutProps) {
@@ -25,22 +24,20 @@ function AdminLayoutContent({
   children: React.ReactNode;
   isModalOpen?: boolean;
 }) {
-  // Merkezi slice fetch (dashboard, modüller vs.)
-  useLayoutInit();
+  useLayoutInit(); // global verileri başlatır
 
-  // Aktif tenant id (tek kaynaktan)
   const tenantId = useActiveTenant();
+  const dispatch = useAppDispatch();
+  const [hasFetchedModules, setHasFetchedModules] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // Tenant modules fetch
-  const dispatch = useAppDispatch();
   useEffect(() => {
-    if (tenantId) {
+    if (tenantId && !hasFetchedModules) {
       dispatch(fetchTenantModuleSettings());
+      setHasFetchedModules(true);
     }
-  }, [tenantId, dispatch]);
+  }, [tenantId, hasFetchedModules, dispatch]);
 
-  // Escape ile sidebar kapatma
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsSidebarOpen(false);
@@ -49,14 +46,14 @@ function AdminLayoutContent({
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
-  // Sidebar aç/kapat fonksiyonları
-  const handleToggleSidebar = useCallback(
-    () => setIsSidebarOpen((prev) => !prev),
-    []
-  );
-  const handleCloseSidebar = useCallback(() => setIsSidebarOpen(false), []);
+  const handleToggleSidebar = useCallback(() => {
+    setIsSidebarOpen((prev) => !prev);
+  }, []);
 
-  // --- Layout Render ---
+  const handleCloseSidebar = useCallback(() => {
+    setIsSidebarOpen(false);
+  }, []);
+
   return (
     <Wrapper>
       <SidebarWrapper $isSidebarOpen={isSidebarOpen}>
@@ -64,10 +61,7 @@ function AdminLayoutContent({
       </SidebarWrapper>
       <ContentWrapper $isSidebarOpen={isSidebarOpen}>
         <Header onToggleSidebar={handleToggleSidebar} />
-        {/* Modal state yukarıdan prop olarak gelir */}
-        <Content
-          onClick={isSidebarOpen && !isModalOpen ? handleCloseSidebar : undefined}
-        >
+        <Content onClick={isSidebarOpen && !isModalOpen ? handleCloseSidebar : undefined}>
           {children}
         </Content>
         <Footer />
@@ -113,4 +107,3 @@ const Content = styled.main`
   flex: 1;
   min-height: 0;
 `;
-

@@ -9,6 +9,7 @@ interface BookingState {
   bookingsAdmin: Booking[];// 🛠️ Admin bookings (Tüm rezervasyonlar)
   booking?: Booking;
   loading: boolean;
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   successMessage: string | null;
 }
@@ -20,6 +21,7 @@ const initialState: BookingState = {
   loading: false,
   error: null,
   successMessage: null,
+  status: "idle",
 };
 
 // ✅ Create Booking

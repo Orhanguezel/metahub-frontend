@@ -7,13 +7,17 @@ import { setRoomId } from "@/modules/chat/slice/chatSlice";
 import { UserDetailsModal } from "@/modules/chat";
 import { Socket } from "socket.io-client";
 import { ChatMessage, ChatSession } from "@/modules/chat/types";
-import { selectAllChatSessionsAdmin, selectChatMessagesAdmin, selectChatRoomId } from "@/modules/chat/slice/chatSlice";
+import {
+  selectAllChatSessionsAdmin,
+  selectChatMessagesAdmin,
+  selectChatRoomId,
+} from "@/modules/chat/slice/chatSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/chat";
 import { SupportedLocale } from "@/types/common";
 
 interface Props {
-  socket: Socket;
+  socket: Socket | null;
   lang?: SupportedLocale;
 }
 
@@ -21,28 +25,28 @@ const ChatSessionList: React.FC<Props> = ({ socket, lang }) => {
   const { i18n, t } = useI18nNamespace("chat", translations);
   const dispatch = useAppDispatch();
 
-  // Eğer prop'tan gelmediyse aktif i18n'den al
-  const currentLang: SupportedLocale = lang || (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
+  const currentLang: SupportedLocale =
+    lang || (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
 
-  // State'ten veri çek
+  // 🔔 HOOKLAR ÜSTTE OLMALI
   const sessions = useAppSelector(selectAllChatSessionsAdmin) as ChatSession[];
   const selectedRoomId = useAppSelector(selectChatRoomId);
   const messages = useAppSelector(selectChatMessagesAdmin) as ChatMessage[];
 
-  // Kullanıcı detayı modalı için state
   const [selectedUser, setSelectedUser] = useState<{
     roomId: string;
     user?: { _id: string; name: string; email: string };
   } | null>(null);
 
-  // Oda seçildiğinde işlemler
+  // 🛑 HOOK'lardan sonra kontrol yapılabilir
+  if (!socket || !sessions?.length) return null;
+
   const handleSelectRoom = (roomId: string) => {
     if (!roomId || selectedRoomId === roomId) return;
     dispatch(setRoomId(roomId));
     socket.emit("join-room", roomId);
   };
 
-  // Kullanıcı detayı modalı aç
   const handleUserDetails = (
     session: {
       roomId: string;
@@ -54,14 +58,12 @@ const ChatSessionList: React.FC<Props> = ({ socket, lang }) => {
     setSelectedUser(session);
   };
 
-  // Oda için okunmamış mesaj sayısı
   const getUnreadCount = (roomId: string) => {
     return messages.filter(
-      (m: ChatMessage) => m.roomId === roomId && !m.isRead && !m.isFromAdmin
+      (m: ChatMessage) =>
+        m.roomId === roomId && !m.isRead && !m.isFromAdmin
     ).length;
   };
-
-  if (!sessions?.length) return null;
 
   return (
     <>
@@ -76,10 +78,15 @@ const ChatSessionList: React.FC<Props> = ({ socket, lang }) => {
               key={session.roomId}
               $active={isActive}
               onClick={() => handleSelectRoom(session.roomId)}
-              aria-label={t("admin.select_session", "Oturumu seç:") + ` ${session.user?.name || t("admin.visitor", "Ziyaretçi")}`}
+              aria-label={
+                t("admin.select_session", "Oturumu seç:") +
+                ` ${session.user?.name || t("admin.visitor", "Ziyaretçi")}`
+              }
             >
               <div>
-                <strong>{session.user?.name || t("admin.visitor", "Ziyaretçi")}</strong>
+                <strong>
+                  {session.user?.name || t("admin.visitor", "Ziyaretçi")}
+                </strong>
                 <DetailsButton
                   type="button"
                   onClick={(e) =>
@@ -91,12 +98,17 @@ const ChatSessionList: React.FC<Props> = ({ socket, lang }) => {
                       e
                     )
                   }
-                  aria-label={t("admin.show_user_details", "Kullanıcı detaylarını göster")}
+                  aria-label={t(
+                    "admin.show_user_details",
+                    "Kullanıcı detaylarını göster"
+                  )}
                 >
                   👁 {t("admin.detail", "Detay")}
                 </DetailsButton>
                 <br />
-                <small>{session.user?.email || t("admin.no_email", "E-posta yok")}</small>
+                <small>
+                  {session.user?.email || t("admin.no_email", "E-posta yok")}
+                </small>
               </div>
               {unread > 0 && <Badge>{unread}</Badge>}
             </Item>
@@ -125,6 +137,7 @@ const ChatSessionList: React.FC<Props> = ({ socket, lang }) => {
 };
 
 export default ChatSessionList;
+
 
 // 💅 Styles (güncel, sade ve responsive)
 const List = styled.div`

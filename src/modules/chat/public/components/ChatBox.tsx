@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import socket from "@/lib/socket";
+import { getSocket } from "@/lib/socket";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/chat";
 import {
@@ -14,12 +14,14 @@ import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 
 const ChatBox = () => {
   const { t } = useI18nNamespace("chat", translations);
-
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [roomId, setRoomId] = useState<string>("");
 
-  // ✅ Socket bağlantısı ve oda atama
+  const socket = getSocket(); // ✅ socket instance buradan alınmalı
+
   useEffect(() => {
+    if (!socket) return;
+
     socket.connect();
 
     const handleRoomAssigned = async (assignedRoomId: string) => {
@@ -54,26 +56,24 @@ const ChatBox = () => {
       socket.off("chat-message", handleIncomingMessage);
       socket.off("bot-message", handleIncomingMessage);
       socket.off("admin-message", handleIncomingMessage);
+      socket.disconnect();
     };
-  }, []);
+  }, [socket]);
 
-  // ✅ Mesaj gönderimi
   const handleSend = (message: string) => {
-    if (!message.trim() || !roomId) return;
+    if (!message.trim() || !roomId || !socket) return;
 
-    // BlogCategoryForm'daki gibi, seçili dil veya ilk dolu dil üzerinden language objesi oluştur
     const filledLanguage: Record<SupportedLocale, string> = {} as any;
     SUPPORTED_LOCALES.forEach((lng) => {
       filledLanguage[lng] = message;
     });
 
     socket.emit("chat-message", {
-      room:roomId,
+      room: roomId,
       message,
       language: filledLanguage,
     });
 
-    // Optimistic UI: hemen göster
     setMessages((prev) => [
       ...prev,
       {

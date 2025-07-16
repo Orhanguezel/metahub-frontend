@@ -29,7 +29,7 @@ import {
 } from "@/modules/booking/slice/bookingSlice";
 export const usePublicLayoutInit = () => {
   const dispatch = useAppDispatch();
-  const tenant = useActiveTenant();
+  const { tenant, loading: tenantLoading } = useActiveTenant();
 
   // Sadece array/selectors için ayrı alınması daha okunaklı
   const sectionMeta = useAppSelector((s) => s.sectionMeta);
@@ -53,12 +53,13 @@ export const usePublicLayoutInit = () => {
   const bookings = useAppSelector((s) => s.booking);
 
 
-  const didInit = useRef<string>("");
+  const didInit = useRef<string | undefined>(undefined);
+
 
   useEffect(() => {
-    if (!tenant) return;
-    if (didInit.current === tenant) return;
-    didInit.current = tenant;
+    if (tenantLoading || !tenant) return; // Tenant yüklenmeden hiçbir fetch atılmaz
+    if (didInit.current === tenant._id) return; // Objeyle kontrol (slug da olabilir)
+    didInit.current = tenant._id;
 
     // Public fetchler
     if (
@@ -83,9 +84,14 @@ export const usePublicLayoutInit = () => {
     if (!companySlice.company && companySlice.status === "idle") dispatch(fetchCompanyInfo());
     if (!couponSlice.coupons || couponSlice.coupons.length === 0) dispatch(fetchCoupons());
 
-    if (profile && bookings.bookings.length === 0) {
-      dispatch(fetchBookings());
-    }
+    if (
+  profile?.email && // kullanıcı yüklendi
+  bookings.bookings.length === 0 &&
+  bookings.status === "idle"
+) {
+  dispatch(fetchBookings());
+}
+
 
     // --- SADECE LOGIN OLAN KULLANICIYA CHAT SESSION FETCH ---
     if (profile) {
@@ -99,6 +105,7 @@ export const usePublicLayoutInit = () => {
   }, [
     dispatch,
     tenant,
+    tenantLoading,
     profile,
     // state'lerin tekil array veya nesne referansını ekle (tekrarlı render önlenir)
     sectionMeta.metas, sectionMeta.loading, sectionSetting.settings, sectionSetting.loading,
@@ -115,7 +122,7 @@ export const usePublicLayoutInit = () => {
     couponSlice.coupons, couponSlice.status,
     chat.sessions.length, chat.activeSessions.length, chat.archivedSessions.length,
     gallery.publicImages, galleryCategory.categories,
-    bookings.bookings.length
+    bookings.bookings.length, bookings.status
   ]);
 
   return {

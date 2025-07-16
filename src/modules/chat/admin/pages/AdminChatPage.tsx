@@ -16,22 +16,19 @@ import { ChatMessage } from "@/modules/chat/types";
 import {
   MessageList,
   ChatInput,
-  // EscalatedSessions,
   ChatSessionList,
   ArchivedSessions,
   SearchBox,
 } from "@/modules/chat";
-import socket from "@/lib/socket";
+import { getSocket } from "@/lib/socket";
 
 const isDev = process.env.NODE_ENV === "development";
 
 export default function AdminChatPage() {
-  // --- Dil & i18n ---
   const { i18n, t } = useI18nNamespace("chat", translations);
   const lang = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
   const dispatch = useAppDispatch();
 
-  // --- SLICE STATE ---
   const roomId = useAppSelector(selectChatRoomId);
   const chatMessagesAdmin = useAppSelector(selectChatMessagesAdmin);
   const manualMessageState = useAppSelector(selectManualMessageState);
@@ -40,15 +37,24 @@ export default function AdminChatPage() {
 
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Socket referansını bir defa oluştur
+  const socket = getSocket();
+
   // --- SOCKET HANDLING ---
   useEffect(() => {
-    socket.connect();
-    if (isDev) socket.on("connect", () => console.log("✅ Socket bağlı:", socket.id));
+    if (!socket) return;
 
-    // Mesajları admin state'e ekle
+    socket.connect();
+    if (isDev) {
+      socket.on("connect", () =>
+        console.log("✅ Socket bağlı:", socket.id)
+      );
+    }
+
     const handleChatMessage = (chatMessage: ChatMessage) => {
       dispatch(addMessageAdmin(chatMessage));
     };
+
     socket.on("admin-message", handleChatMessage);
 
     return () => {
@@ -56,23 +62,21 @@ export default function AdminChatPage() {
       socket.off("connect");
       socket.disconnect();
     };
-  }, [dispatch]);
+  }, [dispatch, socket]);
 
-  // --- MESAJ GÖNDERME ---
   const handleSend = (message: string) => {
-    if (!message.trim() || !roomId) return;
+    if (!message.trim() || !roomId || !socket) return;
     socket.emit("admin-message", { roomId, message, lang });
   };
 
-  // --- FİLTRELEME (Arama kutusu dil desteği ile) ---
   const filteredChatMessages = chatMessagesAdmin.filter(
-    (msg: ChatMessage) => msg.message?.toLowerCase().includes(searchTerm.toLowerCase())
+    (msg: ChatMessage) =>
+      msg.message?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <Container>
       <h2>{t("admin.title", "💬 Admin Chat Paneli")}</h2>
-      {/* <EscalatedSessions /> */}
       <Layout>
         <Sidebar>
           <SearchBox
