@@ -1,7 +1,7 @@
 {
   "page": {
-    "allBike": "Wszystkie rowery",
-    "noBike": "Nie znaleziono rowerów.",
+    "allGallery": "Wszystkie rowery",
+    "noGallery": "Nie znaleziono rowerów.",
     "price": "Cena",
     "stock": "Stan",
     "brand": "Marka",
@@ -9,7 +9,7 @@
     "other": "Inne produkty",
     "untitled": "Bez tytułu",
     "noSummary": "Brak opisu.",
-    "bike": {
+    "gallery": {
       "title": "Najnowszy rower",
       "readMore": "Zobacz szczegóły",
       "all": "Wszystkie rowery"
@@ -17,11 +17,11 @@
   },
   "admin": {
     "tabs": {
-      "bike": "Rowery",
+      "gallery": "Rowery",
       "create": "Nowy rower",
       "categories": "Kategorie"
     },
-    "bike": {
+    "gallery": {
       "create": "Dodaj nowy rower",
       "edit": "Edytuj rower",
       "name": "Nazwa roweru",
@@ -61,7 +61,7 @@
     "loading": "Ładowanie...",
     "confirm": {
       "delete": "Czy na pewno chcesz usunąć tę kategorię?",
-      "delete_bike": "Czy na pewno chcesz usunąć ten rower?"
+      "delete_gallery": "Czy na pewno chcesz usunąć ten rower?"
     },
     "optional_description": "Opis (opcjonalnie)",
     "category_info": "Czego dotyczy ta kategoria?",

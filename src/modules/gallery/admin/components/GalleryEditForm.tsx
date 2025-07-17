@@ -1,496 +1,286 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useMemo } from "react";
-import { useAppDispatch } from "@/store/hooks";
-import { updateGalleryItem } from "@/modules/gallery/slice/gallerySlice";
-import styled, { keyframes } from "styled-components";
-import { toast } from "react-toastify";
-import { ImageUploadWithPreview } from "@/shared";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
-
-import type { SupportedLocale } from "@/types/common";
+import { translations } from "@/modules/gallery";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import { ImageUploadWithPreview } from "@/shared";
+import { toast } from "react-toastify";
 import type { IGalleryCategory, IGallery } from "@/modules/gallery/types";
-import { SUPPORTED_LOCALES } from "@/types/common";
 
-interface EditFormState {
-  category: string;
-  type: "image" | "video";
-  order: string;
-  [key: string]: string;
-}
-
-interface GalleryEditFormProps {
-  item: IGallery; // ✅ doğru prop adı
+interface Props {
+  isOpen: boolean;
   onClose: () => void;
+  editingItem: IGallery | null;
+  onSubmit: (formData: FormData, id?: string) => Promise<void>;
   categories: IGalleryCategory[];
 }
 
-const tabs = ["general", "titles", "descriptions", "image"] as const;
-
-const GalleryEditForm: React.FC<GalleryEditFormProps> = ({
-  item,
+export default function GalleryEditForm({
+  isOpen,
   onClose,
+  editingItem,
+  onSubmit,
   categories,
-}) => {
-  const dispatch = useAppDispatch();
-  const { t, i18n } = useI18nNamespace("gallery", translations);
-  const lang = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
+}: Props) {
+  const { i18n, t } = useI18nNamespace("gallery", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
+  // --- STATE ---
+  const [names, setNames] = useState<Record<SupportedLocale, string>>(() =>
+    SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>)
+  );
+  const [descriptions, setDescriptions] = useState<Record<SupportedLocale, string>>(() =>
+    SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>)
+  );
+  const [category, setCategory] = useState("");
+  const [type, setType] = useState<"image" | "video">("image");
+  const [order, setOrder] = useState("1");
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [removedImages, setRemovedImages] = useState<string[]>([]);
+
+  // --- Yeni: existingImages ---
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+
+  // --- useMemo ile stabilize edilmiş defaultImages ---
   const defaultImages = useMemo(
-    () =>
-      item.images.map((i) => i.thumbnail || i.url).filter(Boolean),
-    [item]
+    () => editingItem?.images?.map((img) => img.url) || [],
+    [editingItem]
   );
 
-  const firstItem = item.images?.[0] ?? {
-    url: "",
-    name: {},
-    description: {},
-    order: 1,
-  };
-
-  const [formState, setFormState] = useState<EditFormState>(() => {
-    const state: EditFormState = {
-      category:
-        typeof item.category === "string"
-          ? item.category
-          : (item.category as IGalleryCategory)?._id ?? "",
-      type: item.type,
-      order: firstItem.order?.toString() || "1",
-    };
-
-    SUPPORTED_LOCALES.forEach((lng) => {
-      state[`title_${lng}`] = firstItem.name?.[lng] ?? "";
-      state[`desc_${lng}`] = firstItem.description?.[lng] ?? "";
-    });
-
-    return state;
-  });
-
-  const [files, setFiles] = useState<File[]>([]);
-  const [removedImages, setRemovedImages] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("general");
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [success, setSuccess] = useState(false);
-
-  const inputRefs = {
-    general: useRef<HTMLSelectElement>(null),
-    titles: useRef<HTMLInputElement>(null),
-    descriptions: useRef<HTMLTextAreaElement>(null),
-  };
-
+  // --- FILL ON EDIT ---
   useEffect(() => {
-    if (activeTab === "general") inputRefs.general.current?.focus();
-    else if (activeTab === "titles") inputRefs.titles.current?.focus();
-    else if (activeTab === "descriptions") inputRefs.descriptions.current?.focus();
-  }, [activeTab]);
+    if (editingItem) {
+      setNames(
+        SUPPORTED_LOCALES.reduce((acc, l) => {
+          acc[l] = editingItem.images?.[0]?.name?.[l] || "";
+          return acc;
+        }, {} as Record<SupportedLocale, string>)
+      );
+      setDescriptions(
+        SUPPORTED_LOCALES.reduce((acc, l) => {
+          acc[l] = editingItem.images?.[0]?.description?.[l] || "";
+          return acc;
+        }, {} as Record<SupportedLocale, string>)
+      );
+      setCategory(
+        typeof editingItem.category === "string"
+          ? editingItem.category
+          : editingItem.category?._id || ""
+      );
+      setType(editingItem.type || "image");
+      setOrder(editingItem.images?.[0]?.order?.toString() || "1");
+      setExistingImages(defaultImages);  // 🔥 Sadece burada set!
+      setSelectedFiles([]);
+      setRemovedImages([]);
+    } else {
+      setNames(SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>));
+      setDescriptions(SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>));
+      setCategory("");
+      setType("image");
+      setOrder("1");
+      setExistingImages([]);
+      setSelectedFiles([]);
+      setRemovedImages([]);
+    }
+  }, [editingItem, isOpen, defaultImages]);
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formState.category) newErrors.category = t("errors.requiredCategory");
+  // --- IMAGE HANDLER ---
+  const handleImagesChange = useCallback(
+    (files: File[], removed: string[], current: string[]) => {
+      setSelectedFiles(files);
+      setRemovedImages(removed);
+      setExistingImages(current); // current -> kalan eski resimler
+    },
+    []
+  );
 
-    if (!formState[`title_${lang}`])
-      newErrors[`title_${lang}`] = t(`errors.requiredTitle_${lang}`);
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
+  // --- SUBMIT ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
-
-    const data = new FormData();
-    Object.entries(formState).forEach(([key, value]) => {
-      if (value) data.append(key, value);
-    });
-    removedImages.forEach((url) => data.append("removedImages[]", url));
-    files.forEach((file) => data.append("images", file));
-
-    try {
-      setIsLoading(true);
-      await dispatch(updateGalleryItem({ id: item._id, formData: data })).unwrap();
-      setSuccess(true);
-      toast.success(t("update.success"));
-      setTimeout(() => {
-        setSuccess(false);
-        onClose();
-      }, 800);
-    } catch (err) {
-      toast.error((err as any)?.message || t("upload.error"));
-    } finally {
-      setIsLoading(false);
+    if (!category || !type || !names[lang]?.trim()) {
+      toast.error(t("errors.requiredFields") || "Please fill required fields.");
+      return;
     }
+
+    const formData = new FormData();
+    formData.append("name", JSON.stringify(names));
+    formData.append("description", JSON.stringify(descriptions));
+    formData.append("category", category);
+    formData.append("type", type);
+    formData.append("order", order);
+
+    for (const file of selectedFiles) {
+      formData.append("images", file);
+    }
+    if (removedImages.length > 0) {
+      formData.append("removedImages", JSON.stringify(removedImages));
+    }
+    // 🔥 Eklenen: Mevcut kalan eski resimler (mutlaka ekle!)
+    if (existingImages.length > 0) {
+      formData.append("existingImages", JSON.stringify(existingImages));
+    }
+
+    await onSubmit(formData, editingItem?._id);
   };
 
+  if (!isOpen) return null;
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <TabList>
-        {tabs.map((tab) => (
-          <Tab
-            key={tab}
-            type="button"
-            $isActive={activeTab === tab}
-            onClick={() => setActiveTab(tab)}
-          >
-            {t(`form.${tab}`)}
-          </Tab>
+    <FormWrapper>
+      <h2>
+        {editingItem
+          ? t("form.edit", "Edit Gallery Item")
+          : t("form.create", "Create Gallery Item")}
+      </h2>
+      <form onSubmit={handleSubmit}>
+        {SUPPORTED_LOCALES.map((lng) => (
+          <div key={lng}>
+            <label htmlFor={`name-${lng}`}>
+              {t("form.title", "Title")} ({lng.toUpperCase()})
+            </label>
+            <input
+              id={`name-${lng}`}
+              value={names[lng]}
+              onChange={(e) => setNames({ ...names, [lng]: e.target.value })}
+            />
+
+            <label htmlFor={`desc-${lng}`}>
+              {t("form.description", "Description")} ({lng.toUpperCase()})
+            </label>
+            <textarea
+              id={`desc-${lng}`}
+              value={descriptions[lng]}
+              onChange={(e) =>
+                setDescriptions({ ...descriptions, [lng]: e.target.value })
+              }
+            />
+          </div>
         ))}
-      </TabList>
 
-      <TabContent>
-        {activeTab === "general" && (
-          <Section $animate>
-            <Label>{t("form.category")}</Label>
-            <Select
-              ref={inputRefs.general}
-              value={formState.category}
-              onChange={(e) =>
-                setFormState({ ...formState, category: e.target.value })
-              }
-            >
-              <option value="">{t("form.selectCategory")}</option>
-              {categories.map((cat) => (
-                <option key={cat._id} value={cat._id}>
-                  {cat.name?.[lang] ?? cat.slug}
-                </option>
-              ))}
-            </Select>
-            {errors.category && <ErrorText>{errors.category}</ErrorText>}
+        <label htmlFor="category">{t("form.category", "Category")}</label>
+        <select
+          id="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          required
+        >
+          <option value="" disabled>
+            {t("form.selectCategory", "Select a category")}
+          </option>
+          {categories.map((cat) => (
+            <option key={cat._id} value={cat._id}>
+              {cat.name?.[lang] || cat.name?.en || Object.values(cat.name || {})[0] || cat.slug}
+            </option>
+          ))}
+        </select>
 
-            <Label>{t("form.type")}</Label>
-            <Select
-              value={formState.type}
-              onChange={(e) =>
-                setFormState({ ...formState, type: e.target.value as "image" | "video" })
-              }
-            >
-              <option value="image">{t("form.type_image")}</option>
-              <option value="video">{t("form.type_video")}</option>
-            </Select>
+        <label htmlFor="type">{t("form.type", "Type")}</label>
+        <select
+          id="type"
+          value={type}
+          onChange={(e) => setType(e.target.value as "image" | "video")}
+          required
+        >
+          <option value="image">{t("form.type_image", "Image")}</option>
+          <option value="video">{t("form.type_video", "Video")}</option>
+        </select>
 
-            <Label>{t("form.order")}</Label>
-            <StyledInput
-              type="number"
-              value={formState.order}
-              onChange={(e) =>
-                setFormState({ ...formState, order: e.target.value })
-              }
-            />
-          </Section>
-        )}
+        <label htmlFor="order">{t("form.order", "Order")}</label>
+        <input
+          id="order"
+          type="number"
+          value={order}
+          onChange={(e) => setOrder(e.target.value)}
+          min={1}
+        />
 
-        {activeTab === "titles" && (
-          <Section $animate>
-            {SUPPORTED_LOCALES.map((lng) => (
-              <div key={lng}>
-                <Label>{t(`form.title_${lng}`)}</Label>
-                <StyledInput
-                  ref={lng === lang ? inputRefs.titles : undefined}
-                  value={formState[`title_${lng}`]}
-                  onChange={(e) =>
-                    setFormState({ ...formState, [`title_${lng}`]: e.target.value })
-                  }
-                />
-                {errors[`title_${lng}`] && (
-                  <ErrorText>{errors[`title_${lng}`]}</ErrorText>
-                )}
-              </div>
-            ))}
-          </Section>
-        )}
+        <label>{t("form.image", "Images")}</label>
+        <ImageUploadWithPreview
+          max={5}
+          defaultImages={defaultImages} // useMemo ile stabilize!
+          onChange={handleImagesChange}
+          folder="gallery"
+        />
 
-        {activeTab === "descriptions" && (
-          <Section $animate>
-            {SUPPORTED_LOCALES.map((lng) => (
-              <div key={lng}>
-                <Label>{t(`form.desc_${lng}`)}</Label>
-                <TextArea
-                  ref={lng === lang ? inputRefs.descriptions : undefined}
-                  value={formState[`desc_${lng}`]}
-                  onChange={(e) =>
-                    setFormState({ ...formState, [`desc_${lng}`]: e.target.value })
-                  }
-                />
-              </div>
-            ))}
-          </Section>
-        )}
-
-        {activeTab === "image" && (
-          <Section $animate>
-            <ImageUploadWithPreview
-              folder="gallery"
-              max={5}
-              defaultImages={defaultImages}
-              onChange={(files, removed) => {
-                setFiles(files);
-                setRemovedImages(removed);
-              }}
-            />
-          </Section>
-        )}
-      </TabContent>
-
-      <SubmitButton type="submit" disabled={isLoading}>
-        {isLoading ? <Spinner /> : success ? "✓" : t("form.save")}
-      </SubmitButton>
-    </Form>
+        <ButtonGroup>
+          <button type="submit">
+            {editingItem
+              ? t("form.save", "Save")
+              : t("form.create", "Create")}
+          </button>
+          <button type="button" onClick={onClose}>
+            {t("form.cancel", "Cancel")}
+          </button>
+        </ButtonGroup>
+      </form>
+    </FormWrapper>
   );
-};
+}
 
-export default GalleryEditForm;
+// --- Styled Components ---
+const FormWrapper = styled.div`
+  max-width: 600px;
+  margin: auto;
+  padding: 1.5rem;
+  background: ${({ theme }) => theme.colors.cardBackground || "#fff"};
+  border: 1px solid ${({ theme }) => theme.colors.border || "#ccc"};
+  border-radius: ${({ theme }) => theme.radii.md || "6px"};
 
+  h2 {
+    margin-bottom: 1rem;
+  }
 
-const fadeIn = keyframes`
-  from { opacity: 0; transform: scale(0.97); }
-  to { opacity: 1; transform: scale(1); }
+  label {
+    display: block;
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+  }
+
+  input,
+  textarea,
+  select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid ${({ theme }) => theme.colors.border || "#ccc"};
+    border-radius: 4px;
+    background-color: ${({ theme }) => theme.colors.inputBackground || "#fff"};
+    color: ${({ theme }) => theme.colors.text || "#000"};
+    font-size: 0.95rem;
+  }
+
+  textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
 `;
 
-const spin = keyframes`
-  to { transform: rotate(360deg); }
-`;
-
-export const Form = styled.form`
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: ${({ theme }) => theme.shadows.md};
+const ButtonGroup = styled.div`
+  margin-top: 1.5rem;
   display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacings.lg};
-  padding: ${({ theme }) => theme.spacings.xl};
-  min-width: 340px;
-  width: 100%;
-  max-width: 480px;
-  margin: 0 auto;
-  transition: box-shadow ${({ theme }) => theme.transition.normal},
-    background ${({ theme }) => theme.transition.normal};
+  gap: 1rem;
 
-  @media ${({ theme }) => theme.media.mobile} {
-    padding: ${({ theme }) => theme.spacings.md};
-    border-radius: ${({ theme }) => theme.radii.md};
-    max-width: 100%;
-    gap: ${({ theme }) => theme.spacings.md};
-  }
-`;
+  button {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
 
-export const TabList = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacings.sm};
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-`;
+    &:first-child {
+      background: ${({ theme }) => theme.colors.primary || "#007bff"};
+      color: #fff;
+    }
 
-export const Tab = styled.button<{ $isActive: boolean }>`
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.xl};
-  background: ${({ $isActive, theme }) =>
-    $isActive ? theme.colors.primary : theme.colors.inputBackground};
-  color: ${({ $isActive, theme }) =>
-    $isActive ? theme.colors.buttonText : theme.colors.text};
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  font-weight: ${({ $isActive, theme }) =>
-    $isActive ? theme.fontWeights.bold : theme.fontWeights.medium};
-  letter-spacings: 0.01em;
-  box-shadow: ${({ $isActive, theme }) =>
-    $isActive ? theme.shadows.button : "none"};
-  cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.normal},
-    color ${({ theme }) => theme.transition.normal},
-    box-shadow ${({ theme }) => theme.transition.normal};
+    &:last-child {
+      background: ${({ theme }) => theme.colors.danger || "#dc3545"};
+      color: #fff;
+    }
 
-  &:hover,
-  &:focus {
-    background: ${({ theme }) => theme.colors.primaryHover};
-    color: ${({ theme }) => theme.colors.buttonText};
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-  }
-`;
-
-export const TabContent = styled.div`
-  position: relative;
-`;
-
-export const Section = styled.div<{ $animate?: boolean }>`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacings.md};
-  margin-top: ${({ theme }) => theme.spacings.sm};
-  animation: ${({ $animate }) => ($animate ? fadeIn : "none")} 0.3s ease;
-`;
-
-export const SectionTitle = styled.h4`
-  margin: 0;
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  color: ${({ theme }) => theme.colors.primary};
-`;
-
-export const Label = styled.label`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  margin-bottom: ${({ theme }) => theme.spacings.xs};
-`;
-
-export const Select = styled.select`
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.md};
-  border-radius: ${({ theme }) => theme.radii.md};
-  border: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.inputBackground};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-family: ${({ theme }) => theme.fonts.body};
-  transition: border ${({ theme }) => theme.transition.normal},
-    background ${({ theme }) => theme.transition.normal};
-
-  &:focus {
-    border: ${({ theme }) => theme.borders.thick}
-      ${({ theme }) => theme.colors.inputBorderFocus};
-    background: ${({ theme }) => theme.colors.inputBackgroundLight};
-    outline: none;
-  }
-`;
-
-export const StyledInput = styled.input`
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.md};
-  border-radius: ${({ theme }) => theme.radii.md};
-  border: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.inputBackground};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-family: ${({ theme }) => theme.fonts.body};
-  transition: border ${({ theme }) => theme.transition.normal},
-    background ${({ theme }) => theme.transition.normal};
-
-  &::placeholder {
-    color: ${({ theme }) => theme.inputs.placeholder};
-    opacity: 1;
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-  }
-
-  &:focus {
-    border: ${({ theme }) => theme.borders.thick}
-      ${({ theme }) => theme.colors.inputBorderFocus};
-    background: ${({ theme }) => theme.colors.inputBackgroundLight};
-    outline: none;
-  }
-`;
-
-export const TextArea = styled.textarea`
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.md};
-  border-radius: ${({ theme }) => theme.radii.md};
-  border: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.inputBackground};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-family: ${({ theme }) => theme.fonts.body};
-  resize: vertical;
-  min-height: 80px;
-  transition: border ${({ theme }) => theme.transition.normal},
-    background ${({ theme }) => theme.transition.normal};
-
-  &::placeholder {
-    color: ${({ theme }) => theme.inputs.placeholder};
-    opacity: 1;
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-  }
-
-  &:focus {
-    border: ${({ theme }) => theme.borders.thick}
-      ${({ theme }) => theme.colors.inputBorderFocus};
-    background: ${({ theme }) => theme.colors.inputBackgroundLight};
-    outline: none;
-  }
-`;
-
-export const ErrorText = styled.span`
-  color: ${({ theme }) => theme.colors.danger};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-family: ${({ theme }) => theme.fonts.body};
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  padding: ${({ theme }) => theme.spacings.xs}
-    ${({ theme }) => theme.spacings.sm};
-  margin-bottom: ${({ theme }) => theme.spacings.xs};
-`;
-
-export const Spinner = styled.div`
-  border: 2px solid ${({ theme }) => theme.colors.buttonText};
-  border-top: 2px solid ${({ theme }) => theme.colors.primaryHover};
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  animation: ${spin} 0.6s linear infinite;
-  display: inline-block;
-`;
-
-export const ImagePreview = styled.img`
-  width: 100%;
-  max-height: 220px;
-  object-fit: cover;
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  margin-bottom: ${({ theme }) => theme.spacings.sm};
-`;
-
-export const Placeholder = styled.div`
-  width: 100%;
-  height: 140px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-family: ${({ theme }) => theme.fonts.body};
-  border-radius: ${({ theme }) => theme.radii.md};
-  margin-bottom: ${({ theme }) => theme.spacings.sm};
-`;
-
-export const SubmitButton = styled.button`
-  align-self: flex-end;
-  background: ${({ theme }) => theme.buttons.primary.background};
-  color: ${({ theme }) => theme.buttons.primary.text};
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.xl};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  box-shadow: ${({ theme }) => theme.shadows.button};
-  cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.normal},
-    color ${({ theme }) => theme.transition.normal},
-    box-shadow ${({ theme }) => theme.transition.normal};
-
-  &:hover,
-  &:focus {
-    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
-    color: ${({ theme }) => theme.buttons.primary.textHover};
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-  }
-
-  &:disabled {
-    background: ${({ theme }) => theme.colors.disabled};
-    color: ${({ theme }) => theme.colors.textMuted};
-    cursor: not-allowed;
-    opacity: ${({ theme }) => theme.opacity.disabled};
-    box-shadow: none;
+    &:hover {
+      opacity: 0.9;
+    }
   }
 `;

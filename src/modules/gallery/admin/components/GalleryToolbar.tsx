@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { searchGalleryItems } from "@/modules/gallery/slice/gallerySlice";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import {translations} from "@/modules/gallery";
 
 const GalleryToolbar: React.FC = () => {
   const dispatch = useAppDispatch();

@@ -18,3 +18,6 @@ export { default as galleryCategoryReducer } from "./slice/galleryCategorySlice"
 
 // Types (if any)
 export * from "./types";
+
+// Locales
+export { default as translations } from "./locales";

@@ -13,6 +13,7 @@ export type ImageType =
   | "feedback"
   | "email"
   | "gallery"
+  | "galleryCategory"
   | "faq"
   | "services"
   | "notification"

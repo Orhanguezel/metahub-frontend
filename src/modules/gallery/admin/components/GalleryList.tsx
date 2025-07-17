@@ -2,11 +2,11 @@
 
 import React, { useState } from "react";
 import { useAppDispatch } from "@/store/hooks";
-import { deleteGalleryItem } from "@/modules/gallery/slice/gallerySlice";
+import { deleteGalleryItem,updateGalleryItem } from "@/modules/gallery/slice/gallerySlice";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
-import translations from "../../locales";
+import {translations} from "@/modules/gallery";
 import { Modal } from "@/shared";
 import { GalleryEditForm } from "@/modules/gallery";
 import type { IGalleryCategory, IGallery } from "@/modules/gallery/types";
@@ -43,11 +43,21 @@ const GalleryList: React.FC<GalleryListProps> = ({
     }
   };
 
-  const handleOpenEdit = (item: IGallery) => setSelectedItem(item);
-  const handleCloseModal = () => {
-    setSelectedItem(null);
-    onUpdate();
-  };
+const handleOpenEdit = (item: IGallery) => setSelectedItem(item);
+const handleCloseModal = () => {
+  setSelectedItem(null);
+  onUpdate();
+};
+
+
+const handleSubmitGalleryEdit = async (formData: FormData, id?: string) => {
+  if (!id) return;
+  await dispatch(updateGalleryItem({ id, formData })).unwrap();
+  onUpdate();
+  handleCloseModal();
+};
+
+
 
   return (
     <>
@@ -124,16 +134,23 @@ const GalleryList: React.FC<GalleryListProps> = ({
         </GridWrapper>
       )}
 
-      {/* Modal */}
       {selectedItem && (
-        <Modal isOpen onClose={handleCloseModal}>
-          <GalleryEditForm
-            item={selectedItem}
-            categories={categories}
-            onClose={handleCloseModal}
-          />
-        </Modal>
-      )}
+  <Modal isOpen onClose={handleCloseModal}>
+    <GalleryEditForm
+      isOpen={!!selectedItem}
+      editingItem={selectedItem}
+      categories={categories}
+      onClose={handleCloseModal}
+      onSubmit={async (formData) => {
+        if (selectedItem && selectedItem._id) {
+          await handleSubmitGalleryEdit(formData, selectedItem._id);
+        }
+      }}
+    />
+  </Modal>
+)}
+
+
     </>
   );
 };

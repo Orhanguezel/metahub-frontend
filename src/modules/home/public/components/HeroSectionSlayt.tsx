@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import useModal from "@/hooks/useModal";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations,Modal} from "@/modules/home";
+import { translations, Modal } from "@/modules/home";
 import { SupportedLocale } from "@/types/common";
 import SkeletonBox from "@/shared/Skeleton";
 import type { IGallery } from "@/modules/gallery/types";
@@ -23,32 +23,31 @@ const HeroSectionSlayt = () => {
   const { i18n, t } = useI18nNamespace("home", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  const {  publicImages } = useAppSelector((state) => state.gallery);
+  const { publicImages } = useAppSelector((state) => state.gallery);
   const { categories } = useAppSelector((state) => state.galleryCategory);
 
-  // FlatItems için type tanımlı state
   const [flatItems, setFlatItems] = useState<GalleryItem[]>([]);
 
   useEffect(() => {
-    if (!publicImages || !Array.isArray(publicImages) || !categories?.length) {
+    if (!Array.isArray(publicImages) || !categories?.length) {
       setFlatItems([]);
       return;
     }
 
-    const targetCategory = categories.find(cat => cat.slug === SLIDER_CATEGORY_SLUG);
+    const targetCategory = categories.find((cat) => cat.slug === SLIDER_CATEGORY_SLUG);
     if (!targetCategory) {
       setFlatItems([]);
       return;
     }
 
     const filtered: GalleryItem[] = publicImages
-      .filter(item =>
+      .filter((item) =>
         typeof item.category === "string"
           ? item.category === targetCategory._id
           : item.category?._id === targetCategory._id
       )
-      .flatMap(item =>
-        item.images?.length
+      .flatMap((item) =>
+        item.images?.[0]
           ? [{
               ...item.images[0],
               category: item.category,
@@ -62,14 +61,12 @@ const HeroSectionSlayt = () => {
 
   const modal = useModal(flatItems);
 
-  // Otomatik slayt geçişi
   useEffect(() => {
     if (flatItems.length === 0) return;
     const timer = setInterval(() => modal.next(), 5000);
     return () => clearInterval(timer);
   }, [flatItems, modal]);
 
-  // Swipe desteği
   const handleSwipe = useCallback((e: React.TouchEvent) => {
     const startX = e.changedTouches[0].clientX;
     const handler = (endEvent: TouchEvent) => {
@@ -95,43 +92,54 @@ const HeroSectionSlayt = () => {
   }
 
   const heroItem = flatItems[modal.currentIndex];
-  const title = heroItem?.name?.[lang] || "No title";
-  const description = heroItem?.description?.[lang] || "No description";
-  const imageSrc = heroItem?.webp || heroItem?.url || heroItem?.thumbnail || "/placeholder.jpg";
+  const title =
+    heroItem?.name?.[lang]?.trim() ||
+    t("hero1.heroTitle", "Königs Masaj");
+
+  const description =
+    heroItem?.description?.[lang]?.trim() ||
+    t("hero1.heroSubtitle", "Doğallığın dokunuşuyla sağlığınızı şımartın");
+
+  const imageSrc =
+    heroItem?.webp || heroItem?.url || heroItem?.thumbnail || "/placeholder.jpg";
 
   return (
     <>
       <HeroWrapper onTouchStart={handleSwipe}>
-  <AnimatePresence mode="wait">
-    <Slide
-      key={modal.currentIndex}
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -50 }}
-      transition={{ duration: 0.8, ease: "easeInOut" }}
-      onClick={() => modal.open(modal.currentIndex)}
-    >
-      <Background>
-        <StyledImage src={imageSrc} alt={title} fill priority />
-        <Overlay />
-      </Background>
-      <Content>
-        <Title>{title}</Title>
-        <Subtitle>{description}</Subtitle>
-      </Content>
-    </Slide>
-  </AnimatePresence>
-  <Nav>
-    {flatItems.map((_, idx) => (
-      <Dot
-        key={idx}
-        $active={idx === modal.currentIndex}
-        onClick={() => modal.open(idx)}
-      />
-    ))}
-  </Nav>
-</HeroWrapper>
-
+        <AnimatePresence mode="wait">
+          <Slide
+            key={modal.currentIndex}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+            onClick={() => modal.open(modal.currentIndex)}
+          >
+            <Background>
+              <StyledImage
+                src={imageSrc}
+                alt={title || "Slider image"}
+                fill
+                priority
+              />
+              <Overlay />
+            </Background>
+            <Content>
+              <Title>{title}</Title>
+              <Subtitle>{description}</Subtitle>
+            </Content>
+          </Slide>
+        </AnimatePresence>
+        <Nav>
+          {flatItems.map((_, idx) => (
+            <Dot
+              key={idx}
+              $active={idx === modal.currentIndex}
+              onClick={() => modal.open(idx)}
+            />
+          ))}
+        </Nav>
+      </HeroWrapper>
 
       <Modal
         isOpen={modal.isOpen}
@@ -142,7 +150,7 @@ const HeroSectionSlayt = () => {
         <div style={{ textAlign: "center" }}>
           <Image
             src={imageSrc}
-            alt={title}
+            alt={title || "Slider detail image"}
             width={1200}
             height={800}
             unoptimized
@@ -160,9 +168,10 @@ const HeroSectionSlayt = () => {
       </Modal>
     </>
   );
-}
+};
 
 export default HeroSectionSlayt;
+
 
 
 const HeroWrapper = styled.section`

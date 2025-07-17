@@ -1,46 +1,10 @@
 {
-  "services": {
-    "title": "Unsere Aktivitäten",
-    "all": "Alle Aktivitäten ansehen →",
-    "noCategory": "Keine Kategorie gefunden."
-  },
-  "news": {
-     "title": "Nachrichten",
-  "readMore": "Mehr erfahren",
-  "all": "Alle Nachrichten"
-  },
-  "blog": {
-    "title": "Neueste Blogbeiträge",
-    "readMore": "Weiterlesen",
-    "all": "Alle Blogbeiträge ansehen"
-  },
-  "radonarprod": {
-    "title": "Unsere Produkte",
-    "readMore": "Details ansehen",
-    "all": "Alle Produkte anzeigen"
-  },
-  "articles": {
-    "title":"Neueste Artikel",
-    "readMore":"Weiterlesen →",
-    "all":"Alle Artikel"
-  },
-  "activity": {
-    "title": "Aktivitäten",
-    "readMore": "Mehr erfahren",
-    "all": "Alle anzeigen"
-  },
-  "about": {
-    "title": "Über Uns",
-    "readMore": "Mehr erfahren",
-    "all": "Alle anzeigen"
+  "hero1": {
+    "heroTitle": "Königs Massage",
+    "heroSubtitle": "Verwöhnen Sie Ihre Gesundheit mit der Kraft der Natur"
   },
   "hero": {
-    "loading": "Wird geladen...",
-    "noImages": "Keine Bilder gefunden.",
-    "fallbackTitle": "Produktname",
-    "fallbackDescription": "Keine Beschreibung verfügbar.",
-    "heroGsap": {
-    "loaderText": "Willkommen"
-  }
-  }
+    "bookAppointment": "Termin buchen"
+  },
+  "noItemsFound": "Keine Elemente gefunden."
 }

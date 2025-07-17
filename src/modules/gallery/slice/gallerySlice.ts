@@ -13,6 +13,7 @@ interface GalleryState {
   categories: IGalleryCategory[];
   stats: IGalleryStats | null;
   loading: boolean;
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   successMessage: string | null;
 }
@@ -23,6 +24,7 @@ const initialState: GalleryState = {
   stats: null,
   categories: [],
   loading: false,
+  status: "idle",
   error: null,
   successMessage: null,
 };

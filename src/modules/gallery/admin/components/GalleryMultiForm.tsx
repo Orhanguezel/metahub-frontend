@@ -1,12 +1,10 @@
-"use client";
-
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useAppDispatch } from "@/store/hooks";
 import { uploadGalleryItem } from "@/modules/gallery/slice/gallerySlice";
 import styled, { css } from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
-import translations from "../../locales";
+import { translations } from "@/modules/gallery";
 import { toast } from "react-toastify";
 import { ImageUploadWithPreview } from "@/shared";
 import type { IGalleryCategory } from "@/modules/gallery/types";
@@ -16,7 +14,7 @@ interface GalleryMultiFormProps {
   onUpdate?: () => void;
 }
 
-const initialTitle = SUPPORTED_LOCALES.reduce(
+const initialName = SUPPORTED_LOCALES.reduce(
   (acc, lng) => ({ ...acc, [lng]: "" }),
   {} as Record<SupportedLocale, string>
 );
@@ -34,53 +32,68 @@ const GalleryMultiForm: React.FC<GalleryMultiFormProps> = ({
   const { i18n, t } = useI18nNamespace("gallery", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
+  // Form state
   const [category, setCategory] = useState("");
   const [type, setType] = useState<"image" | "video">("image");
-  const [title, setTitle] = useState<Record<SupportedLocale, string>>(initialTitle);
-  const [description, setDescription] = useState<Record<SupportedLocale, string>>(initialDescription);
+  const [name, setName] = useState(initialName);
+  const [description, setDescription] = useState(initialDescription);
   const [order, setOrder] = useState("1");
-  const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const selectedCategory = categories.find((cat) => cat._id === category);
   const isSingleImageCategory =
     selectedCategory && (selectedCategory.slug === "hero" || selectedCategory.slug === "cover");
 
+  // Çoklu dosya seçimini handle eden method
+  const handleImagesChange = useCallback(
+    (files: File[], _removed: string[], current: string[]) => {
+      setSelectedFiles(files);
+      setExistingImages(current);
+    },
+    []
+  );
+
+  // Submit logic
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const firstTitle = Object.values(title).find((v) => v.trim());
-    if (!category || !type || !firstTitle || files.length === 0) {
-      toast.error(t("errors.requiredFields"));
+    if (!category || !type || !name[lang]?.trim() || selectedFiles.length === 0) {
+      toast.error(t("errors.requiredFields") || "Please fill required fields and select at least one image.");
       return;
     }
 
-    if (isSingleImageCategory && files.length > 1) {
-      toast.error(
-        t("errors.singleImageLimit") || "Only one image allowed for this category."
-      );
-      return;
-    }
+    // Tüm dilleri otomatik doldur
+    const filledName = { ...name };
+    SUPPORTED_LOCALES.forEach((l) => {
+      if (!filledName[l]) filledName[l] = name[lang];
+    });
+
+    const filledDescription = { ...description };
+    SUPPORTED_LOCALES.forEach((l) => {
+      if (!filledDescription[l]) filledDescription[l] = description[lang] || "";
+    });
 
     const data = new FormData();
     data.append("category", category);
     data.append("type", type);
     data.append("order", order);
-    data.append("title", JSON.stringify(title));
-    data.append("description", JSON.stringify(description));
-    files.forEach((file) => data.append("images", file));
+    data.append("name", JSON.stringify(filledName)); // DÜZELTİLDİ
+    data.append("description", JSON.stringify(filledDescription));
+    selectedFiles.forEach((file) => data.append("images", file));
 
     try {
       setIsLoading(true);
       await dispatch(uploadGalleryItem(data)).unwrap();
       toast.success(t("upload.success"));
-      // Reset
       setCategory("");
       setType("image");
-      setTitle(initialTitle);
+      setName(initialName);
       setDescription(initialDescription);
       setOrder("1");
-      setFiles([]);
+      setSelectedFiles([]);
+      setExistingImages([]);
       onUpdate?.();
     } catch (err) {
       toast.error((err as any)?.message || t("upload.error"));
@@ -92,7 +105,6 @@ const GalleryMultiForm: React.FC<GalleryMultiFormProps> = ({
   return (
     <Form onSubmit={handleSubmit} autoComplete="off">
       <Title>{t("form.title")}</Title>
-
       <label htmlFor="category">{t("form.category")}</label>
       <Select
         id="category"
@@ -122,12 +134,12 @@ const GalleryMultiForm: React.FC<GalleryMultiFormProps> = ({
       {SUPPORTED_LOCALES.map((lng) => (
         <div key={lng}>
           <label>
-            {t("form.title", "Title")} ({lng.toUpperCase()})
+            {t("form.name", "Name")} ({lng.toUpperCase()})
           </label>
           <StyledInput
             type="text"
-            value={title[lng]}
-            onChange={(e) => setTitle({ ...title, [lng]: e.target.value })}
+            value={name[lng]}
+            onChange={(e) => setName({ ...name, [lng]: e.target.value })}
             required={lng === lang}
           />
           <label>
@@ -154,7 +166,8 @@ const GalleryMultiForm: React.FC<GalleryMultiFormProps> = ({
       <ImageUploadWithPreview
         max={isSingleImageCategory ? 1 : 10}
         folder="gallery"
-        onChange={setFiles}
+        defaultImages={existingImages}
+        onChange={handleImagesChange}
       />
 
       <SubmitButton type="submit" disabled={isLoading}>
@@ -166,9 +179,7 @@ const GalleryMultiForm: React.FC<GalleryMultiFormProps> = ({
 
 export default GalleryMultiForm;
 
-
-// Styled Components
-
+// --- Styled Components aşağıda değişmeden bırakabilirsin. ---
 const inputStyles = css`
   background: ${({ theme }) => theme.colors.inputBackground};
   color: ${({ theme }) => theme.colors.text};

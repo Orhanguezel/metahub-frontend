@@ -24,9 +24,7 @@ import {
   fetchActiveChatSessions,
   fetchArchivedSessions,
 } from "@/modules/chat/slice/chatSlice";
-import { 
-  fetchBookings 
-} from "@/modules/booking/slice/bookingSlice";
+import { fetchBookings } from "@/modules/booking/slice/bookingSlice";
 export const usePublicLayoutInit = () => {
   const dispatch = useAppDispatch();
   const { tenant, loading: tenantLoading } = useActiveTenant();
@@ -52,9 +50,7 @@ export const usePublicLayoutInit = () => {
   const profile = useAppSelector((s) => s.account.profile);
   const bookings = useAppSelector((s) => s.booking);
 
-
   const didInit = useRef<string | undefined>(undefined);
-
 
   useEffect(() => {
     if (tenantLoading || !tenant) return; // Tenant yüklenmeden hiçbir fetch atılmaz
@@ -65,33 +61,48 @@ export const usePublicLayoutInit = () => {
     if (
       (!Array.isArray(sectionMeta.metas) || sectionMeta.metas.length === 0) &&
       !sectionMeta.loading
-    ) dispatch(fetchSectionMetas());
+    )
+      dispatch(fetchSectionMetas());
 
     if (
-      (!Array.isArray(sectionSetting.settings) || sectionSetting.settings.length === 0) &&
+      (!Array.isArray(sectionSetting.settings) ||
+        sectionSetting.settings.length === 0) &&
       !sectionSetting.loading
-    ) dispatch(fetchSectionSettingsByTenant());
+    )
+      dispatch(fetchSectionSettingsByTenant());
 
     if (!settingsSlice.fetchedSettings) dispatch(fetchSettings());
-    if (servicesSlice.services.length === 0 && servicesSlice.status === "idle") dispatch(fetchServices());
-    if (aboutSlice.about.length === 0 && aboutSlice.status === "idle") dispatch(fetchAbout());
-    if (newsSlice.news.length === 0 && newsSlice.status === "idle") dispatch(fetchNews());
-    if (blogSlice.blog.length === 0 && blogSlice.status === "idle") dispatch(fetchBlog());
-    if (articlesSlice.articles.length === 0 && articlesSlice.status === "idle") dispatch(fetchArticles());
-    if (activitySlice.activity.length === 0 && activitySlice.status === "idle") dispatch(fetchActivity());
-    if (referencesSlice.references.length === 0 && referencesSlice.status === "idle") dispatch(fetchReferences());
-    if (bikesSlice.bikes.length === 0 && bikesSlice.status === "idle") dispatch(fetchBikes());
-    if (!companySlice.company && companySlice.status === "idle") dispatch(fetchCompanyInfo());
-    if (!couponSlice.coupons || couponSlice.coupons.length === 0) dispatch(fetchCoupons());
+    if (servicesSlice.services.length === 0 && servicesSlice.status === "idle")
+      dispatch(fetchServices());
+    if (aboutSlice.about.length === 0 && aboutSlice.status === "idle")
+      dispatch(fetchAbout());
+    if (newsSlice.news.length === 0 && newsSlice.status === "idle")
+      dispatch(fetchNews());
+    if (blogSlice.blog.length === 0 && blogSlice.status === "idle")
+      dispatch(fetchBlog());
+    if (articlesSlice.articles.length === 0 && articlesSlice.status === "idle")
+      dispatch(fetchArticles());
+    if (activitySlice.activity.length === 0 && activitySlice.status === "idle")
+      dispatch(fetchActivity());
+    if (
+      referencesSlice.references.length === 0 &&
+      referencesSlice.status === "idle"
+    )
+      dispatch(fetchReferences());
+    if (bikesSlice.bikes.length === 0 && bikesSlice.status === "idle")
+      dispatch(fetchBikes());
+    if (!companySlice.company && companySlice.status === "idle")
+      dispatch(fetchCompanyInfo());
+    if (!couponSlice.coupons || couponSlice.coupons.length === 0)
+      dispatch(fetchCoupons());
 
     if (
-  profile?.email && // kullanıcı yüklendi
-  bookings.bookings.length === 0 &&
-  bookings.status === "idle"
-) {
-  dispatch(fetchBookings());
-}
-
+      profile?.email && // kullanıcı yüklendi
+      bookings.bookings.length === 0 &&
+      bookings.status === "idle"
+    ) {
+      dispatch(fetchBookings());
+    }
 
     // --- SADECE LOGIN OLAN KULLANICIYA CHAT SESSION FETCH ---
     if (profile) {
@@ -100,29 +111,59 @@ export const usePublicLayoutInit = () => {
       if (chat.archivedSessions.length === 0) dispatch(fetchArchivedSessions());
     }
 
-    dispatch(fetchPublishedGalleryItems());
-    dispatch(fetchGalleryCategories());
+    if (gallery.publicImages.length === 0 && gallery.status === "idle") {
+      dispatch(fetchPublishedGalleryItems());
+    }
+
+    if (
+      (!galleryCategory.categories ||
+        galleryCategory.categories.length === 0) &&
+      galleryCategory.status === "idle"
+    ) {
+      dispatch(fetchGalleryCategories());
+    }
   }, [
     dispatch,
     tenant,
     tenantLoading,
     profile,
     // state'lerin tekil array veya nesne referansını ekle (tekrarlı render önlenir)
-    sectionMeta.metas, sectionMeta.loading, sectionSetting.settings, sectionSetting.loading,
+    sectionMeta.metas,
+    sectionMeta.loading,
+    sectionSetting.settings,
+    sectionSetting.loading,
     settingsSlice.fetchedSettings,
-    servicesSlice.services, servicesSlice.status,
-    aboutSlice.about, aboutSlice.status,
-    newsSlice.news, newsSlice.status,
-    blogSlice.blog, blogSlice.status,
-    articlesSlice.articles, articlesSlice.status,
-    activitySlice.activity, activitySlice.status,
-    referencesSlice.references, referencesSlice.status,
-    bikesSlice.bikes, bikesSlice.status,
-    companySlice.company, companySlice.status,
-    couponSlice.coupons, couponSlice.status,
-    chat.sessions.length, chat.activeSessions.length, chat.archivedSessions.length,
-    gallery.publicImages, galleryCategory.categories,
-    bookings.bookings.length, bookings.status
+    servicesSlice.services,
+    servicesSlice.status,
+    aboutSlice.about,
+    aboutSlice.status,
+    newsSlice.news,
+    newsSlice.status,
+    blogSlice.blog,
+    blogSlice.status,
+    articlesSlice.articles,
+    articlesSlice.status,
+    activitySlice.activity,
+    activitySlice.status,
+    referencesSlice.references,
+    referencesSlice.status,
+    bikesSlice.bikes,
+    bikesSlice.status,
+    companySlice.company,
+    companySlice.status,
+    couponSlice.coupons,
+    couponSlice.status,
+    chat.sessions.length,
+    chat.activeSessions.length,
+    chat.archivedSessions.length,
+    gallery.publicImages,
+    galleryCategory.categories,
+    bookings.bookings.length,
+    bookings.status,
+    gallery.publicImages.length,
+    gallery.status,
+    galleryCategory.categories.length,
+    galleryCategory.status,
   ]);
 
   return {
@@ -147,8 +188,13 @@ export const usePublicLayoutInit = () => {
     services: servicesSlice.services,
     servicesStatus: servicesSlice.status,
     servicesError: servicesSlice.error,
-    publicImages: gallery.publicImages,
+    gallery: {
+      publicImages: gallery.publicImages,
+      status: gallery.status,
+    },
     galleryCategories: galleryCategory.categories,
+    galleryCategoriesStatus: galleryCategory.status,
+    galleryCategoriesError: galleryCategory.error,
     coupons: couponSlice.coupons,
     couponsStatus: couponSlice.status,
     couponsError: couponSlice.error,
@@ -177,6 +223,5 @@ export const usePublicLayoutInit = () => {
     bikes: bikesSlice.bikes,
     bikesStatus: bikesSlice.status,
     bikesError: bikesSlice.error,
-
   };
 };

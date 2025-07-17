@@ -1,19 +1,26 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useAppDispatch,useAppSelector } from "@/store/hooks";
-
-import { getGalleryStats, clearGalleryMessages } from "@/modules/gallery/slice/gallerySlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  getGalleryStats,
+  clearGalleryMessages,
+} from "@/modules/gallery/slice/gallerySlice";
 import {
   GalleryList,
   GalleryMultiForm,
   GalleryStats,
   CategoryListPage,
   CategoryForm,
+  translations,
 } from "@/modules/gallery";
+import { Modal } from "@/shared";
+import {
+  createGalleryCategory,
+  updateGalleryCategory,
+} from "@/modules/gallery/slice/galleryCategorySlice";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
 import { motion, AnimatePresence } from "framer-motion";
 import { IGalleryCategory } from "@/modules/gallery/types";
 import { toast } from "react-toastify";
@@ -26,7 +33,7 @@ const AdminGalleryPage: React.FC = () => {
   const successMessage = useAppSelector((state) => state.gallery.successMessage);
   const error = useAppSelector((state) => state.gallery.error);
   const stats = useAppSelector((state) => state.gallery.stats);
-  const categories = useAppSelector((state) => state.gallery.categories);
+  const categories = useAppSelector((s) => s.galleryCategory.adminCategories);
 
   const { t } = useI18nNamespace("gallery", translations);
 
@@ -34,21 +41,49 @@ const AdminGalleryPage: React.FC = () => {
   const [editCategory, setEditCategory] = useState<IGalleryCategory | null>(null);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
 
-   useEffect(() => {
-      if (successMessage) toast.success(successMessage);
-      if (error) toast.error(error);
-      if (successMessage || error) {
-        dispatch(clearGalleryMessages());
-      }
-    }, [successMessage, error, dispatch]);
+  // ✅ Modal kapatma handler
+  const handleModalClose = () => {
+    setShowCategoryForm(false);
+    setEditCategory(null);
+  };
 
-  // Gallery stats sadece bir kere ekstra fetch edilsin
   useEffect(() => {
-    if (!stats) dispatch(getGalleryStats());
+    if (successMessage) toast.success(successMessage);
+    if (error) toast.error(error);
+    if (successMessage || error) {
+      dispatch(clearGalleryMessages());
+    }
+  }, [successMessage, error, dispatch]);
+
+  useEffect(() => {
+    if (!stats || Object.keys(stats).length === 0) {
+      dispatch(getGalleryStats());
+    }
   }, [dispatch, stats]);
 
   const handleUpdate = async () => {
     await dispatch(getGalleryStats());
+  };
+
+  // ✅ Kategori create/update submit handler
+  const handleSubmitCategory = async (formData: FormData, id?: string) => {
+    if (id) {
+      // Update
+      await dispatch(updateGalleryCategory({ id, data: formData })).unwrap();
+    } else {
+      // Create
+      await dispatch(createGalleryCategory(formData)).unwrap();
+    }
+    handleModalClose(); // Modal'ı kapat
+  };
+
+  const handleAddCategory = () => {
+    setEditCategory(null);
+    setShowCategoryForm(true);
+  };
+  const handleEditCategory = (category: IGalleryCategory) => {
+    setEditCategory(category);
+    setShowCategoryForm(true);
   };
 
   return (
@@ -91,7 +126,7 @@ const AdminGalleryPage: React.FC = () => {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3 }}
           >
-            <GalleryMultiForm categories={categories} onUpdate={handleUpdate} />
+            <GalleryMultiForm categories={categories || []} onUpdate={handleUpdate} />
           </MotionWrapper>
         )}
 
@@ -126,31 +161,20 @@ const AdminGalleryPage: React.FC = () => {
             transition={{ duration: 0.3 }}
           >
             <CategoryListPage
-              onAdd={() => {
-                setEditCategory(null);
-                setShowCategoryForm(true);
-              }}
-              onEdit={(cat) => {
-                setEditCategory(cat);
-                setShowCategoryForm(true);
-              }}
+              onAdd={handleAddCategory}
+              onEdit={handleEditCategory}
             />
 
             <AnimatePresence>
               {showCategoryForm && (
-                <ModalOverlay
-                  as={motion.div}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <ModalContent>
-                    <CategoryForm
-                      editingItem={editCategory}
-                      onClose={() => setShowCategoryForm(false)}
-                    />
-                  </ModalContent>
-                </ModalOverlay>
+                <Modal isOpen={showCategoryForm} onClose={handleModalClose}>
+                  <CategoryForm
+                    isOpen={showCategoryForm}
+                    onClose={handleModalClose}
+                    editingItem={editCategory}
+                    onSubmit={handleSubmitCategory}
+                  />
+                </Modal>
               )}
             </AnimatePresence>
           </MotionWrapper>
@@ -162,7 +186,8 @@ const AdminGalleryPage: React.FC = () => {
 
 export default AdminGalleryPage;
 
-// Styles: (değişmedi)
+// ---- Styles (değişmedi) ----
+
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacings.xxl}
     ${({ theme }) => theme.spacings.md};
@@ -231,30 +256,3 @@ const MotionWrapper = styled(motion.div)`
   min-height: 300px;
 `;
 
-const ModalOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background: ${({ theme }) => theme.colors.overlayEnd};
-  backdrop-filter: blur(3px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: ${({ theme }) => theme.zIndex.modal};
-  transition: background 0.3s;
-`;
-
-const ModalContent = styled.div`
-  background: ${({ theme }) => theme.colors.cardBackground};
-  padding: ${({ theme }) => theme.spacings.xxl}
-    ${({ theme }) => theme.spacings.lg};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: ${({ theme }) => theme.shadows.xl};
-  min-width: 340px;
-  max-width: 90vw;
-
-  @media (max-width: 600px) {
-    padding: ${({ theme }) => theme.spacings.lg}
-      ${({ theme }) => theme.spacings.sm};
-    min-width: 0;
-  }
-`;

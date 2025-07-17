@@ -97,7 +97,7 @@ import {
   clearGalleryMessages,
 } from "@/modules/gallery/slice/gallerySlice";
 import {
-  fetchGalleryCategories,
+  fetchAdminGalleryCategories,
   clearGalleryCategoryMessages,
 } from "@/modules/gallery/slice/galleryCategorySlice";
 import {
@@ -205,7 +205,7 @@ export const useLayoutInit = () => {
   const newsList = useAppSelector((state) => state.news);
   const newsCategories = useAppSelector((state) => state.newsCategory);
   const galleryList = useAppSelector((state) => state.gallery);
-  const galleryCategories = useAppSelector((state) => state.galleryCategory);
+  const galleryCategory = useAppSelector((state) => state.galleryCategory);
   const referencesList = useAppSelector((state) => state.references);
   const referencesCategories = useAppSelector(
     (state) => state.referencesCategory
@@ -297,8 +297,9 @@ export const useLayoutInit = () => {
       dispatch(fetchNewsCategories());
     if (!galleryList.adminImages.length && !galleryList.loading)
       dispatch(fetchGallery());
-    if (!galleryCategories.categories.length && !galleryCategories.loading)
-      dispatch(fetchGalleryCategories());
+    if (!galleryCategory.adminCategories.length && galleryCategory.status === "idle") {
+      dispatch(fetchAdminGalleryCategories());
+    }
     if (!referencesList.referencesAdmin.length && !referencesList.loading)
       dispatch(fetchAllReferencesAdmin());
     if (
@@ -377,7 +378,7 @@ export const useLayoutInit = () => {
     newsList,
     newsCategories,
     galleryList,
-    galleryCategories,
+    galleryCategory,
     referencesList,
     referencesCategories,
     servicesList,

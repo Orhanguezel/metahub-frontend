@@ -12,10 +12,11 @@ import { ArticlesSection } from "@/modules/articles";
 import { ActivitySection } from "@/modules/activity";
 import { ReferencesSection } from "@/modules/references";
 import { BikesSection } from "@/modules/bikes";
+import {WelcomeCouponBanner} from "@/modules/coupon";
 import HeroSlider from "@/modules/home/public/components/HeroSlider";
 import HeroSection from "@/modules/home/public/components/HeroSection";
 import HeroSectionSlayt from "@/modules/home/public/components/HeroSectionSlayt";
-import {WelcomeCouponBanner} from "@/modules/coupon";
+
 
 // Section Key -> Component Map
 const sectionComponents: Record<string, React.ComponentType<any> | undefined> = {

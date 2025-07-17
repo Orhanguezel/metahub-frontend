@@ -1,7 +1,7 @@
 {
   "page": {
-    "allBike": "Tous les vélos",
-    "noBike": "Aucun vélo trouvé.",
+    "allGallery": "Tous les vélos",
+    "noGallery": "Aucun vélo trouvé.",
     "price": "Prix",
     "stock": "Stock",
     "brand": "Marque",
@@ -9,7 +9,7 @@
     "other": "Autres produits",
     "untitled": "Sans titre",
     "noSummary": "Pas de description.",
-    "bike": {
+    "gallery": {
       "title": "Dernier vélo",
       "readMore": "Voir les détails",
       "all": "Tous les vélos"
@@ -17,11 +17,11 @@
   },
   "admin": {
     "tabs": {
-      "bike": "Vélos",
+      "gallery": "Vélos",
       "create": "Nouveau vélo",
       "categories": "Catégories"
     },
-    "bike": {
+    "gallery": {
       "create": "Ajouter un nouveau vélo",
       "edit": "Modifier le vélo",
       "name": "Nom du vélo",
@@ -61,7 +61,7 @@
     "loading": "Chargement...",
     "confirm": {
       "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
-      "delete_bike": "Êtes-vous sûr de vouloir supprimer ce vélo ?"
+      "delete_gallery": "Êtes-vous sûr de vouloir supprimer ce vélo ?"
     },
     "optional_description": "Description (optionnel)",
     "category_info": "À propos de cette catégorie ?",

@@ -1,15 +1,25 @@
 // types/index.ts
 import type { TranslatedLabel } from "@/types/common";
 
+export interface CategoryImage {
+  url: string;
+  thumbnail: string;
+  webp?: string;
+  publicId?: string;
+  altText?: Partial<TranslatedLabel>;
+}
+
 export interface IGalleryCategory {
   _id: string;
-  slug: string;
   name: Partial<TranslatedLabel>;
   description?: Partial<TranslatedLabel>;
+  slug: string;
+  images?: CategoryImage[];
   isActive: boolean;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
+
 
 export interface IGalleryItem {
   url: string;

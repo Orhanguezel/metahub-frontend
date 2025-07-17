@@ -1,26 +1,31 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import { IGalleryCategory } from "@/modules/gallery/types";
-import { TranslatedLabel } from "@/types/common";
+import type { IGalleryCategory } from "../types";
 
 interface CategoryState {
-  categories: IGalleryCategory[];
+  categories: IGalleryCategory[];         // Public (veya global)
+  adminCategories: IGalleryCategory[];    // Admin paneli için ayrı
+  selected: IGalleryCategory | null;
   loading: boolean;
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   successMessage: string | null;
 }
 
 const initialState: CategoryState = {
   categories: [],
+  adminCategories: [],
+  selected: null,
   loading: false,
+  status: "idle",
   error: null,
   successMessage: null,
 };
 
-// ✅ Fetch all categories
+// 🌍 Fetch All (Public)
 export const fetchGalleryCategories = createAsyncThunk(
-  "galleryCategory/fetchAll",
-  async (_, thunkAPI) => {
+  "gallerycategory/fetchAll",
+  async (_: void, thunkAPI) => {
     const res = await apiCall(
       "get",
       "/gallerycategory",
@@ -31,57 +36,57 @@ export const fetchGalleryCategories = createAsyncThunk(
   }
 );
 
-// ✅ Create category
+// 🌍 Fetch All (Admin)
+export const fetchAdminGalleryCategories = createAsyncThunk(
+  "gallerycategory/fetchAllAdmin",
+  async (_: void, thunkAPI) => {
+    const res = await apiCall(
+      "get",
+      "/gallerycategory",
+      null,
+      thunkAPI.rejectWithValue
+    );
+    return res.data;
+  }
+);
+
+// ➕ Create (FormData)
 export const createGalleryCategory = createAsyncThunk(
-  "galleryCategory/create",
-  async (
-    data: {
-      name: TranslatedLabel;
-      description?: TranslatedLabel;
-      isActive?: boolean;
-    },
-    thunkAPI
-  ) => {
+  "gallerycategory/create",
+  async (formData: FormData, thunkAPI) => {
     const res = await apiCall(
       "post",
       "/gallerycategory",
-      data,
-      thunkAPI.rejectWithValue
+      formData,
+      thunkAPI.rejectWithValue,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
     );
     return res.data;
   }
 );
 
-// ✅ Update category
+// ✏️ Update (FormData)
 export const updateGalleryCategory = createAsyncThunk(
-  "galleryCategory/update",
-  async (
-    {
-      id,
-      data,
-    }: {
-      id: string;
-      data: {
-        name: TranslatedLabel;
-        description?: TranslatedLabel;
-        isActive?: boolean;
-      };
-    },
-    thunkAPI
-  ) => {
+  "gallerycategory/update",
+  async (params: { id: string; data: FormData }, thunkAPI) => {
     const res = await apiCall(
       "put",
-      `/gallerycategory/${id}`,
-      data,
-      thunkAPI.rejectWithValue
+      `/gallerycategory/${params.id}`,
+      params.data,
+      thunkAPI.rejectWithValue,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
     );
     return res.data;
   }
 );
 
-// ✅ Delete category
+// ❌ Delete
 export const deleteGalleryCategory = createAsyncThunk(
-  "galleryCategory/delete",
+  "gallerycategory/delete",
   async (id: string, thunkAPI) => {
     await apiCall(
       "delete",
@@ -97,69 +102,95 @@ const galleryCategorySlice = createSlice({
   name: "galleryCategory",
   initialState,
   reducers: {
-    clearGalleryCategoryMessages: (state) => {
+    clearGalleryCategoryMessages(state) {
       state.error = null;
       state.successMessage = null;
+      state.status = "idle";
+    },
+    clearSelectedCategory(state) {
+      state.selected = null;
     },
   },
   extraReducers: (builder) => {
-    const startLoading = (state: CategoryState) => {
+    // Common loading/failed helpers
+    const loading = (state: CategoryState) => {
       state.loading = true;
+      state.status = "loading";
       state.error = null;
     };
-
-    const onError = (state: CategoryState, action: PayloadAction<any>) => {
+    const failed = (state: CategoryState, action: PayloadAction<any>) => {
       state.loading = false;
-      state.error = action.payload?.message || "Something went wrong.";
+      state.status = "failed";
+      state.error = action.payload?.message || "An error occurred.";
     };
 
     builder
-      // 🔄 Fetch
-      .addCase(fetchGalleryCategories.pending, startLoading)
+      // PUBLIC fetch
+      .addCase(fetchGalleryCategories.pending, loading)
       .addCase(fetchGalleryCategories.fulfilled, (state, action) => {
         state.loading = false;
-        state.categories = action.payload;
+        state.status = "succeeded";
+        state.categories = Array.isArray(action.payload) ? action.payload : [];
       })
-      .addCase(fetchGalleryCategories.rejected, onError)
+      .addCase(fetchGalleryCategories.rejected, failed)
 
-      // ➕ Create
-      .addCase(createGalleryCategory.pending, startLoading)
+      // ADMIN fetch
+      .addCase(fetchAdminGalleryCategories.pending, loading)
+      .addCase(fetchAdminGalleryCategories.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = "succeeded";
+        state.adminCategories = Array.isArray(action.payload) ? action.payload : [];
+      })
+      .addCase(fetchAdminGalleryCategories.rejected, failed)
+
+      // CREATE
+      .addCase(createGalleryCategory.pending, loading)
       .addCase(createGalleryCategory.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Category created successfully.";
+        state.status = "succeeded";
+        state.successMessage = action.payload?.message || "Category created successfully.";
         if (action.payload && action.payload._id) {
           state.categories.unshift(action.payload);
+          state.adminCategories.unshift(action.payload);
         }
       })
-      .addCase(createGalleryCategory.rejected, onError)
+      .addCase(createGalleryCategory.rejected, failed)
 
-      // ✏️ Update
-      .addCase(updateGalleryCategory.pending, startLoading)
+      // UPDATE
+      .addCase(updateGalleryCategory.pending, loading)
       .addCase(updateGalleryCategory.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Category updated successfully.";
+        state.status = "succeeded";
+        state.successMessage = action.payload?.message || "Category updated successfully.";
         const updated = action.payload;
-        const index = state.categories.findIndex(
-          (cat) => cat._id === updated._id
-        );
-        if (index !== -1) {
-          state.categories[index] = updated;
+        if (updated && updated._id) {
+          const idx = state.categories.findIndex((cat) => cat._id === updated._id);
+          if (idx !== -1) state.categories[idx] = updated;
+          const adminIdx = state.adminCategories.findIndex((cat) => cat._id === updated._id);
+          if (adminIdx !== -1) state.adminCategories[adminIdx] = updated;
+          if (state.selected?._id === updated._id) state.selected = updated;
         }
       })
-      .addCase(updateGalleryCategory.rejected, onError)
+      .addCase(updateGalleryCategory.rejected, failed)
 
-      // ❌ Delete
-      .addCase(deleteGalleryCategory.pending, startLoading)
+      // DELETE
+      .addCase(deleteGalleryCategory.pending, loading)
       .addCase(deleteGalleryCategory.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.successMessage = "Category deleted successfully.";
         state.categories = state.categories.filter(
           (cat) => cat._id !== action.payload
         );
+        state.adminCategories = state.adminCategories.filter(
+          (cat) => cat._id !== action.payload
+        );
+        if (state.selected?._id === action.payload) state.selected = null;
       })
-      .addCase(deleteGalleryCategory.rejected, onError);
+      .addCase(deleteGalleryCategory.rejected, failed);
   },
 });
 
-export const { clearGalleryCategoryMessages } = galleryCategorySlice.actions;
+export const { clearGalleryCategoryMessages, clearSelectedCategory } =
+  galleryCategorySlice.actions;
 export default galleryCategorySlice.reducer;

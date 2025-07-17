@@ -1,7 +1,7 @@
 {
   "page": {
-    "allBike": "Todas las bicicletas",
-    "noBike": "No se encontraron bicicletas.",
+    "allGallery": "Todas las bicicletas",
+    "noGallery": "No se encontraron bicicletas.",
     "price": "Precio",
     "stock": "Stock",
     "brand": "Marca",
@@ -9,7 +9,7 @@
     "other": "Otros productos",
     "untitled": "Sin título",
     "noSummary": "Sin descripción.",
-    "bike": {
+    "gallery": {
       "title": "Bicicleta destacada",
       "readMore": "Ver detalles",
       "all": "Todas las bicicletas"
@@ -17,11 +17,11 @@
   },
   "admin": {
     "tabs": {
-      "bike": "Bicicletas",
+      "gallery": "Bicicletas",
       "create": "Nueva bicicleta",
       "categories": "Categorías"
     },
-    "bike": {
+    "gallery": {
       "create": "Agregar nueva bicicleta",
       "edit": "Editar bicicleta",
       "name": "Nombre de la bicicleta",
@@ -61,7 +61,7 @@
     "loading": "Cargando...",
     "confirm": {
       "delete": "¿Estás seguro de que quieres eliminar esta categoría?",
-      "delete_bike": "¿Estás seguro de que quieres eliminar esta bicicleta?"
+      "delete_gallery": "¿Estás seguro de que quieres eliminar esta bicicleta?"
     },
     "optional_description": "Descripción (opcional)",
     "category_info": "¿De qué trata esta categoría?",

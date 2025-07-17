@@ -1,304 +1,192 @@
 "use client";
 
-import React, { useCallback } from "react";
 import styled from "styled-components";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import { SUPPORTED_LOCALES } from "@/types/common";
-import translations from "../../locales";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  deleteGalleryCategory,
-} from "@/modules/gallery/slice/galleryCategorySlice";
+import { translations } from "@/modules/gallery";
+import { deleteGalleryCategory } from "@/modules/gallery/slice/galleryCategorySlice";
 import type { IGalleryCategory } from "@/modules/gallery/types";
+import { LANG_LABELS, SupportedLocale } from "@/types/common";
+import Image from "next/image";
 
-interface GalleryCategoryListPageProps {
+interface Props {
   onAdd: () => void;
   onEdit: (category: IGalleryCategory) => void;
 }
 
-const GalleryCategoryListPage: React.FC<GalleryCategoryListPageProps> = ({
+export default function GalleryCategoryListPage({
   onAdd,
   onEdit,
-}) => {
-  const { t } = useI18nNamespace("gallery", translations);
+}: Props) {
+  const { i18n, t } = useI18nNamespace("gallery", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const dispatch = useAppDispatch();
-  const { categories = [], loading, error } = useAppSelector(
-    (state) => state.galleryCategory || {}
+
+  // ✅ Artık adminCategories slice'ı!
+  const { adminCategories: categories, loading, error } = useAppSelector(
+    (state) => state.galleryCategory
   );
 
-
-  const handleDelete = useCallback(
-    (id: string) => {
-      if (
-        window.confirm(
-          t(
-            "admin.confirm.delete",
-            "Are you sure you want to delete this category?"
-          )
-        )
-      ) {
-        dispatch(deleteGalleryCategory(id));
-      }
-    },
-    [dispatch, t]
-  );
+  const handleDelete = (id: string) => {
+    const confirmMessage = t(
+      "admin.confirm.delete",
+      "Are you sure you want to delete this category?"
+    );
+    if (window.confirm(confirmMessage)) {
+      dispatch(deleteGalleryCategory(id));
+    }
+  };
 
   return (
     <Wrapper>
       <Header>
-        <Title>{t("admin.categories.title", "Gallery Categories")}</Title>
-        <PrimaryButton type="button" onClick={onAdd}>
+        <h2>{t("admin.categories.title", "Product Categories")}</h2>
+        <AddButton onClick={onAdd}>
           {t("admin.categories.add", "Add Category")}
-        </PrimaryButton>
+        </AddButton>
       </Header>
 
       {loading ? (
-        <Status>{t("loading", "Loading...")}</Status>
+        <StatusMessage>{t("admin.loading", "Loading...")}</StatusMessage>
       ) : error ? (
-        <Error>{error}</Error>
-      ) : !categories || categories.length === 0 ? (
-        <Status>{t("admin.categories.empty", "No categories found.")}</Status>
+        <ErrorMessage>❌ {error}</ErrorMessage>
+      ) : categories.length === 0 ? (
+        <StatusMessage>
+          {t("admin.categories.empty", "No categories found.")}
+        </StatusMessage>
       ) : (
-        <TableWrapper>
-          <StyledTable>
-            <thead>
-              <tr>
-                <TableHeaderCell>#</TableHeaderCell>
-                {SUPPORTED_LOCALES.map((lng) => (
-                  <TableHeaderCell key={lng}>
-                    {t(`admin.language.${lng}`, lng.toUpperCase())}
-                  </TableHeaderCell>
-                ))}
-                <TableHeaderCell>{t("admin.slug", "Slug")}</TableHeaderCell>
-                <TableHeaderCell>
-                  {t("admin.actions", "Actions")}
-                </TableHeaderCell>
-              </tr>
-            </thead>
-            <tbody>
-              {categories.map((cat, i) => (
-                <TableRow key={cat._id}>
-                  <TableCell>{i + 1}</TableCell>
-                  {SUPPORTED_LOCALES.map((lng) => (
-                    <TableCell key={lng}>
-                      {cat.name?.[lng] || <i>-</i>}
-                    </TableCell>
-                  ))}
-                  <TableCell>{cat.slug}</TableCell>
-                  <TableCell>
-                    <ActionGroup>
-                      <EditButton type="button" onClick={() => onEdit(cat)}>
-                        {t("admin.edit", "Edit")}
-                      </EditButton>
-                      <DeleteButton
-                        type="button"
-                        onClick={() => handleDelete(cat._id)}
-                      >
-                        {t("admin.delete", "Delete")}
-                      </DeleteButton>
-                    </ActionGroup>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </tbody>
-          </StyledTable>
-        </TableWrapper>
+        <Table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>{t(`admin.language.${lang}`, LANG_LABELS[lang])}</th>
+              <th>{t("admin.slug", "Slug")}</th>
+              <th>{t("admin.categories.image", "Image")}</th>
+              <th>{t("admin.actions", "Actions")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {categories.map((cat: IGalleryCategory, i: number) => {
+              const imageSrc =
+                cat.images && cat.images.length > 0
+                  ? cat.images[0]?.thumbnail || cat.images[0]?.url || ""
+                  : "";
+
+              return (
+                <tr key={cat._id}>
+                  <td>{i + 1}</td>
+                  <td>{cat.name?.[lang] || "—"}</td>
+                  <td>{cat.slug}</td>
+                  <td>
+                    {imageSrc ? (
+                      <Image
+                        src={imageSrc}
+                        alt="category image"
+                        width={60}
+                        height={60}
+                        style={{ borderRadius: 4, objectFit: "cover" }}
+                      />
+                    ) : (
+                      <span style={{ color: "#999" }}>
+                        {t("admin.gallery.no_images", "No images")}
+                      </span>
+                    )}
+                  </td>
+                  <td>
+                    <ActionButton onClick={() => onEdit(cat)}>Edit</ActionButton>
+                    <DeleteButton onClick={() => handleDelete(cat._id)}>
+                      {t("admin.delete", "Delete")}
+                    </DeleteButton>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
       )}
     </Wrapper>
   );
-};
+}
 
-export default GalleryCategoryListPage;
+// Styled Components (aynen kalabilir)
 
-
-const Wrapper = styled.section`
-  margin-top: ${({ theme }) => theme.spacings.xl};
-  width: 100%;
-  max-width: 100%;
+const Wrapper = styled.div`
+  margin-top: 1rem;
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: ${({ theme }) => theme.spacings.md};
-  margin-bottom: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: 1rem;
 
-  @media ${({ theme }) => theme.media.mobile} {
-    flex-direction: column;
-    align-items: stretch;
-    gap: ${({ theme }) => theme.spacings.sm};
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
   }
 `;
 
-const Title = styled.h2`
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-size: ${({ theme }) => theme.fontSizes.xl};
-  color: ${({ theme }) => theme.colors.primary};
-  margin: 0;
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  letter-spacings: 0.01em;
-`;
+const AddButton = styled.button`
+  padding: 0.5rem 1rem;
+  background: ${({ theme }) => theme.colors.primary};
+  color: white;
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  cursor: pointer;
 
-const TableWrapper = styled.div`
-  width: 100%;
-  overflow-x: auto;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: ${({ theme }) => theme.shadows.md};
-  transition: box-shadow ${({ theme }) => theme.transition.normal},
-    background ${({ theme }) => theme.transition.normal};
-
-  @media ${({ theme }) => theme.media.mobile} {
-    border-radius: ${({ theme }) => theme.radii.md};
-    box-shadow: ${({ theme }) => theme.shadows.sm};
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryHover};
   }
 `;
 
-const StyledTable = styled.table`
+const Table = styled.table`
   width: 100%;
-  min-width: 700px;
   border-collapse: collapse;
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  color: ${({ theme }) => theme.colors.text};
 
-  @media ${({ theme }) => theme.media.mobile} {
-    min-width: 360px;
-    font-size: ${({ theme }) => theme.fontSizes.sm};
+  th,
+  td {
+    padding: 0.75rem;
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    text-align: left;
+    font-size: 0.95rem;
+  }
+
+  th {
+    background: ${({ theme }) => theme.colors.tableHeader};
+    color: ${({ theme }) => theme.colors.text};
   }
 `;
 
-const TableHeaderCell = styled.th`
-  background: ${({ theme }) => theme.colors.tableHeader};
-  color: ${({ theme }) => theme.colors.text};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  padding: ${({ theme }) => theme.spacings.md};
-  text-align: left;
-  border-bottom: ${({ theme }) => theme.borders.thick}
-    ${({ theme }) => theme.colors.border};
-  white-space: nowrap;
-`;
-
-const TableCell = styled.td`
-  padding: ${({ theme }) => theme.spacings.md};
-  border-bottom: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.cardBackground};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  vertical-align: middle;
-
-  &:first-child {
-    font-weight: ${({ theme }) => theme.fontWeights.medium};
-    color: ${({ theme }) => theme.colors.textSecondary};
-  }
-`;
-
-const TableRow = styled.tr`
-  &:nth-child(even) ${TableCell} {
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-  }
-  transition: background ${({ theme }) => theme.transition.normal};
-
-  &:hover ${TableCell} {
-    background: ${({ theme }) => theme.colors.hoverBackground};
-  }
-`;
-
-const Status = styled.p`
+const StatusMessage = styled.p`
   text-align: center;
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  margin: ${({ theme }) => theme.spacings.xl} 0;
-  font-family: ${({ theme }) => theme.fonts.body};
+  font-size: 0.95rem;
 `;
 
-const Error = styled.p`
+const ErrorMessage = styled.p`
   text-align: center;
-  color: ${({ theme }) => theme.colors.danger};
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  margin: ${({ theme }) => theme.spacings.xl} 0;
-  font-family: ${({ theme }) => theme.fonts.body};
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacings.md};
+  color: red;
+  font-size: 0.95rem;
 `;
 
-const PrimaryButton = styled.button`
-  background: ${({ theme }) => theme.buttons.primary.background};
-  color: ${({ theme }) => theme.buttons.primary.text};
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.xl};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  box-shadow: ${({ theme }) => theme.shadows.button};
-  cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.normal},
-    color ${({ theme }) => theme.transition.normal},
-    box-shadow ${({ theme }) => theme.transition.normal};
-
-  &:hover,
-  &:focus {
-    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
-    color: ${({ theme }) => theme.buttons.primary.textHover};
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-  }
-
-  &:disabled {
-    background: ${({ theme }) => theme.colors.disabled};
-    color: ${({ theme }) => theme.colors.textMuted};
-    cursor: not-allowed;
-    opacity: ${({ theme }) => theme.opacity.disabled};
-    box-shadow: none;
-  }
-`;
-
-const ActionGroup = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacings.sm};
-`;
-
-const EditButton = styled.button`
+const ActionButton = styled.button`
+  margin-right: 0.5rem;
+  padding: 0.4rem 0.8rem;
   background: ${({ theme }) => theme.colors.warning};
-  color: ${({ theme }) => theme.colors.text};
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  padding: ${({ theme }) => theme.spacings.xs}
-    ${({ theme }) => theme.spacings.lg};
+  color: white;
   border: none;
-  border-radius: ${({ theme }) => theme.radii.md};
+  border-radius: 4px;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.normal};
-
-  &:hover,
-  &:focus {
-    background: ${({ theme }) =>
-      theme.colors.warningHover || theme.colors.warning};
-    color: ${({ theme }) => theme.colors.textPrimary};
-  }
 `;
 
 const DeleteButton = styled.button`
-  background: ${({ theme }) => theme.buttons.danger.background};
-  color: ${({ theme }) => theme.buttons.danger.text};
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  padding: ${({ theme }) => theme.spacings.xs}
-    ${({ theme }) => theme.spacings.lg};
+  padding: 0.4rem 0.8rem;
+  background: ${({ theme }) => theme.colors.danger};
+  color: white;
   border: none;
-  border-radius: ${({ theme }) => theme.radii.md};
+  border-radius: 4px;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.normal};
-
-  &:hover,
-  &:focus {
-    background: ${({ theme }) => theme.buttons.danger.backgroundHover};
-    color: ${({ theme }) => theme.buttons.danger.textHover};
-  }
 `;

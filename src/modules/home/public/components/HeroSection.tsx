@@ -3,67 +3,59 @@
 import Link from "next/link";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/home";
+import { translations } from "@/modules/home";
 import { SupportedLocale } from "@/types/common";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState, useMemo } from "react";
 import { useAppSelector } from "@/store/hooks";
-import type { IGallery} from "@/modules/gallery/types";
+import type { IGallery } from "@/modules/gallery/types";
 
 const HeroSection = () => {
   const { i18n, t } = useI18nNamespace("home", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { publicImages } = useAppSelector((state) => state.gallery);
-
   const [current, setCurrent] = useState(0);
 
-  console.log("HeroSection images:", publicImages);
+  const flatItems = useMemo(() => {
+    if (!Array.isArray(publicImages)) return [];
+    return publicImages
+      .map((gallery: IGallery) => {
+        const firstImage = gallery.images?.[0];
+        if (!firstImage) return null;
+        return {
+          ...firstImage,
+          _galleryId: gallery._id,
+        };
+      })
+      .filter(Boolean);
+  }, [publicImages]);
 
-  // Gallery'den ilk resmi ve detayları düzleştir
- const flatItems = useMemo(() => {
-  if (!publicImages || !Array.isArray(publicImages)) return [];
-  return publicImages
-    .map((gallery: IGallery) => {
-      const firstImage = gallery.images?.[0];
-      if (!firstImage) return null;
-      return {
-        ...firstImage,
-        _galleryId: gallery._id,
-        category: gallery.category,
-        type: gallery.type,
-        tenant: gallery.tenant,
-      };
-    })
-    .filter(Boolean);
-}, [publicImages]);
+  const enableSlider = flatItems.length > 1;
+  const currentHero = flatItems[current];
 
+  const backgroundImage =
+    currentHero?.webp || currentHero?.url || currentHero?.thumbnail || "/placeholder.jpg";
 
+  const title =
+    currentHero?.name?.[lang]?.trim() ||
+    t("hero1.heroTitle", "Königs Masaj");
 
-  // Dil veya flatItems değişirse slider'ı başa sar
+  const description =
+    currentHero?.description?.[lang]?.trim() ||
+    t("hero1.heroSubtitle", "Doğallığın dokunuşuyla sağlığınızı şımartın");
+
   useEffect(() => {
     setCurrent(0);
   }, [lang, flatItems.length]);
 
-  // Otomatik slider
   useEffect(() => {
-    if (flatItems.length <= 1) return;
+    if (!enableSlider) return;
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % flatItems.length);
     }, 7000);
     return () => clearInterval(timer);
-  }, [flatItems.length]);
-
-  const goTo = (idx: number) => setCurrent(idx);
-
-  const currentHero = flatItems[current];
-const backgroundImage =
-  currentHero?.webp || currentHero?.url || currentHero?.thumbnail || "/placeholder.jpg";
-const title =
-  currentHero?.name?.[lang] || t("hero1.heroTitle", "Königs Masaj");
-const description =
-  currentHero?.description?.[lang] || t("hero1.heroSubtitle", "Doğallığın dokunuşuyla sağlığınızı şımartın");
-
+  }, [enableSlider, flatItems.length]);
 
   return (
     <Hero>
@@ -73,12 +65,12 @@ const description =
             initial={{ opacity: 0, scale: 1.1 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.1 }}
-            transition={{ duration: 1, ease: [0.42, 0, 0.58, 1] }}
+            transition={{ duration: 1 }}
             style={{ position: "absolute", inset: 0 }}
           >
             <StyledImage
               src={backgroundImage}
-              alt={title}
+              alt={title || "Hero background image"}
               fill
               priority
               style={{ objectFit: "cover" }}
@@ -106,9 +98,7 @@ const description =
             {description}
           </motion.p>
           <Link href="/booking">
-            <CTAButton>
-              {t("hero.bookAppointment", "Randevu Al")}
-            </CTAButton>
+            <CTAButton>{t("hero.bookAppointment", "Randevu Al")}</CTAButton>
           </Link>
         </HeroCard>
         <Dots>
@@ -116,7 +106,7 @@ const description =
             <Dot
               key={idx}
               $active={idx === current}
-              onClick={() => goTo(idx)}
+              onClick={() => setCurrent(idx)}
               aria-label={`Go to slide ${idx + 1}`}
               tabIndex={0}
             />
@@ -125,9 +115,10 @@ const description =
       </SliderContent>
     </Hero>
   );
-}
+};
 
 export default HeroSection;
+
 
 // Styled components ... (değişmedi)
 
