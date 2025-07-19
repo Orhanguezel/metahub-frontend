@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/about";
+import translations from "@/modules/about/locales";
 import { AboutCategory, IAbout } from "@/modules/about/types";
 import { ImageUploadWithPreview } from "@/shared";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";

@@ -1,7 +1,6 @@
-// src/types/references.ts
 import type { SupportedLocale } from "@/types/common";
 
-// Çok dilli alanlar için merkezi tanım
+// Çok dilli alanlar için
 export type TranslatedField = {
   [lang in SupportedLocale]?: string;
 };
@@ -15,15 +14,13 @@ export interface IReferencesImage {
   _id?: string;
 }
 
-// Ana makale (references) tipi
+// Ana referans tipi (firma logosu)
 export interface IReferences {
   _id: string;
-  title: TranslatedField;
+  title?: TranslatedField;
   slug: string;
-  summary: TranslatedField;
-  content: TranslatedField;
+  content?: TranslatedField;
   tenant: string;
-  tags: string[];
   images: IReferencesImage[];
   category:
     | string
@@ -31,14 +28,13 @@ export interface IReferences {
         _id: string;
         name: TranslatedField;
       };
-  author: string;
   isPublished: boolean;
   isActive: boolean;
   publishedAt?: string;
-  comments: string[];
   createdAt: string;
   updatedAt: string;
 }
+
 
 // Kategori modeli
 export interface ReferencesCategory {

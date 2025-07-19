@@ -131,51 +131,92 @@ export default function AvatarMenu({
     </AvatarWrapper>
   );
 }
-
-// --- Styled Components ---
+// --- Styled Components (Ensotek Modern) ---
 const AvatarWrapper = styled.div`
   position: relative;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  img {
+    border-radius: ${({ theme }) => theme.radii.circle};
+    border: 2.5px solid ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 2px 9px rgba(40,117,194,0.13);
+    background: ${({ theme }) => theme.colors.backgroundAlt};
+    transition: border-color 0.19s, box-shadow 0.17s;
+    width: 36px !important;
+    height: 36px !important;
+
+    &:hover {
+      border-color: ${({ theme }) => theme.colors.accent};
+      box-shadow: 0 5px 22px rgba(11,182,214,0.19);
+    }
+  }
 `;
 
 const AvatarDropdown = styled(motion.div)`
   position: absolute;
   top: 120%;
   right: 0;
-  background: ${({ theme }) => theme.colors.cardBackground};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   border: ${({ theme }) => `${theme.borders.thin} ${theme.colors.border}`};
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.md};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  box-shadow: 0 6px 32px 0 rgba(40,117,194,0.11);
   padding: ${({ theme }) => theme.spacings.sm} 0;
   z-index: ${({ theme }) => theme.zIndex.dropdown};
-  min-width: 170px;
+  min-width: 196px;
+  min-height: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  animation: dropdownAnim 0.19s;
+
+  @keyframes dropdownAnim {
+    from { opacity: 0; transform: translateY(-7px);}
+    to { opacity: 1; transform: translateY(0);}
+  }
 `;
 
 const DropdownItem = styled.a`
   display: block;
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.md};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.text};
-  background: none;
+  padding: 0.85rem 1.35rem;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  color: ${({ theme }) => theme.colors.primary};
+  background: transparent;
   border: none;
+  border-radius: 12px;
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  letter-spacing: 0.01em;
   width: 100%;
   text-align: left;
   cursor: pointer;
-  transition: ${({ theme }) => theme.transition.fast};
-  &:hover {
-    background: ${({ theme }) => theme.colors.hoverBackground};
-    color: ${({ theme }) => theme.colors.primary};
+  transition: background 0.18s, color 0.16s;
+
+  &:hover, &:focus-visible {
+    background: ${({ theme }) => theme.colors.backgroundAlt};
+    color: ${({ theme }) => theme.colors.accent};
+  }
+
+  &:active {
+    color: ${({ theme }) => theme.colors.primaryHover};
+    background: ${({ theme }) => theme.colors.backgroundSecondary};
   }
 `;
 
 const MenuLink = styled(Link)`
   text-decoration: none;
-  color: ${({ theme }) => theme.colors.text};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  transition: ${({ theme }) => theme.transition.fast};
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  padding: 0.48em 1.3em;
+  border-radius: 22px;
+  margin-right: 4px;
+  transition: color 0.18s, background 0.18s;
+
   &:hover {
-    color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.accent};
+    background: ${({ theme }) => theme.colors.backgroundSecondary};
   }
 `;

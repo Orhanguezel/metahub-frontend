@@ -23,9 +23,9 @@ export default function ProductCategoryListPage({
 
   // Merkezi fetch ile gelen slice'ı okuyoruz
    const categories = useAppSelector((state) => state.referencesCategory.categories);
-  const loading = useAppSelector((state) => state.references.loading);
-  const error = useAppSelector((state) => state.references.error);
-  
+  const loading = useAppSelector((state) => state.referencesCategory.loading);
+  const error = useAppSelector((state) => state.referencesCategory.error);
+
 
   // Silme işlemi
   const handleDelete = (id: string) => {

@@ -8,6 +8,7 @@ export { default as List } from "./admin/components/List";
 export { default as FormModal } from "./admin/components/FormModal";
 export { default as CategoryListPage } from "./admin/components/CategoryListPage";
 export { default as CategoryForm } from "./admin/components/CategoryForm";
+export { default as MultiUploadModal } from "./admin/components/MultiUploadModal";
 
 // Public Components
 export { default as ReferencesSection } from "./public/components/Section";

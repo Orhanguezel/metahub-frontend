@@ -71,7 +71,7 @@ export default function BlogDetailSection() {
     );
   }
 
-  const otherBlog = allBlog.filter((item: IBlog) => item.slug !== slug).slice(0, 2);
+  const otherBlog = allBlog.filter((item: IBlog)  => item.slug !== slug);
 
   return (
     <Container

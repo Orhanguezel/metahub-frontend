@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { useAppSelector } from "@/store/hooks";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,9 +10,9 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations, Modal } from "@/modules/home";
 import { SupportedLocale } from "@/types/common";
 import SkeletonBox from "@/shared/Skeleton";
-import type { IGallery } from "@/modules/gallery/types";
+import type { IGallery} from "@/modules/gallery/types";
 
-const SLIDER_CATEGORY_SLUG = "massage-types";
+const SLIDER_CATEGORY_SLUG = "carousel";
 
 type GalleryItem = IGallery["images"][0] & {
   _galleryId?: string;
@@ -26,38 +26,35 @@ const HeroSectionSlayt = () => {
   const { publicImages } = useAppSelector((state) => state.gallery);
   const { categories } = useAppSelector((state) => state.galleryCategory);
 
-  const [flatItems, setFlatItems] = useState<GalleryItem[]>([]);
+  // Burada kategori objesini bul
+  const targetCategory = useMemo(
+    () => categories?.find((cat) => cat.slug === SLIDER_CATEGORY_SLUG),
+    [categories]
+  );
 
-  useEffect(() => {
-    if (!Array.isArray(publicImages) || !categories?.length) {
-      setFlatItems([]);
-      return;
-    }
-
-    const targetCategory = categories.find((cat) => cat.slug === SLIDER_CATEGORY_SLUG);
-    if (!targetCategory) {
-      setFlatItems([]);
-      return;
-    }
-
-    const filtered: GalleryItem[] = publicImages
-      .filter((item) =>
-        typeof item.category === "string"
-          ? item.category === targetCategory._id
-          : item.category?._id === targetCategory._id
-      )
-      .flatMap((item) =>
-        item.images?.[0]
-          ? [{
-              ...item.images[0],
-              category: item.category,
-              _galleryId: item._id,
-            }]
-          : []
-      );
-
-    setFlatItems(filtered);
-  }, [publicImages, categories]);
+  // Flat + order sıralı ve sadece ilgili kategoriden
+  const flatItems = useMemo<GalleryItem[]>(() => {
+    if (!Array.isArray(publicImages) || !targetCategory) return [];
+    const filtered = publicImages.filter((gallery) =>
+      typeof gallery.category === "string"
+        ? gallery.category === targetCategory._id
+        : gallery.category?._id === targetCategory._id
+    );
+    // Bütün galerilerdeki bütün resimleri düzleştirip, parent galleryId ekle ve sırala
+    const allImages: GalleryItem[] = [];
+    filtered.forEach((gallery) => {
+      (gallery.images || []).forEach((img) => {
+        allImages.push({
+          ...img,
+          _galleryId: gallery._id,
+          category: gallery.category,
+        });
+      });
+    });
+    // order'a göre sıralama (default 0)
+    allImages.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return allImages;
+  }, [publicImages, targetCategory]);
 
   const modal = useModal(flatItems);
 

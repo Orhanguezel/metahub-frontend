@@ -121,6 +121,7 @@ const minimalTheme: DefaultTheme = {
     laptopS: "900px",
     laptop: "1024px",
     desktop: "1440px",
+    desktopL: "1640px",
   },
 
   media: {
@@ -147,6 +148,11 @@ const minimalTheme: DefaultTheme = {
     inputBackgroundFocus: "#f0f0f0",
     footerBackground: "#f8f8f8",
     warningBackground: "#fffbe6",
+    contentBackground: "#f6f7fa",
+
+    achievementBackground: "#f0f0f0",
+    achievementGradientStart: "#fbeaf0",
+    achievementGradientEnd: "#e5549c",
 
     text: "#333333",
     textAlt: "#333333",

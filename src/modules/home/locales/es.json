@@ -1,10 +1,10 @@
 {
   "hero1": {
-    "heroTitle": "Masaje Königs",
-    "heroSubtitle": "Mima tu salud con un toque de naturaleza"
+    "heroTitle": "Productos Industriales Innovadores",
+    "heroSubtitle": "Alcanza un nuevo nivel tecnológico con Ensotek."
   },
   "hero": {
-    "bookAppointment": "Reservar cita"
+    "products": "Productos"
   },
-  "noItemsFound": "No se encontraron elementos."
+  "noItemsFound": "No se encontraron productos."
 }

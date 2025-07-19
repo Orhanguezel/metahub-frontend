@@ -9,28 +9,58 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState, useMemo } from "react";
 import { useAppSelector } from "@/store/hooks";
-import type { IGallery } from "@/modules/gallery/types";
+import type { IGallery, IGalleryCategory } from "@/modules/gallery/types";
+
+// KATEGORİNİN _id’si veya slug’ı
+const HERO_CATEGORY_SLUG = "carousel"; // veya ör: "hero_slider"
+const HERO_CATEGORY_ID = ""; // Doldurmak istersen: "6878e89d260cf9b67f2c2101"
 
 const HeroSection = () => {
   const { i18n, t } = useI18nNamespace("home", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+
+  // Hem gallery hem category slice’ı lazım!
   const { publicImages } = useAppSelector((state) => state.gallery);
-  const [current, setCurrent] = useState(0);
+  const galleryCategories = useAppSelector((state) => state.galleryCategory.categories);
 
+  // Hangi kategorinin ID’si/slug’ı ile filtreleyeceksin?
+  // Eğer slug ile çalışacaksan, ilgili kategorinin _id’sini bul:
+  const selectedCategoryId = useMemo(() => {
+    if (HERO_CATEGORY_ID) return HERO_CATEGORY_ID;
+    if (HERO_CATEGORY_SLUG && Array.isArray(galleryCategories)) {
+      const cat = galleryCategories.find((c: IGalleryCategory) => c.slug === HERO_CATEGORY_SLUG);
+      return cat?._id || "";
+    }
+    return "";
+  }, [galleryCategories]);
+
+  // Kategoriye ait bütün gallery objelerini bul ve düzleştir
   const flatItems = useMemo(() => {
-    if (!Array.isArray(publicImages)) return [];
-    return publicImages
-      .map((gallery: IGallery) => {
-        const firstImage = gallery.images?.[0];
-        if (!firstImage) return null;
-        return {
-          ...firstImage,
-          _galleryId: gallery._id,
-        };
-      })
-      .filter(Boolean);
-  }, [publicImages]);
+    if (!selectedCategoryId || !Array.isArray(publicImages)) return [];
 
+    // Seçili kategoriye sahip gallery’leri bul
+    const filteredGalleries = publicImages.filter((item: IGallery) =>
+      typeof item.category === "string"
+        ? item.category === selectedCategoryId
+        : item.category?._id === selectedCategoryId
+    );
+const allImages: any[] = [];
+filteredGalleries.forEach((gallery) => {
+  (gallery.images || []).forEach((img) => {
+    allImages.push({
+      ...img,
+      _galleryId: gallery._id,
+    });
+  });
+});
+
+
+    // order’a göre sırala (küçükten büyüğe)
+    allImages.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return allImages;
+  }, [publicImages, selectedCategoryId]);
+
+  const [current, setCurrent] = useState(0);
   const enableSlider = flatItems.length > 1;
   const currentHero = flatItems[current];
 
@@ -45,10 +75,12 @@ const HeroSection = () => {
     currentHero?.description?.[lang]?.trim() ||
     t("hero1.heroSubtitle", "Doğallığın dokunuşuyla sağlığınızı şımartın");
 
+  // Slide/Language değişince sıfırla
   useEffect(() => {
     setCurrent(0);
   }, [lang, flatItems.length]);
 
+  // Otomatik kaydırıcı
   useEffect(() => {
     if (!enableSlider) return;
     const timer = setInterval(() => {
@@ -118,7 +150,6 @@ const HeroSection = () => {
 };
 
 export default HeroSection;
-
 
 // Styled components ... (değişmedi)
 

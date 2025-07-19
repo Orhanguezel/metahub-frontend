@@ -6,6 +6,8 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../../locales/navbar";
 import { SupportedLocale } from "@/types/common";;
 import { useAppSelector } from "@/store/hooks";
+import { usePathname } from "next/navigation";
+
 
 interface Props {
   onClose: () => void;
@@ -24,6 +26,8 @@ export default function MobileNavbarLinks({ onClose }: Props) {
 
   const links = (navbarLinksSetting?.value as Record<string, any>) || {};
 
+  const pathname = usePathname();
+
   return (
     <>
       {Object.entries(links).map(([key, link]) => {
@@ -35,9 +39,14 @@ export default function MobileNavbarLinks({ onClose }: Props) {
         const href = link.href || "#";
 
         return (
-          <MobileMenuLink key={key} href={href} onClick={onClose}>
-            {label}
-          </MobileMenuLink>
+          <MobileMenuLink
+  key={key}
+  href={href}
+  $active={pathname === href}
+  onClick={onClose}
+>
+  {label}
+</MobileMenuLink>
         );
       })}
 
@@ -59,20 +68,42 @@ export default function MobileNavbarLinks({ onClose }: Props) {
   );
 }
 
-const MobileMenuLink = styled(Link)`
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  text-decoration: none;
-  color: ${({ theme }) => theme.colors.text};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.md};
-  border-bottom: ${({ theme }) =>
-    `${theme.borders.thin} ${theme.colors.border}`};
+const MobileMenuLink = styled(Link)<{ $active?: boolean }>`
   display: block;
   width: 100%;
-  transition: all 0.3s ease;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-family: ${({ theme }) => theme.fonts.main};
+  font-weight: ${({ $active, theme }) =>
+    $active ? theme.fontWeights.bold : theme.fontWeights.medium};
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors.primary : theme.colors.text};
+  padding: 16px 24px;
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.lg};
+  margin-bottom: 3px;
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.primaryTransparent : "transparent"};
+  border-left: 4px solid
+    ${({ $active, theme }) =>
+      $active ? theme.colors.primary : "transparent"};
+  transition:
+    background 0.16s,
+    color 0.14s,
+    border-color 0.15s,
+    font-weight 0.13s;
 
-  &:hover {
+  &:hover,
+  &:focus-visible {
     color: ${({ theme }) => theme.colors.primary};
-    background-color: ${({ theme }) => theme.colors.backgroundAlt};
+    background: ${({ theme }) => theme.colors.cardBackground};
+    border-left: 4px solid ${({ theme }) => theme.colors.primary};
+    text-decoration: none;
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
+  }
+
+  &:active {
+    background: ${({ theme }) => theme.colors.primaryTransparent};
+    color: ${({ theme }) => theme.colors.primaryDark};
   }
 `;
+

@@ -2,11 +2,13 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { IReferences } from "@/modules/references";
 
+type StatusType = "idle" | "loading" | "succeeded" | "failed";
+
 interface ReferencesState {
-  references: IReferences[]; // Public (site) için
-  referencesAdmin: IReferences[]; // Admin panel için
+  references: IReferences[];
+  referencesAdmin: IReferences[];
   selected: IReferences | null;
-  status: "idle" | "loading" | "succeeded" | "failed";
+  status: StatusType;           // <-- EKLENDİ
   loading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -16,7 +18,7 @@ const initialState: ReferencesState = {
   references: [],
   referencesAdmin: [],
   selected: null,
-  status: "idle",
+  status: "idle",   
   loading: false,
   error: null,
   successMessage: null,
@@ -150,6 +152,7 @@ const referencesSlice = createSlice({
     clearReferencesMessages(state) {
       state.error = null;
       state.successMessage = null;
+      state.status = "idle";
     },
     setSelectedReferences(state, action: PayloadAction<IReferences | null>) {
       state.selected = action.payload;
@@ -158,91 +161,96 @@ const referencesSlice = createSlice({
   extraReducers: (builder) => {
     const startLoading = (state: ReferencesState) => {
       state.loading = true;
+      state.status = "loading";    // <-- EKLENDİ
       state.error = null;
+      state.successMessage = null;
     };
 
     const setError = (state: ReferencesState, action: PayloadAction<any>) => {
       state.loading = false;
+      state.status = "failed";     // <-- EKLENDİ
       state.error = extractErrorMessage(action.payload);
+      state.successMessage = null;
     };
 
-    // --- Public List ---
     builder
+      // Public List
       .addCase(fetchReferences.pending, startLoading)
       .addCase(fetchReferences.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.references = action.payload;
       })
-      .addCase(fetchReferences.rejected, setError);
+      .addCase(fetchReferences.rejected, setError)
 
-    // --- Admin List ---
-    builder
+      // Admin List
       .addCase(fetchAllReferencesAdmin.pending, startLoading)
       .addCase(fetchAllReferencesAdmin.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.referencesAdmin = action.payload;
       })
-      .addCase(fetchAllReferencesAdmin.rejected, setError);
+      .addCase(fetchAllReferencesAdmin.rejected, setError)
 
-    // --- Admin Create ---
-    builder
+      // Create
       .addCase(createReferences.pending, startLoading)
       .addCase(createReferences.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload?.message;
+        state.status = "succeeded";
         if (action.payload?.data) {
           state.referencesAdmin.unshift(action.payload.data);
+          state.successMessage = action.payload?.message || null;
         }
       })
-      .addCase(createReferences.rejected, setError);
+      .addCase(createReferences.rejected, setError)
 
-    // --- Admin Update ---
-    builder
+      // Update
       .addCase(updateReferences.pending, startLoading)
       .addCase(updateReferences.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         const updated = action.payload?.data || action.payload;
         const index = state.referencesAdmin.findIndex(
           (a) => a._id === updated._id
         );
         if (index !== -1) state.referencesAdmin[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+        state.successMessage = action.payload?.message || null;
       })
-      .addCase(updateReferences.rejected, setError);
+      .addCase(updateReferences.rejected, setError)
 
-    // --- Admin Delete ---
-    builder
+      // Delete
       .addCase(deleteReferences.pending, startLoading)
       .addCase(deleteReferences.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.referencesAdmin = state.referencesAdmin.filter(
           (a) => a._id !== action.payload.id
         );
-        state.successMessage = action.payload?.message;
+        state.successMessage = action.payload?.message || null;
       })
-      .addCase(deleteReferences.rejected, setError);
+      .addCase(deleteReferences.rejected, setError)
 
-    // --- Admin Toggle Publish ---
-    builder
+      // Toggle Publish
       .addCase(togglePublishReferences.pending, startLoading)
       .addCase(togglePublishReferences.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         const updated = action.payload?.data || action.payload;
         const index = state.referencesAdmin.findIndex(
           (a) => a._id === updated._id
         );
         if (index !== -1) state.referencesAdmin[index] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+        state.successMessage = action.payload?.message || null;
       })
-      .addCase(togglePublishReferences.rejected, setError);
+      .addCase(togglePublishReferences.rejected, setError)
 
-    // --- Single Fetch (slug) ---
-    builder
+      // Single Fetch (slug)
       .addCase(fetchReferencesBySlug.pending, startLoading)
       .addCase(fetchReferencesBySlug.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.selected = action.payload;
       })
       .addCase(fetchReferencesBySlug.rejected, setError);

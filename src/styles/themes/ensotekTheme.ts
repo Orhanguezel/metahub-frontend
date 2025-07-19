@@ -119,6 +119,7 @@ const ensotekTheme: DefaultTheme = {
     laptopS: "900px",
     laptop: "1024px",
     desktop: "1440px",
+    desktopL: "1640px",
   },
 
   media: {
@@ -137,84 +138,114 @@ const ensotekTheme: DefaultTheme = {
   },
 
   colors: {
-    background: "#FFF8F8",
-    backgroundSecondary: "#f5f5f5",
-    backgroundAlt: "#FFFFFF",
-    sectionBackground: "#FFFFFF",
-    inputBackground: "#FFFFFF",
-    inputBackgroundFocus: "#F0F0F0",
-    footerBackground: "#F0F0F0",
-    warningBackground: "#FFFBE6",
-    overlayStart: "rgba(255,255,255,0.3)",
-    overlayEnd: "rgba(255,255,255,0.95)",
-    overlayBackground: "rgba(0,0,0,0.5)",
-    skeleton: "#f0f0f0",
-    skeletonBackground: "#F0F0F0",
-    text: "#0118D8",
-    textAlt: "#1B56FD",
-    textSecondary: "#6c757d",
-    textPrimary: "#0118D8",
-    textMuted: "#7A8A92",
-    textLight: "#0118D8",
-    title: "#0118D8",
-    textOnWarning: "#d95841",
-    textOnSuccess: "#ffffff",
-    textOnDanger: "#ffffff",
-    primary: "#0118D8",
-    primaryLight: "#1B56FD",
-    primaryHover: "#0014A8",
-    primaryDark: "#001080",
-    primaryTransparent: "rgba(1,24,216,0.1)",
-    secondary: "#52404b",
-    secondaryLight: "#f3d9e5",
-    secondaryHover: "#40333d",
-    secondaryDark: "#32272a",
-    secondaryTransparent: "rgba(82,64,75,0.1)",
-    accent: "#1B56FD",
-    accentHover: "#0014A8",
-    accentText: "#FFFFFF",
-    border: "#E9DFC3",
-    borderLight: "#F0F0F0",
-    borderBright: "#E9DFC3",
-    borderBrighter: "#FFFFFF",
-    borderHighlight: "#0118D8",
-    borderInput: "#E9DFC3",
-    card: "#FFFFFF",
-    cardBackground: "#FFFFFF",
-    buttonBackground: "#0118D8",
-    buttonText: "#FFFFFF",
-    buttonBorder: "#0118D8",
-    link: "#1B56FD",
-    linkHover: "#0014A8",
-    hoverBackground: "#E9DFC3",
-    shadowHighlight: "0 0 0 3px rgba(1,24,216,0.1)",
-    success: "#28C76F",
-    warning: "#FFC107",
-    warningHover: "#E0A800",
-    danger: "#FF6B6B",
-    dangerHover: "#E53935",
-    error: "#FF6B6B",
-    info: "#1B56FD",
-    muted: "#7A8A92",
-    disabled: "#D6D6D6",
-    placeholder: "#7A8A92",
-    inputBorder: "#E9DFC3",
-    inputBorderFocus: "#0118D8",
-    inputOutline: "#0118D8",
-    inputIcon: "#0118D8",
-    inputBackgroundLight: "#F0F0F0",
-    inputBackgroundSofter: "#f5f5f5",
-    tableHeader: "#F0F0F0",
-    tagBackground: "#E9DFC3",
-    grey: "#7A8A92",
-    darkGrey: "#0118D8",
-    black: "#000000",
-    white: "#FFFFFF",
-    whiteColor: "#FFFFFF",
-    darkColor: "#0118D8",
-    disabledBg: "#333333",
-    lightGrey: "#f7f7f7",
-  },
+  // Arkaplanlar
+  background: "#F8FAFF",                // ana açık
+  backgroundSecondary: "#EDF4FB",
+  backgroundAlt: "#FFFFFF",
+  sectionBackground: "#FFFFFF",
+  inputBackground: "#FFFFFF",
+  inputBackgroundFocus: "#F0F4F8",
+  footerBackground: "#F0F4F8",
+  warningBackground: "#FFFBE6",
+  contentBackground: "#F6F7FA",
+
+  // Achievement, gradyanlar
+  achievementBackground: "#EDF4FB",
+  achievementGradientStart: "#2875c2",
+  achievementGradientEnd: "#0bb6d6",
+
+  // Overlay ve iskelet
+  overlayStart: "rgba(255,255,255,0.3)",
+  overlayEnd: "rgba(255,255,255,0.97)",
+  overlayBackground: "rgba(0,0,0,0.50)",
+  skeleton: "#E8ECF3",
+  skeletonBackground: "#EDF4FB",
+
+  // Metinler
+  text: "#18335A",                      // lacivert-mavi
+  textAlt: "#2875c2",                   // ana mavi
+  textSecondary: "#6c757d",             // koyu gri
+  textPrimary: "#2875c2",               // ana mavi
+  textMuted: "#8CA0B3",                 // soft mavi-gri
+  textLight: "#ffffff",
+  title: "#18335A",
+  textOnWarning: "#d95841",
+  textOnSuccess: "#ffffff",
+  textOnDanger: "#ffffff",
+
+  // Ana, Accent, Border
+  primary: "#2875c2",                   // ana mavi
+  primaryLight: "#52a6e4",
+  primaryHover: "#205E9C",
+  primaryDark: "#163D5C",
+  primaryTransparent: "rgba(40,117,194,0.10)",
+
+  secondary: "#23405B",
+  secondaryLight: "#688EB3",
+  secondaryHover: "#1a2d40",
+  secondaryDark: "#112437",
+  secondaryTransparent: "rgba(35,64,91,0.10)",
+
+  accent: "#0bb6d6",                    // turkuaz
+  accentHover: "#068ba6",
+  accentText: "#FFFFFF",
+
+  border: "#D3E3EF",
+  borderLight: "#EDF4FB",
+  borderBright: "#B5D2E8",
+  borderBrighter: "#FFFFFF",
+  borderHighlight: "#0bb6d6",
+  borderInput: "#D3E3EF",
+
+  card: "#FFFFFF",
+  cardBackground: "#FFFFFF",
+
+  // Butonlar, Linkler
+  buttonBackground: "#2875c2",
+  buttonText: "#FFFFFF",
+  buttonBorder: "#2875c2",
+
+  link: "#0bb6d6",
+  linkHover: "#2875c2",
+
+  hoverBackground: "#F0F7FA",
+
+  shadowHighlight: "0 0 0 3px rgba(11,182,214,0.13)",
+
+  // Durum Renkleri
+  success: "#28C76F",
+  warning: "#FFC107",
+  warningHover: "#E0A800",
+  danger: "#FF6B6B",
+  dangerHover: "#E53935",
+  error: "#FF6B6B",
+  info: "#0bb6d6",
+
+  // Diğerleri (kullanırsan)
+  muted: "#8CA0B3",
+  disabled: "#D6D6D6",
+  placeholder: "#B4C2D0",
+  inputBorder: "#D3E3EF",
+  inputBorderFocus: "#2875c2",
+  inputOutline: "#2875c2",
+  inputIcon: "#2875c2",
+  inputBackgroundLight: "#F0F4F8",
+  inputBackgroundSofter: "#EDF4FB",
+
+  tableHeader: "#F0F0F0",
+  tagBackground: "#E9DFC3",
+
+  grey: "#7A8A92",
+  darkGrey: "#163D5C",
+  black: "#222B45",
+  white: "#FFFFFF",
+  whiteColor: "#FFFFFF",
+  darkColor: "#163D5C",
+
+  disabledBg: "#333333",
+  lightGrey: "#F5F8FA",
+},
+
 
   buttons: {
     primary: {

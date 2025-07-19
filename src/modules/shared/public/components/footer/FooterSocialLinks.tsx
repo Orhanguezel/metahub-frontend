@@ -1,17 +1,9 @@
+// @/modules/shared/FooterSocialLinks.tsx
 "use client";
-
 import styled from "styled-components";
 import {
-  FaFacebookF,
-  FaInstagram,
-  FaLinkedin,
-  FaYoutube,
-  FaXing,
-  FaTwitter,
-  FaTiktok,
-  FaPinterest,
-  FaTelegram,
-  FaWhatsapp,
+  FaFacebookF, FaInstagram, FaLinkedin, FaYoutube, FaXing,
+  FaTwitter, FaTiktok, FaPinterest, FaTelegram, FaWhatsapp,
 } from "react-icons/fa6";
 import React from "react";
 import { useAppSelector } from "@/store/hooks";
@@ -31,7 +23,6 @@ const iconMap: { [key: string]: React.ReactNode } = {
 };
 
 export default function FooterSocialLinks() {
-  // --- Şirketin sosyal medya linkleri doğrudan redux store'dan alınır ---
   const company = useAppSelector((state) => state.company.company);
   const links: ISocialLink | undefined = company?.socialLinks;
 
@@ -49,18 +40,14 @@ export default function FooterSocialLinks() {
       {activeLinks.map(([key, url]) => {
         const normalizedKey = key.trim().toLowerCase();
         const icon = iconMap[normalizedKey];
-
         if (!icon) return null;
-
         return (
           <SocialLink
             key={normalizedKey}
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={
-              normalizedKey.charAt(0).toUpperCase() + normalizedKey.slice(1)
-            }
+            aria-label={normalizedKey.charAt(0).toUpperCase() + normalizedKey.slice(1)}
             tabIndex={0}
           >
             {icon}
@@ -71,17 +58,12 @@ export default function FooterSocialLinks() {
   );
 }
 
-// 🎨 Styled Components
 const SocialMedia = styled.div`
   margin-top: ${({ theme }) => theme.spacings.lg};
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
   gap: ${({ theme }) => theme.spacings.md};
-
-  ${({ theme }) => theme.media.small} {
-    margin-top: ${({ theme }) => theme.spacings.md};
-  }
 `;
 
 const SocialLink = styled.a`
@@ -94,7 +76,6 @@ const SocialLink = styled.a`
   border-radius: 50%;
   padding: 6px;
   outline: none;
-
   &:hover,
   &:focus-visible {
     color: ${({ theme }) => theme.colors.primary};

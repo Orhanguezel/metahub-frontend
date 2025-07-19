@@ -3,7 +3,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/references";
+import { translations } from "@/modules/references";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import type { SupportedLocale } from "@/types/common";
 
@@ -23,36 +23,38 @@ import {
   CategoryForm,
   CategoryListPage,
   List,
-  Tabs,
+  Tabs, // Güncellenmiş Tabs!
+  MultiUploadModal
 } from "@/modules/references";
 
 import { Modal } from "@/shared";
 import { IReferences } from "@/modules/references/types";
 import { ReferencesCategory } from "@/modules/references/types";
 
+// --- Yeni: Tab tipi
+type ReferencesTab = "list" | "create" | "multiUpload" | "categories";
+
 export default function AdminReferencesPage() {
   const { i18n, t } = useI18nNamespace("references", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-const references = useAppSelector((state) => state.references.referencesAdmin);
-const loading = useAppSelector((state) => state.references.loading);
-const error = useAppSelector((state) => state.references.error);
+  const references = useAppSelector((state) => state.references.referencesAdmin);
+  const loading = useAppSelector((state) => state.references.loading);
+  const error = useAppSelector((state) => state.references.error);
 
-
-  const [activeTab, setActiveTab] = useState<"list" | "create" | "categories">(
-    "list"
-  );
+  // Artık 4 tab var!
+  const [activeTab, setActiveTab] = useState<ReferencesTab>("list");
   const [editingItem, setEditingItem] = useState<IReferences | null>(null);
   const [editingCategory, setEditingCategory] =
     useState<ReferencesCategory | null>(null);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
+  // Çoklu yükleme için modal state
+  const [multiUploadOpen, setMultiUploadOpen] = useState(false);
+
   const dispatch = useAppDispatch();
 
-  
-
-  // ---- FETCH YOK! ----
-
+  // Tekli ekleme/güncelleme
   const handleSubmit = async (formData: FormData, id?: string) => {
     if (id) {
       await dispatch(updateReferences({ id, formData }));
@@ -62,10 +64,24 @@ const error = useAppSelector((state) => state.references.error);
     setActiveTab("list");
   };
 
+  // Çoklu logo yükleme (her biri yeni referans/firma olarak eklenir)
+  const handleMultiUpload = async (images: File[], category: string) => {
+    if (!category) return alert(t("category_required", "Kategori seçmelisiniz!"));
+    const uploadPromises = images.map((file) => {
+      const fd = new FormData();
+      fd.append("images", file);
+      fd.append("category", category);
+      return dispatch(createReferences(fd));
+    });
+    await Promise.all(uploadPromises);
+    setMultiUploadOpen(false);
+    setActiveTab("list");
+  };
+
   const handleDelete = async (id: string) => {
     const confirmMsg = t(
       "confirm.delete_references",
-      "Bu makaleyi silmek istediğinize emin misiniz?"
+      "Bu referansı silmek istediğinize emin misiniz?"
     );
     if (confirm(confirmMsg)) {
       await dispatch(deleteReferences(id));
@@ -76,40 +92,58 @@ const error = useAppSelector((state) => state.references.error);
     dispatch(togglePublishReferences({ id, isPublished: !isPublished }));
   };
 
-  // Create/Update Category
-const handleCategorySubmit = async (
-  data: { name: Record<SupportedLocale, string>; description?: Record<SupportedLocale, string> },
-  id?: string
-) => {
-  if (id) {
-    await dispatch(updateReferencesCategory({ id, data }));
-  } else {
-    await dispatch(createReferencesCategory(data));
-  }
-  setEditingCategory(null);
-  setCategoryModalOpen(false);
-};
+  // Kategori işlemleri
+  const handleCategorySubmit = async (
+    data: { name: Record<SupportedLocale, string>; description?: Record<SupportedLocale, string> },
+    id?: string
+  ) => {
+    if (id) {
+      await dispatch(updateReferencesCategory({ id, data }));
+    } else {
+      await dispatch(createReferencesCategory(data));
+    }
+    setEditingCategory(null);
+    setCategoryModalOpen(false);
+  };
 
-  
+  // --- Tab değişimi: MultiUpload seçilince sadece modal açılır, tab yine 'list'te kalır
+  const handleTabChange = (tab: ReferencesTab) => {
+    if (tab === "multiUpload") {
+      setMultiUploadOpen(true);
+      return;
+    }
+    setActiveTab(tab);
+  };
 
   return (
     <Wrapper>
-      <Tabs activeTab={activeTab} onChange={setActiveTab} />
+      <Tabs
+        activeTab={activeTab}
+        onChange={handleTabChange}
+      />
 
       <TabContent>
         {activeTab === "list" && (
-          <List
-            references={references}
-            lang={lang}
-            loading={loading}
-            error={error}
-            onEdit={(item) => {
-              setEditingItem(item);
-              setActiveTab("create");
-            }}
-            onDelete={handleDelete}
-            onTogglePublish={handleTogglePublish}
-          />
+          <>
+            <List
+              references={references}
+              lang={lang}
+              loading={loading}
+              error={error}
+              onEdit={(item) => {
+                setEditingItem(item);
+                setActiveTab("create");
+              }}
+              onDelete={handleDelete}
+              onTogglePublish={handleTogglePublish}
+            />
+            {/* Çoklu upload modalı */}
+            <MultiUploadModal
+              isOpen={multiUploadOpen}
+              onClose={() => setMultiUploadOpen(false)}
+              onUpload={handleMultiUpload}
+            />
+          </>
         )}
 
         {activeTab === "create" && (
@@ -154,6 +188,7 @@ const handleCategorySubmit = async (
   );
 }
 
+// --- Styled Components ---
 const Wrapper = styled.div`
   max-width: 1200px;
   margin: auto;

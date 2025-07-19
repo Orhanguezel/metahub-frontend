@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import styled from "styled-components";
 import { getImageSrc } from "@/shared/getImageSrc";
 import type { ImageType } from "@/types/image";
@@ -12,7 +12,6 @@ interface Props {
     currentImages: string[]
   ) => void;
   folder?: ImageType;
-  // resetTrigger KALDIRILDI
 }
 
 const ImageUploadWithPreview: React.FC<Props> = ({
@@ -27,16 +26,12 @@ const ImageUploadWithPreview: React.FC<Props> = ({
   const [existingImages, setExistingImages] = useState<string[]>(defaultImages);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
 
-  // defaultImages güncellendiğinde state’i güncelle
-  useEffect(() => {
+  // ✅ defaultImages güncel kalması için editingItem değişiminde güncelle
+  React.useEffect(() => {
     setExistingImages(defaultImages || []);
-    setRemovedImages([]);
-    setFiles([]);
-    setPreviews([]);
-    if (fileInputRef.current) fileInputRef.current.value = "";
   }, [defaultImages]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (onChange) {
       onChange(files, removedImages, existingImages);
     }
@@ -48,7 +43,6 @@ const ImageUploadWithPreview: React.FC<Props> = ({
     const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
     setFiles((prev) => [...prev, ...newFiles]);
     setPreviews((prev) => [...prev, ...newPreviews]);
-    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const removeNewImage = (index: number) => {
@@ -100,9 +94,10 @@ const ImageUploadWithPreview: React.FC<Props> = ({
   );
 };
 
+
 export default ImageUploadWithPreview;
 
-// Styled Components
+// Styled Components (aynı kalabilir)
 const Wrapper = styled.div`
   margin-top: ${({ theme }) => theme.spacings.md};
   display: flex;

@@ -17,10 +17,10 @@ export default function TenantProvider({ children }: { children: ReactNode }) {
     }
   }, [dispatch, tenants.length]);
 
-  // 2. Tenant listesi gelince, host'a göre tenant seç
+  // 2. Sadece ilk seferde tenant tespit et
   useEffect(() => {
     if (tenants.length && !selectedTenant) {
-      const tenantSlug = detectTenantFromHost();
+      const tenantSlug = detectTenantFromHost(); // Prod’da domain, dev’de .env
       const tenantObj = tenants.find(t => t.slug === tenantSlug);
       if (tenantObj) {
         dispatch(setSelectedTenant(tenantObj));
@@ -30,4 +30,3 @@ export default function TenantProvider({ children }: { children: ReactNode }) {
 
   return <>{children}</>;
 }
-

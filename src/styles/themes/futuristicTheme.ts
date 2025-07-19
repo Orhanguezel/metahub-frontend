@@ -120,6 +120,7 @@ const futuristicTheme: DefaultTheme = {
     laptopS: "900px",
     laptop: "1024px",
     desktop: "1440px",
+    desktopL: "1640px",
   },
 
   media: {
@@ -146,6 +147,11 @@ const futuristicTheme: DefaultTheme = {
     inputBackgroundFocus: "#292929",
     footerBackground: "#1A1A1A",
     warningBackground: "#fffbe6",
+    contentBackground: "#F6F7FA",
+     achievementBackground: "#1A1A1A",
+  achievementGradientStart: "#00FFF7",
+  achievementGradientEnd: "#0bb6d6",
+    
     overlayStart: "rgba(0, 0, 0, 0.8)",
     overlayEnd: "rgba(0, 0, 0, 0.95)",
     overlayBackground: "rgba(0, 0, 0, 0.5)",

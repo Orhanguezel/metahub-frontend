@@ -121,6 +121,7 @@ declare module "styled-components" {
       laptopS: string;
       laptop: string;
       desktop: string;
+      desktopL: string;
     };
 
     media: {
@@ -146,6 +147,10 @@ declare module "styled-components" {
       inputBackgroundFocus: string;
       footerBackground: string;
       warningBackground: string;
+      contentBackground: string;
+      achievementBackground: string;
+      achievementGradientStart: string;
+      achievementGradientEnd: string;
       text: string;
       textAlt: string;
       textSecondary: string;

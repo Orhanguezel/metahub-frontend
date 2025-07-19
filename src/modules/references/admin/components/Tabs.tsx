@@ -3,28 +3,33 @@
 import React, { useCallback, useRef } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/references";
+import { translations } from "@/modules/references";
 
+// --- Yeni Tab enum
+type ReferencesTab = "list" | "create" | "multiUpload" | "categories";
+
+// --- Tablar, MultiUpload eklendi
 const TABS: Array<{
-  key: "list" | "create" | "categories";
+  key: ReferencesTab;
   labelKey: string;
   fallback: string;
 }> = [
   { key: "list", labelKey: "tabs.references", fallback: "References" },
-  { key: "create", labelKey: "tabs.create", fallback: "New References" },
+  { key: "create", labelKey: "tabs.create", fallback: "New Reference" },
+  { key: "multiUpload", labelKey: "tabs.multiUpload", fallback: "Bulk Logo Upload" },
   { key: "categories", labelKey: "tabs.categories", fallback: "Categories" },
 ];
 
 interface Props {
-  activeTab: "list" | "create" | "categories";
-  onChange: (tab: "list" | "create" | "categories") => void;
+  activeTab: ReferencesTab;
+  onChange: (tab: ReferencesTab) => void;
 }
 
 export default function ReferencesTabs({ activeTab, onChange }: Props) {
   const { t } = useI18nNamespace("references", translations);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  // Klavyeden sekme (arrow) ile gezilebilsin
+  // Klavye ile sekme gezme
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent, idx: number) => {
       if (e.key === "ArrowRight") {
@@ -44,19 +49,18 @@ export default function ReferencesTabs({ activeTab, onChange }: Props) {
     <Header role="tablist" aria-label="References Management Tabs">
       {TABS.map((tab, idx) => (
         <TabButton
-  key={tab.key}
-  ref={(el) => { tabRefs.current[idx] = el; }}
-  $active={activeTab === tab.key}
-  onClick={() => onChange(tab.key)}
-  tabIndex={activeTab === tab.key ? 0 : -1}
-  role="tab"
-  aria-selected={activeTab === tab.key}
-  aria-controls={`tabpanel-${tab.key}`}
-  onKeyDown={(e) => handleKeyDown(e, idx)}
->
-  {t(tab.labelKey, tab.fallback)}
-</TabButton>
-
+          key={tab.key}
+          ref={(el) => { tabRefs.current[idx] = el; }}
+          $active={activeTab === tab.key}
+          onClick={() => onChange(tab.key)}
+          tabIndex={activeTab === tab.key ? 0 : -1}
+          role="tab"
+          aria-selected={activeTab === tab.key}
+          aria-controls={`tabpanel-${tab.key}`}
+          onKeyDown={(e) => handleKeyDown(e, idx)}
+        >
+          {t(tab.labelKey, tab.fallback)}
+        </TabButton>
       ))}
     </Header>
   );
@@ -117,4 +121,3 @@ const TabButton = styled.button<{ $active: boolean }>`
     color: #fff;
   }
 `;
-

@@ -4,332 +4,374 @@ import { useMemo, useEffect } from "react";
 import { useAppSelector } from "@/store/hooks";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations,Modal} from "@/modules/home";
+import { translations, Modal } from "@/modules/home";
 import { SupportedLocale } from "@/types/common";
 import { FaArrowLeft, FaArrowRight, FaExpand } from "react-icons/fa";
 import SkeletonBox from "@/shared/Skeleton";
 import Image from "next/image";
 import useModal from "@/hooks/useModal";
 import Link from "next/link";
-import type { IGallery } from "@/modules/gallery/types";
+import type { IGallery, IGalleryCategory } from "@/modules/gallery/types";
+
+const SLIDER_CATEGORY_SLUG = "carousel";
 
 const HeroSlider = () => {
   const { publicImages, loading } = useAppSelector((state) => state.gallery);
+  const { categories } = useAppSelector((state) => state.galleryCategory);
   const { i18n, t } = useI18nNamespace("home", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  // ✅ FlatItems doğrudan useMemo ile oluşturuluyor (her render'da değil, sadece images değişirse)
+  const selectedCategoryId = useMemo(() => {
+    if (!SLIDER_CATEGORY_SLUG || !Array.isArray(categories)) return "";
+    const cat = categories.find((c: IGalleryCategory) => c.slug === SLIDER_CATEGORY_SLUG);
+    return cat?._id || "";
+  }, [categories]);
+
   const flatItems = useMemo(() => {
-    if (!publicImages || !Array.isArray(publicImages)) return [];
-    return publicImages
-      .map((gallery: IGallery) => {
-        const firstImage = gallery.images?.[0];
-        if (!firstImage) return null;
-        return {
-          ...firstImage,
+    if (!selectedCategoryId || !Array.isArray(publicImages)) return [];
+    const filteredGalleries = publicImages.filter((gallery: IGallery) =>
+      typeof gallery.category === "string"
+        ? gallery.category === selectedCategoryId
+        : gallery.category?._id === selectedCategoryId
+    );
+    const allImages: any[] = [];
+    filteredGalleries.forEach((gallery) => {
+      (gallery.images || []).forEach((img) => {
+        allImages.push({
+          ...img,
+          order: typeof img.order === "string" ? Number(img.order) : img.order ?? 0,
           _galleryId: gallery._id,
           category: gallery.category,
           type: gallery.type,
           tenant: gallery.tenant,
-        };
-      })
-      .filter(Boolean);
-  }, [publicImages]);
+        });
+      });
+    });
+    allImages.sort((a, b) => (Number(b.order) || 0) - (Number(a.order) || 0));
+    return allImages;
+  }, [publicImages, selectedCategoryId]);
 
-  // Modal ve slider state
   const { isOpen, open, close, next, prev, currentIndex, currentItem } = useModal(flatItems);
 
-  // ✅ Sadece slider için timer effect (gerekli olan tek useEffect)
   useEffect(() => {
     if (flatItems.length === 0) return;
     const timer = setInterval(() => {
       next();
-    }, 5000);
+    }, 6000);
     return () => clearInterval(timer);
   }, [flatItems, next]);
 
   if (loading) {
     return (
-      <HeroContainer>
-        <SkeletonBox style={{ height: "80px", marginBottom: "20px" }} />
-        <SkeletonBox style={{ height: "400px", width: "100%" }} />
-      </HeroContainer>
+      <HeroWrapper>
+        <SkeletonBox style={{ height: "60px", marginBottom: "24px" }} />
+        <SkeletonBox style={{ height: "360px", width: "100%" }} />
+      </HeroWrapper>
     );
   }
 
   if (flatItems.length === 0) {
-    return <HeroContainer>{t("noItemsFound", "No items found.")}</HeroContainer>;
+    return <HeroWrapper>{t("noItemsFound", "No products found.")}</HeroWrapper>;
   }
 
   const currentHero = flatItems[currentIndex];
-  const title = currentHero?.name?.[lang] || "No title";
-  const description = currentHero?.description?.[lang] || "No description";
+  const title = currentHero?.name?.[lang] || currentHero?.name?.["en"] || "No title";
+  const description = currentHero?.description?.[lang] || currentHero?.description?.["en"] || "No description";
   let imageSrc =
     currentHero?.webp ||
     currentHero?.url ||
     currentHero?.thumbnail ||
     "/placeholder.jpg";
 
-  // Cloudinary CDN optimizasyonu için query string eklemek istersen:
-  if (imageSrc.startsWith("https://res.cloudinary.com/")) {
-    imageSrc = `${imageSrc}?w=800&h=450&c_fill&q_auto,f_auto`;
+  if (typeof imageSrc === "string" && imageSrc.startsWith("https://res.cloudinary.com/")) {
+    imageSrc = `${imageSrc}?w=900&h=600&c_fill&q_auto,f_auto`;
   }
+
+  // Ürün detayı yönlendirme
+  const detailLink = currentHero?.productId
+    ? `/products/${currentHero.productId}`
+    : `/products`;
 
   return (
     <>
-      <HeroContainer>
-        <HeroContent>
-          <h2>{title}</h2>
-          <p>{description}</p>
-          <ArrowControls>
-            <SliderButton onClick={prev} aria-label="Previous">
+      <HeroWrapper>
+        <ImageCol>
+          <MainImage
+            src={imageSrc}
+            alt={title}
+            fill
+            priority
+            onClick={() => open(currentIndex)}
+            sizes="60vw"
+            quality={90}
+            style={{ objectFit: "cover" }}
+          />
+          <DotRow>
+            {flatItems.map((_, index) => (
+              <Dot key={index} $active={index === currentIndex} />
+            ))}
+          </DotRow>
+        </ImageCol>
+        <ContentCol>
+          <HeroTitle as="h1">{title}</HeroTitle>
+          <HeroDesc>{description}</HeroDesc>
+          <SliderControls>
+            <ControlButton onClick={prev} aria-label="Previous">
               <FaArrowLeft />
-            </SliderButton>
-            <SliderButton onClick={next} aria-label="Next">
+            </ControlButton>
+            <ControlButton onClick={next} aria-label="Next">
               <FaArrowRight />
-            </SliderButton>
-            <SliderButton onClick={() => open(currentIndex)} aria-label="Expand">
+            </ControlButton>
+            <ControlButton onClick={() => open(currentIndex)} aria-label="Expand">
               <FaExpand />
-            </SliderButton>
-            <AppointmentButton as={Link} href="/booking">
-              {t("hero.bookAppointment", "Book Appointment")}
-            </AppointmentButton>
-          </ArrowControls>
-        </HeroContent>
-        <HeroImageWrapper>
-          <Image
-            src={imageSrc}
-            alt={title}
-            width={800}
-            height={450}
-            priority={currentIndex === 0} // LCP boost!
-            placeholder="blur"
-            blurDataURL="/placeholder.jpg" // istersen base64 küçük bir image ile değiştir
-            sizes="(max-width: 768px) 100vw, 70vw"
-            style={{
-              objectFit: "cover",
-              width: "100%",
-              height: "100%",
-              borderRadius: "inherit",
-            }}
-            onClick={() => open(currentIndex)}
-          />
-          <Dots>
-            {flatItems.map((_, index) => (
-              <Dot key={index} $active={index === currentIndex} />
-            ))}
-          </Dots>
-        </HeroImageWrapper>
-      </HeroContainer>
-
+            </ControlButton>
+            <LinkBtn as={Link} href={detailLink}>
+              {t("hero.products", "Ürünler")}
+            </LinkBtn>
+          </SliderControls>
+        </ContentCol>
+      </HeroWrapper>
+      {/* Modal */}
       <Modal isOpen={isOpen} onClose={close} onNext={next} onPrev={prev}>
-        <div style={{ textAlign: "center" }}>
+        <ModalContent>
           <Image
             src={imageSrc}
             alt={title}
-            width={800}
-            height={500}
-            placeholder="blur"
-            blurDataURL="/placeholder.jpg"
-            sizes="(max-width: 768px) 100vw, 70vw"
+            width={920}
+            height={560}
             style={{
-              objectFit: "cover",
+              objectFit: "contain",
+              borderRadius: "20px",
               width: "100%",
-              height: "100%",
-              cursor: "pointer",
-              borderRadius: "inherit",
+              maxHeight: "80vh",
             }}
-            onClick={() => open(currentIndex)}
           />
-          <h2 style={{ color: "white", marginTop: "10px" }}>
-            {currentItem?.name?.[lang]}
-          </h2>
-          <p style={{ color: "white" }}>{currentItem?.description?.[lang]}</p>
-          <Dots style={{ justifyContent: "center", marginTop: "10px" }}>
+          <ModalTitle>{currentItem?.name?.[lang]}</ModalTitle>
+          <ModalDesc>{currentItem?.description?.[lang]}</ModalDesc>
+          <DotRow style={{ marginTop: "10px" }}>
             {flatItems.map((_, index) => (
               <Dot key={index} $active={index === currentIndex} />
             ))}
-          </Dots>
-        </div>
+          </DotRow>
+        </ModalContent>
       </Modal>
     </>
   );
-}
+};
 
 export default HeroSlider;
 
+// --- Styled Components ---
 
-
-const HeroContainer = styled.div`
-  background: ${({ theme }) => theme.colors.background};
-  color: ${({ theme }) => theme.colors.text};
+const HeroWrapper = styled.section`
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacings.xxl};
-  padding: ${({ theme }) => theme.spacings.xxl};
-  max-width: ${({ theme }) => theme.layout.containerWidth};
-  margin: 0 auto;
-  overflow: hidden;
-
-  @media (max-width: 1024px) {
-    flex-direction: column-reverse;
-    text-align: center;
-    gap: ${({ theme }) => theme.spacings.lg};
-    padding: ${({ theme }) => theme.spacings.lg};
-  }
-`;
-
-const HeroContent = styled.div`
-  flex: 1;
-  max-width: 700px;
-
-  h2 {
-    font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-    color: ${({ theme }) => theme.colors.primary};
-    margin-bottom: ${({ theme }) => theme.spacings.sm};
-    font-family: ${({ theme }) => theme.fonts.heading};
-    font-weight: ${({ theme }) => theme.fontWeights.bold};
-  }
-
-  p {
-    font-size: ${({ theme }) => theme.fontSizes.md};
-    color: ${({ theme }) => theme.colors.text};
-    margin-bottom: ${({ theme }) => theme.spacings.md};
-    font-family: ${({ theme }) => theme.fonts.body};
-  }
-`;
-
-const ArrowControls = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacings.md};
-  margin-top: ${({ theme }) => theme.spacings.md};
-
-  button {
-    background: ${({ theme }) => theme.colors.primary};
-    color: ${({ theme }) => theme.buttons.primary.text};
-    border: none;
-    border-radius: ${({ theme }) => theme.radii.circle};
-    padding: ${({ theme }) => theme.spacings.sm};
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-    box-shadow: ${({ theme }) => theme.shadows.button};
-    cursor: pointer;
-    transition: background ${({ theme }) => theme.transition.normal};
-
-    &:hover {
-      background: ${({ theme }) => theme.buttons.primary.backgroundHover};
-      color: ${({ theme }) => theme.buttons.primary.textHover};
-      box-shadow: ${({ theme }) => theme.shadows.lg};
-    }
-  }
-`;
-
-const HeroImageWrapper = styled.div`
-  position: relative;
-  flex: 1;
-  width: 100%;
-  min-width: 320px;
-  max-width: 650px;
-  aspect-ratio: 16/9;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: ${({ theme }) => theme.shadows.lg};
-  overflow: hidden;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-
-  @media (max-width: 1024px) {
-    max-width: 100%;
-    border-radius: ${({ theme }) => theme.radii.lg};
-    aspect-ratio: 16/9;
-    min-width: 100%;
-  }
-`;
-
-const Dots = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacings.xs};
-  margin-top: ${({ theme }) => theme.spacings.md};
+  align-items: stretch;
   justify-content: center;
-  text-align: center;
+  min-height: 460px;
+  width: 100vw;
+  max-width: 100%;
+  background: linear-gradient(100deg, ${({ theme }) => theme.colors.achievementGradientStart} 0%, ${({ theme }) => theme.colors.achievementGradientEnd} 100%);
+  padding: ${({ theme }) => theme.spacings.xl} 0 ${({ theme }) => theme.spacings.xxl};
+  gap: 0;
+  position: relative;
+  border-radius: 0 0 40px 40px;
+
+  @media (max-width: 1100px) {
+    flex-direction: column;
+    padding: ${({ theme }) => theme.spacings.lg} 0 ${({ theme }) => theme.spacings.xl};
+    border-radius: 0 0 28px 28px;
+  }
+`;
+
+const ImageCol = styled.div`
+  flex: 1.3;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: ${({ theme }) => theme.spacings.xxl};
+  margin-right: ${({ theme }) => theme.spacings.md};
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: 32px;
+  overflow: hidden;
+  aspect-ratio: 16/9;
+  box-shadow: ${({ theme }) => theme.shadows.lg};
+
+  @media (max-width: 1100px) {
+    margin-left: ${({ theme }) => theme.spacings.md};
+    margin-right: ${({ theme }) => theme.spacings.md};
+    min-height: 210px;
+    border-radius: 22px;
+    aspect-ratio: 16/9;
+  }
+`;
+
+const MainImage = styled(Image)`
+  position: absolute !important;
+  left: 0; top: 0;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  cursor: pointer;
+  border-radius: 32px;
+  box-shadow: ${({ theme }) => theme.shadows.lg};
+
+  @media (max-width: 1100px) {
+    border-radius: 20px;
+  }
+`;
+
+const DotRow = styled.div`
+  display: flex;
+  gap: 8px;
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  @media (max-width: 1100px) {
+    bottom: 9px;
+    gap: 6px;
+  }
 `;
 
 const Dot = styled.div<{ $active: boolean }>`
-  width: ${({ theme }) => theme.spacings.lg};
-  height: ${({ theme }) => theme.spacings.lg};
-  background: ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.skeleton};
+  width: 17px;
+  height: 17px;
   border-radius: ${({ theme }) => theme.radii.circle};
-  box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.sm : "none")};
-  border: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.backgroundAlt};
-  transition: background ${({ theme }) => theme.transition.normal};
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.accent : theme.colors.skeleton};
+  border: 2.5px solid ${({ $active, theme }) =>
+    $active ? theme.colors.primary : theme.colors.borderLight};
+  transition: background 0.21s, border 0.22s;
+  box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.md : "none")};
 `;
 
-const SliderButton = styled.button`
+const ContentCol = styled.div`
+  flex: 1;
+  min-width: 0;
+  padding: 0 ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.md};
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+  background: transparent;
+
+  @media (max-width: 1100px) {
+    padding: ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.md};
+    align-items: center;
+    text-align: center;
+    gap: 15px;
+  }
+`;
+
+const HeroTitle = styled.h1`
+  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+  color: ${({ theme }) => theme.colors.white};
+  font-family: ${({ theme }) => theme.fonts.heading};
+  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
+  letter-spacing: 0.01em;
+  margin-bottom: 2px;
+  text-shadow: 0 3px 16px rgba(40,117,194,0.22);
+`;
+
+const HeroDesc = styled.p`
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  color: ${({ theme }) => theme.colors.white};
+  font-family: ${({ theme }) => theme.fonts.body};
+  font-weight: ${({ theme }) => theme.fontWeights.regular};
+  line-height: 1.6;
+  text-shadow: 0 2px 10px rgba(30,80,160,0.09);
+  margin-bottom: 18px;
+`;
+
+const SliderControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-top: 7px;
+
+  @media (max-width: 1100px) {
+    gap: 7px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+`;
+
+const ControlButton = styled.button`
   background: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.buttons.primary.text};
+  color: ${({ theme }) => theme.colors.white};
   border: none;
   border-radius: ${({ theme }) => theme.radii.circle};
-  padding: ${({ theme }) => theme.spacings.sm};
+  padding: 9px;
   width: 40px;
   height: 40px;
+  font-size: 1.22rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: ${({ theme }) => theme.fontSizes.lg};
   box-shadow: ${({ theme }) => theme.shadows.button};
   cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.normal};
+  transition: background 0.19s, color 0.18s, box-shadow 0.18s;
 
   &:hover {
-    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
-    color: ${({ theme }) => theme.buttons.primary.textHover};
+    background: ${({ theme }) => theme.colors.accent};
+    color: ${({ theme }) => theme.colors.white};
     box-shadow: ${({ theme }) => theme.shadows.lg};
   }
 `;
 
-const AppointmentButton = styled.a`
-  background: ${({ theme }) => theme.buttons.primary.background};
-  color: ${({ theme }) => theme.buttons.primary.text};
+const LinkBtn = styled.a`
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.white};
   border: none;
   border-radius: ${({ theme }) => theme.radii.pill};
-  font-family: ${({ theme }) => theme.fonts.body};
   font-size: ${({ theme }) => theme.fontSizes.md};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.xl};
-  margin-left: ${({ theme }) => theme.spacings.md};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  padding: 11px 32px;
+  margin-left: 18px;
   box-shadow: ${({ theme }) => theme.shadows.button};
   cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.normal},
-    color ${({ theme }) => theme.transition.normal};
+  letter-spacing: 0.01em;
+  transition: background 0.18s, color 0.16s;
 
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacings.xs};
+  gap: 8px;
+  text-decoration: none;
 
   &:hover,
-  &:focus {
-    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
-    color: ${({ theme }) => theme.buttons.primary.textHover};
-    box-shadow: ${({ theme }) => theme.shadows.lg};
+  &:focus-visible {
+    background: ${({ theme }) => theme.colors.accent};
+    color: ${({ theme }) => theme.colors.white};
     text-decoration: none;
   }
 
-  @media ${({ theme }) => theme.media.mobile} {
+  @media (max-width: 1100px) {
     margin-left: 0;
-    margin-top: ${({ theme }) => theme.spacings.md};
+    margin-top: 14px;
     width: 100%;
     justify-content: center;
   }
 `;
+
+// Modal içeriği
+const ModalContent = styled.div`
+  text-align: center;
+  padding: 22px 12px;
+`;
+
+const ModalTitle = styled.h2`
+  color: ${({ theme }) => theme.colors.white};
+  font-size: ${({ theme }) => theme.fontSizes.xl};
+  margin-top: 16px;
+`;
+
+const ModalDesc = styled.p`
+  color: ${({ theme }) => theme.colors.white};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  margin-top: 8px;
+  text-shadow: 0 2px 10px rgba(30,80,160,0.08);
+`;
+

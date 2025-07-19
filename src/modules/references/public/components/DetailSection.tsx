@@ -15,7 +15,6 @@ import {
   fetchReferencesBySlug,
   setSelectedReferences,
 } from "@/modules/references/slice/referencesSlice";
-import { CommentForm, CommentList } from "@/modules/comment";
 import type { IReferences } from "@/modules/references";
 import type { SupportedLocale } from "@/types/common";
 
@@ -93,13 +92,6 @@ export default function ReferencesDetailSection() {
         </ImageWrapper>
       )}
 
-      {references.summary?.[lang] && (
-        <SummaryBox>
-          <h3>{t("page.summary")}</h3>
-          <div>{references.summary?.[lang]}</div>
-        </SummaryBox>
-      )}
-
       {references.content?.[lang] && (
         <ContentBox>
           <h3>{t("page.detail")}</h3>
@@ -119,8 +111,6 @@ export default function ReferencesDetailSection() {
           </OtherList>
         </OtherSection>
       )}
-      <CommentForm contentId={references._id} contentType="references" />
-      <CommentList contentId={references._id} contentType="references" />
     </Container>
   );
 }
@@ -151,13 +141,6 @@ const ImageWrapper = styled.div`
   }
 `;
 
-const SummaryBox = styled.div`
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-left: 4px solid ${({ theme }) => theme.colors.primary};
-  padding: ${({ theme }) => theme.spacings.lg};
-  margin-bottom: ${({ theme }) => theme.spacings.lg};
-  border-radius: ${({ theme }) => theme.radii.sm};
-`;
 
 const ContentBox = styled.div`
   background: ${({ theme }) => theme.colors.background};

@@ -121,6 +121,7 @@ const radanorTheme: DefaultTheme = {
     laptopS: "1024px",
     laptop: "1280px",
     desktop: "1440px",
+    desktopL: "1640px",
   },
 
   media: {
@@ -147,6 +148,11 @@ const radanorTheme: DefaultTheme = {
     inputBackgroundFocus: "#1C1F26",
     footerBackground: "#0B0E14",
     warningBackground: "#fffbe6",
+    contentBackground: "#F6F7FA",
+
+    achievementBackground: "#1A1A1A",
+    achievementGradientStart: "#0D1F2D",
+    achievementGradientEnd: "#19d6e3",
 
     text: "#F5F5F5",
     textAlt: "#CCCCCC",

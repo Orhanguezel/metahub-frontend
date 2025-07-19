@@ -5,9 +5,9 @@ import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/gallery";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
-import { ImageUploadWithPreview } from "@/shared";
+import { GalleryUploadWithPreview } from "@/shared";
 import { toast } from "react-toastify";
-import type { IGalleryCategory, IGallery } from "@/modules/gallery/types";
+import type { IGalleryCategory, IGallery, IGalleryItem } from "@/modules/gallery/types";
 
 interface Props {
   isOpen: boolean;
@@ -40,12 +40,12 @@ export default function GalleryEditForm({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
 
-  // --- Yeni: existingImages ---
-  const [existingImages, setExistingImages] = useState<string[]>([]);
+  // --- existingImages artık IGalleryItem[] ---
+  const [existingImages, setExistingImages] = useState<IGalleryItem[]>([]);
 
-  // --- useMemo ile stabilize edilmiş defaultImages ---
+  // defaultImages as IGalleryItem[]
   const defaultImages = useMemo(
-    () => editingItem?.images?.map((img) => img.url) || [],
+    () => editingItem?.images || [],
     [editingItem]
   );
 
@@ -71,7 +71,7 @@ export default function GalleryEditForm({
       );
       setType(editingItem.type || "image");
       setOrder(editingItem.images?.[0]?.order?.toString() || "1");
-      setExistingImages(defaultImages);  // 🔥 Sadece burada set!
+      setExistingImages(defaultImages);
       setSelectedFiles([]);
       setRemovedImages([]);
     } else {
@@ -87,8 +87,9 @@ export default function GalleryEditForm({
   }, [editingItem, isOpen, defaultImages]);
 
   // --- IMAGE HANDLER ---
+  // IGalleryItem[]
   const handleImagesChange = useCallback(
-    (files: File[], removed: string[], current: string[]) => {
+    (files: File[], removed: string[], current: IGalleryItem[]) => {
       setSelectedFiles(files);
       setRemovedImages(removed);
       setExistingImages(current); // current -> kalan eski resimler
@@ -117,9 +118,9 @@ export default function GalleryEditForm({
     if (removedImages.length > 0) {
       formData.append("removedImages", JSON.stringify(removedImages));
     }
-    // 🔥 Eklenen: Mevcut kalan eski resimler (mutlaka ekle!)
+    // 🔥 kalan eski resimler url listesini gönder
     if (existingImages.length > 0) {
-      formData.append("existingImages", JSON.stringify(existingImages));
+      formData.append("existingImages", JSON.stringify(existingImages.map(img => img.url)));
     }
 
     await onSubmit(formData, editingItem?._id);
@@ -197,9 +198,9 @@ export default function GalleryEditForm({
         />
 
         <label>{t("form.image", "Images")}</label>
-        <ImageUploadWithPreview
+        <GalleryUploadWithPreview
           max={5}
-          defaultImages={defaultImages} // useMemo ile stabilize!
+          defaultImages={defaultImages} // IGalleryItem[]
           onChange={handleImagesChange}
           folder="gallery"
         />

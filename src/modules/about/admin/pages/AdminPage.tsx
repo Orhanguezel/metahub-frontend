@@ -3,7 +3,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/about";
+import translations from "@/modules/about/locales";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import type { SupportedLocale } from "@/types/common";
 

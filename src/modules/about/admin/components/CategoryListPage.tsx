@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/about";
+import translations from "@/modules/about/locales";
 import type { AboutCategory } from "@/modules/about/types";
 import { LANG_LABELS, SupportedLocale } from "@/types/common";
 import { deleteAboutCategory } from "@/modules/about/slice/aboutCategorySlice";

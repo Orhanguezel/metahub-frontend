@@ -6,8 +6,8 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import { translations } from "@/modules/gallery";
 import { toast } from "react-toastify";
-import { ImageUploadWithPreview } from "@/shared";
-import type { IGalleryCategory } from "@/modules/gallery/types";
+import { GalleryUploadWithPreview } from "@/shared";
+import type { IGalleryCategory,IGalleryItem } from "@/modules/gallery/types";
 
 interface GalleryMultiFormProps {
   categories: IGalleryCategory[];
@@ -39,7 +39,7 @@ const GalleryMultiForm: React.FC<GalleryMultiFormProps> = ({
   const [description, setDescription] = useState(initialDescription);
   const [order, setOrder] = useState("1");
   const [isLoading, setIsLoading] = useState(false);
-  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<IGalleryItem[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const selectedCategory = categories.find((cat) => cat._id === category);
@@ -48,12 +48,12 @@ const GalleryMultiForm: React.FC<GalleryMultiFormProps> = ({
 
   // Çoklu dosya seçimini handle eden method
   const handleImagesChange = useCallback(
-    (files: File[], _removed: string[], current: string[]) => {
-      setSelectedFiles(files);
-      setExistingImages(current);
-    },
-    []
-  );
+  (files: File[], _removed: string[], current: IGalleryItem[]) => {
+    setSelectedFiles(files);
+    setExistingImages(current);
+  },
+  []
+);
 
   // Submit logic
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,12 +76,15 @@ const GalleryMultiForm: React.FC<GalleryMultiFormProps> = ({
     });
 
     const data = new FormData();
-    data.append("category", category);
-    data.append("type", type);
-    data.append("order", order);
-    data.append("name", JSON.stringify(filledName)); // DÜZELTİLDİ
-    data.append("description", JSON.stringify(filledDescription));
-    selectedFiles.forEach((file) => data.append("images", file));
+data.append("category", category);
+data.append("type", type);
+data.append("order", order);
+data.append("name", JSON.stringify(filledName));
+data.append("description", JSON.stringify(filledDescription));
+selectedFiles.forEach((file) => data.append("images", file));
+if (existingImages.length) {
+  data.append("existingImages", JSON.stringify(existingImages));
+}
 
     try {
       setIsLoading(true);
@@ -163,12 +166,12 @@ const GalleryMultiForm: React.FC<GalleryMultiFormProps> = ({
         min={1}
       />
 
-      <ImageUploadWithPreview
-        max={isSingleImageCategory ? 1 : 10}
-        folder="gallery"
-        defaultImages={existingImages}
-        onChange={handleImagesChange}
-      />
+      <GalleryUploadWithPreview
+  max={isSingleImageCategory ? 1 : 10}
+  folder="gallery"
+  defaultImages={existingImages}
+  onChange={handleImagesChange}
+/>
 
       <SubmitButton type="submit" disabled={isLoading}>
         {isLoading ? t("form.loading") : t("form.submit")}

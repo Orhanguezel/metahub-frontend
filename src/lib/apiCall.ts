@@ -12,6 +12,16 @@ const getLang = (): string => {
 
 const isDev = process.env.NODE_ENV === "development";
 
+const getTenantSlug = (): string | undefined => {
+  // Her iki ortamda da tenant mantığı çalışır.
+  // Dev'de env veya hostname, prod'da host header/NGINX veya window.location
+  try {
+    return detectTenantFromHost();
+  } catch {
+    return undefined;
+  }
+};
+
 const apiCall = async (
   method: "get" | "post" | "put" | "delete" | "patch",
   url: string,
@@ -25,12 +35,11 @@ const apiCall = async (
       if (data) console.log("📤 Payload:", data);
     }
 
-    // Sadece development'da x-tenant ekle (prod'da eklenmez)
-    const tenantSlug = isDev ? detectTenantFromHost() : undefined;
+    // Tüm ortamlarda tenant slug kullanılsın (NGINX header ile taşınan tenant da buradan okunacak)
+    const tenantSlug = getTenantSlug();
 
     // FormData kontrolü
-    const isFormData =
-      typeof FormData !== "undefined" && data instanceof FormData;
+    const isFormData = typeof FormData !== "undefined" && data instanceof FormData;
 
     const finalConfig = {
       ...config,
@@ -70,7 +79,6 @@ const apiCall = async (
       return null;
     }
 
-    // Error logging (dev'de göster)
     if (error?.response) {
       const res = error.response;
       const logObj = {

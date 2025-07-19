@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/references";
+import { translations } from "@/modules/references";
 import { ReferencesCategory, IReferences } from "@/modules/references/types";
 import { ImageUploadWithPreview } from "@/shared";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
@@ -23,57 +23,42 @@ export default function FormModal({
   editingItem,
   onSubmit,
 }: Props) {
-  // --- DİL ve ÇEVİRİ ---
+  // DİL ve ÇEVİRİ
   const { i18n, t } = useI18nNamespace("references", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  // --- STATE ---
- // Sadece selector!
+  // Selector
   const categories = useAppSelector((state) => state.referencesCategory.categories);
   const successMessage = useAppSelector((state) => state.references.successMessage);
   const error = useAppSelector((state) => state.references.error);
-  const currentUser = useAppSelector((state) => state.account.profile);
-  
 
+  // --- STATE ---
   const [titles, setTitles] = useState<Record<SupportedLocale, string>>(() =>
-    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
-  );
-  const [summaries, setSummaries] = useState<Record<SupportedLocale, string>>(() =>
-    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
+    SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
   );
   const [contents, setContents] = useState<Record<SupportedLocale, string>>(() =>
-    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
+    SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
   );
-  const [author, setAuthor] = useState("");
-  const [tags, setTags] = useState("");
   const [category, setCategory] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
 
-  // --- FILL ON EDIT ---
+  // FILL ON EDIT
   useEffect(() => {
     if (editingItem) {
       setTitles(
-        SUPPORTED_LOCALES.reduce((acc, lang) => {
-          acc[lang] = editingItem.title?.[lang] || "";
-          return acc;
-        }, {} as Record<SupportedLocale, string>)
-      );
-      setSummaries(
-        SUPPORTED_LOCALES.reduce((acc, lang) => {
-          acc[lang] = editingItem.summary?.[lang] || "";
+        SUPPORTED_LOCALES.reduce((acc, lng) => {
+          acc[lng] = editingItem.title?.[lng] || "";
           return acc;
         }, {} as Record<SupportedLocale, string>)
       );
       setContents(
-        SUPPORTED_LOCALES.reduce((acc, lang) => {
-          acc[lang] = editingItem.content?.[lang] || "";
+        SUPPORTED_LOCALES.reduce((acc, lng) => {
+          acc[lng] = editingItem.content?.[lng] || "";
           return acc;
         }, {} as Record<SupportedLocale, string>)
       );
-      setAuthor(editingItem.author || currentUser?.name || "");
-      setTags(editingItem.tags?.join(", ") || "");
       setCategory(
         typeof editingItem.category === "string"
           ? editingItem.category
@@ -81,30 +66,26 @@ export default function FormModal({
       );
       setExistingImages(editingItem.images?.map((img) => img.url) || []);
     } else {
-      // Reset
-      setTitles(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
-      setSummaries(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
-      setContents(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
-      setAuthor(currentUser?.name || "");
-      setTags("");
+      setTitles(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
+      setContents(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
       setCategory("");
       setExistingImages([]);
       setSelectedFiles([]);
       setRemovedImages([]);
     }
-  }, [editingItem, isOpen, currentUser]);
+  }, [editingItem, isOpen]);
 
-  // --- TOAST Mesajları ---
- useEffect(() => {
+  // TOAST
+  useEffect(() => {
     if (successMessage) {
       toast.success(successMessage);
-      onClose(); 
+      onClose();
     } else if (error) {
       toast.error(error);
     }
   }, [successMessage, error, onClose]);
 
-  // --- IMAGE HANDLER ---
+  // IMAGE HANDLER
   const handleImagesChange = useCallback(
     (files: File[], removed: string[], current: string[]) => {
       setSelectedFiles(files);
@@ -114,36 +95,26 @@ export default function FormModal({
     []
   );
 
-  // --- SUBMIT ---
+  // SUBMIT
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData();
 
     formData.append("title", JSON.stringify(titles));
-    formData.append("summary", JSON.stringify(summaries));
     formData.append("content", JSON.stringify(contents));
-    formData.append("author", author.trim());
-    formData.append(
-      "tags",
-      JSON.stringify(
-        tags
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean)
-      )
-    );
     formData.append("category", category);
-    formData.append("isPublished", "true");
 
+    // Zorunlu image(s)
     for (const file of selectedFiles) {
       formData.append("images", file);
     }
     if (removedImages.length > 0) {
       formData.append("removedImages", JSON.stringify(removedImages));
     }
+    // Varsayılan olarak yayında (değilse, isPublished eklenmez!)
+    formData.append("isPublished", "true");
 
     await onSubmit(formData, editingItem?._id);
-    // Başarı durumunu useEffect ile handle edeceğiz
   };
 
   if (!isOpen) return null;
@@ -152,8 +123,8 @@ export default function FormModal({
     <FormWrapper>
       <h2>
         {editingItem
-          ? t("admin.references.edit", "Edit References")
-          : t("admin.references.create", "Create New References")}
+          ? t("admin.references.edit", "Edit Reference")
+          : t("admin.references.create", "Add Reference")}
       </h2>
       <form onSubmit={handleSubmit}>
         {SUPPORTED_LOCALES.map((lng) => (
@@ -165,17 +136,6 @@ export default function FormModal({
               id={`title-${lng}`}
               value={titles[lng]}
               onChange={(e) => setTitles({ ...titles, [lng]: e.target.value })}
-            />
-
-            <label htmlFor={`summary-${lng}`}>
-              {t("admin.references.summary", "Summary")} ({lng.toUpperCase()})
-            </label>
-            <textarea
-              id={`summary-${lng}`}
-              value={summaries[lng]}
-              onChange={(e) =>
-                setSummaries({ ...summaries, [lng]: e.target.value })
-              }
             />
 
             <label htmlFor={`content-${lng}`}>
@@ -191,27 +151,9 @@ export default function FormModal({
           </div>
         ))}
 
-        <label htmlFor="author">{t("admin.references.author", "Author")}</label>
-        <input
-          id="author"
-          type="text"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-          required
-        />
-
-        <label htmlFor="tags">{t("admin.references.tags", "Tags")}</label>
-        <input
-          id="tags"
-          type="text"
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
-          placeholder="tag1, tag2, tag3"
-        />
-
-        <label>{t("admin.references.image", "Images")}</label>
+        <label>{t("admin.references.image", "Logo Image")}</label>
         <ImageUploadWithPreview
-          max={5}
+          max={1}
           defaultImages={existingImages}
           onChange={handleImagesChange}
           folder="references"

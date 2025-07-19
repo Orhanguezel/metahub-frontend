@@ -1,10 +1,10 @@
 {
   "hero1": {
-    "heroTitle": "Königs Masaj",
-    "heroSubtitle": "Doğallığın dokunuşuyla sağlığınızı şımartın"
+    "heroTitle": "Yenilikçi Endüstriyel Ürünler",
+    "heroSubtitle": "Ensotek ile teknolojide yeni bir seviyeye ulaşın."
   },
   "hero": {
-    "bookAppointment": "Randevu Al"
+    "products": "Ürünler"
   },
-  "noItemsFound": "Hiçbir öğe bulunamadı."
+  "noItemsFound": "Hiçbir ürün bulunamadı."
 }

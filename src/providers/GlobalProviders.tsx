@@ -20,7 +20,9 @@ export default function GlobalProviders({
   return (
     <ReduxProvider>
       <TenantProvider>
+        <I18nProvider>
         <PostTenantProviders>{children}</PostTenantProviders>
+        </I18nProvider>
       </TenantProvider>
     </ReduxProvider>
   );
@@ -34,7 +36,7 @@ function PostTenantProviders({ children }: { children: React.ReactNode }) {
       <InitI18n />
       <ThemeProviderWrapper>
         <InitUserLoader />
-        <I18nProvider>
+        
           {/* İçerik provider'ları buraya */}
           <GlobalStyle />
           {loading ? (
@@ -44,7 +46,6 @@ function PostTenantProviders({ children }: { children: React.ReactNode }) {
           ) : (
             children
           )}
-        </I18nProvider>
         {/* ToastProvider sadece dışta bağımsız olarak çağrılır */}
         <ToastProvider />
       </ThemeProviderWrapper>

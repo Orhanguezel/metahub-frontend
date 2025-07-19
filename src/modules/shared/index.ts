@@ -30,4 +30,9 @@ export { default as SocialLinks } from "./public/components/navbar/SocialLinks";
 export { default as ThemeToggle } from "./public/components/navbar/ThemeToggle";
 export { default as TopBar } from "./public/components/navbar/TopBar";
 
+//Locales
+export { default as translations } from "./locales/navbar";
+export { default as translationsFooter } from "./locales/footer";
+
+
 // Optionally: i18n can be loaded in page-level or via config

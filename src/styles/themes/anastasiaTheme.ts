@@ -120,6 +120,7 @@ const anastasiaTheme: DefaultTheme = {
     laptopS: "900px",
     laptop: "1024px",
     desktop: "1440px",
+    desktopL: "1640px",
   },
 
   media: {
@@ -146,6 +147,11 @@ const anastasiaTheme: DefaultTheme = {
     inputBackgroundFocus: "#fff7fb",
     footerBackground: "#fff0f6",
     warningBackground: "#fffbe6",
+    contentBackground: "#f6f7fa",
+
+    achievementBackground: "#fbeaf0",
+    achievementGradientStart: "#e5549c",
+    achievementGradientEnd: "#0bb6d6",
 
     text: "#40333d",
     textAlt: "#52404b",

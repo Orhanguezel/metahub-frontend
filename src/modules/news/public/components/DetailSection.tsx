@@ -71,7 +71,7 @@ export default function NewsDetailSection() {
     );
   }
 
-  const otherNews = allNews.filter((item: INews) => item.slug !== slug).slice(0, 2);
+  const otherNews = allNews.filter((item: INews)  => item.slug !== slug);
 
   return (
     <Container

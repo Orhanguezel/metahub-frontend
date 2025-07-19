@@ -1,80 +1,64 @@
 "use client";
-
 import React from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales/navbar";
-import {
-  SUPPORTED_LOCALES,
-  LANG_LABELS,
-  SupportedLocale,
-} from "@/types/common";
+import { SUPPORTED_LOCALES } from "@/i18n"; // Public için de aynısı!
+import translations from "@/modules/shared/locales/header";
 
-// Eğer mevcut değilse, 'en' fallback!
-function getValidLang(lang: string): SupportedLocale {
-  return SUPPORTED_LOCALES.includes(lang as SupportedLocale)
-    ? (lang as SupportedLocale)
-    : "en";
+// Adminde getLocaleLabel fonksiyonun:
+function getLocaleLabel(locale: string): string {
+  return SUPPORTED_LOCALES.includes(locale as any)
+    ? locale.toUpperCase()
+    : locale;
 }
 
 interface Props {
-  value?: string; // Current language code
-  onChange?: (lang: SupportedLocale) => void;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   ariaLabel?: string;
-  hideLabel?: boolean;
-  style?: React.CSSProperties;
   className?: string;
+  style?: React.CSSProperties;
 }
 
-const LangSelect: React.FC<Props> = ({
-  onChange,
-  hideLabel = false,
-  style,
-  className,
-}) => {
-   const { i18n } = useI18nNamespace("navbar", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-
-
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selected = getValidLang(e.target.value);
-    i18n.changeLanguage(selected);
-    if (onChange) onChange(selected);
-  };
+export default function LangSelect(props: Props) {
+  const { value, onChange, ariaLabel, className, style } = props;
+  const { i18n } = useI18nNamespace("header", translations);
 
   return (
-    <LangSelectWrapper style={style} className={className}>
-      {!hideLabel}
-      <Select value={lang} onChange={handleChange}>
-        {SUPPORTED_LOCALES.map((code) => (
-          <option key={code} value={code}>
-            {LANG_LABELS[code]}
-          </option>
-        ))}
-      </Select>
-    </LangSelectWrapper>
+    <LangSelectStyled
+      value={value ?? i18n.language}
+      onChange={onChange ?? ((e) => i18n.changeLanguage(e.target.value))}
+      aria-label={ariaLabel}
+      className={className}
+      style={style}
+    >
+      {SUPPORTED_LOCALES.map((locale) => (
+        <option key={locale} value={locale}>
+          {getLocaleLabel(locale)}
+        </option>
+      ))}
+    </LangSelectStyled>
   );
 };
 
-export default LangSelect;
-
-// Styled
-const LangSelectWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const Select = styled.select`
-  background: ${({ theme }) => theme.inputs.background};
-  border: ${({ theme }) => `${theme.borders.thin} ${theme.colors.border}`};
+const LangSelectStyled = styled.select`
+  background: ${({ theme }) => theme.colors.background || "#222"};
+  border: 1px solid ${({ theme }) => theme.colors.grey};
   padding: ${({ theme }) => theme.spacings.xs}
     ${({ theme }) => theme.spacings.sm};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.inputs.text};
+  border-radius: 6px;
+  font-size: ${({ theme }) => theme.fontSizes.small};
+  color: ${({ theme }) => theme.colors.text};
   cursor: pointer;
+  min-width: 64px;
+  max-width: 110px;
+  transition: border 0.15s, color 0.13s;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
   option {
-    color: ${({ theme }) => theme.inputs.text};
-    background: ${({ theme }) => theme.inputs.background};
+    color: ${({ theme }) => theme.colors.text};
+    background: ${({ theme }) => theme.colors.background || "#222"};
   }
 `;

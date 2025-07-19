@@ -221,7 +221,7 @@ export const useLayoutInit = () => {
 
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
   useEffect(() => {
-    if (!tenantLoaded) return;
+    if (!tenantLoaded || !tenant?._id) return;
     // Fetchler
     if (!settingsAdmin.settingsAdmin.length && !settingsAdmin.loading)
       dispatch(fetchSettingsAdmin());
@@ -332,7 +332,7 @@ export const useLayoutInit = () => {
       dispatch(fetchAllOrdersAdmin());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantLoaded, tenant, dispatch /* diğer dep'ler gerekiyorsa ekle */]);
+  }, [tenantLoaded, tenant?._id, dispatch]);
 
   useEffect(() => {
     return () => {

@@ -1,10 +1,10 @@
 {
   "hero1": {
-    "heroTitle": "Königs Massage",
-    "heroSubtitle": "Verwöhnen Sie Ihre Gesundheit mit der Kraft der Natur"
+    "heroTitle": "Innovative Industrieprodukte",
+    "heroSubtitle": "Mit Ensotek ein neues Level in der Technologie erreichen."
   },
   "hero": {
-    "bookAppointment": "Termin buchen"
+    "products": "Produkte"
   },
-  "noItemsFound": "Keine Elemente gefunden."
+  "noItemsFound": "Keine Produkte gefunden."
 }

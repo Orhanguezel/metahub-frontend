@@ -2,202 +2,269 @@
 
 import styled from "styled-components";
 import Link from "next/link";
-import {translations} from "@/modules/activity";
+import { translations } from "@/modules/activity";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { motion } from "framer-motion";
 import { useAppSelector } from "@/store/hooks";
-import { Skeleton, ErrorMessage } from "@/shared";
+import { Skeleton } from "@/shared";
 import type { IActivity } from "@/modules/activity/types";
 import type { SupportedLocale } from "@/types/common";
-
-
 
 export default function ActivitySection() {
   const { i18n, t } = useI18nNamespace("activity", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-    Object.entries(translations).forEach(([lang, resources]) => {
-  if (!i18n.hasResourceBundle(lang, "activity")) {
-    i18n.addResourceBundle(lang, "activity", resources, true, true);
-  }
-});
+  // i18n yüklemesi (gerekirse)
+  Object.entries(translations).forEach(([lng, resources]) => {
+    if (!i18n.hasResourceBundle(lng, "activity")) {
+      i18n.addResourceBundle(lng, "activity", resources, true, true);
+    }
+  });
 
-  // Store’dan sadece tüketici (stateless)
-  const { activity, loading, error } = useAppSelector((state) => state.activity);
+  const { activity, loading } = useAppSelector((state) => state.activity);
 
- 
-  if (loading) {
-    return (
-      <Section>
-        <Title>📰 {t("page.activity.title")}</Title>
-        <Grid>
-          <Skeleton />
-          <Skeleton />
-          <Skeleton />
-        </Grid>
-      </Section>
-    );
-  }
+  // Multi-language fallback
+  const getMultiLang = (obj?: Record<string, string>) =>
+    obj?.[lang] || obj?.["tr"] || obj?.["en"] || Object.values(obj || {})[0] || "—";
 
-  if (error) {
-    return (
-      <Section>
-        <Title>📰 {t("page.activity.title")}</Title>
-        <ErrorMessage />
-      </Section>
-    );
-  }
-
-  if (!activity || activity.length === 0) {
-    return (
-      <Section>
-        <Title>📰 {t("page.activity.title")}</Title>
-        <p>{t("page.activity.noActivity", "Haber bulunamadı.")}</p>
-      </Section>
-    );
-  }
-
-  const latestActivity = activity.slice(0, 3);
+  // En fazla 6 faaliyet göster
+  const allActivities = (activity || []).slice(0, 6);
 
   return (
-    <Section
-      initial={{ opacity: 0, y: 60 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
-    >
-      <Title>📰 {t("page.activity.title")}</Title>
-
-      <Grid>
-        {latestActivity.map((item: IActivity, index: number) => (
-          <CardLink key={item._id} href={`/activity/${item.slug}`} passHref>
-            <Card
-              as={motion.div}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.2 }}
-              viewport={{ once: true }}
-            >
-              <Content>
-                <ActivityTitle>{item.title?.[lang] || "-"}
-                </ActivityTitle>
-                <Excerpt>{item.summary?.[lang] || "-"}</Excerpt>
-              </Content>
-              {item.images?.[0]?.url && (
-                <StyledImage
-                  src={item.images[0].url}
-                  alt={item.title?.[lang] || "Activity"}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
+    <Section>
+      <Container>
+        <Left>
+          <MinorTitle>
+            {t("page.activity.minorTitle", "FAALİYETLERİMİZ")}
+          </MinorTitle>
+          <MainTitle>
+            {t("page.activity.title", "Sektöre Değer Katan Faaliyet Alanlarımız")}
+          </MainTitle>
+          <Desc>
+            {t(
+              "page.activity.desc",
+              "Ensotek olarak, sektörümüzde öne çıkan çözümler ve hizmetlerle müşterilerimizin iş süreçlerine değer katıyoruz. Geniş faaliyet alanlarımızı keşfedin."
+            )}
+          </Desc>
+          <SeeAllBtn href="/activity">
+            {t("page.activity.all", "Tüm Faaliyetlerimiz")}
+          </SeeAllBtn>
+        </Left>
+        <Right>
+          {loading ? (
+            <CardGrid>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} />
+              ))}
+            </CardGrid>
+          ) : (
+            <CardGrid>
+              {allActivities.map((item: IActivity, idx: number) => (
+                <Card
+                  key={item._id}
+                  as={motion.div}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.39, delay: idx * 0.07 }}
                   viewport={{ once: true }}
-                />
-              )}
-            </Card>
-          </CardLink>
-        ))}
-      </Grid>
-
-      <SeeAll href="/activity">{t("page.activity.all")}</SeeAll>
+                >
+                  <CardImgBox>
+                    {item.images?.[0]?.url ? (
+                      <CardImg
+                        src={item.images[0].url}
+                        alt={getMultiLang(item.title)}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <CardImgPlaceholder />
+                    )}
+                  </CardImgBox>
+                  <CardTitle>{getMultiLang(item.title)}</CardTitle>
+                </Card>
+              ))}
+            </CardGrid>
+          )}
+        </Right>
+      </Container>
     </Section>
   );
 }
 
-// Styled Components (değişmeden bırakılabilir)
-const Section = styled(motion.section)`
-  padding: ${({ theme }) => theme.spacings.xxl}
-    ${({ theme }) => theme.spacings.md};
-  background: ${({ theme }) => theme.colors.background};
+// --- STYLES ---
+
+const Section = styled.section`
+  padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xxl};
+  background: ${({ theme }) => theme.colors.sectionBackground};
   color: ${({ theme }) => theme.colors.text};
-  text-align: center;
 `;
 
-const Title = styled.h2`
+const Container = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 3rem;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 ${({ theme }) => theme.spacings.lg};
+
+  @media (max-width: 1023px) {
+    flex-direction: column;
+    gap: 2.5rem;
+    padding: 0 ${({ theme }) => theme.spacings.sm};
+  }
+`;
+
+const Left = styled.div`
+  flex: 1.12 1 300px;
+  max-width: 440px;
+  @media (max-width: 1023px) {
+    max-width: 100%;
+    text-align: center;
+    margin: 0 auto;
+  }
+`;
+
+const MinorTitle = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.accent};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  letter-spacing: 0.02em;
+  margin-bottom: 1.2rem;
+  text-transform: uppercase;
+`;
+
+const MainTitle = styled.h2`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacings.xl};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  line-height: 1.17;
 `;
 
-const Grid = styled.div`
-  display: grid;
-  gap: ${({ theme }) => theme.spacings.xl};
-  @media (min-width: 1024px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  @media (min-width: 768px) and (max-width: 1023px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @media (max-width: 767px) {
-    grid-template-columns: 1fr;
-  }
+const Desc = styled.p`
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin-bottom: 2.3rem;
+  line-height: 1.67;
 `;
 
-const CardLink = styled(Link)`
+const SeeAllBtn = styled(Link)`
+  display: inline-block;
+  padding: 0.68em 2.1em;
+  font-size: 1.06em;
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  color: ${({ theme }) => theme.colors.white};
+  background: ${({ theme }) => theme.colors.primary};
+  border-radius: ${({ theme }) => theme.radii.pill};
   text-decoration: none;
-  color: inherit;
-  &:hover {
+  letter-spacing: 0.01em;
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  border: 1.5px solid ${({ theme }) => theme.colors.primary};
+  transition: background 0.17s, color 0.16s;
+  &:hover, &:focus-visible {
+    background: ${({ theme }) => theme.colors.accent};
+    color: #fff;
     text-decoration: none;
   }
 `;
 
+const Right = styled.div`
+  flex: 2.8 1 500px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+`;
+
+const CardGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  grid-template-rows: repeat(3, minmax(168px, 1fr));
+  gap: 2.2rem 2.7rem;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: none;
+    gap: 1.2rem 1.2rem;
+    max-width: 99vw;
+  }
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr 1fr; // Hala iki sütun!
+    gap: 0.65rem 0.65rem;
+    padding: 0 0.2rem;
+  }
+`;
+
+
 const Card = styled(motion.div)`
   background: ${({ theme }) => theme.colors.cardBackground};
-  padding: ${({ theme }) => theme.spacings.lg};
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.md};
+  border-radius: 22px;
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  border: 1.5px solid ${({ theme }) => theme.colors.border};
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  transition: transform ${({ theme }) => theme.transition.fast};
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2.1rem 1rem 1.25rem 1rem;
+  min-height: 220px;
+  transition: box-shadow 0.17s, border-color 0.17s, transform 0.16s;
   cursor: pointer;
-  &:hover {
-    transform: translateY(-4px) scale(1.02);
+  position: relative;
+  will-change: transform;
+
+  &:hover, &:focus-visible {
     box-shadow: ${({ theme }) => theme.shadows.lg};
+    border-color: ${({ theme }) => theme.colors.accent};
+    transform: translateY(-8px) scale(1.06);
+    z-index: 1;
   }
 `;
 
-const Content = styled.div`
-  text-align: left;
-`;
+const CardImgBox = styled.div`
+  width: 140px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.1rem;
+  border-radius: ${({ theme }) => theme.radii.xl};
+  overflow: hidden;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  box-shadow: 0 4px 22px 0 rgba(40, 117, 194, 0.07);
 
-const ActivityTitle = styled.h3`
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  margin-bottom: ${({ theme }) => theme.spacings.sm};
-  color: ${({ theme }) => theme.colors.text};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-`;
-
-const Excerpt = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const StyledImage = styled(motion.img)`
-  width: 220px;
-  height: auto;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  object-fit: cover;
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  transition: transform 0.3s ease;
-  margin-top: ${({ theme }) => theme.spacings.md};
-  &:hover {
-    transform: scale(1.02);
-  }
-  @media (max-width: 767px) {
-    width: 100%;
+  @media (max-width: 600px) {
+    width: 100px;
+    height: 78px;
   }
 `;
 
-const SeeAll = styled(Link)`
-  display: inline-block;
-  margin-top: ${({ theme }) => theme.spacings.xl};
+const CardImg = styled.img`
+  width: 95%;
+  height: 90%;
+  object-fit: contain;
+  transition: transform 0.19s cubic-bezier(0.5, 0.27, 0.41, 1.14);
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+
+  &:hover { transform: scale(1.10) rotate(-2deg); }
+`;
+
+const CardImgPlaceholder = styled.div`
+  width: 80px;
+  height: 80px;
+  background: ${({ theme }) => theme.colors.skeleton};
+  border-radius: ${({ theme }) => theme.radii.md};
+  opacity: 0.43;
+`;
+
+const CardTitle = styled.h3`
+  font-size: 1.15em;
   color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  transition: color ${({ theme }) => theme.transition.fast};
-  &:hover {
-    text-decoration: underline;
-    color: ${({ theme }) => theme.colors.primaryHover};
-  }
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-top: 0.6rem;
+  text-align: center;
+  letter-spacing: 0.01em;
+  min-height: 2.2em;
+  line-height: 1.14;
 `;

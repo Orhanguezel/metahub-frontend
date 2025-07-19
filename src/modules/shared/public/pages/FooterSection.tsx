@@ -14,7 +14,6 @@ import translations from "../../locales/footer";
 import { SupportedLocale } from "@/types/common";
 import { useMemo } from "react";
 import { Loading } from "@/shared";
-import { ISocialLink } from "@/modules/company/types";
 import type { IServices } from "@/modules/services/types";
 
 // --- Main Links extractor ---
@@ -35,9 +34,8 @@ function getServiceTitle(srv: IServices, lang: string) {
   );
 }
 
-
 export default function FooterSection() {
-  // Services (masaj türleri)
+  // Services (ör: masaj türleri)
   const { services, status: servicesStatus } = useAppSelector((state) => state.services);
 
   // Settings
@@ -54,7 +52,7 @@ export default function FooterSection() {
   }, [settings]);
   const mainLinks = extractLinks(settingMap.navbar_main_links, lang);
 
-  // Masaj türleri: ilk 5 aktif ve yayınlanmış, dil fallback ile
+  // Masaj türleri: ilk 5 aktif ve yayınlanmış
   const massageLinks = (services || [])
     .filter((s: IServices) => s.isActive && s.isPublished)
     .slice(0, 5)
@@ -63,18 +61,7 @@ export default function FooterSection() {
       href: srv.slug ? `/services/${srv.slug}` : "#",
     }));
 
-  // Sosyal medya ve copyright
-  const socialLinksRaw = settingMap.footer_social_links as
-    | Record<string, { url: string; icon: string }>
-    | undefined;
-  const socialLinks: ISocialLink | undefined = socialLinksRaw
-    ? Object.keys(socialLinksRaw).reduce((acc, key) => {
-        const val = socialLinksRaw[key];
-        if (val?.url)
-          acc[key.trim().toLowerCase() as keyof ISocialLink] = val.url;
-        return acc;
-      }, {} as ISocialLink)
-    : undefined;
+  // Copyright metni
   const rightsText =
     (settingMap.footer_rights &&
       (settingMap.footer_rights[lang] ||
@@ -106,7 +93,7 @@ export default function FooterSection() {
           <FooterLinks title={t("mainLinks", "Main Links")} links={mainLinks} />
         </InfoBlock>
       </FooterGrid>
-      {socialLinks && Object.keys(socialLinks).length > 0 && <FooterSocialLinks />}
+      <FooterSocialLinks />
       {rightsText && <FooterCopyright />}
     </FooterWrapper>
   );
@@ -121,15 +108,22 @@ const FooterWrapper = styled.footer`
   text-align: center;
   width: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: ${({ theme }) => theme.spacings.lg};
 `;
 
 const FooterGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
   gap: ${({ theme }) => theme.spacings.xl};
   max-width: ${({ theme }) => theme.layout.containerWidth};
+  width: 100%;
   margin: ${({ theme }) => theme.spacings.lg} auto 0 auto;
   align-items: flex-start;
+  justify-content: center;
+
   ${({ theme }) => theme.media.small} {
     grid-template-columns: 1fr;
     gap: ${({ theme }) => theme.spacings.md};
@@ -143,4 +137,9 @@ const InfoBlock = styled.div`
   align-items: center;
   margin: 0 ${({ theme }) => theme.spacings.md};
   text-align: center;
+  min-width: 0;
+  row-gap: ${({ theme }) => theme.spacings.sm};
+  ${({ theme }) => theme.media.small} {
+    margin: 0;
+  }
 `;

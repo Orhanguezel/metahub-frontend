@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 
-import translations from "../../locales/header";
+import translations from "@/modules/shared/locales/header";
 import { ThemeToggle, AvatarMenu } from "@/modules/shared";
 import { FaBars } from "react-icons/fa";
 import { SUPPORTED_LOCALES } from "@/i18n";

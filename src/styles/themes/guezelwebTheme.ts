@@ -121,6 +121,7 @@ const guezelwebTheme: DefaultTheme = {
     laptopS: "900px",
     laptop: "1024px",
     desktop: "1440px",
+    desktopL: "1640px",
   },
 
   media: {
@@ -147,6 +148,11 @@ const guezelwebTheme: DefaultTheme = {
     inputBackgroundFocus: "#0d1f2d",
     footerBackground: "#0d1f2d",
     warningBackground: "#fffbe6",
+    contentBackground: "#f6f7fa",
+
+    achievementBackground: "#1b2838",
+    achievementGradientStart: "#0d1f2d",
+    achievementGradientEnd: "#19d6e3",
 
     text: "#fff", // --text-color
     textAlt: "#19d6e3", // --highlight-color (alternatif vurgu için)

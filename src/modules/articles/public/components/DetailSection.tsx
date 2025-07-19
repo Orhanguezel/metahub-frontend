@@ -71,7 +71,7 @@ export default function ArticlesDetailSection() {
     );
   }
 
-  const otherArticles = allArticles.filter((item: IArticles) => item.slug !== slug).slice(0, 2);
+  const otherArticles = allArticles.filter((item: IArticles)  => item.slug !== slug);
 
   return (
     <Container

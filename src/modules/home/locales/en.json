@@ -1,10 +1,10 @@
 {
   "hero1": {
-    "heroTitle": "Königs Massage",
-    "heroSubtitle": "Indulge your health with the touch of nature"
+    "heroTitle": "Innovative Industrial Products",
+    "heroSubtitle": "Reach a new level in technology with Ensotek."
   },
   "hero": {
-    "bookAppointment": "Book Appointment"
+    "products": "Products"
   },
-  "noItemsFound": "No items found."
+  "noItemsFound": "No products found."
 }

@@ -123,10 +123,16 @@ const referencesCategorySlice = createSlice({
       .addCase(createReferencesCategory.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = action.payload?.message;
-        if (action.payload?.data?._id) {
-          state.categories.unshift(action.payload.data);
+        const newCat = action.payload?.data;
+        if (
+          newCat &&
+          newCat._id &&
+          !state.categories.some((cat) => cat._id === newCat._id)
+        ) {
+          state.categories.unshift(newCat);
         }
       })
+
       .addCase(createReferencesCategory.rejected, setError)
       // Update
       .addCase(updateReferencesCategory.pending, startLoading)

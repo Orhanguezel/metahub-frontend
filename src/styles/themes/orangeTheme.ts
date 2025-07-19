@@ -120,6 +120,7 @@ const orangeTheme: DefaultTheme = {
     laptopS: "900px",
     laptop: "1024px",
     desktop: "1440px",
+    desktopL: "1640px",
   },
 
   media: {
@@ -146,6 +147,11 @@ const orangeTheme: DefaultTheme = {
     inputBackgroundFocus: "#F8FAFC",
     footerBackground: "#F8FAFC",
     warningBackground: "#FFFBE6",
+    contentBackground: "#F6F7FA",
+
+    achievementBackground: "#F0F0F0",
+    achievementGradientStart: "#FBEAF0",
+    achievementGradientEnd: "#E5549C",
 
     text: "#0F172A",
     textAlt: "#1E293B",

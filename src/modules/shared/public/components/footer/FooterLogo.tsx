@@ -1,13 +1,16 @@
-// modules/shared/public/components/footer/FooterLogo.tsx
 "use client";
 import styled from "styled-components";
 import Link from "next/link";
 import Image from "next/image";
-import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales/footer";
+import translations from "../../../locales/navbar";
 import { SupportedLocale } from "@/types/common";
+import { useAppSelector } from "@/store/hooks";
 
+// Slogan extraction
+function isLogoTextValue(val: any): val is { slogan: any } {
+  return val && typeof val === "object" && "slogan" in val;
+}
 function resolveLogoSrc(images: any): string {
   if (!images) return "";
   if (typeof images === "string") return images;
@@ -18,115 +21,108 @@ function resolveLogoSrc(images: any): string {
   return "";
 }
 
-function isLogoTextValue(val: any): val is { title: any; slogan: any } {
-  return val && typeof val === "object" && "title" in val;
-}
-
-export default function FooterLogo({ width = 120, height = 120 }: { width?: number; height?: number }) {
-   const { i18n } = useI18nNamespace("footer", translations);
+export default function Logo({
+  height = 250,
+  maxWidth = 330,
+}: {
+  height?: number;
+  maxWidth?: number;
+}) {
+  const { i18n } = useI18nNamespace("navbar", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const settings = useAppSelector((state) => state.settings.settings || []);
   const navbarImagesSetting = settings.find((s: any) => s.key === "navbar_images");
-  const footerImagesSetting = settings.find((s: any) => s.key === "footer_images");
-  const logoSrc =
-    resolveLogoSrc(navbarImagesSetting?.images || navbarImagesSetting?.value) ||
-    resolveLogoSrc(footerImagesSetting?.images || footerImagesSetting?.value);
-
+  const logoSrc = resolveLogoSrc(navbarImagesSetting?.images || navbarImagesSetting?.value);
   const navbarLogoText = settings.find((s: any) => s.key === "navbar_logo_text");
-  const footerLogoText = settings.find((s: any) => s.key === "footer_logo_text");
-  let title = "Logo";
+
   let slogan = "";
-
-  const logoTextValue =
-    (navbarLogoText && isLogoTextValue(navbarLogoText.value) && navbarLogoText.value) ||
-    (footerLogoText && isLogoTextValue(footerLogoText.value) && footerLogoText.value);
-
-  if (logoTextValue) {
-    title =
-      logoTextValue.title?.label?.[lang] ||
-      logoTextValue.title?.label?.en ||
-      "Logo";
+  if (isLogoTextValue(navbarLogoText?.value)) {
     slogan =
-      logoTextValue.slogan?.label?.[lang] ||
-      logoTextValue.slogan?.label?.en ||
+      navbarLogoText.value.slogan?.label?.[lang] ||
+      navbarLogoText.value.slogan?.label?.en ||
       "";
   }
 
   return (
-    <FooterLogoCol>
+    <LogoWrapper href="/">
       {logoSrc ? (
-        <LogoImageLink href="/">
-          <FooterLogoImage
+        <LogoImgBox>
+          <Image
             src={logoSrc}
-            alt={title}
-            width={width}
+            alt="Ensotek Logo"
+            width={maxWidth}
             height={height}
+            style={{
+              width: "auto",
+              height: `${height}px`,
+              maxWidth: `${maxWidth}px`,
+              minWidth: "32px",
+              objectFit: "contain",
+              background: "transparent",
+              border: "none",
+              borderRadius: 0,
+              display: "block",
+            }}
             priority
           />
-        </LogoImageLink>
+        </LogoImgBox>
       ) : (
-        <FooterFallback>{title}</FooterFallback>
+        <Fallback style={{ height }}>{/* fallback kullanılmazsa logoyu yüklemez */}</Fallback>
       )}
-      <FooterLogoText>{title}</FooterLogoText>
-      {slogan && <FooterLogoSlogan>{slogan}</FooterLogoSlogan>}
-    </FooterLogoCol>
+      {slogan && <LogoSlogan>{slogan}</LogoSlogan>}
+    </LogoWrapper>
   );
 }
 
-// --- Styles ---
-const FooterLogoCol = styled.div`
+// --- Styled Components ---
+const LogoWrapper = styled(Link)`
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 0 auto ${({ theme }) => theme.spacings.lg} auto;
+  gap: 0.14em;
   text-decoration: none;
+  background: transparent;
+  min-width: 150px;
+  padding: 0;
+  margin: 0;
+
+  &:hover, &:focus-visible {
+    text-decoration: none;
+  }
 `;
 
-const LogoImageLink = styled(Link)`
+const LogoImgBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 150px;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  height: auto;
 `;
 
-const FooterLogoImage = styled(Image)`
-  height: 120px;
-  width: auto;
-  object-fit: contain;
-  border-radius: ${({ theme }) => theme.radii.md};
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  margin: ${({ theme }) => theme.spacings.sm} 0;
+const Fallback = styled.div`
+  height: 250px;
+  background: transparent;
 `;
 
-const FooterFallback = styled.div`
-  width: 120px;
-  height: 120px;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  border-radius: ${({ theme }) => theme.radii.md};
-  margin: ${({ theme }) => theme.spacings.sm} 0;
-`;
-
-const FooterLogoText = styled.span`
+const LogoSlogan = styled.span`
+  margin-top: 3px;
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.primary};
-  font-family: ${({ theme }) => theme.fonts.heading};
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-family: ${({ theme }) => theme.fonts.body};
+  font-style: italic;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  text-align: center;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  margin-top: ${({ theme }) => theme.spacings.xs};
-`;
 
-const FooterLogoSlogan = styled.span`
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-style: italic;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-family: ${({ theme }) => theme.fonts.body};
-  margin-bottom: ${({ theme }) => theme.spacings.xs};
-  margin-top: ${({ theme }) => theme.spacings.xs};
-  white-space: pre-line;
+  @media (max-width: 600px) {
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
+    max-width: 80vw;
+  }
 `;

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
-import {translations} from "@/modules/activity";
+import { translations } from "@/modules/activity";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import Link from "next/link";
 import Image from "next/image";
@@ -15,7 +15,6 @@ import {
   fetchActivityBySlug,
   setSelectedActivity,
 } from "@/modules/activity/slice/activitySlice";
-import { CommentForm, CommentList } from "@/modules/comment";
 import type { IActivity } from "@/modules/activity";
 import type { SupportedLocale } from "@/types/common";
 
@@ -25,7 +24,7 @@ export default function ActivityDetailSection() {
   const { slug } = useParams() as { slug: string };
   const dispatch = useAppDispatch();
 
-  // Locale dosyalarını i18n'e yükle
+  // i18n yükleme
   Object.entries(translations).forEach(([locale, resources]) => {
     if (!i18n.hasResourceBundle(locale, "activity")) {
       i18n.addResourceBundle(locale, "activity", resources, true, true);
@@ -55,142 +54,254 @@ export default function ActivityDetailSection() {
     };
   }, [dispatch, allActivity, slug]);
 
+  // Çoklu dil fallback
+  const getMultiLang = (obj?: Record<string, string>) =>
+    obj?.[lang] || obj?.["tr"] || obj?.["en"] || Object.values(obj || {})[0] || "—";
+
   if (loading) {
     return (
-      <Container>
+      <DetailContainer>
         <Skeleton />
-      </Container>
+      </DetailContainer>
     );
   }
 
   if (error || !activity) {
     return (
-      <Container>
+      <DetailContainer>
         <ErrorMessage />
-      </Container>
+      </DetailContainer>
     );
   }
 
-  const otherActivity = allActivity.filter((item: IActivity) => item.slug !== slug).slice(0, 2);
+  const otherActivity = allActivity.filter((item: IActivity) => item.slug !== slug);
 
   return (
-    <Container
-      initial={{ opacity: 0, y: 40 }}
+    <DetailContainer
+      initial={{ opacity: 0, y: 38 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.55 }}
     >
-      <Title>{activity.title?.[lang] || t("page.noTitle", "Başlık yok")}</Title>
+      {/* Başlık */}
+      <MainTitle>
+        {getMultiLang(activity.title)}
+      </MainTitle>
 
+      {/* Görsel */}
       {activity.images?.[0]?.url && (
-        <ImageWrapper>
+        <BannerImage>
           <Image
             src={activity.images[0].url}
-            alt={activity.title?.[lang] || ""}
-            width={800}
-            height={400}
-            style={{ width: "100%", height: "auto", objectFit: "cover" }}
+            alt={getMultiLang(activity.title)}
+            width={1100}
+            height={470}
+            priority
+            style={{ objectFit: "cover", width: "100%", height: "310px", borderRadius: "22px" }}
           />
-        </ImageWrapper>
+        </BannerImage>
       )}
 
-      {activity.summary?.[lang] && (
-        <SummaryBox>
-          <h3>{t("page.summary")}</h3>
-          <div>{activity.summary?.[lang]}</div>
-        </SummaryBox>
+      {/* Özet */}
+      {activity.summary && getMultiLang(activity.summary) && (
+        <SummaryBlock>
+          <h3>{t("page.summary", "Kısa Bilgi")}</h3>
+          <div>{getMultiLang(activity.summary)}</div>
+        </SummaryBlock>
       )}
 
-      {activity.content?.[lang] && (
-        <ContentBox>
-          <h3>{t("page.detail")}</h3>
-          <div dangerouslySetInnerHTML={{ __html: activity.content[lang] }} />
-        </ContentBox>
+      {/* İçerik */}
+      {activity.content && getMultiLang(activity.content) && (
+        <ContentBlock>
+          <h3>{t("page.detail", "Detaylar")}</h3>
+          <div
+            className="activity-content"
+            dangerouslySetInnerHTML={{ __html: getMultiLang(activity.content) }}
+          />
+        </ContentBlock>
       )}
 
+      {/* Diğer faaliyetler */}
       {otherActivity?.length > 0 && (
-        <OtherSection>
-          <h3>{t("page.other")}</h3>
-          <OtherList>
+        <OtherBlock>
+          <h3>{t("page.other", "Diğer Faaliyetlerimiz")}</h3>
+          <OtherGrid>
             {otherActivity.map((item: IActivity) => (
-              <OtherItem key={item._id}>
-                <Link href={`/activity/${item.slug}`}>{item.title?.[lang]}</Link>
-              </OtherItem>
+              <OtherCard key={item._id}>
+                <OtherImgWrap>
+                  {item.images?.[0]?.url ? (
+                    <Image
+                      src={item.images[0].url}
+                      alt={getMultiLang(item.title)}
+                      width={70}
+                      height={50}
+                      style={{ objectFit: "contain", width: "60px", height: "40px", borderRadius: "10px" }}
+                    />
+                  ) : (
+                    <OtherImgPlaceholder />
+                  )}
+                </OtherImgWrap>
+                <OtherTitle>
+                  <Link href={`/activity/${item.slug}`}>
+                    {getMultiLang(item.title)}
+                  </Link>
+                </OtherTitle>
+              </OtherCard>
             ))}
-          </OtherList>
-        </OtherSection>
+          </OtherGrid>
+        </OtherBlock>
       )}
-      <CommentForm contentId={activity._id} contentType="activity" />
-      <CommentList contentId={activity._id} contentType="activity" />
-    </Container>
+    </DetailContainer>
   );
 }
 
 // --------- STYLES -----------
-const Container = styled(motion.section)`
-  max-width: 900px;
+const DetailContainer = styled(motion.section)`
+  max-width: 940px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacings.xxl}
-    ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.xxxl} ${({ theme }) => theme.spacings.lg};
+  background: ${({ theme }) => theme.colors.sectionBackground};
+  border-radius: 22px;
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  margin-bottom: 4.5rem;
+
+  @media (max-width: 700px) {
+    padding: ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.sm};
+  }
 `;
 
-const Title = styled.h1`
+const MainTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacings.lg};
   color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
+  letter-spacing: 0.01em;
+  margin-bottom: 1.4rem;
+  text-align: center;
 `;
 
-const ImageWrapper = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacings.xl};
+const BannerImage = styled.div`
+  width: 100%;
+  margin: 0 auto 2.1rem auto;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: ${({ theme }) => theme.shadows.lg};
+
   img {
+    display: block;
     width: 100%;
-    height: auto;
-    object-fit: cover;
-    border-radius: ${({ theme }) => theme.radii.sm};
-    box-shadow: ${({ theme }) => theme.shadows.sm};
+    border-radius: 22px;
   }
 `;
 
-const SummaryBox = styled.div`
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-left: 4px solid ${({ theme }) => theme.colors.primary};
-  padding: ${({ theme }) => theme.spacings.lg};
-  margin-bottom: ${({ theme }) => theme.spacings.lg};
-  border-radius: ${({ theme }) => theme.radii.sm};
-`;
-
-const ContentBox = styled.div`
-  background: ${({ theme }) => theme.colors.background};
-  padding: ${({ theme }) => theme.spacings.lg};
-  margin-bottom: ${({ theme }) => theme.spacings.xl};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  box-shadow: ${({ theme }) => theme.shadows.sm};
+const SummaryBlock = styled.div`
+  background: ${({ theme }) => theme.colors.achievementBackground};
+  border-left: 6px solid ${({ theme }) => theme.colors.primary};
+  padding: 1.45rem 2.1rem 1.2rem 2rem;
+  margin-bottom: 2.1rem;
+  border-radius: 14px;
+  box-shadow: ${({ theme }) => theme.shadows.xs};
   h3 {
-    margin-bottom: ${({ theme }) => theme.spacings.md};
     color: ${({ theme }) => theme.colors.primary};
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+    margin-bottom: 0.7em;
+  }
+  div {
+    color: ${({ theme }) => theme.colors.textSecondary};
+    font-size: ${({ theme }) => theme.fontSizes.base};
+    line-height: 1.7;
   }
 `;
 
-const OtherSection = styled.div`
-  margin-top: ${({ theme }) => theme.spacings.xxl};
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  padding-top: ${({ theme }) => theme.spacings.lg};
+const ContentBlock = styled.div`
+  background: ${({ theme }) => theme.colors.contentBackground};
+  border-left: 6px solid ${({ theme }) => theme.colors.accent};
+  padding: 2.1rem 2.3rem 2rem 2.3rem;
+  margin-bottom: 2.6rem;
+  border-radius: 18px;
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+
+  h3 {
+    color: ${({ theme }) => theme.colors.accent};
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+    margin-bottom: 0.7em;
+  }
+  .activity-content {
+    font-size: ${({ theme }) => theme.fontSizes.base};
+    color: ${({ theme }) => theme.colors.text};
+    line-height: 1.7;
+    p { margin-bottom: 0.9em; }
+    ul, ol { margin-bottom: 0.9em; }
+    li { margin-left: 1.2em; }
+  }
 `;
 
-const OtherList = styled.ul`
+const OtherBlock = styled.div`
+  margin-top: 3.2rem;
+  border-top: 1.5px solid ${({ theme }) => theme.colors.border};
+  padding-top: 2.2rem;
+  h3 {
+    color: ${({ theme }) => theme.colors.primary};
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+    margin-bottom: 1.2rem;
+    text-align: left;
+  }
+`;
+
+const OtherGrid = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacings.sm};
+  flex-wrap: wrap;
+  gap: 1.5rem 2.3rem;
 `;
 
-const OtherItem = styled.li`
+const OtherCard = styled.div`
+  display: flex;
+  align-items: center;
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  border-radius: 14px;
+  box-shadow: ${({ theme }) => theme.shadows.xs};
+  padding: 0.65rem 1.2rem;
+  min-width: 170px;
+  gap: 0.6rem;
+  border: 1.2px solid ${({ theme }) => theme.colors.borderLight};
+  transition: box-shadow 0.17s, border-color 0.14s;
+
+  &:hover, &:focus-visible {
+    border-color: ${({ theme }) => theme.colors.accent};
+    box-shadow: ${({ theme }) => theme.shadows.md};
+  }
+`;
+
+const OtherImgWrap = styled.div`
+  width: 60px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border-radius: 10px;
+  overflow: hidden;
+`;
+
+const OtherImgPlaceholder = styled.div`
+  width: 60px;
+  height: 40px;
+  border-radius: 10px;
+  background: ${({ theme }) => theme.colors.skeleton};
+  opacity: 0.34;
+`;
+
+const OtherTitle = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.base};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
   a {
     color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;
-
-    &:hover {
+    &:hover, &:focus-visible {
       text-decoration: underline;
+      color: ${({ theme }) => theme.colors.accent};
     }
   }
 `;
+
