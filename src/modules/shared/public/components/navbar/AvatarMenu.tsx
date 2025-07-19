@@ -6,13 +6,15 @@ import Image from "next/image";
 import Link from "next/link";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales/navbar";
+import translations from "@/modules/shared/locales/navbar";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logoutUser, resetAuthState } from "@/modules/users/slice/authSlice";
 import { resetProfile } from "@/modules/users/slice/accountSlice";
 import { getImageSrc } from "@/shared/getImageSrc";
 import type { ProfileImageObj } from "@/modules/users/types/auth";
 import { toast } from "react-toastify";
+import { FaSignInAlt, FaUserPlus } from "react-icons/fa";
+
 
 interface AvatarMenuProps {
   showDropdown: boolean;
@@ -83,8 +85,14 @@ export default function AvatarMenu({
   if (!user) {
     return (
       <>
-        <MenuLink href="/login">{t("login")}</MenuLink>
-        <MenuLink href="/register">{t("register")}</MenuLink>
+        <MenuLink href="/login" aria-label={t("login")}>
+  <FaSignInAlt />
+</MenuLink>
+<MenuLink href="/register" aria-label={t("register")}>
+  <FaUserPlus />
+</MenuLink>
+
+
       </>
     );
   }
@@ -207,16 +215,34 @@ const DropdownItem = styled.a`
 const MenuLink = styled(Link)`
   text-decoration: none;
   color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  font-size: ${({ theme }) => theme.fontSizes.md};
   background: ${({ theme }) => theme.colors.backgroundAlt};
-  padding: 0.48em 1.3em;
-  border-radius: 22px;
+  border-radius: 50%;
+  padding: 0.46em 0.52em;
   margin-right: 4px;
-  transition: color 0.18s, background 0.18s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35em;      /* Icon boyutunu belirle */
+  min-width: 38px;
+  min-height: 38px;
+  box-shadow: 0 2px 10px rgba(40,117,194,0.07);
+  transition: color 0.18s, background 0.18s, box-shadow 0.18s;
 
-  &:hover {
+  &:hover, &:focus-visible {
     color: ${({ theme }) => theme.colors.accent};
     background: ${({ theme }) => theme.colors.backgroundSecondary};
+    box-shadow: 0 5px 20px rgba(11,182,214,0.13);
+    outline: none;
+  }
+
+  /* Tam responsive; artık metin yok, ikon hep ortada */
+  @media (max-width: 700px) {
+    font-size: 1.38em;
+    margin-right: 3px;
+    padding: 0.43em 0.46em;
+    min-width: 34px;
+    min-height: 34px;
   }
 `;
+
+

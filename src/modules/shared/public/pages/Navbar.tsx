@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { FaMoon, FaSun, FaBars, FaTimes } from "react-icons/fa";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales/navbar";
+import translations from "@/modules/shared/locales/navbar";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { fetchCart } from "@/modules/cart/slice/cartSlice";
@@ -197,7 +197,7 @@ const CenterSection = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.xl};
-  background: linear-gradient(96deg, ${({ theme }) => theme.colors.achievementGradientStart} 0%, ${({ theme }) => theme.colors.achievementGradientEnd} 85%);
+  background: ${({ theme }) => theme.colors.background};
   border-radius: 0 0 24px 24px;
   box-shadow: ${({ theme }) => theme.shadows.md};
 
@@ -307,7 +307,7 @@ const StickyMenu = styled(motion.div)<{ isAdmin?: boolean }>`
   top: ${({ isAdmin }) => (isAdmin ? "unset" : "0")};
   left: 0;
   width: 100%;
-  background: linear-gradient(96deg, ${({ theme }) => theme.colors.achievementGradientStart} 0%, ${({ theme }) => theme.colors.achievementGradientEnd} 85%);
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   box-shadow: ${({ theme }) => theme.shadows.lg};
   padding: 7px ${({ theme }) => theme.spacings.xxl};
   display: flex;

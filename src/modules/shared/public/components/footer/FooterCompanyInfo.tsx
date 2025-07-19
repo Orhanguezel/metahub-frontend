@@ -9,12 +9,9 @@ import translations from "../../../locales/footer";
 // Başlığı parentten prop ile göndermek de mümkündür, şimdilik component içinde sabit tutuldu.
 export default function FooterCompanyInfo() {
   const company = useAppSelector((state) => state.company.company);
-   const { t } = useI18nNamespace("footer", translations);
-
+  const { t } = useI18nNamespace("footer", translations);
   if (!company) return null;
-
   const { email, phone, address } = company;
-
   return (
     <FooterBlock>
       <FooterTitle>{t("companyInfo", "Company Info")}</FooterTitle>
@@ -35,14 +32,11 @@ export default function FooterCompanyInfo() {
           <InfoRow>
             <span>{t("address", "Address")}:</span>
             <span>
-              {/* Adresin her bir alanını güvenli şekilde birleştiriyoruz */}
               {[
                 address.street,
                 address.postalCode,
                 address.city,
-              ]
-                .filter(Boolean)
-                .join(" ")}
+              ].filter(Boolean).join(" ")}
             </span>
           </InfoRow>
         )}
@@ -51,25 +45,38 @@ export default function FooterCompanyInfo() {
   );
 }
 
+
 // --- Styled Components (footer linkleriyle aynı başlık formatı) ---
-const FooterTitle = styled.h3`
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  margin-bottom: ${({ theme }) => theme.spacings.xs};
+const FooterBlock = styled.div`
+  margin: 0;
+  max-width: 320px;
+  width: 100%;
+  text-align: left;
+
+  ${({ theme }) => theme.media.small} {
+    text-align: center;
+    margin: 0 auto;
+  }
 `;
 
-const FooterBlock = styled.div`
-  margin: ${({ theme }) => theme.spacings.md};
-  max-width: 300px;
-  text-align: center;
+const FooterTitle = styled.h3`
+  color: ${({ theme }) => theme.colors.primary};
+  font-family: ${({ theme }) => theme.fonts.heading};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
+  letter-spacing: 0.01em;
 `;
 
 const CompanyLine = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
+  gap: 4px;
+  align-items: flex-start;
+
+  ${({ theme }) => theme.media.small} {
+    align-items: center;
+  }
 `;
 
 const InfoRow = styled.div`
@@ -77,18 +84,24 @@ const InfoRow = styled.div`
   gap: 6px;
   align-items: center;
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  a {
-    color: ${({ theme }) => theme.colors.textSecondary};
-    text-decoration: underline;
-    font-weight: 500;
-    transition: color 0.2s;
-    &:hover {
-      color: ${({ theme }) => theme.colors.primary};
-    }
-  }
+  font-family: ${({ theme }) => theme.fonts.body};
+  line-height: 1.5;
+
   span:first-child {
     font-weight: 500;
     color: ${({ theme }) => theme.colors.text};
-    min-width: 55px;
+    min-width: 62px;
+    opacity: 0.9;
+    font-size: 1em;
+  }
+
+  a {
+    color: ${({ theme }) => theme.colors.link};
+    text-decoration: underline;
+    font-weight: 500;
+    transition: color ${({ theme }) => theme.transition.fast};
+    &:hover {
+      color: ${({ theme }) => theme.colors.primary};
+    }
   }
 `;

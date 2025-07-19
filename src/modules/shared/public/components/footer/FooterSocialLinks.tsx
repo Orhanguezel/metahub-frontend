@@ -62,24 +62,50 @@ const SocialMedia = styled.div`
   margin-top: ${({ theme }) => theme.spacings.lg};
   display: flex;
   justify-content: center;
+  align-items: center;
   flex-wrap: wrap;
   gap: ${({ theme }) => theme.spacings.md};
+
+  ${({ theme }) => theme.media.small} {
+    gap: ${({ theme }) => theme.spacings.sm};
+    margin-top: ${({ theme }) => theme.spacings.md};
+  }
 `;
 
 const SocialLink = styled.a`
-  font-size: 1.7rem;
+  font-size: 2.1rem;
   color: ${({ theme }) => theme.colors.textSecondary};
-  transition: color ${({ theme }) => theme.transition.fast}, transform 0.2s;
+  background: transparent;
+  border-radius: 50%;
+  padding: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  padding: 6px;
-  outline: none;
+  box-shadow: 0 1px 8px 0 ${({ theme }) => theme.colors.primaryTransparent};
+  transition:
+    color ${({ theme }) => theme.transition.fast},
+    background ${({ theme }) => theme.transition.fast},
+    box-shadow 0.2s,
+    transform 0.18s cubic-bezier(.27,1.4,.5,.99);
+
+  /* hover & focus: canlı ve modern efekt */
   &:hover,
   &:focus-visible {
     color: ${({ theme }) => theme.colors.primary};
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-    transform: translateY(-2px) scale(1.08);
+    background: linear-gradient(
+      100deg,
+      ${({ theme }) => theme.colors.primaryTransparent} 0%,
+      ${({ theme }) => theme.colors.footerBackground} 85%
+    );
+    box-shadow: 0 2px 18px 0 ${({ theme }) => theme.colors.primaryTransparent};
+    outline: 2px solid ${({ theme }) => theme.colors.accent};
+    outline-offset: 2px;
+    transform: translateY(-3px) scale(1.12);
+  }
+
+  &:active {
+    color: ${({ theme }) => theme.colors.accent};
+    background: ${({ theme }) => theme.colors.backgroundAlt};
+    transform: scale(0.97);
   }
 `;

@@ -81,65 +81,96 @@ export default function FooterSection() {
   return (
     <FooterWrapper>
       <FooterLogo />
-      <FooterGrid>
-        <InfoBlock>
-          <FooterLinks title={t("companyInfo", "Bilgilerimiz")} links={[]} />
-          <FooterCompanyInfo />
-        </InfoBlock>
-        <InfoBlock>
-          <FooterLinks title={t("massageTypes", "Massage Types")} links={massageLinks} />
-        </InfoBlock>
-        <InfoBlock>
-          <FooterLinks title={t("mainLinks", "Main Links")} links={mainLinks} />
-        </InfoBlock>
-      </FooterGrid>
+<FooterGrid>
+  <InfoBlock>
+    <FooterCompanyInfo />
+  </InfoBlock>
+  <InfoBlock>
+    <FooterLinks title={t("massageTypes", "Massage Types")} links={massageLinks} />
+  </InfoBlock>
+  <InfoBlock>
+    <FooterLinks title={t("mainLinks", "Main Links")} links={mainLinks} />
+  </InfoBlock>
+</FooterGrid>
+
+
       <FooterSocialLinks />
       {rightsText && <FooterCopyright />}
     </FooterWrapper>
   );
-}
-
-// --- Styled Components ---
-const FooterWrapper = styled.footer`
-  padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.md};
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  color: ${({ theme }) => theme.colors.text};
-  border-top: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
-  text-align: center;
+}const FooterWrapper = styled.footer`
   width: 100%;
-  box-sizing: border-box;
+  background: ${({ theme }) => theme.colors.footerBackground};
+  border-top: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: ${({ theme }) => theme.spacings.xl} 0 ${({ theme }) => theme.spacings.md};
   row-gap: ${({ theme }) => theme.spacings.lg};
+  z-index: 1;
+
+  ${({ theme }) => theme.media.medium} {
+    padding: ${({ theme }) => theme.spacings.lg} 0 ${({ theme }) => theme.spacings.sm};
+    row-gap: ${({ theme }) => theme.spacings.md};
+  }
+
+  ${({ theme }) => theme.media.small} {
+    padding: ${({ theme }) => theme.spacings.md} 0 ${({ theme }) => theme.spacings.sm};
+    row-gap: ${({ theme }) => theme.spacings.sm};
+  }
 `;
 
 const FooterGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, minmax(160px, 1fr));
-  gap: ${({ theme }) => theme.spacings.xl};
-  max-width: ${({ theme }) => theme.layout.containerWidth};
+  grid-template-columns: repeat(3, 1fr);
+  gap: ${({ theme }) => theme.spacings.lg};
   width: 100%;
-  margin: ${({ theme }) => theme.spacings.lg} auto 0 auto;
+  max-width: ${({ theme }) => theme.layout.containerWidth};
+  margin: 0 auto;
   align-items: flex-start;
-  justify-content: center;
+  justify-content: space-between;
+  padding: 0 ${({ theme }) => theme.spacings.lg};
 
+  ${({ theme }) => theme.media.large} {
+    max-width: 1000px;
+    gap: ${({ theme }) => theme.spacings.md};
+    padding: 0 ${({ theme }) => theme.spacings.md};
+  }
+  ${({ theme }) => theme.media.medium} {
+    grid-template-columns: 1fr 1fr;
+    max-width: 650px;
+    gap: ${({ theme }) => theme.spacings.md};
+    padding: 0 ${({ theme }) => theme.spacings.sm};
+  }
   ${({ theme }) => theme.media.small} {
     grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacings.md};
-    margin-top: ${({ theme }) => theme.spacings.md};
+    max-width: 100vw;
+    gap: ${({ theme }) => theme.spacings.xl}; /* Burada spacing arttırıldı */
+    padding: 0 ${({ theme }) => theme.spacings.sm};
+    align-items: center;
+    text-align: center;
+    justify-items: center;
   }
 `;
 
 const InfoBlock = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  margin: 0 ${({ theme }) => theme.spacings.md};
-  text-align: center;
+  align-items: flex-start;
   min-width: 0;
-  row-gap: ${({ theme }) => theme.spacings.sm};
+  padding: 0;
+  width: 100%;
+
   ${({ theme }) => theme.media.small} {
-    margin: 0;
+    align-items: center;
+    text-align: center;
+    padding: 0;
+    margin-bottom: ${({ theme }) => theme.spacings.xl}; /* Ekstra gap */
+    width: 90vw; /* Mobile'da bloklar biraz daha geniş gözüksün */
+    max-width: 480px;
+  }
+  &:last-child {
+    margin-bottom: 0;
   }
 `;
+

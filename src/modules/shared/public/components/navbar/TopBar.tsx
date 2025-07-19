@@ -26,7 +26,7 @@ export default function TopBar() {
             title={phone}
           >
             <FaPhone style={{ marginRight: 5, fontSize: 15 }} />
-            <span>{phone}</span>
+             <span className="contact-label">{phone}</span>
           </ContactItem>
         )}
         {email && (
@@ -37,7 +37,7 @@ export default function TopBar() {
             title={email}
           >
             <FaEnvelope style={{ marginRight: 5, fontSize: 15 }} />
-            <span>{email}</span>
+            <span className="contact-label">{email}</span>
           </ContactItem>
         )}
       </ContactGroup>
@@ -52,39 +52,67 @@ const TopBarWrapper = styled.div`
   background: ${({ theme }) => theme.colors.backgroundAlt};
   color: ${({ theme }) => theme.colors.primary};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  padding: 0.3em ${({ theme }) => theme.spacings.lg};
+  padding: 0.2em ${({ theme }) => theme.spacings.xl};
   display: flex;
+  flex-direction: row; /* Önemli: Mobilde de row! */
   justify-content: space-between;
   align-items: center;
-  border-radius: 0 0 8px 8px;
-  min-height: 32px;
+  min-height: 36px;
+  border-radius: 0 0 12px 12px;
+  gap: ${({ theme }) => theme.spacings.md};
 
-  @media (max-width: 700px) {
-    flex-direction: column;
-    gap: 2px;
-    padding: 0.16em ${({ theme }) => theme.spacings.sm};
+  ${({ theme }) => theme.media.medium} {
+    padding: 0.18em ${({ theme }) => theme.spacings.lg};
+    min-height: 34px;
+    border-radius: 0 0 8px 8px;
+    gap: ${({ theme }) => theme.spacings.sm};
+  }
+
+  ${({ theme }) => theme.media.small} {
+    /* flex-direction: column; <-- ARTIK YOK */
+    flex-direction: row; /* Mobilde de row kalsın! */
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.08em ${({ theme }) => theme.spacings.sm};
+    min-height: 30px;
+    border-radius: 0 0 6px 6px;
+    gap: ${({ theme }) => theme.spacings.xs};
   }
 `;
 
 const LeftGroup = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+  flex: 1 1 auto;
 
-  @media (max-width: 700px) {
-    width: 100%;
+  ${({ theme }) => theme.media.medium} {
+    gap: 10px;
+  }
+  ${({ theme }) => theme.media.small} {
     justify-content: flex-start;
-    gap: 9px;
+    gap: 7px;
+    margin-bottom: 0;
   }
 `;
 
 const ContactGroup = styled.div`
   display: flex;
   align-items: center;
-  gap: 20px;
-  @media (max-width: 700px) {
-    gap: 11px;
-    width: 100%;
+  gap: 15px;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  flex-wrap: nowrap !important; /* Asla alt satıra inme! */
+  padding: 0 15px;
+  overflow-x: auto;
+  min-width: 0;
+
+  ${({ theme }) => theme.media.medium} {
+    gap: 13px;
+  }
+  ${({ theme }) => theme.media.small} {
+    width: auto;
+    gap: 13px;
     justify-content: flex-end;
   }
 `;
@@ -92,19 +120,36 @@ const ContactGroup = styled.div`
 const ContactItem = styled.a`
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   color: ${({ theme }) => theme.colors.primary};
   text-decoration: none;
   font-weight: 500;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  transition: color 0.16s;
+  font-size: 15px;
+  min-width: 30px;
+  min-height: 28px;
+  line-height: 1.1;
+  border-radius: 4px;
+  padding: 1px 4px;
+  transition: color 0.18s, background 0.18s;
 
   &:hover,
   &:focus-visible {
     color: ${({ theme }) => theme.colors.accent};
+    background: ${({ theme }) => theme.colors.backgroundSecondary};
     text-decoration: underline;
+    outline: none;
   }
+
   svg {
-    font-size: 1em;
+    font-size: 15px;
+    min-width: 17px;
+    min-height: 17px;
+  }
+
+  .contact-label {
+    display: inline;
+    @media (max-width: 700px) {
+      display: none;
+    }
   }
 `;

@@ -20,7 +20,7 @@ export default function FooterCopyright() {
   };
 
   const dynamicCompanyRaw = settings.find((s: any) => s.key === "footer_company_name")?.value;
-  const dynamicRightsRaw = settings.find((s: any) => s.key === "footer_rights_text")?.value;
+  const dynamicRightsRaw = settings.find((s: any) => s.key === "footer_rights")?.value;
 
   const companyName =
     getLocalizedValue(dynamicCompanyRaw) || company?.companyName || "";
@@ -48,33 +48,38 @@ export default function FooterCopyright() {
 }
 
 const Copyright = styled.div`
-  margin-top: ${({ theme }) => theme.spacings.lg};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  line-height: ${({ theme }) => theme.lineHeights.normal};
+  width: 100%;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   text-align: center;
-  opacity: 0.88;
-  letter-spacing: 0.02em;
+  padding: ${({ theme }) => theme.spacings.sm} 0 ${({ theme }) => theme.spacings.xs};
+  border-top: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderLight};
+  letter-spacing: 0.01em;
+  margin-top: ${({ theme }) => theme.spacings.sm};
+  font-family: ${({ theme }) => theme.fonts.body};
+  line-height: 1.6;
 
-  strong {
-    color: ${({ theme }) => theme.colors.primary};
-    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-    letter-spacing: 0.04em;
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    padding: ${({ theme }) => theme.spacings.xs} 0;
+    margin-top: ${({ theme }) => theme.spacings.xs};
   }
 `;
 
 const DesignLink = styled.a`
   color: ${({ theme }) => theme.colors.textSecondary};
   text-decoration: none;
-  margin-top: 4px;
+  margin-top: 2px;
   display: inline-block;
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  opacity: 0.8;
-  transition: color ${({ theme }) => theme.transition.fast};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  font-style: italic;
+  opacity: 0.75;
+  transition: color ${({ theme }) => theme.transition.fast}, opacity 0.25s;
 
   &:hover,
   &:focus {
-    color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.accent};
     opacity: 1;
     text-decoration: underline;
     outline: none;
