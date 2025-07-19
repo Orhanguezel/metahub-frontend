@@ -237,11 +237,11 @@ const MenuLink = styled(Link)`
 
   /* Tam responsive; artık metin yok, ikon hep ortada */
   @media (max-width: 700px) {
-    font-size: 1.38em;
+    font-size: 1.08em;
     margin-right: 3px;
-    padding: 0.43em 0.46em;
-    min-width: 34px;
-    min-height: 34px;
+    padding: 0.23em 0.26em;
+    min-width: 30px;
+    min-height: 30px;
   }
 `;
 

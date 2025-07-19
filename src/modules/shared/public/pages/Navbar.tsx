@@ -277,7 +277,7 @@ const DesktopMenu = styled.ul`
   list-style: none;
   gap: 0.11rem; // Neredeyse birleşik, ama birbirine binmez!
   margin: 0;
-  padding: 0;
+  padding: 20px;
   font-family: ${({ theme }) => theme.fonts.main};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};

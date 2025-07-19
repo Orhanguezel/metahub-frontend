@@ -25,7 +25,7 @@ export default function TopBar() {
             aria-label="Telefon"
             title={phone}
           >
-            <FaPhone style={{ marginRight: 5, fontSize: 15 }} />
+            <FaPhone />
              <span className="contact-label">{phone}</span>
           </ContactItem>
         )}
@@ -153,3 +153,4 @@ const ContactItem = styled.a`
     }
   }
 `;
+

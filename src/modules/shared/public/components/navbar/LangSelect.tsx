@@ -44,8 +44,7 @@ export default function LangSelect(props: Props) {
 const LangSelectStyled = styled.select`
   background: ${({ theme }) => theme.colors.background || "#222"};
   border: 1px solid ${({ theme }) => theme.colors.grey};
-  padding: ${({ theme }) => theme.spacings.xs}
-    ${({ theme }) => theme.spacings.sm};
+  padding: ${({ theme }) => theme.spacings.xs} ${({ theme }) => theme.spacings.sm};
   border-radius: 6px;
   font-size: ${({ theme }) => theme.fontSizes.small};
   color: ${({ theme }) => theme.colors.text};
@@ -54,11 +53,33 @@ const LangSelectStyled = styled.select`
   max-width: 110px;
   transition: border 0.15s, color 0.13s;
 
-  &:hover {
+  &:hover,
+  &:focus-visible {
     border-color: ${({ theme }) => theme.colors.primary};
+    outline: none;
   }
+
   option {
     color: ${({ theme }) => theme.colors.text};
     background: ${({ theme }) => theme.colors.background || "#222"};
   }
+
+  /* Tablet */
+  ${({ theme }) => theme.media.medium} {
+    font-size: 0.95em;
+    min-width: 54px;
+    max-width: 90px;
+    padding: 3px 8px;
+    border-radius: 5px;
+  }
+
+  /* Mobil */
+  ${({ theme }) => theme.media.small} {
+    font-size: 0.77em;
+    min-width: 44px;
+    max-width: 74px;
+    padding: 2px;
+    border-radius: 4px;
+  }
 `;
+
