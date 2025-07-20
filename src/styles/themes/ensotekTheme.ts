@@ -251,19 +251,19 @@ const ensotekTheme: DefaultTheme = {
     primary: {
       background: "#0118D8",
       backgroundHover: "#0014A8",
-      text: "#FFFFFF",
+      text: "#222B45",
       textHover: "#FFFFFF",
     },
     secondary: {
       background: "#E9DFC3",
       backgroundHover: "#DCD2B4",
-      text: "#0118D8",
+      text: "#222B45",
       textHover: "#0118D8",
     },
     danger: {
       background: "#FF6B6B",
       backgroundHover: "#E53935",
-      text: "#FFFFFF",
+      text: "#222B45",
       textHover: "#FFFFFF",
     },
   },

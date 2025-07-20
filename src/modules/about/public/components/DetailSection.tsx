@@ -16,17 +16,13 @@ import {
   setSelectedAbout,
 } from "@/modules/about/slice/aboutSlice";
 import type { IAbout } from "@/modules/about";
-import type { SupportedLocale } from "@/types/common";
+import { SupportedLocale, getMultiLang } from "@/types/common";
 
 export default function AboutDetailSection() {
   const { i18n, t } = useI18nNamespace("about", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { slug } = useParams() as { slug: string };
   const dispatch = useAppDispatch();
-
-  // Çoklu dil fallback
-  const getMultiLang = (obj?: Record<string, string>) =>
-    obj?.[lang] || obj?.tr || obj?.en || Object.values(obj || {})[0] || "—";
 
   Object.entries(translations).forEach(([locale, resources]) => {
     if (!i18n.hasResourceBundle(locale, "about")) {
@@ -82,14 +78,14 @@ export default function AboutDetailSection() {
       transition={{ duration: 0.57 }}
     >
       {/* Başlık */}
-      <Title>{getMultiLang(about.title)}</Title>
+      <Title>{getMultiLang(about.title, lang)}</Title>
 
       {/* Büyük görsel */}
       {about.images?.[0]?.url && (
         <ImageWrapper>
           <StyledImage
             src={about.images[0].url}
-            alt={getMultiLang(about.title)}
+            alt={getMultiLang(about.title, lang)}
             width={1080}
             height={410}
             priority
@@ -98,20 +94,18 @@ export default function AboutDetailSection() {
       )}
 
       {/* Özet (Kısa Bilgi) */}
-      {about.summary && getMultiLang(about.summary) && (
+      {about.summary && getMultiLang(about.summary, lang) && (
         <SummaryBox>
-          <BoxTitle>{t("page.summary", "Kısa Bilgi")}</BoxTitle>
-          <div>{getMultiLang(about.summary)}</div>
+          <div>{getMultiLang(about.summary, lang)}</div>
         </SummaryBox>
       )}
 
       {/* Ana içerik */}
-      {about.content && getMultiLang(about.content) && (
+      {about.content && getMultiLang(about.content, lang) && (
         <ContentBox>
-          <BoxTitle>{t("page.detail", "Detaylar")}</BoxTitle>
           <div
             className="about-content"
-            dangerouslySetInnerHTML={{ __html: getMultiLang(about.content) }}
+            dangerouslySetInnerHTML={{ __html: getMultiLang(about.content, lang) }}
           />
         </ContentBox>
       )}
@@ -127,7 +121,7 @@ export default function AboutDetailSection() {
                   {item.images?.[0]?.url ? (
                     <OtherImg
                       src={item.images[0].url}
-                      alt={getMultiLang(item.title)}
+                      alt={getMultiLang(item.title, lang)}
                       width={60}
                       height={40}
                     />
@@ -137,7 +131,7 @@ export default function AboutDetailSection() {
                 </OtherImgWrap>
                 <OtherTitleMini>
                   <Link href={`/about/${item.slug}`}>
-                    {getMultiLang(item.title)}
+                    {getMultiLang(item.title, lang)}
                   </Link>
                 </OtherTitleMini>
               </OtherCard>
@@ -189,13 +183,6 @@ const StyledImage = styled(Image)`
   @media (max-width: 700px) {
     height: 190px;
   }
-`;
-
-const BoxTitle = styled.h3`
-  color: ${({ theme }) => theme.colors.primary};
-  font-size: ${({ theme }) => theme.fontSizes.large};
-  margin-bottom: ${({ theme }) => theme.spacings.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 `;
 
 const SummaryBox = styled.div`
@@ -310,4 +297,3 @@ const OtherTitleMini = styled.div`
     }
   }
 `;
-

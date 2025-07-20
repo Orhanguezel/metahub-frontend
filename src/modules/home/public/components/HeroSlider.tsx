@@ -170,7 +170,8 @@ const HeroWrapper = styled.section`
   min-height: 460px;
   width: 100vw;
   max-width: 100%;
-  background: linear-gradient(100deg, ${({ theme }) => theme.colors.achievementGradientStart} 0%, ${({ theme }) => theme.colors.achievementGradientEnd} 100%);
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  color: ${({ theme }) => theme.colors.title};
   padding: ${({ theme }) => theme.spacings.xl} 0 ${({ theme }) => theme.spacings.xxl};
   gap: 0;
   position: relative;
@@ -268,7 +269,7 @@ const ContentCol = styled.div`
 
 const HeroTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  color: ${({ theme }) => theme.colors.white};
+  color: ${({ theme }) => theme.colors.title};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
   letter-spacing: 0.01em;
@@ -278,7 +279,7 @@ const HeroTitle = styled.h1`
 
 const HeroDesc = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  color: ${({ theme }) => theme.colors.white};
+  color: ${({ theme }) => theme.colors.title};
   font-family: ${({ theme }) => theme.fonts.body};
   font-weight: ${({ theme }) => theme.fontWeights.regular};
   line-height: 1.6;

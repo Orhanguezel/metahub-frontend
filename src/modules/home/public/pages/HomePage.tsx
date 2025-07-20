@@ -14,15 +14,15 @@ import { ReferencesSection } from "@/modules/references";
 import { BikesSection } from "@/modules/bikes";
 import {WelcomeCouponBanner} from "@/modules/coupon";
 import HeroSlider from "@/modules/home/public/components/HeroSlider";
-//import HeroSection from "@/modules/home/public/components/HeroSection";
-//import HeroSectionSlayt from "@/modules/home/public/components/HeroSectionSlayt";
+import HeroSection from "@/modules/home/public/components/HeroSection";
+import HeroSectionSlayt from "@/modules/home/public/components/HeroSectionSlayt";
 
 
 // Section Key -> Component Map
 const sectionComponents: Record<string, React.ComponentType<any> | undefined> = {
   heroSlider: HeroSlider,
-  //heroSection: HeroSection, // Deprecated
-  //heroSectionSlayt: HeroSectionSlayt, // Deprecated
+  heroSection: HeroSection, // Deprecated
+  heroSectionSlayt: HeroSectionSlayt, // Deprecated
   couponBanner: WelcomeCouponBanner, 
   about: AboutSection,
   services: ServicesSection,

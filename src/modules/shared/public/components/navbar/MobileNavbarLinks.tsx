@@ -1,74 +1,97 @@
 "use client";
 import styled from "styled-components";
-import Link from "next/link";
 import { AUTH_LINKS } from "./navigationLinks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../../locales/navbar";
-import { SupportedLocale } from "@/types/common";;
+import { SupportedLocale } from "@/types/common";
 import { useAppSelector } from "@/store/hooks";
-import { usePathname } from "next/navigation";
-
+import { usePathname, useRouter } from "next/navigation";
 
 interface Props {
   onClose: () => void;
 }
 
 export default function MobileNavbarLinks({ onClose }: Props) {
-   const { i18n, t } = useI18nNamespace("navbar", translations);
+  const { i18n, t } = useI18nNamespace("navbar", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-
   const { profile: user } = useAppSelector((state) => state.account);
   const isAuthenticated = !!user;
 
+  // --- Linkleri alırken url/href fallback ile alınmalı! ---
   const navbarLinksSetting = useAppSelector((state) =>
     state.settings.settings.find((s: any) => s.key === "navbar_main_links")
   );
-
+  // .value'nın yapısına dikkat et!
   const links = (navbarLinksSetting?.value as Record<string, any>) || {};
 
   const pathname = usePathname();
+  const router = useRouter();
+
+  // --- Navigation handler ---
+  const handleNav = (targetUrl: string) => {
+    if (!targetUrl || targetUrl === "#") return;
+    if (pathname !== targetUrl) router.push(targetUrl);
+    onClose();
+  };
 
   return (
     <>
       {Object.entries(links).map(([key, link]) => {
+        // url veya href alanını güvenli çek!
+        const targetUrl = link.url || link.href || "#";
         const label =
           link.label?.[lang] ||
           link.label?.en ||
           link.label?.tr ||
           key;
-        const href = link.href || "#";
+
+        // Eğer URL boşsa atla!
+        if (!targetUrl || targetUrl === "#") return null;
 
         return (
-          <MobileMenuLink
-  key={key}
-  href={href}
-  $active={pathname === href}
-  onClick={onClose}
->
-  {label}
-</MobileMenuLink>
+          <MobileMenuButton
+            key={key}
+            $active={pathname === targetUrl}
+            type="button"
+            onClick={() => handleNav(targetUrl)}
+            tabIndex={0}
+          >
+            {label}
+          </MobileMenuButton>
         );
       })}
 
       {!isAuthenticated ? (
         <>
-          <MobileMenuLink href={AUTH_LINKS.login.href} onClick={onClose}>
+          <MobileMenuButton
+            $active={pathname === AUTH_LINKS.login.href}
+            type="button"
+            onClick={() => handleNav(AUTH_LINKS.login.href)}
+          >
             {t(AUTH_LINKS.login.labelKey)}
-          </MobileMenuLink>
-          <MobileMenuLink href={AUTH_LINKS.register.href} onClick={onClose}>
+          </MobileMenuButton>
+          <MobileMenuButton
+            $active={pathname === AUTH_LINKS.register.href}
+            type="button"
+            onClick={() => handleNav(AUTH_LINKS.register.href)}
+          >
             {t(AUTH_LINKS.register.labelKey)}
-          </MobileMenuLink>
+          </MobileMenuButton>
         </>
       ) : (
-        <MobileMenuLink href={AUTH_LINKS.account.href} onClick={onClose}>
+        <MobileMenuButton
+          $active={pathname === AUTH_LINKS.account.href}
+          type="button"
+          onClick={() => handleNav(AUTH_LINKS.account.href)}
+        >
           {t(AUTH_LINKS.account.labelKey)}
-        </MobileMenuLink>
+        </MobileMenuButton>
       )}
     </>
   );
 }
 
-const MobileMenuLink = styled(Link)<{ $active?: boolean }>`
+const MobileMenuButton = styled.button<{ $active?: boolean }>`
   display: block;
   width: 100%;
   font-size: ${({ theme }) => theme.fontSizes.lg};
@@ -86,6 +109,8 @@ const MobileMenuLink = styled(Link)<{ $active?: boolean }>`
   border-left: 4px solid
     ${({ $active, theme }) =>
       $active ? theme.colors.primary : "transparent"};
+  text-align: left;
+  cursor: pointer;
   transition:
     background 0.16s,
     color 0.14s,
@@ -99,6 +124,7 @@ const MobileMenuLink = styled(Link)<{ $active?: boolean }>`
     border-left: 4px solid ${({ theme }) => theme.colors.primary};
     text-decoration: none;
     font-weight: ${({ theme }) => theme.fontWeights.bold};
+    outline: none;
   }
 
   &:active {
@@ -106,4 +132,3 @@ const MobileMenuLink = styled(Link)<{ $active?: boolean }>`
     color: ${({ theme }) => theme.colors.primaryDark};
   }
 `;
-
