@@ -55,7 +55,7 @@ export default function SectionEditModal({
   return (
     <ModalBackdrop>
       <Modal>
-        <h2>{t("editSection", "Edit Section")}: {meta.key}</h2>
+        <h2>{t("editSection", "Edit Section")}: {meta.sectionKey}</h2>
         <LangTabs>
           {SUPPORTED_LOCALES.map((lng) => (
             <button

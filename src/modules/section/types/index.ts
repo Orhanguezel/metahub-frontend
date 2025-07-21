@@ -1,10 +1,10 @@
 import type { SupportedLocale } from "@/types/common";
 
-export type TranslatedLabel = { [key in SupportedLocale]: string };
+export type TranslatedLabel = { [sectionKey in SupportedLocale]: string };
 
 export interface ISectionMeta {
   tenant: string;         
-  key: string;
+  sectionKey: string;
   label: TranslatedLabel;
   description?: TranslatedLabel;
   icon: string;

@@ -1,0 +1,80 @@
+{
+  "page": {
+    "allEnsotekprod": "Tüm Bisikletler",
+    "noEnsotekprod": "Bisiklet bulunamadı.",
+    "price": "Fiyat",
+    "stock": "Stok",
+    "brand": "Marka",
+    "readMore": "Detayları Gör →",
+    "other": "Diğer Ürünler",
+    "untitled": "Başlıksız",
+    "noSummary": "Açıklama yok.",
+    "ensotekprod": {
+      "title": "Güncel Bisiklet",
+      "readMore": "Detayları Gör",
+      "all": "Tüm Bisikletler"
+    }
+  },
+  "admin": {
+    "tabs": {
+      "ensotekprod": "Bisikletler",
+      "create": "Yeni Bisiklet",
+      "categories": "Kategoriler"
+    },
+    "ensotekprod": {
+      "create": "Yeni Bisiklet Ekle",
+      "edit": "Bisikleti Düzenle",
+      "name": "Bisiklet Adı",
+      "description": "Açıklama",
+      "brand": "Marka",
+      "price": "Fiyat",
+      "stock": "Stok",
+      "tags": "Etiketler",
+      "image": "Görsel",
+      "category": "Kategori",
+      "select_category": "Kategori Seçin",
+      "publish_status": "Yayınlandı mı?",
+      "no_images": "Görsel yok",
+      "publish": "Yayınla",
+      "unpublish": "Gizle",
+      "empty": "Hiç bisiklet yok."
+    },
+    "categories": {
+      "title": "Bisiklet Kategorileri",
+      "add": "Yeni Kategori",
+      "empty": "Kategori bulunamadı."
+    },
+    "language": {
+      "en": "İngilizce",
+      "tr": "Türkçe",
+      "de": "Almanca"
+    },
+    "slug": "Slug",
+    "actions": "İşlemler",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "cancel": "İptal",
+    "update": "Güncelle",
+    "create": "Ekle",
+    "yes": "Evet",
+    "no": "Hayır",
+    "loading": "Yükleniyor...",
+    "confirm": {
+      "delete": "Bu kategoriyi silmek istediğinize emin misiniz?",
+      "delete_ensotekprod": "Bu bisikleti silmek istediğinize emin misiniz?"
+    },
+    "optional_description": "Açıklama (opsiyonel)",
+    "category_info": "Bu kategori neyle ilgili?",
+    "saving": "Kaydediliyor...",
+    "save": "Kaydet",
+    "update2": "Güncelle",
+    "editCategory": "Kategoriyi Düzenle",
+    "newCategory": "Yeni Kategori"
+  },
+  "seo": {
+    "title": "SEO Başlığı",
+    "description": "SEO Açıklaması"
+  },
+  "none": "Yok",
+  "delete_confirm": "Silmek istediğinize emin misiniz?"
+}

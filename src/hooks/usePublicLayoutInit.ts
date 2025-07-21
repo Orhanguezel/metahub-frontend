@@ -18,6 +18,7 @@ import { fetchArticles } from "@/modules/articles/slice/articlesSlice";
 import { fetchActivity } from "@/modules/activity/slice/activitySlice";
 import { fetchReferences } from "@/modules/references/slice/referencesSlice";
 import { fetchBikes } from "@/modules/bikes/slice/bikesSlice";
+import { fetchEnsotekprod } from "@/modules/ensotekprod/slice/ensotekprodSlice";
 import { fetchCoupons } from "@/modules/coupon/slice/couponSlice";
 import {
   fetchAllChatSessions,
@@ -25,6 +26,9 @@ import {
   fetchArchivedSessions,
 } from "@/modules/chat/slice/chatSlice";
 import { fetchBookings } from "@/modules/booking/slice/bookingSlice";
+import { fetchLibrary } from "@/modules/library/slice/librarySlice";
+import { fetchLibraryCategories } from "@/modules/library/slice/libraryCategorySlice";
+
 export const usePublicLayoutInit = () => {
   const dispatch = useAppDispatch();
   const { tenant, loading: tenantLoading } = useActiveTenant();
@@ -45,10 +49,14 @@ export const usePublicLayoutInit = () => {
   const activitySlice = useAppSelector((s) => s.activity);
   const referencesSlice = useAppSelector((s) => s.references);
   const bikesSlice = useAppSelector((s) => s.bikes);
+  const ensotekprodSlice = useAppSelector((s) => s.ensotekprod);
   const couponSlice = useAppSelector((s) => s.coupon);
   const chat = useAppSelector((s) => s.chat);
   const profile = useAppSelector((s) => s.account.profile);
   const bookings = useAppSelector((s) => s.booking);
+  const librarySlice = useAppSelector((s) => s.library);
+  const libraryCategorySlice = useAppSelector((s) => s.libraryCategory);
+
 
   const didInit = useRef<string | undefined>(undefined);
 
@@ -91,6 +99,8 @@ export const usePublicLayoutInit = () => {
       dispatch(fetchReferences());
     if (bikesSlice.bikes.length === 0 && bikesSlice.status === "idle")
       dispatch(fetchBikes());
+    if (ensotekprodSlice.ensotekprod.length === 0 && ensotekprodSlice.status === "idle")
+      dispatch(fetchEnsotekprod());
     if (!companySlice.company && companySlice.status === "idle")
       dispatch(fetchCompanyInfo());
     if (!couponSlice.coupons || couponSlice.coupons.length === 0)
@@ -122,6 +132,22 @@ export const usePublicLayoutInit = () => {
     ) {
       dispatch(fetchGalleryCategories());
     }
+    // Library
+if (
+  (!librarySlice.library || librarySlice.library.length === 0) &&
+  !librarySlice.loading
+) {
+  dispatch(fetchLibrary());
+}
+
+// Library Category
+if (
+  (!libraryCategorySlice.categories || libraryCategorySlice.categories.length === 0) &&
+  !libraryCategorySlice.loading
+) {
+  dispatch(fetchLibraryCategories());
+}
+
   }, [
     dispatch,
     tenant,
@@ -149,6 +175,8 @@ export const usePublicLayoutInit = () => {
     referencesSlice.status,
     bikesSlice.bikes,
     bikesSlice.status,
+    ensotekprodSlice.ensotekprod,
+    ensotekprodSlice.status,
     companySlice.company,
     companySlice.status,
     couponSlice.coupons,
@@ -164,6 +192,10 @@ export const usePublicLayoutInit = () => {
     gallery.status,
     galleryCategory.categories.length,
     galleryCategory.status,
+    librarySlice.library,
+    librarySlice.loading,
+    libraryCategorySlice.categories,
+    libraryCategorySlice.loading,
   ]);
 
   return {
@@ -223,5 +255,13 @@ export const usePublicLayoutInit = () => {
     bikes: bikesSlice.bikes,
     bikesStatus: bikesSlice.status,
     bikesError: bikesSlice.error,
+    ensotekprod: ensotekprodSlice.ensotekprod,
+    ensotekprodStatus: ensotekprodSlice.status,
+    ensotekprodError: ensotekprodSlice.error,
+    library: librarySlice.library,
+  libraryStatus: librarySlice.status,
+  libraryError: librarySlice.error,
+  libraryCategories: libraryCategorySlice.categories,
+  libraryCategoriesError: libraryCategorySlice.error,
   };
 };

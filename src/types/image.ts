@@ -34,4 +34,6 @@ export type ImageType =
   | "activity"
   | "company"
   | "tenants"
+  | "ensotekprod"
+  | "ensotekCategory"
   | "misc";

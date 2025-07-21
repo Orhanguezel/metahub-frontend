@@ -93,6 +93,14 @@ import {
   clearBikesCategoryMessages,
 } from "@/modules/bikes/slice/bikesCategorySlice";
 import {
+  fetchEnsotekprodAdmin,
+  clearEnsotekprodMessages,
+} from "@/modules/ensotekprod/slice/ensotekprodSlice";
+import {
+  fetchEnsotekCategories,
+  clearEnsotekCategoryMessages,
+} from "@/modules/ensotekprod/slice/ensotekCategorySlice";
+import {
   fetchGallery,
   clearGalleryMessages,
 } from "@/modules/gallery/slice/gallerySlice";
@@ -134,6 +142,15 @@ import {
   fetchMessagesByRoomAdmin,
   clearChatMessages,
 } from "@/modules/chat/slice/chatSlice";
+import {
+  fetchAllLibraryAdmin,
+  clearLibraryMessages,
+} from "@/modules/library/slice/librarySlice";
+import {
+  fetchLibraryCategories,
+  clearLibraryCategoryMessages,
+} from "@/modules/library/slice/libraryCategorySlice";
+
 
 
 // -- Cleanup aksiyonları merkezi:
@@ -154,6 +171,8 @@ const cleanupActions = [
   clearBookingMessages,
   clearBikesMessages,
   clearBikesCategoryMessages,
+  clearEnsotekprodMessages,
+  clearEnsotekCategoryMessages,
   clearCouponMessages,
   clearNewsMessages,
   clearNewsCategoryMessages,
@@ -169,6 +188,9 @@ const cleanupActions = [
   clearSectionSettingMessages,
   clearOrderMessages,
   clearChatMessages,
+  clearLibraryMessages,
+  clearLibraryCategoryMessages
+
 ];
 
 // --- useLayoutInit ---
@@ -199,6 +221,8 @@ export const useLayoutInit = () => {
   const bookingSlot = useAppSelector((state) => state.bookingSlot);
   const bikesList = useAppSelector((state) => state.bikes);
   const bikesCategories = useAppSelector((state) => state.bikesCategory);
+  const ensotekprodList = useAppSelector((state) => state.ensotekprod);
+  const ensotekCategories = useAppSelector((state) => state.ensotekCategory);
   const chat = useAppSelector((state) => state.chat);
   const comments = useAppSelector((state) => state.comments);
   const coupons = useAppSelector((state) => state.coupon);
@@ -218,6 +242,9 @@ export const useLayoutInit = () => {
     (s) => s.sectionSetting.settingsAdmin
   );
   const ordersAdmin = useAppSelector((state) => state.orders);
+  const libraryList = useAppSelector((state) => state.library);
+const libraryCategory = useAppSelector((state) => state.libraryCategory);
+
 
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
   useEffect(() => {
@@ -264,6 +291,10 @@ export const useLayoutInit = () => {
       dispatch(fetchBikesAdmin());
     if (!bikesCategories.categories.length && !bikesCategories.loading)
       dispatch(fetchBikesCategories());
+    if (!ensotekprodList.ensotekprod.length && !ensotekprodList.loading)
+      dispatch(fetchEnsotekprodAdmin());
+    if (!ensotekCategories.categories.length && !ensotekCategories.loading)
+      dispatch(fetchEnsotekCategories());
 
     if (
       chat.roomId &&
@@ -331,6 +362,12 @@ export const useLayoutInit = () => {
     if (!ordersAdmin.ordersAdmin.length && !ordersAdmin.loading) {
       dispatch(fetchAllOrdersAdmin());
     }
+    if (!libraryList.libraryAdmin.length && !libraryList.loading)
+  dispatch(fetchAllLibraryAdmin());
+
+if (!libraryCategory.categories.length && !libraryCategory.loading)
+  dispatch(fetchLibraryCategories());
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantLoaded, tenant?._id, dispatch]);
 
@@ -373,6 +410,8 @@ export const useLayoutInit = () => {
     bookingSlot,
     bikesList,
     bikesCategories,
+    ensotekprodList,
+    ensotekCategories,
     chat,
     coupons,
     newsList,
@@ -388,6 +427,8 @@ export const useLayoutInit = () => {
     sectionMetasAdmin,
     sectionSettingsAdmin,
     ordersAdmin,
+    libraryList,
+  libraryCategory,
     // gerekirse analyticsTrends vs ekleyebilirsin
   };
 };

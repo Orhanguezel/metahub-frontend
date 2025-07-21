@@ -49,6 +49,10 @@ import tenantsReducer from "@/modules/tenants/slice/tenantSlice";
 import contactReducer from "@/modules/contact/slice/contactSlice";
 import sectionMetaReducer from "@/modules/section/slices/sectionMetaSlice";
 import sectionSettingReducer from "@/modules/section/slices/sectionSettingSlice";
+import librarySlice from "@/modules/library/slice/librarySlice";
+import libraryCategorySlice from "@/modules/library/slice/libraryCategorySlice";
+import ensotekprodReducer from "@/modules/ensotekprod/slice/ensotekprodSlice";
+import ensotekCategoryReducer from "@/modules/ensotekprod/slice/ensotekCategorySlice";
 
 // --- Combine reducers ---
 // Sadece slice bazında persistReducer uygula!
@@ -100,6 +104,10 @@ const rootReducer = combineReducers({
   contact: contactReducer,
   sectionMeta: sectionMetaReducer,
   sectionSetting: sectionSettingReducer,
+  library: librarySlice,
+  libraryCategory: libraryCategorySlice,
+  ensotekCategory: ensotekCategoryReducer,
+  ensotekprod: ensotekprodReducer
 });
 
 // --- Store ---

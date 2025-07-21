@@ -63,20 +63,20 @@ export const createSectionMeta = createAsyncThunk<{ data: ISectionMeta; message?
 );
 
 // Update
-export const updateSectionMeta = createAsyncThunk<{ data: ISectionMeta; message?: string }, { key: string; data: Partial<ISectionMeta> }>(
+export const updateSectionMeta = createAsyncThunk<{ data: ISectionMeta; message?: string }, { sectionKey: string; data: Partial<ISectionMeta> }>(
   "sectionMeta/update",
-  async ({ key, data }, thunkAPI) => {
-    const res = await apiCall("put", `/section/meta/${key}`, data, thunkAPI.rejectWithValue);
+  async ({ sectionKey, data }, thunkAPI) => {
+    const res = await apiCall("put", `/section/meta/${sectionKey}`, data, thunkAPI.rejectWithValue);
     return { data: res.data, message: res.message };
   }
 );
 
 // Delete
-export const deleteSectionMeta = createAsyncThunk<{ key: string; message?: string }, string>(
+export const deleteSectionMeta = createAsyncThunk<{ sectionKey: string; message?: string }, string>(
   "sectionMeta/delete",
-  async (key, thunkAPI) => {
-    const res = await apiCall("delete", `/section/meta/${key}`, null, thunkAPI.rejectWithValue);
-    return { key, message: res.message };
+  async (sectionKey, thunkAPI) => {
+    const res = await apiCall("delete", `/section/meta/${sectionKey}`, null, thunkAPI.rejectWithValue);
+    return { sectionKey, message: res.message };
   }
 );
 
@@ -126,15 +126,15 @@ const sectionMetaSlice = createSlice({
         state.successMessage = action.payload.message ?? null;
       })
       .addCase(updateSectionMeta.fulfilled, (state, action) => {
-        const idx = state.metas.findIndex((m) => m.key === action.payload.data.key);
+        const idx = state.metas.findIndex((m) => m.sectionKey === action.payload.data.sectionKey);
         if (idx !== -1) state.metas[idx] = action.payload.data;
-        const idxAdmin = state.metasAdmin.findIndex((m) => m.key === action.payload.data.key);
+        const idxAdmin = state.metasAdmin.findIndex((m) => m.sectionKey === action.payload.data.sectionKey);
         if (idxAdmin !== -1) state.metasAdmin[idxAdmin] = action.payload.data;
         state.successMessage = action.payload.message ?? null;
       })
       .addCase(deleteSectionMeta.fulfilled, (state, action) => {
-        state.metas = state.metas.filter((m) => m.key !== action.payload.key);
-        state.metasAdmin = state.metasAdmin.filter((m) => m.key !== action.payload.key);
+        state.metas = state.metas.filter((m) => m.sectionKey !== action.payload.sectionKey);
+        state.metasAdmin = state.metasAdmin.filter((m) => m.sectionKey !== action.payload.sectionKey);
         state.successMessage = action.payload.message ?? null;
       });
   },

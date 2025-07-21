@@ -27,6 +27,7 @@ interface Props {
     | "products"
     | "references"
     | "company"
+    | "ensotekprod"
 
 }
 

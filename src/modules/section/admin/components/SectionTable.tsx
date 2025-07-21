@@ -10,7 +10,8 @@ type Props = {
   metasAdmin: ISectionMeta[];
   settings: ISectionSetting[];
   onEdit: (meta: ISectionMeta, setting?: ISectionSetting) => void;
-  onSelect: (key: string) => void;
+  onDelete: (meta: ISectionMeta, setting?: ISectionSetting) => void; // 👈 unutma!
+  onSelect: (sectionKey: string) => void;
   selectedKeys: string[];
 };
 
@@ -18,23 +19,22 @@ export default function SectionTable({
   metasAdmin,
   settings,
   onEdit,
+  onDelete,      // <-- BU EKLENDİ
   onSelect,
   selectedKeys,
 }: Props) {
-  // ---- STANDART DİL MODELİ ----
   const { i18n, t } = useI18nNamespace("section", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  // Select all handler
   const allSelected = metasAdmin.length > 0 && selectedKeys.length === metasAdmin.length;
   function handleSelectAll() {
     if (allSelected) {
       metasAdmin.forEach((m) => {
-        if (selectedKeys.includes(m.key)) onSelect(m.key);
+        if (selectedKeys.includes(m.sectionKey)) onSelect(m.sectionKey);
       });
     } else {
       metasAdmin.forEach((m: ISectionMeta) => {
-        if (!selectedKeys.includes(m.key)) onSelect(m.key);
+        if (!selectedKeys.includes(m.sectionKey)) onSelect(m.sectionKey);
       });
     }
   }
@@ -51,7 +51,7 @@ export default function SectionTable({
               aria-label="Select all"
             />
           </th>
-          <th>{t("section.key", "Key")}</th>
+          <th>{t("section.sectionKey", "Key")}</th>
           <th>{t("section.label", "Label")}</th>
           <th>{t("section.enabled", "Enabled")}</th>
           <th>{t("section.order", "Order")}</th>
@@ -60,18 +60,18 @@ export default function SectionTable({
       </thead>
       <tbody>
         {metasAdmin.map((metaAdmin) => {
-          const setting = settings.find((s) => s.sectionKey === metaAdmin.key);
+          const setting = settings.find((s) => s.sectionKey === metaAdmin.sectionKey);
           return (
-            <tr key={metaAdmin.key}>
+            <tr key={metaAdmin.sectionKey}>
               <td>
                 <input
                   type="checkbox"
-                  checked={selectedKeys.includes(metaAdmin.key)}
-                  onChange={() => onSelect(metaAdmin.key)}
-                  aria-label={`Select ${metaAdmin.key}`}
+                  checked={selectedKeys.includes(metaAdmin.sectionKey)}
+                  onChange={() => onSelect(metaAdmin.sectionKey)}
+                  aria-label={`Select ${metaAdmin.sectionKey}`}
                 />
               </td>
-              <td>{metaAdmin.key}</td>
+              <td>{metaAdmin.sectionKey}</td>
               <td>
                 {metaAdmin.label?.[lang] ||
                   metaAdmin.label?.en ||
@@ -93,6 +93,15 @@ export default function SectionTable({
                   onClick={() => onEdit(metaAdmin, setting)}
                 >
                   {t("edit", "Edit")}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="danger"
+                  style={{ marginLeft: 8 }}
+                  onClick={() => onDelete(metaAdmin, setting)}
+                  disabled={!setting}
+                >
+                  {t("delete", "Delete")}
                 </Button>
               </td>
             </tr>
@@ -127,4 +136,3 @@ const EnabledDot = styled.span<{ $enabled: boolean }>`
   background: ${({ $enabled, theme }) => $enabled ? theme.colors.success : theme.colors.danger};
   border: 2px solid #fff; box-shadow: 0 0 0 1.5px ${({ $enabled, theme }) => $enabled ? theme.colors.success : theme.colors.danger};
 `;
-

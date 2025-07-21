@@ -30,6 +30,7 @@ interface Props {
     | "products"
     | "references"
     | "company"
+    | "ensotekprod";
   // contentType: "news" | "blog" | "products" | "radonarprod" | "bikes" | "articles" | "services" | "about" | "customProduct" | "references" | "library" | "faq" | "contact" | "company" | "tenant";
 }
 

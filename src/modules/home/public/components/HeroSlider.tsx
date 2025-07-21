@@ -89,8 +89,8 @@ const HeroSlider = () => {
 
   // Ürün detayı yönlendirme
   const detailLink = currentHero?.productId
-    ? `/products/${currentHero.productId}`
-    : `/products`;
+    ? `/ensotekprod/${currentHero.productId}`
+    : `/ensotekprod`;
 
   return (
     <>
@@ -172,15 +172,10 @@ const HeroWrapper = styled.section`
   max-width: 100%;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   color: ${({ theme }) => theme.colors.title};
-  padding: ${({ theme }) => theme.spacings.xl} 0 ${({ theme }) => theme.spacings.xxl};
   gap: 0;
   position: relative;
-  border-radius: 0 0 40px 40px;
-
   @media (max-width: 1100px) {
     flex-direction: column;
-    padding: ${({ theme }) => theme.spacings.lg} 0 ${({ theme }) => theme.spacings.xl};
-    border-radius: 0 0 28px 28px;
   }
 `;
 
@@ -191,19 +186,14 @@ const ImageCol = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: ${({ theme }) => theme.spacings.xxl};
   margin-right: ${({ theme }) => theme.spacings.md};
   background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: 32px;
   overflow: hidden;
   aspect-ratio: 16/9;
   box-shadow: ${({ theme }) => theme.shadows.lg};
 
   @media (max-width: 1100px) {
-    margin-left: ${({ theme }) => theme.spacings.md};
-    margin-right: ${({ theme }) => theme.spacings.md};
     min-height: 210px;
-    border-radius: 22px;
     aspect-ratio: 16/9;
   }
 `;
@@ -215,12 +205,7 @@ const MainImage = styled(Image)`
   height: 100% !important;
   object-fit: cover;
   cursor: pointer;
-  border-radius: 32px;
   box-shadow: ${({ theme }) => theme.shadows.lg};
-
-  @media (max-width: 1100px) {
-    border-radius: 20px;
-  }
 `;
 
 const DotRow = styled.div`
