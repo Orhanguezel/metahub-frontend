@@ -34,6 +34,8 @@ const folderMap: Record<ImageType, string> = {
   bikes: "bikes-images",
   bikesCategory: "bikesCategory-images",
   tenants: "tenant-images",
+  ensotekprod: "ensotekprod-images",
+  ensotekCategory: "ensotekCategory-images",
   misc: "misc",
 };
 
@@ -71,6 +73,8 @@ const defaultImageMap: Record<ImageType, string> = {
   bikes: "bikes.png",
   bikesCategory: "bikeCategory.png",
   tenants: "tenant.png",
+  ensotekprod: "ensotekprod.png",
+  ensotekCategory: "ensotekCategory.png",
   misc: "default.png",
 };
 
