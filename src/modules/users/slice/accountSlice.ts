@@ -1,51 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
+import type { Account, NotificationSettings, SocialMediaLinks,ProfileImageObj } from "@/modules/users/types/user";
 
-export interface ProfileImageObj {
-  url: string;
-  thumbnail?: string;
-  webp?: string;
-  publicId?: string;
-}
 
-interface Address {
-  _id?: string;
-  street: string;
-  houseNumber: string;
-  city: string;
-  zipCode: string;
-}
-
-interface NotificationSettings {
-  emailNotifications?: boolean;
-  smsNotifications?: boolean;
-}
-
-interface SocialMedia {
-  facebook?: string;
-  twitter?: string;
-  instagram?: string;
-}
-
-interface Payment {
-  cardNumber: string;
-  expiry: string;
-  cvc: string;
-}
-
-export interface Account {
-  _id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  role: "superadmin" | "admin" | "user" | "moderator" | "staff" | "customer";
-  profileImage?: string | ProfileImageObj;
-  addresses?: Address[];
-  notifications?: NotificationSettings;
-  socialMedia?: SocialMedia;
-  language?: "tr" | "en" | "de";
-  payment?: Payment;
-}
 
 export interface AccountState {
   profile: Account | null;
@@ -131,7 +88,7 @@ export const updateNotificationSettings = createAsyncThunk(
 
 export const updateSocialMediaLinks = createAsyncThunk(
   "users/account/updateSocialMediaLinks",
-  async (data: SocialMedia, thunkAPI) => {
+  async (data: SocialMediaLinks, thunkAPI) => {
     return await apiCall(
       "patch",
       "/users/account/me/social",
@@ -244,23 +201,15 @@ const accountSlice = createSlice({
       })
       .addCase(updateSocialMediaLinks.rejected, failed)
       .addCase(updateProfileImage.pending, loading)
-      .addCase(
-        updateProfileImage.fulfilled,
-        (
-          state,
-          action: PayloadAction<{
-            profileImage: string | ProfileImageObj;
-            profileImageUrl?: string;
-            message?: string;
-          }>
-        ) => {
-          state.loading = false;
-          if (state.profile)
-            state.profile.profileImage = action.payload.profileImage;
-          state.successMessage =
-            action.payload.message || "profile.imageUpdated";
-        }
-      )
+      .addCase(updateProfileImage.fulfilled, (state, action: PayloadAction<{
+        profileImage: ProfileImageObj;
+        message?: string;
+      }>) => {
+        state.loading = false;
+        if (state.profile)
+          state.profile.profileImage = action.payload.profileImage;
+        state.successMessage = action.payload.message || "profile.imageUpdated";
+      })
       .addCase(updateProfileImage.rejected, failed)
       .addCase(deleteUserAccount.pending, loading)
       .addCase(deleteUserAccount.fulfilled, (state) => {

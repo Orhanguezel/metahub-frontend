@@ -66,7 +66,6 @@ export { default as accountReducer } from "./slice/accountSlice";
 // Types (if any)
 export * from "./types/user";
 export * from "./types/authFlow";
-export * from "./types/auth";
 
 // Locales
 export { default as accountTranslations } from "./locales/account";

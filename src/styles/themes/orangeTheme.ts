@@ -148,6 +148,8 @@ const orangeTheme: DefaultTheme = {
     footerBackground: "#F8FAFC",
     warningBackground: "#FFFBE6",
     contentBackground: "#F6F7FA",
+    successBg: "#d1f5dd",
+    dangerBg: "#ffe3e3",
 
     achievementBackground: "#F0F0F0",
     achievementGradientStart: "#FBEAF0",
@@ -250,6 +252,18 @@ const orangeTheme: DefaultTheme = {
       backgroundHover: "#E2E8F0",
       text: "#0F172A",
       textHover: "#0F172A",
+    },
+    success: {
+      background: "#28A745",
+      backgroundHover: "#218838",
+      text: "#FFFFFF",
+      textHover: "#FFFFFF",
+    },
+    warning: {
+      background: "#FFC107",
+      backgroundHover: "#E0A800",
+      text: "#FFFFFF",
+      textHover: "#FFFFFF",
     },
     danger: {
       background: "#DC3545",

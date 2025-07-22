@@ -63,14 +63,14 @@ export const fetchCart = createAsyncThunk<ICart, void, { rejectValue: string }>(
 
 export const addToCart = createAsyncThunk<
   ICart,
-  { productId: string; quantity: number },
+  { productId: string; productType: "Bike" | "Ensotekprod"; quantity: number },
   { rejectValue: string }
 >("cart/addToCart", async (payload, thunkAPI) => {
   try {
     const response = await apiCall(
       "post",
       "/cart/add",
-      payload,
+      payload, // Artık productType ile birlikte gönderiyoruz!
       thunkAPI.rejectWithValue
     );
     if (response && response.data) {
@@ -85,12 +85,12 @@ export const addToCart = createAsyncThunk<
 // Aynı mantık diğer thunklar için de geçerli!
 export const increaseQuantity = createAsyncThunk<
   ICart,
-  string,
+  { productId: string; productType: "Bike" | "Ensotekprod" },
   { rejectValue: string }
->("cart/increaseQuantity", async (productId, thunkAPI) => {
+>("cart/increaseQuantity", async ({ productId, productType }, thunkAPI) => {
   const response = await apiCall(
     "patch",
-    `/cart/increase/${productId}`,
+    `/cart/increase/${productId}?productType=${productType}`,
     null,
     thunkAPI.rejectWithValue
   );
@@ -100,12 +100,12 @@ export const increaseQuantity = createAsyncThunk<
 
 export const decreaseQuantity = createAsyncThunk<
   ICart,
-  string,
+  { productId: string; productType: "Bike" | "Ensotekprod" },
   { rejectValue: string }
->("cart/decreaseQuantity", async (productId, thunkAPI) => {
+>("cart/decreaseQuantity", async ({ productId, productType }, thunkAPI) => {
   const response = await apiCall(
     "patch",
-    `/cart/decrease/${productId}`,
+    `/cart/decrease/${productId}?productType=${productType}`,
     null,
     thunkAPI.rejectWithValue
   );
@@ -115,12 +115,12 @@ export const decreaseQuantity = createAsyncThunk<
 
 export const removeFromCart = createAsyncThunk<
   ICart,
-  string,
+  { productId: string; productType: "Bike" | "Ensotekprod" },
   { rejectValue: string }
->("cart/removeFromCart", async (productId, thunkAPI) => {
+>("cart/removeFromCart", async ({ productId, productType }, thunkAPI) => {
   const response = await apiCall(
     "delete",
-    `/cart/remove/${productId}`,
+    `/cart/remove/${productId}?productType=${productType}`,
     null,
     thunkAPI.rejectWithValue
   );

@@ -148,6 +148,8 @@ const anastasiaTheme: DefaultTheme = {
     footerBackground: "#fff0f6",
     warningBackground: "#fffbe6",
     contentBackground: "#f6f7fa",
+    successBg: "#d1f5dd",
+    dangerBg: "#ffe3e3",
 
     achievementBackground: "#fbeaf0",
     achievementGradientStart: "#e5549c",
@@ -248,6 +250,18 @@ const anastasiaTheme: DefaultTheme = {
       background: "#fbeaf0",
       backgroundHover: "#f3d9e5",
       text: "#52404b",
+      textHover: "#40333d",
+    },
+    success: {
+      background: "#d1f5dd",
+      backgroundHover: "#1E9A5B",
+      text: "#222B45",
+      textHover: "#FFFFFF",
+    },
+    warning: {
+      background: "#fffbe6",
+      backgroundHover: "#ffeeba",
+      text: "#222B45",
       textHover: "#40333d",
     },
     danger: {

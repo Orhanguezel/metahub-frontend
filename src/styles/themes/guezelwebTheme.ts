@@ -149,6 +149,8 @@ const guezelwebTheme: DefaultTheme = {
     footerBackground: "#0d1f2d",
     warningBackground: "#fffbe6",
     contentBackground: "#f6f7fa",
+    successBg: "#d1f5dd",
+    dangerBg: "#ffe3e3",
 
     achievementBackground: "#1b2838",
     achievementGradientStart: "#0d1f2d",
@@ -252,6 +254,18 @@ const guezelwebTheme: DefaultTheme = {
       backgroundHover: "#19d6e3",
       text: "#fff",
       textHover: "#0d1f2d",
+    },
+    success: {
+      background: "#28a745",
+      backgroundHover: "#218838",
+      text: "#fff",
+      textHover: "#fff",
+    },
+    warning: {
+      background: "#ffc107",
+      backgroundHover: "#e0a800",
+      text: "#222B45",
+      textHover: "#fff",
     },
     danger: {
       background: "#dc3545",

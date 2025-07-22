@@ -149,6 +149,8 @@ const modernTheme: DefaultTheme = {
     footerBackground: "#f7f9fc",
     warningBackground: "#fffbe6",
     contentBackground: "#f6f7fa",
+    successBg: "#d1f5dd",
+    dangerBg: "#ffe3e3",
 
     achievementBackground: "#f0f0f0",
     achievementGradientStart: "#fbeaf0",
@@ -251,6 +253,18 @@ const modernTheme: DefaultTheme = {
       backgroundHover: "#d1d5db",
       text: "#374151",
       textHover: "#1f2937",
+    },
+    success: {
+      background: "#22c55e",
+      backgroundHover: "#16a34a",
+      text: "#ffffff",
+      textHover: "#ffffff",
+    },
+    warning: {
+      background: "#facc15",
+      backgroundHover: "#eab308",
+      text: "#111827",
+      textHover: "#111827",
     },
     danger: {
       background: "#ef4444",

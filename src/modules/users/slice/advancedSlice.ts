@@ -1,17 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import { fetchCurrentUser } from "./accountSlice";
+import type { User } from "@/modules/users/types/user";
 
-export interface AuthUser {
-  _id: string;
-  name: string;
-  email: string;
-  role: "superadmin" | "admin" | "user" | "moderator" | "staff" | "customer";
-  profileImage: string;
-}
+
 
 interface AuthState {
-  user: AuthUser | null;
+  user: User | null;
   loading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -159,7 +154,7 @@ const authSlice = createSlice({
       state.error = null;
       state.successMessage = null;
     },
-    setAuthUser: (state, action: PayloadAction<AuthUser>) => {
+    setAuthUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;
     },
   },

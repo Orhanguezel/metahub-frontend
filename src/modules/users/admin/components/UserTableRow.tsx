@@ -1,9 +1,8 @@
 import styled from "styled-components";
 import { User } from "@/modules/users/types/user";
 import { getImageSrc } from "@/shared/getImageSrc";
+import { getProfileImageUrl } from "@/shared/getProfileImageUrl";
 import { UserActions } from "@/modules/users";
-//import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-//import {adminUserTranslations} from "@/modules/users";
 
 interface Props {
   user: User;
@@ -11,13 +10,12 @@ interface Props {
 }
 
 export default function UserTableRow({ user, onRefresh }: Props) {
-  //const { t } = useI18nNamespace("adminUser", adminUserTranslations);
   return (
     <tr>
       <Td>
         <UserInfo>
           <Avatar
-            src={getImageSrc(user.profileImage, "profile")}
+            src={getImageSrc(getProfileImageUrl(user.profileImage), "profile")}
             alt="avatar"
           />
           <span>{user.name}</span>

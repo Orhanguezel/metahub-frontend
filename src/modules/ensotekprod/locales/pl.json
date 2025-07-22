@@ -1,80 +1,37 @@
 {
-  "page": {
-    "allEnsotekprod": "Wszystkie rowery",
-    "noEnsotekprod": "Nie znaleziono rowerów.",
-    "price": "Cena",
-    "stock": "Stan",
-    "brand": "Marka",
-    "readMore": "Zobacz szczegóły →",
-    "other": "Inne produkty",
-    "untitled": "Bez tytułu",
-    "noSummary": "Brak opisu.",
-    "ensotekprod": {
-      "title": "Najnowszy rower",
-      "readMore": "Zobacz szczegóły",
-      "all": "Wszystkie rowery"
-    }
-  },
-  "admin": {
-    "tabs": {
-      "ensotekprod": "Rowery",
-      "create": "Nowy rower",
-      "categories": "Kategorie"
-    },
-    "ensotekprod": {
-      "create": "Dodaj nowy rower",
-      "edit": "Edytuj rower",
-      "name": "Nazwa roweru",
-      "description": "Opis",
-      "brand": "Marka",
-      "price": "Cena",
-      "stock": "Stan",
-      "tags": "Tagi",
-      "image": "Obraz",
-      "category": "Kategoria",
-      "select_category": "Wybierz kategorię",
-      "publish_status": "Opublikowano?",
-      "no_images": "Brak zdjęć",
-      "publish": "Opublikuj",
-      "unpublish": "Ukryj",
-      "empty": "Brak dostępnych rowerów."
-    },
-    "categories": {
-      "title": "Kategorie rowerów",
-      "add": "Nowa kategoria",
-      "empty": "Nie znaleziono kategorii."
-    },
-    "language": {
-      "en": "Angielski",
-      "tr": "Turecki",
-      "de": "Niemiecki"
-    },
-    "slug": "Slug",
-    "actions": "Akcje",
-    "edit": "Edytuj",
-    "delete": "Usuń",
-    "cancel": "Anuluj",
-    "update": "Aktualizuj",
-    "create": "Utwórz",
-    "yes": "Tak",
-    "no": "Nie",
-    "loading": "Ładowanie...",
-    "confirm": {
-      "delete": "Czy na pewno chcesz usunąć tę kategorię?",
-      "delete_ensotekprod": "Czy na pewno chcesz usunąć ten rower?"
-    },
-    "optional_description": "Opis (opcjonalnie)",
-    "category_info": "Czego dotyczy ta kategoria?",
-    "saving": "Zapisywanie...",
-    "save": "Zapisz",
-    "update2": "Aktualizuj",
-    "editCategory": "Edytuj kategorię",
-    "newCategory": "Nowa kategoria"
-  },
-  "seo": {
-    "title": "Tytuł SEO",
-    "description": "Opis SEO"
-  },
-  "none": "Brak",
-  "delete_confirm": "Czy na pewno chcesz usunąć?"
+  "page.ensotekprod.title": "Rowery",
+  "page.ensotekprod.all": "Zobacz wszystkie",
+  "page.ensotekprod.readMore": "Zobacz szczegóły →",
+  "page.ensotekprod.noEnsotekprod": "Nie znaleziono produktów.",
+  "page.ensotekprod.minorTitle": "Poznaj naszą kolekcję",
+  "page.noEnsotekprod": "Nie znaleziono produktów.",
+  "page.noImage": "Brak zdjęcia",
+  "page.allEnsotekprod": "Wszystkie produkty",
+  "page.brand": "Marka",
+  "page.category": "Kategoria",
+  "page.price": "Cena",
+  "page.stock": "Stan magazynowy",
+  "page.stockStatus": "Dostępność",
+  "page.inStock": "W magazynie",
+  "page.outOfStock": "Brak na stanie",
+  "page.isElectric": "Elektryczny?",
+  "page.isActive": "Aktywny?",
+  "page.material": "Materiał",
+  "page.color": "Kolory",
+  "page.size": "Rozmiar",
+  "page.weight": "Waga",
+  "page.powerW": "Moc",
+  "page.voltageV": "Napięcie",
+  "page.flowRateM3H": "Przepływ",
+  "page.coolingCapacityKw": "Wydajność chłodzenia",
+  "page.batteryRangeKm": "Zasięg baterii",
+  "page.motorPowerW": "Moc silnika",
+  "page.tags": "Tagi",
+  "page.readMore": "Zobacz szczegóły →",
+  "page.technicalDetails": "Dane techniczne",
+  "page.other": "Inne produkty",
+  "page.yes": "Tak",
+  "page.no": "Nie",
+  "detail.openImage": "Powiększ",
+  "detail.thumb": "Miniaturka"
 }

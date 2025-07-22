@@ -1,26 +1,21 @@
 import type { SupportedLocale } from "@/types/common";
+import type { IBikes } from "@/modules/bikes/types";
+import type { IEnsotekprod } from "@/modules/ensotekprod/types";
 
-// Payment yöntemi
 export type PaymentMethod = "cash_on_delivery" | "credit_card" | "paypal";
+export type OrderStatus = "pending" | "preparing" | "shipped" | "completed" | "cancelled" |"delivered" ;
 
-// Sipariş durumu
-export type OrderStatus =
-  | "pending"
-  | "preparing"
-  | "shipped"
-  | "completed"
-  | "cancelled"
-  | "delivered";
-
-// Sipariş ürünü (cart item)
+// --- Sipariş ürünü (cart item) ---
 export interface IOrderItem {
-  product: string; // veya Types.ObjectId
+  product: IBikes | IEnsotekprod | string; 
+  productType: "Bike" | "Ensotekprod";
   quantity: number;
   tenant: string;
   unitPrice: number;
+  priceAtAddition: number;
+  totalPriceAtAddition: number;
 }
 
-// Teslimat adresi
 export interface IShippingAddress {
   name: string;
   phone: string;
@@ -31,20 +26,19 @@ export interface IShippingAddress {
   country: string;
 }
 
-// Ana sipariş modeli
+// --- Sipariş modeli ---
 export interface IOrder {
   _id?: string;
-  id?: string; // MongoDB ObjectId veya UUID
-  user: string; // veya Types.ObjectId
-  addressId?: string; // veya Types.ObjectId
+  user: string;
+  addressId?: string;
   items: IOrderItem[];
   tenant: string;
   shippingAddress: IShippingAddress;
   totalPrice: number;
   discount?: number;
-  coupon?: string; // veya Types.ObjectId
+  coupon?: string;
   paymentMethod: PaymentMethod;
-  payments?: string[]; // veya Types.ObjectId[]
+  payments?: string[];
   status: OrderStatus;
   isDelivered: boolean;
   isPaid: boolean;
@@ -53,23 +47,5 @@ export interface IOrder {
   createdAt?: string | Date;
   updatedAt?: string | Date;
 }
-interface ProductNameType {
-  [lang: string]: string;
-}
 
-
-export interface ProductType {
-  _id?: string;
-  name?: ProductNameType;
-  price?: number;
-  [key: string]: any;
-}
-
-export interface OrderItemType {
-  product?: ProductType | string;
-  name?: string;
-  quantity: number;
-  priceAtAddition?: number;
-  size?: string;
-}
 

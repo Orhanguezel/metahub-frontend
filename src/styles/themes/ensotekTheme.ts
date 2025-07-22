@@ -148,6 +148,8 @@ const ensotekTheme: DefaultTheme = {
   footerBackground: "#F0F4F8",
   warningBackground: "#FFFBE6",
   contentBackground: "#F6F7FA",
+  successBg: "#d1f5dd",
+  dangerBg: "#ffe3e3",
 
   // Achievement, gradyanlar
   achievementBackground: "#EDF4FB",
@@ -259,6 +261,18 @@ const ensotekTheme: DefaultTheme = {
       backgroundHover: "#DCD2B4",
       text: "#222B45",
       textHover: "#0118D8",
+    },
+    success: {
+      background: "#d1f5dd",
+      backgroundHover: "#1E9A5B",
+      text: "#222B45",
+      textHover: "#FFFFFF",
+    },
+    warning: {
+      background: "#FFC107",
+      backgroundHover: "#E0A800",
+      text: "#222B45",
+      textHover: "#FFFFFF",
     },
     danger: {
       background: "#FF6B6B",

@@ -1,46 +1,60 @@
-// src/modules/users/types/user.ts
+import type { Address } from "./address";
+import type { SupportedLocale } from "@/types/common";
 
-import type { Address } from "./address"; // Yukarıda tanımlanan Address tipi import ediliyor
+// --- Profile Image tipin tek hali ---
+export interface ProfileImageObj {
+  url: string;
+  thumbnail?: string;
+  webp?: string;
+  publicId?: string;
+}
 
+// --- User (DB) ---
 export interface User {
   _id: string;
   name: string;
   email: string;
   role: "superadmin" | "admin" | "user" | "moderator" | "staff" | "customer";
   isActive: boolean;
-  profileImage?: string;
+  profileImage?: string | ProfileImageObj; // ⚡️ Hem eski (string) hem yeni (obj) destek!
   phone?: string;
   bio?: string;
   birthDate?: string;
-  addresses?: Address[]; // Array of Address type
+  addresses?: Address[];
   socialMedia?: Record<string, string>;
   notifications?: Record<string, any>;
 }
 
+// --- Account (Frontend oturum) ---
 export interface Account {
   _id: string;
   name: string;
   email: string;
+  role?: "superadmin" | "admin" | "user" | "moderator" | "staff" | "customer"; // 🟢 ARTIK VAR
+  isActive?: boolean;            // Eklenmesi önerilir (dashboard için vs.)
+  profileImage?: string | ProfileImageObj; // ⚡️ Tip güvenli!
   phone?: string;
-  profileImage?: string;
-  addresses?: Address[]; // Address[] ile birebir uyumlu!
-  notifications?: NotificationSettings;
-  socialMedia?: SocialMediaLinks;
-  language?: "tr" | "en" | "de";
-  favorites?: any[];
   bio?: string;
   birthDate?: string;
+  addresses?: Address[];
+  addressesPopulated?: Address[];
+  notifications?: NotificationSettings;
+  socialMedia?: SocialMediaLinks;
+  language?: SupportedLocale;
+  favorites?: any[];
   cart?: any;
   orders?: any[];
   payment?: any;
   profile?: any;
 }
 
+// --- Bildirim Ayarları ---
 export interface NotificationSettings {
   emailNotifications: boolean;
   smsNotifications: boolean;
 }
 
+// --- Sosyal Medya ---
 export interface SocialMediaLinks {
   facebook?: string;
   instagram?: string;

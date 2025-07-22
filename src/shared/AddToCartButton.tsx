@@ -6,16 +6,17 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
-//import type { SupportedLocale } from "@/types/common";
 
 interface AddToCartButtonProps {
   productId: string;
+  productType: "Bike" | "Ensotekprod"; // <<-- Yeni parametre zorunlu!
   disabled?: boolean;
-  children?: React.ReactNode; // Butonun içeriğini override etmek isteyenler için
+  children?: React.ReactNode;
 }
 
 export default function AddToCartButton({
   productId,
+  productType,
   disabled = false,
   children,
 }: AddToCartButtonProps) {
@@ -27,19 +28,28 @@ export default function AddToCartButton({
   const { loading, error, successMessage, cart, stockWarning } = useAppSelector(
     (state) => state.cart
   );
-
-  // Kullanıcı login mi?
   const isAuthenticated = !!useAppSelector((state) => state.account.profile);
 
-  // Sepette bu ürün var mı?
+  // Sepette bu ürün var mı (productType ile!)
   const isInCart =
-    cart?.items?.some(
-      (ci) =>
+    cart?.items?.some((ci) => {
+      if (
+        ci.product &&
         typeof ci.product === "object" &&
-        ci.product !== null &&
         "_id" in ci.product &&
-        (ci.product as { _id: string })._id === productId
-    ) || false;
+        "productType" in ci
+      ) {
+        return (
+          (ci.product as any)._id === productId &&
+          ci.productType === productType
+        );
+      }
+      // Eski data için fallback:
+      if (typeof ci.product === "string") {
+        return ci.product === productId && ci.productType === productType;
+      }
+      return false;
+    }) || false;
 
   // Login değilse addToCart yerine login'e yönlendir
   const handleClick = () => {
@@ -47,12 +57,11 @@ export default function AddToCartButton({
       router.push("/login?redirected=cart");
       return;
     }
-    dispatch(addToCart({ productId, quantity: 1 }));
+    dispatch(addToCart({ productId, productType, quantity: 1 }));
     setAdded(true);
     setTimeout(() => dispatch(clearCartMessages()), 2000);
   };
 
-  // Eğer error not logged in ise yönlendir (future-proof, global fallback)
   useEffect(() => {
     if (error === "Not logged in") {
       dispatch(clearCartMessages());
@@ -75,7 +84,6 @@ export default function AddToCartButton({
             ? t("inCart", "Sepette")
             : t("add", "Sepete Ekle"))}
       </StyledButton>
-      {/* Mesajlar */}
       {successMessage && added && (
         <CartSuccessMsg>{t("success", "Sepete eklendi!")}</CartSuccessMsg>
       )}

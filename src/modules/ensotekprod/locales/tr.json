@@ -1,80 +1,37 @@
 {
-  "page": {
-    "allEnsotekprod": "Tüm Bisikletler",
-    "noEnsotekprod": "Bisiklet bulunamadı.",
-    "price": "Fiyat",
-    "stock": "Stok",
-    "brand": "Marka",
-    "readMore": "Detayları Gör →",
-    "other": "Diğer Ürünler",
-    "untitled": "Başlıksız",
-    "noSummary": "Açıklama yok.",
-    "ensotekprod": {
-      "title": "Güncel Bisiklet",
-      "readMore": "Detayları Gör",
-      "all": "Tüm Bisikletler"
-    }
-  },
-  "admin": {
-    "tabs": {
-      "ensotekprod": "Bisikletler",
-      "create": "Yeni Bisiklet",
-      "categories": "Kategoriler"
-    },
-    "ensotekprod": {
-      "create": "Yeni Bisiklet Ekle",
-      "edit": "Bisikleti Düzenle",
-      "name": "Bisiklet Adı",
-      "description": "Açıklama",
-      "brand": "Marka",
-      "price": "Fiyat",
-      "stock": "Stok",
-      "tags": "Etiketler",
-      "image": "Görsel",
-      "category": "Kategori",
-      "select_category": "Kategori Seçin",
-      "publish_status": "Yayınlandı mı?",
-      "no_images": "Görsel yok",
-      "publish": "Yayınla",
-      "unpublish": "Gizle",
-      "empty": "Hiç bisiklet yok."
-    },
-    "categories": {
-      "title": "Bisiklet Kategorileri",
-      "add": "Yeni Kategori",
-      "empty": "Kategori bulunamadı."
-    },
-    "language": {
-      "en": "İngilizce",
-      "tr": "Türkçe",
-      "de": "Almanca"
-    },
-    "slug": "Slug",
-    "actions": "İşlemler",
-    "edit": "Düzenle",
-    "delete": "Sil",
-    "cancel": "İptal",
-    "update": "Güncelle",
-    "create": "Ekle",
-    "yes": "Evet",
-    "no": "Hayır",
-    "loading": "Yükleniyor...",
-    "confirm": {
-      "delete": "Bu kategoriyi silmek istediğinize emin misiniz?",
-      "delete_ensotekprod": "Bu bisikleti silmek istediğinize emin misiniz?"
-    },
-    "optional_description": "Açıklama (opsiyonel)",
-    "category_info": "Bu kategori neyle ilgili?",
-    "saving": "Kaydediliyor...",
-    "save": "Kaydet",
-    "update2": "Güncelle",
-    "editCategory": "Kategoriyi Düzenle",
-    "newCategory": "Yeni Kategori"
-  },
-  "seo": {
-    "title": "SEO Başlığı",
-    "description": "SEO Açıklaması"
-  },
-  "none": "Yok",
-  "delete_confirm": "Silmek istediğinize emin misiniz?"
+  "page.ensotekprod.title": "Bisikletler",
+  "page.ensotekprod.all": "Tümünü Gör",
+  "page.ensotekprod.readMore": "Detayları Gör →",
+  "page.ensotekprod.noEnsotekprod": "Ürün bulunamadı.",
+  "page.ensotekprod.minorTitle": "Koleksiyonumuzu Keşfedin",
+  "page.noEnsotekprod": "Ürün bulunamadı.",
+  "page.noImage": "Görsel yok",
+  "page.allEnsotekprod": "Tüm Ürünler",
+  "page.brand": "Marka",
+  "page.category": "Kategori",
+  "page.price": "Fiyat",
+  "page.stock": "Stok",
+  "page.stockStatus": "Stok Durumu",
+  "page.inStock": "Stokta Var",
+  "page.outOfStock": "Stokta Yok",
+  "page.isElectric": "Elektrikli mi?",
+  "page.isActive": "Aktif mi?",
+  "page.material": "Malzeme",
+  "page.color": "Renkler",
+  "page.size": "Ölçü",
+  "page.weight": "Ağırlık",
+  "page.powerW": "Güç",
+  "page.voltageV": "Voltaj",
+  "page.flowRateM3H": "Debi",
+  "page.coolingCapacityKw": "Soğutma Kapasitesi",
+  "page.batteryRangeKm": "Batarya Menzili",
+  "page.motorPowerW": "Motor Gücü",
+  "page.tags": "Etiketler",
+  "page.readMore": "Detayları Gör →",
+  "page.technicalDetails": "Teknik Özellikler",
+  "page.other": "Diğer Ürünler",
+  "page.yes": "Evet",
+  "page.no": "Hayır",
+  "detail.openImage": "Büyüt",
+  "detail.thumb": "Küçük resim"
 }

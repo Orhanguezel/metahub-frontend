@@ -1,80 +1,37 @@
 {
-  "page": {
-    "allEnsotekprod": "Tous les vélos",
-    "noEnsotekprod": "Aucun vélo trouvé.",
-    "price": "Prix",
-    "stock": "Stock",
-    "brand": "Marque",
-    "readMore": "Voir les détails →",
-    "other": "Autres produits",
-    "untitled": "Sans titre",
-    "noSummary": "Pas de description.",
-    "ensotekprod": {
-      "title": "Dernier vélo",
-      "readMore": "Voir les détails",
-      "all": "Tous les vélos"
-    }
-  },
-  "admin": {
-    "tabs": {
-      "ensotekprod": "Vélos",
-      "create": "Nouveau vélo",
-      "categories": "Catégories"
-    },
-    "ensotekprod": {
-      "create": "Ajouter un nouveau vélo",
-      "edit": "Modifier le vélo",
-      "name": "Nom du vélo",
-      "description": "Description",
-      "brand": "Marque",
-      "price": "Prix",
-      "stock": "Stock",
-      "tags": "Tags",
-      "image": "Image",
-      "category": "Catégorie",
-      "select_category": "Sélectionner une catégorie",
-      "publish_status": "Publié ?",
-      "no_images": "Aucune image",
-      "publish": "Publier",
-      "unpublish": "Dépublier",
-      "empty": "Aucun vélo disponible."
-    },
-    "categories": {
-      "title": "Catégories de vélos",
-      "add": "Nouvelle catégorie",
-      "empty": "Aucune catégorie trouvée."
-    },
-    "language": {
-      "en": "Anglais",
-      "tr": "Turc",
-      "de": "Allemand"
-    },
-    "slug": "Slug",
-    "actions": "Actions",
-    "edit": "Modifier",
-    "delete": "Supprimer",
-    "cancel": "Annuler",
-    "update": "Mettre à jour",
-    "create": "Créer",
-    "yes": "Oui",
-    "no": "Non",
-    "loading": "Chargement...",
-    "confirm": {
-      "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
-      "delete_ensotekprod": "Êtes-vous sûr de vouloir supprimer ce vélo ?"
-    },
-    "optional_description": "Description (optionnel)",
-    "category_info": "À propos de cette catégorie ?",
-    "saving": "Enregistrement...",
-    "save": "Enregistrer",
-    "update2": "Mettre à jour",
-    "editCategory": "Modifier la catégorie",
-    "newCategory": "Nouvelle catégorie"
-  },
-  "seo": {
-    "title": "Titre SEO",
-    "description": "Description SEO"
-  },
-  "none": "Aucun",
-  "delete_confirm": "Êtes-vous sûr de vouloir supprimer ?"
+  "page.ensotekprod.title": "Vélos",
+  "page.ensotekprod.all": "Voir tout",
+  "page.ensotekprod.readMore": "Voir les détails →",
+  "page.ensotekprod.noEnsotekprod": "Aucun produit trouvé.",
+  "page.ensotekprod.minorTitle": "Découvrez notre collection",
+  "page.noEnsotekprod": "Aucun produit trouvé.",
+  "page.noImage": "Pas d'image",
+  "page.allEnsotekprod": "Tous les produits",
+  "page.brand": "Marque",
+  "page.category": "Catégorie",
+  "page.price": "Prix",
+  "page.stock": "Stock",
+  "page.stockStatus": "Statut du stock",
+  "page.inStock": "En stock",
+  "page.outOfStock": "Rupture de stock",
+  "page.isElectric": "Électrique ?",
+  "page.isActive": "Actif ?",
+  "page.material": "Matériau",
+  "page.color": "Couleurs",
+  "page.size": "Taille",
+  "page.weight": "Poids",
+  "page.powerW": "Puissance",
+  "page.voltageV": "Tension",
+  "page.flowRateM3H": "Débit",
+  "page.coolingCapacityKw": "Capacité de refroidissement",
+  "page.batteryRangeKm": "Autonomie de la batterie",
+  "page.motorPowerW": "Puissance du moteur",
+  "page.tags": "Étiquettes",
+  "page.readMore": "Voir les détails →",
+  "page.technicalDetails": "Détails techniques",
+  "page.other": "Autres produits",
+  "page.yes": "Oui",
+  "page.no": "Non",
+  "detail.openImage": "Agrandir",
+  "detail.thumb": "Miniature"
 }

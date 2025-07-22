@@ -2,13 +2,15 @@
 import React from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/order";
+import { translations } from "@/modules/order";
 import type { SupportedLocale } from "@/types/common";
-import type { OrderItemType, ProductType } from "@/modules/order/types";
+import type { IOrderItem} from "@/modules/order/types";
+import type { IBikes } from "@/modules/bikes/types";
+import type { IEnsotekprod } from "@/modules/ensotekprod/types";
 import { getLocalized } from "@/shared/getLocalized";
 
 interface OrderItemListProps {
-  items?: OrderItemType[]; // optional, array olmayabilir!
+  items?: IOrderItem[];
   lang?: SupportedLocale;
 }
 
@@ -25,32 +27,34 @@ const OrderItemList: React.FC<OrderItemListProps> = ({
   return (
     <Items>
       {items.map((item, idx) => {
-        // product olabilir, string olabilir (id), boş olabilir
-        let product: ProductType = {};
-        if (typeof item.product === "object" && item.product !== null) {
-          product = item.product;
+        const product = item.product as IBikes | IEnsotekprod | undefined;
+
+        // Ürün adı
+        let name = "";
+        if (product && typeof product === "object" && "name" in product) {
+          // Çoklu dil desteği varsa
+          name =
+            typeof product.name === "object"
+              ? getLocalized(product.name, lang)
+              : String(product.name);
+        } else {
+          // String ise veya bilinmiyorsa
+          name = (item as any).name || t("detail.unnamedProduct", "Unnamed product");
         }
-        // string ise (ör: id), isim fallback'e düşecek
 
-        // İsim: Çoklu dil varsa, öncelik ver. Yoksa item.name
-        const name =
-          product.name && typeof product.name === "object"
-            ? getLocalized(product.name, lang)
-            : item.name || t("detail.unnamedProduct", "Unnamed product");
-
-        // Fiyat: Öncelik priceAtAddition (siparişteki fiyat), sonra ürün fiyatı
+        // Fiyat (siparişteki fiyat her zaman öncelik)
         const price =
           typeof item.priceAtAddition === "number"
             ? item.priceAtAddition
-            : typeof product.price === "number"
-            ? product.price
+            : typeof item.unitPrice === "number"
+            ? item.unitPrice
             : 0;
 
         return (
-          <Item key={product._id || String(item.product) || idx}>
+          <Item key={typeof item.product === "object" ? (item.product as any)._id : String(item.product) || idx}>
             <Left>
               <ProductName>{name}</ProductName>
-              {item.size && <Size>({item.size})</Size>}
+              {/* Eğer ürünün başka bilgileri varsa burada gösterebilirsin */}
             </Left>
             <Right>
               <Qty>
@@ -67,14 +71,22 @@ const OrderItemList: React.FC<OrderItemListProps> = ({
 
 export default OrderItemList;
 
-// --- Styled Components ---
+// --- Styled Components (aynı kalabilir) ---
 const Items = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
   margin-top: 0.6rem;
 `;
+// ... diğer styled'lar aynı şekilde devam
 
+const Empty = styled.div`
+  color: ${({ theme }) => theme.colors.grey || "#aaa"};
+  font-size: 1.04em;
+  text-align: left;
+  padding: 0.5em 0 0.7em 0;
+  opacity: 0.9;
+`;
 const Item = styled.div`
   display: flex;
   justify-content: space-between;
@@ -105,14 +117,6 @@ const ProductName = styled.span`
   white-space: nowrap;
 `;
 
-const Size = styled.span`
-  color: ${({ theme }) => theme.colors.primary || "#253962"};
-  font-size: 0.96em;
-  font-weight: 400;
-  opacity: 0.95;
-  margin-left: 2px;
-`;
-
 const Right = styled.div`
   display: flex;
   align-items: center;
@@ -136,12 +140,4 @@ const Currency = styled.span`
   color: ${({ theme }) => theme.colors.grey || "#999"};
   font-size: 0.98em;
   margin-left: 0.1em;
-`;
-
-const Empty = styled.div`
-  color: ${({ theme }) => theme.colors.grey || "#aaa"};
-  font-size: 1.04em;
-  text-align: left;
-  padding: 0.5em 0 0.7em 0;
-  opacity: 0.9;
 `;

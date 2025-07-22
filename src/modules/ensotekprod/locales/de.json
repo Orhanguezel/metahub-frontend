@@ -1,80 +1,37 @@
 {
-  "page": {
-    "allEnsotekprod": "Alle Fahrräder",
-    "noEnsotekprod": "Keine Fahrräder gefunden.",
-    "price": "Preis",
-    "stock": "Bestand",
-    "brand": "Marke",
-    "readMore": "Details ansehen →",
-    "other": "Weitere Produkte",
-    "untitled": "Ohne Titel",
-    "noSummary": "Keine Beschreibung.",
-    "ensotekprod": {
-      "title": "Aktuelles Fahrrad",
-      "readMore": "Details ansehen",
-      "all": "Alle Fahrräder"
-    }
-  },
-  "admin": {
-    "tabs": {
-      "ensotekprod": "Fahrräder",
-      "create": "Neues Fahrrad",
-      "categories": "Kategorien"
-    },
-    "ensotekprod": {
-      "create": "Neues Fahrrad hinzufügen",
-      "edit": "Fahrrad bearbeiten",
-      "name": "Fahrradname",
-      "description": "Beschreibung",
-      "brand": "Marke",
-      "price": "Preis",
-      "stock": "Bestand",
-      "tags": "Tags",
-      "image": "Bild",
-      "category": "Kategorie",
-      "select_category": "Kategorie wählen",
-      "publish_status": "Veröffentlicht?",
-      "no_images": "Keine Bilder",
-      "publish": "Veröffentlichen",
-      "unpublish": "Verbergen",
-      "empty": "Keine Fahrräder verfügbar."
-    },
-    "categories": {
-      "title": "Fahrradkategorien",
-      "add": "Neue Kategorie",
-      "empty": "Keine Kategorien gefunden."
-    },
-    "language": {
-      "en": "Englisch",
-      "tr": "Türkisch",
-      "de": "Deutsch"
-    },
-    "slug": "Slug",
-    "actions": "Aktionen",
-    "edit": "Bearbeiten",
-    "delete": "Löschen",
-    "cancel": "Abbrechen",
-    "update": "Aktualisieren",
-    "create": "Erstellen",
-    "yes": "Ja",
-    "no": "Nein",
-    "loading": "Lädt...",
-    "confirm": {
-      "delete": "Möchten Sie diese Kategorie wirklich löschen?",
-      "delete_ensotekprod": "Möchten Sie dieses Fahrrad wirklich löschen?"
-    },
-    "optional_description": "Beschreibung (optional)",
-    "category_info": "Worum geht es in dieser Kategorie?",
-    "saving": "Speichern...",
-    "save": "Speichern",
-    "update2": "Aktualisieren",
-    "editCategory": "Kategorie bearbeiten",
-    "newCategory": "Neue Kategorie"
-  },
-  "seo": {
-    "title": "SEO Titel",
-    "description": "SEO Beschreibung"
-  },
-  "none": "Keine",
-  "delete_confirm": "Sind Sie sicher, dass Sie löschen möchten?"
+  "page.ensotekprod.title": "Fahrräder",
+  "page.ensotekprod.all": "Alle anzeigen",
+  "page.ensotekprod.readMore": "Details ansehen →",
+  "page.ensotekprod.noEnsotekprod": "Keine Produkte gefunden.",
+  "page.ensotekprod.minorTitle": "Unsere Kollektion entdecken",
+  "page.noEnsotekprod": "Keine Produkte gefunden.",
+  "page.noImage": "Kein Bild",
+  "page.allEnsotekprod": "Alle Produkte",
+  "page.brand": "Marke",
+  "page.category": "Kategorie",
+  "page.price": "Preis",
+  "page.stock": "Lager",
+  "page.stockStatus": "Lagerstatus",
+  "page.inStock": "Auf Lager",
+  "page.outOfStock": "Nicht vorrätig",
+  "page.isElectric": "Elektrisch?",
+  "page.isActive": "Aktiv?",
+  "page.material": "Material",
+  "page.color": "Farben",
+  "page.size": "Größe",
+  "page.weight": "Gewicht",
+  "page.powerW": "Leistung",
+  "page.voltageV": "Spannung",
+  "page.flowRateM3H": "Durchflussmenge",
+  "page.coolingCapacityKw": "Kühlleistung",
+  "page.batteryRangeKm": "Batteriereichweite",
+  "page.motorPowerW": "Motorleistung",
+  "page.tags": "Tags",
+  "page.readMore": "Details ansehen →",
+  "page.technicalDetails": "Technische Details",
+  "page.other": "Weitere Produkte",
+  "page.yes": "Ja",
+  "page.no": "Nein",
+  "detail.openImage": "Vergrößern",
+  "detail.thumb": "Vorschaubild"
 }

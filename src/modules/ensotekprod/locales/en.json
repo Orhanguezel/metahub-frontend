@@ -1,80 +1,37 @@
 {
-  "page": {
-    "allEnsotekprod": "All Ensotekprod",
-    "noEnsotekprod": "No ensotekprod found.",
-    "price": "Price",
-    "stock": "Stock",
-    "brand": "Brand",
-    "readMore": "View Details →",
-    "other": "Other Products",
-    "untitled": "Untitled",
-    "noSummary": "No description.",
-    "ensotekprod": {
-      "title": "Latest Ensotekprod",
-      "readMore": "View Details",
-      "all": "All Ensotekprod"
-    }
-  },
-  "admin": {
-    "tabs": {
-      "ensotekprod": "Ensotekprod",
-      "create": "New Ensotekprod",
-      "categories": "Categories"
-    },
-    "ensotekprod": {
-      "create": "Add New Ensotekprod",
-      "edit": "Edit Ensotekprod",
-      "name": "Ensotekprod Name",
-      "description": "Description",
-      "brand": "Brand",
-      "price": "Price",
-      "stock": "Stock",
-      "tags": "Tags",
-      "image": "Image",
-      "category": "Category",
-      "select_category": "Select Category",
-      "publish_status": "Published?",
-      "no_images": "No images",
-      "publish": "Publish",
-      "unpublish": "Unpublish",
-      "empty": "No ensotekprod available."
-    },
-    "categories": {
-      "title": "Ensotekprod Categories",
-      "add": "New Category",
-      "empty": "No categories found."
-    },
-    "language": {
-      "en": "English",
-      "tr": "Turkish",
-      "de": "German"
-    },
-    "slug": "Slug",
-    "actions": "Actions",
-    "edit": "Edit",
-    "delete": "Delete",
-    "cancel": "Cancel",
-    "update": "Update",
-    "create": "Create",
-    "yes": "Yes",
-    "no": "No",
-    "loading": "Loading...",
-    "confirm": {
-      "delete": "Are you sure you want to delete this category?",
-      "delete_ensotekprod": "Are you sure you want to delete this ensotekprod?"
-    },
-    "optional_description": "Description (optional)",
-    "category_info": "What is this category about?",
-    "saving": "Saving...",
-    "save": "Save",
-    "update2": "Update",
-    "editCategory": "Edit Category",
-    "newCategory": "New Category"
-  },
-  "seo": {
-    "title": "SEO Title",
-    "description": "SEO Description"
-  },
-  "none": "None",
-  "delete_confirm": "Are you sure you want to delete?"
+  "page.ensotekprod.title": "Bikes",
+  "page.ensotekprod.all": "See All",
+  "page.ensotekprod.readMore": "See Details →",
+  "page.ensotekprod.noEnsotekprod": "No products found.",
+  "page.ensotekprod.minorTitle": "Explore Our Collection",
+  "page.noEnsotekprod": "No products found.",
+  "page.noImage": "No image",
+  "page.allEnsotekprod": "All Products",
+  "page.brand": "Brand",
+  "page.category": "Category",
+  "page.price": "Price",
+  "page.stock": "Stock",
+  "page.stockStatus": "Stock Status",
+  "page.inStock": "In Stock",
+  "page.outOfStock": "Out of Stock",
+  "page.isElectric": "Electric?",
+  "page.isActive": "Active?",
+  "page.material": "Material",
+  "page.color": "Colors",
+  "page.size": "Size",
+  "page.weight": "Weight",
+  "page.powerW": "Power",
+  "page.voltageV": "Voltage",
+  "page.flowRateM3H": "Flow Rate",
+  "page.coolingCapacityKw": "Cooling Capacity",
+  "page.batteryRangeKm": "Battery Range",
+  "page.motorPowerW": "Motor Power",
+  "page.tags": "Tags",
+  "page.readMore": "See Details →",
+  "page.technicalDetails": "Technical Details",
+  "page.other": "Other Products",
+  "page.yes": "Yes",
+  "page.no": "No",
+  "detail.openImage": "Enlarge",
+  "detail.thumb": "Thumbnail"
 }

@@ -22,5 +22,3 @@ export { default as CartEmpty } from "./public/components/CartEmpty";
 // Slice
 // export * from "./slice/checkoutSlice";
 
-// Types
-export * from "./types";

@@ -3,7 +3,8 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useAppDispatch } from "@/store/hooks";
-import { updateNotificationSettings,Account } from "@/modules/users/slice/accountSlice";
+import { updateNotificationSettings } from "@/modules/users/slice/accountSlice";
+import type { Account } from "@/modules/users/types/user";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import {accountTranslations} from "@/modules/users";
 import * as yup from "yup";

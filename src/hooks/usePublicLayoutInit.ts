@@ -38,7 +38,7 @@ export const usePublicLayoutInit = () => {
   const sectionSetting = useAppSelector((s) => s.sectionSetting);
   const settingsSlice = useAppSelector((s) => s.settings);
   const companySlice = useAppSelector((s) => s.company);
-  const cartSlice = useAppSelector((s) => s.cart);
+
   const servicesSlice = useAppSelector((s) => s.services);
   const gallery = useAppSelector((s) => s.gallery);
   const galleryCategory = useAppSelector((s) => s.galleryCategory);
@@ -214,9 +214,6 @@ if (
     company: companySlice.company,
     companyStatus: companySlice.status,
     companyError: companySlice.error,
-    cart: cartSlice.cart,
-    cartStatus: cartSlice.status,
-    cartError: cartSlice.error,
     services: servicesSlice.services,
     servicesStatus: servicesSlice.status,
     servicesError: servicesSlice.error,

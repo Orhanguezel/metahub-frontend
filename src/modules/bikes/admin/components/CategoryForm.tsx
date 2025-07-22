@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import type { BikesCategory } from "@/modules/bikes/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/bikes";
+import { translations } from "@/modules/bikes";
 import ImageUploadWithPreview from "@/shared/ImageUploadWithPreview";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 
@@ -24,37 +24,43 @@ export default function BikesCategoryFormModal({
   onSubmit,
 }: Props) {
   const { i18n, t } = useI18nNamespace("bikes", translations);
-    const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-
-
+  // Çoklu dil için boş state
   const emptyLabel = SUPPORTED_LOCALES.reduce(
-    (acc, lang) => ({ ...acc, [lang]: "" }),
+    (acc, lng) => ({ ...acc, [lng]: "" }),
     {} as Record<SupportedLocale, string>
   );
 
+  // Controlled State
   const [name, setName] = useState<Record<SupportedLocale, string>>(emptyLabel);
   const [description, setDescription] = useState<Record<SupportedLocale, string>>(emptyLabel);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [isActive, setIsActive] = useState(true);
 
+  // Düzenleme modunda (edit) inputları doldur
   useEffect(() => {
     if (editingItem) {
       setName({ ...emptyLabel, ...editingItem.name });
       setDescription({ ...emptyLabel, ...editingItem.description });
       setExistingImages(editingItem.images?.map((img) => img.url) || []);
+      setIsActive(editingItem.isActive ?? true);
       setSelectedFiles([]);
       setRemovedImages([]);
     } else {
-      setName(emptyLabel);
-      setDescription(emptyLabel);
+      setName({ ...emptyLabel }); // referans sıfırlama!
+      setDescription({ ...emptyLabel });
       setExistingImages([]);
+      setIsActive(true);
       setSelectedFiles([]);
       setRemovedImages([]);
     }
-  }, [editingItem, isOpen, emptyLabel]);
+    // eslint-disable-next-line
+  }, [editingItem, isOpen]);
 
+  // Görsel değişikliği
   const handleImagesChange = useCallback(
     (files: File[], removed: string[], current: string[]) => {
       setSelectedFiles(files);
@@ -64,27 +70,29 @@ export default function BikesCategoryFormModal({
     []
   );
 
+  // Submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Oto-doldurma (en az bir dilde girilmiş ise tüm dillere uygula)
     const filledName = { ...name };
-    const firstNameValue = Object.values(name).find((v) => v.trim());
-    if (firstNameValue)
+    const firstName = Object.values(name).find((v) => v.trim());
+    if (firstName)
       SUPPORTED_LOCALES.forEach((lng) => {
-        if (!filledName[lng]) filledName[lng] = firstNameValue;
+        if (!filledName[lng]) filledName[lng] = firstName;
       });
 
     const filledDesc = { ...description };
-    const firstDescValue = Object.values(description).find((v) => v.trim());
-    if (firstDescValue)
+    const firstDesc = Object.values(description).find((v) => v.trim());
+    if (firstDesc)
       SUPPORTED_LOCALES.forEach((lng) => {
-        if (!filledDesc[lng]) filledDesc[lng] = firstDescValue;
+        if (!filledDesc[lng]) filledDesc[lng] = firstDesc;
       });
 
     const formData = new FormData();
     formData.append("name", JSON.stringify(filledName));
     formData.append("description", JSON.stringify(filledDesc));
-
+    formData.append("isActive", String(isActive));
     for (const file of selectedFiles) {
       formData.append("images", file);
     }
@@ -114,8 +122,11 @@ export default function BikesCategoryFormModal({
             <input
               id={`name-${lng}`}
               type="text"
-              value={name[lng]}
-              onChange={(e) => setName({ ...name, [lng]: e.target.value })}
+              value={name[lng] || ""}
+              autoComplete="off"
+              onChange={(e) =>
+                setName((prev) => ({ ...prev, [lng]: e.target.value }))
+              }
               required={lng === lang}
             />
 
@@ -124,9 +135,10 @@ export default function BikesCategoryFormModal({
             </label>
             <textarea
               id={`desc-${lng}`}
-              value={description[lng]}
+              value={description[lng] || ""}
+              autoComplete="off"
               onChange={(e) =>
-                setDescription({ ...description, [lng]: e.target.value })
+                setDescription((prev) => ({ ...prev, [lng]: e.target.value }))
               }
               required={lng === lang}
             />
@@ -140,6 +152,16 @@ export default function BikesCategoryFormModal({
           onChange={handleImagesChange}
           folder="bikesCategory"
         />
+
+        <label style={{ marginTop: 10 }}>
+          <input
+            type="checkbox"
+            checked={isActive}
+            onChange={() => setIsActive((prev) => !prev)}
+          />
+          {" "}
+          {t("admin.bikecategory.isActive", "Category Active")}
+        </label>
 
         <ButtonGroup>
           <button type="submit">

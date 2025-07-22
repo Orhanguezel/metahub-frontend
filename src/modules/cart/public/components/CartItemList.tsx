@@ -1,37 +1,108 @@
+"use client";
 import styled from "styled-components";
-import { CartItem } from "@/modules/cart";
+import Link from "next/link";
 import type { ICartItem } from "@/modules/cart/types";
-//import { useTranslation } from "react-i18next";
+import type { IBikes } from "@/modules/bikes/types";
+import type { IEnsotekprod } from "@/modules/ensotekprod/types";
+import Image from "next/image";
+import { useTranslation } from "react-i18next";
+import { getMultiLang } from "@/types/common";
+
+// Type guard: gerçek obje mi?
+function isPopulatedProduct(
+  product: unknown
+): product is IBikes | IEnsotekprod {
+  return (
+    !!product &&
+    typeof product === "object" &&
+    "_id" in product &&
+    "name" in product
+  );
+}
 
 interface Props {
   items: ICartItem[];
 }
 
 export default function CartItemList({ items }: Props) {
+  // Kullanıcının aktif dilini al
+  const { i18n } = useTranslation();
+  const lang = i18n.language?.split("-")[0] as any; // ex: 'tr', 'en'
+
   return (
     <ListContainer>
       {items.map((item) => {
-        // 1. Eğer product bir obje ve _id alanı varsa
-        let key: string;
-        if (typeof item.product === "string") {
-          key = item.product;
-        } else if (
-          item.product &&
-          typeof item.product === "object" &&
-          "_id" in item.product
-        ) {
-          key =
-            (item.product as any)._id?.toString?.() ||
-            JSON.stringify(item.product);
-        } else {
-          key = JSON.stringify(item.product);
+        const { productType } = item;
+        const productId: string =
+          isPopulatedProduct(item.product)
+            ? String(item.product._id)
+            : String(item.product);
+
+        let productName = "-";
+        let productSlug = "#";
+        let productImage = "";
+
+        if (isPopulatedProduct(item.product)) {
+          // Çoklu dil label'ı için helper fonksiyonunu kullan!
+          productName = getMultiLang((item.product as any).name, lang);
+
+          productSlug =
+            productType === "Bike"
+              ? `/bikes/${(item.product as any).slug}`
+              : `/ensotekprod/${(item.product as any).slug}`;
+          productImage = (item.product as any).images?.[0]?.url || "";
         }
-        return <CartItem key={key} item={item} />;
+
+        return (
+          <CartItemRow key={productId + "-" + productType}>
+            <ThumbBox>
+              {productImage ? (
+                <Image
+                  src={productImage}
+                  alt={typeof productName === "string" ? productName : "-"}
+                  fill
+                  style={{ objectFit: "cover" }}
+                  sizes="60px"
+                  priority={false}
+                />
+              ) : (
+                <ImgPlaceholder />
+              )}
+            </ThumbBox>
+            <Details>
+              <ProductName as={Link} href={productSlug}>
+                {productName}
+              </ProductName>
+              <ProductType>
+                {productType === "Bike" ? "Bisiklet" : "Ensotek Ürün"}
+              </ProductType>
+              <Qty>
+                <span>Miktar:</span> <b>{item.quantity}</b>
+              </Qty>
+            </Details>
+            <Price>
+              <span>
+                {item.priceAtAddition.toFixed(2)} €
+                {item.quantity > 1 && (
+                  <small style={{ color: "#999", marginLeft: 4 }}>
+                    x{item.quantity}
+                  </small>
+                )}
+              </span>
+              <Total>
+                <b>
+                  {(item.quantity * item.priceAtAddition).toFixed(2)} €
+                </b>
+              </Total>
+            </Price>
+          </CartItemRow>
+        );
       })}
     </ListContainer>
   );
 }
 
+// --- Styles ---
 const ListContainer = styled.div`
   flex: 2;
   min-width: 340px;
@@ -42,4 +113,81 @@ const ListContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacings.md};
+`;
+
+const CartItemRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: 18px 12px;
+  box-shadow: ${({ theme }) => theme.shadows.xs};
+`;
+
+const ThumbBox = styled.div`
+  width: 60px;
+  min-width: 60px;
+  height: 38px;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: ${({ theme }) => theme.colors.skeleton};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ImgPlaceholder = styled.div`
+  width: 100%;
+  height: 100%;
+  background: #e0e5ec;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 1.2rem;
+`;
+
+const Details = styled.div`
+  flex: 1;
+  min-width: 120px;
+`;
+
+const ProductName = styled(Link)`
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.primary};
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+`;
+
+const ProductType = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-style: italic;
+  margin-bottom: 2px;
+`;
+
+const Qty = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  margin-top: 4px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  span { font-weight: 400; }
+`;
+
+const Price = styled.div`
+  min-width: 90px;
+  text-align: right;
+  span {
+    display: block;
+    font-size: 1rem;
+    color: ${({ theme }) => theme.colors.text};
+  }
+`;
+
+const Total = styled.div`
+  font-size: 1.12rem;
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: 700;
 `;

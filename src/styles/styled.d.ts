@@ -151,6 +151,8 @@ declare module "styled-components" {
       achievementBackground: string;
       achievementGradientStart: string;
       achievementGradientEnd: string;
+      successBg: string;
+      dangerBg: string;
       text: string;
       textAlt: string;
       textSecondary: string;
@@ -230,6 +232,18 @@ declare module "styled-components" {
         textHover: string;
       };
       secondary: {
+        background: string;
+        backgroundHover: string;
+        text: string;
+        textHover: string;
+      };
+      success: {
+        background: string;
+        backgroundHover: string;
+        text: string;
+        textHover: string;
+      };
+      warning: {
         background: string;
         backgroundHover: string;
         text: string;

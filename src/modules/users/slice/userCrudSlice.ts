@@ -1,28 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import API from "@/lib/api";
-
-export interface ProfileImageObj {
-  url: string;
-  thumbnail?: string;
-  webp?: string;
-  publicId?: string;
-}
-
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: "superadmin" | "admin" | "user" | "moderator" | "staff" | "customer";
-  isActive?: boolean;
-  profileImage: string | ProfileImageObj; // <-- güncellendi
-  phone?: string;
-  bio?: string;
-  birthDate?: string;
-  addresses?: string[];
-  socialMedia?: Record<string, string>;
-  notifications?: Record<string, any>;
-}
+import type { User } from "@/modules/users/types/user";
 
 interface UserState {
   users: User[];
@@ -40,52 +18,47 @@ const initialState: UserState = {
   successMessage: null,
 };
 
+// --- Fetch All Users ---
 export const fetchUsers = createAsyncThunk(
   "userCrud/fetchUsers",
-  async (_, thunkAPI) =>
-    await apiCall("get", "/users/users", null, thunkAPI.rejectWithValue)
-);
-
-export const fetchUserById = createAsyncThunk(
-  "userCrud/fetchUserById",
-  async (id: string, thunkAPI) =>
-    await apiCall("get", `/users/users/${id}`, null, thunkAPI.rejectWithValue)
-);
-
-export const updateUser = createAsyncThunk(
-  "userCrud/updateUser",
-  async (payload: { id: string; formData: FormData }, thunkAPI) => {
-    try {
-      const response = await API.put(
-        `/users/users/${payload.id}`,
-        payload.formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      return response.data.user;
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ||
-        error?.response?.data ||
-        error?.message ||
-        "Fehler beim Aktualisieren des Benutzers.";
-      return thunkAPI.rejectWithValue(message);
-    }
+  async (_, thunkAPI) => {
+    return await apiCall("get", "/users/users", null, thunkAPI.rejectWithValue);
   }
 );
 
+// --- Fetch User By ID ---
+export const fetchUserById = createAsyncThunk(
+  "userCrud/fetchUserById",
+  async (id: string, thunkAPI) => {
+    return await apiCall("get", `/users/users/${id}`, null, thunkAPI.rejectWithValue);
+  }
+);
+
+// --- Update User (FormData destekli) ---
+export const updateUser = createAsyncThunk(
+  "userCrud/updateUser",
+  async (payload: { id: string; formData: FormData }, thunkAPI) => {
+    return await apiCall(
+      "put",
+      `/users/users/${payload.id}`,
+      payload.formData,
+      thunkAPI.rejectWithValue 
+    );
+  }
+);
+
+
+// --- Delete User ---
 export const deleteUser = createAsyncThunk(
   "userCrud/deleteUser",
-  async (id: string, thunkAPI) =>
-    await apiCall(
+  async (id: string, thunkAPI) => {
+    return await apiCall(
       "delete",
       `/users/users/${id}`,
       null,
       thunkAPI.rejectWithValue
-    )
+    );
+  }
 );
 
 const userCrudSlice = createSlice({
@@ -101,31 +74,37 @@ const userCrudSlice = createSlice({
     const loading = (state: UserState) => {
       state.loading = true;
       state.error = null;
+      state.successMessage = null;
     };
 
     const failed = (state: UserState, action: PayloadAction<any>) => {
       state.loading = false;
-      state.error = action.payload;
+      state.error = typeof action.payload === "string"
+        ? action.payload
+        : action.payload?.message || "Beklenmeyen bir hata oluştu!";
     };
 
     builder
       .addCase(fetchUsers.pending, loading)
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.loading = false;
-        state.users = action.payload;
+        // Eğer API { users: [...] } dönerse
+        state.users = action.payload?.users || action.payload || [];
       })
       .addCase(fetchUsers.rejected, failed)
+
       .addCase(fetchUserById.pending, loading)
       .addCase(fetchUserById.fulfilled, (state, action) => {
         state.loading = false;
-        state.selectedUser = action.payload;
+        state.selectedUser = action.payload?.user || action.payload || null;
       })
       .addCase(fetchUserById.rejected, failed)
+
       .addCase(updateUser.pending, loading)
       .addCase(updateUser.fulfilled, (state, action) => {
         state.loading = false;
+        const updatedUser = action.payload?.user || action.payload;
         state.successMessage = "Benutzer wurde erfolgreich aktualisiert.";
-        const updatedUser = action.payload;
         state.users = state.users.map((u) =>
           u._id === updatedUser._id ? updatedUser : u
         );
@@ -134,12 +113,16 @@ const userCrudSlice = createSlice({
         }
       })
       .addCase(updateUser.rejected, failed)
+
       .addCase(deleteUser.pending, loading)
       .addCase(deleteUser.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = "Benutzer wurde erfolgreich gelöscht.";
         const deletedId = action.meta.arg;
         state.users = state.users.filter((u) => u._id !== deletedId);
+        if (state.selectedUser?._id === deletedId) {
+          state.selectedUser = null;
+        }
       })
       .addCase(deleteUser.rejected, failed);
   },

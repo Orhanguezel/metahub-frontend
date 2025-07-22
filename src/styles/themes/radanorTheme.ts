@@ -149,6 +149,8 @@ const radanorTheme: DefaultTheme = {
     footerBackground: "#0B0E14",
     warningBackground: "#fffbe6",
     contentBackground: "#F6F7FA",
+    successBg: "#d1f5dd",
+    dangerBg: "#ffe3e3",
 
     achievementBackground: "#1A1A1A",
     achievementGradientStart: "#0D1F2D",
@@ -248,6 +250,18 @@ const radanorTheme: DefaultTheme = {
     secondary: {
       background: "#1E1E1E",
       backgroundHover: "#2E2E2E",
+      text: "#FFFFFF",
+      textHover: "#FFFFFF",
+    },
+    success: {
+      background: "#10B981",
+      backgroundHover: "#0F9D6E",
+      text: "#FFFFFF",
+      textHover: "#FFFFFF",
+    },
+    warning: {
+      background: "#F59E0B",
+      backgroundHover: "#D97706",
       text: "#FFFFFF",
       textHover: "#FFFFFF",
     },

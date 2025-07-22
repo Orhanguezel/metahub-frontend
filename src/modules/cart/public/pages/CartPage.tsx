@@ -11,16 +11,28 @@ import { CartItemList, CartSummary, CartEmpty } from "@/modules/cart";
 const CartPage = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { cart, loading } = useAppSelector((state) => state.cart);
+  const { cart, loading, error } = useAppSelector((state) => state.cart);
   const { profile } = useAppSelector((state) => state.account);
   const { t } = useTranslation("cart");
 
+  // KOŞULSUZ, FONKSİYONUN EN BAŞINDA!
   useEffect(() => {
     if (profile && profile._id) {
       console.log(">>> fetchCart tetiklendi!", profile._id);
       dispatch(fetchCart());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, profile?._id]);
+
+  // Return blokları hooklardan sonra!
+  if (error) {
+    return (
+      <PageContainer>
+        <Title>{t("error", "Sepet yüklenemedi.")}</Title>
+        <div style={{ color: "#ED3030" }}>{error}</div>
+      </PageContainer>
+    );
+  }
 
   if (!profile) {
     return (
@@ -57,7 +69,7 @@ const CartPage = () => {
 
 export default CartPage;
 
-// Styled
+// Styled...
 const PageContainer = styled.div`
   max-width: 1000px;
   margin: 0 auto;

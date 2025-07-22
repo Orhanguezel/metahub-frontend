@@ -148,6 +148,8 @@ const futuristicTheme: DefaultTheme = {
     footerBackground: "#1A1A1A",
     warningBackground: "#fffbe6",
     contentBackground: "#F6F7FA",
+    successBg: "#d1f5dd",
+    dangerBg: "#ffe3e3",
      achievementBackground: "#1A1A1A",
   achievementGradientStart: "#00FFF7",
   achievementGradientEnd: "#0bb6d6",
@@ -245,6 +247,18 @@ const futuristicTheme: DefaultTheme = {
       background: "#444444",
       backgroundHover: "#555555",
       text: "#E0E0E0",
+      textHover: "#ffffff",
+    },
+    success: {
+      background: "#28a745",
+      backgroundHover: "#218838",
+      text: "#ffffff",
+      textHover: "#ffffff",
+    },
+    warning: {
+      background: "#ffc107",
+      backgroundHover: "#e0a800",
+      text: "#222B45",
       textHover: "#ffffff",
     },
     danger: {

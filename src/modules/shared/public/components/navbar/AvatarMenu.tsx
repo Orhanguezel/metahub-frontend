@@ -1,4 +1,3 @@
-// /modules/shared/AvatarMenu.tsx
 "use client";
 import React, { useRef, useEffect, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -11,7 +10,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logoutUser, resetAuthState } from "@/modules/users/slice/authSlice";
 import { resetProfile } from "@/modules/users/slice/accountSlice";
 import { getImageSrc } from "@/shared/getImageSrc";
-import type { ProfileImageObj } from "@/modules/users/types/auth";
+import type { User } from "@/modules/users/types/user";
 import { toast } from "react-toastify";
 import { FaSignInAlt, FaUserPlus } from "react-icons/fa";
 
@@ -30,21 +29,27 @@ export default function AvatarMenu({
   const dispatch = useAppDispatch();
   const { profile: user } = useAppSelector((state) => state.account);
 
-  // Profil resmi çözümü
+  // --- Profile image resolver (robust type guard)
   const resolvedProfileImage = useMemo(() => {
-    if (!user?.profileImage)
-      return "/defaults/profile-thumbnail.png"; // <-- public/defaults/ olmalı!
-    if (typeof user.profileImage === "object" && user.profileImage !== null) {
-      const img = user.profileImage as ProfileImageObj;
-      if (img.thumbnail?.startsWith("http")) return img.thumbnail;
-      if (img.url?.startsWith("http")) return img.url;
+    const img = user?.profileImage;
+
+    if (!img) return "/defaults/profile-thumbnail.png";
+
+    if (typeof img === "object" && img !== null) {
+      // ProfileImageObj
+      if (img.thumbnail && typeof img.thumbnail === "string" && img.thumbnail.startsWith("http"))
+        return img.thumbnail;
+      if (img.url && typeof img.url === "string" && img.url.startsWith("http"))
+        return img.url;
       return getImageSrc(img.thumbnail || img.url || "", "profile");
     }
-    if (typeof user.profileImage === "string") {
-      if (!user.profileImage.trim()) return "/defaults/profile-thumbnail.png";
-      if (user.profileImage.startsWith("http")) return user.profileImage;
-      return getImageSrc(user.profileImage, "profile");
+
+    if (typeof img === "string") {
+      if (!img.trim()) return "/defaults/profile-thumbnail.png";
+      if (img.startsWith("http")) return img;
+      return getImageSrc(img, "profile");
     }
+
     return "/defaults/profile-thumbnail.png";
   }, [user?.profileImage]);
 
@@ -86,16 +91,17 @@ export default function AvatarMenu({
     return (
       <>
         <MenuLink href="/login" aria-label={t("login")}>
-  <FaSignInAlt />
-</MenuLink>
-<MenuLink href="/register" aria-label={t("register")}>
-  <FaUserPlus />
-</MenuLink>
-
-
+          <FaSignInAlt />
+        </MenuLink>
+        <MenuLink href="/register" aria-label={t("register")}>
+          <FaUserPlus />
+        </MenuLink>
       </>
     );
   }
+
+  // TİP GÜVENLİ ROLE CHECK: `role` property Account tipine de eklenmiş olmalı!
+  const userRole = (user as User).role || (user as any).role;
 
   return (
     <AvatarWrapper>
@@ -121,7 +127,7 @@ export default function AvatarMenu({
             <DropdownItem as={Link} href="/account">
               {t("account")}
             </DropdownItem>
-            {(user.role === "admin" || user.role === "superadmin") && (
+            {(userRole === "admin" || userRole === "superadmin") && (
               <DropdownItem as={Link} href="/admin">
                 {t("adminDashboard", "Admin Paneli")}
               </DropdownItem>

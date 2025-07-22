@@ -4,11 +4,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import type { EnsotekCategory } from "@/modules/ensotekprod/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/ensotekprod";
+import { translations } from "@/modules/ensotekprod";
 import ImageUploadWithPreview from "@/shared/ImageUploadWithPreview";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
-
-const LANGUAGES = SUPPORTED_LOCALES;
 
 interface Props {
   isOpen: boolean;
@@ -17,6 +15,8 @@ interface Props {
   onSubmit: (formData: FormData, id?: string) => Promise<void>;
 }
 
+const LANGUAGES = SUPPORTED_LOCALES;
+
 export default function EnsotekprodCategoryFormModal({
   isOpen,
   onClose,
@@ -24,37 +24,43 @@ export default function EnsotekprodCategoryFormModal({
   onSubmit,
 }: Props) {
   const { i18n, t } = useI18nNamespace("ensotekprod", translations);
-    const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-
-
+  // Çoklu dilde label için boş obje
   const emptyLabel = SUPPORTED_LOCALES.reduce(
-    (acc, lang) => ({ ...acc, [lang]: "" }),
+    (acc, lng) => ({ ...acc, [lng]: "" }),
     {} as Record<SupportedLocale, string>
   );
 
+  // Controlled State
   const [name, setName] = useState<Record<SupportedLocale, string>>(emptyLabel);
   const [description, setDescription] = useState<Record<SupportedLocale, string>>(emptyLabel);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [isActive, setIsActive] = useState(true);
 
+  // Mount/Unount ile veya parent re-render ile değerleri güncel tut
   useEffect(() => {
     if (editingItem) {
       setName({ ...emptyLabel, ...editingItem.name });
       setDescription({ ...emptyLabel, ...editingItem.description });
       setExistingImages(editingItem.images?.map((img) => img.url) || []);
+      setIsActive(editingItem.isActive ?? true);
       setSelectedFiles([]);
       setRemovedImages([]);
     } else {
-      setName(emptyLabel);
-      setDescription(emptyLabel);
+      setName({ ...emptyLabel }); // Deep clone!
+      setDescription({ ...emptyLabel });
       setExistingImages([]);
+      setIsActive(true);
       setSelectedFiles([]);
       setRemovedImages([]);
     }
-  }, [editingItem, isOpen, emptyLabel]);
+  // eslint-disable-next-line
+  }, [editingItem, isOpen]);
 
+  // Image handler
   const handleImagesChange = useCallback(
     (files: File[], removed: string[], current: string[]) => {
       setSelectedFiles(files);
@@ -64,9 +70,11 @@ export default function EnsotekprodCategoryFormModal({
     []
   );
 
+  // Submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Diğer diller için auto-fill
     const filledName = { ...name };
     const firstNameValue = Object.values(name).find((v) => v.trim());
     if (firstNameValue)
@@ -84,6 +92,7 @@ export default function EnsotekprodCategoryFormModal({
     const formData = new FormData();
     formData.append("name", JSON.stringify(filledName));
     formData.append("description", JSON.stringify(filledDesc));
+    formData.append("isActive", String(isActive));
 
     for (const file of selectedFiles) {
       formData.append("images", file);
@@ -114,8 +123,11 @@ export default function EnsotekprodCategoryFormModal({
             <input
               id={`name-${lng}`}
               type="text"
-              value={name[lng]}
-              onChange={(e) => setName({ ...name, [lng]: e.target.value })}
+              value={name[lng] || ""}
+              autoComplete="off"
+              onChange={(e) =>
+                setName((prev) => ({ ...prev, [lng]: e.target.value }))
+              }
               required={lng === lang}
             />
 
@@ -124,9 +136,10 @@ export default function EnsotekprodCategoryFormModal({
             </label>
             <textarea
               id={`desc-${lng}`}
-              value={description[lng]}
+              value={description[lng] || ""}
+              autoComplete="off"
               onChange={(e) =>
-                setDescription({ ...description, [lng]: e.target.value })
+                setDescription((prev) => ({ ...prev, [lng]: e.target.value }))
               }
               required={lng === lang}
             />
@@ -140,6 +153,16 @@ export default function EnsotekprodCategoryFormModal({
           onChange={handleImagesChange}
           folder="ensotekCategory"
         />
+
+        <label style={{ marginTop: 10 }}>
+          <input
+            type="checkbox"
+            checked={isActive}
+            onChange={() => setIsActive((prev) => !prev)}
+          />
+          {" "}
+          {t("admin.ensotekprodcategory.isActive", "Category Active")}
+        </label>
 
         <ButtonGroup>
           <button type="submit">
