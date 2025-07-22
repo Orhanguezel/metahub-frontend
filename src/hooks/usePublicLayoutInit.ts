@@ -19,6 +19,7 @@ import { fetchActivity } from "@/modules/activity/slice/activitySlice";
 import { fetchReferences } from "@/modules/references/slice/referencesSlice";
 import { fetchBikes } from "@/modules/bikes/slice/bikesSlice";
 import { fetchEnsotekprod } from "@/modules/ensotekprod/slice/ensotekprodSlice";
+import { fetchSparepart } from "@/modules/sparepart/slice/sparepartSlice";
 import { fetchCoupons } from "@/modules/coupon/slice/couponSlice";
 import {
   fetchAllChatSessions,
@@ -50,6 +51,7 @@ export const usePublicLayoutInit = () => {
   const referencesSlice = useAppSelector((s) => s.references);
   const bikesSlice = useAppSelector((s) => s.bikes);
   const ensotekprodSlice = useAppSelector((s) => s.ensotekprod);
+  const sparepartSlice = useAppSelector((s) => s.sparepart);
   const couponSlice = useAppSelector((s) => s.coupon);
   const chat = useAppSelector((s) => s.chat);
   const profile = useAppSelector((s) => s.account.profile);
@@ -101,6 +103,8 @@ export const usePublicLayoutInit = () => {
       dispatch(fetchBikes());
     if (ensotekprodSlice.ensotekprod.length === 0 && ensotekprodSlice.status === "idle")
       dispatch(fetchEnsotekprod());
+    if (sparepartSlice.sparepart.length === 0 && sparepartSlice.status === "idle")
+      dispatch(fetchSparepart());
     if (!companySlice.company && companySlice.status === "idle")
       dispatch(fetchCompanyInfo());
     if (!couponSlice.coupons || couponSlice.coupons.length === 0)
@@ -177,6 +181,8 @@ if (
     bikesSlice.status,
     ensotekprodSlice.ensotekprod,
     ensotekprodSlice.status,
+    sparepartSlice.sparepart,
+    sparepartSlice.status,
     companySlice.company,
     companySlice.status,
     couponSlice.coupons,
@@ -255,6 +261,9 @@ if (
     ensotekprod: ensotekprodSlice.ensotekprod,
     ensotekprodStatus: ensotekprodSlice.status,
     ensotekprodError: ensotekprodSlice.error,
+    sparepart: sparepartSlice.sparepart,
+    sparepartStatus: sparepartSlice.status,
+    sparepartError: sparepartSlice.error,
     library: librarySlice.library,
   libraryStatus: librarySlice.status,
   libraryError: librarySlice.error,

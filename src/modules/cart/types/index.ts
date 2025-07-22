@@ -3,11 +3,13 @@
 import type { SupportedLocale } from "@/types/common";
 import type { IBikes } from "@/modules/bikes/types";
 import type { IEnsotekprod } from "@/modules/ensotekprod/types";
+import type { ISparepart } from "@/modules/sparepart/types";
+
 
 // Sepet item'ı; hangi ürün tipi olduğunu belirten bir alan ekliyoruz
 export interface ICartItem {
-  product: IBikes | IEnsotekprod | string; 
-  productType: "Bike" | "Ensotekprod";
+  product: IBikes | IEnsotekprod | ISparepart | string;
+  productType: "Bike" | "Ensotekprod" | "Sparepart"; // Yeni alan: ürün tipi
   quantity: number;
   tenant: string;
   unitPrice: number;

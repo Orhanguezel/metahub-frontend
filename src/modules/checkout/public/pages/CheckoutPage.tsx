@@ -161,20 +161,30 @@ const orderData = {
         <SummarySection>
           <SectionTitle>{t("checkout:order_summary", "Order Summary")}</SectionTitle>
           <SummaryList>
-            {(cart.items || []).map((item) => (
-              <li key={typeof item.product === "object" ? item.product._id : item.product}>
-                <span>
-                  <h2>{getMultiLang((item.product as any)?.name, lang) || "-"}</h2>
-                  <b>{item.quantity}</b>
-                </span>
-                <span>
-                  {(item.quantity * item.priceAtAddition).toFixed(2)} €
-                </span>
-              </li>
-            ))}
+            {(cart.items || []).map((item, idx) => {
+  const key =
+    typeof item.product === "object" && item.product && "_id" in item.product
+      ? (item.product._id || `unknown-${idx}`)
+      : (item.product || `id-${idx}`);
+  if (!item.product)
+    return <li key={key} style={{ color: "#e33" }}>Ürün bulunamadı!</li>;
+  return (
+    <li key={key}>
+      <span>
+        <h2>{getMultiLang((item.product as any)?.name, lang) || "-"}</h2>
+        <b>{item.quantity}</b>
+      </span>
+      <span>
+        {(item.quantity * item.priceAtAddition).toFixed(2)} €
+      </span>
+    </li>
+  );
+})}
+
+
           </SummaryList>
           <TotalRow>
-            <span>{t("checkout:total", "Total")}:</span>
+            <span>{t("checkout:total", "Total")}:</span>  
             <b>{cart.totalPrice.toFixed(2)} €</b>
           </TotalRow>
 

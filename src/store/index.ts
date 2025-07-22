@@ -53,6 +53,8 @@ import librarySlice from "@/modules/library/slice/librarySlice";
 import libraryCategorySlice from "@/modules/library/slice/libraryCategorySlice";
 import ensotekprodReducer from "@/modules/ensotekprod/slice/ensotekprodSlice";
 import ensotekCategoryReducer from "@/modules/ensotekprod/slice/ensotekCategorySlice";
+import sparepartCategoryReducer from "@/modules/sparepart/slice/sparepartCategorySlice";
+import sparepartReducer from "@/modules/sparepart/slice/sparepartSlice";
 
 // --- Combine reducers ---
 // Sadece slice bazında persistReducer uygula!
@@ -107,7 +109,9 @@ const rootReducer = combineReducers({
   library: librarySlice,
   libraryCategory: libraryCategorySlice,
   ensotekCategory: ensotekCategoryReducer,
-  ensotekprod: ensotekprodReducer
+  ensotekprod: ensotekprodReducer,
+  sparepartCategory: sparepartCategoryReducer,
+  sparepart: sparepartReducer
 });
 
 // --- Store ---

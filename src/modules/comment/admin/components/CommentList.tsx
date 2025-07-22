@@ -28,6 +28,7 @@ interface Props {
     | "references"
     | "company"
     | "ensotekprod"
+    | "sparepart";
 
 }
 

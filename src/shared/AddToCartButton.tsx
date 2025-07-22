@@ -9,7 +9,7 @@ import styled from "styled-components";
 
 interface AddToCartButtonProps {
   productId: string;
-  productType: "Bike" | "Ensotekprod"; // <<-- Yeni parametre zorunlu!
+  productType: "Bike" | "Ensotekprod" | "Sparepart";
   disabled?: boolean;
   children?: React.ReactNode;
 }

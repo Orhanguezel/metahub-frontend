@@ -1,14 +1,15 @@
 import type { SupportedLocale } from "@/types/common";
 import type { IBikes } from "@/modules/bikes/types";
 import type { IEnsotekprod } from "@/modules/ensotekprod/types";
+import type { ISparepart } from "@/modules/sparepart/types";
 
 export type PaymentMethod = "cash_on_delivery" | "credit_card" | "paypal";
 export type OrderStatus = "pending" | "preparing" | "shipped" | "completed" | "cancelled" |"delivered" ;
 
 // --- Sipariş ürünü (cart item) ---
 export interface IOrderItem {
-  product: IBikes | IEnsotekprod | string; 
-  productType: "Bike" | "Ensotekprod";
+  product: IBikes | IEnsotekprod | ISparepart | string;
+  productType: "Bike" | "Ensotekprod" | "Sparepart"; // Yeni alan: ürün tipi
   quantity: number;
   tenant: string;
   unitPrice: number;

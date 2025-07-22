@@ -30,7 +30,8 @@ interface Props {
     | "products"
     | "references"
     | "company"
-    | "ensotekprod";
+    | "ensotekprod"
+    | "sparepart";
   // contentType: "news" | "blog" | "products" | "radonarprod" | "bikes" | "articles" | "services" | "about" | "customProduct" | "references" | "library" | "faq" | "contact" | "company" | "tenant";
 }
 

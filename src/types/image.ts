@@ -36,4 +36,6 @@ export type ImageType =
   | "tenants"
   | "ensotekprod"
   | "ensotekCategory"
+  | "sparepart"
+  | "sparepartCategory"
   | "misc";

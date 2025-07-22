@@ -101,6 +101,15 @@ import {
   clearEnsotekCategoryMessages,
 } from "@/modules/ensotekprod/slice/ensotekCategorySlice";
 import {
+  fetchSparepartAdmin,
+  clearSparepartMessages,
+} from "@/modules/sparepart/slice/sparepartSlice";
+import {
+  fetchSparepartCategories,
+  clearSparepartCategoryMessages,
+} from "@/modules/sparepart/slice/sparepartCategorySlice";
+
+import {
   fetchGallery,
   clearGalleryMessages,
 } from "@/modules/gallery/slice/gallerySlice";
@@ -189,8 +198,9 @@ const cleanupActions = [
   clearOrderMessages,
   clearChatMessages,
   clearLibraryMessages,
-  clearLibraryCategoryMessages
-
+  clearLibraryCategoryMessages,
+  clearSparepartMessages,
+  clearSparepartCategoryMessages
 ];
 
 // --- useLayoutInit ---
@@ -223,6 +233,8 @@ export const useLayoutInit = () => {
   const bikesCategories = useAppSelector((state) => state.bikesCategory);
   const ensotekprodList = useAppSelector((state) => state.ensotekprod);
   const ensotekCategories = useAppSelector((state) => state.ensotekCategory);
+  const sparepartList = useAppSelector((state) => state.sparepart);
+  const sparepartCategories = useAppSelector((state) => state.sparepartCategory);
   const chat = useAppSelector((state) => state.chat);
   const comments = useAppSelector((state) => state.comments);
   const coupons = useAppSelector((state) => state.coupon);
@@ -295,6 +307,10 @@ const libraryCategory = useAppSelector((state) => state.libraryCategory);
       dispatch(fetchEnsotekprodAdmin());
     if (!ensotekCategories.categories.length && !ensotekCategories.loading)
       dispatch(fetchEnsotekCategories());
+    if (!sparepartList.sparepart.length && !sparepartList.loading)
+      dispatch(fetchSparepartAdmin());
+    if (!sparepartCategories.categories.length && !sparepartCategories.loading)
+      dispatch(fetchSparepartCategories());
 
     if (
       chat.roomId &&
@@ -412,6 +428,8 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
     bikesCategories,
     ensotekprodList,
     ensotekCategories,
+    sparepartList,
+    sparepartCategories,
     chat,
     coupons,
     newsList,
