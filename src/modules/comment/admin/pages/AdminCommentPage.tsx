@@ -53,8 +53,9 @@ export default function AdminCommentPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    dispatch(fetchAllCommentsAdmin(currentPage));
-  }, [currentPage, dispatch]);
+  dispatch(fetchAllCommentsAdmin({ page: currentPage }));
+}, [currentPage, dispatch]);
+
 
   useEffect(() => {
     if (successMessage) toast.success(successMessage);
