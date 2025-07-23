@@ -152,9 +152,9 @@ const minimalTheme: DefaultTheme = {
     successBg: "#d1f5dd",
     dangerBg: "#ffe3e3",
 
-    achievementBackground: "#f0f0f0",
-    achievementGradientStart: "#fbeaf0",
-    achievementGradientEnd: "#e5549c",
+    achievementBackground: "#f5f5f5",           // Açık-gri arka plan (tam nötr)
+achievementGradientStart: "#cccccc",        // Açık-gri gradient başı
+achievementGradientEnd: "#888888",          // Koyu-gri gradient sonu
 
     text: "#333333",
     textAlt: "#333333",

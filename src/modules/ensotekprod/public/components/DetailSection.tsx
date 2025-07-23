@@ -1,13 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import { translations } from "@/modules/ensotekprod";
-import translations2 from "@/modules/cart/locales";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import type { SupportedLocale } from "@/types/common";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -17,19 +15,16 @@ import {
   clearEnsotekprodMessages,
 } from "@/modules/ensotekprod/slice/ensotekprodSlice";
 import { clearCartMessages } from "@/modules/cart/slice/cartSlice";
-import { Skeleton, ErrorMessage, AddToCartButton } from "@/shared";
+import { Skeleton, ErrorMessage } from "@/shared";
 import { CommentForm, CommentList } from "@/modules/comment";
-import { ShoppingCart } from "lucide-react";
 import type { IEnsotekprod } from "@/modules/ensotekprod/types";
 import { XCircle, CheckCircle } from "lucide-react";
-
-const Lightbox = dynamic(() => import("react-image-lightbox"), { ssr: false });
+import Modal from "@/modules/home/public/components/Modal";
 
 export default function EnsotekprodDetailSection() {
   const { slug } = useParams() as { slug: string };
   const { i18n, t } = useI18nNamespace("ensotekprod", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-  const { t: tCart } = useI18nNamespace("cart", translations2);
   const dispatch = useAppDispatch();
 
   const {
@@ -39,9 +34,40 @@ export default function EnsotekprodDetailSection() {
     error,
   } = useAppSelector((state) => state.ensotekprod);
 
+  // Ana görsel ve modal
   const [mainPhoto, setMainPhoto] = useState(0);
-  const [isOpen, setIsOpen] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
+  // Tüm görseller ve swipe işlemleri
+  const images = ensotekprod?.images || [];
+  const totalImages = images.length;
+
+  const goNext = useCallback(() => {
+    setMainPhoto((prev) => (prev + 1) % totalImages);
+  }, [totalImages]);
+
+  const goPrev = useCallback(() => {
+    setMainPhoto((prev) => (prev - 1 + totalImages) % totalImages);
+  }, [totalImages]);
+
+  // Modal açıkken keyboard swipe/esc
+  const handleModalKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (!openModal) return;
+      if (e.key === "ArrowRight") goNext();
+      if (e.key === "ArrowLeft") goPrev();
+      if (e.key === "Escape") setOpenModal(false);
+    },
+    [openModal, goNext, goPrev]
+  );
+
+  useEffect(() => {
+    if (!openModal) return;
+    window.addEventListener("keydown", handleModalKey);
+    return () => window.removeEventListener("keydown", handleModalKey);
+  }, [openModal, handleModalKey]);
+
+  // Data fetch & cleanup
   useEffect(() => {
     if (allProducts && allProducts.length > 0) {
       const found = allProducts.find((item: IEnsotekprod) => item.slug === slug);
@@ -53,6 +79,7 @@ export default function EnsotekprodDetailSection() {
     } else {
       dispatch(fetchEnsotekprodBySlug(slug));
     }
+    setMainPhoto(0);
     return () => {
       dispatch(clearEnsotekprodMessages());
       dispatch(clearCartMessages());
@@ -78,58 +105,18 @@ export default function EnsotekprodDetailSection() {
     ?.filter((item: IEnsotekprod) => item.slug !== slug)
     .slice(0, 2);
 
-  // Teknik özellikleri ve opsiyonelleri tek yerde topluyoruz:
+  // Teknik özellikler
   const TECHNICAL = [
-    {
-      label: t("page.material", "Malzeme"),
-      value: ensotekprod.material,
-      icon: "🔩",
-    },
-    {
-      label: t("page.size", "Ebat/Ölçü"),
-      value: ensotekprod.size,
-      icon: "📏",
-    },
-    {
-      label: t("page.weight", "Ağırlık"),
-      value: ensotekprod.weightKg ? `${ensotekprod.weightKg} kg` : null,
-      icon: "⚖️",
-    },
-    {
-      label: t("page.powerW", "Motor Gücü"),
-      value: ensotekprod.powerW ? `${ensotekprod.powerW} W` : null,
-      icon: "🔌",
-    },
-    {
-      label: t("page.voltageV", "Voltaj"),
-      value: ensotekprod.voltageV ? `${ensotekprod.voltageV} V` : null,
-      icon: "⚡",
-    },
-    {
-      label: t("page.flowRateM3H", "Debi"),
-      value: ensotekprod.flowRateM3H ? `${ensotekprod.flowRateM3H} m³/h` : null,
-      icon: "💧",
-    },
-    {
-      label: t("page.coolingCapacityKw", "Soğutma Kapasitesi"),
-      value: ensotekprod.coolingCapacityKw ? `${ensotekprod.coolingCapacityKw} kW` : null,
-      icon: "❄️",
-    },
-    {
-      label: t("page.batteryRangeKm", "Batarya Menzili"),
-      value: ensotekprod.batteryRangeKm ? `${ensotekprod.batteryRangeKm} km` : null,
-      icon: "🔋",
-    },
-    {
-      label: t("page.motorPowerW", "Motor Gücü (Elektrik)"),
-      value: ensotekprod.motorPowerW ? `${ensotekprod.motorPowerW} W` : null,
-      icon: "🚴",
-    },
-    {
-      label: t("page.color", "Renkler"),
-      value: ensotekprod.color?.length ? ensotekprod.color.join(", ") : null,
-      icon: "🎨",
-    },
+    { label: t("page.material", "Malzeme"), value: ensotekprod.material, icon: "🔩" },
+    { label: t("page.size", "Ebat/Ölçü"), value: ensotekprod.size, icon: "📏" },
+    { label: t("page.weight", "Ağırlık"), value: ensotekprod.weightKg ? `${ensotekprod.weightKg} kg` : null, icon: "⚖️" },
+    { label: t("page.powerW", "Motor Gücü"), value: ensotekprod.powerW ? `${ensotekprod.powerW} W` : null, icon: "🔌" },
+    { label: t("page.voltageV", "Voltaj"), value: ensotekprod.voltageV ? `${ensotekprod.voltageV} V` : null, icon: "⚡" },
+    { label: t("page.flowRateM3H", "Debi"), value: ensotekprod.flowRateM3H ? `${ensotekprod.flowRateM3H} m³/h` : null, icon: "💧" },
+    { label: t("page.coolingCapacityKw", "Soğutma Kapasitesi"), value: ensotekprod.coolingCapacityKw ? `${ensotekprod.coolingCapacityKw} kW` : null, icon: "❄️" },
+    { label: t("page.batteryRangeKm", "Batarya Menzili"), value: ensotekprod.batteryRangeKm ? `${ensotekprod.batteryRangeKm} km` : null, icon: "🔋" },
+    { label: t("page.motorPowerW", "Motor Gücü (Elektrik)"), value: ensotekprod.motorPowerW ? `${ensotekprod.motorPowerW} W` : null, icon: "🚴" },
+    { label: t("page.color", "Renkler"), value: ensotekprod.color?.length ? ensotekprod.color.join(", ") : null, icon: "🎨" },
   ];
 
   return (
@@ -140,21 +127,53 @@ export default function EnsotekprodDetailSection() {
     >
       <Title>{ensotekprod.name[lang]}</Title>
 
-      {/* GÖRSELLER */}
-      {ensotekprod.images?.length > 0 && (
+      {/* ANA GÖRSEL VE THUMBNAIL */}
+      {images.length > 0 && (
         <>
           <MainImageWrapper>
             <MainImage
-              src={ensotekprod.images[mainPhoto].url}
+              src={images[mainPhoto].url}
               alt={ensotekprod.name[lang] + `-img${mainPhoto + 1}`}
-              onClick={() => setIsOpen(true)}
+              onClick={() => setOpenModal(true)}
               tabIndex={0}
               role="button"
               aria-label={t("detail.openImage", "Büyüt")}
+              style={{ cursor: "zoom-in" }}
             />
           </MainImageWrapper>
+          {/* --- MODAL (ANA RESİM) --- */}
+          {openModal && (
+            <Modal
+              isOpen={openModal}
+              onClose={() => setOpenModal(false)}
+              onNext={totalImages > 1 ? goNext : undefined}
+              onPrev={totalImages > 1 ? goPrev : undefined}
+            >
+              <div style={{ textAlign: "center", padding: 0 }}>
+                <Image
+                  src={images[mainPhoto].url}
+                  alt={ensotekprod.name[lang] + "-big"}
+                  width={1024}
+                  height={720}
+                  style={{
+                    maxWidth: "94vw",
+                    maxHeight: "80vh",
+                    borderRadius: 12,
+                    boxShadow: "0 6px 42px #2225",
+                    background: "#111",
+                    width: "auto",
+                    height: "auto",
+                  }}
+                  sizes="(max-width: 800px) 90vw, 800px"
+                />
+                <div style={{ marginTop: 10, color: "#666", fontSize: 16 }}>
+                  {ensotekprod.name?.[lang]}
+                </div>
+              </div>
+            </Modal>
+          )}
           <Thumbnails>
-            {ensotekprod.images.map((img, idx) => (
+            {images.map((img, idx) => (
               <ThumbWrapper
                 key={idx}
                 $active={mainPhoto === idx}
@@ -171,47 +190,45 @@ export default function EnsotekprodDetailSection() {
 
       {/* KATEGORİ VE STOK */}
       <MetaInfo>
-  <MetaItem>
-    <b>{t("page.brand", "Marka")}:</b> {ensotekprod.brand}
-  </MetaItem>
-  <MetaItem>
-    <b>{t("page.category", "Kategori")}:</b>{" "}
-    {typeof ensotekprod.category === "object"
-      ? ensotekprod.category.name[lang]
-      : "-"}
-  </MetaItem>
-  <MetaItem>
-    <b>{t("page.price", "Fiyat")}:</b> {ensotekprod.price} €
-  </MetaItem>
-  {/* STOK DURUMU */}
-  <MetaItem>
-  <b>{t("page.stockStatus", "Stok Durumu")}:</b>
-  {ensotekprod.stock > 0 ? (
-    <StockBadge $inStock>
-      <CheckCircle size={18} style={{marginRight: 3, marginBottom: -2}} />
-      {t("page.inStock", "Stokta Var")}
-    </StockBadge>
-  ) : (
-    <StockBadge $inStock={false}>
-      <XCircle size={18} style={{marginRight: 3, marginBottom: -2}} />
-      {t("page.outOfStock", "Stokta Yok")}
-    </StockBadge>
-  )}
-</MetaItem>
-
-  <MetaItem>
-    <b>{t("page.isElectric", "Elektrikli mi?")}:</b>{" "}
-    {ensotekprod.isElectric ? t("yes", "Evet") : t("no", "Hayır")}
-  </MetaItem>
-  {ensotekprod.tags?.length ? (
-    <MetaItem>
-      <b>{t("page.tags", "Etiketler")}:</b>{" "}
-      {ensotekprod.tags.map((tag, i) => (
-        <Tag key={i}>#{tag}</Tag>
-      ))}
-    </MetaItem>
-  ) : null}
-</MetaInfo>
+        <MetaItem>
+          <b>{t("page.brand", "Marka")}:</b> {ensotekprod.brand}
+        </MetaItem>
+        <MetaItem>
+          <b>{t("page.category", "Kategori")}:</b>{" "}
+          {typeof ensotekprod.category === "object"
+            ? ensotekprod.category.name[lang]
+            : "-"}
+        </MetaItem>
+        <MetaItem>
+          <b>{t("page.price", "Fiyat")}:</b> {ensotekprod.price} €
+        </MetaItem>
+        <MetaItem>
+          <b>{t("page.stockStatus", "Stok Durumu")}:</b>
+          {ensotekprod.stock > 0 ? (
+            <StockBadge $inStock>
+              <CheckCircle size={18} style={{ marginRight: 3, marginBottom: -2 }} />
+              {t("page.inStock", "Stokta Var")}
+            </StockBadge>
+          ) : (
+            <StockBadge $inStock={false}>
+              <XCircle size={18} style={{ marginRight: 3, marginBottom: -2 }} />
+              {t("page.outOfStock", "Stokta Yok")}
+            </StockBadge>
+          )}
+        </MetaItem>
+        <MetaItem>
+          <b>{t("page.isElectric", "Elektrikli mi?")}:</b>{" "}
+          {ensotekprod.isElectric ? t("yes", "Evet") : t("no", "Hayır")}
+        </MetaItem>
+        {ensotekprod.tags?.length ? (
+          <MetaItem>
+            <b>{t("page.tags", "Etiketler")}:</b>{" "}
+            {ensotekprod.tags.map((tag, i) => (
+              <Tag key={i}>#{tag}</Tag>
+            ))}
+          </MetaItem>
+        ) : null}
+      </MetaInfo>
 
       {/* TANIM VE TEKNİK ÖZELLİKLER */}
       <Description>
@@ -230,82 +247,44 @@ export default function EnsotekprodDetailSection() {
         </ul>
       </TechnicalBlock>
 
-      {/* SEPET BUTONU */}
-      <AddToCartButton
-  productId={ensotekprod._id}
-  productType="Ensotekprod"        // <-- BURASI ÖNEMLİ
-  disabled={ensotekprod.stock < 1}
->
-  <ShoppingCart size={22} style={{ marginRight: 8, marginBottom: -3 }} />
-  <span>
-    {ensotekprod.stock < 1
-      ? tCart("outOfStock", "Stok Yok")
-      : tCart("add", "Sepete Ekle")}
-  </span>
-</AddToCartButton>
-
-
       {/* Diğer içerikler */}
-            {otherProducts?.length > 0 && (
-              <OtherSection>
-                <OtherTitle>{t("page.other", "Diğer Hakkımızda İçerikleri")}</OtherTitle>
-                <OtherGrid>
-                  {otherProducts.map((item:IEnsotekprod) => (
-                    <OtherCard key={item._id} as={motion.div} whileHover={{ y: -6, scale: 1.025 }}>
-                      <OtherImgWrap>
-                        {item.images?.[0]?.url ? (
-                          <OtherImg
-                            src={item.images[0].url}
-                            alt={item.name?.[lang] || "Untitled"}
-                            width={60}
-                            height={40}
-                          />
-                        ) : (
-                          <OtherImgPlaceholder />
-                        )}
-                      </OtherImgWrap>
-                      <OtherTitleMini>
-                        <Link href={`/ensotekprod/${item.slug}`}>
-                          {item.name?.[lang] || "Untitled"}
-                        </Link>
-                      </OtherTitleMini>
-                    </OtherCard>
-                  ))}
-                </OtherGrid>
-              </OtherSection>
-            )}
+      {otherProducts?.length > 0 && (
+        <OtherSection>
+          <OtherTitle>{t("page.other", "Diğer Hakkımızda İçerikleri")}</OtherTitle>
+          <OtherGrid>
+            {otherProducts.map((item: IEnsotekprod) => (
+              <OtherCard key={item._id} as={motion.div} whileHover={{ y: -6, scale: 1.025 }}>
+                <OtherImgWrap>
+                  {item.images?.[0]?.url ? (
+                    <OtherImg
+                      src={item.images[0].url}
+                      alt={item.name?.[lang] || "Untitled"}
+                      width={60}
+                      height={40}
+                    />
+                  ) : (
+                    <OtherImgPlaceholder />
+                  )}
+                </OtherImgWrap>
+                <OtherTitleMini>
+                  <Link href={`/ensotekprod/${item.slug}`}>
+                    {item.name?.[lang] || "Untitled"}
+                  </Link>
+                </OtherTitleMini>
+              </OtherCard>
+            ))}
+          </OtherGrid>
+        </OtherSection>
+      )}
 
       {/* YORUM BÖLÜMÜ */}
       <CommentForm contentId={ensotekprod._id} contentType="ensotekprod" />
       <CommentList contentId={ensotekprod._id} contentType="ensotekprod" />
-
-      {/* Lightbox modal */}
-      {isOpen && ensotekprod.images?.length > 0 && (
-        <Lightbox
-          mainSrc={ensotekprod.images[mainPhoto].url}
-          nextSrc={ensotekprod.images[(mainPhoto + 1) % ensotekprod.images.length].url}
-          prevSrc={
-            ensotekprod.images[
-              (mainPhoto + ensotekprod.images.length - 1) % ensotekprod.images.length
-            ].url
-          }
-          onCloseRequest={() => setIsOpen(false)}
-          onMovePrevRequest={() =>
-            setMainPhoto(
-              (mainPhoto + ensotekprod.images.length - 1) % ensotekprod.images.length
-            )
-          }
-          onMoveNextRequest={() =>
-            setMainPhoto((mainPhoto + 1) % ensotekprod.images.length)
-          }
-          imageCaption={ensotekprod.name[lang]}
-        />
-      )}
     </Container>
   );
 }
 
-// --- STYLED COMPONENTS ---
+// Styled Components (değişmedi, kopyaladım)
 const Container = styled(motion.section)`
   max-width: 900px;
   margin: 0 auto;
@@ -335,7 +314,6 @@ const MainImage = styled.img`
   box-shadow: ${({ theme }) => theme.shadows.md};
   cursor: zoom-in;
   background: ${({ theme }) => theme.colors.backgroundAlt || "#1a1a1a"};
-
   @media (max-width: 600px) {
     width: 100%;
     height: 180px;
@@ -434,7 +412,6 @@ const Tag = styled.span`
   margin-bottom: 0.15em;
 `;
 
-
 const StockBadge = styled.span<{ $inStock?: boolean }>`
   display: inline-flex;
   align-items: center;
@@ -445,32 +422,25 @@ const StockBadge = styled.span<{ $inStock?: boolean }>`
   border-radius: ${({ theme }) => theme.radii.pill};
   padding: 3px 14px 3px 9px;
   margin-top: 0.08em;
-
   background: ${({ $inStock, theme }) =>
     $inStock
       ? theme.colors.successBg || "#d1f5dd"
       : theme.colors.dangerBg || "#ffe3e3"};
-
   color: ${({ $inStock, theme }) =>
     $inStock
       ? theme.colors.success || "#28C76F"
       : theme.colors.danger || "#FF6B6B"};
-
   box-shadow: 0 2px 8px ${({ $inStock }) =>
     $inStock
       ? "rgba(40, 199, 111, 0.07)"
       : "rgba(255, 107, 107, 0.10)"};
-
   letter-spacing: 0.02em;
   transition: background 0.2s, color 0.2s;
-
   svg {
     margin-right: 3px;
     vertical-align: middle;
   }
 `;
-
-
 
 const OtherSection = styled.div`
   margin-top: ${({ theme }) => theme.spacings.xxl};
@@ -504,7 +474,6 @@ const OtherCard = styled(motion.div)`
   transition: box-shadow 0.18s, border 0.18s, transform 0.16s;
   cursor: pointer;
   min-height: 72px;
-
   &:hover, &:focus-visible {
     box-shadow: ${({ theme }) => theme.shadows.md};
     border-color: ${({ theme }) => theme.colors.primary};
@@ -544,7 +513,6 @@ const OtherTitleMini = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.base};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   color: ${({ theme }) => theme.colors.primary};
-
   a {
     color: inherit;
     text-decoration: none;
@@ -553,5 +521,3 @@ const OtherTitleMini = styled.div`
     }
   }
 `;
-
-

@@ -1,0 +1,22 @@
+{
+  "empty": "Sepetiniz boş!",
+  "shopNow": "Alışverişe Başla",
+  "noName": "İsimsiz Ürün",
+  "decrease": "Azalt",
+  "increase": "Arttır",
+  "remove": "Kaldır",
+  "summary": "Sepet Özeti",
+  "total": "Toplam",
+  "items": "Ürün",
+  "clear": "Sepeti Temizle",
+  "checkout": "Satın Al",
+  "add": "Sepete Ekle",
+  "adding": "Ekleniyor…",
+  "inCart": "Sepette",
+  "success": "Sepete eklendi!",
+  "outOfStock": "Stok Yok",
+  "error": "Sepete eklenemedi!",
+  "loading": "Yükleniyor...",
+  "title": "Sepetiniz",
+  "login_required": "Sepeti görüntülemek için giriş yapınız."
+}

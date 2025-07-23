@@ -150,9 +150,10 @@ const futuristicTheme: DefaultTheme = {
     contentBackground: "#F6F7FA",
     successBg: "#d1f5dd",
     dangerBg: "#ffe3e3",
-     achievementBackground: "#1A1A1A",
+    
+    achievementBackground: "#181C1F",
   achievementGradientStart: "#00FFF7",
-  achievementGradientEnd: "#0bb6d6",
+  achievementGradientEnd: "#7D00FF",
     
     overlayStart: "rgba(0, 0, 0, 0.8)",
     overlayEnd: "rgba(0, 0, 0, 0.95)",

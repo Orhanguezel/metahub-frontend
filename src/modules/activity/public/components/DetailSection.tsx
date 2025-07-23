@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
@@ -17,19 +17,13 @@ import {
 } from "@/modules/activity/slice/activitySlice";
 import type { IActivity } from "@/modules/activity";
 import type { SupportedLocale } from "@/types/common";
+import Modal from "@/modules/home/public/components/Modal"; // Modal path'ini kendi projene göre ayarla
 
 export default function ActivityDetailSection() {
   const { i18n, t } = useI18nNamespace("activity", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { slug } = useParams() as { slug: string };
   const dispatch = useAppDispatch();
-
-  // i18n yükleme
-  Object.entries(translations).forEach(([locale, resources]) => {
-    if (!i18n.hasResourceBundle(locale, "activity")) {
-      i18n.addResourceBundle(locale, "activity", resources, true, true);
-    }
-  });
 
   const {
     selected: activity,
@@ -54,6 +48,40 @@ export default function ActivityDetailSection() {
     };
   }, [dispatch, allActivity, slug]);
 
+  // Görsel galerisi state
+  const images = activity?.images || [];
+  const [mainIndex, setMainIndex] = useState(0);
+  const [openModal, setOpenModal] = useState(false);
+  const totalImages = images.length;
+
+  // Modalda sağ/sol/esc ile gezinme
+  const goNext = useCallback(() => {
+    setMainIndex((prev) => (prev + 1) % totalImages);
+  }, [totalImages]);
+
+  const goPrev = useCallback(() => {
+    setMainIndex((prev) => (prev - 1 + totalImages) % totalImages);
+  }, [totalImages]);
+
+  const handleModalKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (!openModal) return;
+      if (e.key === "ArrowRight") goNext();
+      if (e.key === "ArrowLeft") goPrev();
+      if (e.key === "Escape") setOpenModal(false);
+    },
+    [openModal, goNext, goPrev]
+  );
+
+  useEffect(() => {
+    if (!openModal) return;
+    window.addEventListener("keydown", handleModalKey);
+    return () => window.removeEventListener("keydown", handleModalKey);
+  }, [openModal, handleModalKey]);
+
+  useEffect(() => {
+    setMainIndex(0); // slug değişince resetle
+  }, [slug]);
 
   if (loading) {
     return (
@@ -73,6 +101,8 @@ export default function ActivityDetailSection() {
 
   const otherActivity = allActivity.filter((item: IActivity) => item.slug !== slug);
 
+  const mainImage = images[mainIndex];
+
   return (
     <DetailContainer
       initial={{ opacity: 0, y: 38 }}
@@ -84,18 +114,83 @@ export default function ActivityDetailSection() {
         {activity.title?.[lang]}
       </MainTitle>
 
-      {/* Görsel */}
-      {activity.images?.[0]?.url && (
-        <BannerImage>
-          <Image
-            src={activity.images[0].url}
-            alt={activity.title?.[lang] || "Untitled"}
-            width={1100}
-            height={470}
-            priority
-            style={{ objectFit: "cover", width: "100%", height: "310px", borderRadius: "22px" }}
-          />
-        </BannerImage>
+      {/* Görsel + thumbs */}
+      {mainImage?.url && (
+        <ImageSection>
+          <MainImageFrame>
+            <StyledMainImage
+              src={mainImage.url}
+              alt={activity.title?.[lang] || "Untitled"}
+              width={1100}
+              height={470}
+              priority
+              style={{
+                objectFit: "cover",
+                width: "100%",
+                height: "310px",
+                cursor: "zoom-in",
+              }}
+              onClick={() => setOpenModal(true)}
+              tabIndex={0}
+              role="button"
+              aria-label={t("detail.openImage", "Büyüt")}
+            />
+          </MainImageFrame>
+          {/* Modal */}
+          {openModal && (
+            <Modal
+              isOpen={openModal}
+              onClose={() => setOpenModal(false)}
+              onNext={totalImages > 1 ? goNext : undefined}
+              onPrev={totalImages > 1 ? goPrev : undefined}
+            >
+              <div style={{ textAlign: "center", padding: 0 }}>
+                <Image
+                  src={mainImage.url}
+                  alt={(activity.title?.[lang] || "") + "-big"}
+                  width={1280}
+                  height={720}
+                  style={{
+                    maxWidth: "94vw",
+                    maxHeight: "80vh",
+                    boxShadow: "0 6px 42px #2225",
+                    background: "#111",
+                    width: "auto",
+                    height: "auto"
+                  }}
+                  sizes="(max-width: 800px) 90vw, 1280px"
+                />
+                <div style={{ marginTop: 10, color: "#666", fontSize: 16 }}>
+                  {activity.title?.[lang]}
+                </div>
+              </div>
+            </Modal>
+          )}
+
+          {/* Thumbnails */}
+          {images.length > 1 && (
+            <Gallery>
+              {images.map((img, i) => (
+                <ThumbFrame
+                  key={img.url + i}
+                  $active={mainIndex === i}
+                  onClick={() => setMainIndex(i)}
+                  tabIndex={0}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setMainIndex(i)}
+                  aria-label={`Show image ${i + 1}`}
+                >
+                  <StyledThumbImage
+                    src={img.url}
+                    alt={`${activity.title?.[lang]} thumbnail ${i + 1}`}
+                    width={118}
+                    height={70}
+                    $active={mainIndex === i}
+                  />
+                </ThumbFrame>
+              ))}
+            </Gallery>
+          )}
+        </ImageSection>
       )}
 
       {/* Özet */}
@@ -127,9 +222,9 @@ export default function ActivityDetailSection() {
                     <Image
                       src={item.images[0].url}
                       alt={item.title?.[lang] || "Untitled"}
-                      width={70}
-                      height={50}
-                      style={{ objectFit: "contain", width: "60px", height: "40px", borderRadius: "10px" }}
+                      width={60}
+                      height={40}
+                      style={{ objectFit: "contain", width: "60px", height: "40px" }}
                     />
                   ) : (
                     <OtherImgPlaceholder />
@@ -150,6 +245,7 @@ export default function ActivityDetailSection() {
 }
 
 // --------- STYLES -----------
+
 const DetailContainer = styled(motion.section)`
   max-width: 940px;
   margin: 0 auto;
@@ -172,16 +268,69 @@ const MainTitle = styled.h1`
   text-align: center;
 `;
 
-const BannerImage = styled.div`
-  width: 100%;
-  margin: 0 auto 2.1rem auto;
-  overflow: hidden;
-  box-shadow: ${({ theme }) => theme.shadows.lg};
+const ImageSection = styled.div`
+  margin-bottom: 2.1rem;
+`;
 
-  img {
-    display: block;
-    width: 100%;
+const MainImageFrame = styled.div`
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  background: #e7edf3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: ${({ theme }) => theme.shadows.lg};
+`;
+
+const StyledMainImage = styled(Image)`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 22px;
+`;
+
+const Gallery = styled.div`
+  margin-top: 1.15rem;
+  display: flex;
+  gap: 1.05rem;
+  flex-wrap: wrap;
+`;
+
+const ThumbFrame = styled.button<{ $active?: boolean }>`
+  border: none;
+  background: none;
+  padding: 0;
+  outline: none;
+  cursor: pointer;
+  width: 118px;
+  height: 70px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #eef5fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.15s, border 0.17s;
+  border: 2.3px solid #e1e8ef;
+
+  ${({ $active, theme }) =>
+    $active
+      ? `border-color: ${theme.colors.primary}; box-shadow: 0 5px 18px 0 rgba(229,84,156,0.13);`
+      : ""}
+  &:hover, &:focus-visible {
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 5px 18px 0 rgba(229,84,156,0.15);
+    outline: none;
   }
+`;
+
+const StyledThumbImage = styled(Image)<{ $active?: boolean }>`
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  border-radius: 12px;
 `;
 
 const SummaryBlock = styled.div`
@@ -296,4 +445,3 @@ const OtherTitle = styled.div`
     }
   }
 `;
-

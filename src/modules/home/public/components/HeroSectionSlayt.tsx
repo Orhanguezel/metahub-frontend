@@ -10,7 +10,7 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations, Modal } from "@/modules/home";
 import { SupportedLocale } from "@/types/common";
 import SkeletonBox from "@/shared/Skeleton";
-import type { IGallery} from "@/modules/gallery/types";
+import type { IGallery } from "@/modules/gallery/types";
 
 const SLIDER_CATEGORY_SLUG = "carousel";
 
@@ -26,13 +26,11 @@ const HeroSectionSlayt = () => {
   const { publicImages } = useAppSelector((state) => state.gallery);
   const { categories } = useAppSelector((state) => state.galleryCategory);
 
-  // Burada kategori objesini bul
   const targetCategory = useMemo(
     () => categories?.find((cat) => cat.slug === SLIDER_CATEGORY_SLUG),
     [categories]
   );
 
-  // Flat + order sıralı ve sadece ilgili kategoriden
   const flatItems = useMemo<GalleryItem[]>(() => {
     if (!Array.isArray(publicImages) || !targetCategory) return [];
     const filtered = publicImages.filter((gallery) =>
@@ -40,7 +38,6 @@ const HeroSectionSlayt = () => {
         ? gallery.category === targetCategory._id
         : gallery.category?._id === targetCategory._id
     );
-    // Bütün galerilerdeki bütün resimleri düzleştirip, parent galleryId ekle ve sırala
     const allImages: GalleryItem[] = [];
     filtered.forEach((gallery) => {
       (gallery.images || []).forEach((img) => {
@@ -51,18 +48,30 @@ const HeroSectionSlayt = () => {
         });
       });
     });
-    // order'a göre sıralama (default 0)
     allImages.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     return allImages;
   }, [publicImages, targetCategory]);
 
   const modal = useModal(flatItems);
 
+  // Oto slider
   useEffect(() => {
     if (flatItems.length === 0) return;
     const timer = setInterval(() => modal.next(), 5000);
     return () => clearInterval(timer);
   }, [flatItems, modal]);
+
+  // Klavye kontrolü (modalda)
+  useEffect(() => {
+    if (!modal.isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") modal.next();
+      if (e.key === "ArrowLeft") modal.prev();
+      if (e.key === "Escape") modal.close();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [modal]);
 
   const handleSwipe = useCallback((e: React.TouchEvent) => {
     const startX = e.changedTouches[0].clientX;
@@ -122,8 +131,10 @@ const HeroSectionSlayt = () => {
               <Overlay />
             </Background>
             <Content>
-              <Title>{title}</Title>
-              <Subtitle>{description}</Subtitle>
+              <HeroGlass>
+                <Title>{title}</Title>
+                <Subtitle>{description}</Subtitle>
+              </HeroGlass>
             </Content>
           </Slide>
         </AnimatePresence>
@@ -133,6 +144,8 @@ const HeroSectionSlayt = () => {
               key={idx}
               $active={idx === modal.currentIndex}
               onClick={() => modal.open(idx)}
+              aria-label={`Go to slide ${idx + 1}`}
+              tabIndex={0}
             />
           ))}
         </Nav>
@@ -144,24 +157,28 @@ const HeroSectionSlayt = () => {
         onNext={modal.next}
         onPrev={modal.prev}
       >
-        <div style={{ textAlign: "center" }}>
-          <Image
-            src={imageSrc}
-            alt={title || "Slider detail image"}
-            width={1200}
-            height={800}
-            unoptimized
-            sizes="100vw"
-            style={{
-              objectFit: "contain",
-              maxHeight: "80vh",
-              width: "auto",
-              borderRadius: "12px",
-            }}
-          />
-          <h2 style={{ color: "#fff", marginTop: "10px" }}>{title}</h2>
-          <p style={{ color: "#fff" }}>{description}</p>
-        </div>
+        <ModalContent>
+          <ModalImageWrap>
+            <Image
+              src={imageSrc}
+              alt={title || "Slider detail image"}
+              width={1200}
+              height={800}
+              unoptimized
+              sizes="100vw"
+              style={{
+                objectFit: "contain",
+                maxHeight: "70vh",
+                width: "auto",
+                boxShadow: "0 8px 36px #e5549c33, 0 1.5px 10px #fbeaf0bb"
+              }}
+            />
+          </ModalImageWrap>
+          <ModalGlass>
+            <h2>{title}</h2>
+            <p>{description}</p>
+          </ModalGlass>
+        </ModalContent>
       </Modal>
     </>
   );
@@ -169,7 +186,7 @@ const HeroSectionSlayt = () => {
 
 export default HeroSectionSlayt;
 
-
+// ------------- STYLED COMPONENTS ---------------
 
 const HeroWrapper = styled.section`
   width: 100%;
@@ -221,7 +238,7 @@ const StyledImage = styled(Image)`
   object-fit: cover;
   object-position: center;
   display: block;
-  filter: brightness(0.7);
+  filter: brightness(0.70);
 `;
 
 const Overlay = styled.div`
@@ -229,8 +246,9 @@ const Overlay = styled.div`
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(0,0,0,0.02) 0%,
-    rgba(0,0,0,0.38) 100%
+    rgba(255,240,246,0.08) 0%,
+    rgba(229,84,156,0.16) 65%,
+    rgba(82,64,75,0.18) 100%
   );
   z-index: 2;
 `;
@@ -243,35 +261,41 @@ const Content = styled.div`
   transform: translate(-50%, -50%);
   width: 92%;
   max-width: 720px;
-  padding: 32px 16px;
-  background: rgba(0,0,0,0.28);
-  border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: ${({ theme }) => theme.shadows.md};
   text-align: center;
-  color: ${({ theme }) => theme.colors.whiteColor};
-
-  @media (max-width: 768px) {
-    padding: 20px 6px;
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-    max-width: 96vw;
-  }
 `;
 
-const Title = styled.h2`
-  font-size: ${({ theme }) => theme.fontSizes.xl};
-  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-  color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: 0.5em;
+const HeroGlass = styled.div`
+  background: rgba(255,255,255,0.17);
+  border: 2px solid ${({ theme }) => theme.colors.primaryLight};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  box-shadow: 0 6px 38px #e5549c17, 0 1.5px 10px #fbeaf0bb;
+  padding: 2.4rem 2.2rem 1.8rem 2.2rem;
+  backdrop-filter: blur(10px) brightness(1.06);
+  color: ${({ theme }) => theme.colors.primaryDark};
 
-  @media (max-width: 768px) {
+  h2 {
+    font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+    font-weight: ${({ theme }) => theme.fontWeights.extraBold};
+    margin-bottom: 0.65em;
+    background: linear-gradient(90deg,#e5549c 22%, #b53075 68%, #52404b 98%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    text-shadow: 0 3px 15px #fff4, 0 0.5px 2px #e5549c77;
+  }
+  p {
     font-size: ${({ theme }) => theme.fontSizes.lg};
+    color: ${({ theme }) => theme.colors.textLight};
+    text-shadow: 0 2px 14px #fbeaf0cc;
+    font-weight: 500;
+    margin: 0;
   }
-`;
-
-const Subtitle = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  color: ${({ theme }) => theme.colors.textLight};
-  margin-bottom: 0;
+  @media (max-width: 600px) {
+    padding: 1.2rem 0.8rem;
+    h2 { font-size: ${({ theme }) => theme.fontSizes.xl}; }
+    p { font-size: ${({ theme }) => theme.fontSizes.md}; }
+  }
 `;
 
 const Nav = styled.div`
@@ -290,7 +314,82 @@ const Dot = styled.button<{ $active: boolean }>`
   border-radius: 50%;
   background: ${({ $active, theme }) =>
     $active ? theme.colors.primary : theme.colors.skeleton};
-  border: none;
+  border: ${({ $active, theme }) =>
+    $active ? `2.5px solid ${theme.colors.primaryDark}` : "none"};
+  box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.md : "none")};
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background 0.3s, border 0.22s;
+  outline: none;
+  &:focus {
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primaryTransparent};
+    border: 2px solid ${({ theme }) => theme.colors.primary};
+  }
 `;
+
+const ModalContent = styled.div`
+  text-align: center;
+  padding: 0;
+  @media (max-width: 800px) {
+    padding: 0 6px;
+  }
+`;
+
+const ModalImageWrap = styled.div`
+  margin: 0 auto 18px auto;
+  max-width: 99vw;
+`;
+
+const ModalGlass = styled.div`
+  background: rgba(255,255,255,0.17);
+  border: 2px solid ${({ theme }) => theme.colors.primaryLight};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  box-shadow: 0 8px 32px #e5549c25, 0 2px 14px #fbeaf0aa;
+  padding: 2.1rem 2.2rem 1.5rem 2.2rem;
+  margin: 0 auto;
+  max-width: 520px;
+  margin-top: -10px;
+  backdrop-filter: blur(9px) brightness(1.05);
+  color: ${({ theme }) => theme.colors.primaryDark};
+
+  h2 {
+    font-size: ${({ theme }) => theme.fontSizes.xl};
+    font-weight: ${({ theme }) => theme.fontWeights.extraBold};
+    margin-bottom: 0.65em;
+    background: linear-gradient(90deg,#e5549c 22%, #b53075 68%, #52404b 98%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    text-shadow: 0 2px 10px #fff4, 0 0.5px 2px #e5549c77;
+  }
+  p {
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    color: ${({ theme }) => theme.colors.textLight};
+    text-shadow: 0 1.5px 10px #fbeaf099;
+    font-weight: 500;
+    margin: 0;
+  }
+  @media (max-width: 600px) {
+    padding: 1.1rem 0.6rem;
+    h2 { font-size: ${({ theme }) => theme.fontSizes.lg}; }
+    p { font-size: ${({ theme }) => theme.fontSizes.sm}; }
+  }
+`;
+
+const Title = styled.h1`
+  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
+  margin: 0 0 ${({ theme }) => theme.spacings.sm} 0;
+  letter-spacing: 0.01em;
+  line-height: 1.13;
+`;
+
+const Subtitle = styled.p`
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  color: ${({ theme }) => theme.colors.textLight};
+  margin: 0 0 ${({ theme }) => theme.spacings.lg} 0;
+  font-family: ${({ theme }) => theme.fonts.body};
+  line-height: 1.5;
+  text-shadow: 0 2px 12px rgba(229,84,156,0.08);
+`;
+

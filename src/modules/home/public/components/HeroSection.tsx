@@ -12,50 +12,36 @@ import { useAppSelector } from "@/store/hooks";
 import type { IGallery, IGalleryCategory } from "@/modules/gallery/types";
 
 // KATEGORİNİN _id’si veya slug’ı
-const HERO_CATEGORY_SLUG = "carousel"; // veya ör: "hero_slider"
-const HERO_CATEGORY_ID = ""; // Doldurmak istersen: "6878e89d260cf9b67f2c2101"
+const HERO_CATEGORY_SLUG = "carousel";
 
 const HeroSection = () => {
   const { i18n, t } = useI18nNamespace("home", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  // Hem gallery hem category slice’ı lazım!
   const { publicImages } = useAppSelector((state) => state.gallery);
   const galleryCategories = useAppSelector((state) => state.galleryCategory.categories);
 
-  // Hangi kategorinin ID’si/slug’ı ile filtreleyeceksin?
-  // Eğer slug ile çalışacaksan, ilgili kategorinin _id’sini bul:
   const selectedCategoryId = useMemo(() => {
-    if (HERO_CATEGORY_ID) return HERO_CATEGORY_ID;
-    if (HERO_CATEGORY_SLUG && Array.isArray(galleryCategories)) {
-      const cat = galleryCategories.find((c: IGalleryCategory) => c.slug === HERO_CATEGORY_SLUG);
-      return cat?._id || "";
-    }
-    return "";
+    const cat = galleryCategories.find((c: IGalleryCategory) => c.slug === HERO_CATEGORY_SLUG);
+    return cat?._id || "";
   }, [galleryCategories]);
 
-  // Kategoriye ait bütün gallery objelerini bul ve düzleştir
   const flatItems = useMemo(() => {
     if (!selectedCategoryId || !Array.isArray(publicImages)) return [];
-
-    // Seçili kategoriye sahip gallery’leri bul
     const filteredGalleries = publicImages.filter((item: IGallery) =>
       typeof item.category === "string"
         ? item.category === selectedCategoryId
         : item.category?._id === selectedCategoryId
     );
-const allImages: any[] = [];
-filteredGalleries.forEach((gallery) => {
-  (gallery.images || []).forEach((img) => {
-    allImages.push({
-      ...img,
-      _galleryId: gallery._id,
+    const allImages: any[] = [];
+    filteredGalleries.forEach((gallery) => {
+      (gallery.images || []).forEach((img) => {
+        allImages.push({
+          ...img,
+          _galleryId: gallery._id,
+        });
+      });
     });
-  });
-});
-
-
-    // order’a göre sırala (küçükten büyüğe)
     allImages.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     return allImages;
   }, [publicImages, selectedCategoryId]);
@@ -112,14 +98,20 @@ filteredGalleries.forEach((gallery) => {
       </AnimatePresence>
       <Overlay />
       <SliderContent>
-        <HeroCard>
+        <HeroCard
+          as={motion.div}
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 24 }}
+          transition={{ duration: 0.95 }}
+        >
           <motion.h1
             key={title}
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
-            {title}
+            <GradientTitle>{title}</GradientTitle>
           </motion.h1>
           <motion.p
             key={description}
@@ -127,9 +119,9 @@ filteredGalleries.forEach((gallery) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.2 }}
           >
-            {description}
+            <HeroDesc>{description}</HeroDesc>
           </motion.p>
-          <Link href="/booking">
+          <Link href="/booking" passHref legacyBehavior>
             <CTAButton>{t("hero.bookAppointment", "Randevu Al")}</CTAButton>
           </Link>
         </HeroCard>
@@ -151,8 +143,7 @@ filteredGalleries.forEach((gallery) => {
 
 export default HeroSection;
 
-// Styled components ... (değişmedi)
-
+// ----------- STYLED COMPONENTS --------------
 
 const Hero = styled.section`
   position: relative;
@@ -190,10 +181,12 @@ const Overlay = styled.div`
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.42) 0%,
-    rgba(0, 0, 0, 0.64) 100%
+    rgba(255, 240, 246, 0.68) 0%,
+    rgba(229, 84, 156, 0.32) 60%,
+    rgba(64, 51, 61, 0.48) 100%
   );
   z-index: 1;
+  pointer-events: none;
 `;
 
 const SliderContent = styled.div`
@@ -214,26 +207,26 @@ const SliderContent = styled.div`
 `;
 
 const HeroCard = styled.div`
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255,255,255,0.12);
   border-radius: ${({ theme }) => theme.radii.xl};
   padding: ${({ theme }) => theme.spacings.xl}
     ${({ theme }) => theme.spacings.xxl};
-  box-shadow: ${({ theme }) => theme.shadows.lg};
+  box-shadow: 0 8px 40px 0 rgba(229,84,156,0.10), ${({ theme }) => theme.shadows.lg};
   max-width: 620px;
   width: 100%;
   margin-bottom: ${({ theme }) => theme.spacings.lg};
   text-align: center;
   color: ${({ theme }) => theme.colors.whiteColor};
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(8px) saturate(110%) brightness(1.04);
+  border: 2.5px solid ${({ theme }) => theme.colors.primaryLight};
 
   h1 {
     font-family: ${({ theme }) => theme.fonts.heading};
     font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-    color: ${({ theme }) => theme.colors.primary};
     font-weight: ${({ theme }) => theme.fontWeights.extraBold};
     margin: 0 0 ${({ theme }) => theme.spacings.sm} 0;
-    letter-spacings: 0.01em;
-    line-height: 1.15;
+    letter-spacing: 0.01em;
+    line-height: 1.13;
   }
 
   p {
@@ -241,7 +234,8 @@ const HeroCard = styled.div`
     color: ${({ theme }) => theme.colors.textLight};
     margin: 0 0 ${({ theme }) => theme.spacings.lg} 0;
     font-family: ${({ theme }) => theme.fonts.body};
-    line-height: 1.4;
+    line-height: 1.5;
+    text-shadow: 0 2px 12px rgba(229,84,156,0.08);
   }
 
   @media ${({ theme }) => theme.media.mobile} {
@@ -255,28 +249,67 @@ const HeroCard = styled.div`
   }
 `;
 
+const GradientTitle = styled.span`
+  background: linear-gradient(90deg, #e5549c 24%, #b53075 58%, #52404b 95%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1.5px 1.5px #fbeaf0);
+`;
+
+const HeroDesc = styled.span`
+  color: ${({ theme }) => theme.colors.textLight};
+  font-weight: 500;
+  text-shadow: 0 2px 14px #fbeaf0cc, 0 2px 16px #e5549c13;
+`;
 const CTAButton = styled.button`
-  padding: ${({ theme }) => theme.spacings.md}
-    ${({ theme }) => theme.spacings.xl};
-  background-color: ${({ theme }) => theme.buttons.primary.background};
+  padding: ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.xl};
+  background: ${({ theme }) => theme.buttons.primary.background};
   color: ${({ theme }) => theme.buttons.primary.text};
-  border: none;
+  border: 2.5px solid ${({ theme }) => theme.buttons.primary.background};
   border-radius: ${({ theme }) => theme.radii.pill};
   cursor: pointer;
   font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   box-shadow: ${({ theme }) => theme.shadows.button};
-  transition: background ${({ theme }) => theme.transition.normal},
-    color ${({ theme }) => theme.transition.normal};
+  letter-spacing: 0.01em;
+  margin-top: ${({ theme }) => theme.spacings.md};
+  transition:
+    background ${({ theme }) => theme.transition.normal},
+    color ${({ theme }) => theme.transition.normal},
+    border-color ${({ theme }) => theme.transition.normal},
+    transform 0.22s;
 
   &:hover,
-  &:focus {
+  &:focus-visible {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
     color: ${({ theme }) => theme.buttons.primary.textHover};
+    border-color: ${({ theme }) => theme.buttons.primary.backgroundHover};
     box-shadow: ${({ theme }) => theme.shadows.lg};
     text-decoration: none;
+    transform: scale(1.037);
+    outline: none;
+  }
+
+  &:active {
+    background: ${({ theme }) => theme.colors.primaryDark};
+    border-color: ${({ theme }) => theme.colors.primaryDark};
+    color: ${({ theme }) => theme.colors.white};
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    background: ${({ theme }) => theme.colors.disabledBg};
+    color: ${({ theme }) => theme.colors.textMuted};
+    cursor: not-allowed;
+    opacity: ${({ theme }) => theme.opacity.disabled};
+    border-color: ${({ theme }) => theme.colors.disabledBg};
+    box-shadow: none;
   }
 `;
+
 
 const Dots = styled.div`
   display: flex;
@@ -291,14 +324,15 @@ const Dot = styled.button<{ $active: boolean }>`
   border-radius: ${({ theme }) => theme.radii.circle};
   background: ${({ $active, theme }) =>
     $active ? theme.colors.primary : theme.colors.skeleton};
-  border: none;
-  box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.sm : "none")};
+  border: ${({ $active, theme }) =>
+    $active ? `2.5px solid ${theme.colors.primaryDark}` : "none"};
+  box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.md : "none")};
   cursor: pointer;
   transition: background ${({ theme }) => theme.transition.normal};
   outline: none;
 
   &:focus {
-    box-shadow: ${({ theme }) => theme.shadows.lg};
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primaryTransparent};
     border: 2px solid ${({ theme }) => theme.colors.primary};
   }
 `;

@@ -1,5 +1,3 @@
-"use client";
-
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
@@ -21,7 +19,6 @@ export default function LibraryPage() {
       i18n.addResourceBundle(lng, "library", resources, true, true);
     }
   });
-
 
   if (loading) {
     return (
@@ -68,31 +65,37 @@ export default function LibraryPage() {
             transition={{ delay: index * 0.09, duration: 0.48 }}
             viewport={{ once: true }}
           >
+            {/* --- IMAGE KISMI --- */}
             <ImageWrapper>
               {Array.isArray(item.images) && item.images.length > 0 && item.images[0].url ? (
-                <StyledImage
-                  src={item.images[0].url}
-                  alt={item.title?.[lang] || "Untitled"}
-                  width={440}
-                  height={210}
-                  loading="lazy"
-                />
+                <StyledLink href={`/library/${item.slug}`} aria-label={item.title?.[lang] || "Untitled"}>
+                  <StyledImage
+                    src={item.images[0].url}
+                    alt={item.title?.[lang] || "Untitled"}
+                    width={440}
+                    height={210}
+                    loading="lazy"
+                  />
+                </StyledLink>
               ) : (
                 <ImgPlaceholder />
               )}
             </ImageWrapper>
             <CardContent>
-              <CardTitle>{item.title?.[lang] || "Untitled"}</CardTitle>
+              {/* --- BAŞLIK KISMI --- */}
+              <CardTitle as={Link} href={`/library/${item.slug}`}>
+                {item.title?.[lang] || "Untitled"}
+              </CardTitle>
               <CardSummary>{item.summary?.[lang] || "No summary available."}</CardSummary>
+              {/* --- TAGS --- */}
               {Array.isArray(item.tags) && item.tags.length > 0 && (
-  <Tags>
-    {item.tags.map((tag, i) => (
-      <Tag key={i}>{tag}</Tag>
-    ))}
-  </Tags>
-)}
-
-              {/* PDF dosyası varsa göster */}
+                <Tags>
+                  {item.tags.map((tag, i) => (
+                    <Tag key={i}>{tag}</Tag>
+                  ))}
+                </Tags>
+              )}
+              {/* --- PDF dosyası varsa göster --- */}
               {item.files && item.files.length > 0 && (
                 <FileSection>
                   <a
@@ -100,12 +103,14 @@ export default function LibraryPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     download={item.files[0].name}
+                    onClick={e => e.stopPropagation()}
                   >
                     📄 {item.files[0].name || t("library.pdf_file", "PDF Dosyası")}
                   </a>
                 </FileSection>
               )}
-              <ReadMore href={`/library/${item.slug}`}>
+              {/* --- DEVAMINI OKU --- */}
+              <ReadMore href={`/library/${item.slug}`} tabIndex={0}>
                 {t("readMore", "Devamını Oku →")}
               </ReadMore>
             </CardContent>
@@ -149,7 +154,6 @@ const LibraryGrid = styled.div`
 
 const LibraryCard = styled(motion.div)`
   background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.md};
   border: 1.4px solid ${({ theme }) => theme.colors.borderLight};
   overflow: hidden;
@@ -181,8 +185,12 @@ const StyledImage = styled(Image)`
   width: 100%;
   height: 180px;
   object-fit: cover;
-  border-top-left-radius: ${({ theme }) => theme.radii.xl};
-  border-top-right-radius: ${({ theme }) => theme.radii.xl};
+`;
+
+const StyledLink = styled(Link)`
+  width: 100%;
+  height: 100%;
+  display: block;
 `;
 
 const ImgPlaceholder = styled.div`
@@ -205,6 +213,16 @@ const CardTitle = styled.h2`
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   color: ${({ theme }) => theme.colors.title};
   margin-bottom: 0.13em;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    &:hover,
+    &:focus {
+      text-decoration: underline;
+      color: ${({ theme }) => theme.colors.primary};
+    }
+  }
 `;
 
 const CardSummary = styled.p`
@@ -232,7 +250,6 @@ const Tag = styled.span`
   display: inline-block;
 `;
 
-// PDF ve diğer dosyalar için alan
 const FileSection = styled.div`
   margin: 0.8rem 0 0.2rem 0;
   a {

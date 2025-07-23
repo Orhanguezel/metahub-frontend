@@ -152,9 +152,9 @@ const classicTheme: DefaultTheme = {
     successBg: "#d1f5dd",
     dangerBg: "#ffe3e3",
 
-    achievementBackground: "#f0f0f0",
-    achievementGradientStart: "#fbeaf0",
-    achievementGradientEnd: "#e5549c",
+    achievementBackground: "#e8edf5",
+  achievementGradientStart: "#7aa0d6",
+  achievementGradientEnd: "#486289",
 
     overlayStart: "rgba(255,255,255,0.3)",
     overlayEnd: "rgba(255,255,255,0.95)",

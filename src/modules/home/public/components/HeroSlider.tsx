@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect} from "react";
 import { useAppSelector } from "@/store/hooks";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
@@ -21,12 +21,14 @@ const HeroSlider = () => {
   const { i18n, t } = useI18nNamespace("home", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
+  // --- Kategori ID seçimi ---
   const selectedCategoryId = useMemo(() => {
     if (!SLIDER_CATEGORY_SLUG || !Array.isArray(categories)) return "";
     const cat = categories.find((c: IGalleryCategory) => c.slug === SLIDER_CATEGORY_SLUG);
     return cat?._id || "";
   }, [categories]);
 
+  // --- Görselleri düzleştir ---
   const flatItems = useMemo(() => {
     if (!selectedCategoryId || !Array.isArray(publicImages)) return [];
     const filteredGalleries = publicImages.filter((gallery: IGallery) =>
@@ -51,8 +53,10 @@ const HeroSlider = () => {
     return allImages;
   }, [publicImages, selectedCategoryId]);
 
+  // --- Modal Hook ---
   const { isOpen, open, close, next, prev, currentIndex, currentItem } = useModal(flatItems);
 
+  // --- Otomatik Slider ---
   useEffect(() => {
     if (flatItems.length === 0) return;
     const timer = setInterval(() => {
@@ -61,6 +65,21 @@ const HeroSlider = () => {
     return () => clearInterval(timer);
   }, [flatItems, next]);
 
+  // --- Modal açıkken klavye ile sağ/sol/Esc ---
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleModalKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") next();
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "Escape") close();
+    };
+
+    window.addEventListener("keydown", handleModalKey);
+    return () => window.removeEventListener("keydown", handleModalKey);
+  }, [isOpen, next, prev, close]);
+
+  // --- Loader ve empty ---
   if (loading) {
     return (
       <HeroWrapper>
@@ -74,6 +93,7 @@ const HeroSlider = () => {
     return <HeroWrapper>{t("noItemsFound", "No products found.")}</HeroWrapper>;
   }
 
+  // --- Aktif görsel bilgisi ---
   const currentHero = flatItems[currentIndex];
   const title = currentHero?.name?.[lang] || currentHero?.name?.["en"] || "No title";
   const description = currentHero?.description?.[lang] || currentHero?.description?.["en"] || "No description";
@@ -87,7 +107,6 @@ const HeroSlider = () => {
     imageSrc = `${imageSrc}?w=900&h=600&c_fill&q_auto,f_auto`;
   }
 
-  // Ürün detayı yönlendirme
   const detailLink = currentHero?.productId
     ? `/ensotekprod/${currentHero.productId}`
     : `/ensotekprod`;
@@ -141,7 +160,6 @@ const HeroSlider = () => {
             height={560}
             style={{
               objectFit: "contain",
-              borderRadius: "20px",
               width: "100%",
               maxHeight: "80vh",
             }}
@@ -162,7 +180,6 @@ const HeroSlider = () => {
 export default HeroSlider;
 
 // --- Styled Components ---
-
 const HeroWrapper = styled.section`
   display: flex;
   align-items: stretch;
@@ -360,4 +377,3 @@ const ModalDesc = styled.p`
   margin-top: 8px;
   text-shadow: 0 2px 10px rgba(30,80,160,0.08);
 `;
-

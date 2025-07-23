@@ -62,44 +62,48 @@ export default function AboutPage() {
     <PageWrapper>
       <PageTitle>{t("page.allAbout", "Hakkımızda")}</PageTitle>
       <AboutGrid>
-        {about.map((item: IAbout, index: number) => (
-          <AboutCard
-            key={item._id}
-            as={motion.div}
-            initial={{ opacity: 0, y: 22 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.09, duration: 0.48 }}
-            viewport={{ once: true }}
-          >
-            <ImageWrapper>
-              {item.images?.[0]?.url ? (
-                <StyledImage
-                  src={item.images[0].url}
-                  alt={getMultiLang(item.title)}
-                  width={440}
-                  height={210}
-                  loading="lazy"
-                />
-              ) : (
-                <ImgPlaceholder />
-              )}
-            </ImageWrapper>
-            <CardContent>
-              <CardTitle>{getMultiLang(item.title)}</CardTitle>
-              <CardSummary>{getMultiLang(item.summary)}</CardSummary>
-              {item.tags?.length > 0 && (
-                <Tags>
-                  {item.tags.map((tag, i) => (
-                    <Tag key={i}>{tag}</Tag>
-                  ))}
-                </Tags>
-              )}
-              <ReadMore href={`/about/${item.slug}`}>
-                {t("readMore", "Devamını Oku →")}
-              </ReadMore>
-            </CardContent>
-          </AboutCard>
-        ))}
+        {about.map((item: IAbout, index: number) => {
+          const detailHref = `/about/${item.slug}`;
+          return (
+            <AboutCard
+              key={item._id}
+              as={motion.div}
+              initial={{ opacity: 0, y: 22 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.09, duration: 0.48 }}
+              viewport={{ once: true }}
+            >
+              <Link href={detailHref} tabIndex={-1} style={{ display: "block" }}>
+                <ImageWrapper>
+                  {item.images?.[0]?.url ? (
+                    <StyledImage
+                      src={item.images[0].url}
+                      alt={getMultiLang(item.title)}
+                      width={440}
+                      height={210}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <ImgPlaceholder />
+                  )}
+                </ImageWrapper>
+              </Link>
+              <CardContent>
+                <CardTitle as={Link} href={detailHref}>
+                  {getMultiLang(item.title)}
+                </CardTitle>
+                <CardSummary>{getMultiLang(item.summary)}</CardSummary>
+                {item.tags?.length > 0 && (
+                  <Tags>
+                    {item.tags.map((tag, i) => (
+                      <Tag key={i}>{tag}</Tag>
+                    ))}
+                  </Tags>
+                )}
+              </CardContent>
+            </AboutCard>
+          );
+        })}
       </AboutGrid>
     </PageWrapper>
   );
@@ -169,8 +173,6 @@ const StyledImage = styled(Image)`
   width: 100%;
   height: 180px;
   object-fit: cover;
-  border-top-left-radius: ${({ theme }) => theme.radii.xl};
-  border-top-right-radius: ${({ theme }) => theme.radii.xl};
 `;
 
 const ImgPlaceholder = styled.div`
@@ -193,6 +195,13 @@ const CardTitle = styled.h2`
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   color: ${({ theme }) => theme.colors.title};
   margin-bottom: 0.13em;
+  cursor: pointer;
+  transition: color 0.17s;
+  &:hover,
+  &:focus {
+    color: ${({ theme }) => theme.colors.primary};
+    text-decoration: underline;
+  }
 `;
 
 const CardSummary = styled.p`
@@ -220,30 +229,9 @@ const Tag = styled.span`
   display: inline-block;
 `;
 
-const ReadMore = styled(Link)`
-  display: inline-block;
-  margin-top: auto;
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  padding: 0.32em 0.7em;
-  border-radius: ${({ theme }) => theme.radii.md};
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-  text-decoration: none;
-  letter-spacing: 0.01em;
-  transition: background 0.19s, color 0.16s;
-  &:hover, &:focus-visible {
-    background: ${({ theme }) => theme.colors.primary};
-    color: #fff;
-    text-decoration: none;
-  }
-`;
-
 const EmptyMsg = styled.div`
   color: ${({ theme }) => theme.colors.textSecondary};
   text-align: center;
   font-size: 1.18em;
   margin: 2.4em 0 1.7em 0;
 `;
-

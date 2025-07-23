@@ -1,0 +1,22 @@
+{
+  "empty": "Your cart is empty!",
+  "shopNow": "Go Shopping",
+  "noName": "Unnamed",
+  "decrease": "Decrease",
+  "increase": "Increase",
+  "remove": "Remove",
+  "summary": "Summary",
+  "total": "Total",
+  "items": "Items",
+  "clear": "Clear Cart",
+  "checkout": "Checkout",
+  "add": "Add to Cart",
+  "adding": "Adding…",
+  "inCart": "In Cart",
+  "success": "Added to cart!",
+  "outOfStock": "Out of Stock",
+  "error": "Could not add to cart!",
+  "loading": "Loading...",
+  "title": "Your Cart",
+  "login_required": "Please log in to view your cart."
+}

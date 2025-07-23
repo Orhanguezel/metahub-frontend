@@ -1,0 +1,22 @@
+{
+  "empty": "Twój koszyk jest pusty!",
+  "shopNow": "Idź na zakupy",
+  "noName": "Bez nazwy",
+  "decrease": "Zmniejsz",
+  "increase": "Zwiększ",
+  "remove": "Usuń",
+  "summary": "Podsumowanie",
+  "total": "Suma",
+  "items": "Produkty",
+  "clear": "Wyczyść koszyk",
+  "checkout": "Do kasy",
+  "add": "Dodaj do koszyka",
+  "adding": "Dodawanie…",
+  "inCart": "W koszyku",
+  "success": "Dodano do koszyka!",
+  "outOfStock": "Brak w magazynie",
+  "error": "Nie można dodać do koszyka!",
+  "loading": "Ładowanie...",
+  "title": "Twój koszyk",
+  "login_required": "Zaloguj się, aby zobaczyć koszyk."
+}

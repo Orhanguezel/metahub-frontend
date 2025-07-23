@@ -100,17 +100,36 @@ export default function ReferencesDetailSection() {
       )}
 
       {otherReferences?.length > 0 && (
-        <OtherSection>
-          <h3>{t("page.other")}</h3>
-          <OtherList>
-            {otherReferences.map((item: IReferences) => (
-              <OtherItem key={item._id}>
-                <Link href={`/references/${item.slug}`}>{item.title?.[lang]}</Link>
-              </OtherItem>
-            ))}
-          </OtherList>
-        </OtherSection>
-      )}
+  <OtherSection>
+    <h3>{t("page.other")}</h3>
+    <LogoGrid>
+      {otherReferences.map((item: IReferences) => (
+        <LogoCard key={item._id}>
+          <Link href={`/references/${item.slug}`}>
+            <LogoImageWrapper>
+              {item.images?.[0]?.url && (
+                <Image
+                  src={item.images[0].url}
+                  alt={item.title?.[lang] || ""}
+                  width={120}
+                  height={64}
+                  style={{
+                    objectFit: "contain",
+                    width: "100%",
+                    height: "64px",
+                  }}
+                  sizes="(max-width: 600px) 50vw, 120px"
+                />
+              )}
+            </LogoImageWrapper>
+            <LogoTitle>{item.title?.[lang]}</LogoTitle>
+          </Link>
+        </LogoCard>
+      ))}
+    </LogoGrid>
+  </OtherSection>
+)}
+
     </Container>
   );
 }
@@ -159,21 +178,58 @@ const OtherSection = styled.div`
   border-top: 1px solid ${({ theme }) => theme.colors.border};
   padding-top: ${({ theme }) => theme.spacings.lg};
 `;
-
-const OtherList = styled.ul`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacings.sm};
+const LogoGrid = styled.ul`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: ${({ theme }) => theme.spacings.md};
+  padding: 0;
+  margin: 0;
+  list-style: none;
 `;
 
-const OtherItem = styled.li`
-  font-size: ${({ theme }) => theme.fontSizes.base};
+const LogoCard = styled.li`
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.md};
+  box-shadow: ${({ theme }) => theme.shadows.xs};
+  padding: ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.xs};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: box-shadow 0.18s;
+  min-height: 110px;
+
   a {
-    color: ${({ theme }) => theme.colors.primary};
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-decoration: none;
+    color: inherit;
+    width: 100%;
+    height: 100%;
 
     &:hover {
-      text-decoration: underline;
+      box-shadow: ${({ theme }) => theme.shadows.md};
+      background: ${({ theme }) => theme.colors.primaryTransparent};
     }
   }
+`;
+
+const LogoImageWrapper = styled.div`
+  width: 100%;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
+  background: #fff;
+`;
+
+const LogoTitle = styled.div`
+  margin-top: ${({ theme }) => theme.spacings.xs};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  text-align: center;
+  font-weight: 500;
+  line-height: 1.25;
+  min-height: 36px;
 `;

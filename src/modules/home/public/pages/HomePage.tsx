@@ -12,7 +12,18 @@ import { ArticlesSection } from "@/modules/articles";
 import { ActivitySection } from "@/modules/activity";
 import { ReferencesSection } from "@/modules/references";
 import { BikesSection } from "@/modules/bikes";
-import {WelcomeCouponBanner} from "@/modules/coupon";
+import { LibrarySection } from "@/modules/library";
+import { EnsotekprodSection } from "@/modules/ensotekprod";
+import { SparepartSection } from "@/modules/sparepart";
+import { WelcomeCouponBanner } from "@/modules/coupon";
+import WhatsAppFloatingSection from "@/modules/home/public/components/WhatsAppFloatingSection";
+import FloatingChatboxSection from "@/modules/chat/public/components/FloatingChatbox"; // Senin chat kutun
+import ScrollToTopSection from "@/modules/home/public/components/ScrollToTop";
+import RequestOfferButton from "@/modules/requestOffer/public/components/RequestOfferButton";
+import CatalogRequestButton from "@/modules/catalogRequest/public/components/CatalogRequestButton";
+import NewsletterButton from "@/modules/newsletter/public/components/NewsletterButton";
+import TestimonialSection from "@/modules/comment/public/components/TestimonialSection"; 
+
 import HeroSlider from "@/modules/home/public/components/HeroSlider";
 import HeroSection from "@/modules/home/public/components/HeroSection";
 import HeroSectionSlayt from "@/modules/home/public/components/HeroSectionSlayt";
@@ -32,6 +43,16 @@ const sectionComponents: Record<string, React.ComponentType<any> | undefined> = 
   activity: ActivitySection,
   references: ReferencesSection,
   bikes: BikesSection,
+  library: LibrarySection,
+  ensotekprod: EnsotekprodSection,
+  sparepart: SparepartSection,
+  whatsapp:WhatsAppFloatingSection,
+  scrollToTop:ScrollToTopSection,
+  requestOffer:RequestOfferButton,
+  catalogRequest:CatalogRequestButton,
+  newsletter:NewsletterButton,
+  chatbox: FloatingChatboxSection,
+  testimonial: TestimonialSection,
 };
 
 const isDev = process.env.NODE_ENV === "development";

@@ -16,14 +16,12 @@ export default function ActivityPage() {
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { activity, loading, error } = useAppSelector((state) => state.activity);
 
-  // i18n bundle yüklemesi (gerekiyorsa)
   Object.entries(translations).forEach(([lng, resources]) => {
     if (!i18n.hasResourceBundle(lng, "activity")) {
       i18n.addResourceBundle(lng, "activity", resources, true, true);
     }
   });
 
-  // Çoklu dil fallback fonksiyonu
   const getMultiLang = (obj?: Record<string, string>) =>
     obj?.[lang] || obj?.["tr"] || obj?.["en"] || Object.values(obj || {})[0] || "—";
 
@@ -70,22 +68,30 @@ export default function ActivityPage() {
             transition={{ delay: index * 0.07, duration: 0.44 }}
             viewport={{ once: true }}
           >
-            <ImageWrapper>
-              {item.images?.[0]?.url ? (
-                <Image
-                  src={item.images[0].url}
-                  alt={getMultiLang(item.title)}
-                  width={520}
-                  height={290}
-                  style={{ objectFit: "cover", width: "100%", height: "210px", borderTopLeftRadius: "20px", borderTopRightRadius: "20px" }}
-                  loading="lazy"
-                />
-              ) : (
-                <ImgPlaceholder />
-              )}
-            </ImageWrapper>
+            <Link href={`/activity/${item.slug}`} tabIndex={-1} passHref legacyBehavior>
+              <ImageWrapper as="a">
+                {item.images?.[0]?.url ? (
+                  <Image
+                    src={item.images[0].url}
+                    alt={getMultiLang(item.title)}
+                    width={520}
+                    height={290}
+                    style={{
+                      objectFit: "cover",
+                      width: "100%",
+                      height: "210px",
+                    }}
+                    loading="lazy"
+                  />
+                ) : (
+                  <ImgPlaceholder />
+                )}
+              </ImageWrapper>
+            </Link>
             <CardContent>
-              <CardTitle>{getMultiLang(item.title)}</CardTitle>
+              <CardTitle as={Link} href={`/activity/${item.slug}`}>
+                {getMultiLang(item.title)}
+              </CardTitle>
               <CardSummary>
                 {getMultiLang(item.summary)}
               </CardSummary>
@@ -139,7 +145,6 @@ const ActivityGrid = styled.div`
 
 const ActivityCard = styled(motion.div)`
   background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: 20px;
   box-shadow: ${({ theme }) => theme.shadows.md};
   overflow: hidden;
   display: flex;
@@ -193,6 +198,13 @@ const CardTitle = styled.h2`
   margin-bottom: 0.7rem;
   line-height: 1.18;
   letter-spacing: 0.01em;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover, &:focus-visible {
+    text-decoration: underline;
+    color: ${({ theme }) => theme.colors.accent};
+  }
 `;
 
 const CardSummary = styled.p`
@@ -239,4 +251,3 @@ const ReadMore = styled(Link)`
     text-decoration: none;
   }
 `;
-

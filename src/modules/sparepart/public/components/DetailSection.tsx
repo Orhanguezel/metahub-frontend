@@ -1,13 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import { translations } from "@/modules/sparepart";
 import translations2 from "@/modules/cart/locales";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import type{SupportedLocale } from "@/types/common";
-import dynamic from "next/dynamic";
+import type { SupportedLocale } from "@/types/common";
 import Link from "next/link";
 import Image from "next/image";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -22,9 +21,7 @@ import { CommentForm, CommentList } from "@/modules/comment";
 import { ShoppingCart } from "lucide-react";
 import type { ISparepart } from "@/modules/sparepart/types";
 import { XCircle, CheckCircle } from "lucide-react";
-
-const Lightbox = dynamic(() => import("react-image-lightbox"), { ssr: false });
-
+import Modal from "@/modules/home/public/components/Modal";
 
 export default function SparepartDetailSection() {
   const { slug } = useParams() as { slug: string };
@@ -40,8 +37,38 @@ export default function SparepartDetailSection() {
     error,
   } = useAppSelector((state) => state.sparepart);
 
+  // Main görsel index ve modal state
   const [mainPhoto, setMainPhoto] = useState(0);
-  const [isOpen, setIsOpen] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+
+  // Görsel swipe fonksiyonları
+  const totalImages = sparepart?.images?.length || 0;
+
+  const goNext = useCallback(() => {
+    if (!sparepart?.images?.length) return;
+    setMainPhoto((prev) => (prev + 1) % sparepart.images.length);
+  }, [sparepart?.images]);
+
+  const goPrev = useCallback(() => {
+    if (!sparepart?.images?.length) return;
+    setMainPhoto((prev) => (prev - 1 + sparepart.images.length) % sparepart.images.length);
+  }, [sparepart?.images]);
+
+  // Modal açıkken klavye swipe/ESC desteği
+  const handleModalKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (!openModal) return;
+      if (e.key === "ArrowRight") goNext();
+      if (e.key === "ArrowLeft") goPrev();
+      if (e.key === "Escape") setOpenModal(false);
+    },
+    [openModal, goNext, goPrev]
+  );
+  useEffect(() => {
+    if (!openModal) return;
+    window.addEventListener("keydown", handleModalKey);
+    return () => window.removeEventListener("keydown", handleModalKey);
+  }, [openModal, handleModalKey]);
 
   useEffect(() => {
     if (allProducts && allProducts.length > 0) {
@@ -54,6 +81,7 @@ export default function SparepartDetailSection() {
     } else {
       dispatch(fetchSparepartBySlug(slug));
     }
+    setMainPhoto(0);
     return () => {
       dispatch(clearSparepartMessages());
       dispatch(clearCartMessages());
@@ -75,61 +103,20 @@ export default function SparepartDetailSection() {
     );
   }
 
-  const otherProducts = allProducts
-    ?.filter((item: ISparepart) => item.slug !== slug);
+  const otherProducts = allProducts?.filter((item: ISparepart) => item.slug !== slug);
 
   // Teknik özellikleri ve opsiyonelleri tek yerde topluyoruz:
   const TECHNICAL = [
-    {
-      label: t("page.material", "Malzeme"),
-      value: sparepart.material,
-      icon: "🔩",
-    },
-    {
-      label: t("page.size", "Ebat/Ölçü"),
-      value: sparepart.size,
-      icon: "📏",
-    },
-    {
-      label: t("page.weight", "Ağırlık"),
-      value: sparepart.weightKg ? `${sparepart.weightKg} kg` : null,
-      icon: "⚖️",
-    },
-    {
-      label: t("page.powerW", "Motor Gücü"),
-      value: sparepart.powerW ? `${sparepart.powerW} W` : null,
-      icon: "🔌",
-    },
-    {
-      label: t("page.voltageV", "Voltaj"),
-      value: sparepart.voltageV ? `${sparepart.voltageV} V` : null,
-      icon: "⚡",
-    },
-    {
-      label: t("page.flowRateM3H", "Debi"),
-      value: sparepart.flowRateM3H ? `${sparepart.flowRateM3H} m³/h` : null,
-      icon: "💧",
-    },
-    {
-      label: t("page.coolingCapacityKw", "Soğutma Kapasitesi"),
-      value: sparepart.coolingCapacityKw ? `${sparepart.coolingCapacityKw} kW` : null,
-      icon: "❄️",
-    },
-    {
-      label: t("page.batteryRangeKm", "Batarya Menzili"),
-      value: sparepart.batteryRangeKm ? `${sparepart.batteryRangeKm} km` : null,
-      icon: "🔋",
-    },
-    {
-      label: t("page.motorPowerW", "Motor Gücü (Elektrik)"),
-      value: sparepart.motorPowerW ? `${sparepart.motorPowerW} W` : null,
-      icon: "🚴",
-    },
-    {
-      label: t("page.color", "Renkler"),
-      value: sparepart.color?.length ? sparepart.color.join(", ") : null,
-      icon: "🎨",
-    },
+    { label: t("page.material", "Malzeme"), value: sparepart.material, icon: "🔩" },
+    { label: t("page.size", "Ebat/Ölçü"), value: sparepart.size, icon: "📏" },
+    { label: t("page.weight", "Ağırlık"), value: sparepart.weightKg ? `${sparepart.weightKg} kg` : null, icon: "⚖️" },
+    { label: t("page.powerW", "Motor Gücü"), value: sparepart.powerW ? `${sparepart.powerW} W` : null, icon: "🔌" },
+    { label: t("page.voltageV", "Voltaj"), value: sparepart.voltageV ? `${sparepart.voltageV} V` : null, icon: "⚡" },
+    { label: t("page.flowRateM3H", "Debi"), value: sparepart.flowRateM3H ? `${sparepart.flowRateM3H} m³/h` : null, icon: "💧" },
+    { label: t("page.coolingCapacityKw", "Soğutma Kapasitesi"), value: sparepart.coolingCapacityKw ? `${sparepart.coolingCapacityKw} kW` : null, icon: "❄️" },
+    { label: t("page.batteryRangeKm", "Batarya Menzili"), value: sparepart.batteryRangeKm ? `${sparepart.batteryRangeKm} km` : null, icon: "🔋" },
+    { label: t("page.motorPowerW", "Motor Gücü (Elektrik)"), value: sparepart.motorPowerW ? `${sparepart.motorPowerW} W` : null, icon: "🚴" },
+    { label: t("page.color", "Renkler"), value: sparepart.color?.length ? sparepart.color.join(", ") : null, icon: "🎨" },
   ];
 
   return (
@@ -147,12 +134,44 @@ export default function SparepartDetailSection() {
             <MainImage
               src={sparepart.images[mainPhoto].url}
               alt={`sparepart-img${mainPhoto + 1}`}
-              onClick={() => setIsOpen(true)}
+              onClick={() => setOpenModal(true)}
               tabIndex={0}
               role="button"
               aria-label={t("detail.openImage", "Büyüt")}
+              style={{ cursor: "zoom-in" }}
             />
           </MainImageWrapper>
+          {/* Modal */}
+          {openModal && (
+            <Modal
+              isOpen={openModal}
+              onClose={() => setOpenModal(false)}
+              onNext={totalImages > 1 ? goNext : undefined}
+              onPrev={totalImages > 1 ? goPrev : undefined}
+            >
+              <div style={{ textAlign: "center", padding: 0 }}>
+                <Image
+                  src={sparepart.images[mainPhoto].url}
+                  alt={sparepart.name?.[lang] + "-big"}
+                  width={1024}
+                  height={720}
+                  style={{
+                    maxWidth: "94vw",
+                    maxHeight: "80vh",
+                    borderRadius: 12,
+                    boxShadow: "0 6px 42px #2225",
+                    background: "#111",
+                    width: "auto",
+                    height: "auto"
+                  }}
+                  sizes="(max-width: 800px) 90vw, 800px"
+                />
+                <div style={{ marginTop: 10, color: "#666", fontSize: 16 }}>
+                  {sparepart.name?.[lang]}
+                </div>
+              </div>
+            </Modal>
+          )}
           <Thumbnails>
             {sparepart.images.map((img, idx) => (
               <ThumbWrapper
@@ -171,47 +190,45 @@ export default function SparepartDetailSection() {
 
       {/* KATEGORİ VE STOK */}
       <MetaInfo>
-  <MetaItem>
-    <b>{t("page.brand", "Marka")}:</b> {sparepart.brand}
-  </MetaItem>
-  <MetaItem>
-    <b>{t("page.category", "Kategori")}:</b>{" "}
-    {typeof sparepart.category === "object"
-      ? sparepart.category.name?.[lang] || "Untitled"
-      : "-"}
-  </MetaItem>
-  <MetaItem>
-    <b>{t("page.price", "Fiyat")}:</b> {sparepart.price} €
-  </MetaItem>
-  {/* STOK DURUMU */}
-  <MetaItem>
-  <b>{t("page.stockStatus", "Stok Durumu")}:</b>
-  {sparepart.stock > 0 ? (
-    <StockBadge $inStock>
-      <CheckCircle size={18} style={{marginRight: 3, marginBottom: -2}} />
-      {t("page.inStock", "Stokta Var")}
-    </StockBadge>
-  ) : (
-    <StockBadge $inStock={false}>
-      <XCircle size={18} style={{marginRight: 3, marginBottom: -2}} />
-      {t("page.outOfStock", "Stokta Yok")}
-    </StockBadge>
-  )}
-</MetaItem>
-
-  <MetaItem>
-    <b>{t("page.isElectric", "Elektrikli mi?")}:</b>{" "}
-    {sparepart.isElectric ? t("yes", "Evet") : t("no", "Hayır")}
-  </MetaItem>
-  {sparepart.tags?.length ? (
-    <MetaItem>
-      <b>{t("page.tags", "Etiketler")}:</b>{" "}
-      {sparepart.tags.map((tag, i) => (
-        <Tag key={i}>#{tag}</Tag>
-      ))}
-    </MetaItem>
-  ) : null}
-</MetaInfo>
+        <MetaItem>
+          <b>{t("page.brand", "Marka")}:</b> {sparepart.brand}
+        </MetaItem>
+        <MetaItem>
+          <b>{t("page.category", "Kategori")}:</b>{" "}
+          {typeof sparepart.category === "object"
+            ? sparepart.category.name?.[lang] || "Untitled"
+            : "-"}
+        </MetaItem>
+        <MetaItem>
+          <b>{t("page.price", "Fiyat")}:</b> {sparepart.price} €
+        </MetaItem>
+        <MetaItem>
+          <b>{t("page.stockStatus", "Stok Durumu")}:</b>
+          {sparepart.stock > 0 ? (
+            <StockBadge $inStock>
+              <CheckCircle size={18} style={{ marginRight: 3, marginBottom: -2 }} />
+              {t("page.inStock", "Stokta Var")}
+            </StockBadge>
+          ) : (
+            <StockBadge $inStock={false}>
+              <XCircle size={18} style={{ marginRight: 3, marginBottom: -2 }} />
+              {t("page.outOfStock", "Stokta Yok")}
+            </StockBadge>
+          )}
+        </MetaItem>
+        <MetaItem>
+          <b>{t("page.isElectric", "Elektrikli mi?")}:</b>{" "}
+          {sparepart.isElectric ? t("yes", "Evet") : t("no", "Hayır")}
+        </MetaItem>
+        {sparepart.tags?.length ? (
+          <MetaItem>
+            <b>{t("page.tags", "Etiketler")}:</b>{" "}
+            {sparepart.tags.map((tag, i) => (
+              <Tag key={i}>#{tag}</Tag>
+            ))}
+          </MetaItem>
+        ) : null}
+      </MetaInfo>
 
       {/* TANIM VE TEKNİK ÖZELLİKLER */}
       <Description>
@@ -232,25 +249,24 @@ export default function SparepartDetailSection() {
 
       {/* SEPET BUTONU */}
       <AddToCartButton
-  productId={sparepart._id}
-  productType="Sparepart"        // <-- BURASI ÖNEMLİ
-  disabled={sparepart.stock < 1}
->
-  <ShoppingCart size={22} style={{ marginRight: 8, marginBottom: -3 }} />
-  <span>
-    {sparepart.stock < 1
-      ? tCart("outOfStock", "Stok Yok")
-      : tCart("add", "Sepete Ekle")}
-  </span>
-</AddToCartButton>
-
+        productId={sparepart._id}
+        productType="Sparepart"
+        disabled={sparepart.stock < 1}
+      >
+        <ShoppingCart size={22} style={{ marginRight: 8, marginBottom: -3 }} />
+        <span>
+          {sparepart.stock < 1
+            ? tCart("outOfStock", "Stok Yok")
+            : tCart("add", "Sepete Ekle")}
+        </span>
+      </AddToCartButton>
 
       {/* Diğer içerikler */}
       {otherProducts?.length > 0 && (
         <OtherSection>
           <OtherTitle>{t("page.other", "Diğer Hakkımızda İçerikleri")}</OtherTitle>
           <OtherGrid>
-            {otherProducts.map((item:ISparepart) => (
+            {otherProducts.map((item: ISparepart) => (
               <OtherCard key={item._id} as={motion.div} whileHover={{ y: -6, scale: 1.025 }}>
                 <OtherImgWrap>
                   {item.images?.[0]?.url ? (
@@ -278,29 +294,6 @@ export default function SparepartDetailSection() {
       {/* YORUM BÖLÜMÜ */}
       <CommentForm contentId={sparepart._id} contentType="sparepart" />
       <CommentList contentId={sparepart._id} contentType="sparepart" />
-
-      {/* Lightbox modal */}
-      {isOpen && sparepart.images?.length > 0 && (
-        <Lightbox
-          mainSrc={sparepart.images[mainPhoto].url}
-          nextSrc={sparepart.images[(mainPhoto + 1) % sparepart.images.length].url}
-          prevSrc={
-            sparepart.images[
-              (mainPhoto + sparepart.images.length - 1) % sparepart.images.length
-            ].url
-          }
-          onCloseRequest={() => setIsOpen(false)}
-          onMovePrevRequest={() =>
-            setMainPhoto(
-              (mainPhoto + sparepart.images.length - 1) % sparepart.images.length
-            )
-          }
-          onMoveNextRequest={() =>
-            setMainPhoto((mainPhoto + 1) % sparepart.images.length)
-          }
-          imageCaption={sparepart.name?.[lang] || "Untitled"}
-        />
-      )}
     </Container>
   );
 }

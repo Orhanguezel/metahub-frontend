@@ -78,8 +78,8 @@ const orangeTheme: DefaultTheme = {
     md: "0 4px 8px rgba(0,0,0,0.08)",
     lg: "0 8px 16px rgba(0,0,0,0.1)",
     xl: "0 16px 32px rgba(0,0,0,0.12)",
-    form: "0 6px 20px rgba(0,0,0,0.07)",
-    button: "0 2px 10px rgba(0,0,0,0.05)",
+    form: "0 6px 20px rgba(249, 115, 22, 0.07)",
+    button: "0 2px 10px rgba(249, 115, 22, 0.05)",
   },
 
   transition: {
@@ -134,157 +134,172 @@ const orangeTheme: DefaultTheme = {
     desktop: "@media (min-width: 1025px)",
     landscape: "@media (orientation: landscape)",
     portrait: "@media (orientation: portrait)",
-    retina:
-      "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
+    retina: "@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
   },
 
   colors: {
-    background: "#FFFFFF",
-    backgroundSecondary: "#F8FAFC",
-    backgroundAlt: "#FFF7ED",
-    sectionBackground: "#F8FAFC",
-    inputBackground: "#FFFFFF",
-    inputBackgroundFocus: "#F8FAFC",
-    footerBackground: "#F8FAFC",
-    warningBackground: "#FFFBE6",
-    contentBackground: "#F6F7FA",
+    // BACKGROUND
+    background: "#fff8f2", // çok hafif sıcak bir beyaz
+    backgroundSecondary: "#fff1e5",
+    backgroundAlt: "#fff7ed",
+    sectionBackground: "#fff5eb",
+    inputBackground: "#fff",
+    inputBackgroundFocus: "#fff7ed",
+    footerBackground: "#fff7ed",
+    warningBackground: "#fffbe6",
+    contentBackground: "#fffdfb",
     successBg: "#d1f5dd",
     dangerBg: "#ffe3e3",
 
-    achievementBackground: "#F0F0F0",
-    achievementGradientStart: "#FBEAF0",
-    achievementGradientEnd: "#E5549C",
+    // ACHIEVEMENT / BANNER
+    achievementBackground: "#fff5eb", // çok açık turuncu (badge/banner kutuları)
+    achievementGradientStart: "#ffd8b2", // açık pastel turuncu
+    achievementGradientEnd: "#fb923c",   // ana soft turuncu (primaryLight)
 
-    text: "#0F172A",
-    textAlt: "#1E293B",
-    textSecondary: "#64748B",
-    textPrimary: "#0F172A",
-    textMuted: "#94A3B8",
-    textLight: "#0F172A",
+    // TEXT
+    text: "#262626", // vurgulu koyu
+    textAlt: "#EA580C", // canlı turuncu (hover/alt başlıklar)
+    textSecondary: "#9a6841", // kahverengi-altın arası pastel
+    textPrimary: "#262626",
+    textMuted: "#bfa375", // alt ton soft
+    textLight: "#fb923c", // pastel turuncu
     textOnWarning: "#d95841",
     textOnSuccess: "#ffffff",
     textOnDanger: "#ffffff",
 
-    title: "#F97316",
+    // HEADLINE / PRIMARY
+    title: "#f97316", // ana turuncu
 
-    overlayStart: "rgba(255, 255, 255, 0.3)",
-    overlayEnd: "rgba(255, 255, 255, 0.95)",
-    overlayBackground: "rgba(0, 0, 0, 0.5)",
+    // OVERLAYS & SKELETONS
+    overlayStart: "rgba(255, 247, 237, 0.65)",
+    overlayEnd: "rgba(255, 247, 237, 0.95)",
+    overlayBackground: "rgba(0,0,0,0.13)",
 
-    skeleton: "#E5E7EB",
-    skeletonBackground: "#F1F5F9",
+    skeleton: "#ffe3c2",
+    skeletonBackground: "#fff7ed",
 
-    primary: "#F97316",
-    primaryLight: "#FB923C",
-    primaryHover: "#EA580C",
-    primaryDark: "#C2410C",
-    primaryTransparent: "rgba(249, 115, 22, 0.1)",
+    // PRIMARY / SECONDARY / ACCENT
+    primary: "#f97316",        // ana turuncu
+    primaryLight: "#fb923c",   // açık turuncu
+    primaryHover: "#ea580c",   // canlı/koyu turuncu (hover)
+    primaryDark: "#c2410c",    // daha koyu turuncu
+    primaryTransparent: "rgba(249, 115, 22, 0.10)",
 
-    secondary: "#F97316",
-    secondaryLight: "#FB923C",
-    secondaryHover: "#EA580C",
-    secondaryDark: "#C2410C",
-    secondaryTransparent: "rgba(249, 115, 22, 0.1)",
+    secondary: "#eab308",        // amber (tamamlayıcı accent)
+    secondaryLight: "#fde68a",   // açık amber
+    secondaryHover: "#d97706",   // koyu amber (hover)
+    secondaryDark: "#b45309",    // koyu sarı
+    secondaryTransparent: "rgba(234, 179, 8, 0.10)",
 
-    accent: "#F1F5F9",
-    accentHover: "#E2E8F0",
-    accentText: "#0F172A",
+    accent: "#f97316",
+    accentHover: "#fb923c",
+    accentText: "#fff",
 
-    border: "#E2E8F0",
-    borderLight: "#F1F5F9",
-    borderBright: "#F1F5F9",
-    borderBrighter: "#F8FAFC",
-    borderHighlight: "#F97316",
-    borderInput: "#E2E8F0",
+    // BORDER
+    border: "#fed7aa",
+    borderLight: "#ffedd5",
+    borderBright: "#fb923c",
+    borderBrighter: "#ffe3c2",
+    borderHighlight: "#f97316",
+    borderInput: "#f97316",
 
-    card: "#F8FAFC",
-    cardBackground: "#F8FAFC",
+    // CARD
+    card: "#fff",
+    cardBackground: "#fff",
 
-    buttonBackground: "#F97316",
-    buttonText: "#FFFFFF",
-    buttonBorder: "#F97316",
+    // BUTTON
+    buttonBackground: "#f97316",
+    buttonText: "#fff",
+    buttonBorder: "#f97316",
 
-    link: "#F97316",
-    linkHover: "#EA580C",
+    // LINKS
+    link: "#f97316",
+    linkHover: "#ea580c",
 
-    hoverBackground: "#FFF7ED",
-    shadowHighlight: "0 0 0 3px rgba(249, 115, 22, 0.13)",
+    // HOVER
+    hoverBackground: "#fff7ed",
+    shadowHighlight: "0 0 0 3px rgba(249, 115, 22, 0.15)",
 
-    success: "#28A745",
-    warning: "#FFC107",
-    warningHover: "#E0A800",
-    danger: "#DC3545",
-    dangerHover: "#C82333",
-    error: "#DC3545",
-    info: "#17A2B8",
-    muted: "#6C757D",
-    disabled: "#D6D6D6",
+    // FEEDBACK / STATUS
+    success: "#28a745",
+    warning: "#ffc107",
+    warningHover: "#e0a800",
+    danger: "#dc3545",
+    dangerHover: "#c82333",
+    error: "#dc3545",
+    info: "#17a2b8",
+    muted: "#bfa375",
+    disabled: "#f4e0d9",
 
-    placeholder: "#94A3B8",
-    inputBorder: "#E2E8F0",
-    inputBorderFocus: "#F97316",
-    inputOutline: "#F97316",
-    inputIcon: "#F97316",
-    inputBackgroundLight: "#F8FAFC",
-    inputBackgroundSofter: "#FFF7ED",
+    // PLACEHOLDER / INPUT
+    placeholder: "#bfa375",
+    inputBorder: "#fed7aa",
+    inputBorderFocus: "#f97316",
+    inputOutline: "#f97316",
+    inputIcon: "#ea580c",
+    inputBackgroundLight: "#fffdfb",
+    inputBackgroundSofter: "#fff1e5",
 
-    tableHeader: "#F0F0F0",
-    tagBackground: "#F0F0F0",
-    grey: "#94A3B8",
-    darkGrey: "#1E293B",
-    black: "#000000",
-    white: "#FFFFFF",
-    whiteColor: "#FFFFFF",
-    darkColor: "#0F172A",
-    disabledBg: "#d6d6d6",
-    lightGrey: "#f7f7f7",
+    // TABLE / TAG
+    tableHeader: "#fff5eb",
+    tagBackground: "#ffe3c2",
+
+    // GREY/SOLID/BLACK
+    grey: "#bfa375",
+    darkGrey: "#5d3a0a",
+    black: "#000",
+    white: "#fff",
+    whiteColor: "#fff",
+    darkColor: "#262626",
+    disabledBg: "#ffe3c2",
+    lightGrey: "#fff5eb",
   },
 
   buttons: {
     primary: {
-      background: "#F97316",
-      backgroundHover: "#EA580C",
-      text: "#FFFFFF",
-      textHover: "#FFFFFF",
+      background: "#f97316",
+      backgroundHover: "#ea580c",
+      text: "#fff",
+      textHover: "#fff",
     },
     secondary: {
-      background: "#F1F5F9",
-      backgroundHover: "#E2E8F0",
-      text: "#0F172A",
-      textHover: "#0F172A",
+      background: "#fde68a",
+      backgroundHover: "#fee2b3",
+      text: "#b45309",
+      textHover: "#ea580c",
     },
     success: {
-      background: "#28A745",
+      background: "#28a745",
       backgroundHover: "#218838",
-      text: "#FFFFFF",
-      textHover: "#FFFFFF",
+      text: "#fff",
+      textHover: "#fff",
     },
     warning: {
-      background: "#FFC107",
-      backgroundHover: "#E0A800",
-      text: "#FFFFFF",
-      textHover: "#FFFFFF",
+      background: "#ffc107",
+      backgroundHover: "#e0a800",
+      text: "#fff",
+      textHover: "#fff",
     },
     danger: {
-      background: "#DC3545",
-      backgroundHover: "#C82333",
-      text: "#FFFFFF",
-      textHover: "#FFFFFF",
+      background: "#dc3545",
+      backgroundHover: "#c82333",
+      text: "#fff",
+      textHover: "#fff",
     },
   },
 
   inputs: {
-    background: "#FFFFFF",
-    border: "#E2E8F0",
-    borderFocus: "#F97316",
-    text: "#0F172A",
-    placeholder: "#94A3B8",
+    background: "#fff",
+    border: "#fed7aa",
+    borderFocus: "#f97316",
+    text: "#262626",
+    placeholder: "#bfa375",
   },
 
   cards: {
-    background: "#F8FAFC",
-    hoverBackground: "#F1F5F9",
-    border: "#E2E8F0",
+    background: "#fff",
+    hoverBackground: "#fff7ed",
+    border: "#fed7aa",
     shadow: "0 4px 16px rgba(249, 115, 22, 0.04)",
   },
 };

@@ -2,7 +2,7 @@ import type { SupportedLocale } from "@/types/common";
 
 export type TranslatedField = { [lang in SupportedLocale]: string };
 
-// Backend ile birebir uyumlu contentType (Union Type):
+// Hangi modüle/işe bağlı olduğu:
 export type CommentContentType =
   | "news"
   | "blog"
@@ -17,23 +17,27 @@ export type CommentContentType =
   | "ensotekprod"
   | "sparepart";
 
-// Ana model
+// Yorumun türü (amacı): (isteğe göre genişlet)
+export type CommentType = "comment" | "testimonial" | "review" | "question" | "answer" | "rating";
+
 export interface IComment {
   _id?: string;
   userId?: string | { _id: string; name: string; email: string }; // populate edilirse obje gelir
   name?: string;
   email?: string;
   tenant: string;
-  contentType: CommentContentType;
-  contentId: string | { _id: string; title?: string; slug?: string }; // populate edilirse obje gelir
-  label?: string;              // Sadece tek dil (backend ile uyumlu!)
-  text: string;                // Sadece tek dil
+  contentType: CommentContentType;    // Hangi modül/iş
+  contentId: string | { _id: string; title?: string; slug?: string }; // Hangi içerik
+  type?: CommentType;                 // Yorum türü (default: "comment")
+  label?: string;                     // Sadece tek dil (backend ile uyumlu!)
+  text: string;                       // Sadece tek dil
   reply?: {
-    text: TranslatedField;     // Çoklu dil (admin cevabı)
+    text: TranslatedField;            // Çoklu dil (admin cevabı)
     createdAt?: string;
   };
   isPublished: boolean;
   isActive: boolean;
+  rating?: number;                    // Review için opsiyonel puan (örn: 1-5)
   createdAt?: string;
   updatedAt?: string;
 }

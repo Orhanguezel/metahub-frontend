@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { IComment, CommentContentType, TranslatedField } from "../types";
+import type { IComment, CommentContentType, CommentType, TranslatedField } from "../types";
 
-// --- State Tipi ---
+// --- State ---
 interface CommentsState {
   comments: IComment[];          // Public (içerik özelinde)
   commentsAdmin: IComment[];     // Admin (tüm yorumlar)
@@ -34,7 +34,7 @@ function parseErrorMessage(payload: unknown): string {
   return "Something went wrong.";
 }
 
-// 1. Public: Yorum oluştur
+// 1. Public: Yorum/testimonial oluştur
 export const createComment = createAsyncThunk<
   IComment,
   {
@@ -43,6 +43,7 @@ export const createComment = createAsyncThunk<
     text?: string;
     contentType: CommentContentType;
     contentId: string;
+    type?: CommentType;   // Yeni: türü belirt
     name?: string;
     email?: string;
     recaptchaToken?: string;
@@ -53,56 +54,51 @@ export const createComment = createAsyncThunk<
   return res.data as IComment;
 });
 
-// 2. Public: İçeriğe ait yorumları getir (sadece yayınlanmışlar)
+// 2. Public: İçeriğe ait yorumları getir (type ile filtre opsiyonel)
 export const fetchCommentsForContent = createAsyncThunk<
   IComment[],
-  { type: CommentContentType; id: string }
+  { type: CommentContentType; id: string; commentType?: CommentType }
 >("comments/fetchForContent", async (payload, thunkAPI) => {
-  const res = await apiCall(
-    "get",
-    `/comment/${payload.type}/${payload.id}`,
-    null,
-    thunkAPI.rejectWithValue
-  );
+  // Eğer commentType varsa, API'ya query param ekle
+  let url = `/comment/${payload.type}/${payload.id}`;
+  if (payload.commentType) url += `?type=${payload.commentType}`;
+  const res = await apiCall("get", url, null, thunkAPI.rejectWithValue);
   return res.data as IComment[];
 });
 
-// 3. Admin: Tüm yorumları getir (pagination)
+// 3. Admin: Tüm yorumları getir (pagination, type ile filtre opsiyonel)
 export const fetchAllCommentsAdmin = createAsyncThunk<
   { data: IComment[]; pagination: CommentsState["pagination"] },
-  number
->("comments/fetchAllAdmin", async (page = 1, thunkAPI) => {
-  const res = await apiCall(
-    "get",
-    `/comment?page=${page}`,
-    null,
-    thunkAPI.rejectWithValue
-  );
+  { page?: number; commentType?: CommentType }
+>("comments/fetchAllAdmin", async ({ page = 1, commentType }, thunkAPI) => {
+  let url = `/comment?page=${page}`;
+  if (commentType) url += `&type=${commentType}`;
+  const res = await apiCall("get", url, null, thunkAPI.rejectWithValue);
   return res as { data: IComment[]; pagination: CommentsState["pagination"] };
 });
 
 // 4. Admin: Yayın durumu toggle
-export const togglePublishComment = createAsyncThunk<
-  IComment,
-  string
->("comments/togglePublish", async (id, thunkAPI) => {
-  const res = await apiCall(
-    "put",
-    `/comment/${id}/toggle`,
-    null,
-    thunkAPI.rejectWithValue
-  );
-  return res.data as IComment;
-});
+export const togglePublishComment = createAsyncThunk<IComment, string>(
+  "comments/togglePublish",
+  async (id, thunkAPI) => {
+    const res = await apiCall(
+      "put",
+      `/comment/${id}/toggle`,
+      null,
+      thunkAPI.rejectWithValue
+    );
+    return res.data as IComment;
+  }
+);
 
 // 5. Admin: Yorum sil
-export const deleteComment = createAsyncThunk<
-  string,
-  string
->("comments/delete", async (id, thunkAPI) => {
-  await apiCall("delete", `/comment/${id}`, null, thunkAPI.rejectWithValue);
-  return id;
-});
+export const deleteComment = createAsyncThunk<string, string>(
+  "comments/delete",
+  async (id, thunkAPI) => {
+    await apiCall("delete", `/comment/${id}`, null, thunkAPI.rejectWithValue);
+    return id;
+  }
+);
 
 // 6. Admin: Yoruma admin cevabı ekle
 export const replyToComment = createAsyncThunk<
@@ -140,7 +136,6 @@ const commentsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // --- Yorum oluştur ---
       .addCase(createComment.pending, (state) => {
         state.loading = true;
         state.status = "loading";
@@ -158,7 +153,6 @@ const commentsSlice = createSlice({
         state.error = parseErrorMessage(action.payload);
       })
 
-      // --- İçerik özelinde yorumlar (public) ---
       .addCase(fetchCommentsForContent.pending, (state) => {
         state.loading = true;
         state.status = "loading";
@@ -175,7 +169,6 @@ const commentsSlice = createSlice({
         state.error = parseErrorMessage(action.payload);
       })
 
-      // --- Admin: Tüm yorumlar (pagination) ---
       .addCase(fetchAllCommentsAdmin.pending, (state) => {
         state.loading = true;
         state.status = "loading";
@@ -193,7 +186,6 @@ const commentsSlice = createSlice({
         state.error = parseErrorMessage(action.payload);
       })
 
-      // --- Admin: Yayın durumu toggle ---
       .addCase(togglePublishComment.pending, (state) => {
         state.status = "loading";
       })
@@ -213,7 +205,6 @@ const commentsSlice = createSlice({
         state.error = parseErrorMessage(action.payload);
       })
 
-      // --- Admin: Yorum sil ---
       .addCase(deleteComment.pending, (state) => {
         state.status = "loading";
       })
@@ -227,7 +218,6 @@ const commentsSlice = createSlice({
         state.error = parseErrorMessage(action.payload);
       })
 
-      // --- Admin: Admin reply ---
       .addCase(replyToComment.pending, (state) => {
         state.loading = true;
         state.status = "loading";

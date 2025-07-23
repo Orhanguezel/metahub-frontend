@@ -53,66 +53,70 @@ export default function SparepartPage() {
     <PageWrapper>
       <PageTitle>{t("page.allSparepart", "Tüm Ürünler")}</PageTitle>
       <SparepartGrid>
-        {sparepart.map((item: ISparepart, index: number) => (
-          <SparepartCard
-            key={item._id}
-            as={motion.div}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.07 }}
-            viewport={{ once: true }}
-          >
-            <ImageGallery>
-              {item.images && item.images.length > 0 ? (
-                item.images.slice(0, 2).map((img, i) => (
-                  <Image
-                    key={i}
-                    src={img.url}
-                    alt={item.name?.[lang] + `-img${i + 1}` || "Untitled"}
-                    width={380}
-                    height={190}
-                    style={{
-                      objectFit: "cover",
-                      borderRadius: i === 0 ? "12px 12px 0 0" : "0 0 12px 12px",
-                    }}
-                    loading="lazy"
-                  />
-                ))
-              ) : (
-                <ImgPlaceholder>{t("page.noImage", "Görsel yok")}</ImgPlaceholder>
-              )}
-            </ImageGallery>
-            <CardContent>
-              <CardTitle>{item.name?.[lang] || "Untitled"}</CardTitle>
-              <CardDesc>
-                {item.description?.[lang] || "No description available."}
-              </CardDesc>
-              <Meta>
-                <span>
-                  <b>{t("page.category", "Kategori")}:</b>{" "}
-                  {typeof item.category === "object"
-                    ? item.category.name?.[lang] || "Untitled"
-                    : "-"}
-                </span>
-                <span>
-                  <b>{t("page.price", "Fiyat")}:</b> {item.price} €
-                </span>            
-              </Meta>
-              {/* Etiketler */}
-              {item.tags && item.tags.length > 0 && (
-                <Tags>
-                  {item.tags.map((tag, i) => (
-                    <Tag key={i}>{tag}</Tag>
-                  ))}
-                </Tags>
-              )}
-              <ReadMore href={`/sparepart/${item.slug}`}>
-                {t("page.readMore", "Detayları Gör →")}
-              </ReadMore>
-              <AddToCartButton productId={item._id} productType="Sparepart" disabled={item.stock < 1} />
-            </CardContent>
-          </SparepartCard>
-        ))}
+        {sparepart.map((item: ISparepart, index: number) => {
+          const detailHref = `/sparepart/${item.slug}`;
+          return (
+            <SparepartCard
+              key={item._id}
+              as={motion.div}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.07 }}
+              viewport={{ once: true }}
+            >
+              <Link href={detailHref} tabIndex={-1} style={{ display: "block" }}>
+                <ImageGallery>
+                  {item.images && item.images.length > 0 ? (
+                    item.images.slice(0, 2).map((img, i) => (
+                      <StyledImage
+                        key={i}
+                        src={img.url}
+                        alt={item.name?.[lang] + `-img${i + 1}` || "Untitled"}
+                        width={380}
+                        height={190}
+                        loading="lazy"
+                        draggable={false}
+                      />
+                    ))
+                  ) : (
+                    <ImgPlaceholder>{t("page.noImage", "Görsel yok")}</ImgPlaceholder>
+                  )}
+                </ImageGallery>
+              </Link>
+              <CardContent>
+                <CardTitle as={Link} href={detailHref}>
+                  {item.name?.[lang] || "Untitled"}
+                </CardTitle>
+                <CardDesc>
+                  {item.description?.[lang] || "No description available."}
+                </CardDesc>
+                <Meta>
+                  <span>
+                    <b>{t("page.category", "Kategori")}:</b>{" "}
+                    {typeof item.category === "object"
+                      ? item.category.name?.[lang] || "Untitled"
+                      : "-"}
+                  </span>
+                  <span>
+                    <b>{t("page.price", "Fiyat")}:</b> {item.price} €
+                  </span>            
+                </Meta>
+                {/* Etiketler */}
+                {item.tags && item.tags.length > 0 && (
+                  <Tags>
+                    {item.tags.map((tag, i) => (
+                      <Tag key={i}>{tag}</Tag>
+                    ))}
+                  </Tags>
+                )}
+                <ReadMore href={detailHref}>
+                  {t("page.readMore", "Detayları Gör →")}
+                </ReadMore>
+                <AddToCartButton productId={item._id} productType="Sparepart" disabled={item.stock < 1} />
+              </CardContent>
+            </SparepartCard>
+          );
+        })}
       </SparepartGrid>
     </PageWrapper>
   );
@@ -157,6 +161,14 @@ const ImageGallery = styled.div`
   align-items: stretch;
 `;
 
+const StyledImage = styled(Image)`
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  flex: 1;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+`;
+
 const ImgPlaceholder = styled.div`
   width: 100%;
   height: 190px;
@@ -181,6 +193,14 @@ const CardTitle = styled.h2`
   font-size: ${({ theme }) => theme.fontSizes.lg};
   margin-bottom: ${({ theme }) => theme.spacings.xs};
   color: ${({ theme }) => theme.colors.text};
+  cursor: pointer;
+  transition: color 0.19s;
+
+  &:hover,
+  &:focus {
+    color: ${({ theme }) => theme.colors.primary};
+    text-decoration: underline;
+  }
 `;
 
 const CardDesc = styled.p`

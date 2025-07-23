@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
@@ -19,7 +19,8 @@ import {
 import { CommentForm, CommentList } from "@/modules/comment";
 import type { INews } from "@/modules/news";
 import { SupportedLocale, getMultiLang } from "@/types/common";
-import {SocialLinks} from "@/modules/shared"; 
+import { SocialLinks } from "@/modules/shared";
+import Modal from "@/modules/home/public/components/Modal";
 
 export default function NewsDetailSection() {
   const { i18n, t } = useI18nNamespace("news", translations);
@@ -40,8 +41,39 @@ export default function NewsDetailSection() {
     error,
   } = useAppSelector((state) => state.news);
 
-  // Ana görsel state
+  // Görsel state'leri
   const [mainIndex, setMainIndex] = useState(0);
+  const [openModal, setOpenModal] = useState(false);
+
+  // Memoize navigasyon fonksiyonları
+  const images = news?.images || [];
+  const totalImages = images.length;
+
+  const goNext = useCallback(() => {
+    setMainIndex((prev) => (prev + 1) % totalImages);
+  }, [totalImages]);
+
+  const goPrev = useCallback(() => {
+    setMainIndex((prev) => (prev - 1 + totalImages) % totalImages);
+  }, [totalImages]);
+
+  // Modal açıkken klavye navigasyonu
+  const handleModalKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (!openModal) return;
+      if (e.key === "ArrowRight") goNext();
+      if (e.key === "ArrowLeft") goPrev();
+      if (e.key === "Escape") setOpenModal(false);
+    },
+    [openModal, goNext, goPrev]
+  );
+
+  // Klavye eventi sadece modal açıkken ekle
+  useEffect(() => {
+    if (!openModal) return;
+    window.addEventListener("keydown", handleModalKey);
+    return () => window.removeEventListener("keydown", handleModalKey);
+  }, [openModal, handleModalKey]);
 
   useEffect(() => {
     if (allNews && allNews.length > 0) {
@@ -78,15 +110,10 @@ export default function NewsDetailSection() {
 
   function formatText(txt: string | undefined) {
     if (!txt) return "";
-    return txt.replace(/\\n/g, '\n');
+    return txt.replace(/\\n/g, "\n");
   }
 
-  const images = news.images || [];
   const mainImage = images[mainIndex];
-  const thumbnails = images
-    .map((img, idx) => ({ ...img, idx }))
-    .filter((img) => img.idx !== mainIndex);
-
   const otherNews = allNews.filter((item: INews) => item.slug !== slug);
 
   return (
@@ -108,30 +135,65 @@ export default function NewsDetailSection() {
               width={800}
               height={450}
               priority
+              style={{ cursor: "zoom-in" }}
+              onClick={() => setOpenModal(true)}
+              tabIndex={0}
+              role="button"
+              aria-label={t("detail.openImage", "Büyüt")}
             />
           </MainImageFrame>
-          {thumbnails.length > 0 && (
+          {/* Modal */}
+          {openModal && (
+            <Modal
+              isOpen={openModal}
+              onClose={() => setOpenModal(false)}
+              onNext={totalImages > 1 ? goNext : undefined}
+              onPrev={totalImages > 1 ? goPrev : undefined}
+            >
+              <div style={{ textAlign: "center", padding: 0 }}>
+                <Image
+                  src={mainImage.url}
+                  alt={getMultiLang(news.title, lang) + "-big"}
+                  width={1280}
+                  height={720}
+                  style={{
+                    maxWidth: "94vw",
+                    maxHeight: "80vh",
+                    borderRadius: 12,
+                    boxShadow: "0 6px 42px #2225",
+                    background: "#111",
+                    width: "auto",
+                    height: "auto"
+                  }}
+                  sizes="(max-width: 800px) 90vw, 1280px"
+                />
+                <div style={{ marginTop: 10, color: "#666", fontSize: 16 }}>
+                  {getMultiLang(news.title, lang)}
+                </div>
+              </div>
+            </Modal>
+          )}
+          {/* Thumbnail Galeri */}
+          {images.length > 1 && (
             <Gallery>
-              {images.map((img, i) =>
-                i === mainIndex ? null : (
-                  <ThumbFrame
-                    key={img.url + i}
+              {images.map((img, i) => (
+                <ThumbFrame
+                  key={img.url + i}
+                  $active={mainIndex === i}
+                  onClick={() => setMainIndex(i)}
+                  tabIndex={0}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setMainIndex(i)}
+                  aria-label={`Show image ${i + 1}`}
+                >
+                  <StyledThumbImage
+                    src={img.url}
+                    alt={`${getMultiLang(news.title, lang)} thumbnail ${i + 1}`}
+                    width={168}
+                    height={96}
                     $active={mainIndex === i}
-                    onClick={() => setMainIndex(i)}
-                    tabIndex={0}
-                    onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setMainIndex(i)}
-                    aria-label={`Show image ${i + 1}`}
-                  >
-                    <StyledThumbImage
-                      src={img.url}
-                      alt={`${getMultiLang(news.title, lang)} thumbnail ${i + 1}`}
-                      width={168}
-                      height={96}
-                      $active={mainIndex === i}
-                    />
-                  </ThumbFrame>
-                )
-              )}
+                  />
+                </ThumbFrame>
+              ))}
             </Gallery>
           )}
         </ImageSection>
@@ -197,7 +259,8 @@ export default function NewsDetailSection() {
   );
 }
 
-// --------- STYLES -----------
+// ...styled-components (değişmedi)
+
 const Container = styled(motion.section)`
   max-width: 900px;
   margin: 0 auto;
