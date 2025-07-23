@@ -6,29 +6,21 @@ import { translations } from "@/modules/activity";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { motion } from "framer-motion";
 import { useAppSelector } from "@/store/hooks";
-import { Skeleton } from "@/shared";
+import { Skeleton, SeeAllBtn } from "@/shared";
 import type { IActivity } from "@/modules/activity/types";
 import type { SupportedLocale } from "@/types/common";
 
 export default function ActivitySection() {
   const { i18n, t } = useI18nNamespace("activity", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-
-  // i18n yüklemesi (gerekirse)
-  Object.entries(translations).forEach(([lng, resources]) => {
-    if (!i18n.hasResourceBundle(lng, "activity")) {
-      i18n.addResourceBundle(lng, "activity", resources, true, true);
-    }
-  });
-
   const { activity, loading } = useAppSelector((state) => state.activity);
 
-  // Multi-language fallback
-  const getMultiLang = (obj?: Record<string, string>) =>
-    obj?.[lang] || obj?.["tr"] || obj?.["en"] || Object.values(obj || {})[0] || "—";
-
   // En fazla 6 faaliyet göster
-  const allActivities = (activity || []).slice(0, 6);
+  const allActivities = activity || [];
+
+  // İlkini üstte göster, kalanları gride böl
+  const firstActivity = allActivities[0];
+  const restActivities = allActivities.slice(1, 6); // Max 5 tane gösterir
 
   return (
     <Section>
@@ -40,12 +32,15 @@ export default function ActivitySection() {
           <MainTitle>
             {t("page.activity.title", "Sektöre Değer Katan Faaliyet Alanlarımız")}
           </MainTitle>
+          {/* Summary/desc kısmı: Dinamik */}
           <Desc>
-            {t(
-              "page.activity.desc",
-              "Ensotek olarak, sektörümüzde öne çıkan çözümler ve hizmetlerle müşterilerimizin iş süreçlerine değer katıyoruz. Geniş faaliyet alanlarımızı keşfedin."
-            )}
-          </Desc>
+  {firstActivity
+    ? firstActivity.summary?.[lang] || "-"
+    : t(
+        "page.activity.desc",
+        "Ensotek olarak, sektörümüzde öne çıkan çözümler ve hizmetlerle müşterilerimizin iş süreçlerine değer katıyoruz. Geniş faaliyet alanlarımızı keşfedin."
+      )}
+</Desc>
           <SeeAllBtn href="/activity">
             {t("page.activity.all", "Tüm Faaliyetlerimiz")}
           </SeeAllBtn>
@@ -53,16 +48,17 @@ export default function ActivitySection() {
         <Right>
           {loading ? (
             <CardGrid>
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: 5 }).map((_, i) => (
                 <Skeleton key={i} />
               ))}
             </CardGrid>
           ) : (
             <CardGrid>
-              {allActivities.map((item: IActivity, idx: number) => (
-                <Card
+              {restActivities.map((item: IActivity, idx: number) => (
+                <CardLink
+                  href={`/activity/${item.slug}`}
                   key={item._id}
-                  as={motion.div}
+                  as={motion.a}
                   initial={{ opacity: 0, y: 24 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.39, delay: idx * 0.07 }}
@@ -72,15 +68,15 @@ export default function ActivitySection() {
                     {item.images?.[0]?.url ? (
                       <CardImg
                         src={item.images[0].url}
-                        alt={getMultiLang(item.title)}
+                        alt={item.title?.[lang] || "Untitled"}
                         loading="lazy"
                       />
                     ) : (
                       <CardImgPlaceholder />
                     )}
                   </CardImgBox>
-                  <CardTitle>{getMultiLang(item.title)}</CardTitle>
-                </Card>
+                  <CardTitle>{item.title?.[lang] || "Untitled"}</CardTitle>
+                </CardLink>
               ))}
             </CardGrid>
           )}
@@ -89,6 +85,7 @@ export default function ActivitySection() {
     </Section>
   );
 }
+
 
 // --- STYLES ---
 
@@ -140,32 +137,14 @@ const MainTitle = styled.h2`
   line-height: 1.17;
 `;
 
-const Desc = styled.p`
+const Desc = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.base};
   color: ${({ theme }) => theme.colors.textSecondary};
   margin-bottom: 2.3rem;
   line-height: 1.67;
 `;
 
-const SeeAllBtn = styled(Link)`
-  display: inline-block;
-  padding: 0.68em 2.1em;
-  font-size: 1.06em;
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  color: ${({ theme }) => theme.colors.white};
-  background: ${({ theme }) => theme.colors.primary};
-  border-radius: ${({ theme }) => theme.radii.pill};
-  text-decoration: none;
-  letter-spacing: 0.01em;
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  border: 1.5px solid ${({ theme }) => theme.colors.primary};
-  transition: background 0.17s, color 0.16s;
-  &:hover, &:focus-visible {
-    background: ${({ theme }) => theme.colors.accent};
-    color: #fff;
-    text-decoration: none;
-  }
-`;
+
 
 const Right = styled.div`
   flex: 2.8 1 500px;
@@ -197,29 +176,33 @@ const CardGrid = styled.div`
 `;
 
 
-const Card = styled(motion.div)`
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: 22px;
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  border: 1.5px solid ${({ theme }) => theme.colors.border};
+const CardLink = styled(Link)`
+  text-decoration: none;
+  color: inherit;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: 22px;
+  box-shadow: ${({ theme }) => theme.shadows.sm};
   padding: 2.1rem 1rem 1.25rem 1rem;
   min-height: 220px;
   transition: box-shadow 0.17s, border-color 0.17s, transform 0.16s;
   cursor: pointer;
   position: relative;
   will-change: transform;
+  outline: none;
 
   &:hover, &:focus-visible {
     box-shadow: ${({ theme }) => theme.shadows.lg};
     border-color: ${({ theme }) => theme.colors.accent};
     transform: translateY(-8px) scale(1.06);
     z-index: 1;
+    text-decoration: none;
   }
 `;
+
 
 const CardImgBox = styled.div`
   width: 140px;
@@ -228,7 +211,6 @@ const CardImgBox = styled.div`
   align-items: center;
   justify-content: center;
   margin-bottom: 1.1rem;
-  border-radius: ${({ theme }) => theme.radii.xl};
   overflow: hidden;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   box-shadow: 0 4px 22px 0 rgba(40, 117, 194, 0.07);
@@ -244,7 +226,6 @@ const CardImg = styled.img`
   height: 90%;
   object-fit: contain;
   transition: transform 0.19s cubic-bezier(0.5, 0.27, 0.41, 1.14);
-  border-radius: ${({ theme }) => theme.radii.lg};
   background: ${({ theme }) => theme.colors.backgroundSecondary};
 
   &:hover { transform: scale(1.10) rotate(-2deg); }

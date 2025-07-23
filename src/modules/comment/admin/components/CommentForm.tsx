@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/comment";
+import translations3 from "@/modules/comment/locales";
 import styled from "styled-components";
 import { useAppDispatch } from "@/store/hooks";
 import {
@@ -11,32 +11,15 @@ import {
 } from "@/modules/comment/slice/commentSlice";
 import { useRecaptcha } from "@/hooks/useRecaptcha";
 import { motion } from "framer-motion";
+import type { CommentContentType } from "@/modules/comment/types"; // ✅
 
 interface Props {
   contentId: string;
-  contentType:
-    | "news"
-    | "blog"
-    | "activity"
-    | "news"
-    | "blog"
-    | "customProduct"
-    | "products"
-    | "bikes"
-    | "articles"
-    | "services"
-    | "about"
-    | "library"
-    | "products"
-    | "references"
-    | "company"
-    | "ensotekprod"
-    | "sparepart";
-  // contentType: "news" | "blog" | "products" | "radonarprod" | "bikes" | "articles" | "services" | "about" | "customProduct" | "references" | "library" | "faq" | "contact" | "company" | "tenant";
+  contentType: CommentContentType;
 }
 
 export default function CommentForm({ contentId, contentType }: Props) {
-  const { t } = useI18nNamespace("comment", translations);
+  const { t } = useI18nNamespace("comment", translations3);
 
   const dispatch = useAppDispatch();
   const executeRecaptcha = useRecaptcha();
@@ -45,7 +28,6 @@ export default function CommentForm({ contentId, contentType }: Props) {
     name: "",
     email: "",
     comment: "",
-    rating: 0,
   });
 
   const handleChange = (
@@ -71,7 +53,6 @@ export default function CommentForm({ contentId, contentType }: Props) {
         contentId,
         name: form.name || "Anonymous",
         email: form.email || "anonymous@example.com",
-        rating: form.rating,
         recaptchaToken: token,
       })
     );
@@ -80,7 +61,7 @@ export default function CommentForm({ contentId, contentType }: Props) {
       fetchCommentsForContent({ id: contentId, type: contentType })
     );
 
-    setForm({ name: "", email: "", comment: "", rating: 0 });
+    setForm({ name: "", email: "", comment: "" });
   };
 
   return (
@@ -91,54 +72,39 @@ export default function CommentForm({ contentId, contentType }: Props) {
       animate={{ opacity: 1 }}
     >
       <Field>
-        <label>{t("yourName")}</label>
+        <label>{t("yourName", "Adınız")}</label>
         <input
           name="name"
           value={form.name}
           onChange={handleChange}
-          placeholder={t("yourName")}
+          placeholder={t("yourName", "Adınız")}
         />
       </Field>
 
       <Field>
-        <label>{t("yourEmail")}</label>
+        <label>{t("yourEmail", "E-posta Adresiniz")}</label>
         <input
           name="email"
           type="email"
           value={form.email}
           onChange={handleChange}
-          placeholder={t("yourEmail")}
+          placeholder={t("yourEmail", "E-posta Adresiniz")}
         />
       </Field>
 
       <Field>
-        <label>{t("rating")}</label>
-        <StarWrapper>
-          {[1, 2, 3, 4, 5].map((value) => (
-            <Star
-              key={value}
-              onClick={() => setForm({ ...form, rating: value })}
-              $active={value <= form.rating}
-            >
-              ★
-            </Star>
-          ))}
-        </StarWrapper>
-      </Field>
-
-      <Field>
-        <label>{t("writeComment")}</label>
+        <label>{t("writeComment", "Yorumunuzu yazın")}</label>
         <textarea
           name="comment"
           value={form.comment}
           onChange={handleChange}
-          placeholder={t("writeComment")}
+          placeholder={t("writeComment", "Yorumunuzu yazın")}
           rows={4}
         />
       </Field>
 
       <SubmitButton type="submit" whileTap={{ scale: 0.96 }}>
-        {t("submit")}
+        {t("submit", "Gönder")}
       </SubmitButton>
     </StyledForm>
   );
@@ -176,21 +142,6 @@ const Field = styled.div`
       outline: none;
       border-color: ${({ theme }) => theme.colors.primary};
     }
-  }
-`;
-
-const StarWrapper = styled.div`
-  display: flex;
-  gap: 6px;
-`;
-
-const Star = styled.span<{ $active: boolean }>`
-  cursor: pointer;
-  font-size: 1.6rem;
-  color: ${({ $active, theme }) => ($active ? theme.colors.warning : "#ccc")};
-  transition: color 0.2s;
-  &:hover {
-    color: ${({ theme }) => theme.colors.warning};
   }
 `;
 

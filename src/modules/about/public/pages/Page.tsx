@@ -138,7 +138,6 @@ const AboutGrid = styled.div`
 
 const AboutCard = styled(motion.div)`
   background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.md};
   border: 1.4px solid ${({ theme }) => theme.colors.borderLight};
   overflow: hidden;

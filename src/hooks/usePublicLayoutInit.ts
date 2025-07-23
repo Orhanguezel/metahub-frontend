@@ -7,7 +7,6 @@ import { fetchSectionMetas } from "@/modules/section/slices/sectionMetaSlice";
 import { fetchSectionSettingsByTenant } from "@/modules/section/slices/sectionSettingSlice";
 import { fetchSettings } from "@/modules/settings/slice/settingsSlice";
 import { fetchCompanyInfo } from "@/modules/company/slice/companySlice";
-//import { fetchCart } from "@/modules/cart/slice/cartSlice";
 import { fetchServices } from "@/modules/services/slice/servicesSlice";
 import { fetchPublishedGalleryItems } from "@/modules/gallery/slice/gallerySlice";
 import { fetchGalleryCategories } from "@/modules/gallery/slice/galleryCategorySlice";
@@ -26,7 +25,6 @@ import {
   fetchActiveChatSessions,
   fetchArchivedSessions,
 } from "@/modules/chat/slice/chatSlice";
-import { fetchBookings } from "@/modules/booking/slice/bookingSlice";
 import { fetchLibrary } from "@/modules/library/slice/librarySlice";
 import { fetchLibraryCategories } from "@/modules/library/slice/libraryCategorySlice";
 
@@ -39,7 +37,6 @@ export const usePublicLayoutInit = () => {
   const sectionSetting = useAppSelector((s) => s.sectionSetting);
   const settingsSlice = useAppSelector((s) => s.settings);
   const companySlice = useAppSelector((s) => s.company);
-
   const servicesSlice = useAppSelector((s) => s.services);
   const gallery = useAppSelector((s) => s.gallery);
   const galleryCategory = useAppSelector((s) => s.galleryCategory);
@@ -55,7 +52,6 @@ export const usePublicLayoutInit = () => {
   const couponSlice = useAppSelector((s) => s.coupon);
   const chat = useAppSelector((s) => s.chat);
   const profile = useAppSelector((s) => s.account.profile);
-  const bookings = useAppSelector((s) => s.booking);
   const librarySlice = useAppSelector((s) => s.library);
   const libraryCategorySlice = useAppSelector((s) => s.libraryCategory);
 
@@ -109,14 +105,6 @@ export const usePublicLayoutInit = () => {
       dispatch(fetchCompanyInfo());
     if (!couponSlice.coupons || couponSlice.coupons.length === 0)
       dispatch(fetchCoupons());
-
-    if (
-      profile?.email && // kullanıcı yüklendi
-      bookings.bookings.length === 0 &&
-      bookings.status === "idle"
-    ) {
-      dispatch(fetchBookings());
-    }
 
     // --- SADECE LOGIN OLAN KULLANICIYA CHAT SESSION FETCH ---
     if (profile) {
@@ -192,8 +180,6 @@ if (
     chat.archivedSessions.length,
     gallery.publicImages,
     galleryCategory.categories,
-    bookings.bookings.length,
-    bookings.status,
     gallery.publicImages.length,
     gallery.status,
     galleryCategory.categories.length,

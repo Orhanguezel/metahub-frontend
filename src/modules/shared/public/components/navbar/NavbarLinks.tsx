@@ -5,7 +5,7 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../../locales/navbar";
 import { SupportedLocale } from "@/types/common";
 import { useAppSelector } from "@/store/hooks";
-import { SPECIAL_NAV_LINK } from "./navigationLinks";
+//import { SPECIAL_NAV_LINK } from "./navigationLinks";
 
 export default function NavbarLinks() {
   const { i18n} = useI18nNamespace("navbar", translations);
@@ -37,12 +37,12 @@ export default function NavbarLinks() {
         );
       })}
 
-      {/* Eğer özel bir ikonlu link varsa */}
+      {/* Eğer özel bir ikonlu link varsa 
       <MenuItem1>
         <MenuLink href={SPECIAL_NAV_LINK.href}>
           {SPECIAL_NAV_LINK.icon}
         </MenuLink>
-      </MenuItem1>
+      </MenuItem1>*/}
     </>
   );
 }
@@ -59,12 +59,13 @@ const MenuItem = styled.li`
     margin: 0 0.06rem;
   }
 `;
-
+/*
 const MenuItem1 = styled(MenuItem)`
   padding: 0;
   justify-content: flex-end;
   align-items: center;
 `;
+*/
 
 const MenuLink = styled(Link).attrs<{ $active?: boolean }>(props => ({
   className: props.$active ? "active" : "",

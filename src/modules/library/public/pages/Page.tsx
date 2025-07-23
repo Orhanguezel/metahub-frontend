@@ -22,9 +22,6 @@ export default function LibraryPage() {
     }
   });
 
-  // Çoklu dil fallback
-  const getMultiLang = (obj?: Record<string, string>) =>
-    obj?.[lang] || obj?.tr || obj?.en || Object.values(obj || {})[0] || "—";
 
   if (loading) {
     return (
@@ -75,7 +72,7 @@ export default function LibraryPage() {
               {Array.isArray(item.images) && item.images.length > 0 && item.images[0].url ? (
                 <StyledImage
                   src={item.images[0].url}
-                  alt={getMultiLang(item.title)}
+                  alt={item.title?.[lang] || "Untitled"}
                   width={440}
                   height={210}
                   loading="lazy"
@@ -85,8 +82,8 @@ export default function LibraryPage() {
               )}
             </ImageWrapper>
             <CardContent>
-              <CardTitle>{getMultiLang(item.title)}</CardTitle>
-              <CardSummary>{getMultiLang(item.summary)}</CardSummary>
+              <CardTitle>{item.title?.[lang] || "Untitled"}</CardTitle>
+              <CardSummary>{item.summary?.[lang] || "No summary available."}</CardSummary>
               {Array.isArray(item.tags) && item.tags.length > 0 && (
   <Tags>
     {item.tags.map((tag, i) => (

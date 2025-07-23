@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
@@ -75,6 +76,11 @@ export default function LibraryDetailSection() {
     );
   }
 
+  function formatText(txt: string | undefined) {
+    if (!txt) return "";
+    return txt.replace(/\\n/g, '\n');
+  }
+
   // Mevcut slug harici diğer içerikler (minimum hata riskli!)
   const otherLibrary = Array.isArray(allLibrary)
     ? allLibrary.filter((item: ILibrary) => item.slug !== slug)
@@ -105,18 +111,19 @@ export default function LibraryDetailSection() {
       {/* Özet */}
       {library.summary && getMultiLang(library.summary, lang) && (
         <SummaryBox>
-          <div>{getMultiLang(library.summary, lang)}</div>
-        </SummaryBox>
+                  <ReactMarkdown>
+                    {formatText(getMultiLang(library.summary, lang))}
+                  </ReactMarkdown>
+                </SummaryBox>
       )}
 
       {/* Ana içerik */}
       {library.content && getMultiLang(library.content, lang) && (
         <ContentBox>
-          <div
-            className="library-content"
-            dangerouslySetInnerHTML={{ __html: getMultiLang(library.content, lang) }}
-          />
-        </ContentBox>
+                  <ReactMarkdown>
+                    {formatText(getMultiLang(library.content, lang))}
+                  </ReactMarkdown>
+                </ContentBox>
       )}
 
       {/* Diğer içerikler */}

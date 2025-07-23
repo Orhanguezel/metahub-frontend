@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { IComment } from "@/modules/comment/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/comment";
+import translations3 from "@/modules/comment/locales";
 import { Modal } from "@/shared";
 import styled from "styled-components";
 import { useAppDispatch } from "@/store/hooks";
@@ -16,16 +16,17 @@ interface Props {
   onClose: () => void;
 }
 
-export default function CommentDetailsModal({ comment, lang, onClose }: Props) {
-  const { t } = useI18nNamespace("comment", translations);
+export default function CommentDetailsModal({ comment, onClose }: Props) {
+  const { t } = useI18nNamespace("comment", translations3);
   const dispatch = useAppDispatch();
 
   // --- Dinamik reply state: Mevcut tüm desteklenen diller için doldur ---
   const [reply, setReply] = useState<Record<SupportedLocale, string>>(
-    () => SUPPORTED_LOCALES.reduce((acc, lng) => {
-      acc[lng] = comment.reply?.text?.[lng] || "";
-      return acc;
-    }, {} as Record<SupportedLocale, string>)
+    () =>
+      SUPPORTED_LOCALES.reduce((acc, lng) => {
+        acc[lng] = comment.reply?.text?.[lng] || "";
+        return acc;
+      }, {} as Record<SupportedLocale, string>)
   );
 
   const [sending, setSending] = useState(false);
@@ -35,7 +36,7 @@ export default function CommentDetailsModal({ comment, lang, onClose }: Props) {
     setSending(true);
 
     try {
-      await dispatch(replyToComment({ id: comment._id, text: reply })).unwrap();
+      await dispatch(replyToComment({ id: comment._id!, text: reply })).unwrap();
       onClose();
     } catch (err) {
       console.error("Failed to reply:", err);
@@ -44,59 +45,57 @@ export default function CommentDetailsModal({ comment, lang, onClose }: Props) {
     }
   };
 
-  const name =
-    typeof comment.userId === "object" && "name" in comment.userId
-      ? comment.userId.name
-      : comment.name;
-
-  const email =
-    typeof comment.userId === "object" && "email" in comment.userId
-      ? comment.userId.email
-      : comment.email;
-
+  // --- User ve Content Title tek dil (string) ---
+  const user =
+    comment.userId && typeof comment.userId === "object"
+      ? comment.userId
+      : undefined;
+  const name = user?.name || comment.name || "-";
+  const email = user?.email || comment.email || "-";
   const contentTitle =
-    typeof comment.contentId === "object" && "title" in comment.contentId
-      ? comment.contentId.title?.[lang] || "-"
+    comment.contentId && typeof comment.contentId === "object"
+      ? comment.contentId.title || "-"
       : "-";
 
   return (
     <Modal isOpen={!!comment} onClose={onClose}>
       <ContentWrapper>
-        <h2>{t("details.title")}</h2>
+        <h2>{t("details.title", "Yorum Detayları")}</h2>
 
         <Row>
-          <strong>{t("name")}:</strong> {name}
+          <strong>{t("name", "Ad")}</strong>: {name}
         </Row>
         <Row>
-          <strong>{t("email")}:</strong> {email}
+          <strong>{t("email", "E-posta")}</strong>: {email}
         </Row>
         <Row>
-          <strong>{t("contentType")}:</strong> {comment.contentType}
+          <strong>{t("contentType", "İçerik Türü")}:</strong> {comment.contentType}
         </Row>
         <Row>
-          <strong>{t("contentTitle")}:</strong> {contentTitle}
+          <strong>{t("contentTitle", "İçerik Başlığı")}:</strong> {contentTitle}
         </Row>
         <Row>
-          <strong>{t("status")}:</strong>{" "}
-          {comment.isPublished ? t("published") : t("unpublished")}
+          <strong>{t("status", "Durum")}:</strong>{" "}
+          {comment.isPublished ? t("published", "Yayınlandı") : t("unpublished", "Yayınlanmadı")}
         </Row>
         <Row>
           <strong>{t("date")}:</strong>{" "}
-          {new Date(comment.createdAt || Date.now()).toLocaleString()}
+          {comment.createdAt ? new Date(comment.createdAt).toLocaleString() : "-"}
         </Row>
 
         <Divider />
 
-        {/* --- YORUMU TÜM DİLLERDE GÖSTER --- */}
-        {SUPPORTED_LOCALES.map((lng) => (
-          <Row key={lng}>
-            <strong>{lng.toUpperCase()}:</strong> {comment.label?.[lng] || "-"}
-          </Row>
-        ))}
+        {/* --- YORUM BAŞLIĞI VE İÇERİĞİ TEK DİLDE --- */}
+        <Row>
+          <strong>{t("label", "Başlık")}:</strong>: {comment.label || "-"}
+        </Row>
+        <Row>
+          <strong>{t("text", "İçerik")}:</strong>: {comment.text || "-"}
+        </Row>
 
         <Divider />
 
-        <h3>{t("details.replyTitle")}</h3>
+        <h3>{t("details.replyTitle", "Yanıt Ver")}</h3>
 
         <form onSubmit={handleSubmit}>
           {SUPPORTED_LOCALES.map((lng) => (
@@ -110,7 +109,7 @@ export default function CommentDetailsModal({ comment, lang, onClose }: Props) {
             />
           ))}
           <SubmitButton type="submit" disabled={sending}>
-            {sending ? t("sending") : t("sendReply")}
+            {sending ? t("sending", "Gönderiliyor...") : t("sendReply", "Yanıtla")}
           </SubmitButton>
         </form>
       </ContentWrapper>

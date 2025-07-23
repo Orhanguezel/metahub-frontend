@@ -64,10 +64,7 @@ export const createAbout = createAsyncThunk(
       "post",
       "/about/admin",
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
     return res.data;
   }
@@ -80,10 +77,7 @@ export const updateAbout = createAsyncThunk(
       "put",
       `/about/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
     return res.data;
   }
@@ -114,10 +108,7 @@ export const togglePublishAbout = createAsyncThunk(
       "put",
       `/about/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
     return res.data;
   }

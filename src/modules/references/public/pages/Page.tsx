@@ -7,7 +7,7 @@ import { translations } from "@/modules/references";
 import { Skeleton, ErrorMessage } from "@/shared";
 import type { SupportedLocale } from "@/types/common";
 import type { IReferences } from "@/modules/references/types";
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect} from "react";
 import Image from "next/image";
 
 // Minimum ReferencesCategory type'ı (dummy için)
@@ -62,13 +62,6 @@ export default function ReferencesPage() {
     return Array.from(map.values());
   }, [references]);
 
-  // Çok dilli yardımcı
-  const getMultiLang = useCallback(
-    (obj?: Record<string, string>) =>
-      obj?.[lang] || obj?.["en"] || Object.values(obj || {})[0] || "—",
-    [lang]
-  );
-
   // Kategorilere göre grupla
   const grouped = useMemo(() => {
     const result: Record<string, IReferences[]> = {};
@@ -84,7 +77,7 @@ export default function ReferencesPage() {
   }, [references]);
 
   // Kategorisiz olanlar
-  const noCategory = grouped["none"] || [];
+  const noCategory = grouped["none"]|| [];
 
   // Sadece referanslı kategoriler
   const sortedCategories = useMemo(
@@ -95,7 +88,7 @@ export default function ReferencesPage() {
   const tabs = useMemo(() => [
     ...sortedCategories.map((cat) => ({
       key: cat._id,
-      label: getMultiLang(cat.name),
+      label: cat.name?.[lang] || "Untitled",
     })),
     ...(noCategory.length
       ? [
@@ -105,7 +98,7 @@ export default function ReferencesPage() {
           },
         ]
       : []),
-  ], [sortedCategories, getMultiLang, noCategory.length, t]);
+  ], [sortedCategories, noCategory, lang, t]);
 
 
   // Başlangıçta ilk tab otomatik seçilsin (useEffect ile)
@@ -178,7 +171,7 @@ export default function ReferencesPage() {
                 <div className="logo-img-wrap">
                   <Image
                     src={item.images[0].url}
-                    alt={getMultiLang(item.title) || "Logo"}
+                    alt={item.title?.[lang] || "Logo"}
                     width={132}
                     height={88}
                     style={{ objectFit: "contain", width: "100%", height: "auto" }}

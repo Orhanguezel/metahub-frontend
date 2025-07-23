@@ -70,9 +70,6 @@ export const createLibrary = createAsyncThunk(
       "/library/admin",
       formData,
       thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
     );
     return res.data;
   }
@@ -85,10 +82,7 @@ export const updateLibrary = createAsyncThunk(
       "put",
       `/library/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
     return res.data;
   }
@@ -119,10 +113,7 @@ export const togglePublishLibrary = createAsyncThunk(
       "put",
       `/library/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
     return res.data;
   }

@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
 import type { SupportedLocale } from "@/types/common";
 import { useAppSelector } from "@/store/hooks";
-import { Skeleton, ErrorMessage, AddToCartButton } from "@/shared";
+import { Skeleton, ErrorMessage, AddToCartButton,SeeAllBtn } from "@/shared";
 import type { IBikes } from "@/modules/bikes/types";
 
 export default function BikesSection() {
@@ -119,7 +119,7 @@ export default function BikesSection() {
           </CardWrapper>
         ))}
       </Grid>
-      <SeeAll href="/bikes">{t("page.bike.all", "Tümünü Gör")}</SeeAll>
+      <SeeAllBtn href="/bikes">{t("page.bike.all", "Tümünü Gör")}</SeeAllBtn>
     </Section>
   );
 }
@@ -231,15 +231,3 @@ const StyledImage = styled(motion.img)`
   }
 `;
 
-const SeeAll = styled(Link)`
-  display: inline-block;
-  margin-top: ${({ theme }) => theme.spacings.xl};
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  transition: color ${({ theme }) => theme.transition.fast};
-  &:hover {
-    text-decoration: underline;
-    color: ${({ theme }) => theme.colors.primaryHover};
-  }
-`;

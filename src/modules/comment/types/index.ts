@@ -1,37 +1,39 @@
-// src/types/blog.ts
 import type { SupportedLocale } from "@/types/common";
 
-// Çok dilli alanlar için merkezi tanım
-export type TranslatedField = {
-  [lang in SupportedLocale]?: string;
-};
+export type TranslatedField = { [lang in SupportedLocale]: string };
 
+// Backend ile birebir uyumlu contentType (Union Type):
+export type CommentContentType =
+  | "news"
+  | "blog"
+  | "product"
+  | "articles"
+  | "services"
+  | "bikes"
+  | "about"
+  | "references"
+  | "library"
+  | "company"
+  | "ensotekprod"
+  | "sparepart";
+
+// Ana model
 export interface IComment {
-  _id: string;
-  name: string;
-  email: string;
-  label: TranslatedField; // Çoklu dil desteği (örn. { tr, en, de })
-  contentType:
-    | "news"
-    | "blog"
-    | "product"
-    | "articles"
-    | "services"
-    | "bikes"
-    | "about"
-    | "product"
-    | "references"
-    | "library"
-    | "company";
-  contentId: string | { _id: string; title?: TranslatedField; slug?: string };
-  userId?: string | { _id: string; name: string; email: string };
+  _id?: string;
+  userId?: string | { _id: string; name: string; email: string }; // populate edilirse obje gelir
+  name?: string;
+  email?: string;
+  tenant: string;
+  contentType: CommentContentType;
+  contentId: string | { _id: string; title?: string; slug?: string }; // populate edilirse obje gelir
+  label?: string;              // Sadece tek dil (backend ile uyumlu!)
+  text: string;                // Sadece tek dil
+  reply?: {
+    text: TranslatedField;     // Çoklu dil (admin cevabı)
+    createdAt?: string;
+  };
   isPublished: boolean;
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
-  reply?: {
-    text: TranslatedField;
-    createdAt?: string;
-  };
-  rating?: number;
 }

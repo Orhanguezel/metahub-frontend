@@ -167,7 +167,6 @@ const ImageWrapper = styled.div`
   width: 100%;
   margin: 0 auto ${({ theme }) => theme.spacings.xl};
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${({ theme }) => theme.radii.xl};
   overflow: hidden;
   box-shadow: ${({ theme }) => theme.shadows.md};
   display: flex;
@@ -179,7 +178,6 @@ const StyledImage = styled(Image)`
   width: 100%;
   height: 320px;
   object-fit: cover;
-  border-radius: ${({ theme }) => theme.radii.xl};
   @media (max-width: 700px) {
     height: 190px;
   }

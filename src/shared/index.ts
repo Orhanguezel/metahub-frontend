@@ -11,3 +11,4 @@ export { default as SEOManager } from "./SEOManager";
 export { default as Loader } from "./Loader";
 export { default as AddToCartButton } from "./AddToCartButton";
 export { default as Button } from "./Button";
+export { SeeAllBtn } from "./SeeAllBtn";

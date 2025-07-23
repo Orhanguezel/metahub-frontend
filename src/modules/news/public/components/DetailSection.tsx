@@ -219,7 +219,6 @@ const MainImageFrame = styled.div`
   width: 100%;
   max-width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 18px;
   overflow: hidden;
   background: #e7edf3;
   display: flex;
@@ -232,7 +231,6 @@ const StyledMainImage = styled(Image)`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 18px;
 `;
 
 const Gallery = styled.div`
@@ -251,7 +249,6 @@ const ThumbFrame = styled.button<{ $active?: boolean }>`
   width: 168px;
   height: 96px;
   aspect-ratio: 16 / 9;
-  border-radius: 11px;
   overflow: hidden;
   background: #eef5fa;
   display: flex;
@@ -271,7 +268,6 @@ const StyledThumbImage = styled(Image)<{ $active?: boolean }>`
   width: 100% !important;
   height: 100% !important;
   object-fit: cover;
-  border-radius: 10px;
 `;
 
 const SocialShareBox = styled.div`

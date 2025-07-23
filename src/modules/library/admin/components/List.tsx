@@ -10,7 +10,6 @@ import Image from "next/image";
 
 interface Props {
   library: ILibrary[] | undefined;
-  lang: SupportedLocale;
   loading: boolean;
   error: string | null;
   onEdit?: (item: ILibrary) => void;
@@ -20,14 +19,14 @@ interface Props {
 
 export default function LibraryList({
   library,
-  lang,
   loading,
   error,
   onEdit,
   onDelete,
   onTogglePublish,
 }: Props) {
-  const { t } = useI18nNamespace("library", translations);
+  const { i18n, t } = useI18nNamespace("library", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   if (loading) {
     return (
@@ -44,18 +43,13 @@ export default function LibraryList({
   if (library.length === 0)
     return <Empty>{t("library.empty", "No library available.")}</Empty>;
 
-  // Fallback fonksiyonu (çok dilli)
-  const getMultiLang = (obj?: Record<string, string>) => {
-    if (!obj) return "";
-    return obj[lang] || obj["en"] || Object.values(obj)[0] || "—";
-  };
 
   return (
     <div>
       {library.map((item) => (
         <LibraryCard key={item._id}>
-          <h2>{getMultiLang(item.title)}</h2>
-          <p>{getMultiLang(item.summary)}</p>
+          <h2>{item.title?.[lang] || Object.values(item.title || {})[0] || "—"}</h2>
+          <p>{item.summary?.[lang] || Object.values(item.summary || {})[0] || "—"}</p>
 
           {/* IMAGES */}
          {Array.isArray(item.images) && item.images.length > 0 ? (
@@ -64,7 +58,7 @@ export default function LibraryList({
       <Image
         key={i}
         src={img.url}
-        alt={getMultiLang(item.title) || `library-${i}`}
+        alt={item.title?.[lang] || Object.values(item.title || {})[0] || `library-${i}`}
         loading="lazy"
         width={150}
         height={100}

@@ -9,6 +9,7 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import type { SupportedLocale } from "@/types/common";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import Image from "next/image";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchEnsotekprodBySlug,
@@ -23,10 +24,6 @@ import type { IEnsotekprod } from "@/modules/ensotekprod/types";
 import { XCircle, CheckCircle } from "lucide-react";
 
 const Lightbox = dynamic(() => import("react-image-lightbox"), { ssr: false });
-
-function getMultiLang(obj: any, lang: SupportedLocale) {
-  return obj?.[lang] || obj?.tr || obj?.en || obj?.de || Object.values(obj || {})[0] || "-";
-}
 
 export default function EnsotekprodDetailSection() {
   const { slug } = useParams() as { slug: string };
@@ -141,7 +138,7 @@ export default function EnsotekprodDetailSection() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <Title>{getMultiLang(ensotekprod.name, lang)}</Title>
+      <Title>{ensotekprod.name[lang]}</Title>
 
       {/* GÖRSELLER */}
       {ensotekprod.images?.length > 0 && (
@@ -149,7 +146,7 @@ export default function EnsotekprodDetailSection() {
           <MainImageWrapper>
             <MainImage
               src={ensotekprod.images[mainPhoto].url}
-              alt={getMultiLang(ensotekprod.name, lang) + `-img${mainPhoto + 1}`}
+              alt={ensotekprod.name[lang] + `-img${mainPhoto + 1}`}
               onClick={() => setIsOpen(true)}
               tabIndex={0}
               role="button"
@@ -180,7 +177,7 @@ export default function EnsotekprodDetailSection() {
   <MetaItem>
     <b>{t("page.category", "Kategori")}:</b>{" "}
     {typeof ensotekprod.category === "object"
-      ? getMultiLang(ensotekprod.category.name, lang)
+      ? ensotekprod.category.name[lang]
       : "-"}
   </MetaItem>
   <MetaItem>
@@ -218,7 +215,7 @@ export default function EnsotekprodDetailSection() {
 
       {/* TANIM VE TEKNİK ÖZELLİKLER */}
       <Description>
-        <div dangerouslySetInnerHTML={{ __html: getMultiLang(ensotekprod.description, lang) }} />
+        <div dangerouslySetInnerHTML={{ __html: ensotekprod.description[lang] }} />
       </Description>
 
       <TechnicalBlock>
@@ -248,19 +245,35 @@ export default function EnsotekprodDetailSection() {
 </AddToCartButton>
 
 
-      {/* DİĞER ÜRÜNLER */}
-      {otherProducts?.length > 0 && (
-        <OtherProduct>
-          <h3>{t("page.other", "Diğer Ürünler")}</h3>
-          <ProductList>
-            {otherProducts.map((item: IEnsotekprod) => (
-              <ProductItem key={item._id}>
-                <Link href={`/ensotekprod/${item.slug}`}>{getMultiLang(item.name, lang)}</Link>
-              </ProductItem>
-            ))}
-          </ProductList>
-        </OtherProduct>
-      )}
+      {/* Diğer içerikler */}
+            {otherProducts?.length > 0 && (
+              <OtherSection>
+                <OtherTitle>{t("page.other", "Diğer Hakkımızda İçerikleri")}</OtherTitle>
+                <OtherGrid>
+                  {otherProducts.map((item:IEnsotekprod) => (
+                    <OtherCard key={item._id} as={motion.div} whileHover={{ y: -6, scale: 1.025 }}>
+                      <OtherImgWrap>
+                        {item.images?.[0]?.url ? (
+                          <OtherImg
+                            src={item.images[0].url}
+                            alt={item.name?.[lang] || "Untitled"}
+                            width={60}
+                            height={40}
+                          />
+                        ) : (
+                          <OtherImgPlaceholder />
+                        )}
+                      </OtherImgWrap>
+                      <OtherTitleMini>
+                        <Link href={`/ensotekprod/${item.slug}`}>
+                          {item.name?.[lang] || "Untitled"}
+                        </Link>
+                      </OtherTitleMini>
+                    </OtherCard>
+                  ))}
+                </OtherGrid>
+              </OtherSection>
+            )}
 
       {/* YORUM BÖLÜMÜ */}
       <CommentForm contentId={ensotekprod._id} contentType="ensotekprod" />
@@ -285,7 +298,7 @@ export default function EnsotekprodDetailSection() {
           onMoveNextRequest={() =>
             setMainPhoto((mainPhoto + 1) % ensotekprod.images.length)
           }
-          imageCaption={getMultiLang(ensotekprod.name, lang)}
+          imageCaption={ensotekprod.name[lang]}
         />
       )}
     </Container>
@@ -421,28 +434,6 @@ const Tag = styled.span`
   margin-bottom: 0.15em;
 `;
 
-const OtherProduct = styled.div`
-  margin-top: ${({ theme }) => theme.spacings.xxl};
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  padding-top: ${({ theme }) => theme.spacings.lg};
-`;
-
-const ProductList = styled.ul`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacings.sm};
-`;
-
-const ProductItem = styled.li`
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  a {
-    color: ${({ theme }) => theme.colors.primary};
-    text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-`;
 
 const StockBadge = styled.span<{ $inStock?: boolean }>`
   display: inline-flex;
@@ -476,6 +467,90 @@ const StockBadge = styled.span<{ $inStock?: boolean }>`
   svg {
     margin-right: 3px;
     vertical-align: middle;
+  }
+`;
+
+
+
+const OtherSection = styled.div`
+  margin-top: ${({ theme }) => theme.spacings.xxl};
+  border-top: 1.5px solid ${({ theme }) => theme.colors.borderLight};
+  padding-top: ${({ theme }) => theme.spacings.lg};
+`;
+
+const OtherTitle = styled.h3`
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: ${({ theme }) => theme.fontSizes.large};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+`;
+
+const OtherGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem 1.8rem;
+  margin-top: 0.7rem;
+`;
+
+const OtherCard = styled(motion.div)`
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.xs};
+  border: 1.3px solid ${({ theme }) => theme.colors.borderLight};
+  padding: 1.1rem 1.2rem 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  transition: box-shadow 0.18s, border 0.18s, transform 0.16s;
+  cursor: pointer;
+  min-height: 72px;
+
+  &:hover, &:focus-visible {
+    box-shadow: ${({ theme }) => theme.shadows.md};
+    border-color: ${({ theme }) => theme.colors.primary};
+    transform: translateY(-5px) scale(1.035);
+    z-index: 2;
+  }
+`;
+
+const OtherImgWrap = styled.div`
+  flex-shrink: 0;
+  width: 60px;
+  height: 40px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  overflow: hidden;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const OtherImg = styled(Image)`
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: ${({ theme }) => theme.radii.md};
+`;
+
+const OtherImgPlaceholder = styled.div`
+  width: 60px;
+  height: 40px;
+  background: ${({ theme }) => theme.colors.skeleton};
+  opacity: 0.36;
+  border-radius: ${({ theme }) => theme.radii.md};
+`;
+
+const OtherTitleMini = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  color: ${({ theme }) => theme.colors.primary};
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
   }
 `;
 

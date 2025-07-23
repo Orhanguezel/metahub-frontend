@@ -6,7 +6,7 @@ import translations from "@/modules/news/locales";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { motion } from "framer-motion";
 import { useAppSelector } from "@/store/hooks";
-import { Skeleton, ErrorMessage } from "@/shared";
+import { Skeleton, ErrorMessage,SeeAllBtn } from "@/shared";
 import type { INews } from "@/modules/news/types";
 import type { SupportedLocale } from "@/types/common";
 import {
@@ -214,7 +214,6 @@ const Card = styled(motion.article)`
   display: flex;
   flex-direction: column;
   background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: 24px;
   border: 1.5px solid ${({ theme }) => theme.colors.borderLight};
   box-shadow: 0 6px 36px 0 rgba(40,117,194,0.11);
   overflow: hidden;
@@ -240,7 +239,6 @@ const CardImageBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 24px 24px 0 0;
   position: relative;
   overflow: hidden;
   min-height: 150px;
@@ -252,7 +250,6 @@ const StyledImage = styled.img`
   height: 100%;
   min-height: 150px;
   object-fit: cover;
-  border-radius: 24px 24px 0 0;
   transition: transform 0.18s;
 `;
 
@@ -340,28 +337,6 @@ const ButtonArea = styled.div`
   justify-content: center;
   align-items: center;
   margin-top: 2.1rem;
-`;
-
-const SeeAllBtn = styled(Link)`
-  display: inline-block;
-  padding: 0.75em 2.3em;
-  font-size: 1.09em;
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.white};
-  background: linear-gradient(90deg, #2875c2 60%, #0bb6d6 100%);
-  border-radius: ${({ theme }) => theme.radii.pill};
-  text-decoration: none;
-  box-shadow: ${({ theme }) => theme.shadows.md};
-  border: none;
-  letter-spacing: 0.01em;
-  transition: background 0.22s, color 0.22s, transform 0.19s;
-  &:hover, &:focus-visible {
-    background: linear-gradient(90deg, #0bb6d6 0%, #2875c2 90%);
-    color: #fff;
-    transform: translateY(-2px) scale(1.04);
-    text-decoration: none;
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-  }
 `;
 
 const NoNews = styled.div`

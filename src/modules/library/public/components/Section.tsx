@@ -4,7 +4,7 @@ import translations from "@/modules/library/locales";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { motion } from "framer-motion";
 import { useAppSelector } from "@/store/hooks";
-import { Skeleton, ErrorMessage } from "@/shared";
+import { Skeleton, ErrorMessage,SeeAllBtn } from "@/shared";
 import Image from "next/image";
 import type { SupportedLocale } from "@/types/common";
 import { FaChartLine, FaLightbulb } from "react-icons/fa";
@@ -72,14 +72,11 @@ export default function LibrarySection() {
     <FaLightbulb key="bulb" size={32} color="#2875c2" />,
   ];
 
-  const getMultiLang = (obj?: Record<string, string>) =>
-    obj?.[lang] || obj?.en || Object.values(obj || {})[0] || "—";
-
   // Kartlar
   const features = featuresData.map((item, i) => ({
     icon: icons[i],
-    title: getMultiLang(item.title),
-    summary: getMultiLang(item.summary),
+    title: item.title?.[lang] || Object.values(item.title || {})[0] || "—",
+    summary: item.summary?.[lang] || Object.values(item.summary || {})[0] || "—",
     slug: item.slug,
   }));
 
@@ -98,10 +95,10 @@ export default function LibrarySection() {
         <Left>
           <MinorTitle>{t("page.library.minorTitle", "HAKKIMIZDA")}</MinorTitle>
           <MainTitle>
-            {getMultiLang(main.title) || t("page.library.title", "Ensotek Hakkında")}
+            {main.title?.[lang] || Object.values(main.title || {})[0] || t("page.library.title", "Ensotek Hakkında")}
           </MainTitle>
           <Desc>
-            {getMultiLang(main.summary)}
+            {main.summary?.[lang] || Object.values(main.summary || {})[0] || "—"}
           </Desc>
           <Features>
             {features.map((item, i) => (
@@ -125,7 +122,7 @@ export default function LibrarySection() {
             {main.images && Array.isArray(main.images) && main.images[0]?.url ? (
               <MainImage
                 src={main.images[0].url}
-                alt={getMultiLang(main.title) || "Library"}
+                alt={main.title?.[lang] || Object.values(main.title || {})[0] || "Library"}
                 width={330}
                 height={210}
                 style={{ objectFit: "cover", borderRadius: "18px" }}
@@ -141,7 +138,7 @@ export default function LibrarySection() {
                 <StackedImageLink key={idx} href={`/library/${item.slug}`}>
                   <StackedImage
                     src={item.images[0].url}
-                    alt={getMultiLang(item.title) || "Library"}
+                    alt={item.title?.[lang] || Object.values(item.title || {})[0] || "Library"}
                     width={135}
                     height={90}
                     style={{
@@ -338,29 +335,6 @@ const FeatureDesc = styled.div`
   -webkit-box-orient: vertical;
   text-overflow: ellipsis;
   min-height: 2.7em;
-`;
-
-const SeeAllBtn = styled(Link)`
-  display: inline-block;
-  margin-top: 2.1rem;
-  padding: 0.75em 2.3em;
-  font-size: 1.09em;
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.white};
-  background: linear-gradient(90deg, #2875c2 60%, #0bb6d6 100%);
-  border-radius: ${({ theme }) => theme.radii.pill};
-  text-decoration: none;
-  box-shadow: ${({ theme }) => theme.shadows.md};
-  border: none;
-  letter-spacing: 0.01em;
-  transition: background 0.22s, color 0.22s, transform 0.19s;
-  &:hover, &:focus-visible {
-    background: linear-gradient(90deg, #0bb6d6 0%, #2875c2 90%);
-    color: #fff;
-    transform: translateY(-2px) scale(1.04);
-    text-decoration: none;
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-  }
 `;
 
 const Right = styled.div`

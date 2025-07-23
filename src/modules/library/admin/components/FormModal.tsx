@@ -32,53 +32,56 @@ export default function FormModal({
   const currentUser = useAppSelector((state) => state.account.profile);
 
   const [titles, setTitles] = useState<Record<SupportedLocale, string>>(() =>
-    SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>)
+    SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
   );
   const [summaries, setSummaries] = useState<Record<SupportedLocale, string>>(() =>
-    SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>)
+    SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
   );
   const [contents, setContents] = useState<Record<SupportedLocale, string>>(() =>
-    SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>)
+    SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
   );
+
   const [author, setAuthor] = useState("");
   const [tags, setTags] = useState("");
   const [category, setCategory] = useState("");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
-  // --- PDF dosyası için state ---
   const [selectedPdf, setSelectedPdf] = useState<File | null>(null);
 
-  // --- Fill on edit ---
+  // Formu editlerken doldur
   useEffect(() => {
     if (editingItem) {
-      setTitles(SUPPORTED_LOCALES.reduce((acc, l) => {
-        acc[l] = editingItem.title?.[l] || "";
+      setTitles(SUPPORTED_LOCALES.reduce((acc, lng) => {
+        acc[lng] = editingItem.title?.[lng] || "";
         return acc;
       }, {} as Record<SupportedLocale, string>));
-      setSummaries(SUPPORTED_LOCALES.reduce((acc, l) => {
-        acc[l] = editingItem.summary?.[l] || "";
+      setSummaries(SUPPORTED_LOCALES.reduce((acc, lng) => {
+        acc[lng] = editingItem.summary?.[lng] || "";
         return acc;
       }, {} as Record<SupportedLocale, string>));
-      setContents(SUPPORTED_LOCALES.reduce((acc, l) => {
-        acc[l] = editingItem.content?.[l] || "";
+      setContents(SUPPORTED_LOCALES.reduce((acc, lng) => {
+        acc[lng] = editingItem.content?.[lng] || "";
         return acc;
       }, {} as Record<SupportedLocale, string>));
       setAuthor(editingItem.author || currentUser?.name || "");
       setTags(editingItem.tags?.join(", ") || "");
-      setCategory(typeof editingItem.category === "string" ? editingItem.category : editingItem.category?._id || "");
+      setCategory(
+        typeof editingItem.category === "string"
+          ? editingItem.category
+          : editingItem.category?._id || ""
+      );
       setExistingImages(editingItem.images?.map((img) => img.url) || []);
-      // Edit modunda mevcut pdf var mı göster
+      setRemovedImages([]);
       setSelectedPdf(null);
     } else {
-      setTitles(SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>));
-      setSummaries(SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>));
-      setContents(SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>));
+      setTitles(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
+      setSummaries(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
+      setContents(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
       setAuthor(currentUser?.name || "");
       setTags("");
       setCategory("");
       setExistingImages([]);
-      setSelectedImages([]);
       setRemovedImages([]);
       setSelectedPdf(null);
     }
@@ -142,9 +145,9 @@ export default function FormModal({
     if (removedImages.length > 0) {
       formData.append("removedImages", JSON.stringify(removedImages));
     }
-    // --- PDF dosyası ekle ---
+    // PDF dosyası ekle
     if (selectedPdf) {
-      formData.append("files", selectedPdf); // fieldname "files" olmalı!
+      formData.append("files", selectedPdf);
     }
 
     await onSubmit(formData, editingItem?._id);

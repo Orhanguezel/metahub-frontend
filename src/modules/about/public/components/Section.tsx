@@ -4,7 +4,7 @@ import translations from "@/modules/about/locales";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { motion } from "framer-motion";
 import { useAppSelector } from "@/store/hooks";
-import { Skeleton, ErrorMessage } from "@/shared";
+import { Skeleton, ErrorMessage,SeeAllBtn } from "@/shared";
 import Image from "next/image";
 import type { SupportedLocale } from "@/types/common";
 import { FaChartLine, FaLightbulb } from "react-icons/fa"; // Sadece iki ikon!
@@ -159,7 +159,6 @@ export default function AboutSection() {
 
 const StackedImageLink = styled(Link)`
   display: block;
-  border-radius: ${({ theme }) => theme.radii.md};
   overflow: hidden;
   cursor: pointer;
 
@@ -267,7 +266,6 @@ const Feature = styled.div`
   align-items: flex-start;
   gap: 1.12rem;
   background: ${({ theme }) => theme.colors.cardBackground || "#fff"};
-  border-radius: 18px;
   border: 1.5px solid ${({ theme }) => theme.colors.borderLight || "#f1f3f8"};
   box-shadow: 0 2px 14px 0 rgba(40,117,194,0.07);
   padding: 1.45rem 1.1rem 1.15rem 1.15rem;
@@ -291,7 +289,6 @@ const IconWrap = styled.div`
     ${({ theme }) => theme.colors.primaryTransparent} 40%,
     ${({ theme }) => theme.colors.backgroundAlt} 100%
   );
-  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -328,29 +325,6 @@ const FeatureDesc = styled.div`
   min-height: 2.7em;
 `;
 
-const SeeAllBtn = styled(Link)`
-  display: inline-block;
-  margin-top: 2.1rem;
-  padding: 0.75em 2.3em;
-  font-size: 1.09em;
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.white};
-  background: linear-gradient(90deg, #2875c2 60%, #0bb6d6 100%);
-  border-radius: ${({ theme }) => theme.radii.pill};
-  text-decoration: none;
-  box-shadow: ${({ theme }) => theme.shadows.md};
-  border: none;
-  letter-spacing: 0.01em;
-  transition: background 0.22s, color 0.22s, transform 0.19s;
-  &:hover, &:focus-visible {
-    background: linear-gradient(90deg, #0bb6d6 0%, #2875c2 90%);
-    color: #fff;
-    transform: translateY(-2px) scale(1.04);
-    text-decoration: none;
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-  }
-`;
-
 const Right = styled.div`
   flex: 1.5 1 320px;
   min-width: 270px;
@@ -373,7 +347,6 @@ const MainImageWrap = styled(Link)`
   width: 340px;
   height: 220px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${({ theme }) => theme.radii.xl};
   overflow: hidden;
   box-shadow: 0 8px 30px 0 rgba(40,117,194,0.16), ${({ theme }) => theme.shadows.lg};
   margin-bottom: 0.8rem;
@@ -387,7 +360,6 @@ const MainImageWrap = styled(Link)`
     position: absolute;
     inset: 0;
     pointer-events: none;
-    border-radius: ${({ theme }) => theme.radii.xl};
     background: linear-gradient(120deg, rgba(40,117,194,0.07) 12%, rgba(11,182,214,0.06) 100%);
     z-index: 1;
   }
@@ -433,7 +405,6 @@ const StackedImage = styled(Image)`
   width: 110px;
   height: 72px;
   object-fit: cover;
-  border-radius: ${({ theme }) => theme.radii.md};
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   box-shadow: 0 2px 14px 0 rgba(40,117,194,0.07);
   transition: box-shadow 0.17s, transform 0.15s;

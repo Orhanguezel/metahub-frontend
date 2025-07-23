@@ -6,7 +6,7 @@ import {translations} from "@/modules/articles";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { motion } from "framer-motion";
 import { useAppSelector } from "@/store/hooks";
-import { Skeleton, ErrorMessage } from "@/shared";
+import { Skeleton, ErrorMessage,SeeAllBtn } from "@/shared";
 import type { IArticles } from "@/modules/articles/types";
 import type { SupportedLocale } from "@/types/common";
 
@@ -98,7 +98,7 @@ export default function ArticlesSection() {
         ))}
       </Grid>
 
-      <SeeAll href="/articles">{t("page.articles.all")}</SeeAll>
+      <SeeAllBtn href="/articles">{t("page.articles.all")}</SeeAllBtn>
     </Section>
   );
 }
@@ -186,18 +186,5 @@ const StyledImage = styled(motion.img)`
   }
   @media (max-width: 767px) {
     width: 100%;
-  }
-`;
-
-const SeeAll = styled(Link)`
-  display: inline-block;
-  margin-top: ${({ theme }) => theme.spacings.xl};
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  transition: color ${({ theme }) => theme.transition.fast};
-  &:hover {
-    text-decoration: underline;
-    color: ${({ theme }) => theme.colors.primaryHover};
   }
 `;

@@ -27,8 +27,7 @@ import { Modal } from "@/shared";
 import { ILibrary, LibraryCategory } from "@/modules/library/types";
 
 export default function AdminLibraryPage() {
-  const { i18n, t } = useI18nNamespace("library", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const { t } = useI18nNamespace("library", translations);
 
   const library = useAppSelector((state) => state.library.libraryAdmin);
   const loading = useAppSelector((state) => state.library.loading);
@@ -90,7 +89,6 @@ export default function AdminLibraryPage() {
         {activeTab === "list" && (
           <List
             library={library}
-            lang={lang}
             loading={loading}
             error={error}
             onEdit={(item) => {
@@ -111,7 +109,6 @@ export default function AdminLibraryPage() {
             }}
             editingItem={editingItem}
             onSubmit={handleSubmit}
-            // Eğer formda dosya alanı tanımlıysa, files desteği props ile geçilebilir
           />
         )}
 

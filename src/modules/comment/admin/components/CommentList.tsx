@@ -4,38 +4,20 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchCommentsForContent } from "@/modules/comment/slice/commentSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/comment";
-import { SupportedLocale } from "@/types/common";
+import translations3 from "@/modules/comment/locales";
 import styled from "styled-components";
 import { motion } from "framer-motion";
+import type { CommentContentType } from "@/modules/comment/types"; // ✅
 
 interface Props {
   contentId: string;
-  contentType:
-    | "news"
-    | "blog"
-    | "activity"
-    | "news"
-    | "blog"
-    | "customProduct"
-    | "products"
-    | "bikes"
-    | "articles"
-    | "services"
-    | "about"
-    | "library"
-    | "products"
-    | "references"
-    | "company"
-    | "ensotekprod"
-    | "sparepart";
-
+  contentType: CommentContentType; // ✅
 }
 
 export default function CommentList({ contentId, contentType }: Props) {
   const dispatch = useAppDispatch();
-  const { i18n, t } = useI18nNamespace("comment", translations);
-  const lang: SupportedLocale = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
+  const { t } = useI18nNamespace("comment", translations3);
+
   const { comments, loading } = useAppSelector((state) => state.comments);
 
   useEffect(() => {
@@ -44,12 +26,13 @@ export default function CommentList({ contentId, contentType }: Props) {
     }
   }, [dispatch, contentId, contentType]);
 
+  // Sadece yayınlanmış yorumlar (backend'den zaten filtreli gelir)
   const publishedComments = Array.isArray(comments)
     ? comments.filter((c) => c.isPublished)
     : [];
 
-  if (loading) return <p>{t("loading")}</p>;
-  if (publishedComments.length === 0) return <p>{t("noComments")}</p>;
+  if (loading) return <p>{t("loading", "Yükleniyor...")}</p>;
+  if (!publishedComments.length) return <p>{t("noComments", "Henüz yorum yok.")}</p>;
 
   return (
     <ListWrapper>
@@ -61,17 +44,19 @@ export default function CommentList({ contentId, contentType }: Props) {
           transition={{ delay: index * 0.05 }}
         >
           <Header>
-            <Name>{c.name || "Anonymous"}</Name>
-            {c.rating && <Stars>{"★".repeat(c.rating)}</Stars>}
+            <Name>{typeof c.userId === "object" && "name" in c.userId ? c.userId.name : c.name || "Anonymous"}</Name>
+            {/* <Stars>{"★".repeat(5)}</Stars> */}
           </Header>
-          <Text>{c.label?.[lang] || t("noText")}</Text>
+          {/* Eğer başlık varsa göster */}
+          {c.label && <Label>{c.label}</Label>}
+          <Text>{c.text || t("noText", "Yorum yok.")}</Text>
         </CommentCard>
       ))}
     </ListWrapper>
   );
 }
 
-// ✨ Styled Components
+// --- Styled Components ---
 const ListWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -98,9 +83,11 @@ const Name = styled.span`
   font-size: 1rem;
 `;
 
-const Stars = styled.span`
-  color: ${({ theme }) => theme.colors.warning};
-  font-size: 1.1rem;
+const Label = styled.div`
+  font-weight: 500;
+  font-size: 1rem;
+  color: ${({ theme }) => theme.colors.primary};
+  margin-bottom: 0.4rem;
 `;
 
 const Text = styled.p`

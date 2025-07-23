@@ -70,7 +70,7 @@ export default function ReferencesDetailSection() {
     );
   }
 
-  const otherReferences = allReferences.filter((item: IReferences) => item.slug !== slug).slice(0, 2);
+  const otherReferences = allReferences.filter((item: IReferences) => item.slug !== slug);
 
   return (
     <Container

@@ -12,11 +12,6 @@ import AddToCartButton from "@/shared/AddToCartButton";
 import type { SupportedLocale } from "@/types/common";
 import type { ISparepart } from "@/modules/sparepart/types";
 
-// Çoklu dil fallback
-function getMultiLang(obj: any, lang: SupportedLocale): string {
-  return obj?.[lang] || obj?.tr || obj?.en || obj?.de || Object.values(obj || {})[0] || "—";
-}
-
 export default function SparepartPage() {
   const { i18n, t } = useI18nNamespace("sparepart", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
@@ -73,7 +68,7 @@ export default function SparepartPage() {
                   <Image
                     key={i}
                     src={img.url}
-                    alt={getMultiLang(item.name, lang) + `-img${i + 1}`}
+                    alt={item.name?.[lang] + `-img${i + 1}` || "Untitled"}
                     width={380}
                     height={190}
                     style={{
@@ -88,73 +83,20 @@ export default function SparepartPage() {
               )}
             </ImageGallery>
             <CardContent>
-              <CardTitle>{getMultiLang(item.name, lang)}</CardTitle>
+              <CardTitle>{item.name?.[lang] || "Untitled"}</CardTitle>
               <CardDesc>
-                {getMultiLang(item.description, lang)}
+                {item.description?.[lang] || "No description available."}
               </CardDesc>
               <Meta>
                 <span>
                   <b>{t("page.category", "Kategori")}:</b>{" "}
                   {typeof item.category === "object"
-                    ? getMultiLang(item.category.name, lang)
+                    ? item.category.name?.[lang] || "Untitled"
                     : "-"}
                 </span>
                 <span>
                   <b>{t("page.price", "Fiyat")}:</b> {item.price} €
-                </span>
-                <span>
-                  <b>{t("page.stock", "Stok")}:</b> {item.stock}
-                </span>
-                <span>
-                  <b>{t("page.brand", "Marka")}:</b> {item.brand}
-                </span>
-                {item.material && (
-                  <span>
-                    <b>{t("page.material", "Malzeme")}:</b> {item.material}
-                  </span>
-                )}
-                {item.color && item.color.length > 0 && (
-                  <span>
-                    <b>{t("page.color", "Renkler")}:</b> {item.color.join(", ")}
-                  </span>
-                )}
-                {item.size && (
-                  <span>
-                    <b>{t("page.size", "Ölçü")}:</b> {item.size}
-                  </span>
-                )}
-                {item.weightKg && (
-                  <span>
-                    <b>{t("page.weight", "Ağırlık")}:</b> {item.weightKg} kg
-                  </span>
-                )}
-                {item.powerW && (
-                  <span>
-                    <b>{t("page.powerW", "Güç")}:</b> {item.powerW} W
-                  </span>
-                )}
-                {item.voltageV && (
-                  <span>
-                    <b>{t("page.voltageV", "Voltaj")}:</b> {item.voltageV} V
-                  </span>
-                )}
-                {item.flowRateM3H && (
-                  <span>
-                    <b>{t("page.flowRateM3H", "Debi")}:</b> {item.flowRateM3H} m³/h
-                  </span>
-                )}
-                {item.coolingCapacityKw && (
-                  <span>
-                    <b>{t("page.coolingCapacityKw", "Soğutma Kapasitesi")}:</b>{" "}
-                    {item.coolingCapacityKw} kW
-                  </span>
-                )}
-                <span>
-                  <b>{t("page.isElectric", "Elektrikli mi?")}:</b> {item.isElectric ? t("yes", "Evet") : t("no", "Hayır")}
-                </span>
-                <span>
-                  <b>{t("page.isActive", "Aktif?")}:</b> {item.isActive ? t("yes", "Evet") : t("no", "Hayır")}
-                </span>
+                </span>            
               </Meta>
               {/* Etiketler */}
               {item.tags && item.tags.length > 0 && (
@@ -198,7 +140,6 @@ const SparepartGrid = styled.div`
 
 const SparepartCard = styled(motion.div)`
   background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.md};
   overflow: hidden;
   display: flex;

@@ -54,9 +54,6 @@ export default function ActivityDetailSection() {
     };
   }, [dispatch, allActivity, slug]);
 
-  // Çoklu dil fallback
-  const getMultiLang = (obj?: Record<string, string>) =>
-    obj?.[lang] || obj?.["tr"] || obj?.["en"] || Object.values(obj || {})[0] || "—";
 
   if (loading) {
     return (
@@ -84,7 +81,7 @@ export default function ActivityDetailSection() {
     >
       {/* Başlık */}
       <MainTitle>
-        {getMultiLang(activity.title)}
+        {activity.title?.[lang]}
       </MainTitle>
 
       {/* Görsel */}
@@ -92,7 +89,7 @@ export default function ActivityDetailSection() {
         <BannerImage>
           <Image
             src={activity.images[0].url}
-            alt={getMultiLang(activity.title)}
+            alt={activity.title?.[lang] || "Untitled"}
             width={1100}
             height={470}
             priority
@@ -102,20 +99,18 @@ export default function ActivityDetailSection() {
       )}
 
       {/* Özet */}
-      {activity.summary && getMultiLang(activity.summary) && (
+      {activity.summary && activity.summary[lang] && (
         <SummaryBlock>
-          <h3>{t("page.summary", "Kısa Bilgi")}</h3>
-          <div>{getMultiLang(activity.summary)}</div>
+          <div>{activity.summary[lang]}</div>
         </SummaryBlock>
       )}
 
       {/* İçerik */}
-      {activity.content && getMultiLang(activity.content) && (
+      {activity.content && activity.content[lang] && (
         <ContentBlock>
-          <h3>{t("page.detail", "Detaylar")}</h3>
           <div
             className="activity-content"
-            dangerouslySetInnerHTML={{ __html: getMultiLang(activity.content) }}
+            dangerouslySetInnerHTML={{ __html: activity.content[lang] }}
           />
         </ContentBlock>
       )}
@@ -131,7 +126,7 @@ export default function ActivityDetailSection() {
                   {item.images?.[0]?.url ? (
                     <Image
                       src={item.images[0].url}
-                      alt={getMultiLang(item.title)}
+                      alt={item.title?.[lang] || "Untitled"}
                       width={70}
                       height={50}
                       style={{ objectFit: "contain", width: "60px", height: "40px", borderRadius: "10px" }}
@@ -142,7 +137,7 @@ export default function ActivityDetailSection() {
                 </OtherImgWrap>
                 <OtherTitle>
                   <Link href={`/activity/${item.slug}`}>
-                    {getMultiLang(item.title)}
+                    {item.title?.[lang] || "Untitled"}
                   </Link>
                 </OtherTitle>
               </OtherCard>
@@ -160,7 +155,6 @@ const DetailContainer = styled(motion.section)`
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacings.xxxl} ${({ theme }) => theme.spacings.lg};
   background: ${({ theme }) => theme.colors.sectionBackground};
-  border-radius: 22px;
   box-shadow: ${({ theme }) => theme.shadows.md};
   margin-bottom: 4.5rem;
 
@@ -181,14 +175,12 @@ const MainTitle = styled.h1`
 const BannerImage = styled.div`
   width: 100%;
   margin: 0 auto 2.1rem auto;
-  border-radius: 22px;
   overflow: hidden;
   box-shadow: ${({ theme }) => theme.shadows.lg};
 
   img {
     display: block;
     width: 100%;
-    border-radius: 22px;
   }
 `;
 

@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { useAppSelector } from "@/store/hooks";
 import { FaUsers, FaGlobe, FaRegLightbulb, FaTrophy } from "react-icons/fa";
 
+
 const YEARS_OF_EXPERIENCE = 40;
 const PROJECTS_COUNT = 1200;
 const COUNTRIES_COUNT = 12;

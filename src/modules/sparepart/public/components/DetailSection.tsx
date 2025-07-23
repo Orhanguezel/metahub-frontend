@@ -6,9 +6,10 @@ import { motion } from "framer-motion";
 import { translations } from "@/modules/sparepart";
 import translations2 from "@/modules/cart/locales";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import { getMultiLang, type SupportedLocale } from "@/types/common";
+import type{SupportedLocale } from "@/types/common";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import Image from "next/image";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchSparepartBySlug,
@@ -75,8 +76,7 @@ export default function SparepartDetailSection() {
   }
 
   const otherProducts = allProducts
-    ?.filter((item: ISparepart) => item.slug !== slug)
-    .slice(0, 2);
+    ?.filter((item: ISparepart) => item.slug !== slug);
 
   // Teknik özellikleri ve opsiyonelleri tek yerde topluyoruz:
   const TECHNICAL = [
@@ -177,7 +177,7 @@ export default function SparepartDetailSection() {
   <MetaItem>
     <b>{t("page.category", "Kategori")}:</b>{" "}
     {typeof sparepart.category === "object"
-      ? getMultiLang(sparepart.category.name, lang)
+      ? sparepart.category.name?.[lang] || "Untitled"
       : "-"}
   </MetaItem>
   <MetaItem>
@@ -215,7 +215,7 @@ export default function SparepartDetailSection() {
 
       {/* TANIM VE TEKNİK ÖZELLİKLER */}
       <Description>
-        <div dangerouslySetInnerHTML={{ __html: getMultiLang(sparepart.description, lang) }} />
+        <div dangerouslySetInnerHTML={{ __html: sparepart.description?.[lang] || "" }} />
       </Description>
 
       <TechnicalBlock>
@@ -245,18 +245,34 @@ export default function SparepartDetailSection() {
 </AddToCartButton>
 
 
-      {/* DİĞER ÜRÜNLER */}
+      {/* Diğer içerikler */}
       {otherProducts?.length > 0 && (
-        <OtherProduct>
-          <h3>{t("page.other", "Diğer Ürünler")}</h3>
-          <ProductList>
-            {otherProducts.map((item: ISparepart) => (
-              <ProductItem key={item._id}>
-                <Link href={`/sparepart/${item.slug}`}>{getMultiLang(item.name, lang)}</Link>
-              </ProductItem>
+        <OtherSection>
+          <OtherTitle>{t("page.other", "Diğer Hakkımızda İçerikleri")}</OtherTitle>
+          <OtherGrid>
+            {otherProducts.map((item:ISparepart) => (
+              <OtherCard key={item._id} as={motion.div} whileHover={{ y: -6, scale: 1.025 }}>
+                <OtherImgWrap>
+                  {item.images?.[0]?.url ? (
+                    <OtherImg
+                      src={item.images[0].url}
+                      alt={item.name?.[lang] || "Untitled"}
+                      width={60}
+                      height={40}
+                    />
+                  ) : (
+                    <OtherImgPlaceholder />
+                  )}
+                </OtherImgWrap>
+                <OtherTitleMini>
+                  <Link href={`/sparepart/${item.slug}`}>
+                    {item.name?.[lang] || "Untitled"}
+                  </Link>
+                </OtherTitleMini>
+              </OtherCard>
             ))}
-          </ProductList>
-        </OtherProduct>
+          </OtherGrid>
+        </OtherSection>
       )}
 
       {/* YORUM BÖLÜMÜ */}
@@ -282,7 +298,7 @@ export default function SparepartDetailSection() {
           onMoveNextRequest={() =>
             setMainPhoto((mainPhoto + 1) % sparepart.images.length)
           }
-          imageCaption={getMultiLang(sparepart.name, lang)}
+          imageCaption={sparepart.name?.[lang] || "Untitled"}
         />
       )}
     </Container>
@@ -315,7 +331,6 @@ const MainImage = styled.img`
   max-width: 98vw;
   height: 320px;
   object-fit: contain;
-  border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.md};
   cursor: zoom-in;
   background: ${({ theme }) => theme.colors.backgroundAlt || "#1a1a1a"};
@@ -418,28 +433,6 @@ const Tag = styled.span`
   margin-bottom: 0.15em;
 `;
 
-const OtherProduct = styled.div`
-  margin-top: ${({ theme }) => theme.spacings.xxl};
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  padding-top: ${({ theme }) => theme.spacings.lg};
-`;
-
-const ProductList = styled.ul`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacings.sm};
-`;
-
-const ProductItem = styled.li`
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  a {
-    color: ${({ theme }) => theme.colors.primary};
-    text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-`;
 
 const StockBadge = styled.span<{ $inStock?: boolean }>`
   display: inline-flex;
@@ -475,5 +468,90 @@ const StockBadge = styled.span<{ $inStock?: boolean }>`
     vertical-align: middle;
   }
 `;
+
+
+
+const OtherSection = styled.div`
+  margin-top: ${({ theme }) => theme.spacings.xxl};
+  border-top: 1.5px solid ${({ theme }) => theme.colors.borderLight};
+  padding-top: ${({ theme }) => theme.spacings.lg};
+`;
+
+const OtherTitle = styled.h3`
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: ${({ theme }) => theme.fontSizes.large};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+`;
+
+const OtherGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem 1.8rem;
+  margin-top: 0.7rem;
+`;
+
+const OtherCard = styled(motion.div)`
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.xs};
+  border: 1.3px solid ${({ theme }) => theme.colors.borderLight};
+  padding: 1.1rem 1.2rem 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  transition: box-shadow 0.18s, border 0.18s, transform 0.16s;
+  cursor: pointer;
+  min-height: 72px;
+
+  &:hover, &:focus-visible {
+    box-shadow: ${({ theme }) => theme.shadows.md};
+    border-color: ${({ theme }) => theme.colors.primary};
+    transform: translateY(-5px) scale(1.035);
+    z-index: 2;
+  }
+`;
+
+const OtherImgWrap = styled.div`
+  flex-shrink: 0;
+  width: 60px;
+  height: 40px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  overflow: hidden;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const OtherImg = styled(Image)`
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: ${({ theme }) => theme.radii.md};
+`;
+
+const OtherImgPlaceholder = styled.div`
+  width: 60px;
+  height: 40px;
+  background: ${({ theme }) => theme.colors.skeleton};
+  opacity: 0.36;
+  border-radius: ${({ theme }) => theme.radii.md};
+`;
+
+const OtherTitleMini = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  color: ${({ theme }) => theme.colors.primary};
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+`;
+
 
 
