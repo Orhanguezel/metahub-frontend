@@ -21,6 +21,15 @@ export default function useModal<T = any>(items: T[] = []) {
 
   const currentItem = items[currentIndex] || null;
 
+    // Dışarıdan index ayarlamak için fonksiyon (hem sayı hem fonksiyon alır)
+  const setIndex = useCallback(
+    (index: number | ((curr: number) => number)) => {
+      setCurrentIndex(index);
+    },
+    []
+  );
+
+
   useEffect(() => {
     if (currentIndex >= items.length) {
       setCurrentIndex(0);
@@ -35,5 +44,6 @@ export default function useModal<T = any>(items: T[] = []) {
     prev,
     currentIndex,
     currentItem,
+    setIndex,
   };
 }

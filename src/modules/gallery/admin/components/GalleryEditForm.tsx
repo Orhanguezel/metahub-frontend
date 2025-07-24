@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/gallery";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
-import { GalleryUploadWithPreview } from "@/shared";
+import {GalleryUploadWithPreview} from "@/shared";
 import { toast } from "react-toastify";
 import type { IGalleryCategory, IGallery, IGalleryItem } from "@/modules/gallery/types";
+import { completeLocales } from "@/utils/completeLocales";
 
 interface Props {
   isOpen: boolean;
@@ -16,6 +17,9 @@ interface Props {
   onSubmit: (formData: FormData, id?: string) => Promise<void>;
   categories: IGalleryCategory[];
 }
+
+const initialByLocale = () =>
+  SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>);
 
 export default function GalleryEditForm({
   isOpen,
@@ -28,55 +32,33 @@ export default function GalleryEditForm({
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   // --- STATE ---
-  const [names, setNames] = useState<Record<SupportedLocale, string>>(() =>
-    SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>)
-  );
-  const [descriptions, setDescriptions] = useState<Record<SupportedLocale, string>>(() =>
-    SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>)
-  );
+  const [names, setNames] = useState<Record<SupportedLocale, string>>(initialByLocale());
+  const [descriptions, setDescriptions] = useState<Record<SupportedLocale, string>>(initialByLocale());
   const [category, setCategory] = useState("");
   const [type, setType] = useState<"image" | "video">("image");
   const [order, setOrder] = useState("1");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
-
-  // --- existingImages artık IGalleryItem[] ---
   const [existingImages, setExistingImages] = useState<IGalleryItem[]>([]);
 
-  // defaultImages as IGalleryItem[]
-  const defaultImages = useMemo(
-    () => editingItem?.images || [],
-    [editingItem]
-  );
-
-  // --- FILL ON EDIT ---
+  // --- Editte mevcut değerleri yükle ---
   useEffect(() => {
     if (editingItem) {
-      setNames(
-        SUPPORTED_LOCALES.reduce((acc, l) => {
-          acc[l] = editingItem.images?.[0]?.name?.[l] || "";
-          return acc;
-        }, {} as Record<SupportedLocale, string>)
-      );
-      setDescriptions(
-        SUPPORTED_LOCALES.reduce((acc, l) => {
-          acc[l] = editingItem.images?.[0]?.description?.[l] || "";
-          return acc;
-        }, {} as Record<SupportedLocale, string>)
-      );
-      setCategory(
-        typeof editingItem.category === "string"
-          ? editingItem.category
-          : editingItem.category?._id || ""
+      // Sadece ilk resmin başlık/açıklama/order kullanılır!
+      setNames(completeLocales(editingItem.images?.[0]?.name));
+      setDescriptions(completeLocales(editingItem.images?.[0]?.description));
+      setCategory(typeof editingItem.category === "string"
+        ? editingItem.category
+        : editingItem.category?._id || ""
       );
       setType(editingItem.type || "image");
       setOrder(editingItem.images?.[0]?.order?.toString() || "1");
-      setExistingImages(defaultImages);
+      setExistingImages(editingItem.images || []);
       setSelectedFiles([]);
       setRemovedImages([]);
     } else {
-      setNames(SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>));
-      setDescriptions(SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>));
+      setNames(initialByLocale());
+      setDescriptions(initialByLocale());
       setCategory("");
       setType("image");
       setOrder("1");
@@ -84,15 +66,14 @@ export default function GalleryEditForm({
       setSelectedFiles([]);
       setRemovedImages([]);
     }
-  }, [editingItem, isOpen, defaultImages]);
+  }, [editingItem, isOpen]);
 
-  // --- IMAGE HANDLER ---
-  // IGalleryItem[]
+  // --- Görsel yükleme handler ---
   const handleImagesChange = useCallback(
     (files: File[], removed: string[], current: IGalleryItem[]) => {
       setSelectedFiles(files);
       setRemovedImages(removed);
-      setExistingImages(current); // current -> kalan eski resimler
+      setExistingImages(current);
     },
     []
   );
@@ -105,20 +86,20 @@ export default function GalleryEditForm({
       return;
     }
 
+    const filledNames = completeLocales(names);
+    const filledDescriptions = completeLocales(descriptions);
+
     const formData = new FormData();
-    formData.append("name", JSON.stringify(names));
-    formData.append("description", JSON.stringify(descriptions));
+    formData.append("name", JSON.stringify(filledNames));
+    formData.append("description", JSON.stringify(filledDescriptions));
     formData.append("category", category);
     formData.append("type", type);
     formData.append("order", order);
 
-    for (const file of selectedFiles) {
-      formData.append("images", file);
-    }
+    selectedFiles.forEach((file) => formData.append("images", file));
     if (removedImages.length > 0) {
       formData.append("removedImages", JSON.stringify(removedImages));
     }
-    // 🔥 kalan eski resimler url listesini gönder
     if (existingImages.length > 0) {
       formData.append("existingImages", JSON.stringify(existingImages.map(img => img.url)));
     }
@@ -146,16 +127,13 @@ export default function GalleryEditForm({
               value={names[lng]}
               onChange={(e) => setNames({ ...names, [lng]: e.target.value })}
             />
-
             <label htmlFor={`desc-${lng}`}>
               {t("form.description", "Description")} ({lng.toUpperCase()})
             </label>
             <textarea
               id={`desc-${lng}`}
               value={descriptions[lng]}
-              onChange={(e) =>
-                setDescriptions({ ...descriptions, [lng]: e.target.value })
-              }
+              onChange={(e) => setDescriptions({ ...descriptions, [lng]: e.target.value })}
             />
           </div>
         ))}
@@ -200,16 +178,14 @@ export default function GalleryEditForm({
         <label>{t("form.image", "Images")}</label>
         <GalleryUploadWithPreview
           max={5}
-          defaultImages={defaultImages} // IGalleryItem[]
+          defaultImages={existingImages}
           onChange={handleImagesChange}
           folder="gallery"
         />
 
         <ButtonGroup>
           <button type="submit">
-            {editingItem
-              ? t("form.save", "Save")
-              : t("form.create", "Create")}
+            {editingItem ? t("form.save", "Save") : t("form.create", "Create")}
           </button>
           <button type="button" onClick={onClose}>
             {t("form.cancel", "Cancel")}

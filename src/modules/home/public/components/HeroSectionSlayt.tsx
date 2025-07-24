@@ -7,10 +7,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import useModal from "@/hooks/useModal";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import { translations, Modal } from "@/modules/home";
+import { translations } from "@/modules/home";
 import { SupportedLocale } from "@/types/common";
 import SkeletonBox from "@/shared/Skeleton";
 import type { IGallery } from "@/modules/gallery/types";
+import Modal from "./Modal";
 
 const SLIDER_CATEGORY_SLUG = "carousel";
 

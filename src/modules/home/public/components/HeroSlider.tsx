@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useEffect} from "react";
+import { useMemo, useEffect } from "react";
 import { useAppSelector } from "@/store/hooks";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import { translations, Modal } from "@/modules/home";
+import { translations } from "@/modules/home";
+import Modal from "./Modal";
 import { SupportedLocale } from "@/types/common";
 import { FaArrowLeft, FaArrowRight, FaExpand } from "react-icons/fa";
 import SkeletonBox from "@/shared/Skeleton";
@@ -49,32 +50,31 @@ const HeroSlider = () => {
         });
       });
     });
-    allImages.sort((a, b) => (Number(b.order) || 0) - (Number(a.order) || 0));
+    // Sırala: Küçükten büyüğe (order)
+    allImages.sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
     return allImages;
   }, [publicImages, selectedCategoryId]);
 
   // --- Modal Hook ---
-  const { isOpen, open, close, next, prev, currentIndex, currentItem } = useModal(flatItems);
+  const { isOpen, open, close, next, prev, currentIndex, currentItem, setIndex } = useModal(flatItems);
 
   // --- Otomatik Slider ---
   useEffect(() => {
-    if (flatItems.length === 0) return;
+    if (flatItems.length === 0 || isOpen) return;
     const timer = setInterval(() => {
-      next();
+      setIndex((current) => (current + 1) % flatItems.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, [flatItems, next]);
+  }, [flatItems.length, setIndex, isOpen]);
 
   // --- Modal açıkken klavye ile sağ/sol/Esc ---
   useEffect(() => {
     if (!isOpen) return;
-
     const handleModalKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") next();
       if (e.key === "ArrowLeft") prev();
       if (e.key === "Escape") close();
     };
-
     window.addEventListener("keydown", handleModalKey);
     return () => window.removeEventListener("keydown", handleModalKey);
   }, [isOpen, next, prev, close]);
@@ -102,7 +102,6 @@ const HeroSlider = () => {
     currentHero?.url ||
     currentHero?.thumbnail ||
     "/placeholder.jpg";
-
   if (typeof imageSrc === "string" && imageSrc.startsWith("https://res.cloudinary.com/")) {
     imageSrc = `${imageSrc}?w=900&h=600&c_fill&q_auto,f_auto`;
   }
@@ -127,7 +126,13 @@ const HeroSlider = () => {
           />
           <DotRow>
             {flatItems.map((_, index) => (
-              <Dot key={index} $active={index === currentIndex} />
+              <Dot
+                key={index}
+                $active={index === currentIndex}
+                onClick={() => setIndex(index)}
+                tabIndex={0}
+                aria-label={`Go to slide ${index + 1}`}
+              />
             ))}
           </DotRow>
         </ImageCol>
@@ -135,23 +140,30 @@ const HeroSlider = () => {
           <HeroTitle as="h1">{title}</HeroTitle>
           <HeroDesc>{description}</HeroDesc>
           <SliderControls>
-            <ControlButton onClick={prev} aria-label="Previous">
-              <FaArrowLeft />
-            </ControlButton>
-            <ControlButton onClick={next} aria-label="Next">
-              <FaArrowRight />
-            </ControlButton>
-            <ControlButton onClick={() => open(currentIndex)} aria-label="Expand">
-              <FaExpand />
-            </ControlButton>
-            <LinkBtn as={Link} href={detailLink}>
-              {t("hero.products", "Ürünler")}
-            </LinkBtn>
-          </SliderControls>
+  <ControlButton onClick={prev} aria-label="Previous">
+    <FaArrowLeft />
+  </ControlButton>
+  <ControlButton onClick={next} aria-label="Next">
+    <FaArrowRight />
+  </ControlButton>
+  <ControlButton onClick={() => open(currentIndex)} aria-label="Expand">
+    <FaExpand />
+  </ControlButton>
+  <StyledLink href={detailLink}>
+  {t("hero.products", "Ürünler")}
+</StyledLink>
+</SliderControls>
+
+
         </ContentCol>
       </HeroWrapper>
       {/* Modal */}
-      <Modal isOpen={isOpen} onClose={close} onNext={next} onPrev={prev}>
+      <Modal
+        isOpen={isOpen}
+        onClose={close}
+        onNext={next}
+        onPrev={prev}
+      >
         <ModalContent>
           <Image
             src={imageSrc}
@@ -162,6 +174,8 @@ const HeroSlider = () => {
               objectFit: "contain",
               width: "100%",
               maxHeight: "80vh",
+              borderRadius: "18px",
+              background: "#fff"
             }}
           />
           <ModalTitle>{currentItem?.name?.[lang]}</ModalTitle>
@@ -208,7 +222,6 @@ const ImageCol = styled.div`
   overflow: hidden;
   aspect-ratio: 16/9;
   box-shadow: ${({ theme }) => theme.shadows.lg};
-
   @media (max-width: 1100px) {
     min-height: 210px;
     aspect-ratio: 16/9;
@@ -239,7 +252,7 @@ const DotRow = styled.div`
   }
 `;
 
-const Dot = styled.div<{ $active: boolean }>`
+const Dot = styled.button<{ $active: boolean }>`
   width: 17px;
   height: 17px;
   border-radius: ${({ theme }) => theme.radii.circle};
@@ -249,6 +262,8 @@ const Dot = styled.div<{ $active: boolean }>`
     $active ? theme.colors.primary : theme.colors.borderLight};
   transition: background 0.21s, border 0.22s;
   box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.md : "none")};
+  cursor: pointer;
+  outline: none;
 `;
 
 const ContentCol = styled.div`
@@ -260,7 +275,6 @@ const ContentCol = styled.div`
   justify-content: center;
   gap: 22px;
   background: transparent;
-
   @media (max-width: 1100px) {
     padding: ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.md};
     align-items: center;
@@ -294,7 +308,6 @@ const SliderControls = styled.div`
   align-items: center;
   gap: 13px;
   margin-top: 7px;
-
   @media (max-width: 1100px) {
     gap: 7px;
     flex-wrap: wrap;
@@ -325,7 +338,7 @@ const ControlButton = styled.button`
   }
 `;
 
-const LinkBtn = styled.a`
+const StyledLink = styled(Link)`
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.white};
   border: none;
@@ -338,7 +351,6 @@ const LinkBtn = styled.a`
   cursor: pointer;
   letter-spacing: 0.01em;
   transition: background 0.18s, color 0.16s;
-
   display: flex;
   align-items: center;
   gap: 8px;
@@ -350,7 +362,6 @@ const LinkBtn = styled.a`
     color: ${({ theme }) => theme.colors.white};
     text-decoration: none;
   }
-
   @media (max-width: 1100px) {
     margin-left: 0;
     margin-top: 14px;
@@ -359,7 +370,6 @@ const LinkBtn = styled.a`
   }
 `;
 
-// Modal içeriği
 const ModalContent = styled.div`
   text-align: center;
   padding: 22px 12px;

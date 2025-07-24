@@ -1,4 +1,3 @@
-"use client";
 import React, { useRef, useState } from "react";
 import styled from "styled-components";
 import { getImageSrc } from "@/shared/getImageSrc";
@@ -7,7 +6,7 @@ import type { IGalleryItem } from "@/modules/gallery/types";
 
 interface Props {
   max?: number;
-  defaultImages?: IGalleryItem[];
+  defaultImages?: IGalleryItem[]; // 🔥
   onChange?: (
     files: File[],
     removedImages: string[],
@@ -16,7 +15,7 @@ interface Props {
   folder?: ImageType;
 }
 
-const ImageUploadWithPreview: React.FC<Props> = ({
+const GalleryUploadWithPreview: React.FC<Props> = ({
   max = 5,
   defaultImages = [],
   onChange,
@@ -28,7 +27,7 @@ const ImageUploadWithPreview: React.FC<Props> = ({
   const [existingImages, setExistingImages] = useState<IGalleryItem[]>(defaultImages);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
 
-  // ✅ defaultImages güncel kalması için editingItem değişiminde güncelle
+  // Editing/değişim
   React.useEffect(() => {
     setExistingImages(defaultImages || []);
   }, [defaultImages]);
@@ -53,10 +52,9 @@ const ImageUploadWithPreview: React.FC<Props> = ({
   };
 
   const removeExistingImage = (url: string) => {
-  setExistingImages((prev) => prev.filter((img) => img.url !== url));
-  setRemovedImages((prev) => [...prev, url]);
-};
-
+    setExistingImages((prev) => prev.filter((img) => img.url !== url));
+    setRemovedImages((prev) => [...prev, url]);
+  };
 
   return (
     <Wrapper>
@@ -97,8 +95,8 @@ const ImageUploadWithPreview: React.FC<Props> = ({
   );
 };
 
+export default GalleryUploadWithPreview;
 
-export default ImageUploadWithPreview;
 
 // Styled Components (aynı kalabilir)
 const Wrapper = styled.div`

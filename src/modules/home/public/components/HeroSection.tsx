@@ -7,11 +7,11 @@ import { translations } from "@/modules/home";
 import { SupportedLocale } from "@/types/common";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useAppSelector } from "@/store/hooks";
 import type { IGallery, IGalleryCategory } from "@/modules/gallery/types";
+import Modal from "./Modal"; // Kendi Modal bileşenin olacak
 
-// KATEGORİNİN _id’si veya slug’ı
 const HERO_CATEGORY_SLUG = "carousel";
 
 const HeroSection = () => {
@@ -47,6 +47,8 @@ const HeroSection = () => {
   }, [publicImages, selectedCategoryId]);
 
   const [current, setCurrent] = useState(0);
+  const [isModalOpen, setModalOpen] = useState(false);
+
   const enableSlider = flatItems.length > 1;
   const currentHero = flatItems[current];
 
@@ -75,6 +77,28 @@ const HeroSection = () => {
     return () => clearInterval(timer);
   }, [enableSlider, flatItems.length]);
 
+  // --- MODAL Navigation ---
+  const handleModalOpen = () => setModalOpen(true);
+  const handleModalClose = () => setModalOpen(false);
+
+  // Klavye navigation
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!isModalOpen) return;
+      if (e.key === "Escape") handleModalClose();
+      if (e.key === "ArrowRight") setCurrent((prev) => (prev + 1) % flatItems.length);
+      if (e.key === "ArrowLeft")
+        setCurrent((prev) => (prev - 1 + flatItems.length) % flatItems.length);
+    },
+    [isModalOpen, flatItems.length]
+  );
+
+  useEffect(() => {
+    if (!isModalOpen) return;
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isModalOpen, handleKeyDown]);
+
   return (
     <Hero>
       <AnimatePresence mode="wait">
@@ -91,7 +115,14 @@ const HeroSection = () => {
               alt={title || "Hero background image"}
               fill
               priority
-              style={{ objectFit: "cover" }}
+              style={{ objectFit: "cover", cursor: "pointer" }}
+              onClick={handleModalOpen}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleModalOpen();
+              }}
+              aria-label="Detaylı gör"
+              role="button"
             />
           </motion.div>
         </BackgroundImageWrapper>
@@ -121,8 +152,10 @@ const HeroSection = () => {
           >
             <HeroDesc>{description}</HeroDesc>
           </motion.p>
-          <Link href="/booking" passHref legacyBehavior>
-            <CTAButton>{t("hero.bookAppointment", "Randevu Al")}</CTAButton>
+          <Link href="/booking">
+            <CTAButton as="span">
+              {t("hero.bookAppointment", "Randevu Al")}
+            </CTAButton>
           </Link>
         </HeroCard>
         <Dots>
@@ -137,6 +170,28 @@ const HeroSection = () => {
           ))}
         </Dots>
       </SliderContent>
+
+      {/* MODAL */}
+  <Modal
+    isOpen={isModalOpen}
+    onClose={handleModalClose}
+    onNext={enableSlider ? () => setCurrent((prev) => (prev + 1) % flatItems.length) : undefined}
+    onPrev={enableSlider ? () => setCurrent((prev) => (prev - 1 + flatItems.length) % flatItems.length) : undefined}
+  >
+    <ModalContent>
+      <ModalImage
+        src={backgroundImage}
+        alt={title}
+        fill
+        priority
+        style={{ objectFit: "contain", background: "#fff" }}
+      />
+      <ModalCaption>
+        <h3>{title}</h3>
+        <p>{description}</p>
+      </ModalCaption>
+    </ModalContent>
+  </Modal>
     </Hero>
   );
 };
@@ -174,17 +229,12 @@ const StyledImage = styled(Image)`
   object-fit: cover;
   border-radius: ${({ theme }) => theme.radii.xl};
   background: ${({ theme }) => theme.colors.cardBackground};
+  cursor: pointer;
 `;
 
 const Overlay = styled.div`
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 240, 246, 0.68) 0%,
-    rgba(229, 84, 156, 0.32) 60%,
-    rgba(64, 51, 61, 0.48) 100%
-  );
   z-index: 1;
   pointer-events: none;
 `;
@@ -263,6 +313,7 @@ const HeroDesc = styled.span`
   font-weight: 500;
   text-shadow: 0 2px 14px #fbeaf0cc, 0 2px 16px #e5549c13;
 `;
+
 const CTAButton = styled.button`
   padding: ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.xl};
   background: ${({ theme }) => theme.buttons.primary.background};
@@ -310,7 +361,6 @@ const CTAButton = styled.button`
   }
 `;
 
-
 const Dots = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacings.sm};
@@ -334,5 +384,46 @@ const Dot = styled.button<{ $active: boolean }>`
   &:focus {
     box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primaryTransparent};
     border: 2px solid ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+// --- MODAL Styles ---
+const ModalContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 880px;
+  width: 92vw;
+  margin: 0 auto;
+  padding: 2.2rem;
+  background: #fff;
+  border-radius: ${({ theme }) => theme.radii.xl};
+  box-shadow: ${({ theme }) => theme.shadows.xl};
+`;
+
+const ModalImage = styled(Image)`
+  width: 100%;
+  height: 480px;
+  object-fit: contain;
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background: #fff;
+`;
+
+const ModalCaption = styled.div`
+  margin-top: 1.3em;
+  text-align: center;
+
+  h3 {
+    font-size: 1.38em;
+    color: ${({ theme }) => theme.colors.primary};
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
+    margin-bottom: 0.2em;
+  }
+  p {
+    color: ${({ theme }) => theme.colors.textSecondary};
+    font-size: 1.07em;
+    font-weight: 400;
+    margin: 0 auto;
+    max-width: 420px;
   }
 `;

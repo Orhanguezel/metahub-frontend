@@ -27,6 +27,7 @@ import TestimonialSection from "@/modules/comment/public/components/TestimonialS
 import HeroSlider from "@/modules/home/public/components/HeroSlider";
 import HeroSection from "@/modules/home/public/components/HeroSection";
 import HeroSectionSlayt from "@/modules/home/public/components/HeroSectionSlayt";
+import HeroRobotic from "../components/HeroRobotic";
 
 
 // Section Key -> Component Map
@@ -53,6 +54,7 @@ const sectionComponents: Record<string, React.ComponentType<any> | undefined> = 
   newsletter:NewsletterButton,
   chatbox: FloatingChatboxSection,
   testimonial: TestimonialSection,
+  herorobotic: HeroRobotic,
 };
 
 const isDev = process.env.NODE_ENV === "development";
