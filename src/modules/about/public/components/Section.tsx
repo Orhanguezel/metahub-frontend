@@ -4,10 +4,10 @@ import translations from "@/modules/about/locales";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { motion } from "framer-motion";
 import { useAppSelector } from "@/store/hooks";
-import { Skeleton, ErrorMessage,SeeAllBtn } from "@/shared";
+import { Skeleton, ErrorMessage, SeeAllBtn } from "@/shared";
 import Image from "next/image";
 import type { SupportedLocale } from "@/types/common";
-import { FaChartLine, FaLightbulb } from "react-icons/fa"; // Sadece iki ikon!
+import { FaChartLine, FaLightbulb } from "react-icons/fa";
 
 export default function AboutSection() {
   const { i18n, t } = useI18nNamespace("about", translations);
@@ -48,7 +48,8 @@ export default function AboutSection() {
     );
   }
 
-  if (!Array.isArray(about) || about.length === 0) {
+  // Güvenli array check ve fallback
+  if (!Array.isArray(about) || about.filter(Boolean).length === 0) {
     return (
       <Section>
         <AboutGrid>
@@ -61,16 +62,17 @@ export default function AboutSection() {
     );
   }
 
-  // --- MAIN: Önce slug ile, yoksa index ile, yoksa ilk eleman ---
+  // Null-safe, slug'lı main seçimi (hiçbiri yoksa en baştaki eleman)
+  const validAbout = about.filter((item) => !!item && typeof item === "object");
   const main =
-    about.find((x) => x?.slug === "ensotek-su-sogutma-kuleleri") ||
-    (about.length > 2 ? about[2] : about[0]) ||
+    validAbout.find((x) => !!x?.slug && x.slug === "ensotek-su-sogutma-kuleleri") ||
+    (validAbout.length > 2 ? validAbout[2] : validAbout[0]) ||
     {};
 
-  // --- Sadece iki kart: Vizyon & Misyon (yoksa boş obje döner) ---
+  // Vizyon & Misyon kartları
   const featuresData = [
-    about[0] || {},
-    about[1] || {},
+    validAbout[0] || {},
+    validAbout[1] || {},
   ];
 
   const icons = [
@@ -85,9 +87,16 @@ export default function AboutSection() {
     slug: item?.slug || "",
   }));
 
-  // --- Sağdaki ek görseller (main ile slug aynıysa filtreleniyor) ---
-  const rightImages = (about || [])
-    .filter((item) => item && main && item.slug && main.slug && item.slug !== main.slug)
+  // Sağdaki ek görseller (main ile slug aynıysa filtreleniyor)
+  const rightImages = validAbout
+    .filter((item) =>
+      !!item &&
+      !!main &&
+      typeof item.slug === "string" &&
+      typeof main.slug === "string" &&
+      item.slug !== main.slug &&
+      item.images?.[0]?.url
+    )
     .slice(0, 2);
 
   return (
@@ -142,7 +151,7 @@ export default function AboutSection() {
           <StackedImages>
             {rightImages.map((item, idx) =>
               item?.images?.[0]?.url && item?.slug ? (
-                <StackedImageLink key={idx} href={`/about/${item.slug}`}>
+                <StackedImageLink key={item.slug} href={`/about/${item.slug}`}>
                   <StackedImage
                     src={item.images[0].url}
                     alt={item.title?.[lang] || "About"}
@@ -163,6 +172,9 @@ export default function AboutSection() {
     </Section>
   );
 }
+
+// --- Styled Components aynı şekilde bırakılabilir ---
+
 
 const StackedImageLink = styled(Link)`
   display: block;
