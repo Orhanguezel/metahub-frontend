@@ -3,6 +3,7 @@ import React, { useRef, useState } from "react";
 import styled from "styled-components";
 import { getImageSrc } from "@/shared/getImageSrc";
 import type { ImageType } from "@/types/image";
+import { useActiveTenant } from "@/hooks/useActiveTenant"; // <-- ekle
 
 interface Props {
   max?: number;
@@ -26,6 +27,10 @@ const ImageUploadWithPreview: React.FC<Props> = ({
   const [previews, setPreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(defaultImages);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
+
+  // 🔥 Aktif tenant slug
+  const { tenant } = useActiveTenant();
+  const tenantSlug = tenant?.slug; // veya fallback
 
   // ✅ defaultImages güncel kalması için editingItem değişiminde güncelle
   React.useEffect(() => {
@@ -79,7 +84,10 @@ const ImageUploadWithPreview: React.FC<Props> = ({
             <RemoveBtn type="button" onClick={() => removeExistingImage(url)}>
               ×
             </RemoveBtn>
-            <ImagePreview src={getImageSrc(url, folder)} alt={`image-${i}`} />
+            <ImagePreview
+              src={getImageSrc(url, folder, tenantSlug)} // --- tenantSlug parametresi eklendi!
+              alt={`image-${i}`}
+            />
           </PreviewBox>
         ))}
         {previews.map((src, i) => (
@@ -95,8 +103,10 @@ const ImageUploadWithPreview: React.FC<Props> = ({
   );
 };
 
-
 export default ImageUploadWithPreview;
+
+// --- Styled Components ... (değişmedi)
+
 
 // Styled Components (aynı kalabilir)
 const Wrapper = styled.div`

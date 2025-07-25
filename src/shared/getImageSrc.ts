@@ -82,55 +82,40 @@ const defaultImageMap: Record<ImageType, string> = {
   misc: "default.png",
 };
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5019";
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5019";
 const PROJECT_ENV = process.env.NEXT_PUBLIC_APP_ENV || "ensotek";
 
+// Fonksiyonu hook ile çağırırken parametre olarak tenantSlug geç!
 export function getImageSrc(
   imagePath?: string,
-  type: ImageType = "profile"
+  type: ImageType = "profile",
+  tenantSlug?: string // Ekstra parametre!
 ): string {
   const folder = folderMap[type];
   const defaultImage = defaultImageMap[type];
 
+  // 1. Tenant slug'ı belirle (prod: runtime, dev: env)
+  let tenant = tenantSlug;
+  if (!tenant) {
+    if (typeof window !== "undefined" && window.location.hostname.includes("localhost")) {
+      tenant = PROJECT_ENV; // Dev/test ortamı
+    }
+    // SSR/CSR ayrımı, SSR'da tenant parametresi zorunlu!
+  }
+  if (!tenant) tenant = "default";
+
   if (!folder || !defaultImage) {
-    return `${BASE_URL}/uploads/${PROJECT_ENV}/misc/default.png`;
+    return `${BASE_URL}/uploads/${tenant}/misc/default.png`;
   }
 
-  // 1. ⛔️ Önce string mi diye kontrol et
   if (typeof imagePath !== "string" || imagePath.trim() === "") {
-    // Not: default profil resmi için public yolunu kullan
     return `/defaults/${defaultImage}`;
   }
 
-  // 2. Eğer zaten /defaults/ ile başlıyorsa, direkt ver (Next.js public folder)
-  if (imagePath.startsWith("/defaults/")) {
-    return imagePath;
-  }
-  if (imagePath === "/default-avatar.png") {
-    return imagePath;
-  }
+  if (imagePath.startsWith("/defaults/")) return imagePath;
+  if (imagePath === "/default-avatar.png") return imagePath;
 
-  // 3. Cloudinary ya da http ile başlıyorsa
-  if (imagePath.startsWith("http")) {
-    if (imagePath.includes("cloudinary.com")) {
-      return imagePath;
-    }
-    try {
-      const url = new URL(imagePath);
-      const parts = url.pathname.split("/");
-      if (parts[2] !== PROJECT_ENV) {
-        parts[2] = PROJECT_ENV;
-        const newPath = parts.join("/");
-        return `${url.origin}${newPath}`;
-      }
-      return imagePath;
-    } catch {
-      return `${BASE_URL}/uploads/${PROJECT_ENV}/${folder}/${defaultImage}`;
-    }
-  }
+  if (imagePath.startsWith("http")) return imagePath;
 
-  // 4. Dosya yolu ise (ör: 64a1e3...jpg)
-  return `${BASE_URL}/uploads/${PROJECT_ENV}/${folder}/${imagePath}`;
+  return `${BASE_URL}/uploads/${tenant}/${folder}/${imagePath}`;
 }
-

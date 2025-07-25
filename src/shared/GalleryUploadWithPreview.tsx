@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { getImageSrc } from "@/shared/getImageSrc";
 import type { ImageType } from "@/types/image";
 import type { IGalleryItem } from "@/modules/gallery/types";
+import { useActiveTenant } from "@/hooks/useActiveTenant"; // <-- ekle
 
 interface Props {
   max?: number;
@@ -27,7 +28,10 @@ const GalleryUploadWithPreview: React.FC<Props> = ({
   const [existingImages, setExistingImages] = useState<IGalleryItem[]>(defaultImages);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
 
-  // Editing/değişim
+  // 🔥 Aktif tenant slug
+  const { tenant } = useActiveTenant();
+  const tenantSlug = tenant?.slug;
+
   React.useEffect(() => {
     setExistingImages(defaultImages || []);
   }, [defaultImages]);
@@ -79,7 +83,10 @@ const GalleryUploadWithPreview: React.FC<Props> = ({
             <RemoveBtn type="button" onClick={() => removeExistingImage(img.url)}>
               ×
             </RemoveBtn>
-            <ImagePreview src={getImageSrc(img.url, folder)} alt={`image-${i}`} />
+            <ImagePreview
+              src={getImageSrc(img.url, folder, tenantSlug)} // 🔥 tenantSlug parametresi
+              alt={`image-${i}`}
+            />
           </PreviewBox>
         ))}
         {previews.map((src, i) => (
@@ -96,7 +103,6 @@ const GalleryUploadWithPreview: React.FC<Props> = ({
 };
 
 export default GalleryUploadWithPreview;
-
 
 // Styled Components (aynı kalabilir)
 const Wrapper = styled.div`
