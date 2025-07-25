@@ -40,11 +40,9 @@ let slogan = "";
   if (isLogoTextValue(navbarLogoText?.value)) {
     title =
       navbarLogoText.value.title?.label?.[lang] ||
-      navbarLogoText.value.title?.label?.en ||
       "";
     slogan =
       navbarLogoText.value.slogan?.label?.[lang] ||
-      navbarLogoText.value.slogan?.label?.en ||
       "";
   }
 

@@ -97,9 +97,11 @@ export default function SparepartPage() {
                       ? item.category.name?.[lang] || "Untitled"
                       : "-"}
                   </span>
-                  <span>
+                  {/* <span>
                     <b>{t("page.price", "Fiyat")}:</b> {item.price} €
-                  </span>            
+                  </span><span>
+                    <b>{t("page.price", "Fiyat")}:</b> {item.price} €
+                  </span> */}
                 </Meta>
                 {/* Etiketler */}
                 {item.tags && item.tags.length > 0 && (

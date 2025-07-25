@@ -48,7 +48,7 @@ export default function AboutSection() {
     );
   }
 
-  if (!about || about.length === 0) {
+  if (!Array.isArray(about) || about.length === 0) {
     return (
       <Section>
         <AboutGrid>
@@ -61,27 +61,33 @@ export default function AboutSection() {
     );
   }
 
-  // --- MAIN: Ensotek Su Soğutma Kuleleri ---
-  const main = about[2]; // veya slug'a göre bulabilirsin: about.find(x => x.slug === "ensotek-su-sogutma-kuleleri")
-  // --- Sadece iki kart: Vizyonumuz, Misyonumuz ---
-  const featuresData = [about[0], about[1]];
+  // --- MAIN: Önce slug ile, yoksa index ile, yoksa ilk eleman ---
+  const main =
+    about.find((x) => x?.slug === "ensotek-su-sogutma-kuleleri") ||
+    (about.length > 2 ? about[2] : about[0]) ||
+    {};
 
-  const icons = [
-    <FaChartLine size={32} color="#2875c2" />,
-    <FaLightbulb size={32} color="#2875c2" />,
+  // --- Sadece iki kart: Vizyon & Misyon (yoksa boş obje döner) ---
+  const featuresData = [
+    about[0] || {},
+    about[1] || {},
   ];
 
-  // Kartlar (Vizyon & Misyon)
+  const icons = [
+    <FaChartLine size={32} color="#2875c2" key="vizyon" />,
+    <FaLightbulb size={32} color="#2875c2" key="misyon" />,
+  ];
+
   const features = featuresData.map((item, i) => ({
     icon: icons[i],
     title: item?.title?.[lang] || item?.title?.en || "-",
     summary: item?.summary?.[lang] || item?.summary?.en || "-",
-    slug: item.slug,
+    slug: item?.slug || "",
   }));
 
-  // --- YAN GÖRSELLER ---
-  const rightImages = about
-    .filter((item) => item.slug !== main.slug)
+  // --- Sağdaki ek görseller (main ile slug aynıysa filtreleniyor) ---
+  const rightImages = (about || [])
+    .filter((item) => item && main && item.slug && main.slug && item.slug !== main.slug)
     .slice(0, 2);
 
   return (
@@ -96,10 +102,12 @@ export default function AboutSection() {
         <Left>
           <MinorTitle>{t("page.about.minorTitle", "HAKKIMIZDA")}</MinorTitle>
           <MainTitle>
-            {main.title?.[lang] || main.title?.en || t("page.about.title", "Ensotek Hakkında")}
+            {main?.title?.[lang] ||
+              main?.title?.en ||
+              t("page.about.title", "Ensotek Hakkında")}
           </MainTitle>
           <Desc>
-            {main.summary?.[lang] || main.summary?.en || ""}
+            {main?.summary?.[lang] || main?.summary?.en || ""}
           </Desc>
           <Features>
             {features.map((item, i) => (
@@ -119,21 +127,21 @@ export default function AboutSection() {
 
         {/* SAĞ BLOK - GÖRSEL + küçük resimler */}
         <Right>
-          <MainImageWrap as={Link} href={`/about/${main.slug}`}>
-            {main.images?.[0]?.url && (
+          {main?.slug && main?.images?.[0]?.url && (
+            <MainImageWrap as={Link} href={`/about/${main.slug}`}>
               <MainImage
                 src={main.images[0].url}
                 alt={main.title?.[lang] || "About"}
                 width={330}
                 height={210}
-                style={{ objectFit: "cover"}}
+                style={{ objectFit: "cover" }}
                 priority
               />
-            )}
-          </MainImageWrap>
+            </MainImageWrap>
+          )}
           <StackedImages>
             {rightImages.map((item, idx) =>
-              item.images?.[0]?.url ? (
+              item?.images?.[0]?.url && item?.slug ? (
                 <StackedImageLink key={idx} href={`/about/${item.slug}`}>
                   <StackedImage
                     src={item.images[0].url}
@@ -142,7 +150,7 @@ export default function AboutSection() {
                     height={90}
                     style={{
                       objectFit: "cover",
-                      marginTop: idx === 1 ? "12px" : "0"
+                      marginTop: idx === 1 ? "12px" : "0",
                     }}
                     loading="lazy"
                   />

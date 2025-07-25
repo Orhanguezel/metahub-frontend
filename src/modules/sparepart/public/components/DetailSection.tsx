@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import { translations } from "@/modules/sparepart";
-import translations2 from "@/modules/cart/locales";
+//import translations2 from "@/modules/cart/locales";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import type { SupportedLocale } from "@/types/common";
 import Link from "next/link";
@@ -16,9 +16,10 @@ import {
   clearSparepartMessages,
 } from "@/modules/sparepart/slice/sparepartSlice";
 import { clearCartMessages } from "@/modules/cart/slice/cartSlice";
-import { Skeleton, ErrorMessage, AddToCartButton } from "@/shared";
+import { Skeleton, ErrorMessage } from "@/shared";
 import { CommentForm, CommentList } from "@/modules/comment";
-import { ShoppingCart } from "lucide-react";
+//import { AddToCartButton } from "@/shared";
+//import { ShoppingCart } from "lucide-react";
 import type { ISparepart } from "@/modules/sparepart/types";
 import { XCircle, CheckCircle } from "lucide-react";
 import Modal from "@/modules/home/public/components/Modal";
@@ -27,7 +28,7 @@ export default function SparepartDetailSection() {
   const { slug } = useParams() as { slug: string };
   const { i18n, t } = useI18nNamespace("sparepart", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-  const { t: tCart } = useI18nNamespace("cart", translations2);
+  //const { t: tCart } = useI18nNamespace("cart", translations2);
   const dispatch = useAppDispatch();
 
   const {
@@ -199,9 +200,10 @@ export default function SparepartDetailSection() {
             ? sparepart.category.name?.[lang] || "Untitled"
             : "-"}
         </MetaItem>
-        <MetaItem>
+        {/*<MetaItem>
           <b>{t("page.price", "Fiyat")}:</b> {sparepart.price} €
-        </MetaItem>
+        </MetaItem>*/}
+
         <MetaItem>
           <b>{t("page.stockStatus", "Stok Durumu")}:</b>
           {sparepart.stock > 0 ? (
@@ -247,8 +249,7 @@ export default function SparepartDetailSection() {
         </ul>
       </TechnicalBlock>
 
-      {/* SEPET BUTONU */}
-      <AddToCartButton
+      {/* SEPET BUTONU  <AddToCartButton
         productId={sparepart._id}
         productType="Sparepart"
         disabled={sparepart.stock < 1}
@@ -259,7 +260,8 @@ export default function SparepartDetailSection() {
             ? tCart("outOfStock", "Stok Yok")
             : tCart("add", "Sepete Ekle")}
         </span>
-      </AddToCartButton>
+      </AddToCartButton> */}
+      
 
       {/* Diğer içerikler */}
       {otherProducts?.length > 0 && (
