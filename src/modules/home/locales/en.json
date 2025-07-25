@@ -4,7 +4,8 @@
     "heroSubtitle": "Reach a new level in technology with Ensotek."
   },
   "hero": {
-    "products": "Products"
+    "products": "Products",
+    "bookAppointment": "Book Appointment"
   },
   "noItemsFound": "No products found."
 }

@@ -1,0 +1,18 @@
+{
+  "impressumTitle": "Impressum / Legal Notice",
+  "phone": "Phone",
+  "fax": "Fax",
+  "email": "E-Mail",
+  "website": "Website",
+  "managersTitle": "Authorized Representatives",
+  "tradeInfo": "Commercial Register Information",
+  "registerCourt": "Register Court",
+  "registerNumber": "Commercial Register Number",
+  "vatTitle": "VAT (Umsatzsteuer-Identifikationsnummer)",
+  "liabilityTitle": "Disclaimer",
+  "liabilityText": "Our website may contain external links to third-party sites over whose content we have no control. {{companyName}} is not responsible for the content or legal consequences of linked pages. Only the respective site owner is responsible.",
+  "privacyTitle": "Data Protection",
+  "privacyText": "This website may use cookies to analyze visitor statistics. You can restrict or disable the use of cookies in your browser settings. Also, for privacy policy and personal data protection information related to {{companyName}},",
+  "privacyPolicy": "our Privacy Policy",
+  "privacyContinue": "can be reviewed."
+}

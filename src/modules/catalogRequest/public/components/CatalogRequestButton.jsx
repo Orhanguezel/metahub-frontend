@@ -22,7 +22,6 @@ export default function CatalogRequestButton() {
     </>
   );
 }
-
 const FloatingButton = styled.button`
   position: fixed;
   top: 160px;
@@ -32,7 +31,7 @@ const FloatingButton = styled.button`
   color: #fff;
   border: none;
   border-radius: ${({ theme }) => theme.radii.md} 0 0 ${({ theme }) => theme.radii.md};
-  padding: 1.1em 1.25em 1.1em 0.9em;
+  padding: 1.1em 0.25em 1.1em 0.45em;
   box-shadow: ${({ theme }) => theme.shadows.md};
   font-size: 1.1em;
   font-weight: 600;
@@ -49,8 +48,33 @@ const FloatingButton = styled.button`
     transform: rotate(180deg);
     font-size: 1.04em;
     letter-spacing: 0.01em;
+    display: inline;
+    transition: opacity 0.16s;
   }
+
   &:hover {
     background: ${({ theme }) => theme.colors.primaryHover};
+  }
+
+  // SADECE MOBİLDE YAZIYI GİZLE, BUTONU KÜÇÜLT
+  @media (max-width: 600px) {
+    padding: 0;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 14px 0 0 14px;
+    box-shadow: 0 3px 16px 0 rgba(20,80,180,0.08);
+    justify-content: center;
+    align-items: center;
+
+    span {
+      display: none;
+    }
+    svg {
+      width: 21px;
+      height: 21px;
+      margin: 0;
+    }
   }
 `;

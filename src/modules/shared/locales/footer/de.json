@@ -5,8 +5,15 @@
   "address": "Adresse",
   "mainLinks": "Hauptlinks",
   "massageTypes": "Massagearten",
+  "ensotekprod": "Produkte",
+  "sparepart": "Ersatzteile",
+  "library": "Bibliothek",
   "rightsText": "Alle Rechte vorbehalten.",
-  "designedBy": "Design von OG"
+  "designedBy": "Design von OG",
+  "impressum": "Impressum",
+  "privacyPolicy": "Datenschutzerklärung",
+  "terms": "AGB",
+  "contact": "Kontakt"
 }
 
 

@@ -5,8 +5,15 @@
   "address": "Adres",
   "mainLinks": "Główne linki",
   "massageTypes": "Rodzaje masażu",
+  "ensotekprod": "Produkty",
+  "sparepart": "Części Zamienne",
+  "library": "Biblioteka",
   "rightsText": "Wszelkie prawa zastrzeżone.",
-  "designedBy": "Projekt: OG"
+  "designedBy": "Projekt: OG",
+  "impressum": "Nota prawna",
+  "privacyPolicy": "Polityka prywatności",
+  "terms": "Warunki ogólne",
+  "contact": "Kontakt"
 }
 
 

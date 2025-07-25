@@ -1,0 +1,18 @@
+{
+  "impressumTitle": "Impressum / Yasal Bilgilendirme",
+  "phone": "Telefon",
+  "fax": "Faks",
+  "email": "E-Posta",
+  "website": "İnternet",
+  "managersTitle": "Yetkili Temsilciler",
+  "tradeInfo": "Ticaret Sicil Bilgisi",
+  "registerCourt": "Kayıtlı Mahkeme",
+  "registerNumber": "Ticaret Sicil Numarası",
+  "vatTitle": "Katma Değer Vergisi (Umsatzsteuer-Identifikationsnummer)",
+  "liabilityTitle": "Sorumluluk Reddi",
+  "liabilityText": "Sitemizden verilen harici bağlantılar, içerikleri üzerinde hiçbir kontrolümüz olmayan üçüncü taraf sitelere yönlendirebilir. Bağlantı verilen sayfaların içeriklerinden ve yasal sonuçlarından {{companyName}} sorumlu değildir. Yalnızca ilgili sayfanın sahibi sorumludur.",
+  "privacyTitle": "Veri Koruma",
+  "privacyText": "Bu web sitesi, ziyaretçi istatistiklerini analiz etmek için çerezler (cookies) kullanabilir. Çerezlerin kullanımını tarayıcı ayarlarınızdan kısıtlayabilir veya engelleyebilirsiniz. Ayrıca, {{companyName}} gizlilik politikası ve kişisel verilerin korunması ile ilgili olarak",
+  "privacyPolicy": "Gizlilik Politikamıza",
+  "privacyContinue": "göz atabilirsiniz."
+}

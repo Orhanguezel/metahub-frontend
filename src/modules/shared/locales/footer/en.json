@@ -3,10 +3,16 @@
   "email": "E-Mail",
   "phone": "Phone",
   "address": "Address",
-  "mainLinks": "Main Links",
   "massageTypes": "Massage Types",
+  "ensotekprod": "Products",
+  "sparepart": "Spare Parts",
+  "library": "Library",
   "rightsText": "All rights reserved.",
-  "designedBy": "Designed by OG"
+  "designedBy": "Designed by OG",
+  "impressum": "Imprint",
+  "privacyPolicy": "Privacy Policy",
+  "terms": "Terms & Conditions",
+  "contact": "Contact"
 }
 
   

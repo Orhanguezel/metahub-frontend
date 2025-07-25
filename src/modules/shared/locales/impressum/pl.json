@@ -1,0 +1,18 @@
+{
+  "impressumTitle": "Impressum / Nota prawna",
+  "phone": "Telefon",
+  "fax": "Faks",
+  "email": "E-Mail",
+  "website": "Strona internetowa",
+  "managersTitle": "Upoważnieni przedstawiciele",
+  "tradeInfo": "Informacje z rejestru handlowego",
+  "registerCourt": "Sąd rejestrowy",
+  "registerNumber": "Numer rejestru handlowego",
+  "vatTitle": "Numer VAT (Umsatzsteuer-Identifikationsnummer)",
+  "liabilityTitle": "Zastrzeżenie",
+  "liabilityText": "Nasza strona może zawierać zewnętrzne linki do stron trzecich, na których treść nie mamy wpływu. {{companyName}} nie ponosi odpowiedzialności za treści ani skutki prawne powiązanych stron. Odpowiedzialność ponosi wyłącznie właściciel danej strony.",
+  "privacyTitle": "Ochrona danych",
+  "privacyText": "Ta strona internetowa może używać plików cookies do analizy statystyk odwiedzin. Możesz ograniczyć lub wyłączyć użycie cookies w ustawieniach przeglądarki. Informacje o polityce prywatności i ochronie danych osobowych przez {{companyName}} znajdziesz w",
+  "privacyPolicy": "naszej polityce prywatności",
+  "privacyContinue": "."
+}

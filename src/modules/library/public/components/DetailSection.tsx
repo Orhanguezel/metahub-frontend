@@ -20,10 +20,6 @@ import type { ILibrary } from "@/modules/library";
 import { SupportedLocale } from "@/types/common";
 import Modal from "@/modules/home/public/components/Modal";
 
-// Çoklu dil fallback için güvenli fonksiyon
-const getMultiLang = (obj: Record<string, string> | undefined, lang: SupportedLocale) =>
-  obj?.[lang] || obj?.en || obj?.tr || Object.values(obj || {})[0] || "—";
-
 export default function LibraryDetailSection() {
   const { i18n, t } = useI18nNamespace("library", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
@@ -108,6 +104,14 @@ export default function LibraryDetailSection() {
     );
   }
 
+  function formatFileSize(bytes?: number) {
+  if (!bytes) return "";
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+}
+
+
   function formatText(txt: string | undefined) {
     if (!txt) return "";
     return txt.replace(/\\n/g, '\n');
@@ -127,7 +131,7 @@ export default function LibraryDetailSection() {
       transition={{ duration: 0.57 }}
     >
       {/* Başlık */}
-      <Title>{getMultiLang(library.title, lang)}</Title>
+      <Title>{library.title?.[lang] || "Untitled"}</Title>
 
       {/* Ana görsel ve thumbnails */}
       {mainImage?.url && (
@@ -135,7 +139,7 @@ export default function LibraryDetailSection() {
           <MainImageFrame>
             <StyledMainImage
               src={mainImage.url}
-              alt={getMultiLang(library.title, lang)}
+              alt={library.title?.[lang] || "Untitled"}
               width={900}
               height={420}
               priority
@@ -157,7 +161,7 @@ export default function LibraryDetailSection() {
               <div style={{ textAlign: "center", padding: 0 }}>
                 <Image
                   src={mainImage.url}
-                  alt={getMultiLang(library.title, lang) + "-big"}
+                  alt={library.title?.[lang] + "-big" || "Untitled"}
                   width={1280}
                   height={720}
                   style={{
@@ -172,7 +176,7 @@ export default function LibraryDetailSection() {
                   sizes="(max-width: 800px) 90vw, 1280px"
                 />
                 <div style={{ marginTop: 10, color: "#666", fontSize: 16 }}>
-                  {getMultiLang(library.title, lang)}
+                  {library.title?.[lang] || "Untitled"}
                 </div>
               </div>
             </Modal>
@@ -191,7 +195,7 @@ export default function LibraryDetailSection() {
                 >
                   <StyledThumbImage
                     src={img.url}
-                    alt={`${getMultiLang(library.title, lang)} thumbnail ${i + 1}`}
+                    alt={`${library.title?.[lang] || "Untitled"} thumbnail ${i + 1}`}
                     width={168}
                     height={96}
                     $active={mainIndex === i}
@@ -204,27 +208,62 @@ export default function LibraryDetailSection() {
       )}
 
       {/* Özet */}
-      {library.summary && getMultiLang(library.summary, lang) && (
+      {library.summary && (library.summary?.[lang] || library.summary?.en || library.summary?.tr) && (
         <SummaryBox>
           <ReactMarkdown>
-            {formatText(getMultiLang(library.summary, lang))}
+            {formatText(library.summary?.[lang] || library.summary?.en || library.summary?.tr)}
           </ReactMarkdown>
         </SummaryBox>
       )}
 
-      {/* Ana içerik */}
-      {library.content && getMultiLang(library.content, lang) && (
-        <ContentBox>
-          <ReactMarkdown>
-            {formatText(getMultiLang(library.content, lang))}
-          </ReactMarkdown>
-        </ContentBox>
-      )}
+      {library.content && (library.content?.[lang] || library.content?.en || library.content?.tr) && (
+  <ContentBox>
+    <ReactMarkdown>
+      {formatText(library.content?.[lang] || library.content?.en || library.content?.tr)}
+    </ReactMarkdown>
+    {/* --- EK: Dökümanlar Alanı --- */}
+    {Array.isArray(library.files) && library.files.length > 0 && (
+      <FilesSection>
+        <FilesTitle>{t("detail.documents", "İlgili Dökümanlar")}</FilesTitle>
+        <FilesGrid>
+          {library.files.map((file) => (
+            <FileCard key={file.url}>
+              <FileIconWrap>
+                {file.type?.includes("pdf") ? (
+                  <PdfIcon>📄</PdfIcon>
+                ) : (
+                  <FileIcon>📎</FileIcon>
+                )}
+              </FileIconWrap>
+              <FileInfo>
+                <FileName title={file.name}>{file.name}</FileName>
+                <FileMeta>
+                  {file.type || "Dosya"}
+                  {file.size ? ` • ${formatFileSize(file.size)}` : ""}
+                </FileMeta>
+              </FileInfo>
+              <DownloadBtn
+  href={file.url}
+  download={file.name}
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  {t("detail.download", "İndir")}
+</DownloadBtn>
+
+            </FileCard>
+          ))}
+        </FilesGrid>
+      </FilesSection>
+    )}
+  </ContentBox>
+)}
+
 
       {/* Diğer içerikler */}
       {otherLibrary.length > 0 && (
         <OtherSection>
-          <OtherTitle>{t("page.other", "Diğer Hakkımızda İçerikleri")}</OtherTitle>
+          <OtherTitle>{t("page.other", "Diğer Kütüphane  İçerikleri")}</OtherTitle>
           <OtherGrid>
             {otherLibrary.map((item: ILibrary) => (
               <OtherCard key={item._id} as={motion.div} whileHover={{ y: -6, scale: 1.025 }}>
@@ -232,7 +271,7 @@ export default function LibraryDetailSection() {
                   {Array.isArray(item.images) && item.images[0]?.url ? (
                     <OtherImg
                       src={item.images[0].url}
-                      alt={getMultiLang(item.title, lang)}
+                      alt={item.title?.[lang] || "Untitled"}
                       width={60}
                       height={40}
                     />
@@ -242,7 +281,7 @@ export default function LibraryDetailSection() {
                 </OtherImgWrap>
                 <OtherTitleMini>
                   <Link href={`/library/${item.slug}`}>
-                    {getMultiLang(item.title, lang)}
+                    {item.title?.[lang] || "Untitled"}
                   </Link>
                 </OtherTitleMini>
               </OtherCard>
@@ -343,7 +382,7 @@ const SummaryBox = styled.div`
 `;
 
 const ContentBox = styled.div`
-  background: ${({ theme }) => theme.colors.contentBackground};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   padding: ${({ theme }) => theme.spacings.xl};
   margin-bottom: ${({ theme }) => theme.spacings.xl};
   border-radius: ${({ theme }) => theme.radii.xl};
@@ -445,3 +484,85 @@ const OtherTitleMini = styled.div`
     }
   }
 `;
+
+const FilesSection = styled.div`
+  margin-top: ${({ theme }) => theme.spacings.lg};
+  padding: ${({ theme }) => theme.spacings.md};
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.xs};
+`;
+
+const FilesTitle = styled.h4`
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
+`;
+
+const FilesGrid = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacings.md};
+`;
+
+const FileCard = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacings.sm};
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  border-radius: ${({ theme }) => theme.radii.md};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  min-width: 0;
+`;
+
+const FileIconWrap = styled.div`
+  font-size: 2.1rem;
+  color: ${({ theme }) => theme.colors.primary};
+`;
+
+const PdfIcon = styled.span`
+  font-size: 2.1rem;
+`;
+
+const FileIcon = styled.span`
+  font-size: 2.1rem;
+`;
+
+const FileInfo = styled.div`
+  min-width: 0;
+  flex: 1;
+`;
+
+const FileName = styled.div`
+  font-weight: 500;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.text};
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 160px;
+`;
+
+const FileMeta = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const DownloadBtn = styled.a`
+  margin-left: ${({ theme }) => theme.spacings.sm};
+  padding: 6px 14px;
+  background: ${({ theme }) => theme.colors.primary};
+  color: #fff;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.18s;
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryHover};
+    color: #fff;
+  }
+`;
+

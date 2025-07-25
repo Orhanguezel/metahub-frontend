@@ -14,7 +14,6 @@ import {
 import {
   Wrapper,
   Title,
-  Form,
   Input,
   Button,
   Message,
@@ -22,10 +21,18 @@ import {
   AddressItem,
 } from "@/modules/users/styles/AccountStyles";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {accountTranslations} from "@/modules/users";;
+import { accountTranslations } from "@/modules/users";
 import { toast } from "react-toastify";
+import styled from "styled-components";
 
 
+const DivForm = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+// --- Props ekleme ---
 type AddressFormData = {
   street: string;
   houseNumber: string;
@@ -35,6 +42,20 @@ type AddressFormData = {
   email: string;
   country: string;
 };
+type Address = AddressFormData & {
+  _id?: string;
+  isDefault?: boolean;
+  [key: string]: any;
+};
+
+interface AddressFormProps {
+  // Company veya başka bir context için dışarıdan state ile
+  addresses?: Address[];
+  setAddresses?: (addresses: Address[]) => void;
+  loading?: boolean;
+  parentType?: "user" | "company" | string;
+  parentId?: string;
+}
 
 const schema = (t: any) =>
   yup.object({
@@ -50,17 +71,49 @@ const schema = (t: any) =>
     country: yup.string().required(t("address.errors.country")),
   });
 
-const AddressForm: React.FC = () => {
+const EMPTY: AddressFormData = {
+  street: "",
+  houseNumber: "",
+  city: "",
+  zipCode: "",
+  phone: "",
+  email: "",
+  country: "",
+};
+
+const AddressForm: React.FC<AddressFormProps> = ({
+  addresses: externalAddresses,
+  setAddresses: setExternalAddresses,
+  loading: externalLoading,
+  parentType = "user",
+}) => {
   const { t } = useI18nNamespace("account", accountTranslations);
   const dispatch = useAppDispatch();
-  const { addresses } = useAppSelector((state) => state.address);
+  const { addresses: reduxAddresses } = useAppSelector((state) => state.address);
+  const reduxLoading = useAppSelector((state) => state.address.loading);
 
-  // Hangi adres düzenleniyor? (update için)
-  const [editId, setEditId] = useState<string | null>(null);
+  // State: dışarıdan mı yoksa slice'tan mı?
+  const isUser = parentType === "user";
+  const [addresses, setAddresses] = useState<Address[]>(externalAddresses ?? []);
+  const loading = externalLoading ?? reduxLoading;
+
+  // Slice’tan al (user context)
+  useEffect(() => {
+    if (isUser) dispatch(fetchAddresses());
+  }, [dispatch, isUser]);
 
   useEffect(() => {
-    dispatch(fetchAddresses());
-  }, [dispatch]);
+    if (isUser) setAddresses(reduxAddresses);
+    else if (externalAddresses) setAddresses(externalAddresses);
+  }, [reduxAddresses, externalAddresses, isUser]);
+
+  // Parent'a (company gibi) güncelleme callback'i
+  useEffect(() => {
+    if (setExternalAddresses) setExternalAddresses(addresses);
+  }, [addresses, setExternalAddresses]);
+
+  // --- Edit state
+  const [editId, setEditId] = useState<string | null>(null);
 
   const {
     register,
@@ -70,25 +123,25 @@ const AddressForm: React.FC = () => {
     formState: { errors, isSubmitting },
   } = useForm<AddressFormData>({
     resolver: yupResolver(schema(t)),
-    defaultValues: {
-      street: "",
-      houseNumber: "",
-      city: "",
-      zipCode: "",
-      phone: "",
-      email: "",
-      country: "",
-    },
+    defaultValues: EMPTY,
   });
 
-  // Yeni adres ekleme veya güncelleme işlemi
+  // Yeni adres ekle veya güncelle
   const onSubmit = async (data: AddressFormData) => {
     try {
       if (editId) {
-        await dispatch(updateAddress({ id: editId, data })).unwrap();
+        if (isUser) {
+          await dispatch(updateAddress({ id: editId, data })).unwrap();
+        } else {
+          setAddresses(addresses.map((a) => (a._id === editId ? { ...a, ...data } : a)));
+        }
         toast.success(t("address.updated"));
       } else {
-        await dispatch(createAddress(data)).unwrap();
+        if (isUser) {
+          await dispatch(createAddress(data)).unwrap();
+        } else {
+          setAddresses([...addresses, { ...data, _id: `${Date.now()}` }]);
+        }
         toast.success(t("address.success"));
       }
       reset();
@@ -98,21 +151,22 @@ const AddressForm: React.FC = () => {
     }
   };
 
-  const handleEdit = (address: any) => {
-    setEditId(address._id);
-    // Formu doldur
-    setValue("street", address.street);
-    setValue("houseNumber", address.houseNumber);
-    setValue("city", address.city);
-    setValue("zipCode", address.zipCode);
-    setValue("phone", address.phone);
-    setValue("email", address.email);
-    setValue("country", address.country || "");
+  // Edit butonu
+  const handleEdit = (address: Address) => {
+    setEditId(address._id ?? null);
+    Object.keys(EMPTY).forEach((key) =>
+      setValue(key as keyof AddressFormData, address[key] || "")
+    );
   };
 
+  // Silme
   const handleDelete = async (id: string) => {
     try {
-      await dispatch(deleteAddress(id)).unwrap();
+      if (isUser) {
+        await dispatch(deleteAddress(id)).unwrap();
+      } else {
+        setAddresses(addresses.filter((a) => a._id !== id));
+      }
       toast.success(t("address.deleted"));
       if (editId === id) {
         reset();
@@ -123,83 +177,81 @@ const AddressForm: React.FC = () => {
     }
   };
 
-  return (
-    <Wrapper>
-      <Title>{t("address.title")}</Title>
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        <Input {...register("street")} placeholder={t("address.street")} />
-        {errors.street && <Message $error>{errors.street.message}</Message>}
+return (
+  <Wrapper>
+    <Title>{t("address.title")}</Title>
+    <DivForm>
+      <Input {...register("street")} placeholder={t("address.street")} />
+      {errors.street && <Message $error>{errors.street.message}</Message>}
 
-        <Input
-          {...register("houseNumber")}
-          placeholder={t("address.houseNumber")}
-        />
-        {errors.houseNumber && (
-          <Message $error>{errors.houseNumber.message}</Message>
-        )}
+      <Input {...register("houseNumber")} placeholder={t("address.houseNumber")} />
+      {errors.houseNumber && <Message $error>{errors.houseNumber.message}</Message>}
 
-        <Input {...register("city")} placeholder={t("address.city")} />
-        {errors.city && <Message $error>{errors.city.message}</Message>}
+      <Input {...register("city")} placeholder={t("address.city")} />
+      {errors.city && <Message $error>{errors.city.message}</Message>}
 
-        <Input {...register("zipCode")} placeholder={t("address.zipCode")} />
-        {errors.zipCode && <Message $error>{errors.zipCode.message}</Message>}
+      <Input {...register("zipCode")} placeholder={t("address.zipCode")} />
+      {errors.zipCode && <Message $error>{errors.zipCode.message}</Message>}
 
-        <Input {...register("phone")} placeholder={t("address.phone")} />
-        {errors.phone && <Message $error>{errors.phone.message}</Message>}
+      <Input {...register("phone")} placeholder={t("address.phone")} />
+      {errors.phone && <Message $error>{errors.phone.message}</Message>}
 
-        <Input {...register("email")} placeholder={t("address.email")} />
-        {errors.email && <Message $error>{errors.email.message}</Message>}
+      <Input {...register("email")} placeholder={t("address.email")} />
+      {errors.email && <Message $error>{errors.email.message}</Message>}
 
-        <Input {...register("country")} placeholder={t("address.country")} />
-        {errors.country && <Message $error>{errors.country.message}</Message>}
+      <Input {...register("country")} placeholder={t("address.country")} />
+      {errors.country && <Message $error>{errors.country.message}</Message>}
 
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting
-            ? t("address.saving")
-            : editId
-            ? t("address.update")
-            : t("address.add")}
+      <Button
+        type="button"
+        disabled={isSubmitting || loading}
+        onClick={handleSubmit(onSubmit)}
+      >
+        {isSubmitting
+          ? t("address.saving")
+          : editId
+          ? t("address.update")
+          : t("address.add")}
+      </Button>
+      {editId && (
+        <Button
+          type="button"
+          style={{ marginLeft: 8 }}
+          onClick={() => {
+            setEditId(null);
+            reset();
+          }}
+        >
+          {t("address.cancel")}
         </Button>
-        {editId && (
-          <Button
-            type="button"
-            style={{ marginLeft: 8 }}
-            onClick={() => {
-              setEditId(null);
-              reset();
-            }}
-          >
-            {t("address.cancel")}
-          </Button>
-        )}
-      </Form>
+      )}
+    </DivForm>
 
-      <AddressList>
-        {addresses.map((address) => (
-          <AddressItem key={address._id}>
-            <p>
-              {address.street}, {address.houseNumber}, {address.city}{" "}
-              {address.zipCode}
-              <br />
-              {address.phone} • {address.email} • {address.country}
-            </p>
-            <div style={{ display: "flex", gap: "1rem" }}>
-              <Button type="button" onClick={() => handleEdit(address)}>
-                {t("address.edit")}
-              </Button>
-              <Button
-                $danger
-                type="button"
-                onClick={() => handleDelete(address._id!)}
-              >
-                {t("address.remove")}
-              </Button>
-            </div>
-          </AddressItem>
-        ))}
-      </AddressList>
-    </Wrapper>
-  );
-};
+    <AddressList>
+      {addresses.map((address) => (
+        <AddressItem key={address._id}>
+          <p>
+            {address.street}, {address.houseNumber}, {address.city} {address.zipCode}
+            <br />
+            {address.phone} • {address.email} • {address.country}
+          </p>
+          <div style={{ display: "flex", gap: "1rem" }}>
+            <Button type="button" onClick={() => handleEdit(address)}>
+              {t("address.edit")}
+            </Button>
+            <Button
+              $danger
+              type="button"
+              onClick={() => handleDelete(address._id!)}
+            >
+              {t("address.remove")}
+            </Button>
+          </div>
+        </AddressItem>
+      ))}
+    </AddressList>
+  </Wrapper>
+);
+}
 
 export default AddressForm;

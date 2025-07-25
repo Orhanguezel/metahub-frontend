@@ -70,3 +70,59 @@ Bu dosya içerisinde `UsersPage` bileşenini render ediyoruz.
 
 Hazırsan `UsersPage.tsx` ile başlayalım 💪  
 Yoksa önce `UserEditModal` veya `UserActions` gibi bir parça üzerinden mi gitmek istersin?
+
+
+
+{
+  "companyName": {
+    "tr": "Ensotek CTP Su Soğutma Kuleleri Mühendislik San. Tic. Ltd. Şti.",
+    "en": "Ensotek GRP Cooling Towers Engineering Ltd.",
+    "de": "Ensotek GFK Kühltürme Ingenieurwesen GmbH",
+    "fr": "Ensotek Tours de Refroidissement en PRV Ingénierie SARL",
+    "pl": "Ensotek Wieże Chłodnicze z GRP Inżynieria Sp. z o.o.",
+    "es": "Ensotek Torres de Refrigeración GRP Ingeniería S.L."
+  },
+  "companyDesc": {
+    "tr": "Su soğutma kulelerinde 20 yılı aşkın tecrübe. Endüstriyel ve enerji santralleri için yüksek verimli çözümler.",
+    "en": "Over 20 years of experience in cooling towers. High-efficiency solutions for industrial and power plants.",
+    "de": "Über 20 Jahre Erfahrung mit Kühltürmen. Hochleistungs-Lösungen für Industrie und Kraftwerke.",
+    "fr": "Plus de 20 ans d'expérience dans les tours de refroidissement. Solutions à haute efficacité pour l'industrie et les centrales électriques.",
+    "pl": "Ponad 20 lat doświadczenia w wieżach chłodniczych. Wydajne rozwiązania dla przemysłu i elektrowni.",
+    "es": "Más de 20 años de experiencia en torres de refrigeración. Soluciones de alta eficiencia para la industria y plantas de energía."
+  },
+  "tenant": "ensotek",
+  "language": "tr",
+  "taxNumber": "1234567890",
+  "handelsregisterNumber": "9876543210",
+  "registerCourt": "İstanbul Ticaret Sicil Müdürlüğü",
+  "website": "https://www.ensotek.com.tr",
+  "email": "info@ensotek.com.tr",
+  "phone": "+90 212 123 45 67",
+  "addresses": [
+  ],
+  "bankDetails": {
+    "bankName": "Türkiye İş Bankası",
+    "iban": "TR330006100519786457841326",
+    "swiftCode": "ISBKTRISXXX"
+  },
+  "managers": [
+    "Orhan Güzel",
+    "Mehmet Yıldız"
+  ],
+  "images": [
+     {   "url": "/uploads/company/logo.png",
+   "thumbnail": "/uploads/company/logo-thumb.png",
+   "webp": "/uploads/company/logo.webp",
+      "publicId": "ensotek/logo_xxx"
+    }
+  ],
+  "socialLinks": {
+    "facebook": "https://www.facebook.com/ensotek",
+    "instagram": "https://www.instagram.com/ensotek",
+    "twitter": "https://twitter.com/ensotek",
+    "linkedin": "https://www.linkedin.com/company/ensotek",
+    "youtube": "https://www.youtube.com/@ensotek"
+  },
+  "createdAt": { "$date": "2024-07-24T20:00:00.000Z" },
+  "updatedAt": { "$date": "2024-07-24T20:00:00.000Z" }
+}

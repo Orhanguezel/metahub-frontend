@@ -5,13 +5,39 @@ import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../../locales/footer";
 
+// Address tipini basit tanımla, types'tan import edebilirsin istersen:
+type AddressObj = {
+  street?: string;
+  postalCode?: string;
+  city?: string;
+  country?: string;
+  [key: string]: any;
+};
 
-// Başlığı parentten prop ile göndermek de mümkündür, şimdilik component içinde sabit tutuldu.
 export default function FooterCompanyInfo() {
   const company = useAppSelector((state) => state.company.company);
   const { t } = useI18nNamespace("footer", translations);
   if (!company) return null;
-  const { email, phone, address } = company;
+  const { email, phone, addresses } = company;
+
+  // Adres (ilk populate ise object, değilse string)
+  let addressLine = "";
+  if (
+    Array.isArray(addresses) &&
+    addresses.length > 0 &&
+    typeof addresses[0] === "object"
+  ) {
+    const addr = addresses[0] as AddressObj;
+    addressLine = [
+      addr.street,
+      addr.postalCode,
+      addr.city,
+      addr.country,
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
+
   return (
     <FooterBlock>
       <FooterTitle>{t("companyInfo", "Company Info")}</FooterTitle>
@@ -28,16 +54,10 @@ export default function FooterCompanyInfo() {
             <a href={`tel:${phone}`}>{phone}</a>
           </InfoRow>
         )}
-        {address && (
+        {addressLine && (
           <InfoRow>
             <span>{t("address", "Address")}:</span>
-            <span>
-              {[
-                address.street,
-                address.postalCode,
-                address.city,
-              ].filter(Boolean).join(" ")}
-            </span>
+            <span>{addressLine}</span>
           </InfoRow>
         )}
       </CompanyLine>
@@ -45,8 +65,8 @@ export default function FooterCompanyInfo() {
   );
 }
 
-
 // --- Styled Components (footer linkleriyle aynı başlık formatı) ---
+// (Aynen kalsın)
 const FooterBlock = styled.div`
   margin: 0;
   max-width: 320px;

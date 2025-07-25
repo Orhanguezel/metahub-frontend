@@ -1,0 +1,18 @@
+{
+  "impressumTitle": "Impressum / Mentions légales",
+  "phone": "Téléphone",
+  "fax": "Fax",
+  "email": "E-Mail",
+  "website": "Site Web",
+  "managersTitle": "Représentants autorisés",
+  "tradeInfo": "Informations du registre du commerce",
+  "registerCourt": "Tribunal d'enregistrement",
+  "registerNumber": "Numéro du registre du commerce",
+  "vatTitle": "Numéro de TVA (Umsatzsteuer-Identifikationsnummer)",
+  "liabilityTitle": "Clause de non-responsabilité",
+  "liabilityText": "Notre site Web peut contenir des liens externes vers des sites de tiers sur lesquels nous n'avons aucun contrôle. {{companyName}} n'est pas responsable du contenu ou des conséquences juridiques des pages liées. Seul le propriétaire du site est responsable.",
+  "privacyTitle": "Protection des données",
+  "privacyText": "Ce site Web peut utiliser des cookies pour analyser les statistiques des visiteurs. Vous pouvez restreindre ou désactiver l'utilisation des cookies dans les paramètres de votre navigateur. Pour plus d'informations sur la politique de confidentialité et la protection des données personnelles de {{companyName}}, veuillez consulter",
+  "privacyPolicy": "notre politique de confidentialité",
+  "privacyContinue": "."
+}

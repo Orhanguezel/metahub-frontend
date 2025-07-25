@@ -126,7 +126,7 @@ export default function AboutSection() {
                 alt={main.title?.[lang] || "About"}
                 width={330}
                 height={210}
-                style={{ objectFit: "cover", borderRadius: "18px" }}
+                style={{ objectFit: "cover"}}
                 priority
               />
             )}
@@ -142,7 +142,6 @@ export default function AboutSection() {
                     height={90}
                     style={{
                       objectFit: "cover",
-                      borderRadius: "14px",
                       marginTop: idx === 1 ? "12px" : "0"
                     }}
                     loading="lazy"
@@ -204,9 +203,9 @@ const AboutGrid = styled.div`
 `;
 
 const Left = styled.div`
-  flex: 1.1 1 340px;
-  min-width: 320px;
-  max-width: 540px;
+  flex: 1.1 1 440px;
+  min-width: 440px;
+  max-width: 640px;
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
@@ -246,7 +245,7 @@ const Desc = styled.p`
 
 const Features = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 2.2rem 1.3rem;
   margin: 2.5rem 0 1.3rem 0;
 
@@ -418,9 +417,6 @@ const StackedImage = styled(Image)`
 
   ${({ theme }) => theme.media.small} {
     width: 50%;
-    min-width: 90px;
-    max-width: 175px;
-    height: 90px;
     max-height: 120px;
   }
 `;

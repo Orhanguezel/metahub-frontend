@@ -10,17 +10,15 @@ import { Skeleton, SeeAllBtn } from "@/shared";
 import type { IActivity } from "@/modules/activity/types";
 import type { SupportedLocale } from "@/types/common";
 
+
 export default function ActivitySection() {
   const { i18n, t } = useI18nNamespace("activity", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { activity, loading } = useAppSelector((state) => state.activity);
 
-  // En fazla 6 faaliyet göster
   const allActivities = activity || [];
-
-  // İlkini üstte göster, kalanları gride böl
   const firstActivity = allActivities[0];
-  const restActivities = allActivities.slice(1, 6); // Max 5 tane gösterir
+  const restActivities = allActivities.slice(0, 6); // Max 6 tane gösterir
 
   return (
     <Section>
@@ -32,15 +30,28 @@ export default function ActivitySection() {
           <MainTitle>
             {t("page.activity.title", "Sektöre Değer Katan Faaliyet Alanlarımız")}
           </MainTitle>
-          {/* Summary/desc kısmı: Dinamik */}
           <Desc>
-  {firstActivity
-    ? firstActivity.summary?.[lang] || "-"
-    : t(
-        "page.activity.desc",
-        "Ensotek olarak, sektörümüzde öne çıkan çözümler ve hizmetlerle müşterilerimizin iş süreçlerine değer katıyoruz. Geniş faaliyet alanlarımızı keşfedin."
-      )}
-</Desc>
+            {firstActivity
+              ? firstActivity.summary?.[lang] || "-"
+              : t(
+                  "page.activity.desc",
+                  "Ensotek olarak, sektörümüzde öne çıkan çözümler ve hizmetlerle müşterilerimizin iş süreçlerine değer katıyoruz. Geniş faaliyet alanlarımızı keşfedin."
+                )}
+          </Desc>
+
+          {/* --- EK: Ana faaliyet görseli, summary'nin hemen altında --- */}
+          {firstActivity?.images?.[0]?.url && (
+            <FirstActivityImageWrap as={Link} href={`/activity/${firstActivity.slug}`}>
+              <FirstActivityImage
+                src={firstActivity.images[0].url}
+                alt={firstActivity.title?.[lang] || "Faaliyet"}
+                width={430}
+                height={185}
+                style={{ objectFit: "cover" }}
+              />
+            </FirstActivityImageWrap>
+          )}
+
           <SeeAllBtn href="/activity">
             {t("page.activity.all", "Tüm Faaliyetlerimiz")}
           </SeeAllBtn>
@@ -85,6 +96,38 @@ export default function ActivitySection() {
     </Section>
   );
 }
+
+// ... diğer styled-components aynı şekilde devam ...
+
+// --- EK: Ana faaliyet görseli için özel wrap ve stil ---
+const FirstActivityImageWrap = styled(Link)`
+  width: 100%;
+  max-width: 410px;
+  min-height: 140px;
+  max-height: 220px;
+  margin: 1.3rem 0 1.2rem 0;
+  display: block;
+  overflow: hidden;
+  box-shadow: 0 8px 30px 0 rgba(40,117,194,0.12);
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+
+  @media (max-width: 600px) {
+    min-width: 140px;
+    min-height: 80px;
+    height: auto;
+    margin: 1rem auto 0.9rem auto;
+    max-width: 100%;
+  }
+`;
+
+const FirstActivityImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+`;
+
+
 
 
 // --- STYLES ---
@@ -184,7 +227,6 @@ const CardLink = styled(Link)`
   align-items: center;
   justify-content: flex-start;
   background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: 22px;
   box-shadow: ${({ theme }) => theme.shadows.sm};
   padding: 2.1rem 1rem 1.25rem 1rem;
   min-height: 220px;
@@ -235,7 +277,6 @@ const CardImgPlaceholder = styled.div`
   width: 80px;
   height: 80px;
   background: ${({ theme }) => theme.colors.skeleton};
-  border-radius: ${({ theme }) => theme.radii.md};
   opacity: 0.43;
 `;
 

@@ -95,7 +95,7 @@ const ChatBox = () => {
   return (
     <Wrapper>
       <Header>
-        <h4>🤖 {t("assistantTitle", "Ensotek Asistan")}</h4>
+        <h4>🤖 {t("assistantTitle", "")}</h4>
       </Header>
       <PublicMessageList messages={messages} />
       <PublicChatInput onSend={handleSend} />

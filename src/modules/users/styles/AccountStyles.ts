@@ -4,6 +4,12 @@ import styled, { keyframes } from "styled-components";
 
 // --- Wrapper ---
 
+export const DivForm = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
 export const Wrapper = styled.div`
   width: 100%;
   max-width: 900px;

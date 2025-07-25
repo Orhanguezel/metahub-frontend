@@ -1,55 +1,108 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { useAppSelector } from "@/store/hooks";
 import styled from "styled-components";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/home";
-import type { SupportedLocale } from "@/types/common";
-import type { IGallery, IGalleryCategory } from "@/modules/gallery/types";
-import Image from "next/image";
-import Link from "next/link";
-import { Skeleton } from "@/shared";
+import { SupportedLocale } from "@/types/common";
+import SkeletonBox from "@/shared/Skeleton";
+import type { IGallery } from "@/modules/gallery/types";
+import useModal from "@/hooks/useModal";
 
 const SLIDER_CATEGORY_SLUG = "maintenance";
 
+type GalleryItem = IGallery["images"][0] & {
+  _galleryId?: string;
+  category?: any;
+};
+
 const HeroRobotic = () => {
-  const { publicImages, loading } = useAppSelector((state) => state.gallery);
-  const { categories } = useAppSelector((state) => state.galleryCategory);
   const { i18n, t } = useI18nNamespace("home", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  // Kategori ID seçimi
-  const selectedCategoryId = useMemo(() => {
-    if (!SLIDER_CATEGORY_SLUG || !Array.isArray(categories)) return "";
-    const cat = categories.find((c: IGalleryCategory) => c.slug === SLIDER_CATEGORY_SLUG);
-    return cat?._id || "";
-  }, [categories]);
+  const { publicImages, loading } = useAppSelector((state) => state.gallery);
+  const { categories } = useAppSelector((state) => state.galleryCategory);
 
-  // Hero Gallery Seçimi
-  const heroGallery: IGallery | undefined = useMemo(() => {
-    if (!selectedCategoryId || !Array.isArray(publicImages)) return undefined;
-    return publicImages.find((gallery: IGallery) =>
+  // İlgili kategoriyi bul
+  const targetCategory = useMemo(
+    () => categories?.find((cat) => cat.slug === SLIDER_CATEGORY_SLUG),
+    [categories]
+  );
+
+  // İlgili kategorideki TUM görselleri flat array olarak al
+  const flatItems = useMemo<GalleryItem[]>(() => {
+    if (!Array.isArray(publicImages) || !targetCategory) return [];
+    const filtered = publicImages.filter((gallery) =>
       typeof gallery.category === "string"
-        ? gallery.category === selectedCategoryId
-        : (gallery.category as IGalleryCategory)?._id === selectedCategoryId
+        ? gallery.category === targetCategory._id
+        : gallery.category?._id === targetCategory._id
     );
-  }, [publicImages, selectedCategoryId]);
+    const allImages: GalleryItem[] = [];
+    filtered.forEach((gallery) => {
+      (gallery.images || []).forEach((img) => {
+        allImages.push({
+          ...img,
+          _galleryId: gallery._id,
+          category: gallery.category,
+        });
+      });
+    });
+    allImages.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return allImages;
+  }, [publicImages, targetCategory]);
 
-  // Hero İçerik
-  const heroItem = heroGallery?.images?.[0];
+  const modal = useModal(flatItems);
+
+  // Oto slider
+  useEffect(() => {
+    if (flatItems.length === 0) return;
+    const timer = setInterval(() => modal.next(), 5800);
+    return () => clearInterval(timer);
+  }, [flatItems, modal]);
+
+  // Swipe support (mobil)
+  const handleSwipe = useCallback((e: React.TouchEvent) => {
+    const startX = e.changedTouches[0].clientX;
+    const handler = (endEvent: TouchEvent) => {
+      const endX = endEvent.changedTouches[0].clientX;
+      if (startX - endX > 50) modal.next();
+      if (endX - startX > 50) modal.prev();
+      window.removeEventListener("touchend", handler);
+    };
+    window.addEventListener("touchend", handler);
+  }, [modal]);
+
+  // Loading ve boş durum
+  if (loading) {
+    return (
+      <HeroSectionWrapper>
+        <SkeletonBox style={{ height: "52px", marginBottom: "18px" }} />
+        <SkeletonBox style={{ height: "26px", width: "60%" }} />
+        <SkeletonBox style={{ height: "36px", width: "40%", marginTop: "12px" }} />
+      </HeroSectionWrapper>
+    );
+  }
+  if (!flatItems.length) {
+    return (
+      <HeroSectionWrapper>
+        <Content>{t("noItemsFound", "No hero found.")}</Content>
+      </HeroSectionWrapper>
+    );
+  }
+
+  // Aktif slide
+  const heroItem = flatItems[modal.currentIndex];
   const title =
     heroItem?.name?.[lang] ||
     heroItem?.name?.["en"] ||
-    (heroGallery?.category && typeof heroGallery.category !== "string"
-      ? heroGallery.category.name?.[lang] || heroGallery.category.name?.["en"]
-      : t("hero.title", "Empowering The Future With AI & Robotics"));
-
+    t("hero.title", "Empowering The Future With AI & Robotics");
   const description =
     heroItem?.description?.[lang] ||
     heroItem?.description?.["en"] ||
     t("hero.desc", "Cutting-edge solutions for the new digital age.");
-
   const imageSrc =
     heroItem?.webp ||
     heroItem?.url ||
@@ -60,51 +113,46 @@ const HeroRobotic = () => {
   const ctaLabel = t("hero.cta", "Explore Now");
   const ctaHref = "/about";
 
-  // Loader / Empty
-  if (loading) {
-    return (
-      <HeroSectionWrapper>
-        <HeroContainer>
-          <Content>
-            <Skeleton style={{ height: "52px", marginBottom: "18px" }} />
-            <Skeleton style={{ height: "26px", width: "60%" }} />
-            <Skeleton style={{ height: "36px", width: "40%", marginTop: "12px" }} />
-          </Content>
-        </HeroContainer>
-      </HeroSectionWrapper>
-    );
-  }
-  if (!heroGallery || !heroItem) {
-    return (
-      <HeroSectionWrapper>
-        <HeroContainer>
-          <Content>{t("noItemsFound", "No hero found.")}</Content>
-        </HeroContainer>
-      </HeroSectionWrapper>
-    );
-  }
-
   return (
-    <HeroSectionWrapper>
-      <HeroContainer>
-        <Content>
-          <Title>{title}</Title>
-          <Description>{description}</Description>
-          <Actions>
-            <CtaBtn as={Link} href={ctaHref}>{ctaLabel}</CtaBtn>
-          </Actions>
-        </Content>
-        <HeroImageWrapper>
-          <Image
-            src={imageSrc}
-            alt={heroItem?.name?.[lang] || "Hero Image"}
-            width={480}
-            height={480}
-            style={{ objectFit: "contain", width: "100%", height: "auto" }}
-            priority
+    <HeroSectionWrapper onTouchStart={handleSwipe}>
+      <AnimatePresence mode="wait">
+        <Slide
+          key={modal.currentIndex}
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -50 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+        >
+          <Content>
+            <Title>{title}</Title>
+            <Description>{description}</Description>
+            <Actions>
+              <CtaBtn href={ctaHref}>{ctaLabel}</CtaBtn>
+            </Actions>
+          </Content>
+          <HeroImageWrapper>
+            <Image
+              src={imageSrc}
+              alt={heroItem?.name?.[lang] || "Hero Image"}
+              width={480}
+              height={480}
+              style={{ objectFit: "contain", width: "100%", height: "auto" }}
+              priority
+            />
+          </HeroImageWrapper>
+        </Slide>
+      </AnimatePresence>
+      <Nav>
+        {flatItems.map((_, idx) => (
+          <Dot
+            key={idx}
+            $active={idx === modal.currentIndex}
+            onClick={() => modal.open(idx)}
+            aria-label={`Go to slide ${idx + 1}`}
+            tabIndex={0}
           />
-        </HeroImageWrapper>
-      </HeroContainer>
+        ))}
+      </Nav>
     </HeroSectionWrapper>
   );
 };
@@ -112,23 +160,22 @@ const HeroRobotic = () => {
 export default HeroRobotic;
 
 // --- Styled Components ---
-
 const HeroSectionWrapper = styled.section`
   width: 100%;
   background: radial-gradient(
-  circle at center,
-  ${({ theme }) => `${theme.colors.backgroundSecondary}CC`} 0%,
-  #000 100%
-);
-
-
-
+    circle at center,
+    ${({ theme }) => `${theme.colors.backgroundSecondary}CC`} 0%,
+    #000 100%
+  );
   position: relative;
   min-height: 68vh;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
-const HeroContainer = styled.div`
+const Slide = styled(motion.div)`
   width: 100%;
   max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
@@ -141,7 +188,6 @@ const HeroContainer = styled.div`
   @media (max-width: 900px) {
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     padding: ${({ theme }) => theme.spacings.lg} 0;
   }
 `;
@@ -248,5 +294,33 @@ const HeroImageWrapper = styled.div`
     align-items: center;
     justify-content: center;
     margin-top: ${({ theme }) => theme.spacings.lg};
+  }
+`;
+
+const Nav = styled.div`
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.sm};
+  z-index: 5;
+`;
+
+const Dot = styled.button<{ $active: boolean }>`
+  width: ${({ theme }) => theme.spacings.lg};
+  height: ${({ theme }) => theme.spacings.lg};
+  border-radius: 50%;
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.primary : theme.colors.skeleton};
+  border: ${({ $active, theme }) =>
+    $active ? `2.5px solid ${theme.colors.primaryDark}` : "none"};
+  box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.md : "none")};
+  cursor: pointer;
+  transition: background 0.3s, border 0.22s;
+  outline: none;
+  &:focus {
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primaryTransparent};
+    border: 2px solid ${({ theme }) => theme.colors.primary};
   }
 `;

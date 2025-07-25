@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
@@ -31,6 +29,7 @@ export default function FormModal({
   const error = useAppSelector((state) => state.library.error);
   const currentUser = useAppSelector((state) => state.account.profile);
 
+  // State'ler
   const [titles, setTitles] = useState<Record<SupportedLocale, string>>(() =>
     SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
   );
@@ -48,6 +47,7 @@ export default function FormModal({
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [selectedPdf, setSelectedPdf] = useState<File | null>(null);
+  const [removedFiles, setRemovedFiles] = useState<string[]>([]); // EKLENDİ
 
   // Formu editlerken doldur
   useEffect(() => {
@@ -74,6 +74,7 @@ export default function FormModal({
       setExistingImages(editingItem.images?.map((img) => img.url) || []);
       setRemovedImages([]);
       setSelectedPdf(null);
+      setRemovedFiles([]); // EKLENDİ
     } else {
       setTitles(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
       setSummaries(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
@@ -84,6 +85,7 @@ export default function FormModal({
       setExistingImages([]);
       setRemovedImages([]);
       setSelectedPdf(null);
+      setRemovedFiles([]); // EKLENDİ
     }
   }, [editingItem, isOpen, currentUser]);
 
@@ -116,8 +118,17 @@ export default function FormModal({
         return;
       }
       setSelectedPdf(file);
+      setRemovedFiles([]); // yeni dosya seçildiyse eskisini kaldırmayı unutma!
     }
   };
+
+  // Mevcut PDF sil (X ile)
+  const handleRemovePdf = () => {
+    if (existingPdf) setRemovedFiles([existingPdf.url]);
+    setSelectedPdf(null);
+  };
+
+  const handleRemoveSelectedPdf = () => setSelectedPdf(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,9 +156,12 @@ export default function FormModal({
     if (removedImages.length > 0) {
       formData.append("removedImages", JSON.stringify(removedImages));
     }
-    // PDF dosyası ekle
+    // --- EK: PDF dosya ekle ve sil ---
     if (selectedPdf) {
       formData.append("files", selectedPdf);
+    }
+    if (removedFiles.length > 0) {
+      formData.append("removedFiles", JSON.stringify(removedFiles));
     }
 
     await onSubmit(formData, editingItem?._id);
@@ -155,7 +169,7 @@ export default function FormModal({
 
   if (!isOpen) return null;
 
-  // Mevcut pdf gösterimi (varsa) -- opsiyonel
+  // Mevcut pdf gösterimi (varsa)
   const existingPdf =
     editingItem?.files && editingItem.files.length > 0
       ? editingItem.files[0]
@@ -238,16 +252,54 @@ export default function FormModal({
           accept="application/pdf"
           onChange={handlePdfChange}
         />
-        {existingPdf && !selectedPdf && (
-          <div style={{ marginTop: 8 }}>
+        {/* Eski PDF varsa ve silinmediyse */}
+        {existingPdf && !selectedPdf && removedFiles.length === 0 && (
+          <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
             <a href={existingPdf.url} target="_blank" rel="noopener noreferrer">
               {existingPdf.name || "PDF"}
             </a>
+            <button
+              type="button"
+              onClick={handleRemovePdf}
+              aria-label={t("admin.remove", "Remove PDF")}
+              style={{
+                marginLeft: 4,
+                background: "none",
+                border: "none",
+                color: "#dc3545",
+                cursor: "pointer",
+                fontSize: 20,
+                lineHeight: 1,
+                fontWeight: 700,
+              }}
+              title={t("admin.remove", "Remove PDF")}
+            >
+              ×
+            </button>
           </div>
         )}
+        {/* Yeni PDF seçildiyse */}
         {selectedPdf && (
-          <div style={{ marginTop: 8 }}>
+          <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
             {selectedPdf.name}
+            <button
+              type="button"
+              onClick={handleRemoveSelectedPdf}
+              aria-label={t("admin.remove", "Remove PDF")}
+              style={{
+                marginLeft: 4,
+                background: "none",
+                border: "none",
+                color: "#dc3545",
+                cursor: "pointer",
+                fontSize: 20,
+                lineHeight: 1,
+                fontWeight: 700,
+              }}
+              title={t("admin.remove", "Remove PDF")}
+            >
+              ×
+            </button>
           </div>
         )}
 

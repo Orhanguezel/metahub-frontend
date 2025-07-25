@@ -3,10 +3,32 @@ import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
-import { useFormik } from "formik";
-import * as yup from "yup";
 import ImageUploadWithPreview from "@/shared/ImageUploadWithPreview";
-import type { ICompany, ICompanyImage } from "@/modules/company/types";
+import type { ICompany, ICompanyImage, TranslatedLabel } from "@/modules/company/types";
+import { SUPPORTED_LOCALES, LANG_LABELS } from "@/types/common";
+import { AddressForm } from "@/modules/users";
+import { SocialLinksForm } from "@/modules/company";
+import type { Address } from "@/modules/users/types/address";
+
+// Helpers
+const getUrlArray = (images?: ICompanyImage[]): string[] =>
+  Array.isArray(images) ? images.map((img) => img.url) : [];
+
+const fillLabel = (obj?: TranslatedLabel) => {
+  const res: TranslatedLabel = {} as any;
+  for (const lng of SUPPORTED_LOCALES) res[lng] = obj?.[lng] || "";
+  return res;
+};
+
+function getInitialAddresses(arr: any): Address[] {
+  if (!arr) return [];
+  if (typeof arr[0] === "object") return arr as Address[];
+  return [];
+}
+
+function extractAddressIds(addresses: Address[]): string[] {
+  return addresses.map(addr => (typeof addr._id === "string" ? addr._id : "")).filter(Boolean);
+}
 
 interface Props {
   initialValues: ICompany;
@@ -18,70 +40,85 @@ interface Props {
   loading?: boolean;
 }
 
-const getUrlArray = (images?: ICompanyImage[]): string[] =>
-  Array.isArray(images) ? images.map((img) => img.url) : [];
-
 export default function CompanyForm({ initialValues, onSubmit, loading }: Props) {
   const { t } = useI18nNamespace("company", translations);
 
-  // Logo state'leri initialValues değiştikçe resetlenir!
+  // --- STATES ---
+  const [companyName, setCompanyName] = useState(fillLabel(initialValues.companyName));
+  const [companyDesc, setCompanyDesc] = useState(fillLabel(initialValues.companyDesc));
+  const [email, setEmail] = useState(initialValues.email);
+  const [phone, setPhone] = useState(initialValues.phone);
+  const [taxNumber, setTaxNumber] = useState(initialValues.taxNumber);
+  const [handelsregisterNumber, setHandelsregisterNumber] = useState(initialValues.handelsregisterNumber || "");
+  const [registerCourt, setRegisterCourt] = useState(initialValues.registerCourt || "");
+  const [website, setWebsite] = useState(initialValues.website || "");
+  const [bankDetails, setBankDetails] = useState(initialValues.bankDetails);
+  const [socialLinks, setSocialLinks] = useState(initialValues.socialLinks ?? {});
+  const [managers, setManagers] = useState<string[]>(
+    Array.isArray(initialValues.managers) && initialValues.managers.length > 0
+      ? initialValues.managers
+      : [""]
+  );
+  const [addresses, setAddresses] = useState<Address[]>(getInitialAddresses(initialValues.addresses));
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(getUrlArray(initialValues.images));
 
+  // Images reset logic
   useEffect(() => {
     setExistingImages(getUrlArray(initialValues.images));
     setSelectedFiles([]);
     setRemovedImages([]);
   }, [JSON.stringify(initialValues.images)]);
 
-  // Formik validasyon şeması
-  const schema = yup.object().shape({
-    companyName: yup.string().required(t("required", "Required")),
-    email: yup.string().email(t("invalidEmail", "Invalid email")).required(t("required", "Required")),
-    phone: yup.string().required(t("required", "Required")),
-    taxNumber: yup.string().required(t("required", "Required")),
-    handelsregisterNumber: yup.string(),
-    address: yup.object().shape({
-      street: yup.string().required(t("required", "Required")),
-      city: yup.string().required(t("required", "Required")),
-      postalCode: yup.string().required(t("required", "Required")),
-      country: yup.string().required(t("required", "Required")),
-    }),
-    bankDetails: yup.object().shape({
-      bankName: yup.string().required(t("required", "Required")),
-      iban: yup.string().required(t("required", "Required")),
-      swiftCode: yup.string().required(t("required", "Required")),
-    }),
-    socialLinks: yup.object().shape({
-      facebook: yup.string().url(t("invalidUrl", "Invalid URL")).nullable(),
-      instagram: yup.string().url(t("invalidUrl", "Invalid URL")).nullable(),
-      twitter: yup.string().url(t("invalidUrl", "Invalid URL")).nullable(),
-      linkedin: yup.string().url(t("invalidUrl", "Invalid URL")).nullable(),
-      youtube: yup.string().url(t("invalidUrl", "Invalid URL")).nullable(),
-    }),
-  });
+  // --- MANAGERS LOGIC ---
+  const handleManagerChange = (idx: number, value: string) => {
+    setManagers(managers.map((m, i) => (i === idx ? value : m)));
+  };
+  const addManager = () => setManagers([...managers, ""]);
+  const removeManager = (idx: number) => setManagers(managers.length === 1 ? [""] : managers.filter((_, i) => i !== idx));
 
-  // Formik config
-  const formik = useFormik<ICompany>({
-    initialValues: {
-      ...initialValues,
-      socialLinks: {
-        facebook: initialValues.socialLinks?.facebook || "",
-        instagram: initialValues.socialLinks?.instagram || "",
-        twitter: initialValues.socialLinks?.twitter || "",
-        linkedin: initialValues.socialLinks?.linkedin || "",
-        youtube: initialValues.socialLinks?.youtube || "",
+  // --- BANK DETAILS LOGIC ---
+  const handleBankChange = (field: keyof typeof bankDetails, value: string) => {
+    setBankDetails(prev => ({ ...prev, [field]: value }));
+  };
+
+  // --- SOCIAL LINKS LOGIC ---
+  const handleSocialLinksChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSocialLinks({ ...socialLinks, [e.target.name]: e.target.value });
+  };
+
+  // --- SUBMIT HANDLER ---
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Basit zorunlu alan kontrolü (isteğe bağlı: burada daha detaylı validation ekleyebilirsin)
+    if (!companyName["tr"] || !email || !phone || !taxNumber || !bankDetails.bankName || !bankDetails.iban || !bankDetails.swiftCode) {
+      alert(t("required", "Please fill all required fields!"));
+      return;
+    }
+
+    onSubmit(
+      {
+        ...initialValues,
+        companyName,
+        companyDesc,
+        email,
+        phone,
+        taxNumber,
+        handelsregisterNumber,
+        registerCourt,
+        website,
+        bankDetails,
+        managers,
+        socialLinks,
+        addresses: extractAddressIds(addresses),
       },
-    },
-    enableReinitialize: true,
-    validationSchema: schema,
-    onSubmit: (values: ICompany) => {
-      onSubmit(values, selectedFiles, removedImages);
-    },
-  });
+      selectedFiles,
+      removedImages
+    );
+  };
 
-  // Resim değişimini formik state dışı yönet
+  // --- LOGO UPLOAD HANDLER ---
   const handleLogoChange = useCallback(
     (files: File[], removed: string[], current: string[]) => {
       setSelectedFiles(files);
@@ -92,237 +129,106 @@ export default function CompanyForm({ initialValues, onSubmit, loading }: Props)
   );
 
   return (
-    <FormStyled onSubmit={formik.handleSubmit} autoComplete="off" noValidate>
+    <FormStyled onSubmit={handleSubmit} autoComplete="off" noValidate>
       <SectionTitle>{t("companyInfo", "Company Info")}</SectionTitle>
 
-      <Label htmlFor="companyName">{t("companyName", "Company Name")}</Label>
-      <Input
-        id="companyName"
-        name="companyName"
-        value={formik.values.companyName}
-        onChange={formik.handleChange}
-        autoComplete="organization"
-        $hasError={!!formik.errors.companyName && !!formik.touched.companyName}
-        disabled={loading}
-      />
-      <FieldError>
-        {formik.touched.companyName && formik.errors.companyName}
-      </FieldError>
+      {/* Çoklu dil: Şirket adı */}
+      {SUPPORTED_LOCALES.map((lng) => (
+        <div key={"companyName_" + lng}>
+          <Label htmlFor={`companyName.${lng}`}>
+            {t("companyName", "Company Name")} ({LANG_LABELS[lng]})
+          </Label>
+          <Input
+            id={`companyName.${lng}`}
+            name={`companyName.${lng}`}
+            value={companyName[lng] || ""}
+            onChange={e => setCompanyName({ ...companyName, [lng]: e.target.value })}
+            $hasError={!companyName[lng]}
+            disabled={loading}
+          />
+        </div>
+      ))}
+
+      {/* Çoklu dil: Kısa açıklama (opsiyonel) */}
+      {SUPPORTED_LOCALES.map((lng) => (
+        <div key={"companyDesc_" + lng}>
+          <Label htmlFor={`companyDesc.${lng}`}>
+            {t("companyDesc", "Short Description")} ({LANG_LABELS[lng]})
+          </Label>
+          <Input
+            id={`companyDesc.${lng}`}
+            name={`companyDesc.${lng}`}
+            value={companyDesc[lng] || ""}
+            onChange={e => setCompanyDesc({ ...companyDesc, [lng]: e.target.value })}
+            $hasError={false}
+            disabled={loading}
+          />
+        </div>
+      ))}
 
       <Label htmlFor="email">{t("email", "E-Mail")}</Label>
-      <Input
-        id="email"
-        name="email"
-        type="email"
-        value={formik.values.email}
-        onChange={formik.handleChange}
-        autoComplete="email"
-        $hasError={!!formik.errors.email && !!formik.touched.email}
-        disabled={loading}
-      />
-      <FieldError>{formik.touched.email && formik.errors.email}</FieldError>
+      <Input id="email" name="email" type="email" value={email} onChange={e => setEmail(e.target.value)} disabled={loading} />
 
       <Label htmlFor="phone">{t("phone", "Phone")}</Label>
-      <Input
-        id="phone"
-        name="phone"
-        value={formik.values.phone}
-        onChange={formik.handleChange}
-        autoComplete="tel"
-        $hasError={!!formik.errors.phone && !!formik.touched.phone}
-        disabled={loading}
-      />
-      <FieldError>{formik.touched.phone && formik.errors.phone}</FieldError>
+      <Input id="phone" name="phone" value={phone} onChange={e => setPhone(e.target.value)} disabled={loading} />
 
       <Label htmlFor="taxNumber">{t("taxNumber", "Tax Number")}</Label>
-      <Input
-        id="taxNumber"
-        name="taxNumber"
-        value={formik.values.taxNumber}
-        onChange={formik.handleChange}
-        $hasError={!!formik.errors.taxNumber && !!formik.touched.taxNumber}
-        disabled={loading}
-      />
-      <FieldError>
-        {formik.touched.taxNumber && formik.errors.taxNumber}
-      </FieldError>
+      <Input id="taxNumber" name="taxNumber" value={taxNumber} onChange={e => setTaxNumber(e.target.value)} disabled={loading} />
 
-      <Label htmlFor="handelsregisterNumber">
-        {t("handelsregisterNumber", "Handelsregister Number")}
-      </Label>
-      <Input
-        id="handelsregisterNumber"
-        name="handelsregisterNumber"
-        value={formik.values.handelsregisterNumber || ""}
-        onChange={formik.handleChange}
-        disabled={loading}
-      />
+      <Label htmlFor="handelsregisterNumber">{t("handelsregisterNumber", "Handelsregister Number")}</Label>
+      <Input id="handelsregisterNumber" name="handelsregisterNumber" value={handelsregisterNumber} onChange={e => setHandelsregisterNumber(e.target.value)} disabled={loading} />
 
-      <SectionTitle>{t("address", "Address")}</SectionTitle>
-      <Label htmlFor="address.street">{t("street", "Street")}</Label>
-      <Input
-        id="address.street"
-        name="address.street"
-        value={formik.values.address.street}
-        onChange={formik.handleChange}
-        autoComplete="address-line1"
-        $hasError={
-          !!formik.errors.address?.street && !!formik.touched.address?.street
-        }
-        disabled={loading}
-      />
-      <FieldError>
-        {formik.touched.address?.street &&
-          (formik.errors.address as any)?.street}
-      </FieldError>
+      <Label htmlFor="registerCourt">{t("registerCourt", "Register Court")}</Label>
+      <Input id="registerCourt" name="registerCourt" value={registerCourt} onChange={e => setRegisterCourt(e.target.value)} disabled={loading} />
 
-      <Label htmlFor="address.city">{t("city", "City")}</Label>
-      <Input
-        id="address.city"
-        name="address.city"
-        value={formik.values.address.city}
-        onChange={formik.handleChange}
-        autoComplete="address-level2"
-        $hasError={
-          !!formik.errors.address?.city && !!formik.touched.address?.city
-        }
-        disabled={loading}
-      />
-      <FieldError>
-        {formik.touched.address?.city && (formik.errors.address as any)?.city}
-      </FieldError>
+      <Label htmlFor="website">{t("website", "Website")}</Label>
+      <Input id="website" name="website" value={website} onChange={e => setWebsite(e.target.value)} disabled={loading} />
 
-      <Label htmlFor="address.postalCode">
-        {t("postalCode", "Postal Code")}
-      </Label>
-      <Input
-        id="address.postalCode"
-        name="address.postalCode"
-        value={formik.values.address.postalCode}
-        onChange={formik.handleChange}
-        autoComplete="postal-code"
-        $hasError={
-          !!formik.errors.address?.postalCode &&
-          !!formik.touched.address?.postalCode
-        }
-        disabled={loading}
+      {/* --- Çoklu Adres Alanı --- */}
+      <SectionTitle>{t("addresses", "Addresses")}</SectionTitle>
+      <AddressForm
+        parentType="company"
+        parentId={initialValues._id}
+        addresses={addresses}
+        setAddresses={setAddresses}
+        loading={loading}
       />
-      <FieldError>
-        {formik.touched.address?.postalCode &&
-          (formik.errors.address as any)?.postalCode}
-      </FieldError>
-
-      <Label htmlFor="address.country">{t("country", "Country")}</Label>
-      <Input
-        id="address.country"
-        name="address.country"
-        value={formik.values.address.country}
-        onChange={formik.handleChange}
-        autoComplete="country"
-        $hasError={
-          !!formik.errors.address?.country && !!formik.touched.address?.country
-        }
-        disabled={loading}
-      />
-      <FieldError>
-        {formik.touched.address?.country &&
-          (formik.errors.address as any)?.country}
-      </FieldError>
 
       <SectionTitle>{t("bankDetails", "Bank Details")}</SectionTitle>
       <Label htmlFor="bankDetails.bankName">{t("bankName", "Bank Name")}</Label>
-      <Input
-        id="bankDetails.bankName"
-        name="bankDetails.bankName"
-        value={formik.values.bankDetails.bankName}
-        onChange={formik.handleChange}
-        $hasError={
-          !!formik.errors.bankDetails?.bankName &&
-          !!formik.touched.bankDetails?.bankName
-        }
-        disabled={loading}
-      />
-      <FieldError>
-        {formik.touched.bankDetails?.bankName &&
-          (formik.errors.bankDetails as any)?.bankName}
-      </FieldError>
-
+      <Input id="bankDetails.bankName" name="bankDetails.bankName" value={bankDetails.bankName} onChange={e => handleBankChange("bankName", e.target.value)} disabled={loading} />
       <Label htmlFor="bankDetails.iban">{t("iban", "IBAN")}</Label>
-      <Input
-        id="bankDetails.iban"
-        name="bankDetails.iban"
-        value={formik.values.bankDetails.iban}
-        onChange={formik.handleChange}
-        $hasError={
-          !!formik.errors.bankDetails?.iban &&
-          !!formik.touched.bankDetails?.iban
-        }
-        disabled={loading}
-      />
-      <FieldError>
-        {formik.touched.bankDetails?.iban &&
-          (formik.errors.bankDetails as any)?.iban}
-      </FieldError>
+      <Input id="bankDetails.iban" name="bankDetails.iban" value={bankDetails.iban} onChange={e => handleBankChange("iban", e.target.value)} disabled={loading} />
+      <Label htmlFor="bankDetails.swiftCode">{t("swiftCode", "SWIFT Code")}</Label>
+      <Input id="bankDetails.swiftCode" name="bankDetails.swiftCode" value={bankDetails.swiftCode} onChange={e => handleBankChange("swiftCode", e.target.value)} disabled={loading} />
 
-      <Label htmlFor="bankDetails.swiftCode">
-        {t("swiftCode", "SWIFT Code")}
-      </Label>
-      <Input
-        id="bankDetails.swiftCode"
-        name="bankDetails.swiftCode"
-        value={formik.values.bankDetails.swiftCode}
-        onChange={formik.handleChange}
-        $hasError={
-          !!formik.errors.bankDetails?.swiftCode &&
-          !!formik.touched.bankDetails?.swiftCode
-        }
-        disabled={loading}
-      />
-      <FieldError>
-        {formik.touched.bankDetails?.swiftCode &&
-          (formik.errors.bankDetails as any)?.swiftCode}
-      </FieldError>
+      {/* --- Yöneticiler (opsiyonel) --- */}
+      <SectionTitle>{t("managers", "Managers")}</SectionTitle>
+      <FieldArrayContainer>
+        {managers.map((manager, idx) => (
+          <div key={idx} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <Input
+              value={manager}
+              onChange={e => handleManagerChange(idx, e.target.value)}
+              disabled={loading}
+              placeholder={t("manager", "Manager")}
+            />
+            <Button type="button" onClick={() => removeManager(idx)} disabled={managers.length === 1}>
+              {t("remove", "Remove")}
+            </Button>
+          </div>
+        ))}
+        <Button type="button" onClick={addManager}>
+          + {t("addManager", "Add Manager")}
+        </Button>
+      </FieldArrayContainer>
 
-      <SectionTitle>{t("socialMedia", "Social Media Accounts")}</SectionTitle>
-      <Label htmlFor="socialLinks.facebook">Facebook</Label>
-      <Input
-        id="socialLinks.facebook"
-        name="socialLinks.facebook"
-        value={formik.values.socialLinks?.facebook || ""}
-        onChange={formik.handleChange}
-        disabled={loading}
-      />
-      <Label htmlFor="socialLinks.instagram">Instagram</Label>
-      <Input
-        id="socialLinks.instagram"
-        name="socialLinks.instagram"
-        value={formik.values.socialLinks?.instagram || ""}
-        onChange={formik.handleChange}
-        disabled={loading}
-      />
-      <Label htmlFor="socialLinks.twitter">Twitter</Label>
-      <Input
-        id="socialLinks.twitter"
-        name="socialLinks.twitter"
-        value={formik.values.socialLinks?.twitter || ""}
-        onChange={formik.handleChange}
-        disabled={loading}
-      />
-      <Label htmlFor="socialLinks.linkedin">LinkedIn</Label>
-      <Input
-        id="socialLinks.linkedin"
-        name="socialLinks.linkedin"
-        value={formik.values.socialLinks?.linkedin || ""}
-        onChange={formik.handleChange}
-        disabled={loading}
-      />
-      <Label htmlFor="socialLinks.youtube">YouTube</Label>
-      <Input
-        id="socialLinks.youtube"
-        name="socialLinks.youtube"
-        value={formik.values.socialLinks?.youtube || ""}
-        onChange={formik.handleChange}
-        disabled={loading}
+      {/* --- Sosyal Medya (Ayrı bileşen) --- */}
+      <SocialLinksForm
+        values={socialLinks}
+        onChange={handleSocialLinksChange}
+        loading={loading}
+        renderAsForm={false}
       />
 
       <SectionTitle>{t("logoUpload", "Upload Logo(s)")}</SectionTitle>
@@ -333,52 +239,21 @@ export default function CompanyForm({ initialValues, onSubmit, loading }: Props)
         folder="company"
       />
 
-      <Button
-        type="submit"
-        aria-label={t("save", "Save Company")}
-        disabled={formik.isSubmitting || loading}
-      >
+      <Button type="submit" aria-label={t("save", "Save Company")} disabled={loading}>
         {t("save", "Save Company")}
       </Button>
     </FormStyled>
   );
 }
 
-// 🎨 Styled Components
+// --- Styled Components (AYNEN BIRAK, DEĞİŞİKLİK YOK) ---
 const FormStyled = styled.form`
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
   background: ${({ theme }) => theme.colors.cardBackground};
   padding: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.sm};
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-top: ${({ theme }) => theme.spacings.md};
-  margin-bottom: ${({ theme }) => theme.spacings.xs};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const Input = styled.input<{ $hasError?: boolean }>`
-  padding: ${({ theme }) => theme.spacings.sm};
-  margin-bottom: ${({ theme }) => theme.spacings.xs};
-  width: 100%;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  border: 1px solid
-    ${({ theme, $hasError }) =>
-      $hasError ? theme.colors.danger : theme.colors.border};
-  background: ${({ theme }) => theme.colors.inputBackground};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  transition: border ${({ theme }) => theme.transition.fast};
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
-    outline: none;
-  }
 `;
 
 const SectionTitle = styled.h4`
@@ -401,14 +276,31 @@ const Button = styled.button.attrs({ type: "submit" })`
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   cursor: pointer;
   transition: background ${({ theme }) => theme.transition.fast};
-
   &:hover:not(:disabled) {
     background: ${({ theme }) => theme.colors.primaryHover};
   }
-
   &:disabled {
     opacity: ${({ theme }) => theme.opacity.disabled};
     cursor: not-allowed;
+  }
+`;
+
+const Input = styled.input<{ $hasError?: boolean }>`
+  padding: ${({ theme }) => theme.spacings.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
+  width: 100%;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  border: 1px solid
+    ${({ theme, $hasError }) =>
+      $hasError ? theme.colors.danger : theme.colors.border};
+  background: ${({ theme }) => theme.colors.inputBackground};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  transition: border ${({ theme }) => theme.transition.fast};
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.primary};
+    outline: none;
   }
 `;
 
@@ -417,4 +309,21 @@ const FieldError = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.xs};
   margin-bottom: ${({ theme }) => theme.spacings.xs};
   min-height: 18px;
+`;
+
+const FieldArrayContainer = styled.div`
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+
+
+const Label = styled.label`
+  display: block;
+  margin-top: ${({ theme }) => theme.spacings.md};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.textPrimary};
 `;

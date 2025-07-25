@@ -134,9 +134,9 @@ export default function Navbar() {
           </RightControls>
         </CenterSection>
         <MenuBar>
-          <DesktopMenu>
+          <DesktopMenu2>
             <NavbarLinks />
-          </DesktopMenu>
+          </DesktopMenu2>
         </MenuBar>
         <AnimatePresence>
           {mobileOpen && (
@@ -275,15 +275,37 @@ const Hamburger = styled.button`
 const DesktopMenu = styled.ul`
   display: flex;
   list-style: none;
-  gap: 0.11rem; // Neredeyse birleşik, ama birbirine binmez!
+  gap: 1.11rem; // Neredeyse birleşik, ama birbirine binmez!
+  margin: 0;
+  padding: 20px;
+  font-family: ${({ theme }) => theme.fonts.main};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  @media (max-width: 1024px) {
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    gap: 0.9rem;
+  }
+  @media (max-width: 900px) {
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    gap: 0.07rem;
+  }
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const DesktopMenu2 = styled.ul`
+  display: flex;
+  list-style: none;
+  gap: 2.11rem; // Neredeyse birleşik, ama birbirine binmez!
   margin: 0;
   padding: 20px;
   font-family: ${({ theme }) => theme.fonts.main};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   @media (max-width: 900px) {
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-    gap: 0.07rem;
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    gap: 2.07rem;
   }
   @media (max-width: 768px) {
     display: none;

@@ -1,0 +1,18 @@
+{
+  "impressumTitle": "Impressum / Rechtliche Hinweise",
+  "phone": "Telefon",
+  "fax": "Fax",
+  "email": "E-Mail",
+  "website": "Webseite",
+  "managersTitle": "Vertretungsberechtigte",
+  "tradeInfo": "Handelsregisterangaben",
+  "registerCourt": "Registergericht",
+  "registerNumber": "Handelsregisternummer",
+  "vatTitle": "Umsatzsteuer-Identifikationsnummer",
+  "liabilityTitle": "Haftungsausschluss",
+  "liabilityText": "Unsere Webseite kann externe Links zu Webseiten Dritter enthalten, auf deren Inhalte wir keinen Einfluss haben. Für die Inhalte und rechtlichen Folgen der verlinkten Seiten ist {{companyName}} nicht verantwortlich. Verantwortlich ist nur der jeweilige Betreiber der Seite.",
+  "privacyTitle": "Datenschutz",
+  "privacyText": "Diese Website kann Cookies zur Analyse der Besucherstatistiken verwenden. Sie können die Verwendung von Cookies in Ihren Browsereinstellungen einschränken oder deaktivieren. Weitere Informationen zum Datenschutz und zur Verarbeitung personenbezogener Daten durch {{companyName}} finden Sie in",
+  "privacyPolicy": "unserer Datenschutzerklärung",
+  "privacyContinue": "nachlesen."
+}

@@ -5,8 +5,15 @@
   "address": "Dirección",
   "mainLinks": "Enlaces principales",
   "massageTypes": "Tipos de masaje",
+  "ensotekprod": "Productos",
+  "sparepart": "Repuestos",
+  "library": "Biblioteca",
   "rightsText": "Todos los derechos reservados.",
-  "designedBy": "Diseñado por OG"
+  "designedBy": "Diseñado por OG",
+  "impressum": "Aviso legal",
+  "privacyPolicy": "Política de privacidad",
+  "terms": "Términos y condiciones",
+  "contact": "Contacto"
 }
 
 

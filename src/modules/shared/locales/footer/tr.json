@@ -5,8 +5,15 @@
   "address": "Adres",
   "mainLinks": "Ana Linkler",
   "massageTypes": "Masaj Türleri",
+  "ensotekprod": "Ürünler",
+  "sparepart": "Yedek Parçalar",
+  "library": "Kütüphane",
   "rightsText": "Tüm hakları saklıdır.",
-  "designedBy": "Tasarım: OG"
+  "designedBy": "Tasarım: OG",
+   "impressum": "Yasal Bilgilendirme",
+  "privacyPolicy": "Gizlilik Politikası",
+  "terms": "Genel Şartlar (AGB)",
+  "contact": "İletişim"
 }
 
 

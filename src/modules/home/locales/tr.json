@@ -4,7 +4,9 @@
     "heroSubtitle": "Ensotek ile teknolojide yeni bir seviyeye ulaşın."
   },
   "hero": {
-    "products": "Ürünler"
+    "products": "Ürünler",
+    "bookAppointment": "Randevu Al"
+
   },
   "noItemsFound": "Hiçbir ürün bulunamadı."
 }

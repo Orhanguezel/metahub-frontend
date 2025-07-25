@@ -31,8 +31,17 @@ export default function ScrollToTopButton() {
           transition={{ duration: 0.28 }}
           onClick={handleClick}
           aria-label="Sayfanın başına dön"
+          whileHover="hover"
         >
-          <FaChevronUp size={28} />
+          <motion.span
+            variants={{
+              hover: { y: -8, scale: 1.13, transition: { type: "spring", stiffness: 500, damping: 13 } },
+              initial: { y: 0, scale: 1 },
+            }}
+            style={{ display: "flex" }}
+          >
+            <FaChevronUp size={28} />
+          </motion.span>
         </Button>
       )}
     </AnimatePresence>

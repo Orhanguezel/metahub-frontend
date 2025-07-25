@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
+    "@react-pdf-viewer/core": "^3.12.0",
+    "@react-pdf-viewer/default-layout": "^3.12.0",
     "@reduxjs/toolkit": "^2.6.1",
     "@types/leaflet": "^1.9.18",
     "@types/leaflet.markercluster": "^1.5.5",
@@ -42,6 +44,7 @@
     "react-image-lightbox": "^5.1.4",
     "react-leaflet": "^5.0.0",
     "react-markdown": "^10.1.0",
+    "react-pdf": "^10.0.1",
     "react-redux": "^9.2.0",
     "react-toastify": "^11.0.5",
     "react-tooltip": "^5.28.1",

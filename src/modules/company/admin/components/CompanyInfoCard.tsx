@@ -1,49 +1,99 @@
 "use client";
 
 import styled from "styled-components";
+import { useMemo } from "react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
 import type { ICompany } from "@/modules/company/types";
+import { SupportedLocale } from "@/types/common";
 
-interface CompanyInfoCardProps {
-  company: ICompany | null;
-  
-}
-
+// Varsayılan logo yolu
 const DEFAULT_LOGO = "/default-company-logo.png";
 
+// Populated address type
+type PopulatedAddress = {
+  _id?: string;
+  street: string;
+  houseNumber: string;
+  city: string;
+  zipCode: string;
+  phone: string;
+  email: string;
+  country: string;
+  isDefault?: boolean;
+};
 
-export default function CompanyInfoCard({ company }: CompanyInfoCardProps) {
-  const { t } = useI18nNamespace("company", translations);
+export default function CompanyInfoCard({ company }: { company: ICompany | null }) {
+  const { i18n, t } = useI18nNamespace("company", translations);
+  const lang = (i18n.language?.slice(0, 2) || "en") as SupportedLocale;
 
-  if (!company) return null;
+  // --- Çoklu dil isim ve açıklama ---
+  const companyName =
+    (typeof company?.companyName === "object" && company?.companyName[lang]) ||
+    (typeof company?.companyName === "string" && company?.companyName) ||
+    t("companyName", "Company Name");
 
+  const companyDesc =
+    (typeof company?.companyDesc === "object" && company?.companyDesc[lang]) ||
+    (typeof company?.companyDesc === "string" && company?.companyDesc) ||
+    "";
+
+  // --- İlk adresi bul (populated veya id olabilir) ---
+  // Not: Eğer sadece id string array ise addressStr = "-"
+  const addressStr = useMemo(() => {
+    if (!company?.addresses || company.addresses.length === 0) return "-";
+    // Populated mi kontrolü (object içeriyorsa street olmalı)
+    const addr = company.addresses.find(
+      (a: any) => typeof a === "object" && !!a && "street" in a
+    ) as PopulatedAddress | undefined;
+
+    if (addr) {
+      return [addr.street, addr.city, addr.zipCode, addr.country]
+        .filter(Boolean)
+        .join(", ");
+    }
+    return "-";
+  }, [company?.addresses]);
+
+  // --- Görseller
   const images =
-    Array.isArray(company.images) && company.images.length > 0
+    Array.isArray(company?.images) && company.images.length > 0
       ? company.images
       : [];
+
+  // --- Hiç şirket yoksa veya companyName bile yoksa render etme
+  if (!company || !companyName) return null;
 
   return (
     <Card>
       <InfoBlock>
-        <CompanyName>{company.companyName || t("companyName", "Company Name")}</CompanyName>
+        <CompanyName>{companyName}</CompanyName>
+        {companyDesc && <CompanyDesc>{companyDesc}</CompanyDesc>}
         <Contact>{company.email || "-"}</Contact>
         <Contact>{company.phone || "-"}</Contact>
-        <Contact>
-          {(company.address?.street || "-") +
-            ", " +
-            (company.address?.city || "-")}
-        </Contact>
+        <Contact>{addressStr}</Contact>
+        {company.website && (
+          <Contact>
+            <a
+              href={company.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "inherit", textDecoration: "underline" }}
+            >
+              {company.website}
+            </a>
+          </Contact>
+        )}
       </InfoBlock>
       <LogoRow>
         {images.length > 0 ? (
           images.map((image, idx) => (
             <Logo
-    key={(image.url || "") + idx}
-    src={image.thumbnail || image.url}
-    alt={t("companyLogoAlt", "Company Logo {{n}}", { n: idx + 1 })}
-    loading="lazy"
-  />
+              key={(image.url || "") + idx}
+              src={image.thumbnail || image.url}
+              alt={t("companyLogoAlt", "Company Logo {{n}}", { n: idx + 1 })}
+              loading="lazy"
+            />
           ))
         ) : (
           <Logo
@@ -57,6 +107,7 @@ export default function CompanyInfoCard({ company }: CompanyInfoCardProps) {
   );
 }
 
+// --- Styled Components ---
 const Card = styled.section`
   background: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.textPrimary};
@@ -96,10 +147,17 @@ const CompanyName = styled.h3`
   margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
+const CompanyDesc = styled.p`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
+`;
+
 const Contact = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
   margin: ${({ theme }) => theme.spacings.xs} 0;
+  word-break: break-all;
 `;
 
 const LogoRow = styled.div`
@@ -129,4 +187,3 @@ const Logo = styled.img`
     background: ${({ theme }) => theme.colors.backgroundSecondary};
   }
 `;
-

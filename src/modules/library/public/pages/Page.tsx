@@ -23,7 +23,7 @@ export default function LibraryPage() {
   if (loading) {
     return (
       <PageWrapper>
-        <PageTitle>{t("page.allLibrary", "Hakkımızda")}</PageTitle>
+        <PageTitle>{t("page.allLibrary", "Kütüphane")}</PageTitle>
         <LibraryGrid>
           {[...Array(3)].map((_, i) => (
             <Skeleton key={i} />
@@ -44,7 +44,7 @@ export default function LibraryPage() {
   if (!library || library.length === 0) {
     return (
       <PageWrapper>
-        <PageTitle>{t("page.allLibrary", "Hakkımızda")}</PageTitle>
+        <PageTitle>{t("page.allLibrary", "Kütüphane")}</PageTitle>
         <EmptyMsg>
           {t("page.noLibrary", "Herhangi bir içerik bulunamadı.")}
         </EmptyMsg>
@@ -54,7 +54,7 @@ export default function LibraryPage() {
 
   return (
     <PageWrapper>
-      <PageTitle>{t("page.allLibrary", "Hakkımızda")}</PageTitle>
+      <PageTitle>{t("page.allLibrary", "Kütüphane")}</PageTitle>
       <LibraryGrid>
         {library.map((item: ILibrary, index: number) => (
           <LibraryCard

@@ -5,16 +5,19 @@ import { useState } from "react";
 import styled from "styled-components";
 import { BsChatDots } from "react-icons/bs";
 import ChatBox from "@/modules/chat/public/components/ChatBox"; // Senin ana chat kutun
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import { translations } from "@/modules/chat";
 
 export default function FloatingChatboxSection() {
+  const { t } = useI18nNamespace("chat", translations);
   const [open, setOpen] = useState(false);
 
   return (
     <>
       <ChatButton
-        aria-label="Chat"
+        aria-label={t("chat", "Chat")}
         onClick={() => setOpen(true)}
-        title="Canlı Sohbet"
+        title={t("chat", "Canlı Sohbet")}
       >
         <BsChatDots size={28} />
       </ChatButton>
@@ -33,7 +36,7 @@ export default function FloatingChatboxSection() {
 // --- Styles ---
 const ChatButton = styled.button`
   position: fixed;
-  bottom: 34px;
+  bottom: 28px;
   right: 234px;
   z-index: 1201;
   background: ${({ theme }) => theme.colors.primary};
@@ -48,6 +51,12 @@ const ChatButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.6em;
+  @media (max-width: 600px) {
+    right: 84px;
+    bottom: 14px;
+    padding: 0.7em 0.85em;
+    font-size: ${({ theme }) => theme.fontSizes.md};
+  }
 `;
 
 const ChatModalOverlay = styled.div`

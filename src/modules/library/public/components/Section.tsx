@@ -4,37 +4,23 @@ import translations from "@/modules/library/locales";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { motion } from "framer-motion";
 import { useAppSelector } from "@/store/hooks";
-import { Skeleton, ErrorMessage,SeeAllBtn } from "@/shared";
+import { Skeleton, ErrorMessage, SeeAllBtn } from "@/shared";
 import Image from "next/image";
 import type { SupportedLocale } from "@/types/common";
-import { FaChartLine, FaLightbulb } from "react-icons/fa";
+import type { ILibrary } from "@/modules/library";
 
 export default function LibrarySection() {
   const { i18n, t } = useI18nNamespace("library", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-
-  // Çeviri kaynaklarını yükle
-  Object.entries(translations).forEach(([lng, resources]) => {
-    if (!i18n.hasResourceBundle(lng, "library")) {
-      i18n.addResourceBundle(lng, "library", resources, true, true);
-    }
-  });
 
   const { library, loading, error } = useAppSelector((state) => state.library);
 
   if (loading) {
     return (
       <Section>
-        <LibraryGrid>
-          <Left>
-            <Skeleton />
-            <Skeleton />
-            <Skeleton />
-          </Left>
-          <Right>
-            <Skeleton />
-          </Right>
-        </LibraryGrid>
+        <FullWidth>
+          <Skeleton />
+        </FullWidth>
       </Section>
     );
   }
@@ -42,9 +28,9 @@ export default function LibrarySection() {
   if (error) {
     return (
       <Section>
-        <LibraryGrid>
+        <FullWidth>
           <ErrorMessage message={error} />
-        </LibraryGrid>
+        </FullWidth>
       </Section>
     );
   }
@@ -52,343 +38,174 @@ export default function LibrarySection() {
   if (!Array.isArray(library) || library.length < 3) {
     return (
       <Section>
-        <LibraryGrid>
-          <Left>
-            <MainTitle>{t("page.library.allLibrary", "Hakkımızda")}</MainTitle>
-            <Desc>{t("library.library.empty", "Hakkında içeriği bulunamadı.")}</Desc>
-          </Left>
-        </LibraryGrid>
+        <FullWidth>
+          <MainTitle>{t("page.library.allLibrary", "Kütüphane")}</MainTitle>
+          <Desc>{t("library.library.empty", "Kütüphane içeriği bulunamadı.")}</Desc>
+        </FullWidth>
       </Section>
     );
   }
 
-  // --- MAIN: Ensotek Su Soğutma Kuleleri (örnek ana içerik) ---
-  const main = library[2]; // Sıralamanı sen belirleyebilirsin!
-  // Vizyon & Misyon (örnek)
-  const featuresData = [library[0], library[1]];
-
-  const icons = [
-    <FaChartLine key="chart" size={32} color="#2875c2" />,
-    <FaLightbulb key="bulb" size={32} color="#2875c2" />,
-  ];
-
-  // Kartlar
-  const features = featuresData.map((item, i) => ({
-    icon: icons[i],
-    title: item.title?.[lang] || Object.values(item.title || {})[0] || "—",
-    summary: item.summary?.[lang] || Object.values(item.summary || {})[0] || "—",
-    slug: item.slug,
-  }));
-
-  // --- YAN GÖRSELLER ---
-  const rightImages = library.filter((item) => item._id !== main._id).slice(0, 2);
+  const allLibrary = library || [];
+  const firstLibrary = allLibrary[6];
+  const restLibraries = allLibrary.slice(1, 3); // 2 küçük kart
 
   return (
-    <Section
-      initial={{ opacity: 0, y: 34 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.66 }}
-      viewport={{ once: true }}
-    >
-      <LibraryGrid>
-        {/* SOL BLOK */}
-        <Left>
-          <MinorTitle>{t("page.library.minorTitle", "HAKKIMIZDA")}</MinorTitle>
-          <MainTitle>
-            {main.title?.[lang] || Object.values(main.title || {})[0] || t("page.library.title", "Ensotek Hakkında")}
-          </MainTitle>
+    <Section>
+      {/* --- 1. SATIR: YAZI SOLDA, RESİM SAĞDA --- */}
+      <MainInfoRow>
+        <MainTextCol>
+          <MinorTitle>{t("page.library.minorTitle", "KÜTÜPHANE")}</MinorTitle>
+          <StyledLink
+            href={`/library/${firstLibrary.slug}`}
+            aria-label={firstLibrary.title?.[lang] || "Untitled"}
+          >
+            {firstLibrary.title?.[lang] ||
+              Object.values(firstLibrary.title || {})[0] ||
+              t("page.library.title", "Kütüphane")}
+          </StyledLink>
           <Desc>
-            {main.summary?.[lang] || Object.values(main.summary || {})[0] || "—"}
+            {firstLibrary.summary?.[lang] ||
+              Object.values(firstLibrary.summary || {})[0] ||
+              "—"}
           </Desc>
-          <Features>
-            {features.map((item, i) => (
-              <Feature key={i}>
-                <IconWrap>{item.icon}</IconWrap>
-                <FeatureText>
-                  <FeatureTitle>{item.title}</FeatureTitle>
-                  <FeatureDesc>{item.summary}</FeatureDesc>
-                </FeatureText>
-              </Feature>
-            ))}
-          </Features>
-          <SeeAllBtn href="/library">
-            {t("page.library.all", "Daha Fazla Bilgi")}
-          </SeeAllBtn>
-        </Left>
+        </MainTextCol>
+        <MainImageWrap as={Link} href={`/library/${firstLibrary.slug}`}>
+          {firstLibrary?.images?.[0]?.url ? (
+            <MainImage
+              src={firstLibrary.images[0].url}
+              alt={firstLibrary.title?.[lang] || "Kütüphane"}
+              width={360}
+              height={230}
+              style={{ objectFit: "cover" }}
+              priority
+            />
+          ) : (
+            <ImgPlaceholder />
+          )}
+        </MainImageWrap>
+      </MainInfoRow>
 
-        {/* SAĞ BLOK - GÖRSEL + küçük resimler */}
-        <Right>
-          <MainImageWrap as={Link} href={`/library/${main.slug}`}>
-            {main.images && Array.isArray(main.images) && main.images[0]?.url ? (
-              <MainImage
-                src={main.images[0].url}
-                alt={main.title?.[lang] || Object.values(main.title || {})[0] || "Library"}
-                width={330}
-                height={210}
-                style={{ objectFit: "cover", borderRadius: "18px" }}
-                priority
-              />
-            ) : (
-              <ImgPlaceholder />
-            )}
-          </MainImageWrap>
-          <StackedImages>
-            {rightImages.map((item, idx) =>
-              item.images && Array.isArray(item.images) && item.images[0]?.url ? (
-                <StackedImageLink key={idx} href={`/library/${item.slug}`}>
-                  <StackedImage
+      {/* --- 2. SATIR: BUTON + KARTLAR --- */}
+      <BottomRow>
+        <SeeAllWrap>
+          <SeeAllBtn href="/library">
+            {t("page.library.all", "Tüm Kayıtları Gör")}
+          </SeeAllBtn>
+        </SeeAllWrap>
+        <SmallCards>
+          {restLibraries.map((item: ILibrary, idx: number) => (
+            <SmallCard
+              key={item._id}
+              as={motion.div}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.36, delay: idx * 0.09 }}
+              viewport={{ once: true }}
+            >
+              <SmallCardImageWrap as={Link} href={`/library/${item.slug}`}>
+                {item.images?.[0]?.url ? (
+                  <SmallCardImage
                     src={item.images[0].url}
-                    alt={item.title?.[lang] || Object.values(item.title || {})[0] || "Library"}
-                    width={135}
+                    alt={item.title?.[lang] || "Kütüphane"}
+                    width={90}
                     height={90}
-                    style={{
-                      objectFit: "cover",
-                      borderRadius: "14px",
-                      marginTop: idx === 1 ? "12px" : "0"
-                    }}
-                    loading="lazy"
                   />
-                </StackedImageLink>
-              ) : null
-            )}
-          </StackedImages>
-        </Right>
-      </LibraryGrid>
+                ) : (
+                  <ImgPlaceholderSmall />
+                )}
+              </SmallCardImageWrap>
+              <SmallCardTitle as={Link} href={`/library/${item.slug}`}>
+                {item.title?.[lang] || "Untitled"}
+              </SmallCardTitle>
+            </SmallCard>
+          ))}
+        </SmallCards>
+      </BottomRow>
     </Section>
   );
 }
 
-const ImgPlaceholder = styled.div`
-  width: 100%;
-  height: 100%;
-  background: ${({ theme }) => theme.colors.skeleton};
-  opacity: 0.36;
-`;
-
-
-const StackedImageLink = styled(Link)`
-  display: block;
-  border-radius: ${({ theme }) => theme.radii.md};
-  overflow: hidden;
-  cursor: pointer;
-
-  &:hover img,
-  &:focus-visible img {
-    box-shadow: 0 7px 32px 0 rgba(40,117,194,0.14);
-    transform: scale(1.055);
-    outline: none;
-  }
-`;
-
-// Diğer styled'lar aynı!
-
-
 // --- STYLES ---
-const Section = styled(motion.section)`
+
+const Section = styled.section`
   background: ${({ theme }) => theme.colors.sectionBackground};
   color: ${({ theme }) => theme.colors.text};
-  padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xxl};
+  padding: 3.5vw 0 2vw 0;
   width: 100%;
+
+  @media (max-width: 600px) {
+    padding: 1.2rem 0 0.7rem 0;
+  }
 `;
 
-const LibraryGrid = styled.div`
+
+const FullWidth = styled.div`
   max-width: 1280px;
   margin: 0 auto;
-  display: flex;
-  gap: 2.8rem;
-  align-items: flex-start;
-  padding: 0 ${({ theme }) => theme.spacings.xl};
-  flex-wrap: wrap;
-
-  ${({ theme }) => theme.media.medium} {
-    padding: 0 ${({ theme }) => theme.spacings.md};
-    gap: 2rem;
-  }
-
-  ${({ theme }) => theme.media.small} {
-    flex-direction: column;
-    gap: 2.5rem;
-    padding: 0 ${({ theme }) => theme.spacings.sm};
-    align-items: center;
-  }
+  padding: 0 2vw;
 `;
 
-const Left = styled.div`
-  flex: 1.1 1 340px;
-  min-width: 320px;
-  max-width: 540px;
+const MainInfoRow = styled.div`
+  max-width: 1280px;
+  margin: 0 auto 2.3vw auto;
   display: flex;
-  flex-direction: column;
-  gap: 1.1rem;
+  flex-direction: row;
+  align-items: flex-start;
   justify-content: flex-start;
-  ${({ theme }) => theme.media.small} {
-    max-width: 100%;
-    align-items: center;
-    text-align: center;
-    gap: 2rem;
-  }
-`;
+  gap: 2vw;
+  padding: 0 2vw;
 
-const MinorTitle = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.accent};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-`;
-
-const MainTitle = styled.h2`
-  font-size: clamp(2.2rem, 3.3vw, 2.7rem);
-  color: ${({ theme }) => theme.colors.primary};
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-  margin: 0 0 0.45em 0;
-  letter-spacing: -0.01em;
-  line-height: 1.13;
-`;
-
-const Desc = styled.p`
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  line-height: 1.7;
-  margin-bottom: 1.8rem;
-`;
-
-const Features = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2.2rem 1.3rem;
-  margin: 2.5rem 0 1.3rem 0;
-
-  @media (max-width: 1100px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
-  }
-  @media (max-width: 700px) {
-    grid-template-columns: 1fr;
-    gap: 1.3rem;
-    margin: 1.4rem 0 0.7rem 0;
-  }
-`;
-
-const Feature = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: 1.12rem;
-  background: ${({ theme }) => theme.colors.cardBackground || "#fff"};
-  border-radius: 18px;
-  border: 1.5px solid ${({ theme }) => theme.colors.borderLight || "#f1f3f8"};
-  box-shadow: 0 2px 14px 0 rgba(40,117,194,0.07);
-  padding: 1.45rem 1.1rem 1.15rem 1.15rem;
-  min-height: 145px;
-  transition: box-shadow 0.17s, transform 0.16s, border-color 0.15s;
-  cursor: pointer;
-
-  &:hover, &:focus-visible {
-    box-shadow: 0 8px 26px 0 rgba(40,117,194,0.13);
-    transform: translateY(-5px) scale(1.032);
-    border-color: ${({ theme }) => theme.colors.primaryTransparent};
-    outline: none;
-  }
-`;
-
-const IconWrap = styled.div`
-  min-width: 44px;
-  min-height: 44px;
-  background: linear-gradient(
-    135deg,
-    ${({ theme }) => theme.colors.primaryTransparent} 40%,
-    ${({ theme }) => theme.colors.backgroundAlt} 100%
-  );
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-  font-size: 1.8rem;
-`;
-
-const FeatureText = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0; /* clamp için */
-`;
-
-const FeatureTitle = styled.h3`
-  font-size: 1.14rem;
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  margin-bottom: 0.21rem;
-  line-height: 1.2;
-  white-space: pre-line;
-`;
-
-const FeatureDesc = styled.div`
-  font-size: 0.97rem;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  opacity: 0.95;
-  line-height: 1.55;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;    /* En fazla 3 satır! */
-  -webkit-box-orient: vertical;
-  text-overflow: ellipsis;
-  min-height: 2.7em;
-`;
-
-const Right = styled.div`
-  flex: 1.5 1 320px;
-  min-width: 270px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1.7rem;
-
-  ${({ theme }) => theme.media.small} {
-    width: 100%;
-    max-width: 420px; /* Mobilde çok genişlemesin */
-    margin: 0 auto;
+  @media (max-width: 900px) {
     flex-direction: column;
-    align-items: center;
-    gap: 1rem;
+    gap: 0;
+    padding: 0;
+    margin-bottom: 0;
+  }
+  @media (max-width: 600px) {
+  align-items: center;
+    gap: 0;
+    padding: 0;
+    margin-bottom: 0 !important;
+  }
+`;
+
+
+const MainTextCol = styled.div`
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0;
+
+  @media (max-width: 900px) {
+    gap: 0.2rem;
+    padding: 0;
+    margin: 0;
   }
 `;
 
 const MainImageWrap = styled(Link)`
-  width: 340px;
-  height: 220px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${({ theme }) => theme.radii.xl};
+  min-width: 320px;
+  max-width: 370px;
+  width: 350px;
+  height: 210px;
+  margin-left: auto;
   overflow: hidden;
-  box-shadow: 0 8px 30px 0 rgba(40,117,194,0.16), ${({ theme }) => theme.shadows.lg};
-  margin-bottom: 0.8rem;
-  position: relative;
-  isolation: isolate;
-  cursor: pointer;
-  display: block;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  box-shadow: 0 6px 32px 0 rgba(40,117,194,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-radius: ${({ theme }) => theme.radii.xl};
-    background: linear-gradient(120deg, rgba(40,117,194,0.07) 12%, rgba(11,182,214,0.06) 100%);
-    z-index: 1;
-  }
-
-  &:hover, &:focus-visible {
-    box-shadow: 0 12px 38px 0 rgba(40,117,194,0.25), ${({ theme }) => theme.shadows.xl};
-    transform: scale(1.025);
-  }
-
-  ${({ theme }) => theme.media.small} {
-    width: 100%;
-    max-width: 340px;
+  @media (max-width: 900px) {
+    width: 98vw;
+    max-width: 420px;
     min-width: 170px;
-    height: 175px;
-    margin: 0 auto 0.5rem auto;
+    margin: 0 auto;
+    height: 170px;
   }
 `;
 
@@ -397,46 +214,240 @@ const MainImage = styled(Image)`
   height: 100%;
   object-fit: cover;
   display: block;
-  position: relative;
-  z-index: 2;
 `;
 
-const StackedImages = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1.15rem;
+const ImgPlaceholder = styled.div`
+  width: 100%;
+  height: 100%;
+  min-height: 140px;
+  background: ${({ theme }) => theme.colors.skeleton};
+  opacity: 0.36;
+`;
 
-  ${({ theme }) => theme.media.small} {
+const MinorTitle = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.accent};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  margin-bottom: 0.8rem;
+
+  @media (max-width: 600px) {
+    margin-bottom: 0.4rem;
+    text-align: center;
     width: 100%;
-    max-width: 340px;
-    flex-direction: row;
+    display: block;
     justify-content: center;
-    gap: 0.85rem;
+    align-items: center;
   }
 `;
 
-const StackedImage = styled(Image)`
-  width: 110px;
-  height: 72px;
+const StyledLink = styled(Link)`
+  color: ${({ theme }) => theme.colors.primary};
+  font-family: ${({ theme }) => theme.fonts.heading};
+  font-size: clamp(2.2rem, 3.3vw, 2.7rem);
+  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
+  letter-spacing: -0.01em;
+  line-height: 1.13;
+  text-decoration: none;
+  margin: 0 0 0.20em 0;
+  display: inline-block;
+  transition: color 0.2s;
+  &:hover, &:focus-visible {
+    color: ${({ theme }) => theme.colors.accent};
+    text-decoration: underline;
+  }
+`;
+
+const MainTitle = styled.h2`
+  font-size: clamp(2.2rem, 3.3vw, 2.7rem);
+  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
+  color: ${({ theme }) => theme.colors.primary};
+  margin: 0 0 0.25em 0;
+  line-height: 1.13;
+  letter-spacing: -0.01em;
+  font-family: ${({ theme }) => theme.fonts.heading};
+  text-decoration: none;
+  transition: color 0.2s;
+
+  @media (max-width: 600px) {
+    text-align: center;
+    width: 100%;
+    display: block;
+    align-items: center;
+  }
+`;
+
+const Desc = styled.p`
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  line-height: 1.7;
+  margin-bottom: 0.8rem;
+  @media (max-width: 600px) {
+    margin-bottom: 0.4rem;
+    text-align: center;
+    width: 100%;
+    display: block;
+    justify-content: center;
+    align-items: center;
+  }
+`;
+
+const BottomRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 2vw;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 2vw;
+
+  @media (max-width: 900px) {
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    margin: 0;
+  }
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    margin: 0 !important;
+  }
+`;
+
+const SeeAllWrap = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex: 0 0 240px;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+
+  @media (max-width: 900px) {
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+  }
+`;
+
+const SmallCards = styled.div`
+  flex: 1 1 0;
+  display: flex;
+  gap: 0.2rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+
+  @media (max-width: 900px) {
+    flex-direction: row;
+    gap: 0.2rem;
+    justify-content: center;
+    margin-top: 0 !important;
+    padding: 0;
+  }
+  @media (max-width: 600px) {
+    flex-direction: row;
+    gap: 0;
+    justify-content: center;
+    margin-top: 0 !important; /* SeeAllWrap ile arasında boşluk bırakma */
+    padding: 0;
+  }
+`;
+
+const SmallCard = styled.div`
+  background: ${({ theme }) => theme.colors.cardBackground};
+  box-shadow: 0 4px 18px 0 rgba(40,117,194,0.09);
+  padding: 1rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  min-height: 120px;
+  width: 48%;   // Mobilde iki kart yan yana tam sığsın
+  gap: 0.7rem;
+  transition: box-shadow 0.17s, transform 0.13s;
+  &:hover { box-shadow: 0 8px 28px 0 rgba(40,117,194,0.14); transform: translateY(-4px) scale(1.03); }
+
+  @media (max-width: 900px) {
+    width: 48%;
+    min-width: 0;
+    max-width: 240px;
+    padding: 0.7rem 0.4rem;
+    gap: 0;
+  }
+  @media (max-width: 600px) {
+    width: 48%;
+    min-width: 0;
+    max-width: 170px;
+    padding: 0.4rem 0.2rem;
+    gap: 0;
+  }
+`;
+
+
+const SmallCardImageWrap = styled(Link)`
+  width: 80px;
+  height: 54px;
   object-fit: cover;
-  border-radius: ${({ theme }) => theme.radii.md};
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   box-shadow: 0 2px 14px 0 rgba(40,117,194,0.07);
   transition: box-shadow 0.17s, transform 0.15s;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover, &:focus-visible {
     box-shadow: 0 7px 32px 0 rgba(40,117,194,0.14);
     transform: scale(1.055);
     outline: none;
   }
-
-  ${({ theme }) => theme.media.small} {
-    width: 50%;
-    min-width: 90px;
-    max-width: 175px;
-    height: 90px;
-    max-height: 120px;
+  @media (max-width: 900px) {
+    width: 70px;
+    height: 50px;
   }
+  @media (max-width: 600px) {
+    width: 55px;
+    height: 38px;
+    padding: 0;
+    margin: 0 auto;
+  }
+`;
+
+
+const SmallCardImage = styled(Image)`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const ImgPlaceholderSmall = styled.div`
+  width: 90px;
+  height: 90px;
+  background: ${({ theme }) => theme.colors.skeleton};
+  opacity: 0.28;
+  @media (max-width: 900px) {
+    width: 70px;
+    height: 70px;
+  }
+  @media (max-width: 600px) {
+    width: 55px;
+    height: 55px;
+    padding: 0;
+    margin: 0 auto;
+  }
+`;
+
+const SmallCardTitle = styled.h3`
+  font-size: 1.13rem;
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  text-align: center;
+  margin: 0;
+  line-height: 1.32;
 `;
 

@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
+import styled from "styled-components";
 
 export interface SocialLinks {
   facebook?: string;
@@ -14,9 +13,12 @@ export interface SocialLinks {
 }
 
 interface Props {
-  initialValues: SocialLinks;
-  onSubmit: (values: SocialLinks) => void;
+  values: SocialLinks;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   loading?: boolean;
+  // Eğer kendi başına form olarak kullanılacaksa:
+  onSubmit?: (e: React.FormEvent) => void;
+  renderAsForm?: boolean; // Varsayılan true, parent formda ise false gönder!
 }
 
 const SOCIAL_KEYS: (keyof SocialLinks)[] = [
@@ -28,79 +30,66 @@ const SOCIAL_KEYS: (keyof SocialLinks)[] = [
 ];
 
 const SocialLinksForm: React.FC<Props> = ({
-  initialValues,
-  onSubmit,
+  values,
+  onChange,
   loading,
+  onSubmit,
+  renderAsForm = true,
 }) => {
   const { t } = useI18nNamespace("company", translations);
-  const [formData, setFormData] = useState<SocialLinks>({
-    facebook: "",
-    instagram: "",
-    twitter: "",
-    linkedin: "",
-    youtube: "",
-  });
-
-  useEffect(() => {
-    setFormData({
-      facebook: initialValues.facebook || "",
-      instagram: initialValues.instagram || "",
-      twitter: initialValues.twitter || "",
-      linkedin: initialValues.linkedin || "",
-      youtube: initialValues.youtube || "",
-    });
-  }, [initialValues]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
 
   // Label ve placeholder'lar i18n ile alınır
   const getLabel = (key: keyof SocialLinks) =>
     t(`socialLabels.${key}`, key.charAt(0).toUpperCase() + key.slice(1));
-
   const getPlaceholder = (key: keyof SocialLinks) =>
     t(`socialPlaceholders.${key}`, `https://${key}.com/yourcompany`);
 
-  return (
-    <Form onSubmit={handleSubmit} autoComplete="off">
+  // İçeriği tek bir değişkene koy, tekrar kullan:
+  const content = (
+    <>
       <SectionTitle>{t("socialMedia", "Sosyal Medya Hesapları")}</SectionTitle>
       <InputsGrid>
         {SOCIAL_KEYS.map((key) => (
           <InputBlock key={key}>
             <Label htmlFor={key}>{getLabel(key)}</Label>
             <Input
-              id={key}
-              name={key}
-              type="url"
-              value={formData[key] || ""}
-              onChange={handleChange}
-              placeholder={getPlaceholder(key)}
-              autoComplete="off"
-              disabled={!!loading}
-            />
+  id={key}
+  name={key}
+  type="url"
+  value={values?.[key] || ""}
+  onChange={onChange}
+  placeholder={getPlaceholder(key)}
+  autoComplete="off"
+  disabled={!!loading}
+/>
           </InputBlock>
         ))}
       </InputsGrid>
-      <Button type="submit" disabled={!!loading}>
-        {loading ? t("saving", "Kaydediliyor...") : t("save", "Kaydet")}
-      </Button>
-    </Form>
+      {/* Sadece kendi başına form ise submit butonunu göster */}
+      {renderAsForm && (
+        <Button type="submit" disabled={!!loading}>
+          {loading ? t("saving", "Kaydediliyor...") : t("save", "Kaydet")}
+        </Button>
+      )}
+    </>
   );
+
+  // Eğer parent bir form varsa (örneğin CompanyForm içindeyse) renderAsForm=false gönder!
+  if (renderAsForm) {
+    return (
+      <Form onSubmit={onSubmit} autoComplete="off" noValidate>
+        {content}
+      </Form>
+    );
+  } else {
+    // Sadece bir grid / input seti döner, parent form submiti yönetir
+    return content;
+  }
 };
 
 export default SocialLinksForm;
 
-// Styled Components
+// Styled Components...
 const Form = styled.form`
   margin-top: 24px;
   background: ${({ theme }) => theme.colors.cardBackground};
@@ -108,35 +97,27 @@ const Form = styled.form`
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.xs};
 `;
-
 const SectionTitle = styled.h4`
   margin-bottom: ${({ theme }) => theme.spacings.md};
   color: ${({ theme }) => theme.colors.textPrimary};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
-
 const InputsGrid = styled.div`
   display: grid;
   gap: ${({ theme }) => theme.spacings.md};
   grid-template-columns: 1fr;
-
   ${({ theme }) => theme.media.small} {
     grid-template-columns: 1fr 1fr;
   }
 `;
-
-const InputBlock = styled.div`
-  width: 100%;
-`;
-
+const InputBlock = styled.div` width: 100%; `;
 const Label = styled.label`
   display: block;
   font-weight: 600;
   margin-bottom: ${({ theme }) => theme.spacings.xs};
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
-
 const Input = styled.input`
   padding: ${({ theme }) => theme.spacings.sm};
   width: 100%;
@@ -146,13 +127,11 @@ const Input = styled.input`
   color: ${({ theme }) => theme.colors.textPrimary};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   margin-bottom: ${({ theme }) => theme.spacings.sm};
-
   &:focus {
     border-color: ${({ theme }) => theme.colors.primary};
     outline: none;
     background: ${({ theme }) => theme.colors.backgroundAlt};
   }
-
   &:disabled {
     background: ${({ theme }) => theme.colors.disabled};
     color: ${({ theme }) => theme.colors.textSecondary};
@@ -160,7 +139,6 @@ const Input = styled.input`
     opacity: 0.8;
   }
 `;
-
 const Button = styled.button`
   margin-top: ${({ theme }) => theme.spacings.md};
   padding: ${({ theme }) => theme.spacings.sm}
@@ -174,13 +152,6 @@ const Button = styled.button`
   cursor: pointer;
   min-width: 140px;
   transition: background 0.2s;
-
-  &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.primaryHover};
-  }
-
-  &:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
+  &:hover:not(:disabled) { background: ${({ theme }) => theme.colors.primaryHover}; }
+  &:disabled { opacity: 0.7; cursor: not-allowed; }
 `;

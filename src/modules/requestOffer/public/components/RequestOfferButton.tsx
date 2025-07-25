@@ -1,4 +1,3 @@
-// src/modules/requestOffer/components/RequestOfferButton.tsx
 "use client";
 
 import styled from "styled-components";
@@ -14,7 +13,10 @@ export default function RequestOfferButton() {
 
   return (
     <>
-      <FloatingButton onClick={() => setOpen(true)}>
+      <FloatingButton
+        aria-label={t("buttonText", "Teklif İste")}
+        onClick={() => setOpen(true)}
+      >
         <HiOutlineTag size={28} />
         <span>{t("buttonText", "Teklif İste")}</span>
       </FloatingButton>
@@ -25,17 +27,14 @@ export default function RequestOfferButton() {
 
 const FloatingButton = styled.button`
   position: fixed;
-  top: 390px;
+  top: 400px;
   right: 0;
   z-index: 1201;
   background: ${({ theme }) => theme.colors.primary};
   color: #fff;
   border: none;
   border-radius: ${({ theme }) => theme.radii.md} 0 0 ${({ theme }) => theme.radii.md};
-  padding: 1.1em 1.25em 1.1em 0.9em;
   box-shadow: ${({ theme }) => theme.shadows.md};
-  font-size: 1.1em;
-  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 0.75em;
@@ -43,14 +42,43 @@ const FloatingButton = styled.button`
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
+  padding: 1.1em 0.25em 1.1em 0.45em;
+  font-size: 1.1em;
+  font-weight: 600;
 
   span {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
     font-size: 1.04em;
     letter-spacing: 0.01em;
+    display: inline;
+    transition: opacity 0.16s;
   }
-  &:hover {
+
+  &:hover, &:focus-visible {
     background: ${({ theme }) => theme.colors.primaryHover};
+  }
+
+  // MOBİLDE: SADECE KÜÇÜK İKON!
+  @media (max-width: 600px) {
+    top: 286px;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 14px 0 0 14px;
+    box-shadow: 0 3px 16px 0 rgba(20,80,180,0.08);
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+
+    span {
+      display: none;
+    }
+    svg {
+      width: 21px;
+      height: 21px;
+      margin: 0;
+    }
   }
 `;

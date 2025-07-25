@@ -5,16 +5,30 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../../locales/footer";
 import { SupportedLocale } from "@/types/common";
 
+// Firma adı çoklu dil object olabilir, handle et
+function resolveCompanyName(companyName: any, lang: SupportedLocale): string {
+  if (!companyName) return "";
+  if (typeof companyName === "string") return companyName;
+  if (typeof companyName === "object") {
+    return (
+      companyName[lang] ||
+      companyName.tr ||
+      Object.values(companyName)[0] || ""
+    );
+  }
+  return "";
+}
+
 export default function FooterCopyright() {
   const settings = useAppSelector((state) => state.settings.settings) ?? [];
   const company = useAppSelector((state) => state.company.company);
-   const { i18n} = useI18nNamespace("footer", translations);
-    const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const { i18n } = useI18nNamespace("footer", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   // Settings’ten dinamik değerler
   const getLocalizedValue = (value: any): string | undefined => {
     if (value && typeof value === "object" && !Array.isArray(value)) {
-      return value[lang] || value.tr || "";
+      return value[lang] || value.tr || Object.values(value)[0] || "";
     }
     return value;
   };
@@ -22,8 +36,12 @@ export default function FooterCopyright() {
   const dynamicCompanyRaw = settings.find((s: any) => s.key === "footer_company_name")?.value;
   const dynamicRightsRaw = settings.find((s: any) => s.key === "footer_rights")?.value;
 
+  // Firma adı settings > company > fallback ""
   const companyName =
-    getLocalizedValue(dynamicCompanyRaw) || company?.companyName || "";
+    getLocalizedValue(dynamicCompanyRaw) ||
+    resolveCompanyName(company?.companyName, lang) ||
+    "";
+
   const rightsText = getLocalizedValue(dynamicRightsRaw) || "";
 
   // Eğer company veya rights yoksa, component hiç render edilmez!
@@ -47,6 +65,7 @@ export default function FooterCopyright() {
   );
 }
 
+// --- Styled Components (DEĞİŞTİRME) ---
 const Copyright = styled.div`
   width: 100%;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
