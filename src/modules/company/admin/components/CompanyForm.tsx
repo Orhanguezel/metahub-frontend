@@ -304,13 +304,6 @@ const Input = styled.input<{ $hasError?: boolean }>`
   }
 `;
 
-const FieldError = styled.div`
-  color: ${({ theme }) => theme.colors.danger};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  margin-bottom: ${({ theme }) => theme.spacings.xs};
-  min-height: 18px;
-`;
-
 const FieldArrayContainer = styled.div`
   margin-top: 8px;
   display: flex;
