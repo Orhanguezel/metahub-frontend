@@ -1,6 +1,8 @@
 {
   "page.about.minorTitle": "HAKKIMIZDA",
-  "page.about.title": "Ensotek Hakkında",
+  "page.about.minorTitleMe": "HAKKIMDA",
+  "page.about.titleMe": "Hakkımda",
+  "page.about.title": "Hakkında",
   "page.about.desc": "Ensotek; yenilikçi mühendislik, sürdürülebilir çözümler ve müşteri odaklı hizmet anlayışıyla sektöründe güvenilir bir iş ortağıdır.",
   "page.about.all": "Daha Fazla Bilgi",
   "page.about.noAbout": "Herhangi bir içerik bulunamadı.",
@@ -9,6 +11,7 @@
   "page.about.other": "Diğer Hakkımızda İçerikleri",
   "page.noAbout": "Hakkında içeriği bulunamadı.",
   "page.about.allAbout": "Hakkımızda",
+  "page.about.allAboutMe": "Hakkımda",
   "page.summary": "Kısa Bilgi",
   "page.allAbout": "Hakkımızda",
   "page.detail": "Detaylar",

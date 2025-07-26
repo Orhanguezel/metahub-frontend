@@ -44,18 +44,13 @@ export default function BlogList({
   if (blog.length === 0)
     return <Empty>{t("blog.empty", "No blog available.")}</Empty>;
 
-  // Fallback fonksiyonu (çok dilli)
-  const getMultiLang = (obj?: Record<string, string>) => {
-    if (!obj) return "";
-    return obj[lang] || obj["en"] || Object.values(obj)[0] || "—";
-  };
 
   return (
     <div>
       {blog.map((item) => (
         <BlogCard key={item._id}>
-          <h2>{getMultiLang(item.title)}</h2>
-          <p>{getMultiLang(item.summary)}</p>
+          <h2>{item.title[lang] || "Blog Title"}</h2>
+          <p>{item.summary[lang] || "No summary available."}</p>
 
           {item.images?.length > 0 ? (
             <ImageGrid>
@@ -63,7 +58,7 @@ export default function BlogList({
                 <Image
                   key={i}
                   src={img.url}
-                  alt={getMultiLang(item.title) || `blog-${i}`}
+                  alt={item.title[lang] || `blog-${i}`}
                   loading="lazy"
                   width={150}
                   height={100}

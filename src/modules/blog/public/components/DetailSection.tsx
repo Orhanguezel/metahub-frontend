@@ -18,7 +18,7 @@ import {
 } from "@/modules/blog/slice/blogSlice";
 import { CommentForm, CommentList } from "@/modules/comment";
 import type { IBlog } from "@/modules/blog";
-import { SupportedLocale, getMultiLang } from "@/types/common";
+import { SupportedLocale } from "@/types/common";
 import { SocialLinks } from "@/modules/shared";
 import Modal from "@/modules/home/public/components/Modal";
 
@@ -123,7 +123,7 @@ export default function BlogDetailSection() {
       transition={{ duration: 0.6 }}
     >
       {/* Başlık */}
-      <Title>{getMultiLang(blog.title, lang)}</Title>
+      <Title>{blog.title[lang]}</Title>
 
       {/* Büyük görsel + thumb */}
       {mainImage?.url && (
@@ -131,7 +131,7 @@ export default function BlogDetailSection() {
           <MainImageFrame>
             <StyledMainImage
               src={mainImage.url}
-              alt={getMultiLang(blog.title, lang)}
+              alt={blog.title[lang] || "Blog Title"}
               width={800}
               height={450}
               priority
@@ -153,7 +153,7 @@ export default function BlogDetailSection() {
               <div style={{ textAlign: "center", padding: 0 }}>
                 <Image
                   src={mainImage.url}
-                  alt={getMultiLang(blog.title, lang) + "-big"}
+                  alt={blog.title[lang] + "-big"}
                   width={1280}
                   height={720}
                   style={{
@@ -168,7 +168,7 @@ export default function BlogDetailSection() {
                   sizes="(max-width: 800px) 90vw, 1280px"
                 />
                 <div style={{ marginTop: 10, color: "#666", fontSize: 16 }}>
-                  {getMultiLang(blog.title, lang)}
+                  {blog.title[lang]}
                 </div>
               </div>
             </Modal>
@@ -187,7 +187,7 @@ export default function BlogDetailSection() {
                 >
                   <StyledThumbImage
                     src={img.url}
-                    alt={`${getMultiLang(blog.title, lang)} thumbnail ${i + 1}`}
+                    alt={`${blog.title[lang]} thumbnail ${i + 1}`}
                     width={168}
                     height={96}
                     $active={mainIndex === i}
@@ -206,19 +206,19 @@ export default function BlogDetailSection() {
       </SocialShareBox>
 
       {/* Özet (Kısa Bilgi) */}
-      {blog.summary && getMultiLang(blog.summary, lang) && (
+      {blog.summary && blog.summary[lang] && (
         <SummaryBox>
           <ReactMarkdown>
-            {formatText(getMultiLang(blog.summary, lang))}
+            {formatText(blog.summary[lang])}
           </ReactMarkdown>
         </SummaryBox>
       )}
 
       {/* Ana içerik */}
-      {blog.content && getMultiLang(blog.content, lang) && (
+      {blog.content && blog.content[lang] && (
         <ContentBox>
           <ReactMarkdown>
-            {formatText(getMultiLang(blog.content, lang))}
+            {formatText(blog.content[lang])}
           </ReactMarkdown>
         </ContentBox>
       )}
@@ -234,7 +234,7 @@ export default function BlogDetailSection() {
                   {item.images?.[0]?.url ? (
                     <OtherImg
                       src={item.images[0].url}
-                      alt={getMultiLang(item.title, lang)}
+                      alt={item.title[lang] || "Blog Image"}
                       width={60}
                       height={40}
                     />
@@ -244,7 +244,7 @@ export default function BlogDetailSection() {
                 </OtherImgWrap>
                 <OtherTitleMini>
                   <Link href={`/blog/${item.slug}`}>
-                    {getMultiLang(item.title, lang)}
+                    {item.title[lang] || "Blog Title"}
                   </Link>
                 </OtherTitleMini>
               </OtherCard>

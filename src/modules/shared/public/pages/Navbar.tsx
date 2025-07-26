@@ -197,7 +197,7 @@ const CenterSection = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.xl};
-  background: ${({ theme }) => theme.colors.background};
+  background: ${({ theme }) => theme.colors.sectionBackground};
   border-radius: 0 0 24px 24px;
   box-shadow: ${({ theme }) => theme.shadows.md};
 
@@ -329,7 +329,7 @@ const StickyMenu = styled(motion.div)<{ isAdmin?: boolean }>`
   top: ${({ isAdmin }) => (isAdmin ? "unset" : "0")};
   left: 0;
   width: 100%;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: ${({ theme }) => theme.colors.sectionBackground};
   box-shadow: ${({ theme }) => theme.shadows.lg};
   padding: 7px ${({ theme }) => theme.spacings.xxl};
   display: flex;

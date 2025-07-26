@@ -110,7 +110,7 @@ const Fallback = styled.div`
 const LogoSlogan = styled.span`
   margin-top: 3px;
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textMuted};
+  color: ${({ theme }) => theme.colors.secondary};
   font-family: ${({ theme }) => theme.fonts.body};
   font-style: italic;
   font-weight: ${({ theme }) => theme.fontWeights.medium};

@@ -152,9 +152,9 @@ const modernTheme: DefaultTheme = {
     successBg: "#d1f5dd",
     dangerBg: "#ffe3e3",
 
-    achievementBackground: "#f0f0f0",
-    achievementGradientStart: "#fbeaf0",
-    achievementGradientEnd: "#e5549c",
+    achievementBackground: "#6366f1",
+    achievementGradientStart: "#6366f1",
+    achievementGradientEnd: "#eef2ff",
 
     text: "#1f1f1f",
     textAlt: "#2e2e2e",

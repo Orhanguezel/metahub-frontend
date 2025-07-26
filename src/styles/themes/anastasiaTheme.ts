@@ -151,9 +151,9 @@ const anastasiaTheme: DefaultTheme = {
     successBg: "#d1f5dd",
     dangerBg: "#ffe3e3",
 
-    achievementBackground: "#fbeaf0",
+    achievementBackground: "#e5549c",
     achievementGradientStart: "#e5549c",
-    achievementGradientEnd: "#0bb6d6",
+    achievementGradientEnd: "#fbcbe4",
 
     text: "#40333d",
     textAlt: "#52404b",

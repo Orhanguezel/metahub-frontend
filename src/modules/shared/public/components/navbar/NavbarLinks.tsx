@@ -22,8 +22,6 @@ export default function NavbarLinks() {
       {Object.entries(links).map(([key, link]: any) => {
         const label =
           link.label?.[lang] ||
-          link.label?.en ||
-          link.label?.tr ||
           key;
         const url = link.url || "/"; // **DOĞRU: url**
 

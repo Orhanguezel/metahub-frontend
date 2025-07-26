@@ -11,6 +11,7 @@ export { default as CategoryForm } from "./admin/components/CategoryForm";
 
 // Public Components
 export { default as AboutSection } from "./public/components/Section";
+export { default as AboutMeSection } from "./public/components/SectionMe";
 export { default as DetailSection } from "./public/components/DetailSection";
 
 // Types (if any)

@@ -5,6 +5,7 @@ import { useAppSelector } from "@/store/hooks";
 
 // SECTION COMPONENTS
 import { AboutSection } from "@/modules/about";
+import { AboutMeSection } from "@/modules/about";
 import { ServicesSection } from "@/modules/services";
 import { NewsSection } from "@/modules/news";
 import { BlogSection } from "@/modules/blog";
@@ -16,6 +17,8 @@ import { LibrarySection } from "@/modules/library";
 import { EnsotekprodSection } from "@/modules/ensotekprod";
 import { SparepartSection } from "@/modules/sparepart";
 import { WelcomeCouponBanner } from "@/modules/coupon";
+import { TeamSection } from "@/modules/team";
+import { ContactFormSection } from "@/modules/contact";
 import WhatsAppFloatingSection from "@/modules/home/public/components/WhatsAppFloatingSection";
 import FloatingChatboxSection from "@/modules/chat/public/components/FloatingChatbox"; // Senin chat kutun
 import ScrollToTopSection from "@/modules/home/public/components/ScrollToTop";
@@ -55,6 +58,9 @@ const sectionComponents: Record<string, React.ComponentType<any> | undefined> = 
   chatbox: FloatingChatboxSection,
   testimonial: TestimonialSection,
   herorobotic: HeroRobotic,
+  team: TeamSection,
+  aboutMe: AboutMeSection,
+  contact: ContactFormSection,
 };
 
 const isDev = process.env.NODE_ENV === "development";
