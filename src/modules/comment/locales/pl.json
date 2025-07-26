@@ -33,6 +33,17 @@
   "writeComment": "Napisz swój komentarz",
   "submit": "Wyślij",
   "noText": "Brak komentarza.",
-  "captchaError": "Błąd walidacji reCAPTCHA."
+  "captchaError": "Błąd walidacji reCAPTCHA.",
+  "sectionTitle": "Referencje",
+  "sectionDesc": "Prawdziwe opinie naszych użytkowników. Zaloguj się, aby dodać komentarz.",
+  "form.addTestimonial": "Napisz komentarz",
+  "form.title": "Zostaw swój komentarz",
+  "form.label": "Tytuł/Stanowisko (opcjonalne)",
+  "form.text": "Twój komentarz",
+  "form.required": "Proszę wprowadzić komentarz.",
+  "form.sending": "Wysyłanie...",
+  "form.submit": "Wyślij",
+  "form.success": "Twój komentarz został pomyślnie przesłany! Zostanie opublikowany po zatwierdzeniu.",
+  "form.error": "Wystąpił błąd. Proszę spróbuj ponownie.",
+  "anon": "Anonimowy"
 }
-

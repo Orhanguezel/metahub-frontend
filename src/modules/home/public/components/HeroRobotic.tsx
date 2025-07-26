@@ -12,7 +12,7 @@ import SkeletonBox from "@/shared/Skeleton";
 import type { IGallery } from "@/modules/gallery/types";
 import useModal from "@/hooks/useModal";
 
-const SLIDER_CATEGORY_SLUG = "maintenance";
+const SLIDER_CATEGORY_SLUG = "carousel";
 
 type GalleryItem = IGallery["images"][0] & {
   _galleryId?: string;

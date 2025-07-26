@@ -10,14 +10,15 @@ import {
   clearCommentMessages,
   fetchAllCommentsAdmin,
 } from "@/modules/comment/slice/commentSlice";
-import type { IComment, CommentContentType } from "@/modules/comment/types";
+import type { IComment, CommentContentType, CommentType } from "@/modules/comment/types";
 import type { SupportedLocale } from "@/types/common";
 import { CommentDetailsModal } from "@/modules/comment";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations3 from "@/modules/comment/locales";
 
 // --- Content Type Seçenekleri ---
-const contentTypeOptions: { value: CommentContentType; label: string }[] = [
+const contentTypeOptions: { value: CommentContentType | "all"; label: string }[] = [
+  { value: "all", label: "Tüm Türler" },
   { value: "blog", label: "Blog" },
   { value: "product", label: "Product" },
   { value: "bikes", label: "Bikes" },
@@ -32,11 +33,20 @@ const contentTypeOptions: { value: CommentContentType; label: string }[] = [
   { value: "sparepart", label: "Sparepart" },
 ];
 
+const typeOptions: { value: CommentType | "all"; label: string }[] = [
+  { value: "all", label: "Tümü" },
+  { value: "comment", label: "Yorum" },
+  { value: "testimonial", label: "Testimonial" },
+  { value: "review", label: "Değerlendirme" },
+  { value: "question", label: "Soru" },
+  { value: "answer", label: "Cevap" },
+  { value: "rating", label: "Puan" },
+];
+
 export default function AdminCommentPage() {
   const dispatch = useAppDispatch();
-  const { i18n, t } = useI18nNamespace("comment", translations3);
-  const lang: SupportedLocale =
-    (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
+  const { i18n, t } = useI18nNamespace("testimonial", translations3);
+  const lang: SupportedLocale = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
 
   const {
     commentsAdmin = [],
@@ -46,40 +56,44 @@ export default function AdminCommentPage() {
     pagination = { pages: 1, page: 1 },
   } = useAppSelector((state) => state.comments);
 
-  const [typeFilter, setTypeFilter] = useState<"all" | CommentContentType>("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | CommentType>("all");
+  const [contentTypeFilter, setContentTypeFilter] = useState<"all" | CommentContentType>("all");
   const [publishFilter, setPublishFilter] = useState<"all" | "published" | "unpublished">("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedComment, setSelectedComment] = useState<IComment | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Otomatik fetch: tip, içerik türü veya sayfa değişince
   useEffect(() => {
-  dispatch(fetchAllCommentsAdmin({ page: currentPage }));
-}, [currentPage, dispatch]);
-
+    dispatch(
+      fetchAllCommentsAdmin({
+        page: currentPage,
+        commentType: typeFilter !== "all" ? typeFilter : undefined,
+        // İstersek backend'e contentType paramı da gönderebilirsin, burada gerek yok.
+      })
+    );
+  }, [typeFilter, currentPage, dispatch]);
 
   useEffect(() => {
     if (successMessage) toast.success(successMessage);
     if (error) toast.error(error);
-    if (successMessage || error) {
-      dispatch(clearCommentMessages());
-    }
+    if (successMessage || error) dispatch(clearCommentMessages());
   }, [successMessage, error, dispatch]);
 
-  const filteredComments = commentsAdmin.filter((c) => {
-    const user =
-      c.userId && typeof c.userId === "object"
-        ? c.userId
-        : undefined;
+  // --- Filtering Logic ---
+  const filteredComments = commentsAdmin.filter((c: any) => {
+    const user = c.userId && typeof c.userId === "object" ? c.userId : undefined;
     const name = user?.name || c.name || "";
     const email = user?.email || c.email || "";
-    const matchesType = typeFilter === "all" || c.contentType === typeFilter;
+    const matchesContentType = contentTypeFilter === "all" || c.contentType === contentTypeFilter;
+    const matchesType = typeFilter === "all" || c.type === typeFilter;
     const matchesStatus =
       publishFilter === "all" ||
       (publishFilter === "published" && c.isPublished) ||
       (publishFilter === "unpublished" && !c.isPublished);
     const matchesSearch =
       [name, email, c.label ?? "", c.text].join(" ").toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesType && matchesStatus && matchesSearch;
+    return matchesContentType && matchesType && matchesStatus && matchesSearch;
   });
 
   const handleToggle = (id: string) => dispatch(togglePublishComment(id));
@@ -88,6 +102,7 @@ export default function AdminCommentPage() {
       dispatch(deleteComment(id));
     }
   };
+
   const handlePageChange = (page: number) => setCurrentPage(page);
 
   return (
@@ -95,9 +110,14 @@ export default function AdminCommentPage() {
       <h1>{t("title", "Yorum Yönetimi")}</h1>
       <FilterBar>
         <label>
-          {t("filter.type", "İçerik Türü")}
+          {t("filter.typeLabel", "Yorum Tipi")}
           <select value={typeFilter} onChange={e => setTypeFilter(e.target.value as any)}>
-            <option value="all">{t("filter.allTypes", "Tüm Türler")}</option>
+            {typeOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+          </select>
+        </label>
+        <label>
+          {t("filter.contentType", "İçerik Türü")}
+          <select value={contentTypeFilter} onChange={e => setContentTypeFilter(e.target.value as any)}>
             {contentTypeOptions.map(opt =>
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             )}
@@ -131,6 +151,7 @@ export default function AdminCommentPage() {
           <StyledTable>
             <thead>
               <tr>
+                <th>{t("filter.typeLabel", "Tip")}</th>
                 <th>{t("contentType", "İçerik Türü")}</th>
                 <th>{t("user", "Kullanıcı")}</th>
                 <th>{t("email", "E-posta")}</th>
@@ -143,7 +164,7 @@ export default function AdminCommentPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredComments.map((comment) => {
+              {filteredComments.map((comment: any) => {
                 const user =
                   comment.userId && typeof comment.userId === "object"
                     ? comment.userId
@@ -160,6 +181,7 @@ export default function AdminCommentPage() {
                 const commentLabel = comment.label || "-";
                 return (
                   <tr key={comment._id}>
+                    <td>{comment.type || "-"}</td>
                     <td>{comment.contentType}</td>
                     <td>{user?.name || comment.name || "-"}</td>
                     <td>{user?.email || comment.email || "-"}</td>
@@ -220,8 +242,7 @@ export default function AdminCommentPage() {
   );
 }
 
-// --- Styled Components (Theme Uyumu Maksimum!) ---
-
+// --- Styled Components ---
 const Wrapper = styled.div`
   padding: ${({ theme }) => theme.spacings.xl};
   max-width: ${({ theme }) => theme.layout.containerWidth};
@@ -342,7 +363,9 @@ const Status = styled.span<{ $published: boolean }>`
   border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderHighlight};
 `;
 
-const ActionButton = styled.button<{ danger?: boolean }>`
+const ActionButton = styled.button.withConfig({
+  shouldForwardProp: (prop) => prop !== 'danger',
+})<{ danger?: boolean }>`
   background: ${({ danger, theme }) =>
     danger
       ? theme.colors.dangerBg

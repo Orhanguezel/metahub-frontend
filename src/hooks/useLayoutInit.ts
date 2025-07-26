@@ -125,7 +125,6 @@ import {
   fetchNewsCategories,
   clearNewsCategoryMessages,
 } from "@/modules/news/slice/newsCategorySlice";
-import { clearCommentMessages } from "@/modules/comment/slice/commentSlice";
 import {
   fetchAllContactMessages,
   clearContactMessages,
@@ -160,6 +159,15 @@ import {
   clearLibraryCategoryMessages,
 } from "@/modules/library/slice/libraryCategorySlice";
 
+import {
+  fetchAllTeamAdmin,
+  clearTeamMessages,
+} from "@/modules/team/slice/teamSlice";
+import {
+  fetchTeamCategories,
+  clearTeamCategoryMessages,
+} from "@/modules/team/slice/teamCategorySlice";
+
 
 
 // -- Cleanup aksiyonları merkezi:
@@ -191,7 +199,6 @@ const cleanupActions = [
   clearReferencesCategoryMessages,
   clearServicesMessages,
   clearServicesCategoryMessages,
-  clearCommentMessages,
   clearContactMessages,
   clearSectionMetaMessages,
   clearSectionSettingMessages,
@@ -200,7 +207,9 @@ const cleanupActions = [
   clearLibraryMessages,
   clearLibraryCategoryMessages,
   clearSparepartMessages,
-  clearSparepartCategoryMessages
+  clearSparepartCategoryMessages,
+  clearTeamMessages,
+  clearTeamCategoryMessages
 ];
 
 // --- useLayoutInit ---
@@ -236,7 +245,6 @@ export const useLayoutInit = () => {
   const sparepartList = useAppSelector((state) => state.sparepart);
   const sparepartCategories = useAppSelector((state) => state.sparepartCategory);
   const chat = useAppSelector((state) => state.chat);
-  const comments = useAppSelector((state) => state.comments);
   const coupons = useAppSelector((state) => state.coupon);
   const newsList = useAppSelector((state) => state.news);
   const newsCategories = useAppSelector((state) => state.newsCategory);
@@ -256,7 +264,8 @@ export const useLayoutInit = () => {
   const ordersAdmin = useAppSelector((state) => state.orders);
   const libraryList = useAppSelector((state) => state.library);
 const libraryCategory = useAppSelector((state) => state.libraryCategory);
-
+const teamList = useAppSelector((state) => state.team);
+const teamCategory = useAppSelector((state) => state.teamCategory);
 
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
   useEffect(() => {
@@ -359,8 +368,6 @@ const libraryCategory = useAppSelector((state) => state.libraryCategory);
     if (!servicesCategories.categories.length && !servicesCategories.loading)
       dispatch(fetchServicesCategories());
 
-    if (!comments.commentsAdmin.length && !comments.loading)
-      dispatch(clearCommentMessages());
     if (
       !contactMessagesAdmin.messagesAdmin.length &&
       !contactMessagesAdmin.loading
@@ -383,6 +390,11 @@ const libraryCategory = useAppSelector((state) => state.libraryCategory);
 
 if (!libraryCategory.categories.length && !libraryCategory.loading)
   dispatch(fetchLibraryCategories());
+
+    if (!teamList.teamAdmin.length && !teamList.loading)
+      dispatch(fetchAllTeamAdmin());
+    if (!teamCategory.categories.length && !teamCategory.loading)
+      dispatch(fetchTeamCategories());
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantLoaded, tenant?._id, dispatch]);
@@ -440,13 +452,14 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
     referencesCategories,
     servicesList,
     servicesCategories,
-    comments,
     contactMessagesAdmin,
     sectionMetasAdmin,
     sectionSettingsAdmin,
     ordersAdmin,
     libraryList,
   libraryCategory,
+  teamList,
+  teamCategory,
     // gerekirse analyticsTrends vs ekleyebilirsin
   };
 };

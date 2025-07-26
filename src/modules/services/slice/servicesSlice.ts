@@ -69,10 +69,7 @@ export const createServices = createAsyncThunk(
       "post",
       "/services/admin",
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
     return res.data;
   }
@@ -85,10 +82,7 @@ export const updateServices = createAsyncThunk(
       "put",
       `/services/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
     return res.data;
   }
@@ -119,10 +113,7 @@ export const togglePublishServices = createAsyncThunk(
       "put",
       `/services/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
     return res.data;
   }

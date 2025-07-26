@@ -38,6 +38,7 @@ const folderMap: Record<ImageType, string> = {
   ensotekCategory: "ensotekCategory-images",
   sparepart: "sparepart-images",
   sparepartCategory: "sparepartCategory-images",
+  team: "team-images",
   misc: "misc",
 };
 
@@ -79,6 +80,7 @@ const defaultImageMap: Record<ImageType, string> = {
   ensotekCategory: "ensotekCategory.png",
   sparepart: "sparepart.png",
   sparepartCategory: "sparepartCategory.png",
+  team: "team.png",
   misc: "default.png",
 };
 

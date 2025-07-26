@@ -30,7 +30,7 @@ export default function AvatarMenu({
   const { profile: user } = useAppSelector((state) => state.account);
 
   // --- Profile image resolver (robust type guard)
-  const resolvedProfileImage = useMemo(() => {
+   const resolvedProfileImage = useMemo(() => {
     const img = user?.profileImage;
 
     if (!img) return "/defaults/profile-thumbnail.png";

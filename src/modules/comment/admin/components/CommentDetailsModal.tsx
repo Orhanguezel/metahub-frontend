@@ -17,7 +17,7 @@ interface Props {
 }
 
 export default function CommentDetailsModal({ comment, onClose }: Props) {
-  const { t } = useI18nNamespace("comment", translations3);
+  const { t } = useI18nNamespace("testimonial", translations3);
   const dispatch = useAppDispatch();
 
   // --- Dinamik reply state: Mevcut tüm desteklenen diller için doldur ---

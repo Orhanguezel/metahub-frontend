@@ -147,10 +147,11 @@ export default function NewsPage() {
                 <Link href={`/news/${item.slug}`}>{item.title?.[lang] || "Untitled"}</Link>
               </NewsTitle>
               <NewsMeta>
-                <span>
+                {/* <span>
                   <b>{t("author", "Yazar")}: </b>
                   {item.author || t("unknown", "Bilinmiyor")}
-                </span>
+                </span> */}
+                
                 <span>
                   {new Date(item.publishedAt || item.createdAt).toLocaleDateString("tr-TR", {
                     year: "numeric",

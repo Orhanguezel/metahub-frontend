@@ -16,7 +16,7 @@ interface Props {
 
 export default function CommentList({ contentId, contentType }: Props) {
   const dispatch = useAppDispatch();
-  const { t } = useI18nNamespace("comment", translations3);
+  const { t } = useI18nNamespace("testimonial", translations3);
 
   const { comments, loading } = useAppSelector((state) => state.comments);
 

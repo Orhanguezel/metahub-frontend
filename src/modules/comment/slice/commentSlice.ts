@@ -38,16 +38,21 @@ function parseErrorMessage(payload: unknown): string {
 export const createComment = createAsyncThunk<
   IComment,
   {
-    comment: string;
-    label?: string;
-    text?: string;
-    contentType: CommentContentType;
-    contentId: string;
-    type?: CommentType;   // Yeni: türü belirt
-    name?: string;
-    email?: string;
-    recaptchaToken?: string;
-    rating?: number;
+  comment: string;
+  profileImage?: string | { thumbnail?: string; url?: string };
+  label?: string;
+  text?: string;
+  contentType: CommentContentType;
+  contentId: string;
+  type?: CommentType;
+  name?: string;
+  company?: string;
+  position?: string;
+  email?: string;
+  recaptchaToken?: string;
+  rating?: number;
+  isPublished?: boolean; 
+  isActive?: boolean;
   }
 >("comments/createComment", async (data, thunkAPI) => {
   const res = await apiCall("post", "/comment", data, thunkAPI.rejectWithValue);

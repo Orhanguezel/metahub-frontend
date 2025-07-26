@@ -15,7 +15,8 @@ export type CommentContentType =
   | "library"
   | "company"
   | "ensotekprod"
-  | "sparepart";
+  | "sparepart"
+
 
 // Yorumun türü (amacı): (isteğe göre genişlet)
 export type CommentType = "comment" | "testimonial" | "review" | "question" | "answer" | "rating";
@@ -24,6 +25,9 @@ export interface IComment {
   _id?: string;
   userId?: string | { _id: string; name: string; email: string }; // populate edilirse obje gelir
   name?: string;
+  company?: string;
+  position?: string;
+  profileImage?: string | { thumbnail?: string; url?: string };
   email?: string;
   tenant: string;
   contentType: CommentContentType;    // Hangi modül/iş

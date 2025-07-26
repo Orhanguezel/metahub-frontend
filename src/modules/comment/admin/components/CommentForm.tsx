@@ -19,7 +19,7 @@ interface Props {
 }
 
 export default function CommentForm({ contentId, contentType }: Props) {
-  const { t } = useI18nNamespace("comment", translations3);
+  const { t } = useI18nNamespace("testimonial", translations3);
 
   const dispatch = useAppDispatch();
   const executeRecaptcha = useRecaptcha();

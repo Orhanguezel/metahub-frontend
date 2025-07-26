@@ -33,5 +33,17 @@
   "writeComment": "Escribe tu comentario",
   "submit": "Enviar",
   "noText": "Sin comentario.",
-  "captchaError": "Falló la validación de reCAPTCHA."
+  "captchaError": "Falló la validación de reCAPTCHA.",
+  "sectionTitle": "Testimonios",
+  "sectionDesc": "Opiniones reales de nuestros usuarios. Inicie sesión para dejar su comentario.",
+  "form.addTestimonial": "Escribir un comentario",
+  "form.title": "Deja tu comentario",
+  "form.label": "Título/Posición (opcional)",
+  "form.text": "Tu comentario",
+  "form.required": "Por favor ingresa tu comentario.",
+  "form.sending": "Enviando...",
+  "form.submit": "Enviar",
+  "form.success": "¡Tu comentario ha sido enviado exitosamente! Se publicará después de la aprobación.",
+  "form.error": "Ocurrió un error. Por favor, inténtelo de nuevo.",
+  "anon": "Anónimo"
 }

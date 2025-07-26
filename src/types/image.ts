@@ -38,4 +38,5 @@ export type ImageType =
   | "ensotekCategory"
   | "sparepart"
   | "sparepartCategory"
+  | "team"
   | "misc";

@@ -33,5 +33,17 @@
   "writeComment": "Yorumunuzu yazın",
   "submit": "Gönder",
   "noText": "Yorum yok.",
-  "captchaError": "reCAPTCHA doğrulaması başarısız oldu."
+  "captchaError": "reCAPTCHA doğrulaması başarısız oldu.",
+  "sectionTitle": "Testimonials",
+  "sectionDesc": "Kullanıcılarımızdan gelen gerçek yorumlar. Siz de yorum bırakmak için giriş yapın.",
+  "form.addTestimonial": "Yorum Yaz",
+  "form.title": "Yorumunuzu Bırakın",
+  "form.label": "Başlık/Unvan (opsiyonel)",
+  "form.text": "Yorumunuz",
+  "form.required": "Lütfen yorumunuzu yazın.",
+  "form.sending": "Gönderiliyor...",
+  "form.submit": "Gönder",
+  "form.success": "Yorumunuz başarıyla gönderildi! Onaylandıktan sonra yayınlanacaktır.",
+  "form.error": "Bir hata oluştu. Lütfen tekrar deneyin.",
+  "anon": "Anonim"
 }

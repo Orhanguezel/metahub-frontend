@@ -13,6 +13,9 @@ export interface ProfileImageObj {
 export interface User {
   _id: string;
   name: string;
+  company?: string; // Yeni: Kullanıcının şirketi
+  position?: string; // Yeni: Kullanıcının pozisyonu
+  tenant: string; // Yeni: Tenant ID
   email: string;
   role: "superadmin" | "admin" | "user" | "moderator" | "staff" | "customer";
   isActive: boolean;
@@ -29,6 +32,9 @@ export interface User {
 export interface Account {
   _id: string;
   name: string;
+  company?: string; // Yeni: Kullanıcının şirketi
+  position?: string; // Yeni: Kullanıcının pozisyonu
+  tenant: string; // Yeni: Tenant ID
   email: string;
   role?: "superadmin" | "admin" | "user" | "moderator" | "staff" | "customer"; // 🟢 ARTIK VAR
   isActive?: boolean;            // Eklenmesi önerilir (dashboard için vs.)

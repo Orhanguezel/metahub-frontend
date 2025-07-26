@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import { IServices } from "@/modules/services";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/services";
+import translations from "@/modules/services/locales";
 import { Skeleton } from "@/shared";
 import { SupportedLocale } from "@/types/common";
 import Image from "next/image";

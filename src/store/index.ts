@@ -55,6 +55,8 @@ import ensotekprodReducer from "@/modules/ensotekprod/slice/ensotekprodSlice";
 import ensotekCategoryReducer from "@/modules/ensotekprod/slice/ensotekCategorySlice";
 import sparepartCategoryReducer from "@/modules/sparepart/slice/sparepartCategorySlice";
 import sparepartReducer from "@/modules/sparepart/slice/sparepartSlice";
+import teamReducer from "@/modules/team/slice/teamSlice";
+import teamCategoryReducer from "@/modules/team/slice/teamCategorySlice";
 
 // --- Combine reducers ---
 // Sadece slice bazında persistReducer uygula!
@@ -111,7 +113,9 @@ const rootReducer = combineReducers({
   ensotekCategory: ensotekCategoryReducer,
   ensotekprod: ensotekprodReducer,
   sparepartCategory: sparepartCategoryReducer,
-  sparepart: sparepartReducer
+  sparepart: sparepartReducer,
+  team: teamReducer,
+  teamCategory: teamCategoryReducer,
 });
 
 // --- Store ---

@@ -33,5 +33,17 @@
   "writeComment": "Schreiben Sie Ihren Kommentar",
   "submit": "Absenden",
   "noText": "Kein Kommentar.",
-  "captchaError": "reCAPTCHA-Validierung fehlgeschlagen."
+  "captchaError": "reCAPTCHA-Validierung fehlgeschlagen.",
+  "sectionTitle": "Testimonials",
+  "sectionDesc": "Echte Bewertungen von unseren Nutzern. Melden Sie sich an, um einen Kommentar zu hinterlassen.",
+  "form.addTestimonial": "Kommentar schreiben",
+  "form.title": "Hinterlassen Sie Ihren Kommentar",
+  "form.label": "Titel/Position (optional)",
+  "form.text": "Ihr Kommentar",
+  "form.required": "Bitte geben Sie Ihren Kommentar ein.",
+  "form.sending": "Wird gesendet...",
+  "form.submit": "Absenden",
+  "form.success": "Ihr Kommentar wurde erfolgreich übermittelt! Er wird nach Genehmigung veröffentlicht.",
+  "form.error": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+  "anon": "Anonym"
 }

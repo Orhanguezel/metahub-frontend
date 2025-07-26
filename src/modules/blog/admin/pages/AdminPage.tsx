@@ -65,7 +65,7 @@ const error = useAppSelector((state) => state.blog.error);
   const handleDelete = async (id: string) => {
     const confirmMsg = t(
       "confirm.delete_blog",
-      "Bu makaleyi silmek istediğinize emin misiniz?"
+      "Bu haberi silmek istediğinize emin misiniz?"
     );
     if (confirm(confirmMsg)) {
       await dispatch(deleteBlog(id));

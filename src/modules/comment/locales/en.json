@@ -33,5 +33,17 @@
   "writeComment": "Write your comment",
   "submit": "Submit",
   "noText": "No comment.",
-  "captchaError": "reCAPTCHA validation failed."
+  "captchaError": "reCAPTCHA validation failed.",
+  "sectionTitle": "Testimonials",
+  "sectionDesc": "Real reviews from our users. Log in to leave your comment.",
+  "form.addTestimonial": "Write a Comment",
+  "form.title": "Leave Your Comment",
+  "form.label": "Title/Position (optional)",
+  "form.text": "Your Comment",
+  "form.required": "Please enter your comment.",
+  "form.sending": "Sending...",
+  "form.submit": "Submit",
+  "form.success": "Your comment has been submitted successfully! It will be published after approval.",
+  "form.error": "An error occurred. Please try again.",
+  "anon": "Anonymous"
 }
