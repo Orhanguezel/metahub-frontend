@@ -105,7 +105,7 @@ export default function EnsotekprodSection() {
                 )}
               </Card>
             </CardLink>
-            <AddToCartButton productId={item._id} productType="Ensotekprod" disabled={item.stock < 1}>
+            <AddToCartButton productId={item._id} productType="ensotekprod" disabled={item.stock < 1}>
               <ShoppingCart
                 size={20}
                 style={{ marginRight: 8, marginBottom: -3 }}

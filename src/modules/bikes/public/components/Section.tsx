@@ -105,7 +105,7 @@ export default function BikesSection() {
                 )}
               </Card>
             </CardLink>
-            <AddToCartButton productId={item._id} productType="Bike" disabled={item.stock < 1}>
+            <AddToCartButton productId={item._id} productType="bike" disabled={item.stock < 1}>
               <ShoppingCart
                 size={20}
                 style={{ marginRight: 8, marginBottom: -3 }}

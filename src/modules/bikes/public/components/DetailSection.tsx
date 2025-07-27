@@ -147,7 +147,7 @@ export default function BikesDetailSection() {
 
       </MetaInfo>
 
-      <AddToCartButton productId={bike._id} productType="Bike" disabled={bike.stock < 1}>
+      <AddToCartButton productId={bike._id} productType="bike" disabled={bike.stock < 1}>
         <ShoppingCart size={22} style={{ marginRight: 8, marginBottom: -3 }} />
         <span>
           {bike.stock < 1

@@ -47,7 +47,7 @@ export default function CartItemList({ items }: Props) {
           productName = getMultiLang((item.product as any).name, lang);
 
           productSlug =
-            productType === "Bike"
+            productType === "bike"
               ? `/bikes/${(item.product as any).slug}`
               : `/ensotekprod/${(item.product as any).slug}`;
           productImage = (item.product as any).images?.[0]?.url || "";
@@ -74,7 +74,7 @@ export default function CartItemList({ items }: Props) {
                 {productName}
               </ProductName>
               <ProductType>
-                {productType === "Bike" ? "Bisiklet" : "Ensotek Ürün"}
+                {productType === "bike" ? "Bisiklet" : "Ensotek Ürün"}
               </ProductType>
               <Qty>
                 <span>Miktar:</span> <b>{item.quantity}</b>

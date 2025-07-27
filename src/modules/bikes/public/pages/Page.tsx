@@ -88,7 +88,7 @@ export default function BikesPage() {
                 {t("page.readMore", "Detayları Gör →")}
               </ReadMore>
               {/* ---- AddToCartButton --- */}
-              <AddToCartButton productId={item._id} productType="Bike" disabled={item.stock < 1} />
+              <AddToCartButton productId={item._id} productType="bike" disabled={item.stock < 1} />
             </CardContent>
           </BikesCard>
         ))}
