@@ -1,5 +1,4 @@
 // Pages
-export { default as AdminCheckoutPage } from "./admin/pages/AdminCheckoutPage";
 export { default as CheckoutPage } from "./public/pages/CheckoutPage";
 
 // Admin Components
