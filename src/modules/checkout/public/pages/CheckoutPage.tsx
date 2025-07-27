@@ -11,10 +11,11 @@ import type { SupportedLocale } from "@/types/common";
 import type { Address } from "@/modules/users/types/address";
 import type { PaymentMethod } from "@/modules/order/types";
 
+// -- Payment method values (backend uyumlu) --
 const PAYMENT_METHODS = [
   { value: "credit_card", label: "Credit Card" },
   { value: "paypal", label: "PayPal" },
-  { value: "cash_on_delivery", label: "Cash on Delivery" }, // backend uyumlu value
+  { value: "cash_on_delivery", label: "Cash on Delivery" },
 ];
 
 const CheckoutPage: React.FC = () => {
@@ -28,17 +29,22 @@ const CheckoutPage: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS[0].value);
   const [placingOrder, setPlacingOrder] = useState(false);
 
-  // Adresleri güvenli şekilde bul
+  // Adresleri bul (populated varsa onu kullan)
   const addresses: Address[] = useMemo(
     () => profile?.addressesPopulated || profile?.addresses || [],
     [profile]
   );
+
+  // Yeni modele uygun default address seçimi
   const defaultAddress: Address | undefined = useMemo(
-    () => addresses.find((a) => a.isDefault) || addresses[0],
+    () =>
+      addresses.find((a) => a.isDefault) ||
+      addresses.find((a) => a.addressType === "shipping") ||
+      addresses[0],
     [addresses]
   );
 
-  // Router koruması
+  // Oturum ve sepet router koruması
   useEffect(() => {
     if (!profile) router.replace("/login?redirected=checkout");
   }, [profile, router]);
@@ -58,37 +64,40 @@ const CheckoutPage: React.FC = () => {
     }
   }, [profile, addresses, router, t]);
 
-  // Render protection
   if (!profile || !defaultAddress || !cart) return null;
 
-  // === DİNAMİK orderData ===
+  // === YENİ orderData ===
   const handleCompleteOrder = async () => {
     if (placingOrder) return;
     setPlacingOrder(true);
 
-const orderData = {
-  items: cart.items.map((item) => ({
-    product: typeof item.product === "object" ? item.product._id : item.product,
-    productType: item.productType,
-    quantity: item.quantity,
-    tenant: cart.tenant ?? "main",
-    unitPrice: item.priceAtAddition,
-    priceAtAddition: item.priceAtAddition,
-    totalPriceAtAddition: item.totalPriceAtAddition,
-  })),
-  totalPrice: cart.totalPrice,
-  paymentMethod: paymentMethod as PaymentMethod, 
-  tenant: cart.tenant ?? "main",
-  shippingAddress: {
-    name: profile.name,
-    phone: defaultAddress.phone,
-    tenant: cart.tenant ?? "main",
-    street: defaultAddress.street,
-    city: defaultAddress.city,
-    postalCode: defaultAddress.zipCode,
-    country: defaultAddress.country,
-  },
-};
+    const orderData = {
+      items: cart.items.map((item) => ({
+        product: typeof item.product === "object" ? item.product._id : item.product,
+        productType: item.productType,
+        quantity: item.quantity,
+        tenant: cart.tenant ?? "main",
+        unitPrice: item.priceAtAddition,
+        priceAtAddition: item.priceAtAddition,
+        totalPriceAtAddition: item.totalPriceAtAddition,
+      })),
+      totalPrice: cart.totalPrice,
+      paymentMethod: paymentMethod as PaymentMethod,
+      tenant: cart.tenant ?? "main",
+      addressId: defaultAddress._id, // <-- Backend addressId desteği varsa
+      shippingAddress: {
+        name: profile.name,
+        phone: defaultAddress.phone,
+        tenant: cart.tenant ?? "main",
+        street: defaultAddress.street,
+        houseNumber: defaultAddress.houseNumber, // yeni alan!
+        city: defaultAddress.city,
+        postalCode: defaultAddress.postalCode || defaultAddress.zipCode, // backend postalCode, frontend zipCode
+        country: defaultAddress.country,
+        email: defaultAddress.email,
+        addressType: defaultAddress.addressType,
+      },
+    };
 
     try {
       await dispatch(createOrder(orderData)).unwrap();
@@ -101,7 +110,6 @@ const orderData = {
     }
   };
 
-  // Loading / hata
   if (loading || placingOrder) {
     return <PageContainer>{t("checkout:loading", "Loading...")}</PageContainer>;
   }
@@ -128,6 +136,10 @@ const orderData = {
               <Input value={profile.name} disabled readOnly />
             </InputGroup>
             <InputGroup>
+              <Label>{t("checkout:addressType", "Address Type")}</Label>
+              <Input value={t(`address.type.${defaultAddress.addressType}`)} disabled readOnly />
+            </InputGroup>
+            <InputGroup>
               <Label>{t("checkout:street", "Street")}</Label>
               <Input
                 value={
@@ -144,7 +156,7 @@ const orderData = {
             </InputGroup>
             <InputGroup>
               <Label>{t("checkout:zipCode", "Postal Code")}</Label>
-              <Input value={defaultAddress.zipCode} disabled readOnly />
+              <Input value={defaultAddress.zipCode || defaultAddress.postalCode} disabled readOnly />
             </InputGroup>
             <InputGroup>
               <Label>{t("checkout:country", "Country")}</Label>
@@ -154,6 +166,10 @@ const orderData = {
               <Label>{t("checkout:phone", "Phone")}</Label>
               <Input value={defaultAddress.phone} disabled readOnly />
             </InputGroup>
+            <InputGroup>
+              <Label>{t("checkout:email", "Email")}</Label>
+              <Input value={defaultAddress.email} disabled readOnly />
+            </InputGroup>
           </InnerFormLayout>
         </FormSection>
 
@@ -162,29 +178,27 @@ const orderData = {
           <SectionTitle>{t("checkout:order_summary", "Order Summary")}</SectionTitle>
           <SummaryList>
             {(cart.items || []).map((item, idx) => {
-  const key =
-    typeof item.product === "object" && item.product && "_id" in item.product
-      ? (item.product._id || `unknown-${idx}`)
-      : (item.product || `id-${idx}`);
-  if (!item.product)
-    return <li key={key} style={{ color: "#e33" }}>Ürün bulunamadı!</li>;
-  return (
-    <li key={key}>
-      <span>
-        <h2>{getMultiLang((item.product as any)?.name, lang) || "-"}</h2>
-        <b>{item.quantity}</b>
-      </span>
-      <span>
-        {(item.quantity * item.priceAtAddition).toFixed(2)} €
-      </span>
-    </li>
-  );
-})}
-
-
+              const key =
+                typeof item.product === "object" && item.product && "_id" in item.product
+                  ? (item.product._id || `unknown-${idx}`)
+                  : (item.product || `id-${idx}`);
+              if (!item.product)
+                return <li key={key} style={{ color: "#e33" }}>Ürün bulunamadı!</li>;
+              return (
+                <li key={key}>
+                  <span>
+                    <h2>{getMultiLang((item.product as any)?.name, lang) || "-"}</h2>
+                    <b>{item.quantity}</b>
+                  </span>
+                  <span>
+                    {(item.quantity * item.priceAtAddition).toFixed(2)} €
+                  </span>
+                </li>
+              );
+            })}
           </SummaryList>
           <TotalRow>
-            <span>{t("checkout:total", "Total")}:</span>  
+            <span>{t("checkout:total", "Total")}:</span>
             <b>{cart.totalPrice.toFixed(2)} €</b>
           </TotalRow>
 

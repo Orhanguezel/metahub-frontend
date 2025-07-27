@@ -7,6 +7,7 @@ import type { SupportedLocale } from "@/types/common";
 import type { IOrderItem} from "@/modules/order/types";
 import type { IBikes } from "@/modules/bikes/types";
 import type { IEnsotekprod } from "@/modules/ensotekprod/types";
+import type { ISparepart } from "@/modules/sparepart/types";
 import { getLocalized } from "@/shared/getLocalized";
 
 interface OrderItemListProps {
@@ -27,7 +28,7 @@ const OrderItemList: React.FC<OrderItemListProps> = ({
   return (
     <Items>
       {items.map((item, idx) => {
-        const product = item.product as IBikes | IEnsotekprod | undefined;
+        const product = item.product as IBikes | IEnsotekprod | ISparepart | undefined;
 
         // Ürün adı
         let name = "";

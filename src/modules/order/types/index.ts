@@ -9,7 +9,7 @@ export type OrderStatus = "pending" | "preparing" | "shipped" | "completed" | "c
 // --- Sipariş ürünü (cart item) ---
 export interface IOrderItem {
   product: IBikes | IEnsotekprod | ISparepart | string;
-  productType: "Bike" | "Ensotekprod" | "Sparepart"; // Yeni alan: ürün tipi
+  productType: "bike" | "ensotekprod" | "sparepart"; // Yeni alan: ürün tipi
   quantity: number;
   tenant: string;
   unitPrice: number;

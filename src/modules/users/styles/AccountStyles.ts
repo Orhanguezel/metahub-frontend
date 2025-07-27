@@ -426,3 +426,53 @@ export const InputGroup = styled.div`
   margin-bottom: ${({ theme }) => theme.spacings.md};
   width: 100%;
 `;
+
+
+export const Select = styled.select`
+  width: 100%;
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
+  background: ${({ theme }) => theme.colors.inputBackground};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.inputBorder};
+  border-radius: ${({ theme }) => theme.radii.md};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-family: ${({ theme }) => theme.fonts.main};
+  font-weight: 500;
+  letter-spacings: 0.01em;
+  box-shadow: 0 1px 6px 0 ${({ theme }) => theme.colors.primaryTransparent};
+  transition: border-color ${({ theme }) => theme.transition.fast},
+    box-shadow ${({ theme }) => theme.transition.fast},
+    background ${({ theme }) => theme.transition.fast},
+    color ${({ theme }) => theme.transition.fast};
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23${encodeURIComponent(
+    "#000"
+  )}' d='M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.2em;
+  padding-right: 2.5rem;
+  cursor: pointer;
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+    box-shadow: 0 0 0 2.5px ${({ theme }) => theme.colors.inputBorderFocus},
+      0 2px 12px 0 ${({ theme }) => theme.colors.primaryTransparent};
+  }
+  & option {
+    background: ${({ theme }) => theme.colors.inputBackground};
+    color: ${({ theme }) => theme.colors.text};
+  }
+  @media ${({ theme }) => theme.media.small} {
+    padding: 0.34em 0.6em;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%23${encodeURIComponent(
+      "#000"
+    )}' d='M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.2em;
+    padding-right: 2.5rem;
+    cursor: pointer;
+  }
+ `;

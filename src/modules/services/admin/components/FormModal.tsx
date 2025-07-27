@@ -129,8 +129,13 @@ export default function FormModal({
     formData.append("summary", JSON.stringify(summaries));
     formData.append("content", JSON.stringify(contents));
     formData.append("author", author.trim());
-    formData.append("durationMinutes", durationMinutes?.toString() || "");
-    formData.append("price", price?.toString() || "");
+   if (durationMinutes !== undefined) {
+  formData.append("durationMinutes", durationMinutes.toString());
+}
+if (price !== undefined) {
+  formData.append("price", price.toString());
+}
+
     formData.append(
       "tags",
       JSON.stringify(

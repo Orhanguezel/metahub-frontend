@@ -114,7 +114,7 @@ export default function SparepartPage() {
                 <ReadMore href={detailHref}>
                   {t("page.readMore", "Detayları Gör →")}
                 </ReadMore>
-                <AddToCartButton productId={item._id} productType="Sparepart" disabled={item.stock < 1} />
+                <AddToCartButton productId={item._id} productType="sparepart" disabled={item.stock < 1} />
               </CardContent>
             </SparepartCard>
           );

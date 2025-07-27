@@ -4,12 +4,13 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addToCart, clearCartMessages } from "@/modules/cart/slice/cartSlice";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "@/modules/cart/locales";
 import styled from "styled-components";
 
 interface AddToCartButtonProps {
   productId: string;
-  productType: "Bike" | "Ensotekprod" | "Sparepart";
+  productType: "bike" | "ensotekprod" | "sparepart";
   disabled?: boolean;
   children?: React.ReactNode;
 }
@@ -22,7 +23,7 @@ export default function AddToCartButton({
 }: AddToCartButtonProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { t } = useTranslation("cart");
+  const { t } = useI18nNamespace("cart", translations);
   const [added, setAdded] = useState(false);
 
   const { loading, error, successMessage, cart, stockWarning } = useAppSelector(

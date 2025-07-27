@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import { IServices } from "@/modules/services";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/services";
+import translations from "@/modules/services/locales";
 import { Skeleton } from "@/shared";
 import { SupportedLocale } from "@/types/common";
 import Image from "next/image";
@@ -44,13 +44,18 @@ export default function ServicesList({
   if (services.length === 0)
     return <Empty>{t("services.empty", "No services available.")}</Empty>;
 
+  // Fallback fonksiyonu (çok dilli)
+  const getMultiLang = (obj?: Record<string, string>) => {
+    if (!obj) return "";
+    return obj[lang] || obj["en"] || Object.values(obj)[0] || "—";
+  };
 
   return (
     <div>
       {services.map((item) => (
         <ServicesCard key={item._id}>
-          <h2>{item.title[lang] || Object.values(item.title)[0] || "—"}</h2>
-          <p>{item.summary[lang] || Object.values(item.summary)[0] || "—"}</p>
+          <h2>{getMultiLang(item.title)}</h2>
+          <p>{getMultiLang(item.summary)}</p>
 
           {item.images?.length > 0 ? (
             <ImageGrid>
@@ -58,7 +63,7 @@ export default function ServicesList({
                 <Image
                   key={i}
                   src={img.url}
-                  alt={item.title[lang] || Object.values(item.title)[0] || `services-${i}`}
+                  alt={getMultiLang(item.title) || `services-${i}`}
                   loading="lazy"
                   width={150}
                   height={100}
@@ -73,7 +78,6 @@ export default function ServicesList({
             <strong>{t("services.author", "Author")}:</strong>{" "}
             {item.author || t("unknown", "Unknown")}
           </InfoLine>
-          
           <InfoLine>
             <strong>{t("services.tags", "Tags")}:</strong>{" "}
             {item.tags?.length ? item.tags.join(", ") : t("none", "None")}

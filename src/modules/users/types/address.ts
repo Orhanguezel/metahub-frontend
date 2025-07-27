@@ -1,18 +1,23 @@
-// src/modules/users/types/address.ts
+export type AddressType = "home" | "work" | "billing" | "shipping" | "factory" | "other";
+export const ADDRESS_TYPE_OPTIONS: AddressType[] = [
+  "home", "work", "billing", "shipping", "factory", "other"
+];
 
 export interface Address {
-  _id?: string;                         // MongoDB ObjectId veya string (frontendde her zaman string, populated ise obje olabilir)
-  userId?: string;                      // Adresi oluşturan user (opsiyonel, populated response'ta olabilir)
-  companyId?: string;                   // Firma adresi için (opsiyonel, populated response'ta olabilir)
-  tenant?: string;                      // Multi-tenant sistemler için (opsiyonel)
+  _id?: string;
+  addressType: AddressType;
   street: string;
   houseNumber: string;
   city: string;
-  zipCode: string;
+  zipCode: string;       // frontend'de input, backend postalCode ile mapli!
   phone: string;
   email: string;
-  country: string;                      // Zorunlu alan
+  country: string;
   isDefault?: boolean;
-  createdAt?: Date | string;            // Date veya ISO string
+  userId?: string;
+  companyId?: string;
+  tenant?: string;
+  postalCode?: string;
+  createdAt?: Date | string;
   updatedAt?: Date | string;
 }

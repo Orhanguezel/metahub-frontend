@@ -21,36 +21,36 @@ const initialState: AddressState = {
 // 📥 Fetch all addresses
 export const fetchAddresses = createAsyncThunk(
   "address/fetchAddresses",
-  async (_, thunkAPI) =>
-    await apiCall("get", "/address", null, thunkAPI.rejectWithValue)
+  async (_, { rejectWithValue }) =>
+    await apiCall("get", "/address", null, rejectWithValue)
 );
 
 // ➕ Create new address
 export const createAddress = createAsyncThunk(
   "address/createAddress",
-  async (data: Omit<Address, "_id" | "createdAt" | "updatedAt">, thunkAPI) =>
-    await apiCall("post", "/address", data, thunkAPI.rejectWithValue)
+  async (data: Omit<Address, "_id" | "createdAt" | "updatedAt">, { rejectWithValue }) =>
+    await apiCall("post", "/address", data, rejectWithValue)
 );
 
 // ✏️ Update address
 export const updateAddress = createAsyncThunk(
   "address/updateAddress",
-  async ({ id, data }: { id: string; data: Omit<Address, "_id" | "createdAt" | "updatedAt"> }, thunkAPI) =>
-    await apiCall("put", `/address/${id}`, data, thunkAPI.rejectWithValue)
+  async ({ id, data }: { id: string; data: Omit<Address, "_id" | "createdAt" | "updatedAt"> }, { rejectWithValue }) =>
+    await apiCall("put", `/address/${id}`, data, rejectWithValue)
 );
 
 // 🗑 Delete address
 export const deleteAddress = createAsyncThunk(
   "address/deleteAddress",
-  async (id: string, thunkAPI) =>
-    await apiCall("delete", `/address/${id}`, null, thunkAPI.rejectWithValue)
+  async (id: string, { rejectWithValue }) =>
+    await apiCall("delete", `/address/${id}`, null, rejectWithValue)
 );
 
 // 🔍 Get single address by ID (optional)
 export const fetchAddressById = createAsyncThunk(
   "address/fetchAddressById",
-  async (id: string, thunkAPI) =>
-    await apiCall("get", `/address/${id}`, null, thunkAPI.rejectWithValue)
+  async (id: string, { rejectWithValue }) =>
+    await apiCall("get", `/address/${id}`, null, rejectWithValue)
 );
 
 const addressSlice = createSlice({
@@ -71,9 +71,12 @@ const addressSlice = createSlice({
       state.error = null;
     };
 
-    const failed = (state: AddressState, action: PayloadAction<any>) => {
+    // TYPE-SAFE error yakalama:
+    const failed = (state: AddressState, action: PayloadAction<unknown>) => {
       state.loading = false;
-      state.error = action.payload?.message || "An error occurred";
+      const payload = action.payload as { message?: string } | undefined;
+      state.error = payload?.message || "An error occurred";
+      state.successMessage = null;
     };
 
     builder
@@ -82,6 +85,7 @@ const addressSlice = createSlice({
       .addCase(fetchAddresses.fulfilled, (state, action) => {
         state.loading = false;
         state.addresses = action.payload.data;
+        state.error = null;
       })
       .addCase(fetchAddresses.rejected, failed);
 
@@ -91,6 +95,7 @@ const addressSlice = createSlice({
       .addCase(createAddress.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = action.payload.message;
+        state.error = null;
         state.addresses.push(action.payload.data);
       })
       .addCase(createAddress.rejected, failed);
@@ -101,6 +106,7 @@ const addressSlice = createSlice({
       .addCase(updateAddress.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = action.payload.message;
+        state.error = null;
         const updated = action.payload.data;
         state.addresses = state.addresses.map((addr) =>
           addr._id === updated._id ? updated : addr
@@ -114,6 +120,7 @@ const addressSlice = createSlice({
       .addCase(deleteAddress.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = action.payload.message;
+        state.error = null;
         const deletedId = action.meta.arg;
         state.addresses = state.addresses.filter((addr) => addr._id !== deletedId);
       })
@@ -125,6 +132,7 @@ const addressSlice = createSlice({
       .addCase(fetchAddressById.fulfilled, (state, action) => {
         state.loading = false;
         state.currentAddress = action.payload.data;
+        state.error = null;
       })
       .addCase(fetchAddressById.rejected, failed);
   },

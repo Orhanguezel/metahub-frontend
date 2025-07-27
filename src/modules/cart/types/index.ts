@@ -9,7 +9,7 @@ import type { ISparepart } from "@/modules/sparepart/types";
 // Sepet item'ı; hangi ürün tipi olduğunu belirten bir alan ekliyoruz
 export interface ICartItem {
   product: IBikes | IEnsotekprod | ISparepart | string;
-  productType: "Bike" | "Ensotekprod" | "Sparepart"; // Yeni alan: ürün tipi
+  productType: "bike" | "ensotekprod" | "sparepart"; // Yeni alan: ürün tipi
   quantity: number;
   tenant: string;
   unitPrice: number;

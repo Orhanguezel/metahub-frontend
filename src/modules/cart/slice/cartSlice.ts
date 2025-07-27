@@ -63,7 +63,7 @@ export const fetchCart = createAsyncThunk<ICart, void, { rejectValue: string }>(
 
 export const addToCart = createAsyncThunk<
   ICart,
-  { productId: string; productType: "Bike" | "Ensotekprod" | "Sparepart"; quantity: number },
+  { productId: string; productType: "bike" | "ensotekprod" | "sparepart"; quantity: number },
   { rejectValue: string }
 >("cart/addToCart", async (payload, thunkAPI) => {
   try {
@@ -85,7 +85,7 @@ export const addToCart = createAsyncThunk<
 // Aynı mantık diğer thunklar için de geçerli!
 export const increaseQuantity = createAsyncThunk<
   ICart,
-  { productId: string; productType: "Bike" | "Ensotekprod" | "Sparepart" },
+  { productId: string; productType: "bike" | "ensotekprod" | "sparepart" },
   { rejectValue: string }
 >("cart/increaseQuantity", async ({ productId, productType }, thunkAPI) => {
   const response = await apiCall(
@@ -100,7 +100,7 @@ export const increaseQuantity = createAsyncThunk<
 
 export const decreaseQuantity = createAsyncThunk<
   ICart,
-  { productId: string; productType: "Bike" | "Ensotekprod" | "Sparepart" },
+  { productId: string; productType: "bike" | "ensotekprod" | "sparepart" },
   { rejectValue: string }
 >("cart/decreaseQuantity", async ({ productId, productType }, thunkAPI) => {
   const response = await apiCall(
@@ -115,7 +115,7 @@ export const decreaseQuantity = createAsyncThunk<
 
 export const removeFromCart = createAsyncThunk<
   ICart,
-  { productId: string; productType: "Bike" | "Ensotekprod" | "Sparepart" },
+  { productId: string; productType: "bike" | "ensotekprod" | "sparepart" },
   { rejectValue: string }
 >("cart/removeFromCart", async ({ productId, productType }, thunkAPI) => {
   const response = await apiCall(
