@@ -22,21 +22,22 @@ const ICON_MAP: Record<string, ReactNode> = {
 export default function SocialLinks() {
   const company = useAppSelector((state) => state.company.company);
   if (!company || !company.socialLinks) return null;
-  return (
+   return (
     <SocialLinksWrapper>
       {Object.entries(company.socialLinks).map(([key, url]) => {
         if (!url) return null;
         const IconComponent = ICON_MAP[key.toLowerCase()];
         if (!IconComponent) return null;
+
         return (
           <IconCircleButton
             key={key}
-            href={url}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={key}
             title={key.charAt(0).toUpperCase() + key.slice(1)}
             tabIndex={0}
+
           >
             {IconComponent}
           </IconCircleButton>
@@ -49,8 +50,11 @@ export default function SocialLinks() {
 const SocialLinksWrapper = styled.div`
   display: flex;
   align-items: center;
+  color: ${({ theme }) => theme.colors.textMuted};
   gap: 14px;
 
   @media (max-width: 900px) { gap: 10px; }
   @media (max-width: 600px) { gap: 6px; }
 `;
+
+

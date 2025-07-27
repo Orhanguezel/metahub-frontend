@@ -1,54 +1,40 @@
 {
-  "publicFaq": {
-    "title": "Sıkça Sorulan Sorular",
-    "noFaqs": "Şu anda görüntülenecek SSS bulunmamaktadır.",
-    "askTitle": "Bir Soru Sor",
-    "askRequired": "Lütfen bir soru girin.",
-    "askPlaceholder": "Örn: Sistem nasıl çalışıyor?",
-    "askButton": "Sor",
-    "answerTitle": "Cevap",
-    "question": "Sorunuz"
-  },
-  "adminFaq": {
-    "title": "SSS Yönetimi",
-    "create": "Yeni Oluştur",
-    "listEmpty": "SSS bulunamadı.",
-    "actions": "İşlemler",
-    "form": {
-      "required": "Lütfen tüm dillerde tüm alanları doldurun.",
-      "title": "Yeni SSS Ekle",
-      "titleEdit": "SSS'yi Düzenle",
-      "question": "Soru",
-      "answer": "Cevap",
-      "category": "Kategori",
-      "categoryPlaceholder": "Örn: Kargo, İade",
-      "submit": "Oluştur",
-      "success": "SSS başarıyla oluşturuldu.",
-      "updated": "SSS başarıyla güncellendi.",
-      "error": "İşlem başarısız oldu."
-    },
-    "ask": {
-      "title": "Bir Soru Sor",
-      "placeholder": "Örn: Sistem nasıl çalışıyor?",
-      "submit": "Sor",
-      "answerTitle": "Cevap"
-    },
-    "messages": {
-      "created": "SSS başarıyla oluşturuldu.",
-      "error": "SSS oluşturulurken hata oluştu."
-    },
-    "titleMulti": "Yeni SSS (Çok Dilli)"
-  },
-  "common": {
-    "loading": "Yükleniyor...",
-    "edit": "Düzenle",
-    "delete": "Sil",
-    "save": "Kaydet",
-    "cancel": "İptal",
-    "update": "Güncelle",
-    "create": "Oluştur"
-  },
-  "confirm": {
-    "delete": "Bu SSS'yi silmek istediğinizden emin misiniz?"
-  }
+  "adminFaq.title": "Sıkça Sorulan Sorular",
+  "adminFaq.create": "Yeni Oluştur",
+  "adminFaq.form.titleCreate": "SSS Oluştur",
+  "adminFaq.form.titleEdit": "SSS Düzenle",
+  "adminFaq.form.question": "Soru",
+  "adminFaq.form.answer": "Cevap",
+  "adminFaq.form.category": "Kategori",
+  "adminFaq.form.required": "Lütfen en az bir dilde soru ve cevap giriniz.",
+  "adminFaq.list.empty": "Hiç SSS bulunamadı.",
+  "adminFaq.question": "Soru",
+  "adminFaq.answer": "Cevap",
+  "adminFaq.ask.title": "Bir Soru Sor",
+  "adminFaq.ask.placeholder": "ör. Sistem nasıl çalışıyor?",
+  "adminFaq.ask.submit": "Sor",
+  "adminFaq.ask.answerTitle": "Cevap",
+  "adminFaq.unpublish": "Yayınlamaktan Çıkar",
+  "adminFaq.publish": "Yayınla",
+  "tabs.list": "SSS Listesi",
+  "tabs.create": "Yeni SSS",
+  "confirm.delete": "Bu SSS'yi silmek istediğinize emin misiniz?",
+  "common.create": "Oluştur",
+  "common.update": "Güncelle",
+  "common.edit": "Düzenle",
+  "common.delete": "Sil",
+  "common.loading": "Yükleniyor...",
+  "common.yes": "Evet",
+  "common.no": "Hayır",
+  "publicFaq.title": "Sıkça Sorulan Sorular",
+  "publicFaq.noFaqs": "Henüz herhangi bir SSS kaydı yok.",
+  "publicFaq.askTitle": "Yapay Zeka ile Soru Sor",
+  "publicFaq.askRequired": "Lütfen bir soru girin.",
+  "publicFaq.question": "Sorunuz",
+  "publicFaq.askPlaceholder": "Buraya sorunuzu yazın (örn: Chiller sistemleri nerelerde kullanılır?)",
+  "publicFaq.askButton": "Soruyu Gönder",
+  "publicFaq.answerTitle": "Yanıt",
+  "publicFaq.askNoticeTitle": "Not:",
+  "publicFaq.askNotice": "Buradan ucu açık veya detaylı sorular sorabilirsiniz. Cevaplar, yapay zeka tarafından verilmektedir ve test aşamasındadır. Bazen cevaplar eksik veya hatalı olabilir."
+
 }

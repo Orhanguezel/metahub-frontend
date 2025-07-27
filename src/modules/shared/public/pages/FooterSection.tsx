@@ -45,6 +45,8 @@ export default function FooterSection() {
   const { ensotekprod } = useAppSelector((state) => state.ensotekprod || {});
   const { sparepart } = useAppSelector((state) => state.sparepart || {});
   const { library } = useAppSelector((state) => state.library || {});
+  const { faqs } = useAppSelector((state) => state.faq || {});
+  const { team } = useAppSelector((state) => state.team || {});
 
   // Settings
   const rawSettings = useAppSelector((state) => state.settings.settings);
@@ -66,6 +68,7 @@ export default function FooterSection() {
   // --- DİNAMİK FOOTER BLOKLARI ---
   type FooterBlock = { title: string; links: { label: string; href: string }[] };
 
+  // Diğer bloklar
   const footerBlocks: FooterBlock[] = [
     services && Array.isArray(services) && services.length > 0 && {
       title: t("massageTypes", "Massage Types"),
@@ -120,6 +123,33 @@ export default function FooterSection() {
     },
   ].filter((block): block is FooterBlock => !!block);
 
+  // --- Diğer Linkler Bloğu ---
+  const otherLinks: { label: string; href: string }[] = [];
+  if (faqs && Array.isArray(faqs) && faqs.length > 0) {
+    otherLinks.push({
+      label: t("faqLink", "Sıkça Sorulan Sorular"),
+      href: "/faq",
+    });
+  }
+  if (team && Array.isArray(team) && team.length > 0) {
+    otherLinks.push({
+      label: t("teamLink", "Takım"),
+      href: "/team",
+    });
+  }
+  // // İleride başka linkler (mesela destek) eklemek için örnek:
+  // if (supportCenterEnabled) {
+  //   otherLinks.push({ label: t("support", "Destek Merkezi"), href: "/support" });
+  // }
+
+  // Eğer diğer linkler varsa, bloğu ekle
+  if (otherLinks.length > 0) {
+    footerBlocks.push({
+      title: t("other", "Other Links"),
+      links: otherLinks,
+    });
+  }
+
   // Legal (yasal) linkler en alt için
   const legalLinks = [
     { label: t("impressum", "Impressum"), href: "/impressum" },
@@ -164,7 +194,7 @@ export default function FooterSection() {
   );
 }
 
-// --- Styled Components ---
+// --- Styled Components --- (Aynı şekilde bırakabilirsin!)
 const FooterWrapper = styled.footer`
   width: 100%;
   background: ${({ theme }) => theme.colors.footerBackground};
@@ -271,4 +301,3 @@ const Divider = styled.span`
   opacity: 0.6;
   user-select: none;
 `;
-

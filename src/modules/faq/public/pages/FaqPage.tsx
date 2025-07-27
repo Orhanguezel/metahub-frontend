@@ -2,11 +2,12 @@
 
 import React from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "@/modules/faq/locales";
 import { FAQListSection, FAQAskSection } from "@/modules/faq";
 
 export default function FaqPage() {
-  const { t } = useTranslation("faq");
+  const { t } = useI18nNamespace("faq", translations);
 
   return (
     <Wrapper>

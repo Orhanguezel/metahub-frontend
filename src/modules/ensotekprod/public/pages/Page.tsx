@@ -1,5 +1,3 @@
-"use client";
-
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
@@ -68,7 +66,7 @@ export default function EnsotekprodPage() {
             transition={{ delay: index * 0.07 }}
             viewport={{ once: true }}
           >
-            <Link href={`/ensotekprod/${item.slug}`} passHref legacyBehavior>
+            <Link href={`/ensotekprod/${item.slug}`}>
               <ImageGallery tabIndex={0} role="link">
                 {item.images && item.images.length > 0 ? (
                   item.images.slice(0, 2).map((img, i) => (
@@ -90,7 +88,7 @@ export default function EnsotekprodPage() {
               </ImageGallery>
             </Link>
             <CardContent>
-              <Link href={`/ensotekprod/${item.slug}`} passHref legacyBehavior>
+              <Link href={`/ensotekprod/${item.slug}`}>
                 <CardTitle tabIndex={0} role="link">
                   {item.name?.[lang] || "Untitled"}
                 </CardTitle>

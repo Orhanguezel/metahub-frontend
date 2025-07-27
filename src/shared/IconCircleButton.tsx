@@ -11,15 +11,15 @@ export const IconCircleButton = styled.a`
   min-width: 32px;
   min-height: 32px;
   background: transparent;
-  color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.textPrimary};
   font-size: 1.13em;
   transition: color 0.17s, background 0.16s, box-shadow 0.16s;
 
   &:hover,
   &:focus-visible {
-    background: ${({ theme }) => theme.colors.primaryTransparent};
     color: ${({ theme }) => theme.colors.accent};
-    box-shadow: 0 1px 6px 0 ${({ theme }) => theme.colors.primaryTransparent};
+    background: ${({ theme }) => theme.colors.backgroundSecondary};
+    text-decoration: underline;
     outline: none;
   }
 

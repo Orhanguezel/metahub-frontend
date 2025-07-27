@@ -1,80 +1,39 @@
 {
-  "page": {
-    "allBike": "Tous les vélos",
-    "noBike": "Aucun vélo trouvé.",
-    "price": "Prix",
-    "stock": "Stock",
-    "brand": "Marque",
-    "readMore": "Voir les détails →",
-    "other": "Autres produits",
-    "untitled": "Sans titre",
-    "noSummary": "Pas de description.",
-    "bike": {
-      "title": "Dernier vélo",
-      "readMore": "Voir les détails",
-      "all": "Tous les vélos"
-    }
-  },
-  "admin": {
-    "tabs": {
-      "bike": "Vélos",
-      "create": "Nouveau vélo",
-      "categories": "Catégories"
-    },
-    "bike": {
-      "create": "Ajouter un nouveau vélo",
-      "edit": "Modifier le vélo",
-      "name": "Nom du vélo",
-      "description": "Description",
-      "brand": "Marque",
-      "price": "Prix",
-      "stock": "Stock",
-      "tags": "Tags",
-      "image": "Image",
-      "category": "Catégorie",
-      "select_category": "Sélectionner une catégorie",
-      "publish_status": "Publié ?",
-      "no_images": "Aucune image",
-      "publish": "Publier",
-      "unpublish": "Dépublier",
-      "empty": "Aucun vélo disponible."
-    },
-    "categories": {
-      "title": "Catégories de vélos",
-      "add": "Nouvelle catégorie",
-      "empty": "Aucune catégorie trouvée."
-    },
-    "language": {
-      "en": "Anglais",
-      "tr": "Turc",
-      "de": "Allemand"
-    },
-    "slug": "Slug",
-    "actions": "Actions",
-    "edit": "Modifier",
-    "delete": "Supprimer",
-    "cancel": "Annuler",
-    "update": "Mettre à jour",
-    "create": "Créer",
-    "yes": "Oui",
-    "no": "Non",
-    "loading": "Chargement...",
-    "confirm": {
-      "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
-      "delete_bike": "Êtes-vous sûr de vouloir supprimer ce vélo ?"
-    },
-    "optional_description": "Description (optionnel)",
-    "category_info": "À propos de cette catégorie ?",
-    "saving": "Enregistrement...",
-    "save": "Enregistrer",
-    "update2": "Mettre à jour",
-    "editCategory": "Modifier la catégorie",
-    "newCategory": "Nouvelle catégorie"
-  },
-  "seo": {
-    "title": "Titre SEO",
-    "description": "Description SEO"
-  },
-  "none": "Aucun",
-  "delete_confirm": "Êtes-vous sûr de vouloir supprimer ?"
+  "adminFaq.title": "Foire Aux Questions",
+  "adminFaq.create": "Créer Nouveau",
+  "adminFaq.form.titleCreate": "Créer une FAQ",
+  "adminFaq.form.titleEdit": "Modifier la FAQ",
+  "adminFaq.form.question": "Question",
+  "adminFaq.form.answer": "Réponse",
+  "adminFaq.form.category": "Catégorie",
+  "adminFaq.form.required": "Veuillez remplir au moins une langue pour la question et la réponse.",
+  "adminFaq.list.empty": "Aucune FAQ trouvée.",
+  "adminFaq.question": "Question",
+  "adminFaq.answer": "Réponse",
+  "adminFaq.ask.title": "Poser une Question",
+  "adminFaq.ask.placeholder": "ex : Comment fonctionne le système ?",
+  "adminFaq.ask.submit": "Demander",
+  "adminFaq.ask.answerTitle": "Réponse",
+  "adminFaq.unpublish": "Ne pas publier",
+  "adminFaq.publish": "Publier",
+  "tabs.list": "Liste des FAQs",
+  "tabs.create": "Nouvelle FAQ",
+  "confirm.delete": "Êtes-vous sûr de vouloir supprimer cette FAQ ?",
+  "common.create": "Créer",
+  "common.update": "Mettre à jour",
+  "common.edit": "Modifier",
+  "common.delete": "Supprimer",
+  "common.loading": "Chargement...",
+  "common.yes": "Oui",
+  "common.no": "Non",
+  "publicFaq.title": "Questions fréquemment posées",
+  "publicFaq.noFaqs": "Aucune FAQ disponible pour le moment.",
+  "publicFaq.askTitle": "Poser une question (IA)",
+  "publicFaq.askRequired": "Veuillez saisir une question.",
+  "publicFaq.question": "Votre question",
+  "publicFaq.askPlaceholder": "Saisissez votre question ici (ex : Où sont utilisés les systèmes de refroidissement ?)",
+  "publicFaq.askButton": "Envoyer la question",
+  "publicFaq.answerTitle": "Réponse",
+  "publicFaq.askNoticeTitle": "Note :",
+  "publicFaq.askNotice": "Vous pouvez poser des questions ouvertes ou détaillées ici. Les réponses sont générées par l'IA et cette fonctionnalité est en phase de test. Les réponses peuvent être incomplètes ou incorrectes."
 }

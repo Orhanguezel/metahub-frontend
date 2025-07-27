@@ -1,240 +1,165 @@
+"use client";
+
 import styled from "styled-components";
 import Link from "next/link";
-import translations from "@/modules/services/locales";
+import { translations } from "@/modules/services";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { motion } from "framer-motion";
 import { useAppSelector } from "@/store/hooks";
-import { Skeleton, ErrorMessage, SeeAllBtn } from "@/shared";
-import Image from "next/image";
+import { Skeleton, SeeAllBtn } from "@/shared";
+import type { IServices } from "@/modules/services/types";
 import type { SupportedLocale } from "@/types/common";
-import { FaChartLine, FaLightbulb } from "react-icons/fa";
+
 
 export default function ServicesSection() {
   const { i18n, t } = useI18nNamespace("services", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const { services, loading } = useAppSelector((state) => state.services);
 
-  Object.entries(translations).forEach(([lng, resources]) => {
-    if (!i18n.hasResourceBundle(lng, "services")) {
-      i18n.addResourceBundle(lng, "services", resources, true, true);
-    }
-  });
-
-  const { services, loading, error } = useAppSelector((state) => state.services);
-
-  if (loading) {
-    return (
-      <Section>
-        <ServicesGrid>
-          <Left>
-            <Skeleton />
-            <Skeleton />
-            <Skeleton />
-          </Left>
-          <Right>
-            <Skeleton />
-          </Right>
-        </ServicesGrid>
-      </Section>
-    );
-  }
-
-  if (error) {
-    return (
-      <Section>
-        <ServicesGrid>
-          <ErrorMessage />
-        </ServicesGrid>
-      </Section>
-    );
-  }
-
-  // Güvenli array check ve fallback
-  if (!Array.isArray(services) || services.filter(Boolean).length === 0) {
-    return (
-      <Section>
-        <ServicesGrid>
-          <Left>
-            <MainTitle>{t("page.services.allServices", "Hakkımızda")}</MainTitle>
-            <Desc>{t("services.services.empty", "Hakkında içeriği bulunamadı.")}</Desc>
-          </Left>
-        </ServicesGrid>
-      </Section>
-    );
-  }
-
-  // Null-safe, slug'lı main seçimi (hiçbiri yoksa en baştaki eleman)
-  const validServices = services.filter((item) => !!item && typeof item === "object");
-  const main =
-    validServices.find((x) => !!x?.slug && x.slug === "ensotek-su-sogutma-kuleleri") ||
-    (validServices.length > 2 ? validServices[2] : validServices[0]) ||
-    {};
-
-  // Vizyon & Misyon kartları
-  const featuresData = [
-    validServices[0] || {},
-    validServices[1] || {},
-  ];
-
-  const icons = [
-    <FaChartLine size={32} color="#2875c2" key="vizyon" />,
-    <FaLightbulb size={32} color="#2875c2" key="misyon" />,
-  ];
-
-  const features = featuresData.map((item, i) => ({
-    icon: icons[i],
-    title: item?.title?.[lang] || item?.title?.en || "-",
-    summary: item?.summary?.[lang] || item?.summary?.en || "-",
-    slug: item?.slug || "",
-  }));
-
-  // Sağdaki ek görseller (main ile slug aynıysa filtreleniyor)
-  const rightImages = validServices
-    .filter((item) =>
-      !!item &&
-      !!main &&
-      typeof item.slug === "string" &&
-      typeof main.slug === "string" &&
-      item.slug !== main.slug &&
-      item.images?.[0]?.url
-    )
-    .slice(0, 2);
+  const allActivities = services || [];
+  const firstServices = allActivities[0];
+  const restActivities = allActivities.slice(0, 6); // Max 6 tane gösterir
 
   return (
-    <Section
-      initial={{ opacity: 0, y: 34 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.66 }}
-      viewport={{ once: true }}
-    >
-      <ServicesGrid>
-        {/* SOL BLOK */}
+    <Section>
+      <Container>
         <Left>
-          <MinorTitle>{t("page.services.minorTitle", "HAKKIMIZDA")}</MinorTitle>
+          <MinorTitle>
+            {t("page.services.minorTitle", "Hizmetlerimiz")}
+          </MinorTitle>
           <MainTitle>
-            {main?.title?.[lang] ||
-              main?.title?.en ||
-              t("page.services.title", "Ensotek Hakkında")}
+            {t("page.services.title", "Hizmet Alanlarımız")}
           </MainTitle>
           <Desc>
-            {main?.summary?.[lang] || main?.summary?.en || ""}
+            {firstServices
+              ? firstServices.summary?.[lang] || "-"
+              : t(
+                  "page.services.desc",
+                  ""
+                )}
           </Desc>
-          <Features>
-            {features.map((item, i) => (
-              <Feature key={i}>
-                <IconWrap>{item.icon}</IconWrap>
-                <FeatureText>
-                  <FeatureTitle>{item.title}</FeatureTitle>
-                  <FeatureDesc>{item.summary}</FeatureDesc>
-                </FeatureText>
-              </Feature>
-            ))}
-          </Features>
+
+          {/* --- EK: Ana faaliyet görseli, summary'nin hemen altında --- */}
+          {firstServices?.images?.[0]?.url && (
+            <FirstServicesImageWrap as={Link} href={`/services/${firstServices.slug}`}>
+              <FirstServicesImage
+                src={firstServices.images[0].url}
+                alt={firstServices.title?.[lang] || "Faaliyet"}
+                width={430}
+                height={185}
+                style={{ objectFit: "cover" }}
+              />
+            </FirstServicesImageWrap>
+          )}
+
           <SeeAllBtn href="/services">
-            {t("page.services.all", "Daha Fazla Bilgi")}
+            {t("page.services.all", "Tüm Hizmetler")}
           </SeeAllBtn>
         </Left>
-
-        {/* SAĞ BLOK - GÖRSEL + küçük resimler */}
         <Right>
-          {main?.slug && main?.images?.[0]?.url && (
-            <MainImageWrap as={Link} href={`/services/${main.slug}`}>
-              <MainImage
-                src={main.images[0].url}
-                alt={main.title?.[lang] || "Services"}
-                width={330}
-                height={210}
-                style={{ objectFit: "cover" }}
-                priority
-              />
-            </MainImageWrap>
+          {loading ? (
+            <CardGrid>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} />
+              ))}
+            </CardGrid>
+          ) : (
+            <CardGrid>
+              {restActivities.map((item: IServices, idx: number) => (
+                <CardLink
+                  href={`/services/${item.slug}`}
+                  key={item._id}
+                  as={motion.a}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ durationMinutes: 0.39, delay: idx * 0.07 }}
+                  viewport={{ once: true }}
+                >
+                  <CardImgBox>
+                    {item.images?.[0]?.url ? (
+                      <CardImg
+                        src={item.images[0].url}
+                        alt={item.title?.[lang] || "Untitled"}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <CardImgPlaceholder />
+                    )}
+                  </CardImgBox>
+                  <CardTitle>{item.title?.[lang] || "Untitled"}</CardTitle>
+                </CardLink>
+              ))}
+            </CardGrid>
           )}
-          <StackedImages>
-            {rightImages.map((item, idx) =>
-              item?.images?.[0]?.url && item?.slug ? (
-                <StackedImageLink key={item.slug} href={`/services/${item.slug}`}>
-                  <StackedImage
-                    src={item.images[0].url}
-                    alt={item.title?.[lang] || "Services"}
-                    width={135}
-                    height={90}
-                    style={{
-                      objectFit: "cover",
-                      marginTop: idx === 1 ? "12px" : "0",
-                    }}
-                    loading="lazy"
-                  />
-                </StackedImageLink>
-              ) : null
-            )}
-          </StackedImages>
         </Right>
-      </ServicesGrid>
+      </Container>
     </Section>
   );
 }
 
-// --- Styled Components aynı şekilde bırakılabilir ---
+// ... diğer styled-components aynı şekilde devam ...
 
-
-const StackedImageLink = styled(Link)`
+// --- EK: Ana faaliyet görseli için özel wrap ve stil ---
+const FirstServicesImageWrap = styled(Link)`
+  width: 100%;
+  max-width: 410px;
+  min-height: 140px;
+  max-height: 220px;
+  margin: 1.3rem 0 1.2rem 0;
   display: block;
   overflow: hidden;
-  cursor: pointer;
+  box-shadow: 0 8px 30px 0 rgba(40,117,194,0.12);
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
 
-  &:hover img,
-  &:focus-visible img {
-    box-shadow: 0 7px 32px 0 rgba(40,117,194,0.14);
-    transform: scale(1.055);
-    outline: none;
+  @media (max-width: 600px) {
+    min-width: 140px;
+    min-height: 80px;
+    height: auto;
+    margin: 1rem auto 0.9rem auto;
+    max-width: 100%;
   }
 `;
 
-// Diğer styled'lar aynı!
+const FirstServicesImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+`;
+
+
 
 
 // --- STYLES ---
-const Section = styled(motion.section)`
+
+const Section = styled.section`
+  padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xxl};
   background: ${({ theme }) => theme.colors.sectionBackground};
   color: ${({ theme }) => theme.colors.text};
-  padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xxl};
-  width: 100%;
 `;
 
-const ServicesGrid = styled.div`
-  max-width: 1280px;
-  margin: 0 auto;
+const Container = styled.div`
   display: flex;
-  gap: 2.8rem;
   align-items: flex-start;
-  padding: 0 ${({ theme }) => theme.spacings.xl};
-  flex-wrap: wrap;
+  gap: 3rem;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 ${({ theme }) => theme.spacings.lg};
 
-  ${({ theme }) => theme.media.medium} {
-    padding: 0 ${({ theme }) => theme.spacings.md};
-    gap: 2rem;
-  }
-
-  ${({ theme }) => theme.media.small} {
+  @media (max-width: 1023px) {
     flex-direction: column;
     gap: 2.5rem;
     padding: 0 ${({ theme }) => theme.spacings.sm};
-    align-items: center;
   }
 `;
 
 const Left = styled.div`
-  flex: 1.1 1 440px;
-  min-width: 440px;
-  max-width: 640px;
-  display: flex;
-  flex-direction: column;
-  gap: 1.1rem;
-  justify-content: flex-start;
-  ${({ theme }) => theme.media.small} {
+  flex: 1.12 1 300px;
+  max-width: 440px;
+  @media (max-width: 1023px) {
     max-width: 100%;
-    align-items: center;
     text-align: center;
-    gap: 2rem;
+    margin: 0 auto;
   }
 `;
 
@@ -242,202 +167,126 @@ const MinorTitle = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.accent};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  letter-spacing: 0.02em;
+  margin-bottom: 1.2rem;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
 `;
 
 const MainTitle = styled.h2`
-  font-size: clamp(2.2rem, 3.3vw, 2.7rem);
+  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
   color: ${({ theme }) => theme.colors.primary};
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-  margin: 0 0 0.45em 0;
-  letter-spacing: -0.01em;
-  line-height: 1.13;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  line-height: 1.17;
 `;
 
-const Desc = styled.p`
-  color: ${({ theme }) => theme.colors.textSecondary};
+const Desc = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.base};
-  line-height: 1.7;
-  margin-bottom: 1.8rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin-bottom: 2.3rem;
+  line-height: 1.67;
 `;
 
-const Features = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2.2rem 1.3rem;
-  margin: 2.5rem 0 1.3rem 0;
 
-  @media (max-width: 1100px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
-  }
-  @media (max-width: 700px) {
-    grid-template-columns: 1fr;
-    gap: 1.3rem;
-    margin: 1.4rem 0 0.7rem 0;
-  }
-`;
 
-const Feature = styled.div`
+const Right = styled.div`
+  flex: 2.8 1 500px;
   display: flex;
-  align-items: flex-start;
-  gap: 1.12rem;
-  background: ${({ theme }) => theme.colors.cardBackground || "#fff"};
-  border: 1.5px solid ${({ theme }) => theme.colors.borderLight || "#f1f3f8"};
-  box-shadow: 0 2px 14px 0 rgba(40,117,194,0.07);
-  padding: 1.45rem 1.1rem 1.15rem 1.15rem;
-  min-height: 145px;
-  transition: box-shadow 0.17s, transform 0.16s, border-color 0.15s;
+  justify-content: center;
+  align-items: stretch;
+`;
+
+const CardGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  grid-template-rows: repeat(3, minmax(168px, 1fr));
+  gap: 2.2rem 2.7rem;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: none;
+    gap: 1.2rem 1.2rem;
+    max-width: 99vw;
+  }
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr 1fr; // Hala iki sütun!
+    gap: 0.65rem 0.65rem;
+    padding: 0 0.2rem;
+  }
+`;
+
+
+const CardLink = styled(Link)`
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  padding: 2.1rem 1rem 1.25rem 1rem;
+  min-height: 220px;
+  transition: box-shadow 0.17s, border-color 0.17s, transform 0.16s;
   cursor: pointer;
+  position: relative;
+  will-change: transform;
+  outline: none;
 
   &:hover, &:focus-visible {
-    box-shadow: 0 8px 26px 0 rgba(40,117,194,0.13);
-    transform: translateY(-5px) scale(1.032);
-    border-color: ${({ theme }) => theme.colors.primaryTransparent};
-    outline: none;
+    box-shadow: ${({ theme }) => theme.shadows.lg};
+    border-color: ${({ theme }) => theme.colors.accent};
+    transform: translateY(-8px) scale(1.06);
+    z-index: 1;
+    text-decoration: none;
   }
 `;
 
-const IconWrap = styled.div`
-  min-width: 44px;
-  min-height: 44px;
-  background: linear-gradient(
-    135deg,
-    ${({ theme }) => theme.colors.primaryTransparent} 40%,
-    ${({ theme }) => theme.colors.backgroundAlt} 100%
-  );
+
+const CardImgBox = styled.div`
+  width: 140px;
+  height: 110px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-  font-size: 1.8rem;
+  margin-bottom: 1.1rem;
+  overflow: hidden;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  box-shadow: 0 4px 22px 0 rgba(40, 117, 194, 0.07);
+
+  @media (max-width: 600px) {
+    width: 100px;
+    height: 78px;
+  }
 `;
 
-const FeatureText = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0; /* clamp için */
+const CardImg = styled.img`
+  width: 95%;
+  height: 90%;
+  object-fit: contain;
+  transition: transform 0.19s cubic-bezier(0.5, 0.27, 0.41, 1.14);
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+
+  &:hover { transform: scale(1.10) rotate(-2deg); }
 `;
 
-const FeatureTitle = styled.h3`
-  font-size: 1.14rem;
+const CardImgPlaceholder = styled.div`
+  width: 80px;
+  height: 80px;
+  background: ${({ theme }) => theme.colors.skeleton};
+  opacity: 0.43;
+`;
+
+const CardTitle = styled.h3`
+  font-size: 1.15em;
   color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  margin-bottom: 0.21rem;
-  line-height: 1.2;
-  white-space: pre-line;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-top: 0.6rem;
+  text-align: center;
+  letter-spacing: 0.01em;
+  min-height: 2.2em;
+  line-height: 1.14;
 `;
-
-const FeatureDesc = styled.div`
-  font-size: 0.97rem;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  opacity: 0.95;
-  line-height: 1.55;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;    /* En fazla 3 satır! */
-  -webkit-box-orient: vertical;
-  text-overflow: ellipsis;
-  min-height: 2.7em;
-`;
-
-const Right = styled.div`
-  flex: 1.5 1 320px;
-  min-width: 270px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1.7rem;
-
-  ${({ theme }) => theme.media.small} {
-    width: 100%;
-    max-width: 420px; /* Mobilde çok genişlemesin */
-    margin: 0 auto;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-`;
-
-const MainImageWrap = styled(Link)`
-  width: 340px;
-  height: 220px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  overflow: hidden;
-  box-shadow: 0 8px 30px 0 rgba(40,117,194,0.16), ${({ theme }) => theme.shadows.lg};
-  margin-bottom: 0.8rem;
-  position: relative;
-  isolation: isolate;
-  cursor: pointer;
-  display: block;
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(120deg, rgba(40,117,194,0.07) 12%, rgba(11,182,214,0.06) 100%);
-    z-index: 1;
-  }
-
-  &:hover, &:focus-visible {
-    box-shadow: 0 12px 38px 0 rgba(40,117,194,0.25), ${({ theme }) => theme.shadows.xl};
-    transform: scale(1.025);
-  }
-
-  ${({ theme }) => theme.media.small} {
-    width: 100%;
-    max-width: 340px;
-    min-width: 170px;
-    height: 175px;
-    margin: 0 auto 0.5rem auto;
-  }
-`;
-
-const MainImage = styled(Image)`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  position: relative;
-  z-index: 2;
-`;
-
-const StackedImages = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1.15rem;
-
-  ${({ theme }) => theme.media.small} {
-    width: 100%;
-    max-width: 340px;
-    flex-direction: row;
-    justify-content: center;
-    gap: 0.85rem;
-  }
-`;
-
-const StackedImage = styled(Image)`
-  width: 110px;
-  height: 72px;
-  object-fit: cover;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  box-shadow: 0 2px 14px 0 rgba(40,117,194,0.07);
-  transition: box-shadow 0.17s, transform 0.15s;
-  cursor: pointer;
-
-  &:hover, &:focus-visible {
-    box-shadow: 0 7px 32px 0 rgba(40,117,194,0.14);
-    transform: scale(1.055);
-    outline: none;
-  }
-
-  ${({ theme }) => theme.media.small} {
-    width: 50%;
-    max-height: 120px;
-  }
-`;
-

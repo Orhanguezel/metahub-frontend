@@ -128,104 +128,107 @@ export const fetchAboutBySlug = createAsyncThunk(
 );
 
 // --- Slice ---
-
 const aboutSlice = createSlice({
   name: "about",
   initialState,
   reducers: {
-    clearAboutMessages(state) {
+    clearAboutMessages: (state) => {
       state.error = null;
       state.successMessage = null;
     },
-    setSelectedAbout(state, action: PayloadAction<IAbout | null>) {
+    setSelectedAbout: (state, action: PayloadAction<IAbout | null>) => {
       state.selected = action.payload;
     },
   },
   extraReducers: (builder) => {
-    const startLoading = (state: AboutState) => {
+    const setLoading = (state: AboutState) => {
       state.loading = true;
+      state.status = "loading";
       state.error = null;
     };
 
     const setError = (state: AboutState, action: PayloadAction<any>) => {
       state.loading = false;
+      state.status = "failed";
       state.error = extractErrorMessage(action.payload);
     };
 
-    // --- Public List ---
+    // 🌐 Public
     builder
-      .addCase(fetchAbout.pending, startLoading)
+      .addCase(fetchAbout.pending, setLoading)
       .addCase(fetchAbout.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.about = action.payload;
       })
       .addCase(fetchAbout.rejected, setError);
 
-    // --- Admin List ---
+    // 🔐 Admin List
     builder
-      .addCase(fetchAllAboutAdmin.pending, startLoading)
+      .addCase(fetchAllAboutAdmin.pending, setLoading)
       .addCase(fetchAllAboutAdmin.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.aboutAdmin = action.payload;
       })
       .addCase(fetchAllAboutAdmin.rejected, setError);
 
-    // --- Admin Create ---
+    // ➕ Create
     builder
-      .addCase(createAbout.pending, startLoading)
+      .addCase(createAbout.pending, setLoading)
       .addCase(createAbout.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage =
-          action.payload?.message;
-        if (action.payload?.data) {
-          state.aboutAdmin.unshift(action.payload.data);
-        }
+        state.status = "succeeded";
+        state.aboutAdmin.unshift(action.payload);
+        state.successMessage = "About successfully created.";
       })
       .addCase(createAbout.rejected, setError);
 
-    // --- Admin Update ---
+    // 📝 Update
     builder
-      .addCase(updateAbout.pending, startLoading)
+      .addCase(updateAbout.pending, setLoading)
       .addCase(updateAbout.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload?.data || action.payload;
-        const index = state.aboutAdmin.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.aboutAdmin[index] = updated;
+        state.status = "succeeded";
+        const updated = action.payload;
+        const i = state.aboutAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.aboutAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+        state.successMessage = "About successfully updated.";
       })
       .addCase(updateAbout.rejected, setError);
 
-    // --- Admin Delete ---
+    // 🗑️ Delete
     builder
-      .addCase(deleteAbout.pending, startLoading)
+      .addCase(deleteAbout.pending, setLoading)
       .addCase(deleteAbout.fulfilled, (state, action) => {
         state.loading = false;
-        state.aboutAdmin = state.aboutAdmin.filter(
-          (a) => a._id !== action.payload.id
-        );
-        state.successMessage = action.payload?.message;
+        state.status = "succeeded";
+        state.aboutAdmin = state.aboutAdmin.filter((a) => a._id !== action.payload.id);
+        state.successMessage = action.payload.message;
       })
       .addCase(deleteAbout.rejected, setError);
 
-    // --- Admin Toggle Publish ---
+    // 🌍 Toggle Publish
     builder
-      .addCase(togglePublishAbout.pending, startLoading)
+      .addCase(togglePublishAbout.pending, setLoading)
       .addCase(togglePublishAbout.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload?.data || action.payload;
-        const index = state.aboutAdmin.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.aboutAdmin[index] = updated;
+        state.status = "succeeded";
+        const updated = action.payload;
+        const i = state.aboutAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.aboutAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+        state.successMessage = "Publish status updated.";
       })
       .addCase(togglePublishAbout.rejected, setError);
 
-    // --- Single Fetch (slug) ---
+    // 🔎 Single (Slug)
     builder
-      .addCase(fetchAboutBySlug.pending, startLoading)
+      .addCase(fetchAboutBySlug.pending, setLoading)
       .addCase(fetchAboutBySlug.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.selected = action.payload;
       })
       .addCase(fetchAboutBySlug.rejected, setError);

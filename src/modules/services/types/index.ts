@@ -25,6 +25,8 @@ export interface IServices {
   tenant: string;
   tags: string[];
   images: IServicesImage[];
+  durationMinutes?: number;
+  price?: number;
   category:
     | string
     | {

@@ -32,7 +32,7 @@ export default function SparepartSection() {
       <Section>
         <Title>
           <IconTitle>🚲</IconTitle>
-          {t("page.sparepart.title", "Bisikletler")}
+          {t("page.sparepart.title", "Yedek parçalar")}
         </Title>
         <Grid>
           {[...Array(3)].map((_, i) => (
@@ -48,7 +48,7 @@ export default function SparepartSection() {
       <Section>
         <Title>
           <IconTitle>🚲</IconTitle>
-          {t("page.sparepart.title", "Bisikletler")}
+          {t("page.sparepart.title", "Yedek parçalar")}
         </Title>
         <ErrorMessage message={error} />
       </Section>
@@ -60,9 +60,9 @@ export default function SparepartSection() {
       <Section>
         <Title>
           <IconTitle>🚲</IconTitle>
-          {t("page.sparepart.title", "Bisikletler")}
+          {t("page.sparepart.title", "Yedek parçalar")}
         </Title>
-        <p>{t("page.noSparepart", "Henüz ürün yok.")}</p>
+        <p>{t("page.noSparepart", "Henüz yedek parça yok.")}</p>
       </Section>
     );
   }
@@ -76,7 +76,7 @@ export default function SparepartSection() {
     >
       <Title>
         <IconTitle>🚲</IconTitle>
-        {t("page.sparepart.title", "Bisikletler")}
+        {t("page.sparepart.title", "Yedek parçalar")}
       </Title>
       <Grid>
         {latestSparepart.map((item: ISparepart, index: number) => (

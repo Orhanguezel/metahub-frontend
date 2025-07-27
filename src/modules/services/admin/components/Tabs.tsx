@@ -3,7 +3,7 @@
 import React, { useCallback, useRef } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "@/modules/services/locales";
+import {translations} from "@/modules/services";
 
 const TABS: Array<{
   key: "list" | "create" | "categories";

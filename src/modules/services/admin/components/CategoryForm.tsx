@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import { useState, useEffect, useMemo } from "react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "@/modules/services/locales";
+import {translations} from "@/modules/services";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import type { ServicesCategory } from "@/modules/services/types";
 

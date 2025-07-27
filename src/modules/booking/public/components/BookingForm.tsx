@@ -17,6 +17,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { format } from "date-fns";
 import TimeSlotPicker from "./TimeSlotPicker";
+import { useSearchParams } from "next/navigation";
+
 
 // --- STYLED COMPONENTS & CUSTOM INPUT ---
 
@@ -93,6 +95,9 @@ export default function BookingForm() {
 
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
+  const params = useSearchParams();
+const preselectedService = params.get("service");
+
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const [form, setForm] = useState<Omit<BookingFormInput, "language">>({
@@ -107,11 +112,29 @@ export default function BookingForm() {
     durationMinutes: 60,
   });
 
-  useEffect(() => {
-    if (form.date) {
-      dispatch(fetchAvailableSlots(form.date));
+  // Mevcut date değişimi için
+useEffect(() => {
+  if (form.date) {
+    dispatch(fetchAvailableSlots(form.date));
+  }
+}, [dispatch, form.date]);
+
+// Yeni: Preselected service (URL'den)
+useEffect(() => {
+  if (!form.service && services.length && preselectedService) {
+    const selected = services.find(
+      (s) => s._id === preselectedService || s.slug === preselectedService
+    );
+    if (selected) {
+      setForm((prev) => ({
+        ...prev,
+        service: selected._id,
+        serviceType: selected.title?.[lang] || "",
+      }));
     }
-  }, [dispatch, form.date]);
+  }
+}, [form.service, services, preselectedService, lang]);
+
 
   const handleChange = (
     e: React.ChangeEvent<

@@ -44,14 +44,14 @@ export default function SparepartPage() {
   if (!sparepart || sparepart.length === 0) {
     return (
       <PageWrapper>
-        <p>{t("page.noSparepart", "Ürün bulunamadı.")}</p>
+        <p>{t("page.noSparepart", "Yedek parça bulunamadı.")}</p>
       </PageWrapper>
     );
   }
 
   return (
     <PageWrapper>
-      <PageTitle>{t("page.allSparepart", "Tüm Ürünler")}</PageTitle>
+      <PageTitle>{t("page.allSparepart", "Tüm Yedek Parçalar")}</PageTitle>
       <SparepartGrid>
         {sparepart.map((item: ISparepart, index: number) => {
           const detailHref = `/sparepart/${item.slug}`;

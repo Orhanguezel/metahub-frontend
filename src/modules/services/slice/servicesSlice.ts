@@ -69,7 +69,10 @@ export const createServices = createAsyncThunk(
       "post",
       "/services/admin",
       formData,
-      thunkAPI.rejectWithValue
+      thunkAPI.rejectWithValue,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
     );
     return res.data;
   }
@@ -82,7 +85,10 @@ export const updateServices = createAsyncThunk(
       "put",
       `/services/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue
+      thunkAPI.rejectWithValue,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
     );
     return res.data;
   }
@@ -113,7 +119,10 @@ export const togglePublishServices = createAsyncThunk(
       "put",
       `/services/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue
+      thunkAPI.rejectWithValue,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
     );
     return res.data;
   }
@@ -133,107 +142,109 @@ export const fetchServicesBySlug = createAsyncThunk(
 );
 
 // --- Slice ---
-
 const servicesSlice = createSlice({
   name: "services",
   initialState,
   reducers: {
-    clearServicesMessages(state) {
+    clearServicesMessages: (state) => {
       state.error = null;
       state.successMessage = null;
     },
-    setSelectedServices(state, action: PayloadAction<IServices | null>) {
+    setSelectedServices: (state, action: PayloadAction<IServices | null>) => {
       state.selected = action.payload;
     },
   },
   extraReducers: (builder) => {
-    const startLoading = (state: ServicesState) => {
+    const setLoading = (state: ServicesState) => {
       state.loading = true;
+      state.status = "loading";
       state.error = null;
     };
 
     const setError = (state: ServicesState, action: PayloadAction<any>) => {
       state.loading = false;
+      state.status = "failed";
       state.error = extractErrorMessage(action.payload);
     };
 
-    // --- Public List ---
+    // 🌐 Public
     builder
-      .addCase(fetchServices.pending, startLoading)
+      .addCase(fetchServices.pending, setLoading)
       .addCase(fetchServices.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.services = action.payload;
       })
       .addCase(fetchServices.rejected, setError);
 
-    // --- Admin List ---
+    // 🔐 Admin List
     builder
-      .addCase(fetchAllServicesAdmin.pending, startLoading)
+      .addCase(fetchAllServicesAdmin.pending, setLoading)
       .addCase(fetchAllServicesAdmin.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.servicesAdmin = action.payload;
       })
       .addCase(fetchAllServicesAdmin.rejected, setError);
 
-    // --- Admin Create ---
+    // ➕ Create
     builder
-      .addCase(createServices.pending, startLoading)
+      .addCase(createServices.pending, setLoading)
       .addCase(createServices.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload?.message;
-        if (action.payload?.data) {
-          state.servicesAdmin.unshift(action.payload.data);
-        }
+        state.status = "succeeded";
+        state.servicesAdmin.unshift(action.payload);
+        state.successMessage = "Services successfully created.";
       })
       .addCase(createServices.rejected, setError);
 
-    // --- Admin Update ---
+    // 📝 Update
     builder
-      .addCase(updateServices.pending, startLoading)
+      .addCase(updateServices.pending, setLoading)
       .addCase(updateServices.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload?.data || action.payload;
-        const index = state.servicesAdmin.findIndex(
-          (a) => a._id === updated._id
-        );
-        if (index !== -1) state.servicesAdmin[index] = updated;
+        state.status = "succeeded";
+        const updated = action.payload;
+        const i = state.servicesAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.servicesAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+        state.successMessage = "Services successfully updated.";
       })
       .addCase(updateServices.rejected, setError);
 
-    // --- Admin Delete ---
+    // 🗑️ Delete
     builder
-      .addCase(deleteServices.pending, startLoading)
+      .addCase(deleteServices.pending, setLoading)
       .addCase(deleteServices.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.servicesAdmin = state.servicesAdmin.filter(
           (a) => a._id !== action.payload.id
         );
-        state.successMessage = action.payload?.message;
+        state.successMessage = action.payload.message;
       })
       .addCase(deleteServices.rejected, setError);
 
-    // --- Admin Toggle Publish ---
+    // 🌍 Toggle Publish
     builder
-      .addCase(togglePublishServices.pending, startLoading)
+      .addCase(togglePublishServices.pending, setLoading)
       .addCase(togglePublishServices.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload?.data || action.payload;
-        const index = state.servicesAdmin.findIndex(
-          (a) => a._id === updated._id
-        );
-        if (index !== -1) state.servicesAdmin[index] = updated;
+        state.status = "succeeded";
+        const updated = action.payload;
+        const i = state.servicesAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.servicesAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+        state.successMessage = "Publish status updated.";
       })
       .addCase(togglePublishServices.rejected, setError);
 
-    // --- Single Fetch (slug) ---
+    // 🔎 Single (Slug)
     builder
-      .addCase(fetchServicesBySlug.pending, startLoading)
+      .addCase(fetchServicesBySlug.pending, setLoading)
       .addCase(fetchServicesBySlug.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.selected = action.payload;
       })
       .addCase(fetchServicesBySlug.rejected, setError);

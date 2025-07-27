@@ -22,14 +22,10 @@ export default function ServicesPage() {
     }
   });
 
-  // Çoklu dil fallback
-  const getMultiLang = (obj?: Record<string, string>) =>
-    obj?.[lang] || obj?.tr || obj?.en || Object.values(obj || {})[0] || "—";
-
   if (loading) {
     return (
       <PageWrapper>
-        <PageTitle>{t("page.allServices", "Hakkımızda")}</PageTitle>
+        <PageTitle>{t("page.allServices", "Tüm Faaliyetlerimiz")}</PageTitle>
         <ServicesGrid>
           {[...Array(3)].map((_, i) => (
             <Skeleton key={i} />
@@ -50,188 +46,232 @@ export default function ServicesPage() {
   if (!services || services.length === 0) {
     return (
       <PageWrapper>
-        <PageTitle>{t("page.allServices", "Hakkımızda")}</PageTitle>
-        <EmptyMsg>
-          {t("page.noServices", "Herhangi bir içerik bulunamadı.")}
-        </EmptyMsg>
+        <PageTitle>{t("page.allServices", "Tüm Hizmetlerimiz")}</PageTitle>
+        <EmptyMsg>{t("page.noServices", "Herhangi bir hizmet bulunamadı.")}</EmptyMsg>
       </PageWrapper>
     );
   }
 
   return (
     <PageWrapper>
-      <PageTitle>{t("page.allServices", "Hakkımızda")}</PageTitle>
+      <PageTitle>{t("page.allServices", "Tüm Hizmetlerimiz")}</PageTitle>
       <ServicesGrid>
-        {services.map((item: IServices, index: number) => {
-          const detailHref = `/services/${item.slug}`;
-          return (
-            <ServicesCard
-              key={item._id}
-              as={motion.div}
-              initial={{ opacity: 0, y: 22 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.09, duration: 0.48 }}
-              viewport={{ once: true }}
-            >
-              <Link href={detailHref} tabIndex={-1} style={{ display: "block" }}>
-                <ImageWrapper>
-                  {item.images?.[0]?.url ? (
-                    <StyledImage
-                      src={item.images[0].url}
-                      alt={getMultiLang(item.title)}
-                      width={440}
-                      height={210}
-                      loading="lazy"
-                    />
-                  ) : (
-                    <ImgPlaceholder />
-                  )}
-                </ImageWrapper>
-              </Link>
-              <CardContent>
-                <CardTitle as={Link} href={detailHref}>
-                  {getMultiLang(item.title)}
-                </CardTitle>
-                <CardSummary>{getMultiLang(item.summary)}</CardSummary>
-                {item.tags?.length > 0 && (
-                  <Tags>
-                    {item.tags.map((tag, i) => (
-                      <Tag key={i}>{tag}</Tag>
-                    ))}
-                  </Tags>
-                )}
-              </CardContent>
-            </ServicesCard>
-          );
-        })}
+        {services.map((item: IServices, index: number) => (
+          <ServicesCard
+            key={item._id}
+            as={motion.div}
+            initial={{ opacity: 0, y: 32 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.07, durationMinutes: 0.44 }}
+            viewport={{ once: true }}
+          >
+            <Link href={`/services/${item.slug}`} tabIndex={-1}>
+  <ImageWrapper>
+    {item.images?.[0]?.url ? (
+      <Image
+        src={item.images[0].url}
+        alt={item.title[lang] || Object.values(item.title)[0] || `services-${index}`}
+        width={520}
+        height={290}
+        style={{
+          objectFit: "cover",
+          width: "100%",
+          height: "210px",
+        }}
+      />
+    ) : (
+      <ImgPlaceholder />
+    )}
+  </ImageWrapper>
+</Link>
+
+            <CardContent>
+              <CardTitle as={Link} href={`/services/${item.slug}`}>
+                {item.title[lang] || Object.values(item.title)[0] || "—"}
+              </CardTitle>
+              <CardSummary>
+                {item.summary[lang] || Object.values(item.summary)[0] || "—"}
+              </CardSummary>
+              <Meta>
+                <span>
+                  {t("tags", "Etiketler")}: <i>{item.tags?.join(", ") || "-"}</i>
+                </span>
+              </Meta>
+              <ReadMore href={`/services/${item.slug}`}>
+                {t("readMore", "Devamını Oku →")}
+              </ReadMore>
+              <BookNowButton href={`/booking?service=${item._id}`}>
+  {t("bookNow", "Randevu Al")}
+</BookNowButton>
+
+            </CardContent>
+          </ServicesCard>
+        ))}
       </ServicesGrid>
     </PageWrapper>
   );
 }
 
-// ----- STYLES -----
+// --- STYLES ---
+
 const PageWrapper = styled.div`
-  max-width: 1260px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacings.xxxl} ${({ theme }) => theme.spacings.md};
-  @media (max-width: 600px) {
-    padding: ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.xs};
-  }
+  padding: ${({ theme }) => theme.spacings.xxxl} ${({ theme }) => theme.spacings.md} 3.5rem;
 `;
 
 const PageTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  color: ${({ theme }) => theme.colors.primary};
   margin-bottom: ${({ theme }) => theme.spacings.xl};
+  color: ${({ theme }) => theme.colors.primary};
   text-align: center;
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
   letter-spacing: 0.01em;
+`;
+
+const EmptyMsg = styled.div`
+  text-align: center;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin: 3.5rem 0 2.7rem 0;
 `;
 
 const ServicesGrid = styled.div`
   display: grid;
-  gap: 2.1rem 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: 2.2rem 2.2rem;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   align-items: stretch;
-  margin: 0 auto;
-
-  @media (max-width: 800px) {
-    gap: 1.3rem;
-  }
+  margin-bottom: 2.5rem;
 `;
 
 const ServicesCard = styled(motion.div)`
   background: ${({ theme }) => theme.colors.cardBackground};
   box-shadow: ${({ theme }) => theme.shadows.md};
-  border: 1.4px solid ${({ theme }) => theme.colors.borderLight};
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: box-shadow 0.17s, border 0.17s, transform 0.16s;
+  border: 1.7px solid ${({ theme }) => theme.colors.borderLight};
+  min-height: 370px;
+  position: relative;
+  transition: box-shadow 0.17s, border-color 0.18s, transform 0.16s;
   cursor: pointer;
-  min-height: 335px;
 
   &:hover, &:focus-visible {
     box-shadow: ${({ theme }) => theme.shadows.lg};
-    border-color: ${({ theme }) => theme.colors.primary};
-    transform: translateY(-8px) scale(1.035);
+    border-color: ${({ theme }) => theme.colors.accent};
+    transform: translateY(-7px) scale(1.018);
     z-index: 1;
   }
 `;
 
 const ImageWrapper = styled.div`
   width: 100%;
-  height: 180px;
+  height: 210px;
   overflow: hidden;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   display: flex;
   align-items: center;
   justify-content: center;
-`;
 
-const StyledImage = styled(Image)`
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
+  @media (max-width: 600px) {
+    height: 160px;
+  }
 `;
 
 const ImgPlaceholder = styled.div`
   width: 100%;
-  height: 180px;
+  height: 100%;
   background: ${({ theme }) => theme.colors.skeleton};
-  opacity: 0.38;
+  opacity: 0.44;
 `;
 
 const CardContent = styled.div`
-  padding: ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.md};
-  flex: 1;
+  padding: 1.4rem 1.3rem 1.3rem 1.3rem;
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  flex: 1 1 auto;
 `;
 
 const CardTitle = styled.h2`
-  font-size: ${({ theme }) => theme.fontSizes.large};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  color: ${({ theme }) => theme.colors.title};
-  margin-bottom: 0.13em;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-bottom: 0.7rem;
+  line-height: 1.18;
+  letter-spacing: 0.01em;
+  text-decoration: none;
   cursor: pointer;
-  transition: color 0.17s;
-  &:hover,
-  &:focus {
-    color: ${({ theme }) => theme.colors.primary};
+
+  &:hover, &:focus-visible {
     text-decoration: underline;
+    color: ${({ theme }) => theme.colors.accent};
   }
 `;
 
 const CardSummary = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.base};
   color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: 0.45em;
-  line-height: 1.6;
+  margin-bottom: 1.35rem;
+  line-height: 1.62;
+  min-height: 3em;
 `;
 
-const Tags = styled.div`
+const Meta = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textMuted};
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 0.3em;
+  gap: 1.2rem 2.1rem;
+  margin-bottom: 0.7rem;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 0.25em;
+  }
 `;
 
-const Tag = styled.span`
-  background: ${({ theme }) => theme.colors.accent}22;
-  color: ${({ theme }) => theme.colors.primary};
-  padding: 0.21em 1.07em;
-  font-size: 0.96em;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  font-weight: 500;
-  letter-spacing: 0.01em;
+const ReadMore = styled(Link)`
+  align-self: flex-start;
+  margin-top: auto;
   display: inline-block;
+  font-size: 1.04em;
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  color: ${({ theme }) => theme.colors.primary};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  padding: 0.46em 1.45em;
+  border-radius: 18px;
+  border: 1.4px solid ${({ theme }) => theme.colors.primary};
+  text-decoration: none;
+  transition: background 0.17s, color 0.18s, border-color 0.16s;
+
+  &:hover, &:focus-visible {
+    background: ${({ theme }) => theme.colors.primary};
+    color: #fff;
+    border-color: ${({ theme }) => theme.colors.primary};
+    text-decoration: none;
+  }
 `;
 
-const EmptyMsg = styled.div`
-  color: ${({ theme }) => theme.colors.textSecondary};
-  text-align: center;
-  font-size: 1.18em;
-  margin: 2.4em 0 1.7em 0;
+const BookNowButton = styled(Link)`
+  align-self: flex-start;
+  margin-top: 0.8rem;
+  display: inline-block;
+  font-size: 1.02em;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.accent};
+  background: ${({ theme }) => theme.colors.cardBackground};
+  padding: 0.42em 1.35em;
+  border-radius: 16px;
+  border: 1.3px dashed ${({ theme }) => theme.colors.accent};
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+
+  &:hover,
+  &:focus-visible {
+    background: ${({ theme }) => theme.colors.accent};
+    color: #fff;
+    border-color: ${({ theme }) => theme.colors.accent};
+  }
 `;
+

@@ -140,109 +140,110 @@ export const fetchActivityBySlug = createAsyncThunk(
     return res.data;
   }
 );
-
 // --- Slice ---
-
 const activitySlice = createSlice({
   name: "activity",
   initialState,
   reducers: {
-    clearActivityMessages(state) {
+    clearActivityMessages: (state) => {
       state.error = null;
       state.successMessage = null;
     },
-    setSelectedActivity(state, action: PayloadAction<IActivity | null>) {
+    setSelectedActivity: (state, action: PayloadAction<IActivity | null>) => {
       state.selected = action.payload;
     },
   },
   extraReducers: (builder) => {
-    const startLoading = (state: ActivityState) => {
+    const setLoading = (state: ActivityState) => {
       state.loading = true;
+      state.status = "loading";
       state.error = null;
     };
 
     const setError = (state: ActivityState, action: PayloadAction<any>) => {
       state.loading = false;
+      state.status = "failed";
       state.error = extractErrorMessage(action.payload);
     };
 
-    // --- Public List ---
+    // 🌐 Public
     builder
-      .addCase(fetchActivity.pending, startLoading)
+      .addCase(fetchActivity.pending, setLoading)
       .addCase(fetchActivity.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.activity = action.payload;
       })
       .addCase(fetchActivity.rejected, setError);
 
-    // --- Admin List ---
+    // 🔐 Admin List
     builder
-      .addCase(fetchAllActivityAdmin.pending, startLoading)
+      .addCase(fetchAllActivityAdmin.pending, setLoading)
       .addCase(fetchAllActivityAdmin.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.activityAdmin = action.payload;
       })
       .addCase(fetchAllActivityAdmin.rejected, setError);
 
-    // --- Admin Create ---
+    // ➕ Create
     builder
-      .addCase(createActivity.pending, startLoading)
+      .addCase(createActivity.pending, setLoading)
       .addCase(createActivity.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload?.message;
-        if (action.payload?.data) {
-          state.activityAdmin.unshift(action.payload.data);
-        }
+        state.status = "succeeded";
+        state.activityAdmin.unshift(action.payload);
+        state.successMessage = "Activity successfully created.";
       })
       .addCase(createActivity.rejected, setError);
 
-    // --- Admin Update ---
+    // 📝 Update
     builder
-      .addCase(updateActivity.pending, startLoading)
+      .addCase(updateActivity.pending, setLoading)
       .addCase(updateActivity.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload?.data || action.payload;
-        const index = state.activityAdmin.findIndex(
-          (a) => a._id === updated._id
-        );
-        if (index !== -1) state.activityAdmin[index] = updated;
+        state.status = "succeeded";
+        const updated = action.payload;
+        const i = state.activityAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.activityAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+        state.successMessage = "Activity successfully updated.";
       })
       .addCase(updateActivity.rejected, setError);
 
-    // --- Admin Delete ---
+    // 🗑️ Delete
     builder
-      .addCase(deleteActivity.pending, startLoading)
+      .addCase(deleteActivity.pending, setLoading)
       .addCase(deleteActivity.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.activityAdmin = state.activityAdmin.filter(
           (a) => a._id !== action.payload.id
         );
-        state.successMessage = action.payload?.message;
+        state.successMessage = action.payload.message;
       })
       .addCase(deleteActivity.rejected, setError);
 
-    // --- Admin Toggle Publish ---
+    // 🌍 Toggle Publish
     builder
-      .addCase(togglePublishActivity.pending, startLoading)
+      .addCase(togglePublishActivity.pending, setLoading)
       .addCase(togglePublishActivity.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload?.data || action.payload;
-        const index = state.activityAdmin.findIndex(
-          (a) => a._id === updated._id
-        );
-        if (index !== -1) state.activityAdmin[index] = updated;
+        state.status = "succeeded";
+        const updated = action.payload;
+        const i = state.activityAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.activityAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+        state.successMessage = "Publish status updated.";
       })
       .addCase(togglePublishActivity.rejected, setError);
 
-    // --- Single Fetch (slug) ---
+    // 🔎 Single (Slug)
     builder
-      .addCase(fetchActivityBySlug.pending, startLoading)
+      .addCase(fetchActivityBySlug.pending, setLoading)
       .addCase(fetchActivityBySlug.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.selected = action.payload;
       })
       .addCase(fetchActivityBySlug.rejected, setError);

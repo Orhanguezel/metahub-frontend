@@ -1,54 +1,39 @@
 {
-  "publicFaq": {
-    "title": "Häufig gestellte Fragen",
-    "noFaqs": "Derzeit sind keine FAQs verfügbar.",
-    "askTitle": "Stelle eine Frage",
-    "askRequired": "Bitte gib eine Frage ein.",
-    "askPlaceholder": "z. B. Wie funktioniert das System?",
-    "askButton": "Fragen",
-    "answerTitle": "Antwort",
-    "question": "Deine Frage"
-  },
-  "adminFaq": {
-    "title": "FAQ-Verwaltung",
-    "create": "Neu erstellen",
-    "listEmpty": "Keine FAQs gefunden.",
-    "actions": "Aktionen",
-    "form": {
-      "required": "Bitte fülle alle Felder in allen Sprachen aus.",
-      "title": "Neue FAQ hinzufügen",
-      "titleEdit": "FAQ bearbeiten",
-      "question": "Frage",
-      "answer": "Antwort",
-      "category": "Kategorie",
-      "categoryPlaceholder": "z. B. Versand, Rückgabe",
-      "submit": "Erstellen",
-      "success": "FAQ wurde erfolgreich erstellt.",
-      "updated": "FAQ wurde erfolgreich aktualisiert.",
-      "error": "Vorgang fehlgeschlagen."
-    },
-    "ask": {
-      "title": "Stelle eine Frage",
-      "placeholder": "z. B. Wie funktioniert das System?",
-      "submit": "Fragen",
-      "answerTitle": "Antwort"
-    },
-    "messages": {
-      "created": "FAQ wurde erfolgreich erstellt.",
-      "error": "Fehler beim Erstellen der FAQ."
-    },
-    "titleMulti": "Neue FAQ (Mehrsprachig)"
-  },
-  "common": {
-    "loading": "Lade...",
-    "edit": "Bearbeiten",
-    "delete": "Löschen",
-    "save": "Speichern",
-    "cancel": "Abbrechen",
-    "update": "Aktualisieren",
-    "create": "Erstellen"
-  },
-  "confirm": {
-    "delete": "Möchten Sie diese FAQ wirklich löschen?"
-  }
+  "adminFaq.title": "Häufig gestellte Fragen",
+  "adminFaq.create": "Neu erstellen",
+  "adminFaq.form.titleCreate": "FAQ erstellen",
+  "adminFaq.form.titleEdit": "FAQ bearbeiten",
+  "adminFaq.form.question": "Frage",
+  "adminFaq.form.answer": "Antwort",
+  "adminFaq.form.category": "Kategorie",
+  "adminFaq.form.required": "Bitte füllen Sie mindestens eine Sprache für Frage und Antwort aus.",
+  "adminFaq.list.empty": "Keine FAQs gefunden.",
+  "adminFaq.question": "Frage",
+  "adminFaq.answer": "Antwort",
+  "adminFaq.ask.title": "Eine Frage stellen",
+  "adminFaq.ask.placeholder": "z.B. Wie funktioniert das System?",
+  "adminFaq.ask.submit": "Fragen",
+  "adminFaq.ask.answerTitle": "Antwort",
+  "adminFaq.unpublish": "Yayınlamaktan Çıkar",
+  "adminFaq.publish": "Yayınla",
+  "tabs.list": "FAQ-Liste",
+  "tabs.create": "Neue FAQ",
+  "confirm.delete": "Möchten Sie dieses FAQ wirklich löschen?",
+  "common.create": "Erstellen",
+  "common.update": "Aktualisieren",
+  "common.edit": "Bearbeiten",
+  "common.delete": "Löschen",
+  "common.loading": "Wird geladen...",
+  "common.yes": "Ja",
+  "common.no": "Nein",
+   "publicFaq.title": "Häufig gestellte Fragen",
+  "publicFaq.noFaqs": "Noch keine FAQs vorhanden.",
+  "publicFaq.askTitle": "Frage stellen (KI-gestützt)",
+  "publicFaq.askRequired": "Bitte geben Sie eine Frage ein.",
+  "publicFaq.question": "Ihre Frage",
+  "publicFaq.askPlaceholder": "Stellen Sie hier Ihre Frage (z.B. Wo werden Chiller-Systeme eingesetzt?)",
+  "publicFaq.askButton": "Frage absenden",
+  "publicFaq.answerTitle": "Antwort",
+  "publicFaq.askNoticeTitle": "Hinweis:",
+  "publicFaq.askNotice": "Hier können Sie offene oder detaillierte Fragen stellen. Antworten werden von einer KI generiert und diese Funktion befindet sich im Test. Antworten können daher unvollständig oder fehlerhaft sein."
 }

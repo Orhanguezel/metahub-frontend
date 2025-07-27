@@ -137,103 +137,109 @@ export const fetchNewsBySlug = createAsyncThunk(
 );
 
 // --- Slice ---
-
 const newsSlice = createSlice({
   name: "news",
   initialState,
   reducers: {
-    clearNewsMessages(state) {
+    clearNewsMessages: (state) => {
       state.error = null;
       state.successMessage = null;
     },
-    setSelectedNews(state, action: PayloadAction<INews | null>) {
+    setSelectedNews: (state, action: PayloadAction<INews | null>) => {
       state.selected = action.payload;
     },
   },
   extraReducers: (builder) => {
-    const startLoading = (state: NewsState) => {
+    const setLoading = (state: NewsState) => {
       state.loading = true;
+      state.status = "loading";
       state.error = null;
     };
 
     const setError = (state: NewsState, action: PayloadAction<any>) => {
       state.loading = false;
+      state.status = "failed";
       state.error = extractErrorMessage(action.payload);
     };
 
-    // --- Public List ---
+    // 🌐 Public
     builder
-      .addCase(fetchNews.pending, startLoading)
+      .addCase(fetchNews.pending, setLoading)
       .addCase(fetchNews.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.news = action.payload;
       })
       .addCase(fetchNews.rejected, setError);
 
-    // --- Admin List ---
+    // 🔐 Admin List
     builder
-      .addCase(fetchAllNewsAdmin.pending, startLoading)
+      .addCase(fetchAllNewsAdmin.pending, setLoading)
       .addCase(fetchAllNewsAdmin.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.newsAdmin = action.payload;
       })
       .addCase(fetchAllNewsAdmin.rejected, setError);
 
-    // --- Admin Create ---
+    // ➕ Create
     builder
-      .addCase(createNews.pending, startLoading)
+      .addCase(createNews.pending, setLoading)
       .addCase(createNews.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload?.message;
-        if (action.payload?.data) {
-          state.newsAdmin.unshift(action.payload.data);
-        }
+        state.status = "succeeded";
+        state.newsAdmin.unshift(action.payload);
+        state.successMessage = "News successfully created.";
       })
       .addCase(createNews.rejected, setError);
 
-    // --- Admin Update ---
+    // 📝 Update
     builder
-      .addCase(updateNews.pending, startLoading)
+      .addCase(updateNews.pending, setLoading)
       .addCase(updateNews.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload?.data || action.payload;
-        const index = state.newsAdmin.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.newsAdmin[index] = updated;
+        state.status = "succeeded";
+        const updated = action.payload;
+        const i = state.newsAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.newsAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+        state.successMessage = "News successfully updated.";
       })
       .addCase(updateNews.rejected, setError);
 
-    // --- Admin Delete ---
+    // 🗑️ Delete
     builder
-      .addCase(deleteNews.pending, startLoading)
+      .addCase(deleteNews.pending, setLoading)
       .addCase(deleteNews.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.newsAdmin = state.newsAdmin.filter(
           (a) => a._id !== action.payload.id
         );
-        state.successMessage = action.payload?.message;
+        state.successMessage = action.payload.message;
       })
       .addCase(deleteNews.rejected, setError);
 
-    // --- Admin Toggle Publish ---
+    // 🌍 Toggle Publish
     builder
-      .addCase(togglePublishNews.pending, startLoading)
+      .addCase(togglePublishNews.pending, setLoading)
       .addCase(togglePublishNews.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload?.data || action.payload;
-        const index = state.newsAdmin.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.newsAdmin[index] = updated;
+        state.status = "succeeded";
+        const updated = action.payload;
+        const i = state.newsAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.newsAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+        state.successMessage = "Publish status updated.";
       })
       .addCase(togglePublishNews.rejected, setError);
 
-    // --- Single Fetch (slug) ---
+    // 🔎 Single (Slug)
     builder
-      .addCase(fetchNewsBySlug.pending, startLoading)
+      .addCase(fetchNewsBySlug.pending, setLoading)
       .addCase(fetchNewsBySlug.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.selected = action.payload;
       })
       .addCase(fetchNewsBySlug.rejected, setError);

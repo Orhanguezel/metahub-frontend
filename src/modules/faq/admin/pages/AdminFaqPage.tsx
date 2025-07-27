@@ -3,33 +3,30 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-
 import {
-  fetchAllFAQs,
   createFAQ,
   updateFAQ,
   deleteFAQ,
   clearFAQMessages,
-  FAQ,
+  togglePublishFAQ,
 } from "@/modules/faq/slice/faqSlice";
-import { useTranslation } from "react-i18next";
+import { FAQList, FAQFormSection, Tabs } from "@/modules/faq";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "@/modules/faq/locales";
 import { toast } from "react-toastify";
-import { FAQList, FAQEditModal } from "@/modules/faq";
+import type { IFaq } from "@/modules/faq/types";
 
 export default function AdminFaqPage() {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("faq");
+  const { t } = useI18nNamespace("faq", translations);
 
-  const { faqs, loading, error, successMessage } = useAppSelector(
-    (state) => state.faq
-  );
+  const faqs = useAppSelector((state) => state.faq.faqsAdmin);
+  const loading = useAppSelector((state) => state.faq.loading);
+  const error = useAppSelector((state) => state.faq.error);
+  const successMessage = useAppSelector((state) => state.faq.successMessage);
 
-  const [editingItem, setEditingItem] = useState<FAQ | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-
-  useEffect(() => {
-    dispatch(fetchAllFAQs());
-  }, [dispatch]);
+  const [activeTab, setActiveTab] = useState<"list" | "create">("list");
+  const [editingItem, setEditingItem] = useState<IFaq | null>(null);
 
   useEffect(() => {
     if (successMessage) toast.success(successMessage);
@@ -39,92 +36,48 @@ export default function AdminFaqPage() {
     };
   }, [successMessage, error, dispatch]);
 
-  const handleCreateOrUpdate = async (data: FAQ) => {
+  const handleSubmit = async (data: IFaq) => {
     if (data._id) {
       await dispatch(updateFAQ({ id: data._id, data }));
     } else {
       await dispatch(createFAQ(data));
     }
-    setModalOpen(false);
     setEditingItem(null);
+    setActiveTab("list");
   };
 
   const handleDelete = async (id: string) => {
-    const confirmMessage = t(
-      "confirm.delete",
-      "Are you sure you want to delete this FAQ?"
-    );
-    if (confirm(confirmMessage)) {
-      await dispatch(deleteFAQ(id));
-    }
+    const confirmMsg = t("confirm.delete", "Are you sure you want to delete this FAQ?");
+    if (confirm(confirmMsg)) await dispatch(deleteFAQ(id));
   };
 
-  const handleEdit = (faq: FAQ) => {
+  const handleEdit = (faq: IFaq) => {
     setEditingItem(faq);
-    setModalOpen(true);
+    setActiveTab("create");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleCreate = () => {
-    setEditingItem(null);
-    setModalOpen(true);
+  const handleTogglePublish = async (id: string, isPublished: boolean) => {
+    await dispatch(togglePublishFAQ({ id, isPublished }));
   };
 
   return (
     <Container>
-      <Header>
-        <h2>{t("adminFaq.title", "Frequently Asked Questions")}</h2>
-        <CreateButton onClick={handleCreate}>
-          {t("adminFaq.create", "Create New")}
-        </CreateButton>
-      </Header>
+      <Tabs activeTab={activeTab} onChange={setActiveTab} />
 
-      <FAQList
-        faqs={faqs}
-        loading={loading}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      {activeTab === "create" && (
+        <FAQFormSection onSubmit={handleSubmit} editingItem={editingItem} />
+      )}
 
-      <FAQEditModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleCreateOrUpdate}
-        editingItem={editingItem}
-      />
+      {activeTab === "list" && (
+        <FAQList faqs={faqs} loading={loading} onEdit={handleEdit} onDelete={handleDelete} onTogglePublish={handleTogglePublish} />
+      )}
     </Container>
   );
 }
 
-// 💅 Styled Components
 const Container = styled.div`
-  padding: ${({ theme }) => theme.spacings.lg};
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: ${({ theme }) => theme.spacings.lg};
-
-  h2 {
-    font-size: ${({ theme }) => theme.fontSizes.xl};
-    color: ${({ theme }) => theme.colors.primary};
-  }
-`;
-
-const CreateButton = styled.button`
-  background: ${({ theme }) => theme.colors.primary};
-  color: #fff;
-  padding: 0.5rem 1rem;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.primaryHover};
-  }
+  max-width: 1200px;
+  margin: auto;
+  padding: ${({ theme }) => theme.layout.sectionspacings} ${({ theme }) => theme.spacings.md};
 `;

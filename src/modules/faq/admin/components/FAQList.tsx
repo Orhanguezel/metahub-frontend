@@ -1,108 +1,209 @@
-"use client";
-
-import React from "react";
 import styled from "styled-components";
-import { FAQ } from "@/modules/faq/slice/faqSlice";
-import { useTranslation } from "react-i18next";
+import { IFaq } from "@/modules/faq/types";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "@/modules/faq/locales";
+import { Skeleton } from "@/shared";
+import { SUPPORTED_LOCALES, type SupportedLocale } from "@/types/common";
+import { MdCheckCircle, MdRadioButtonUnchecked } from "react-icons/md";
 
 interface Props {
-  faqs: FAQ[];
-  onEdit: (faq: FAQ) => void;
-  onDelete: (id: string) => void;
+  faqs: IFaq[];
   loading?: boolean;
+  onEdit?: (faq: IFaq) => void;
+  onDelete?: (id: string) => void;
+  onTogglePublish?: (id: string, isPublished: boolean) => void;
 }
 
-export default function FAQList({ faqs, onEdit, onDelete, loading }: Props) {
-  const { t, i18n } = useTranslation("faq");
+export default function FAQList({ faqs, loading, onEdit, onDelete, onTogglePublish }: Props) {
+  const { i18n, t } = useI18nNamespace("faq", translations);
 
-  const currentLang = (
-    ["en", "tr", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "en" | "tr" | "de";
+  const lang: SupportedLocale = (() => {
+    const code = i18n.language?.slice(0, 2);
+    return SUPPORTED_LOCALES.includes(code as SupportedLocale)
+      ? (code as SupportedLocale)
+      : "en";
+  })();
 
-  const langLabel = {
-    en: "EN",
-    tr: "TR",
-    de: "DE",
-  }[currentLang];
+  if (loading) {
+    return (
+      <SkeletonWrapper>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} />
+        ))}
+      </SkeletonWrapper>
+    );
+  }
 
-  if (loading) return <p>{t("common.loading", "Loading")}...</p>;
-  if (!faqs.length) return <p>{t("adminFaq.list.empty", "No FAQs found.")}</p>;
+  if (!Array.isArray(faqs) || faqs.length === 0) {
+    return <Empty>{t("adminFaq.list.empty", "No FAQs found.")}</Empty>;
+  }
 
   return (
-    <StyledTable>
-      <thead>
-        <tr>
-          <th>{t("adminFaq.form.question", `Question (${langLabel})`)}</th>
-          <th>{t("adminFaq.form.answer", `Answer (${langLabel})`)}</th>
-          <th>{t("adminFaq.actions", "Actions")}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {faqs.map((faq) => (
-          <tr key={faq._id}>
-            <td>{faq.question?.[currentLang] || "–"}</td>
-            <td>{faq.answer?.[currentLang] || "–"}</td>
-            <td>
+    <ListContainer>
+      {faqs.map((item) => {
+        const question = item.question[lang]?.trim();
+        const answer = item.answer[lang]?.trim();
+
+        return (
+          <FaqCard key={item._id}>
+            <Label>{t("adminFaq.question", "Question")}:</Label>
+            <Question>{question || "—"}</Question>
+
+            <Label>{t("adminFaq.answer", "Answer")}:</Label>
+            <Answer>{answer || "—"}</Answer>
+
+            <StatusLine>
+              <strong>{t("adminFaq.published", "Published")}:</strong>{" "}
+              {onTogglePublish ? (
+                <PublishButton
+                  $active={!!item.isPublished}
+                  title={
+                     item.isPublished
+                      ? t("adminFaq.unpublish", "Unpublish")
+                      : t("adminFaq.publish", "Publish")
+                  }
+                  onClick={() =>
+  item._id && onTogglePublish(item._id, !item.isPublished)
+}
+                >
+                  {item.isPublished ? (
+                    <>
+                      <MdCheckCircle size={20} />
+                      {t("common.yes", "Yes")}
+                    </>
+                  ) : (
+                    <>
+                      <MdRadioButtonUnchecked size={20} />
+                      {t("common.no", "No")}
+                    </>
+                  )}
+                </PublishButton>
+              ) : (
+                <span>{item.isPublished ? t("common.yes", "Yes") : t("common.no", "No")}</span>
+              )}
+            </StatusLine>
+
+            {(onEdit || onDelete) && (
               <ButtonGroup>
-                <EditButton onClick={() => onEdit(faq)}>
-                  {t("common.edit", "Edit")}
-                </EditButton>
-                <DeleteButton onClick={() => onDelete(faq._id!)}>
-                  {t("common.delete", "Delete")}
-                </DeleteButton>
+                {onEdit && (
+                  <ActionButton onClick={() => onEdit(item)}>
+                    {t("common.edit", "Edit")}
+                  </ActionButton>
+                )}
+                {onDelete && (
+                  <DeleteButton
+                    onClick={() => {
+                      const confirmMsg = t(
+                        "confirm.delete",
+                        "Are you sure you want to delete this FAQ?"
+                      );
+                      if (item._id && confirm(confirmMsg)) {
+                        onDelete(item._id);
+                      }
+                    }}
+                  >
+                    {t("common.delete", "Delete")}
+                  </DeleteButton>
+                )}
               </ButtonGroup>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </StyledTable>
+            )}
+          </FaqCard>
+        );
+      })}
+    </ListContainer>
   );
 }
 
-// 💅 Styled Components
-const StyledTable = styled.table`
-  width: 100%;
-  margin-top: 1rem;
-  border-collapse: collapse;
+// --- Styles ---
+const SkeletonWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const ListContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const FaqCard = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  color: ${({ theme }) => theme.colors.text};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: 1.5rem 1rem 1.25rem 1rem;
+  position: relative;
+`;
 
-  th,
-  td {
-    padding: 0.75rem;
-    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-    text-align: left;
-  }
+const Label = styled.div`
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.primary};
+`;
 
-  th {
-    background: ${({ theme }) => theme.colors.tableHeader};
-    color: ${({ theme }) => theme.colors.text};
+const Question = styled.div`
+  font-size: 1.1rem;
+  margin-bottom: 0.3rem;
+`;
+
+const Answer = styled.div`
+  font-size: 1rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin-bottom: 0.8rem;
+`;
+
+const StatusLine = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0.2rem 0;
+  font-size: 0.96rem;
+`;
+
+const PublishButton = styled.button<{ $active: boolean }>`
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.success : theme.colors.border};
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 12px 3px 7px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-size: 1em;
+  transition: background 0.15s;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.warning};
   }
 `;
 
 const ButtonGroup = styled.div`
+  margin-top: 1rem;
   display: flex;
   gap: 0.5rem;
 `;
 
-const EditButton = styled.button`
-  padding: 6px 12px;
-  background: ${({ theme }) => theme.colors.primary};
+const ActionButton = styled.button`
+  padding: 0.4rem 0.75rem;
+  background: ${({ theme }) => theme.colors.warning};
   color: white;
-  font-size: 0.9rem;
-  font-weight: 600;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
 `;
 
 const DeleteButton = styled.button`
-  padding: 6px 12px;
+  padding: 0.4rem 0.75rem;
   background: ${({ theme }) => theme.colors.danger};
   color: white;
-  font-size: 0.9rem;
-  font-weight: 600;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
+`;
+
+const Empty = styled.p`
+  text-align: center;
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;

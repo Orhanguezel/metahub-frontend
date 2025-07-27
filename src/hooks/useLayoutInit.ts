@@ -168,6 +168,11 @@ import {
   clearTeamCategoryMessages,
 } from "@/modules/team/slice/teamCategorySlice";
 
+import {
+  fetchAllFAQsAdmin,
+  clearFAQMessages,
+} from "@/modules/faq/slice/faqSlice";
+
 
 
 // -- Cleanup aksiyonları merkezi:
@@ -209,7 +214,8 @@ const cleanupActions = [
   clearSparepartMessages,
   clearSparepartCategoryMessages,
   clearTeamMessages,
-  clearTeamCategoryMessages
+  clearTeamCategoryMessages,
+  clearFAQMessages, 
 ];
 
 // --- useLayoutInit ---
@@ -266,6 +272,7 @@ export const useLayoutInit = () => {
 const libraryCategory = useAppSelector((state) => state.libraryCategory);
 const teamList = useAppSelector((state) => state.team);
 const teamCategory = useAppSelector((state) => state.teamCategory);
+const faqList = useAppSelector((state) => state.faq);
 
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
   useEffect(() => {
@@ -396,6 +403,9 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
     if (!teamCategory.categories.length && !teamCategory.loading)
       dispatch(fetchTeamCategories());
 
+    if (!faqList.faqsAdmin.length && !faqList.loading)
+      dispatch(fetchAllFAQsAdmin());
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantLoaded, tenant?._id, dispatch]);
 
@@ -460,6 +470,7 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
   libraryCategory,
   teamList,
   teamCategory,
+  faqList,
     // gerekirse analyticsTrends vs ekleyebilirsin
   };
 };

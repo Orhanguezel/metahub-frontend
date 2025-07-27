@@ -49,8 +49,8 @@ export default function TopBar() {
 
 const TopBarWrapper = styled.div`
   width: 100%;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  color: ${({ theme }) => theme.colors.primary};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  color: ${({ theme }) => theme.colors.textMuted};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   padding: 0.2em ${({ theme }) => theme.spacings.xl};
   display: flex;
@@ -58,7 +58,6 @@ const TopBarWrapper = styled.div`
   justify-content: space-between;
   align-items: center;
   min-height: 36px;
-  border-radius: 0 0 12px 12px;
   gap: ${({ theme }) => theme.spacings.md};
 
   ${({ theme }) => theme.media.medium} {
@@ -83,6 +82,7 @@ const TopBarWrapper = styled.div`
 const LeftGroup = styled.div`
   display: flex;
   align-items: center;
+  color: ${({ theme }) => theme.colors.textMuted};
   gap: 16px;
   flex: 1 1 auto;
 
@@ -99,6 +99,7 @@ const LeftGroup = styled.div`
 const ContactGroup = styled.div`
   display: flex;
   align-items: center;
+  color: ${({ theme }) => theme.colors.textMuted};
   gap: 15px;
   flex: 1 1 auto;
   justify-content: flex-end;
@@ -121,7 +122,7 @@ const ContactItem = styled.a`
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.textPrimary};
   text-decoration: none;
   font-weight: 500;
   font-size: 15px;

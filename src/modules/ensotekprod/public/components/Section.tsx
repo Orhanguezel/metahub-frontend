@@ -32,7 +32,7 @@ export default function EnsotekprodSection() {
       <Section>
         <Title>
           <IconTitle></IconTitle>
-          {t("page.ensotekprod.title", "Bisikletler")}
+          {t("page.ensotekprod.title", "Ürünler")}
         </Title>
         <Grid>
           {[...Array(3)].map((_, i) => (
@@ -48,7 +48,7 @@ export default function EnsotekprodSection() {
       <Section>
         <Title>
           <IconTitle>🚲</IconTitle>
-          {t("page.ensotekprod.title", "Bisikletler")}
+          {t("page.ensotekprod.title", "Ürünler")}
         </Title>
         <ErrorMessage message={error} />
       </Section>
@@ -60,7 +60,7 @@ export default function EnsotekprodSection() {
       <Section>
         <Title>
           <IconTitle>🚲</IconTitle>
-          {t("page.ensotekprod.title", "Bisikletler")}
+          {t("page.ensotekprod.title", "Ürünler")}
         </Title>
         <p>{t("page.noEnsotekprod", "Henüz ürün yok.")}</p>
       </Section>
@@ -76,7 +76,7 @@ export default function EnsotekprodSection() {
     >
       <Title>
         <IconTitle>🚲</IconTitle>
-        {t("page.ensotekprod.title", "Bisikletler")}
+        {t("page.ensotekprod.title", "Ürünler")}
       </Title>
       <Grid>
         {latestEnsotekprod.map((item: IEnsotekprod, index: number) => (

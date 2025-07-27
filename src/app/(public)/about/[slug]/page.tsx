@@ -1,3 +1,4 @@
+"use client";
 import AboutDetailSection from "@/modules/about/public/components/DetailSection";
 
 export default function Page() {

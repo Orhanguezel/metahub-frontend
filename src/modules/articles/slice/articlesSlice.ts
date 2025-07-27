@@ -142,107 +142,109 @@ export const fetchArticlesBySlug = createAsyncThunk(
 );
 
 // --- Slice ---
-
 const articlesSlice = createSlice({
   name: "articles",
   initialState,
   reducers: {
-    clearArticlesMessages(state) {
+    clearArticlesMessages: (state) => {
       state.error = null;
       state.successMessage = null;
     },
-    setSelectedArticles(state, action: PayloadAction<IArticles | null>) {
+    setSelectedArticles: (state, action: PayloadAction<IArticles | null>) => {
       state.selected = action.payload;
     },
   },
   extraReducers: (builder) => {
-    const startLoading = (state: ArticlesState) => {
+    const setLoading = (state: ArticlesState) => {
       state.loading = true;
+      state.status = "loading";
       state.error = null;
     };
 
     const setError = (state: ArticlesState, action: PayloadAction<any>) => {
       state.loading = false;
+      state.status = "failed";
       state.error = extractErrorMessage(action.payload);
     };
 
-    // --- Public List ---
+    // 🌐 Public
     builder
-      .addCase(fetchArticles.pending, startLoading)
+      .addCase(fetchArticles.pending, setLoading)
       .addCase(fetchArticles.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.articles = action.payload;
       })
       .addCase(fetchArticles.rejected, setError);
 
-    // --- Admin List ---
+    // 🔐 Admin List
     builder
-      .addCase(fetchAllArticlesAdmin.pending, startLoading)
+      .addCase(fetchAllArticlesAdmin.pending, setLoading)
       .addCase(fetchAllArticlesAdmin.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.articlesAdmin = action.payload;
       })
       .addCase(fetchAllArticlesAdmin.rejected, setError);
 
-    // --- Admin Create ---
+    // ➕ Create
     builder
-      .addCase(createArticles.pending, startLoading)
+      .addCase(createArticles.pending, setLoading)
       .addCase(createArticles.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload?.message;
-        if (action.payload?.data) {
-          state.articlesAdmin.unshift(action.payload.data);
-        }
+        state.status = "succeeded";
+        state.articlesAdmin.unshift(action.payload);
+        state.successMessage = "Articles successfully created.";
       })
       .addCase(createArticles.rejected, setError);
 
-    // --- Admin Update ---
+    // 📝 Update
     builder
-      .addCase(updateArticles.pending, startLoading)
+      .addCase(updateArticles.pending, setLoading)
       .addCase(updateArticles.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload?.data || action.payload;
-        const index = state.articlesAdmin.findIndex(
-          (a) => a._id === updated._id
-        );
-        if (index !== -1) state.articlesAdmin[index] = updated;
+        state.status = "succeeded";
+        const updated = action.payload;
+        const i = state.articlesAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.articlesAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+        state.successMessage = "Articles successfully updated.";
       })
       .addCase(updateArticles.rejected, setError);
 
-    // --- Admin Delete ---
+    // 🗑️ Delete
     builder
-      .addCase(deleteArticles.pending, startLoading)
+      .addCase(deleteArticles.pending, setLoading)
       .addCase(deleteArticles.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.articlesAdmin = state.articlesAdmin.filter(
           (a) => a._id !== action.payload.id
         );
-        state.successMessage = action.payload?.message;
+        state.successMessage = action.payload.message;
       })
       .addCase(deleteArticles.rejected, setError);
 
-    // --- Admin Toggle Publish ---
+    // 🌍 Toggle Publish
     builder
-      .addCase(togglePublishArticles.pending, startLoading)
+      .addCase(togglePublishArticles.pending, setLoading)
       .addCase(togglePublishArticles.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload?.data || action.payload;
-        const index = state.articlesAdmin.findIndex(
-          (a) => a._id === updated._id
-        );
-        if (index !== -1) state.articlesAdmin[index] = updated;
+        state.status = "succeeded";
+        const updated = action.payload;
+        const i = state.articlesAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.articlesAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+        state.successMessage = "Publish status updated.";
       })
       .addCase(togglePublishArticles.rejected, setError);
 
-    // --- Single Fetch (slug) ---
+    // 🔎 Single (Slug)
     builder
-      .addCase(fetchArticlesBySlug.pending, startLoading)
+      .addCase(fetchArticlesBySlug.pending, setLoading)
       .addCase(fetchArticlesBySlug.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.selected = action.payload;
       })
       .addCase(fetchArticlesBySlug.rejected, setError);

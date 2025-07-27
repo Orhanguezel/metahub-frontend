@@ -67,7 +67,9 @@ export default function SlotRulesTable() {
         <RulesList>
           {dailyRules.map((d) => (
             <RuleRow key={d.key}>
-              <Day>{d.label[lang]}</Day>
+              <Day suppressHydrationWarning>
+  {typeof window === "undefined" ? "" : d.label[lang]}
+</Day>
               <Hours>
                 {d.rule
                   ? (

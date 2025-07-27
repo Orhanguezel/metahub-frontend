@@ -28,6 +28,7 @@ import {
 import { fetchLibrary } from "@/modules/library/slice/librarySlice";
 import { fetchLibraryCategories } from "@/modules/library/slice/libraryCategorySlice";
 import { fetchTeam } from "@/modules/team/slice/teamSlice";
+import { fetchFAQs } from "@/modules/faq/slice/faqSlice";
 
 export const usePublicLayoutInit = () => {
   const dispatch = useAppDispatch();
@@ -56,6 +57,7 @@ export const usePublicLayoutInit = () => {
   const librarySlice = useAppSelector((s) => s.library);
   const libraryCategorySlice = useAppSelector((s) => s.libraryCategory);
   const teamSlice = useAppSelector((s) => s.team);
+  const faqSlice = useAppSelector((s) => s.faq);
 
   const didInit = useRef<string | undefined>(undefined);
 
@@ -148,6 +150,13 @@ if (
   dispatch(fetchTeam());
 }
 
+    if (
+      (!faqSlice.faqs || faqSlice.faqs.length === 0) &&
+      !faqSlice.loading
+    ) {
+      dispatch(fetchFAQs());
+    }
+
   }, [
     dispatch,
     tenant,
@@ -198,6 +207,8 @@ if (
     libraryCategorySlice.loading,
     teamSlice.team,
     teamSlice.loading,
+    faqSlice.faqs,
+    faqSlice.loading
   ]);
 
   return {
@@ -268,5 +279,7 @@ if (
   team: teamSlice.team,
   teamStatus: teamSlice.status,
   teamError: teamSlice.error,
+  faqs: faqSlice.faqs,
+  faqsLoading: faqSlice.loading
   };
 };

@@ -1,85 +1,130 @@
-// src/store/faqSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
+import type { IFaq } from "@/modules/faq/types";
 
-export interface FAQ {
-  _id?: string;
-  question: Record<string, string>;
-  answer: Record<string, string>;
-  category?: string;
-  isActive?: boolean;
-  isPublished?: boolean;
-}
-
+// --- STATE ---
 interface FAQState {
-  faqs: FAQ[];
+  faqs: IFaq[]; // 🌐 Public
+  faqsAdmin: IFaq[]; // 🔐 Admin
+  status: "idle" | "loading" | "succeeded" | "failed";
   loading: boolean;
   error: string | null;
   successMessage: string | null;
-  answer: string | null;
+  answer: string | null; // 🤖 AI yanıtı
 }
 
 const initialState: FAQState = {
   faqs: [],
+  faqsAdmin: [],
   loading: false,
+  status: "idle",
   error: null,
   successMessage: null,
   answer: null,
 };
 
-// 📄 Get published FAQs (public)
-export const fetchPublishedFAQs = createAsyncThunk(
-  "faq/fetchPublishedFAQs",
-  async (lang: string, thunkAPI) =>
-    await apiCall("get", `/faq?lang=${lang}`, null, thunkAPI.rejectWithValue)
+const extractErrorMessage = (payload: unknown): string => {
+  if (typeof payload === "string") return payload;
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    "message" in payload &&
+    typeof (payload as any).message === "string"
+  )
+    return (payload as any).message;
+  return "An error occurred.";
+};
+
+// --- Async Thunks ---
+
+export const fetchFAQs = createAsyncThunk<IFaq[]>(
+  "faq/fetchFAQs",
+  async (_, thunkAPI) => {
+    const res = await apiCall("get", "/faq", null, thunkAPI.rejectWithValue);
+    return res.data;
+  }
 );
 
-// ➕ Create new FAQ (admin)
-export const createFAQ = createAsyncThunk(
-  "faq/createFAQ",
-  async (data: FAQ, thunkAPI) =>
-    await apiCall("post", "/faq/admin", data, thunkAPI.rejectWithValue, true) // true = requiresAuth
-);
-
-// 🗑️ Delete FAQ (admin)
-export const deleteFAQ = createAsyncThunk(
-  "faq/deleteFAQ",
-  async (id: string, thunkAPI) =>
-    await apiCall(
-      "delete",
-      `/faq/admin/${id}`,
+export const fetchAllFAQsAdmin = createAsyncThunk<IFaq[]>(
+  "faq/fetchAllFAQsAdmin",
+  async (_, thunkAPI) => {
+    const res = await apiCall(
+      "get",
+      "/faq/admin",
       null,
       thunkAPI.rejectWithValue,
       true
-    )
+    );
+    return res.data;
+  }
 );
 
-// 📄 Get all FAQs (admin)
-export const fetchAllFAQs = createAsyncThunk(
-  "faq/fetchAllFAQs",
-  async (_, thunkAPI) =>
-    await apiCall("get", "/faq/admin", null, thunkAPI.rejectWithValue, true)
-);
-
-// askFAQ thunk'u slice'a eklenmeli
-export const askFAQ = createAsyncThunk(
-  "faq/askFAQ",
-  async (data: { question: string; language: string }, thunkAPI) =>
-    await apiCall("post", "/faq/ask", data, thunkAPI.rejectWithValue)
-);
-
-// 📝 Update FAQ (admin)
-export const updateFAQ = createAsyncThunk(
-  "faq/updateFAQ",
-  async (data: { id: string; data: FAQ }, thunkAPI) =>
-    await apiCall(
-      "put",
-      `/faq/admin/${data.id}`,
-      data.data,
+export const createFAQ = createAsyncThunk<IFaq, IFaq>(
+  "faq/createFAQ",
+  async (data, thunkAPI) => {
+    const res = await apiCall(
+      "post",
+      "/faq/admin",
+      data,
       thunkAPI.rejectWithValue,
       true
-    )
+    );
+    return res.data;
+  }
 );
+
+export const updateFAQ = createAsyncThunk<
+  IFaq,
+  { id: string; data: Partial<IFaq> }
+>("faq/updateFAQ", async ({ id, data }, thunkAPI) => {
+  const res = await apiCall(
+    "put",
+    `/faq/admin/${id}`,
+    data,
+    thunkAPI.rejectWithValue,
+    true
+  );
+  return res.data;
+});
+
+export const deleteFAQ = createAsyncThunk<
+  { id: string; message: string },
+  string
+>("faq/deleteFAQ", async (id, thunkAPI) => {
+  const res = await apiCall(
+    "delete",
+    `/faq/admin/${id}`,
+    null,
+    thunkAPI.rejectWithValue,
+    true
+  );
+  return { id, message: res.data.message };
+});
+
+export const togglePublishFAQ = createAsyncThunk<
+  IFaq,
+  { id: string; isPublished: boolean }
+>("faq/togglePublishFAQ", async ({ id, isPublished }, thunkAPI) => {
+  // ↓↓ DİKKAT: JSON olarak gönderiyoruz ↓↓
+  const res = await apiCall(
+    "put",
+    `/faq/admin/${id}`,
+    { isPublished }, // ← JSON body!
+    thunkAPI.rejectWithValue,
+    true
+  );
+  return res.data;
+});
+
+export const askFAQ = createAsyncThunk<
+  { answer: string },
+  { question: string }
+>("faq/askFAQ", async (data, thunkAPI) => {
+  const res = await apiCall("post", "/faq/ask", data, thunkAPI.rejectWithValue);
+  return res.data;
+});
+
+// --- Slice ---
 
 const faqSlice = createSlice({
   name: "faq",
@@ -89,85 +134,117 @@ const faqSlice = createSlice({
       state.error = null;
       state.successMessage = null;
     },
+    clearAnswer: (state) => {
+      state.answer = null;
+    },
   },
   extraReducers: (builder) => {
-    const loadingReducer = (state: FAQState) => {
+    const setLoading = (state: FAQState) => {
       state.loading = true;
+      state.status = "loading";
       state.error = null;
     };
 
-    const errorReducer = (state: FAQState, action: PayloadAction<any>) => {
+    const setError = (state: FAQState, action: PayloadAction<any>) => {
       state.loading = false;
-      state.error = action.payload;
+      state.status = "failed";
+      state.error = extractErrorMessage(action.payload);
     };
 
-    // Fetch published
+    // 🌐 Public
     builder
-      .addCase(fetchPublishedFAQs.pending, loadingReducer)
-      .addCase(fetchPublishedFAQs.fulfilled, (state, action) => {
+      .addCase(fetchFAQs.pending, setLoading)
+      .addCase(fetchFAQs.fulfilled, (state, action) => {
         state.loading = false;
-        state.faqs = action.payload.data;
+        state.status = "succeeded";
+        state.faqs = action.payload;
       })
-      .addCase(fetchPublishedFAQs.rejected, errorReducer);
+      .addCase(fetchFAQs.rejected, setError);
 
-    // Fetch all (admin)
+    // 🔐 Admin
     builder
-      .addCase(fetchAllFAQs.pending, loadingReducer)
-      .addCase(fetchAllFAQs.fulfilled, (state, action) => {
+      .addCase(fetchAllFAQsAdmin.pending, setLoading)
+      .addCase(fetchAllFAQsAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.faqs = action.payload.data;
+        state.status = "succeeded";
+        state.faqsAdmin = action.payload;
       })
-      .addCase(fetchAllFAQs.rejected, errorReducer);
+      .addCase(fetchAllFAQsAdmin.rejected, setError);
 
-    // Create
+    // ➕ Create
     builder
-      .addCase(createFAQ.pending, loadingReducer)
+      .addCase(createFAQ.pending, setLoading)
       .addCase(createFAQ.fulfilled, (state, action) => {
         state.loading = false;
-        state.faqs.unshift(action.payload.data);
-        state.successMessage = "FAQ was successfully created.";
+        state.status = "succeeded";
+        state.faqsAdmin.unshift(action.payload);
+        state.successMessage = "FAQ successfully created.";
       })
-      .addCase(createFAQ.rejected, errorReducer);
+      .addCase(createFAQ.rejected, setError);
 
-    // Delete
+    // 📝 Update
     builder
-      .addCase(deleteFAQ.pending, loadingReducer)
-      .addCase(deleteFAQ.fulfilled, (state, action) => {
-        const deletedId = action.meta.arg;
+      .addCase(updateFAQ.pending, setLoading)
+      .addCase(updateFAQ.fulfilled, (state, action) => {
         state.loading = false;
-        state.faqs = state.faqs.filter((f) => f._id !== deletedId);
-        state.successMessage = "FAQ was successfully deleted.";
+        state.status = "succeeded";
+        const updated = action.payload;
+        const i = state.faqsAdmin.findIndex((f) => f._id === updated._id);
+        if (i !== -1) state.faqsAdmin[i] = updated;
+        state.successMessage = "FAQ successfully updated.";
       })
-      .addCase(deleteFAQ.rejected, errorReducer);
+      .addCase(updateFAQ.rejected, setError);
 
-    // Ask FAQ
+    // 🗑️ Delete
+    builder
+      .addCase(deleteFAQ.pending, setLoading)
+      .addCase(deleteFAQ.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = "succeeded";
+        state.faqsAdmin = state.faqsAdmin.filter(
+          (f) => f._id !== action.payload.id
+        );
+        state.successMessage = action.payload.message;
+      })
+      .addCase(deleteFAQ.rejected, setError);
+
+    // 🌍 Toggle Publish
+    builder
+      .addCase(togglePublishFAQ.pending, setLoading)
+      .addCase(togglePublishFAQ.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = "succeeded";
+        const updated = action.payload;
+        const i = state.faqsAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.faqsAdmin[i] = updated;
+        state.successMessage = "Publish status updated.";
+      })
+
+      .addCase(togglePublishFAQ.rejected, setError);
+
+    // 🤖 Ask AI
     builder
       .addCase(askFAQ.pending, (state) => {
         state.loading = true;
+        state.status = "loading";
         state.answer = null;
         state.error = null;
       })
       .addCase(askFAQ.fulfilled, (state, action) => {
         state.loading = false;
-        state.answer = action.payload.data; 
+        state.status = "succeeded";
+        state.answer = action.payload?.answer ?? action.payload ?? "No answer provided.";
       })
-      .addCase(askFAQ.rejected, errorReducer);
-
-    // Update
-    builder
-      .addCase(updateFAQ.pending, loadingReducer)
-      .addCase(updateFAQ.fulfilled, (state, action) => {
+      .addCase(askFAQ.rejected, (state, action) => {
         state.loading = false;
-        const updatedFAQ = action.payload.data;
-        const index = state.faqs.findIndex((f) => f._id === updatedFAQ._id);
-        if (index !== -1) {
-          state.faqs[index] = updatedFAQ;
-        }
-        state.successMessage = "FAQ was successfully updated.";
-      })
-      .addCase(updateFAQ.rejected, errorReducer);
+        state.status = "failed";
+        state.error =
+          typeof action.payload === "string"
+            ? action.payload
+            : "AI service unavailable. Please try again later.";
+      });
   },
 });
 
-export const { clearFAQMessages } = faqSlice.actions;
+export const { clearFAQMessages, clearAnswer } = faqSlice.actions;
 export default faqSlice.reducer;

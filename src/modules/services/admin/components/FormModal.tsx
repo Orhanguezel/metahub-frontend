@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "@/modules/services/locales";
+import {translations} from "@/modules/services";
 import { ServicesCategory, IServices } from "@/modules/services/types";
 import { ImageUploadWithPreview } from "@/shared";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
@@ -46,6 +46,8 @@ export default function FormModal({
   );
   const [author, setAuthor] = useState("");
   const [tags, setTags] = useState("");
+  const [price, setPrice] = useState<number | undefined>(undefined);
+  const [durationMinutes, setDuration] = useState<number | undefined>(undefined);
   const [category, setCategory] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
@@ -73,6 +75,8 @@ export default function FormModal({
         }, {} as Record<SupportedLocale, string>)
       );
       setAuthor(editingItem.author || currentUser?.name || "");
+      setPrice(editingItem.price || undefined);
+      setDuration(editingItem.durationMinutes || undefined);
       setTags(editingItem.tags?.join(", ") || "");
       setCategory(
         typeof editingItem.category === "string"
@@ -85,6 +89,8 @@ export default function FormModal({
       setTitles(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
       setSummaries(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
       setContents(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
+      setPrice(undefined);
+      setDuration(undefined);
       setAuthor(currentUser?.name || "");
       setTags("");
       setCategory("");
@@ -123,6 +129,8 @@ export default function FormModal({
     formData.append("summary", JSON.stringify(summaries));
     formData.append("content", JSON.stringify(contents));
     formData.append("author", author.trim());
+    formData.append("durationMinutes", durationMinutes?.toString() || "");
+    formData.append("price", price?.toString() || "");
     formData.append(
       "tags",
       JSON.stringify(
@@ -190,6 +198,26 @@ export default function FormModal({
             />
           </div>
         ))}
+        <label htmlFor="durationMinutes">{t("admin.services.durationMinutes", "Duration")}</label>
+        <input
+          id="durationMinutes"
+          type="number"
+          value={durationMinutes}
+          onChange={(e) => setDuration(Number(e.target.value))}
+          min={5}
+  max={480}
+        />
+        <label htmlFor="price">{t("admin.services.price", "Price")}</label>
+        <input
+        name="price"
+          id="price"
+          type="number"
+          value={price}
+          onChange={(e) => setPrice(Number(e.target.value))}
+          step="0.01"
+          min="0"
+          placeholder={t("admin.services.price_placeholder", "Enter price")}
+        />
 
         <label htmlFor="author">{t("admin.services.author", "Author")}</label>
         <input

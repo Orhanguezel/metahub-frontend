@@ -5,19 +5,18 @@ import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { askFAQ, clearFAQMessages } from "@/modules/faq/slice/faqSlice";
 import { toast } from "react-toastify";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "@/modules/faq/locales";
 
 export default function FAQAskPanel() {
   const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("faq");
+  const { t } = useI18nNamespace("faq", translations);
+
 
   const [question, setQuestion] = useState("");
 
   const { answer, loading } = useAppSelector((state) => state.faq);
 
-  const currentLang = (
-    ["tr", "en", "de"].includes(i18n.language) ? i18n.language : "en"
-  ) as "tr" | "en" | "de";
 
   const handleAsk = async () => {
     if (!question.trim()) {
@@ -26,7 +25,7 @@ export default function FAQAskPanel() {
     }
 
     dispatch(clearFAQMessages());
-    await dispatch(askFAQ({ question, language: currentLang }));
+    await dispatch(askFAQ({ question }));
   };
 
   return (
