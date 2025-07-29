@@ -35,8 +35,6 @@ export default function AvatarMenu({
   [user?.profileImage]
 );
 
-
-
   // Dropdown dışı tıklama ile kapanır
   useEffect(() => {
     if (!showDropdown) return;
@@ -88,26 +86,27 @@ export default function AvatarMenu({
   const userRole = (user as User).role || (user as any).role;
 
   return (
-    <AvatarWrapper>
-      <Image
-        src={resolvedProfileImage}
-        alt="Profil"
-        width={32}
-        height={32}
-        style={{ borderRadius: "50%", objectFit: "cover" }}
-        priority
-        onClick={() => setShowDropdown((prev) => !prev)}
-      />
-      <AnimatePresence>
-        {showDropdown && (
-          <AvatarDropdown
-            ref={dropdownRef}
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.2 }}
-            onClick={(e) => e.stopPropagation()}
-          >
+  <AvatarWrapper>
+    <Image
+  src={resolvedProfileImage}
+  alt="Profil"
+  width={36}
+  height={36}
+  style={{ borderRadius: "50%", objectFit: "cover", cursor: "pointer" }}
+  onClick={() => setShowDropdown((prev) => !prev)}
+  priority
+  unoptimized 
+/>
+    <AnimatePresence>
+      {showDropdown && (
+        <AvatarDropdown
+          ref={dropdownRef}
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -5 }}
+          transition={{ duration: 0.2 }}
+          onClick={(e) => e.stopPropagation()}
+        >
             <DropdownItem as={Link} href="/account">
               {t("account")}
             </DropdownItem>
