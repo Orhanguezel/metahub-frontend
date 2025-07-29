@@ -61,16 +61,13 @@ export const updateProfileImage = createAsyncThunk(
   "account/updateProfileImage",
   async (file: File, thunkAPI) => {
     const formData = new FormData();
-    formData.append("profileImage", file);
+    formData.append("images", file);
     return await apiCall(
       "put",
       "/users/account/me/profile-image",
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
-    );
+      thunkAPI.rejectWithValue
+  );
   }
 );
 
