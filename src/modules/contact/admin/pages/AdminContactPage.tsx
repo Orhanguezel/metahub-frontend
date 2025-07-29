@@ -46,18 +46,20 @@ export default function AdminContactMessagesPage() {
 
   return (
     <AdminContainer>
-      <h1>{t("admin.title", "İletişim Mesajları")}</h1>
-      {loading && <p>{t("admin.loading", "Yükleniyor...")}</p>}
+      <Title>{t("admin.title", "İletişim Mesajları")}</Title>
+      {loading && <InfoMsg>{t("admin.loading", "Yükleniyor...")}</InfoMsg>}
       {error && <ErrorMsg>{error}</ErrorMsg>}
       {successMessage && <SuccessMsg>{successMessage}</SuccessMsg>}
-      <ContactMessageList
-        messages={messagesAdmin}
-        onSelect={setSelectedId}
-        onDelete={handleDelete}
-        selectedId={selectedId}
-        search={search}
-        setSearch={setSearch}
-      />
+      <ListWrapper>
+        <ContactMessageList
+          messages={messagesAdmin}
+          onSelect={setSelectedId}
+          onDelete={handleDelete}
+          selectedId={selectedId}
+          search={search}
+          setSearch={setSearch}
+        />
+      </ListWrapper>
       {selectedMsg && (
         <ContactMessageModal
           message={selectedMsg}
@@ -68,6 +70,66 @@ export default function AdminContactMessagesPage() {
   );
 }
 
-const AdminContainer = styled.div` max-width: 900px; margin: 0 auto; padding: 32px; `;
-const ErrorMsg = styled.div` color: #ff5555; margin-bottom: 12px; `;
-const SuccessMsg = styled.div` color: #00a651; margin-bottom: 12px; `;
+// --- STYLED COMPONENTS ---
+
+const AdminContainer = styled.div`
+  max-width: 900px;
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacings.xl};
+  background: ${({ theme }) => theme.colors.sectionBackground};
+  min-height: 100vh;
+  font-family: ${({ theme }) => theme.fonts.main};
+
+  ${({ theme }) => theme.media.small} {
+    max-width: 100%;
+    padding: ${({ theme }) => theme.spacings.sm};
+  }
+`;
+
+const Title = styled.h1`
+  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
+  text-align: center;
+
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+    margin-bottom: ${({ theme }) => theme.spacings.lg};
+  }
+`;
+
+const InfoMsg = styled.div`
+  color: ${({ theme }) => theme.colors.primary};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  text-align: center;
+`;
+
+const ErrorMsg = styled.div`
+  color: ${({ theme }) => theme.colors.danger};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  text-align: center;
+`;
+
+const SuccessMsg = styled.div`
+  color: ${({ theme }) => theme.colors.success};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  text-align: center;
+`;
+
+const ListWrapper = styled.div`
+  margin-top: ${({ theme }) => theme.spacings.md};
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  padding: ${({ theme }) => theme.spacings.lg};
+
+  ${({ theme }) => theme.media.small} {
+    padding: ${({ theme }) => theme.spacings.sm};
+    box-shadow: none;
+    border-radius: ${({ theme }) => theme.radii.md};
+  }
+`;

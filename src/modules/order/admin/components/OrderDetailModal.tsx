@@ -1,9 +1,8 @@
 "use client";
-
 import React from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/order";
+import { translations } from "@/modules/order";
 import type { SupportedLocale } from "@/types/common";
 import { OrderItemList } from "@/modules/order";
 import type { IOrder, OrderStatus } from "@/modules/order/types";
@@ -17,15 +16,32 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   order,
   onClose,
 }) => {
-  const { t,i18n } = useI18nNamespace("order", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale; 
+  const { t, i18n } = useI18nNamespace("order", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+
   if (!order) return null;
 
-  // ESC veya arka plana tıklamayla kapama vs. eklenebilir
+  // Kullanıcı tipini handle et (string veya object)
+  const userId =
+    typeof order.user === "string"
+      ? order.user
+      : order.user && typeof order.user === "object" && "_id" in order.user
+      ? order.user._id
+      : "-";
+
+  const userName =
+    order.user && typeof order.user === "object" && "name" in order.user
+      ? order.user.name
+      : undefined;
+
+  const userEmail =
+    order.user && typeof order.user === "object" && "email" in order.user
+      ? order.user.email
+      : undefined;
 
   return (
     <Backdrop tabIndex={-1} onClick={onClose}>
-      <Modal onClick={(e) => e.stopPropagation()}>
+      <Modal onClick={e => e.stopPropagation()}>
         <Header>
           <Title>
             {t("detail.title", "Order Detail")} #
@@ -36,8 +52,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
           </CloseBtn>
         </Header>
         <Section>
-          <Label>{t("orderId", "Order ID")}:</Label>{" "}
-          <Mono>{order._id || (order as any).id}</Mono>
+          <Label>{t("orderId", "Order ID")}:</Label> <Mono>{order._id || (order as any).id}</Mono>
         </Section>
         <Section>
           <Label>{t("createdAt", "Created At")}:</Label>{" "}
@@ -46,58 +61,57 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
           </span>
         </Section>
         <Section>
-          <Label>{t("userId", "User ID")}:</Label>{" "}
-          <Mono>{(order.user as string) || "-"}</Mono>
+          <Label>{t("userId", "User ID")}:</Label> <Mono>{userId}</Mono>
         </Section>
+        {userName && (
+          <Section>
+            <Label>{t("userName", "User Name")}:</Label> <Mono>{userName}</Mono>
+          </Section>
+        )}
+        {userEmail && (
+          <Section>
+            <Label>{t("userEmail", "Email")}:</Label> <Mono>{userEmail}</Mono>
+          </Section>
+        )}
         <Section>
           <Label>{t("status", "Status")}:</Label>{" "}
-          <Status $status={order.status}>
-            {t(order.status, order.status)}
-          </Status>
+          <Status $status={order.status}>{t(`status.${order.status}`, order.status)}</Status>
         </Section>
         <Section>
           <Label>{t("shippingAddress", "Shipping Address")}:</Label>
           <AddressBlock>
             {order.shippingAddress?.name && (
               <div>
-                <strong>{t("name", "Name")}:</strong> {/* Eğer çok dilliyse: */}
+                <strong>{t("name", "Name")}:</strong>{" "}
                 {typeof order.shippingAddress.name === "object"
-                  ? order.shippingAddress.name[lang] ||
-                    Object.values(order.shippingAddress.name)[0]
+                  ? order.shippingAddress.name[lang] || Object.values(order.shippingAddress.name)[0]
                   : order.shippingAddress.name}
               </div>
             )}
             {order.shippingAddress?.phone && (
               <div>
-                <strong>{t("phone", "Phone")}:</strong>{" "}
-                {order.shippingAddress.phone}
+                <strong>{t("phone", "Phone")}:</strong> {order.shippingAddress.phone}
               </div>
             )}
             <div>
               <strong>{t("address", "Address")}:</strong>{" "}
-              {[
-                order.shippingAddress?.street,
-                order.shippingAddress?.city,
-                order.shippingAddress?.country,
-              ]
+              {[order.shippingAddress?.street, order.shippingAddress?.city, order.shippingAddress?.country]
                 .filter(Boolean)
                 .join(", ")}
             </div>
             {order.shippingAddress?.postalCode && (
               <div>
-                <strong>{t("postalCode", "Postal Code")}:</strong>{" "}
-                {order.shippingAddress.postalCode}
+                <strong>{t("postalCode", "Postal Code")}:</strong> {order.shippingAddress.postalCode}
               </div>
             )}
           </AddressBlock>
         </Section>
         <Section>
-          <Label>{t("paymentMethod", "Payment Method")}:</Label>{" "}
-          <Mono>{order.paymentMethod}</Mono>
+          <Label>{t("paymentMethod", "Payment Method")}:</Label> <Mono>{order.paymentMethod}</Mono>
         </Section>
         <Section>
           <Label>{t("total", "Total")}:</Label>{" "}
-          <Total>{order.totalPrice?.toFixed(2) || 0} EUR</Total>
+          <Total>{order.totalPrice?.toFixed(2) || "0.00"} EUR</Total>
         </Section>
         <Section>
           <Label>{t("productDetails", "Product Details")}:</Label>
@@ -203,6 +217,8 @@ const Status = styled.span<{ $status: OrderStatus }>`
       ? theme.colors.success || "#13ae60"
       : $status === "cancelled"
       ? theme.colors.danger || "#e74c3c"
+      : $status === "pending"
+      ? theme.colors.warning || "#FF9800"
       : theme.colors.secondary || "#374151"};
   color: #fff;
   padding: 0.19em 1.18em;

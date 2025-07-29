@@ -7,23 +7,33 @@ import type { TranslatedLabel } from "@/types/common";
 interface SettingsState {
   settings: ISetting[];         // Public (client)
   settingsAdmin: ISetting[];    // Admin (panel)
-  loading: boolean;
+  loading: boolean;             // Public loading
+  loadingAdmin: boolean;        // Admin loading
   status: "idle" | "loading" | "succeeded" | "failed";
-  error: string | null;
+  error: string | null;         // Public error
+  errorAdmin: string | null;    // Admin error
   successMessage: string | null;
-  fetchedSettings: boolean;
+  fetchedSettings: boolean;     // Public fetched
+  fetchedSettingsAdmin: boolean; // Admin fetched
 }
 
 const initialState: SettingsState = {
   settings: [],
   settingsAdmin: [],
   loading: false,
+  loadingAdmin: false,
   status: "idle",
   error: null,
+  errorAdmin: null,
   successMessage: null,
   fetchedSettings: false,
+  fetchedSettingsAdmin: false,
 };
 
+
+
+// --- THUNKS ---
+// 1️⃣ Public: Get All Settings
 // --- THUNKS ---
 // 1️⃣ Public: Get All Settings
 export const fetchSettings = createAsyncThunk<
@@ -160,13 +170,16 @@ const settingsSlice = createSlice({
   reducers: {
     clearSettingsMessages: (state) => {
       state.error = null;
+      state.errorAdmin = null;
       state.successMessage = null;
     },
     clearSettings: (state) => {
       state.settings = [];
       state.settingsAdmin = [];
       state.fetchedSettings = false;
+      state.fetchedSettingsAdmin = false;
       state.error = null;
+      state.errorAdmin = null;
       state.successMessage = null;
     },
   },
@@ -186,55 +199,60 @@ const settingsSlice = createSlice({
         state.loading = false;
         state.error = action.payload || "Failed to fetch settings.";
       })
-      // ADMIN GET
+
+      // ADMIN GET (Yeni admin-specific loading/error yönetimi)
       .addCase(fetchSettingsAdmin.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loadingAdmin = true;
+        state.errorAdmin = null;
       })
       .addCase(fetchSettingsAdmin.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loadingAdmin = false;
         state.settingsAdmin = action.payload;
-        state.fetchedSettings = true;
+        state.fetchedSettingsAdmin = true;
       })
       .addCase(fetchSettingsAdmin.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Failed to fetch admin settings.";
+        state.loadingAdmin = false;
+        state.errorAdmin = action.payload || "Failed to fetch admin settings.";
       })
-      // UPSERT
+
+      // UPSERT (Mevcut kodun aynen kalır)
       .addCase(upsertSettings.fulfilled, (state, action) => {
-        state.loading = false;
         state.successMessage = action.payload.message || "Setting saved successfully.";
         updateOrInsert(state, action.payload.data);
       })
-      // IMAGE UPSERT
+      // IMAGE UPSERT (Aynen kalır)
       .addCase(upsertSettingsImage.fulfilled, (state, action) => {
-        state.loading = false;
         state.successMessage = action.payload.message || "Image uploaded successfully.";
         updateOrInsert(state, action.payload.data);
       })
-      // IMAGE UPDATE
+      // IMAGE UPDATE (Aynen kalır)
       .addCase(updateSettingsImage.fulfilled, (state, action) => {
-        state.loading = false;
         state.successMessage = action.payload.message || "Image updated successfully.";
         updateOrInsert(state, action.payload.data);
       })
-      // DELETE
+      // DELETE (Aynen kalır)
       .addCase(deleteSettings.fulfilled, (state, action) => {
-        state.loading = false;
         state.successMessage = "Setting deleted successfully.";
         state.settingsAdmin = state.settingsAdmin.filter((s) => s.key !== action.payload);
       })
-      // Global Error Handler
+
+      // Global Error Handler (Public ve Admin ayrımı için düzenlendi)
       .addMatcher(
         (action) => action.type.endsWith("/rejected"),
         (state, action) => {
           const payload = (action as any).payload;
-          state.loading = false;
-          state.error =
+          const errorMsg =
             typeof payload === "string"
               ? payload
-              : (payload && typeof payload === "object" && "message" in payload && payload.message) ||
-                "Operation failed.";
+              : payload?.message || "Operation failed.";
+
+          if (action.type.includes("Admin")) {
+            state.loadingAdmin = false;
+            state.errorAdmin = errorMsg;
+          } else {
+            state.loading = false;
+            state.error = errorMsg;
+          }
         }
       );
   },

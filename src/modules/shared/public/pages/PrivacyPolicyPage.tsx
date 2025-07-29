@@ -58,7 +58,7 @@ export default function DatenschutzPage(props: {
     <Wrapper>
       <h1>{t("datenschutz.title", "Datenschutzerklärung")}</h1>
       <Section>
-        <b>{t("datenschutz.status", "Stand")}:</b> Dezember 2023
+        <b>{t("datenschutz.status", "Stand")}:</b> Dezember 2025
         <br />
         <br />
         {t("datenschutz.intro1", `Wir freuen uns sehr über Ihr Interesse an unserem Unternehmen.`)}

@@ -96,6 +96,11 @@ const DesignLink = styled.a`
   opacity: 0.75;
   transition: color ${({ theme }) => theme.transition.fast}, opacity 0.25s;
 
+  @media (max-width: 600px) {
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
+    margin-bottom: 44px;
+  }
+
   &:hover,
   &:focus {
     color: ${({ theme }) => theme.colors.accent};

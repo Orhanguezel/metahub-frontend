@@ -245,10 +245,15 @@ const AdminSettingsList: React.FC<AdminSettingsListProps> = ({
 export default AdminSettingsList;
 
 // --- Styled Components ---
-
 const TableWrapper = styled.div`
   width: 100%;
   overflow-x: auto;
+  padding-bottom: ${({ theme }) => theme.spacings.sm};
+  border-radius: ${({ theme }) => theme.radii.md};
+
+  ${({ theme }) => theme.media.small} {
+    padding-bottom: ${({ theme }) => theme.spacings.xs};
+  }
 `;
 
 const Table = styled.table`
@@ -256,8 +261,20 @@ const Table = styled.table`
   min-width: 600px;
   border-collapse: collapse;
   background: ${({ theme }) => theme.colors.backgroundAlt};
-  border-radius: ${({ theme }) => theme.radii.md};
+  border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.sm};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  overflow: hidden;
+
+  ${({ theme }) => theme.media.medium} {
+    min-width: 480px;
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+  }
+  ${({ theme }) => theme.media.small} {
+    min-width: 360px;
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
+    border-radius: ${({ theme }) => theme.radii.sm};
+  }
 `;
 
 const TableHeader = styled.th`
@@ -267,34 +284,56 @@ const TableHeader = styled.th`
   padding: ${({ theme }) => theme.spacings.md};
   text-align: left;
   font-size: ${({ theme }) => theme.fontSizes.sm};
+  white-space: nowrap;
+
+  ${({ theme }) => theme.media.small} {
+    padding: ${({ theme }) => theme.spacings.sm};
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  }
 `;
 
 const TableCell = styled.td`
   padding: ${({ theme }) => theme.spacings.md};
-  border-bottom: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
+  border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   vertical-align: top;
+  word-break: break-word;
+
+  ${({ theme }) => theme.media.small} {
+    padding: ${({ theme }) => theme.spacings.sm};
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  }
 `;
 
 const SingleValue = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
+
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  }
 `;
 
 const Select = styled.select`
-  padding: 0.4rem 0.8rem;
+  padding: 0.3rem 0.7rem;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   border-radius: ${({ theme }) => theme.radii.sm};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
   background: ${({ theme }) => theme.colors.inputBackground};
   color: ${({ theme }) => theme.colors.text};
+  min-width: 90px;
+
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
+    padding: 0.2rem 0.5rem;
+    min-width: 72px;
+  }
 `;
 
 const ActionButton = styled.button`
   margin-right: ${({ theme }) => theme.spacings.xs};
-  padding: 0.4rem 0.8rem;
+  padding: 0.32rem 0.72rem;
   background: ${({ theme }) => theme.buttons.secondary.background};
   color: ${({ theme }) => theme.buttons.secondary.text};
   border: none;
@@ -302,16 +341,21 @@ const ActionButton = styled.button`
   cursor: pointer;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   transition: background ${({ theme }) => theme.transition.fast};
+  box-shadow: ${({ theme }) => theme.shadows.xs};
 
   &:hover {
     background: ${({ theme }) => theme.buttons.secondary.backgroundHover};
+  }
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
+    padding: 0.24rem 0.4rem;
+    margin-right: ${({ theme }) => theme.spacings.xs};
   }
 `;
 
 const ActionButtonDelete = styled(ActionButton)`
   background: ${({ theme }) => theme.buttons.danger.background};
   color: ${({ theme }) => theme.buttons.danger.text};
-
   &:hover {
     background: ${({ theme }) => theme.buttons.danger.backgroundHover};
   }
@@ -320,19 +364,42 @@ const ActionButtonDelete = styled(ActionButton)`
 const EmptyMessage = styled.div`
   text-align: center;
   color: ${({ theme }) => theme.colors.warning};
-  padding: ${({ theme }) => theme.spacings.lg};
+  padding: ${({ theme }) => theme.spacings.xl};
   font-size: ${({ theme }) => theme.fontSizes.lg};
+  background: ${({ theme }) => theme.colors.inputBackgroundLight};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.xs};
+  margin: ${({ theme }) => theme.spacings.md} 0;
+
+  ${({ theme }) => theme.media.medium} {
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    padding: ${({ theme }) => theme.spacings.lg};
+    border-radius: ${({ theme }) => theme.radii.md};
+  }
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    padding: ${({ theme }) => theme.spacings.md};
+    border-radius: ${({ theme }) => theme.radii.sm};
+    margin: ${({ theme }) => theme.spacings.sm} 0;
+  }
 `;
 
 const NestedList = styled.ul`
   list-style: disc;
   padding-left: ${({ theme }) => theme.spacings.md};
+  margin: ${({ theme }) => theme.spacings.xs} 0;
+  ${({ theme }) => theme.media.small} {
+    padding-left: ${({ theme }) => theme.spacings.sm};
+  }
 `;
 
 const NestedItem = styled.li`
   font-size: ${({ theme }) => theme.fontSizes.xs};
   color: ${({ theme }) => theme.colors.textSecondary};
   margin-bottom: 4px;
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  }
 `;
 
 const LogoGroup = styled.div`
@@ -340,6 +407,10 @@ const LogoGroup = styled.div`
   gap: ${({ theme }) => theme.spacings.sm};
   flex-wrap: wrap;
   align-items: center;
+
+  ${({ theme }) => theme.media.small} {
+    gap: ${({ theme }) => theme.spacings.xs};
+  }
 `;
 
 const LogoPreview = styled.div`
@@ -353,12 +424,22 @@ const LogoPreview = styled.div`
     border-radius: ${({ theme }) => theme.radii.sm};
     box-shadow: ${({ theme }) => theme.shadows.sm};
     margin-top: ${({ theme }) => theme.spacings.xs};
+    object-fit: contain;
+    background: ${({ theme }) => theme.colors.inputBackgroundLight};
   }
 
   span {
     font-size: ${({ theme }) => theme.fontSizes.xs};
     margin-top: ${({ theme }) => theme.spacings.xs};
-    color: ${({ theme }) => theme.colors.textSecondary};
-    opacity: 0.7;
+    color: ${({ theme }) => theme.colors.textMuted};
+    opacity: 0.8;
+  }
+  ${({ theme }) => theme.media.small} {
+    img {
+      max-width: 56px;
+    }
+    span {
+      font-size: ${({ theme }) => theme.fontSizes.xsmall};
+    }
   }
 `;

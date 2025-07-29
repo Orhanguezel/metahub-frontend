@@ -1,80 +1,133 @@
 {
   "page": {
-    "allBike": "Wszystkie rowery",
-    "noBike": "Nie znaleziono rowerów.",
-    "price": "Cena",
-    "stock": "Stan",
-    "brand": "Marka",
-    "readMore": "Zobacz szczegóły →",
-    "other": "Inne produkty",
-    "untitled": "Bez tytułu",
-    "noSummary": "Brak opisu.",
-    "bike": {
-      "title": "Najnowszy rower",
-      "readMore": "Zobacz szczegóły",
-      "all": "Wszystkie rowery"
+    "title": "Ustawienia konta",
+    "profileImage": "Zdjęcie profilowe",
+    "personalInfo": "Dane osobowe",
+    "address": "Dane adresowe",
+    "notifications": "Ustawienia powiadomień",
+    "social": "Linki do mediów społecznościowych",
+    "password": "Zmień hasło",
+    "deleteAccount": "Usuń konto",
+    "loading": "Ładowanie..."
+  },
+  "form": {
+    "title": "Zaktualizuj moje dane",
+    "name": "Imię i nazwisko",
+    "email": "E-mail",
+    "phone": "Telefon",
+    "save": "Zapisz",
+    "saving": "Zapisywanie...",
+    "success": "Dane zostały zaktualizowane.",
+    "error": "Wystąpił błąd podczas aktualizacji.",
+    "errors": {
+      "name": "Wpisz swoje imię i nazwisko.",
+      "email": "Wpisz swój adres e-mail.",
+      "emailInvalid": "Podaj poprawny adres e-mail."
+    },
+    "imageSuccess": "Zdjęcie profilowe zaktualizowane.",
+    "imageError": "Nie udało się przesłać zdjęcia.",
+    "loading": "Ładowanie...",
+    "upload": "Prześlij zdjęcie"
+  },
+  "address": {
+    "title": "Moje adresy",
+    "add": "Dodaj",
+    "update": "Aktualizuj",
+    "saving": "Zapisywanie...",
+    "edit": "Edytuj",
+    "remove": "Usuń",
+    "cancel": "Anuluj",
+    "success": "Adres zapisano pomyślnie.",
+    "updated": "Adres zaktualizowano.",
+    "deleted": "Adres usunięto.",
+    "error": "Wystąpił błąd.",
+    "type": {
+      "home": "Dom",
+      "work": "Praca",
+      "billing": "Fakturowanie",
+      "shipping": "Dostawa",
+      "factory": "Fabryka",
+      "warehouse": "Magazyn",
+      "showroom": "Salon",
+      "branch": "Oddział",
+      "other": "Inny"
+    },
+    "addressLine": "Pełny adres",
+    "street": "Ulica",
+    "houseNumber": "Numer domu",
+    "city": "Miasto",
+    "district": "Dzielnica",
+    "province": "Województwo",
+    "postalCode": "Kod pocztowy",
+    "zipCode": "Kod pocztowy",
+    "country": "Kraj",
+    "phone": "Telefon",
+    "email": "E-mail",
+    "countryCode": "Kod kraju",
+    "errors": {
+      "addressType": "Typ adresu jest wymagany.",
+      "addressLine": "Adres jest wymagany.",
+      "street": "Ulica jest wymagana.",
+      "houseNumber": "Numer domu jest wymagany.",
+      "city": "Miasto jest wymagane.",
+      "district": "Dzielnica jest wymagana.",
+      "province": "Województwo nie jest wymagane.",
+      "postalCode": "Kod pocztowy jest wymagany.",
+      "zipCode": "Kod pocztowy jest wymagany.",
+      "country": "Kraj jest wymagany.",
+      "countryCode": "Wybór kraju jest wymagany.",
+      "phone": "Telefon jest wymagany.",
+      "email": "E-mail jest wymagany.",
+      "email_format": "Nieprawidłowy format e-mail."
     }
   },
-  "admin": {
-    "tabs": {
-      "bike": "Rowery",
-      "create": "Nowy rower",
-      "categories": "Kategorie"
-    },
-    "bike": {
-      "create": "Dodaj nowy rower",
-      "edit": "Edytuj rower",
-      "name": "Nazwa roweru",
-      "description": "Opis",
-      "brand": "Marka",
-      "price": "Cena",
-      "stock": "Stan",
-      "tags": "Tagi",
-      "image": "Obraz",
-      "category": "Kategoria",
-      "select_category": "Wybierz kategorię",
-      "publish_status": "Opublikowano?",
-      "no_images": "Brak zdjęć",
-      "publish": "Opublikuj",
-      "unpublish": "Ukryj",
-      "empty": "Brak dostępnych rowerów."
-    },
-    "categories": {
-      "title": "Kategorie rowerów",
-      "add": "Nowa kategoria",
-      "empty": "Nie znaleziono kategorii."
-    },
-    "language": {
-      "en": "Angielski",
-      "tr": "Turecki",
-      "de": "Niemiecki"
-    },
-    "slug": "Slug",
-    "actions": "Akcje",
-    "edit": "Edytuj",
-    "delete": "Usuń",
-    "cancel": "Anuluj",
-    "update": "Aktualizuj",
-    "create": "Utwórz",
-    "yes": "Tak",
-    "no": "Nie",
-    "loading": "Ładowanie...",
-    "confirm": {
-      "delete": "Czy na pewno chcesz usunąć tę kategorię?",
-      "delete_bike": "Czy na pewno chcesz usunąć ten rower?"
-    },
-    "optional_description": "Opis (opcjonalnie)",
-    "category_info": "Czego dotyczy ta kategoria?",
-    "saving": "Zapisywanie...",
+  "countries": {
+    "TR": "Turcja",
+    "DE": "Niemcy",
+    "EN": "Wielka Brytania",
+    "FR": "Francja",
+    "ES": "Hiszpania",
+    "PL": "Polska"
+  },
+  "notifications": {
+    "email": "Powiadomienie e-mail",
+    "sms": "Powiadomienie SMS",
     "save": "Zapisz",
-    "update2": "Aktualizuj",
-    "editCategory": "Edytuj kategorię",
-    "newCategory": "Nowa kategoria"
+    "saving": "Zapisywanie...",
+    "success": "Ustawienia powiadomień zaktualizowano.",
+    "error": "Nie udało się zaktualizować ustawień powiadomień.",
+    "emailRequired": "Powiadomienie e-mail jest wymagane.",
+    "smsRequired": "Powiadomienie SMS jest wymagane."
   },
-  "seo": {
-    "title": "Tytuł SEO",
-    "description": "Opis SEO"
+  "social": {
+    "title": "Linki do mediów społecznościowych",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "twitter": "Twitter",
+    "instagramPlaceholder": "Wprowadź link do profilu na Instagramie",
+    "facebookPlaceholder": "Wprowadź link do profilu na Facebooku",
+    "twitterPlaceholder": "Wprowadź link do profilu na Twitterze",
+    "save": "Zapisz",
+    "saving": "Zapisywanie...",
+    "success": "Linki do mediów społecznościowych zapisane.",
+    "error": "Nie udało się zapisać linków.",
+    "errors": {
+      "instagramInvalid": "Podaj poprawny adres Instagrama.",
+      "facebookInvalid": "Podaj poprawny adres Facebooka.",
+      "twitterInvalid": "Podaj poprawny adres Twittera."
+    }
   },
-  "none": "Brak",
-  "delete_confirm": "Czy na pewno chcesz usunąć?"
+  "delete": {
+    "title": "Usuń konto",
+    "warning": "Tej operacji nie można cofnąć! Aby usunąć konto, wpisz swoje hasło i 'delete'.",
+    "loggedInAs": "Zalogowany jako:",
+    "confirmation": "Wpisz 'delete' aby potwierdzić",
+    "confirmationError": "Aby potwierdzić usunięcie wpisz 'delete'.",
+    "password": "Twoje hasło",
+    "passwordError": "Wpisz swoje hasło.",
+    "button": "Usuń konto na zawsze",
+    "success": "Twoje konto zostało usunięte.",
+    "error": "Nie udało się usunąć konta.",
+    "loading": "Przetwarzanie..."
+  }
 }

@@ -1,5 +1,6 @@
 // src/types/company.ts (Frontend)
 import type { SupportedLocale } from "@/types/common";
+import type { Address } from "@/modules/users/types/address";
 
 export type TranslatedLabel = { [key in SupportedLocale]: string };
 
@@ -30,7 +31,7 @@ export interface ICompany {
   website?: string;
   email: string;
   phone: string;
-  addresses?: Array<string>;                     // Address _id referans array
+  addresses?: Array<string | Address>;                    // Address _id referans array
   bankDetails: {
     bankName: string;
     iban: string;

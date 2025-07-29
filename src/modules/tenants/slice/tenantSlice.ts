@@ -2,10 +2,26 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import { ITenant, TenantsListResponse, MessageResponse } from "../types";
 
+const initialTenantSlug = (() => {
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname === "localhost"
+  ) {
+    return (
+      process.env.NEXT_PUBLIC_APP_ENV ||
+      process.env.NEXT_PUBLIC_TENANT_NAME ||
+      process.env.TENANT_NAME
+    );
+  }
+  // prod için uygun bir tespit fonksiyonu çağırabilirsin.
+  // örn: detectTenantFromHost() fonksiyonu gibi
+  return undefined;
+})();
+
 // --- State Type ---
 interface TenantState {
-  tenants: ITenant[];         // Public
-  tenantsAdmin: ITenant[];    // Admin
+  tenants: ITenant[]; // Public
+  tenantsAdmin: ITenant[]; // Admin
   loading: boolean;
   loadingAdmin: boolean;
   error: string | null;
@@ -23,12 +39,17 @@ const initialState: TenantState = {
   error: null,
   successMessage: null,
   selectedTenantId: null,
-  selectedTenant: null,
+  selectedTenant: initialTenantSlug
+    ? ({ slug: initialTenantSlug } as ITenant)
+    : null,
 };
 
 // --- LOCAL/DEV tenant slug override (prod'da asla kullanılmaz) ---
 const getLocalTenantSlug = (): string | undefined => {
-  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname === "localhost"
+  ) {
     return (
       process.env.NEXT_PUBLIC_APP_ENV ||
       process.env.NEXT_PUBLIC_TENANT_NAME ||
@@ -38,8 +59,21 @@ const getLocalTenantSlug = (): string | undefined => {
   return undefined;
 };
 
+// --- Helper: Local tenant seçimi ---
+const setLocalTenantIfAvailable = (state: TenantState) => {
+  const localTenantSlug = getLocalTenantSlug();
+  if (localTenantSlug) {
+    const found = state.tenants.find(
+      (t) => t.slug === localTenantSlug || t._id === localTenantSlug
+    );
+    if (found) {
+      state.selectedTenantId = found._id ?? null;
+      state.selectedTenant = found;
+    }
+  }
+};
+
 // --- Async Thunks ---
-// 1️⃣ Public fetch (aktif tenantlar)
 export const fetchTenants = createAsyncThunk<
   TenantsListResponse,
   void,
@@ -52,7 +86,6 @@ export const fetchTenants = createAsyncThunk<
   }
 });
 
-// 2️⃣ Admin fetch (tüm tenantlar)
 export const fetchTenantsAdmin = createAsyncThunk<
   TenantsListResponse,
   void,
@@ -65,8 +98,6 @@ export const fetchTenantsAdmin = createAsyncThunk<
   }
 });
 
-// 3️⃣ CRUD (admin endpointleri)
-// Dikkat: Endpointler backend'de "/tenants/admin" prefixli!
 export const createTenant = createAsyncThunk<
   MessageResponse,
   FormData,
@@ -78,24 +109,36 @@ export const createTenant = createAsyncThunk<
     return rejectWithValue({ message: err.message ?? "Create failed!" });
   }
 });
+
 export const updateTenant = createAsyncThunk<
   MessageResponse,
   { id: string; formData: FormData },
   { rejectValue: { message: string } }
 >("tenants/update", async ({ id, formData }, { rejectWithValue }) => {
   try {
-    return await apiCall("put", `/tenants/admin/${id}`, formData, rejectWithValue);
+    return await apiCall(
+      "put",
+      `/tenants/admin/${id}`,
+      formData,
+      rejectWithValue
+    );
   } catch (err: any) {
     return rejectWithValue({ message: err.message ?? "Update failed!" });
   }
 });
+
 export const deleteTenant = createAsyncThunk<
   MessageResponse,
   string,
   { rejectValue: { message: string } }
 >("tenants/delete", async (id, { rejectWithValue }) => {
   try {
-    return await apiCall("delete", `/tenants/admin/${id}`, null, rejectWithValue);
+    return await apiCall(
+      "delete",
+      `/tenants/admin/${id}`,
+      null,
+      rejectWithValue
+    );
   } catch (err: any) {
     return rejectWithValue({ message: err.message ?? "Delete failed!" });
   }
@@ -108,17 +151,7 @@ const tenantSlice = createSlice({
   reducers: {
     setTenants(state, action: PayloadAction<ITenant[]>) {
       state.tenants = action.payload;
-      // Sadece localde .env override varsa otomatik tenant seç
-      const localTenantSlug = getLocalTenantSlug();
-      if (localTenantSlug) {
-        const found = state.tenants.find(
-          (t) => t.slug === localTenantSlug || t._id === localTenantSlug
-        );
-        if (found) {
-          state.selectedTenantId = found._id ?? null;
-          state.selectedTenant = found;
-        }
-      }
+      setLocalTenantIfAvailable(state);
     },
     clearTenantMessages(state) {
       state.error = null;
@@ -134,54 +167,43 @@ const tenantSlice = createSlice({
     },
     setSelectedTenantId(state, action: PayloadAction<string | null>) {
       state.selectedTenantId = action.payload;
-      // selectedTenant objesini state.tenants listesinde bul
-      const tenantObj =
+      state.selectedTenant =
         state.tenants.find((t) => t._id === action.payload) || null;
-      state.selectedTenant = tenantObj;
     },
   },
   extraReducers: (builder) => {
-    // --- PUBLIC FETCH ---
     builder
+      // PUBLIC FETCH
       .addCase(fetchTenants.pending, (state) => {
         state.loading = true;
         state.error = null;
         state.successMessage = null;
       })
+      // fetchTenants.fulfilled reducer’ı
       .addCase(fetchTenants.fulfilled, (state, action) => {
         state.loading = false;
         state.tenants = action.payload.data || [];
         state.successMessage = action.payload.message || null;
-        // LOCAL: otomatik tenant seçimi
-        const localTenantSlug = getLocalTenantSlug();
-        if (localTenantSlug && state.tenants.length > 0) {
-          const found = state.tenants.find(
-            (t) => t.slug === localTenantSlug || t._id === localTenantSlug
-          );
-          if (found) {
-            state.selectedTenantId = found._id ?? null;
-            state.selectedTenant = found;
-          }
-        }
-        // selectedTenantId validasyonu
-        if (state.selectedTenantId) {
-          const stillThere = state.tenants.find(
-            (t) => t._id === state.selectedTenantId
-          );
-          if (!stillThere) {
-            state.selectedTenantId = null;
-            state.selectedTenant = null;
+        if (!state.selectedTenant) {
+          const slug = getLocalTenantSlug(); // veya detectTenantFromHost()
+          if (slug) {
+            const found = state.tenants.find(
+              (t) => t.slug === slug || t._id === slug
+            );
+            if (found) {
+              state.selectedTenant = found;
+            }
           }
         }
       })
+
       .addCase(fetchTenants.rejected, (state, action) => {
         state.loading = false;
         const payload = action.payload as { message?: string } | undefined;
         state.error = payload?.message || "Fetch failed!";
-      });
+      })
 
-    // --- ADMIN FETCH ---
-    builder
+      // ADMIN FETCH
       .addCase(fetchTenantsAdmin.pending, (state) => {
         state.loadingAdmin = true;
         state.error = null;
@@ -196,10 +218,9 @@ const tenantSlice = createSlice({
         state.loadingAdmin = false;
         const payload = action.payload as { message?: string } | undefined;
         state.error = payload?.message || "Admin fetch failed!";
-      });
+      })
 
-    // --- CRUD ---
-    builder
+      // CRUD
       .addCase(createTenant.fulfilled, (state, action) => {
         state.successMessage = action.payload.message || "Tenant created!";
       })
@@ -209,17 +230,21 @@ const tenantSlice = createSlice({
       .addCase(deleteTenant.fulfilled, (state, action) => {
         state.successMessage = action.payload.message || "Tenant deleted!";
       })
-      // Error handling for all
+
+      // Global Error Handling
       .addMatcher(
         (action) => action.type.endsWith("/rejected"),
         (state, action) => {
-          const payload = (action as any).payload;
           state.loading = false;
           state.loadingAdmin = false;
+          const payload = (action as any).payload;
           state.error =
             typeof payload === "string"
               ? payload
-              : (payload && typeof payload === "object" && "message" in payload && payload.message) ||
+              : (payload &&
+                  typeof payload === "object" &&
+                  "message" in payload &&
+                  payload.message) ||
                 "Operation failed.";
         }
       );

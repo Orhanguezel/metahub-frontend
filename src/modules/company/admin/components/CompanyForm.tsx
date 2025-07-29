@@ -8,7 +8,7 @@ import type { ICompany, ICompanyImage, TranslatedLabel } from "@/modules/company
 import { SUPPORTED_LOCALES, LANG_LABELS } from "@/types/common";
 import { AddressForm } from "@/modules/users";
 import { SocialLinksForm } from "@/modules/company";
-import type { Address } from "@/modules/users/types/address";
+import { useAppSelector } from "@/store/hooks";
 
 // Helpers
 const getUrlArray = (images?: ICompanyImage[]): string[] =>
@@ -20,16 +20,6 @@ const fillLabel = (obj?: TranslatedLabel) => {
   return res;
 };
 
-function getInitialAddresses(arr: any): Address[] {
-  if (!arr) return [];
-  if (typeof arr[0] === "object") return arr as Address[];
-  return [];
-}
-
-function extractAddressIds(addresses: Address[]): string[] {
-  return addresses.map(addr => (typeof addr._id === "string" ? addr._id : "")).filter(Boolean);
-}
-
 interface Props {
   initialValues: ICompany;
   onSubmit: (
@@ -40,10 +30,16 @@ interface Props {
   loading?: boolean;
 }
 
-export default function CompanyForm({ initialValues, onSubmit, loading }: Props) {
+export default function CompanyForm({
+  initialValues,
+  onSubmit,
+  loading,
+}: Props) {
   const { t } = useI18nNamespace("company", translations);
+  // Doğrudan redux’tan company çek!
+  const company = useAppSelector((state) => state.company.companyAdmin);
 
-  // --- STATES ---
+  // --- STATE'ler ---
   const [companyName, setCompanyName] = useState(fillLabel(initialValues.companyName));
   const [companyDesc, setCompanyDesc] = useState(fillLabel(initialValues.companyDesc));
   const [email, setEmail] = useState(initialValues.email);
@@ -59,24 +55,30 @@ export default function CompanyForm({ initialValues, onSubmit, loading }: Props)
       ? initialValues.managers
       : [""]
   );
-  const [addresses, setAddresses] = useState<Address[]>(getInitialAddresses(initialValues.addresses));
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(getUrlArray(initialValues.images));
 
-  // Images reset logic
   useEffect(() => {
+    setCompanyName(fillLabel(initialValues.companyName));
+    setCompanyDesc(fillLabel(initialValues.companyDesc));
+    setEmail(initialValues.email);
+    setPhone(initialValues.phone);
+    setTaxNumber(initialValues.taxNumber);
+    setHandelsregisterNumber(initialValues.handelsregisterNumber || "");
+    setRegisterCourt(initialValues.registerCourt || "");
+    setWebsite(initialValues.website || "");
+    setBankDetails(initialValues.bankDetails);
+    setSocialLinks(initialValues.socialLinks ?? {});
+    setManagers(
+      Array.isArray(initialValues.managers) && initialValues.managers.length > 0
+        ? initialValues.managers
+        : [""]
+    );
     setExistingImages(getUrlArray(initialValues.images));
     setSelectedFiles([]);
     setRemovedImages([]);
-  }, [JSON.stringify(initialValues.images)]);
-
-  // --- MANAGERS LOGIC ---
-  const handleManagerChange = (idx: number, value: string) => {
-    setManagers(managers.map((m, i) => (i === idx ? value : m)));
-  };
-  const addManager = () => setManagers([...managers, ""]);
-  const removeManager = (idx: number) => setManagers(managers.length === 1 ? [""] : managers.filter((_, i) => i !== idx));
+  }, [JSON.stringify(initialValues)]);
 
   // --- BANK DETAILS LOGIC ---
   const handleBankChange = (field: keyof typeof bankDetails, value: string) => {
@@ -88,15 +90,20 @@ export default function CompanyForm({ initialValues, onSubmit, loading }: Props)
     setSocialLinks({ ...socialLinks, [e.target.name]: e.target.value });
   };
 
+  // --- MANAGERS LOGIC ---
+  const handleManagerChange = (idx: number, value: string) => {
+    setManagers(managers.map((m, i) => (i === idx ? value : m)));
+  };
+  const addManager = () => setManagers([...managers, ""]);
+  const removeManager = (idx: number) => setManagers(managers.length === 1 ? [""] : managers.filter((_, i) => i !== idx));
+
   // --- SUBMIT HANDLER ---
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Basit zorunlu alan kontrolü (isteğe bağlı: burada daha detaylı validation ekleyebilirsin)
     if (!companyName["tr"] || !email || !phone || !taxNumber || !bankDetails.bankName || !bankDetails.iban || !bankDetails.swiftCode) {
       alert(t("required", "Please fill all required fields!"));
       return;
     }
-
     onSubmit(
       {
         ...initialValues,
@@ -111,7 +118,6 @@ export default function CompanyForm({ initialValues, onSubmit, loading }: Props)
         bankDetails,
         managers,
         socialLinks,
-        addresses: extractAddressIds(addresses),
       },
       selectedFiles,
       removedImages
@@ -128,10 +134,10 @@ export default function CompanyForm({ initialValues, onSubmit, loading }: Props)
     []
   );
 
+  // --- Render ---
   return (
     <FormStyled onSubmit={handleSubmit} autoComplete="off" noValidate>
       <SectionTitle>{t("companyInfo", "Company Info")}</SectionTitle>
-
       {/* Çoklu dil: Şirket adı */}
       {SUPPORTED_LOCALES.map((lng) => (
         <div key={"companyName_" + lng}>
@@ -184,15 +190,9 @@ export default function CompanyForm({ initialValues, onSubmit, loading }: Props)
       <Label htmlFor="website">{t("website", "Website")}</Label>
       <Input id="website" name="website" value={website} onChange={e => setWebsite(e.target.value)} disabled={loading} />
 
-      {/* --- Çoklu Adres Alanı --- */}
+      {/* --- Çoklu Adres Alanı (AccountForm patterniyle tam uyumlu) --- */}
       <SectionTitle>{t("addresses", "Addresses")}</SectionTitle>
-      <AddressForm
-        parentType="company"
-        parentId={initialValues._id}
-        addresses={addresses}
-        setAddresses={setAddresses}
-        loading={loading}
-      />
+      <AddressForm parentType="company" parentId={company?._id} renderAsForm={false} />
 
       <SectionTitle>{t("bankDetails", "Bank Details")}</SectionTitle>
       <Label htmlFor="bankDetails.bankName">{t("bankName", "Bank Name")}</Label>
@@ -202,7 +202,6 @@ export default function CompanyForm({ initialValues, onSubmit, loading }: Props)
       <Label htmlFor="bankDetails.swiftCode">{t("swiftCode", "SWIFT Code")}</Label>
       <Input id="bankDetails.swiftCode" name="bankDetails.swiftCode" value={bankDetails.swiftCode} onChange={e => handleBankChange("swiftCode", e.target.value)} disabled={loading} />
 
-      {/* --- Yöneticiler (opsiyonel) --- */}
       <SectionTitle>{t("managers", "Managers")}</SectionTitle>
       <FieldArrayContainer>
         {managers.map((manager, idx) => (
@@ -223,7 +222,7 @@ export default function CompanyForm({ initialValues, onSubmit, loading }: Props)
         </Button>
       </FieldArrayContainer>
 
-      {/* --- Sosyal Medya (Ayrı bileşen) --- */}
+      {/* --- Sosyal Medya --- */}
       <SocialLinksForm
         values={socialLinks}
         onChange={handleSocialLinksChange}
@@ -246,7 +245,7 @@ export default function CompanyForm({ initialValues, onSubmit, loading }: Props)
   );
 }
 
-// --- Styled Components (AYNEN BIRAK, DEĞİŞİKLİK YOK) ---
+// --- Styled Components (değişiklik yok) ---
 const FormStyled = styled.form`
   max-width: 800px;
   margin: 0 auto;
@@ -297,7 +296,6 @@ const Input = styled.input<{ $hasError?: boolean }>`
   color: ${({ theme }) => theme.colors.text};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   transition: border ${({ theme }) => theme.transition.fast};
-
   &:focus {
     border-color: ${({ theme }) => theme.colors.primary};
     outline: none;
@@ -310,8 +308,6 @@ const FieldArrayContainer = styled.div`
   flex-direction: column;
   gap: 8px;
 `;
-
-
 
 const Label = styled.label`
   display: block;

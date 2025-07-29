@@ -229,16 +229,33 @@ export default function AdminSectionPage() {
 }
 
 const Wrapper = styled.div`
-  max-width: 1100px;
-  margin: 2rem auto;
-  padding: 2rem;
+  max-width: ${({ theme }) => theme.layout.containerWidth};
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacings.xl};
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.md};
+  min-height: 80vh;
+  transition: box-shadow 0.23s;
+
+  ${({ theme }) => theme.media.small} {
+    padding: ${({ theme }) => theme.spacings.sm};
+    min-width: 0;
+    box-shadow: ${({ theme }) => theme.shadows.sm};
+    border-radius: ${({ theme }) => theme.radii.md};
+  }
 `;
 
 const Title = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes.xl};
+  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin-bottom: 2rem;
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
+  color: ${({ theme }) => theme.colors.primary};
+  text-align: center;
+
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+    margin-bottom: ${({ theme }) => theme.spacings.lg};
+  }
 `;
+

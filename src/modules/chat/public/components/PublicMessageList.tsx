@@ -1,3 +1,4 @@
+// components/PublicMessageList.tsx
 "use client";
 
 import React, { useEffect, useRef } from "react";
@@ -10,7 +11,7 @@ import { SupportedLocale } from "@/types/common";
 interface Props {
   messages: ChatMessage[];
   currentUserId?: string;
-  lang?: SupportedLocale; // dışarıdan da dil override edilebilir
+  lang?: SupportedLocale;
 }
 
 const PublicMessageList: React.FC<Props> = ({
@@ -18,23 +19,19 @@ const PublicMessageList: React.FC<Props> = ({
   currentUserId,
   lang: langProp,
 }) => {
-  // Eğer lang prop gelmezse, i18n üzerinden aktif dili çek
   const { i18n } = useI18nNamespace("chat", translations);
   const lang: SupportedLocale =
     langProp || (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Otomatik scroll to bottom
   useEffect(() => {
     scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight);
   }, [messages]);
 
-  // Çoklu dilde mesaj metni: önce seçili dil, yoksa ilk dolu dili, yoksa message stringi göster
   function getMessageText(msg: ChatMessage): string {
     if (msg.language && typeof msg.language === "object") {
       if (msg.language[lang] && msg.language[lang]?.trim())
         return msg.language[lang]!;
-      // Fallback: ilk dolu dili bul
       const first = Object.values(msg.language).find((t) => t && t.trim());
       if (first) return first;
     }
@@ -46,7 +43,7 @@ const PublicMessageList: React.FC<Props> = ({
       {messages.map((msg) => {
         const isMe =
           (currentUserId && msg.sender && msg.sender._id === currentUserId) ||
-          (!msg.sender && !msg.isFromBot && !msg.isFromAdmin); // Guest mesajı ise
+          (!msg.sender && !msg.isFromBot && !msg.isFromAdmin);
         const isBot = msg.isFromBot;
         const isAdmin = msg.isFromAdmin && !isBot;
 
@@ -89,58 +86,70 @@ const PublicMessageList: React.FC<Props> = ({
 
 export default PublicMessageList;
 
-// Styles
+// Styled Components – Ensotek Theme & Responsive
+
 const Container = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
-  background: #f7f7f7;
-  border: 1px solid #eaeaea;
-  margin-bottom: 1rem;
+  padding: ${({ theme }) => theme.spacings.md};
+  background: ${({ theme }) => theme.colors.background};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.md};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  min-height: 160px;
+
+  @media (max-width: 700px) {
+    padding: ${({ theme }) => theme.spacings.sm};
+    margin-bottom: ${({ theme }) => theme.spacings.sm};
+    border-radius: ${({ theme }) => theme.radii.sm};
+  }
 `;
 
-const MessageItem = styled.div<{
-  $me?: boolean;
-  $bot?: boolean;
-  $admin?: boolean;
-}>`
+const MessageItem = styled.div<{ $me?: boolean; $bot?: boolean; $admin?: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  max-width: 96%;
-  margin-bottom: 0.7rem;
-  padding: 0.8rem 1rem;
-  border-radius: 12px;
-  border-left: 4px solid #ddd;
-  background: #fff;
-  box-shadow: 0 0 0.5px #ececec;
+  max-width: 97%;
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  padding: 0.85rem 1rem;
+  border-radius: ${({ theme }) => theme.radii.md};
+  border-left: 4px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.cardBackground};
+  box-shadow: ${({ theme }) => theme.shadows.xs};
 
-  ${({ $me }) =>
+  ${({ $me, theme }) =>
     $me &&
     css`
       align-self: flex-end;
-      background: #e5f7e8;
-      border-left: 4px solid #49b95b;
+      background: ${theme.colors.successBg};
+      border-left: 4px solid ${theme.colors.success};
     `}
-  ${({ $bot }) =>
+  ${({ $bot, theme }) =>
     $bot &&
     css`
-      background: #eef6ff;
-      border-left: 4px solid #1890ff;
+      background: ${theme.colors.info};
+      border-left: 4px solid ${theme.colors.primary};
     `}
-  ${({ $admin }) =>
+  ${({ $admin, theme }) =>
     $admin &&
     css`
-      background: #fff4e1;
-      border-left: 4px solid #ffc048;
+      background: ${theme.colors.warningBackground};
+      border-left: 4px solid ${theme.colors.warning};
     `}
+
+  @media (max-width: 700px) {
+    padding: ${({ theme }) => theme.spacings.sm};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    max-width: 100%;
+    margin-bottom: ${({ theme }) => theme.spacings.sm};
+  }
 `;
 
 const Meta = styled.div`
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin-bottom: 0.1rem;
+  margin-bottom: 0.13rem;
 `;
 
 const Avatar = styled.span<{ $bot?: boolean; $admin?: boolean; $me?: boolean }>`
@@ -149,45 +158,54 @@ const Avatar = styled.span<{ $bot?: boolean; $admin?: boolean; $me?: boolean }>`
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
-  font-size: 1.2rem;
+  border-radius: ${({ theme }) => theme.radii.circle};
+  font-size: 1.12rem;
   font-weight: bold;
-  background: #e2e6ea;
-  ${({ $bot }) =>
+  background: ${({ theme }) => theme.colors.skeleton};
+  ${({ $bot, theme }) =>
     $bot &&
     css`
-      background: #c8e1ff;
+      background: ${theme.colors.accent};
+      color: ${theme.colors.accentText};
     `}
-  ${({ $admin }) =>
+  ${({ $admin, theme }) =>
     $admin &&
     css`
-      background: #ffe29d;
+      background: ${theme.colors.warning};
+      color: ${theme.colors.textOnWarning};
     `}
-  ${({ $me }) =>
+  ${({ $me, theme }) =>
     $me &&
     css`
-      background: #98eaa1;
+      background: ${theme.colors.success};
+      color: ${theme.colors.textOnSuccess};
     `}
 `;
 
 const Sender = styled.span<{ $bot?: boolean; $admin?: boolean; $me?: boolean }>`
   font-weight: 600;
-  font-size: 0.95rem;
-  color: ${({ $bot, $admin, $me }) =>
-    $bot ? "#1876d2" : $admin ? "#b68d11" : $me ? "#2d9a43" : "#222"};
+  font-size: 0.96rem;
+  color: ${({ $bot, $admin, $me, theme }) =>
+    $bot ? theme.colors.accent
+    : $admin ? theme.colors.warning
+    : $me ? theme.colors.success
+    : theme.colors.text};
 `;
 
 const Text = styled.div`
-  font-size: 1.05rem;
-  margin: 0.25rem 0 0.1rem 0;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  margin: 0.25rem 0 0.09rem 0;
   word-break: break-word;
+  color: ${({ theme }) => theme.colors.text};
+  @media (max-width: 700px) {
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+  }
 `;
 
 const Time = styled.span`
-  font-size: 0.79rem;
-  color: #999;
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  color: ${({ theme }) => theme.colors.textSecondary};
   margin-left: auto;
-  margin-right: 0;
-  min-width: 44px;
+  min-width: 40px;
   text-align: right;
 `;

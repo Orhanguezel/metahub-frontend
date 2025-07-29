@@ -54,18 +54,39 @@ export default function SectionFilterBar({
     </Bar>
   );
 }
-
 const Bar = styled.div`
   display: flex;
-  gap: 0.75rem;
-  margin-bottom: 1.2rem;
+  gap: ${({ theme }) => theme.spacings.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   align-items: center;
+  flex-wrap: wrap;
+
+  ${({ theme }) => theme.media.small} {
+    flex-direction: column;
+    align-items: stretch;
+    gap: ${({ theme }) => theme.spacings.xs};
+    margin-bottom: ${({ theme }) => theme.spacings.md};
+  }
 `;
 
 const Input = styled.input`
   min-width: 210px;
-  padding: 0.65rem 1.2rem;
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
   border-radius: ${({ theme }) => theme.radii.md};
   border: 1px solid ${({ theme }) => theme.colors.inputBorder};
-  font-size: 1rem;
+  background: ${({ theme }) => theme.colors.inputBackground};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  transition: border 0.2s;
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+    outline: 1.5px solid ${({ theme }) => theme.colors.inputOutline};
+  }
+
+  ${({ theme }) => theme.media.small} {
+    min-width: 0;
+    width: 100%;
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  }
 `;

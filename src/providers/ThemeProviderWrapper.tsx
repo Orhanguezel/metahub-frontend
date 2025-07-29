@@ -1,11 +1,11 @@
 "use client";
-
 import React, { createContext, useContext } from "react";
 import { ThemeProvider } from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { themes, ThemeName } from "@/styles/themes";
 import { DefaultTheme } from "styled-components";
 import { useThemeMode, ThemeMode } from "@/hooks/useThemeMode";
+import type { ISetting } from "@/modules/settings/types";
 
 interface ThemeContextType {
   toggle: () => void;
@@ -21,20 +21,31 @@ export const ThemeContext = createContext<ThemeContextType>({
 
 export default function ThemeProviderWrapper({
   children,
+  admin = false,
 }: {
   children: React.ReactNode;
+  admin?: boolean;
 }) {
-  const settings = useAppSelector((state) => state.settings.settings);
+  // 👇 HOOKLAR DAİMA EN ÜSTTE ve KOŞULSUZ
+  const settings = useAppSelector(state =>
+  admin ? state.settings.settingsAdmin : state.settings.settings
+);
 
-  const [themeMode, toggleThemeMode] = useThemeMode();
+  const [themeMode, toggleThemeMode] = useThemeMode(); // 👈 DAİMA EN ÜSTTE!
   const isDark = themeMode === "dark";
 
-  const siteTemplateSetting = settings?.find((s) => s.key === "site_template");
-  const selectedTemplate: ThemeName =
-    (siteTemplateSetting?.value as ThemeName) || "anastasia";
-  const templateTheme = themes[selectedTemplate] || themes["anastasia"];
 
-  // Dark Mode pastel override'ları (yalnızca renkler!)
+  // --- AYAR/SETTING KONTROL ---
+  if (!settings || !Array.isArray(settings)) {
+    return <div style={{ minHeight: "100vh", background: "#f8f8fb" }}>Theme settings missing!</div>;
+  }
+  const siteTemplateSetting = settings.find((s: ISetting) => s.key === "site_template");
+  const selectedTemplate: ThemeName = siteTemplateSetting?.value as ThemeName;
+
+  // Tema seçimi (Fallback her zaman anastasia)
+  const templateTheme = themes[selectedTemplate || "anastasia"] || themes["anastasia"];
+
+  // Dark mode override (sadece renkler)
   const darkOverrides: Partial<DefaultTheme["colors"]> = {
     background: "#18121a",
     backgroundSecondary: "#24162b",
@@ -81,9 +92,7 @@ export default function ThemeProviderWrapper({
     : templateTheme;
 
   return (
-    <ThemeContext.Provider
-      value={{ toggle: toggleThemeMode, isDark, mode: themeMode }}
-    >
+    <ThemeContext.Provider value={{ toggle: toggleThemeMode, isDark, mode: themeMode }}>
       <ThemeProvider theme={finalTheme}>{children}</ThemeProvider>
     </ThemeContext.Provider>
   );

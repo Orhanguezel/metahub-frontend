@@ -1,23 +1,40 @@
-export type AddressType = "home" | "work" | "billing" | "shipping" | "factory" | "other";
+// src//modules/users/types/address.ts
+
+export type AddressType =
+  | "home"
+  | "work"
+  | "billing"
+  | "shipping"
+  | "factory"
+  | "warehouse"
+  | "showroom"
+  | "branch"
+  | "other";
+
 export const ADDRESS_TYPE_OPTIONS: AddressType[] = [
-  "home", "work", "billing", "shipping", "factory", "other"
+  "home", "work", "billing", "shipping", "factory",
+  "warehouse", "showroom", "branch", "other"
 ];
 
+// Final Address interface (Her ülke için uygun!)
 export interface Address {
   _id?: string;
-  addressType: AddressType;
-  street: string;
-  houseNumber: string;
-  city: string;
-  zipCode: string;       // frontend'de input, backend postalCode ile mapli!
-  phone: string;
-  email: string;
-  country: string;
-  isDefault?: boolean;
+  addressType: AddressType;    // ZORUNLU
+  addressLine: string;         // ZORUNLU (her zaman en az 1 satır!)
   userId?: string;
   companyId?: string;
   tenant?: string;
-  postalCode?: string;
+  isDefault?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+
+  // Ülkeye göre opsiyoneller:
+  street?: string;
+  houseNumber?: string;
+  city?: string;
+  district?: string;
+  province?: string;
+  postalCode?: string;
+  country?: string;
+  phone?: string;
 }

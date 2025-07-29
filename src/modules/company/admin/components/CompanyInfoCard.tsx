@@ -13,13 +13,14 @@ const DEFAULT_LOGO = "/default-company-logo.png";
 // Populated address type
 type PopulatedAddress = {
   _id?: string;
-  street: string;
-  houseNumber: string;
-  city: string;
-  zipCode: string;
-  phone: string;
-  email: string;
-  country: string;
+  street?: string;
+  houseNumber?: string;
+  city?: string;
+  zipCode?: string;
+  postalCode?: string; // bazen farklı field gelebilir
+  phone?: string;
+  email?: string;
+  country?: string;
   isDefault?: boolean;
 };
 
@@ -38,22 +39,29 @@ export default function CompanyInfoCard({ company }: { company: ICompany | null 
     (typeof company?.companyDesc === "string" && company?.companyDesc) ||
     "";
 
-  // --- İlk adresi bul (populated veya id olabilir) ---
-  // Not: Eğer sadece id string array ise addressStr = "-"
-  const addressStr = useMemo(() => {
-    if (!company?.addresses || company.addresses.length === 0) return "-";
-    // Populated mi kontrolü (object içeriyorsa street olmalı)
-    const addr = company.addresses.find(
+  // --- İlk adresi bul ve düzgün sırala ---
+  const addressObj = useMemo(() => {
+    if (!company?.addresses || company.addresses.length === 0) return null;
+    // Populated ise (object ve street varsa)
+    return company.addresses.find(
       (a: any) => typeof a === "object" && !!a && "street" in a
     ) as PopulatedAddress | undefined;
-
-    if (addr) {
-      return [addr.street, addr.city, addr.zipCode, addr.country]
-        .filter(Boolean)
-        .join(", ");
-    }
-    return "-";
   }, [company?.addresses]);
+
+  // Adres stringini detaylı ve fallback'li oluştur
+  const addressStr = useMemo(() => {
+    if (!addressObj) return "-";
+    const zip = addressObj.zipCode || addressObj.postalCode || "";
+    return [
+      addressObj.street,
+      addressObj.houseNumber,
+      addressObj.city,
+      zip,
+      addressObj.country,
+    ]
+      .filter(Boolean)
+      .join(", ");
+  }, [addressObj]);
 
   // --- Görseller
   const images =
@@ -61,7 +69,6 @@ export default function CompanyInfoCard({ company }: { company: ICompany | null 
       ? company.images
       : [];
 
-  // --- Hiç şirket yoksa veya companyName bile yoksa render etme
   if (!company || !companyName) return null;
 
   return (
@@ -72,6 +79,8 @@ export default function CompanyInfoCard({ company }: { company: ICompany | null 
         <Contact>{company.email || "-"}</Contact>
         <Contact>{company.phone || "-"}</Contact>
         <Contact>{addressStr}</Contact>
+        {addressObj?.email && <Contact>{addressObj.email}</Contact>}
+        {addressObj?.phone && <Contact>{addressObj.phone}</Contact>}
         {company.website && (
           <Contact>
             <a

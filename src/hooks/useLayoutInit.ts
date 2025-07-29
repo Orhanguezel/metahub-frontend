@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useRef,useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useActiveTenant } from "@/hooks/useActiveTenant";
 import {
@@ -11,7 +11,6 @@ import {
   fetchCompanyAdmin,
   clearCompanyMessages,
 } from "@/modules/company/slice/companySlice";
-import { setApiKey } from "@/lib/api";
 import {
   fetchModuleMetas,
   clearModuleMetaMessages,
@@ -220,12 +219,16 @@ const cleanupActions = [
 
 // --- useLayoutInit ---
 export const useLayoutInit = () => {
-  const dispatch = useAppDispatch();
-  const { tenant, loading: tenantLoading } = useActiveTenant(); // ✅
+   const dispatch = useAppDispatch();
+  const { tenant, loading: tenantLoading } = useActiveTenant();
+  const didInit = useRef<string | undefined>(undefined);
   const tenantLoaded = !!tenant && !tenantLoading;
 
   // Slice stateleri
-  const settingsAdmin = useAppSelector((state) => state.settings);
+  const settingsAdmin = useAppSelector(state => state.settings.settingsAdmin);
+  const loadingAdmin = useAppSelector(state => state.settings.loadingAdmin);
+  const fetchedSettingsAdmin = useAppSelector(state => state.settings.fetchedSettingsAdmin);
+
   const companyAdmin = useAppSelector((state) => state.company);
   const moduleMeta = useAppSelector((state) => state.moduleMeta);
   const moduleSetting = useAppSelector((state) => state.moduleSetting);
@@ -274,12 +277,17 @@ const teamList = useAppSelector((state) => state.team);
 const teamCategory = useAppSelector((state) => state.teamCategory);
 const faqList = useAppSelector((state) => state.faq);
 
+
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
   useEffect(() => {
-    if (!tenantLoaded || !tenant?._id) return;
-    // Fetchler
-    if (!settingsAdmin.settingsAdmin.length && !settingsAdmin.loading)
-      dispatch(fetchSettingsAdmin());
+   if (!tenantLoaded || !tenant?._id) return;
+  if (didInit.current === tenant._id) return;
+  didInit.current = tenant._id;
+
+  if (!fetchedSettingsAdmin && !loadingAdmin) {
+    dispatch(fetchSettingsAdmin());
+  }
+
     if (!companyAdmin.company && !companyAdmin.loading)
       dispatch(fetchCompanyAdmin());
     if (!moduleMeta.modules.length && !moduleMeta.loading)
@@ -411,20 +419,10 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
 
   useEffect(() => {
     return () => {
-      cleanupActions.forEach((action) => dispatch(action()));
+     cleanupActions.forEach((action) => dispatch(action()));
     };
   }, [dispatch]);
 
-  useEffect(() => {
-    if (settingsAdmin.settings?.length) {
-      const apiKeySetting = settingsAdmin.settings.find(
-        (s: any) => s.key === "api_key"
-      );
-      if (apiKeySetting?.value && typeof apiKeySetting.value === "string") {
-        setApiKey(apiKeySetting.value);
-      }
-    }
-  }, [settingsAdmin.settings]);
 
   // Return ile tüm state’leri döndür
   return {

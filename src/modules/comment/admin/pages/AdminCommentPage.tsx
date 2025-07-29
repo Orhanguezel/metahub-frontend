@@ -16,7 +16,6 @@ import { CommentDetailsModal } from "@/modules/comment";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations3 from "@/modules/comment/locales";
 
-// --- Content Type Seçenekleri ---
 const contentTypeOptions: { value: CommentContentType | "all"; label: string }[] = [
   { value: "all", label: "Tüm Türler" },
   { value: "blog", label: "Blog" },
@@ -32,7 +31,6 @@ const contentTypeOptions: { value: CommentContentType | "all"; label: string }[]
   { value: "ensotekprod", label: "Ensotekprod" },
   { value: "sparepart", label: "Sparepart" },
 ];
-
 const typeOptions: { value: CommentType | "all"; label: string }[] = [
   { value: "all", label: "Tümü" },
   { value: "comment", label: "Yorum" },
@@ -47,7 +45,6 @@ export default function AdminCommentPage() {
   const dispatch = useAppDispatch();
   const { i18n, t } = useI18nNamespace("testimonial", translations3);
   const lang: SupportedLocale = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
-
   const {
     commentsAdmin = [],
     loading,
@@ -63,13 +60,11 @@ export default function AdminCommentPage() {
   const [selectedComment, setSelectedComment] = useState<IComment | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Otomatik fetch: tip, içerik türü veya sayfa değişince
   useEffect(() => {
     dispatch(
       fetchAllCommentsAdmin({
         page: currentPage,
         commentType: typeFilter !== "all" ? typeFilter : undefined,
-        // İstersek backend'e contentType paramı da gönderebilirsin, burada gerek yok.
       })
     );
   }, [typeFilter, currentPage, dispatch]);
@@ -105,6 +100,7 @@ export default function AdminCommentPage() {
 
   const handlePageChange = (page: number) => setCurrentPage(page);
 
+  // --- Main Render ---
   return (
     <Wrapper>
       <h1>{t("title", "Yorum Yönetimi")}</h1>
@@ -146,6 +142,7 @@ export default function AdminCommentPage() {
       {error && <Error>{error}</Error>}
       {!loading && filteredComments.length === 0 && <Empty>{t("noComments", "Henüz yorum yok.")}</Empty>}
 
+      {/* --- Masaüstü: Tablo --- */}
       {!loading && filteredComments.length > 0 && (
         <>
           <StyledTable>
@@ -215,6 +212,92 @@ export default function AdminCommentPage() {
             </tbody>
           </StyledTable>
 
+          {/* --- Mobil: Kartlar --- */}
+          <MobileCards>
+            {filteredComments.map((comment: any) => {
+              const user =
+                comment.userId && typeof comment.userId === "object"
+                  ? comment.userId
+                  : undefined;
+              let contentTitle = "-";
+              if (
+                comment.contentId &&
+                typeof comment.contentId === "object" &&
+                "title" in comment.contentId &&
+                typeof comment.contentId.title === "string"
+              ) {
+                contentTitle = comment.contentId.title || "-";
+              }
+              const commentLabel = comment.label || "-";
+              return (
+                <Card key={comment._id}>
+                  <Row>
+                    <Field>{t("filter.typeLabel", "Tip")}</Field>
+                    <Value>{comment.type || "-"}</Value>
+                  </Row>
+                  <Row>
+                    <Field>{t("contentType", "İçerik Türü")}</Field>
+                    <Value>{comment.contentType}</Value>
+                  </Row>
+                  <Row>
+                    <Field>{t("user", "Kullanıcı")}</Field>
+                    <Value>{user?.name || comment.name || "-"}</Value>
+                  </Row>
+                  <Row>
+                    <Field>{t("email", "E-posta")}</Field>
+                    <Value>{user?.email || comment.email || "-"}</Value>
+                  </Row>
+                  <Row>
+                    <Field>{t("contentTitle", "İçerik Başlığı")}</Field>
+                    <Value>{contentTitle}</Value>
+                  </Row>
+                  <Row>
+                    <Field>{t("label", "Başlık")}</Field>
+                    <Value>{commentLabel}</Value>
+                  </Row>
+                  <Row>
+                    <Field>{t("comment", "Yorum")}</Field>
+                    <Value
+                      style={{ cursor: "pointer" }}
+                      onClick={() => setSelectedComment(comment)}
+                    >
+                      {comment.text}
+                    </Value>
+                  </Row>
+                  <Row>
+                    <Field>{t("date", "Tarih")}</Field>
+                    <Value>
+                      {comment.createdAt
+                        ? new Date(comment.createdAt).toLocaleString()
+                        : "-"}
+                    </Value>
+                  </Row>
+                  <Row>
+                    <Field>{t("status", "Durum")}</Field>
+                    <Value>
+                      <Status $published={comment.isPublished}>
+                        {comment.isPublished
+                          ? t("published", "Yayınlandı")
+                          : t("unpublished", "Yayınlanmadı")}
+                      </Status>
+                    </Value>
+                  </Row>
+                  <Actions>
+                    <ActionButton onClick={() => handleToggle(comment._id!)}>
+                      {t("toggle", "Aç/Kapat")}
+                    </ActionButton>
+                    <ActionButton
+                      danger
+                      onClick={() => handleDelete(comment._id!)}
+                    >
+                      {t("delete", "Sil")}
+                    </ActionButton>
+                  </Actions>
+                </Card>
+              );
+            })}
+          </MobileCards>
+
           {selectedComment && (
             <CommentDetailsModal
               comment={selectedComment}
@@ -242,33 +325,17 @@ export default function AdminCommentPage() {
   );
 }
 
-// --- Styled Components ---
+// --- STYLED COMPONENTS ---
+
 const Wrapper = styled.div`
   padding: ${({ theme }) => theme.spacings.xl};
   max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
   font-family: ${({ theme }) => theme.fonts.main};
   background: ${({ theme }) => theme.colors.background};
-`;
-
-const Error = styled.div`
-  color: ${({ theme }) => theme.colors.danger};
-  margin-top: ${({ theme }) => theme.spacings.md};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-`;
-
-const LoadingRow = styled.div`
-  padding: ${({ theme }) => theme.spacings.xl};
-  text-align: center;
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  color: ${({ theme }) => theme.colors.primary};
-`;
-
-const Empty = styled.div`
-  padding: ${({ theme }) => theme.spacings.xl};
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.md};
+  ${({ theme }) => theme.media.small} {
+    padding: ${({ theme }) => theme.spacings.sm};
+  }
 `;
 
 const FilterBar = styled.div`
@@ -286,6 +353,7 @@ const FilterBar = styled.div`
     gap: 0.22rem;
     font-weight: ${({ theme }) => theme.fontWeights.medium};
     color: ${({ theme }) => theme.colors.text};
+    min-width: 150px;
   }
 
   input,
@@ -293,7 +361,6 @@ const FilterBar = styled.div`
     padding: ${({ theme }) => theme.spacings.sm};
     border-radius: ${({ theme }) => theme.radii.sm};
     border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.inputBorder};
-    min-width: 160px;
     background: ${({ theme }) => theme.colors.inputBackground};
     font-size: ${({ theme }) => theme.fontSizes.base};
     font-family: inherit;
@@ -304,8 +371,25 @@ const FilterBar = styled.div`
       outline: 1.5px solid ${({ theme }) => theme.colors.inputOutline};
     }
   }
+
+  ${({ theme }) => theme.media.small} {
+    flex-direction: column;
+    align-items: stretch;
+    gap: ${({ theme }) => theme.spacings.sm};
+
+    label {
+      min-width: 0;
+      width: 100%;
+    }
+
+    input,
+    select {
+      width: 100%;
+    }
+  }
 `;
 
+// Masaüstü tablosu (sadece geniş ekranda)
 const StyledTable = styled.table`
   width: 100%;
   border-collapse: separate;
@@ -315,15 +399,16 @@ const StyledTable = styled.table`
   border-radius: ${({ theme }) => theme.radii.lg};
   overflow: hidden;
   margin-top: ${({ theme }) => theme.spacings.lg};
+  font-size: ${({ theme }) => theme.fontSizes.base};
 
-  th,
-  td {
+  th, td {
     border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
     padding: ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.sm};
     text-align: left;
-    font-size: ${({ theme }) => theme.fontSizes.base};
     vertical-align: middle;
     background: inherit;
+    word-break: break-word;
+    max-width: 240px;
   }
 
   th {
@@ -347,20 +432,79 @@ const StyledTable = styled.table`
     &:hover {
       background: ${({ theme }) => theme.colors.hoverBackground};
     }
-    word-break: break-word;
-    max-width: 300px;
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
   }
+
+  ${({ theme }) => theme.media.small} {
+    display: none;
+  }
+`;
+
+// Mobilde kart görünümü
+const MobileCards = styled.div`
+  display: none;
+  ${({ theme }) => theme.media.small} {
+    display: block;
+  }
+`;
+const Card = styled.div`
+  display: none;
+  ${({ theme }) => theme.media.small} {
+    display: block;
+    background: ${({ theme }) => theme.colors.cardBackground};
+    border-radius: ${({ theme }) => theme.radii.md};
+    box-shadow: ${({ theme }) => theme.cards.shadow};
+    padding: ${({ theme }) => theme.spacings.md};
+    margin-bottom: ${({ theme }) => theme.spacings.md};
+  }
+`;
+const Row = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 3px 0;
+`;
+const Field = styled.span`
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  min-width: 110px;
+  flex: 1 1 40%;
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+`;
+const Value = styled.span`
+  color: ${({ theme }) => theme.colors.text};
+  word-break: break-word;
+  text-align: right;
+  max-width: 55%;
+  flex: 1 1 60%;
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+`;
+const Actions = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.xs};
+  margin-top: ${({ theme }) => theme.spacings.sm};
 `;
 
 const Status = styled.span<{ $published: boolean }>`
   display: inline-block;
-  padding: 0.3em 0.95em;
+  padding: 0.3em 1em;
   border-radius: ${({ theme }) => theme.radii.pill};
   font-size: ${({ theme }) => theme.fontSizes.xsmall};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  background: ${({ $published, theme }) => $published ? theme.colors.successBg : theme.colors.warningBackground};
-  color: ${({ $published, theme }) => $published ? theme.colors.success : theme.colors.warning};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderHighlight};
+  background: ${({ $published, theme }) =>
+    $published ? theme.colors.successBg : theme.colors.warningBackground};
+  color: ${({ $published, theme }) =>
+    $published ? theme.colors.success : theme.colors.warning};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.colors.borderHighlight};
+  letter-spacing: 0.02em;
+  min-width: 70px;
+  text-align: center;
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    min-width: 56px;
+    padding: 0.2em 0.6em;
+  }
 `;
 
 const ActionButton = styled.button.withConfig({
@@ -376,7 +520,7 @@ const ActionButton = styled.button.withConfig({
       : theme.colors.buttonText};
   border: ${({ theme }) => theme.borders.thin} ${({ danger, theme }) =>
     danger ? theme.colors.danger : theme.colors.buttonBorder};
-  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.xs} ${({ theme }) => theme.spacings.sm};
   margin-right: ${({ theme }) => theme.spacings.xs};
   border-radius: ${({ theme }) => theme.radii.md};
   font-size: ${({ theme }) => theme.fontSizes.xsmall};
@@ -392,6 +536,11 @@ const ActionButton = styled.button.withConfig({
         : theme.colors.primaryHover};
     color: ${({ theme }) => theme.colors.white};
   }
+  ${({ theme }) => theme.media.small} {
+    margin-right: 0;
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    padding: ${({ theme }) => theme.spacings.xs} ${({ theme }) => theme.spacings.sm};
+  }
 `;
 
 const PaginationBar = styled.div`
@@ -399,7 +548,7 @@ const PaginationBar = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacings.sm};
   justify-content: center;
-
+  flex-wrap: wrap;
   button {
     padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
     border: none;
@@ -410,11 +559,50 @@ const PaginationBar = styled.div`
     font-weight: ${({ theme }) => theme.fontWeights.medium};
     font-size: ${({ theme }) => theme.fontSizes.base};
     transition: background ${({ theme }) => theme.transition.fast};
-
     &:disabled {
       background: ${({ theme }) => theme.colors.border};
       color: ${({ theme }) => theme.colors.textSecondary};
       cursor: default;
     }
+    ${({ theme }) => theme.media.small} {
+      font-size: ${({ theme }) => theme.fontSizes.xs};
+      padding: ${({ theme }) => theme.spacings.xs} ${({ theme }) => theme.spacings.sm};
+      min-width: 32px;
+    }
   }
 `;
+
+const Error = styled.div`
+  color: ${({ theme }) => theme.colors.danger};
+  margin-top: ${({ theme }) => theme.spacings.md};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  text-align: center;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    margin-top: ${({ theme }) => theme.spacings.sm};
+  }
+`;
+
+const LoadingRow = styled.div`
+  padding: ${({ theme }) => theme.spacings.xl};
+  text-align: center;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  color: ${({ theme }) => theme.colors.primary};
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    padding: ${({ theme }) => theme.spacings.md};
+  }
+`;
+
+const Empty = styled.div`
+  padding: ${({ theme }) => theme.spacings.xl};
+  text-align: center;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    padding: ${({ theme }) => theme.spacings.md};
+  }
+`;
+

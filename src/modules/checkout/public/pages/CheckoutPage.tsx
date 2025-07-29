@@ -3,7 +3,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import checkoutTranslations from "@/modules/checkout/locales";
+import { accountTranslations } from "@/modules/users";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { clearCart } from "@/modules/cart/slice/cartSlice";
 import { createOrder } from "@/modules/order/slice/ordersSlice";
 import { getMultiLang } from "@/types/common";
@@ -11,11 +13,11 @@ import type { SupportedLocale } from "@/types/common";
 import type { Address } from "@/modules/users/types/address";
 import type { PaymentMethod } from "@/modules/order/types";
 
-// -- Payment method values (backend uyumlu) --
+// Payment methods: Çeviri anahtarları!
 const PAYMENT_METHODS = [
-  { value: "credit_card", label: "Credit Card" },
-  { value: "paypal", label: "PayPal" },
-  { value: "cash_on_delivery", label: "Cash on Delivery" },
+  { value: "credit_card", label: "checkout:payment_credit_card" },
+  { value: "paypal", label: "checkout:payment_paypal" },
+  { value: "cash_on_delivery", label: "checkout:payment_cash_on_delivery" },
 ];
 
 const CheckoutPage: React.FC = () => {
@@ -23,28 +25,30 @@ const CheckoutPage: React.FC = () => {
   const router = useRouter();
   const { cart, loading, error } = useAppSelector((state) => state.cart);
   const { profile } = useAppSelector((state) => state.account);
-  const { t, i18n } = useTranslation(["checkout", "cart"]);
+  const { addresses } = useAppSelector((state) => state.address);
+
+  const { t, i18n } = useI18nNamespace("checkout", checkoutTranslations);
+  const { t: tAccount } = useI18nNamespace("account", accountTranslations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS[0].value);
   const [placingOrder, setPlacingOrder] = useState(false);
 
-  // Adresleri bul (populated varsa onu kullan)
-  const addresses: Address[] = useMemo(
-    () => profile?.addressesPopulated || profile?.addresses || [],
-    [profile]
-  );
-
-  // Yeni modele uygun default address seçimi
-  const defaultAddress: Address | undefined = useMemo(
-    () =>
-      addresses.find((a) => a.isDefault) ||
-      addresses.find((a) => a.addressType === "shipping") ||
-      addresses[0],
+  // Sadece "shipping" adresleri
+  const shippingAddresses: Address[] = useMemo(
+    () => (addresses || []).filter(a => a.addressType === "shipping"),
     [addresses]
   );
 
-  // Oturum ve sepet router koruması
+  // Default teslimat adresi
+  const defaultShippingAddress: Address | undefined = useMemo(
+    () =>
+      shippingAddresses.find(a => a.isDefault) ||
+      shippingAddresses[0],
+    [shippingAddresses]
+  );
+
+  // Router korumaları
   useEffect(() => {
     if (!profile) router.replace("/login?redirected=checkout");
   }, [profile, router]);
@@ -54,19 +58,17 @@ const CheckoutPage: React.FC = () => {
   }, [cart, router]);
 
   useEffect(() => {
-    if (profile && (!addresses || addresses.length === 0)) {
+    if (profile && (!shippingAddresses || shippingAddresses.length === 0)) {
       setTimeout(() => {
-        alert(
-          t("checkout:no_address", "Lütfen önce bir teslimat adresi ekleyin. Yönlendiriliyorsunuz...")
-        );
+        alert(t("no_shipping_address", "Lütfen önce bir teslimat adresi ekleyin. Yönlendiriliyorsunuz..."));
         router.replace("/account");
       }, 300);
     }
-  }, [profile, addresses, router, t]);
+  }, [profile, shippingAddresses, router, t]);
 
-  if (!profile || !defaultAddress || !cart) return null;
+  if (!profile || !defaultShippingAddress || !cart) return null;
 
-  // === YENİ orderData ===
+  // Sipariş oluşturma
   const handleCompleteOrder = async () => {
     if (placingOrder) return;
     setPlacingOrder(true);
@@ -84,18 +86,18 @@ const CheckoutPage: React.FC = () => {
       totalPrice: cart.totalPrice,
       paymentMethod: paymentMethod as PaymentMethod,
       tenant: cart.tenant ?? "main",
-      addressId: defaultAddress._id, // <-- Backend addressId desteği varsa
+      addressId: defaultShippingAddress._id,
       shippingAddress: {
-        name: profile.name,
-        phone: defaultAddress.phone,
+        name: profile.name || "",
+        phone: defaultShippingAddress.phone || "",
         tenant: cart.tenant ?? "main",
-        street: defaultAddress.street,
-        houseNumber: defaultAddress.houseNumber, // yeni alan!
-        city: defaultAddress.city,
-        postalCode: defaultAddress.postalCode || defaultAddress.zipCode, // backend postalCode, frontend zipCode
-        country: defaultAddress.country,
-        email: defaultAddress.email,
-        addressType: defaultAddress.addressType,
+        street: defaultShippingAddress.street || "",
+        houseNumber: defaultShippingAddress.houseNumber || "",
+        city: defaultShippingAddress.city || "",
+        postalCode: defaultShippingAddress.postalCode || "",
+        country: defaultShippingAddress.country || "",
+        email: profile.email || "",
+        addressType: defaultShippingAddress.addressType || "shipping",
       },
     };
 
@@ -104,19 +106,19 @@ const CheckoutPage: React.FC = () => {
       dispatch(clearCart());
       router.replace("/order/success");
     } catch (err: any) {
-      alert(t("checkout:error", "Sipariş oluşturulamadı!") + ` ${err.message || err}`);
+      alert(t("error", "Sipariş oluşturulamadı!") + ` ${err.message || err}`);
     } finally {
       setPlacingOrder(false);
     }
   };
 
   if (loading || placingOrder) {
-    return <PageContainer>{t("checkout:loading", "Loading...")}</PageContainer>;
+    return <PageContainer>{t("loading", "Yükleniyor...")}</PageContainer>;
   }
   if (error) {
     return (
       <PageContainer>
-        <Title>{t("checkout:error", "Checkout error")}</Title>
+        <Title>{t("error", "Hata")}</Title>
         <div style={{ color: "#ED3030" }}>{error}</div>
       </PageContainer>
     );
@@ -125,57 +127,58 @@ const CheckoutPage: React.FC = () => {
   // --- Render ---
   return (
     <PageContainer>
-      <Title>{t("checkout:title", "Order Checkout")}</Title>
+      <Title>{t("title", "Sipariş Onayı")}</Title>
       <CheckoutLayout>
         {/* Adres Bölümü */}
         <FormSection>
-          <SectionTitle>{t("checkout:shipping_address", "Shipping Address")}</SectionTitle>
+          <SectionTitle>{t("shipping_address", "Teslimat Adresi")}</SectionTitle>
           <InnerFormLayout>
             <InputGroup>
-              <Label>{t("checkout:fullName", "Full Name")}</Label>
+              <Label>{t("fullName", "Ad Soyad")}</Label>
               <Input value={profile.name} disabled readOnly />
             </InputGroup>
             <InputGroup>
-              <Label>{t("checkout:addressType", "Address Type")}</Label>
-              <Input value={t(`address.type.${defaultAddress.addressType}`)} disabled readOnly />
+              <Label>{tAccount("addressType", "Adres Tipi")}</Label>
+              <Input value={tAccount(`address.type.${defaultShippingAddress.addressType}`)} disabled readOnly />
+
             </InputGroup>
             <InputGroup>
-              <Label>{t("checkout:street", "Street")}</Label>
+              <Label>{t("street", "Cadde / Sokak")}</Label>
               <Input
                 value={
-                  defaultAddress.street +
-                  (defaultAddress.houseNumber ? ` ${defaultAddress.houseNumber}` : "")
+                  defaultShippingAddress.street +
+                  (defaultShippingAddress.houseNumber ? ` ${defaultShippingAddress.houseNumber}` : "")
                 }
                 disabled
                 readOnly
               />
             </InputGroup>
             <InputGroup>
-              <Label>{t("checkout:city", "City")}</Label>
-              <Input value={defaultAddress.city} disabled readOnly />
+              <Label>{t("city", "Şehir")}</Label>
+              <Input value={defaultShippingAddress.city} disabled readOnly />
             </InputGroup>
             <InputGroup>
-              <Label>{t("checkout:zipCode", "Postal Code")}</Label>
-              <Input value={defaultAddress.zipCode || defaultAddress.postalCode} disabled readOnly />
+              <Label>{t("zipCode", "Posta Kodu")}</Label>
+              <Input value={defaultShippingAddress.postalCode} disabled readOnly />
             </InputGroup>
             <InputGroup>
-              <Label>{t("checkout:country", "Country")}</Label>
-              <Input value={defaultAddress.country} disabled readOnly />
+              <Label>{t("country", "Ülke")}</Label>
+              <Input value={defaultShippingAddress.country} disabled readOnly />
             </InputGroup>
             <InputGroup>
-              <Label>{t("checkout:phone", "Phone")}</Label>
-              <Input value={defaultAddress.phone} disabled readOnly />
+              <Label>{t("phone", "Telefon")}</Label>
+              <Input value={defaultShippingAddress.phone} disabled readOnly />
             </InputGroup>
             <InputGroup>
-              <Label>{t("checkout:email", "Email")}</Label>
-              <Input value={defaultAddress.email} disabled readOnly />
+              <Label>{t("email", "E-Posta")}</Label>
+              <Input value={profile.email} disabled readOnly />
             </InputGroup>
           </InnerFormLayout>
         </FormSection>
 
         {/* Sipariş Özeti ve Ödeme */}
         <SummarySection>
-          <SectionTitle>{t("checkout:order_summary", "Order Summary")}</SectionTitle>
+          <SectionTitle>{t("order_summary", "Sipariş Özeti")}</SectionTitle>
           <SummaryList>
             {(cart.items || []).map((item, idx) => {
               const key =
@@ -183,7 +186,7 @@ const CheckoutPage: React.FC = () => {
                   ? (item.product._id || `unknown-${idx}`)
                   : (item.product || `id-${idx}`);
               if (!item.product)
-                return <li key={key} style={{ color: "#e33" }}>Ürün bulunamadı!</li>;
+                return <li key={key} style={{ color: "#e33" }}>{t("error_product_not_found", "Ürün bulunamadı!")}</li>;
               return (
                 <li key={key}>
                   <span>
@@ -198,12 +201,12 @@ const CheckoutPage: React.FC = () => {
             })}
           </SummaryList>
           <TotalRow>
-            <span>{t("checkout:total", "Total")}:</span>
+            <span>{t("total", "Toplam")}:</span>
             <b>{cart.totalPrice.toFixed(2)} €</b>
           </TotalRow>
 
           <PaymentSection>
-            <PaymentTitle>{t("checkout:payment_method", "Payment Method")}</PaymentTitle>
+            <PaymentTitle>{t("payment_method", "Ödeme Yöntemi")}</PaymentTitle>
             <PaymentOptions>
               {PAYMENT_METHODS.map((method) => (
                 <label key={method.value}>
@@ -214,7 +217,7 @@ const CheckoutPage: React.FC = () => {
                     checked={paymentMethod === method.value}
                     onChange={() => setPaymentMethod(method.value)}
                   />
-                  {t(`checkout:payment_${method.value}`, method.label)}
+                  {t(method.label)}
                 </label>
               ))}
             </PaymentOptions>
@@ -224,7 +227,7 @@ const CheckoutPage: React.FC = () => {
             onClick={handleCompleteOrder}
             disabled={placingOrder || !paymentMethod}
           >
-            {t("checkout:complete_order", "Complete Order")}
+            {t("complete_order", "Siparişi Tamamla")}
           </OrderButton>
         </SummarySection>
       </CheckoutLayout>
@@ -234,7 +237,7 @@ const CheckoutPage: React.FC = () => {
 
 export default CheckoutPage;
 
-// --- Styled (Aynı) ---
+// --- Styled Components ---
 const PageContainer = styled.div`
   max-width: 900px;
   margin: 48px auto;

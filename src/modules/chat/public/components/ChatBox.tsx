@@ -17,7 +17,7 @@ const ChatBox = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [roomId, setRoomId] = useState<string>("");
 
-  const socket = getSocket(); // ✅ socket instance buradan alınmalı
+  const socket = getSocket();
 
   useEffect(() => {
     if (!socket) return;
@@ -95,31 +95,82 @@ const ChatBox = () => {
   return (
     <Wrapper>
       <Header>
-        <h4>🤖 {t("assistantTitle", "")}</h4>
+        <h4>🤖 {t("assistantTitle", "Sanal Asistan")}</h4>
       </Header>
-      <PublicMessageList messages={messages} />
-      <PublicChatInput onSend={handleSend} />
+      <MessageArea>
+        <PublicMessageList messages={messages} />
+      </MessageArea>
+      <InputArea>
+        <PublicChatInput onSend={handleSend} />
+      </InputArea>
     </Wrapper>
   );
 };
 
 export default ChatBox;
 
-// 💅 Styles
+// Styled Components - Ensotek Theme & Responsive
+
 const Wrapper = styled.div`
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
-  border: 1px solid #ccc;
-  padding: 1rem;
-  background-color: white;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  border: 1.5px solid ${({ theme }) => theme.colors.border};
   display: flex;
   flex-direction: column;
-  height: 80vh;
+  height: 75vh;
+  min-height: 450px;
+  overflow: hidden;
+  position: relative;
+  transition: box-shadow 0.22s;
+  @media (max-width: 700px) {
+    max-width: 100%;
+    border-radius: ${({ theme }) => theme.radii.md};
+    height: 68vh;
+    min-height: 350px;
+  }
 `;
 
 const Header = styled.div`
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.buttonText};
+  padding: 1rem 1.6rem;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-bottom: 1.5px solid ${({ theme }) => theme.colors.primaryDark};
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  h4 {
+    margin: 0;
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+    color: ${({ theme }) => theme.colors.buttonText};
+    font-family: ${({ theme }) => theme.fonts.heading};
+  }
 `;
+
+const MessageArea = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  background: ${({ theme }) => theme.colors.background};
+  padding: 1.3rem 1rem 0.7rem 1rem;
+  @media (max-width: 700px) {
+    padding: 1rem 0.3rem 0.5rem 0.3rem;
+  }
+`;
+
+const InputArea = styled.div`
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  padding: 1rem 1.3rem 1.2rem 1.3rem;
+  border-top: 1.5px solid ${({ theme }) => theme.colors.border};
+  @media (max-width: 700px) {
+    padding: 0.7rem 0.5rem 0.7rem 0.5rem;
+  }
+`;
+

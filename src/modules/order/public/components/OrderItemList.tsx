@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/order";
 import type { SupportedLocale } from "@/types/common";
-import type { IOrderItem} from "@/modules/order/types";
+import type { IOrderItem } from "@/modules/order/types";
 import type { IBikes } from "@/modules/bikes/types";
 import type { IEnsotekprod } from "@/modules/ensotekprod/types";
 import type { ISparepart } from "@/modules/sparepart/types";
@@ -33,17 +33,15 @@ const OrderItemList: React.FC<OrderItemListProps> = ({
         // Ürün adı
         let name = "";
         if (product && typeof product === "object" && "name" in product) {
-          // Çoklu dil desteği varsa
           name =
             typeof product.name === "object"
               ? getLocalized(product.name, lang)
               : String(product.name);
         } else {
-          // String ise veya bilinmiyorsa
           name = (item as any).name || t("detail.unnamedProduct", "Unnamed product");
         }
 
-        // Fiyat (siparişteki fiyat her zaman öncelik)
+        // Fiyat (siparişteki fiyat öncelikli)
         const price =
           typeof item.priceAtAddition === "number"
             ? item.priceAtAddition
@@ -54,14 +52,15 @@ const OrderItemList: React.FC<OrderItemListProps> = ({
         return (
           <Item key={typeof item.product === "object" ? (item.product as any)._id : String(item.product) || idx}>
             <Left>
-              <ProductName>{name}</ProductName>
-              {/* Eğer ürünün başka bilgileri varsa burada gösterebilirsin */}
+              <ProductName title={name}>{name}</ProductName>
+              {/* Buraya ürünle ilgili ekstra info veya badge eklenebilir */}
             </Left>
             <Right>
               <Qty>
-                {item.quantity} × <Price>{price.toFixed(2)}</Price>
-                <Currency>EUR</Currency>
+                {item.quantity} <span>×</span>
               </Qty>
+              <Price>{price.toFixed(2)}</Price>
+              <Currency>EUR</Currency>
             </Right>
           </Item>
         );
@@ -72,31 +71,47 @@ const OrderItemList: React.FC<OrderItemListProps> = ({
 
 export default OrderItemList;
 
-// --- Styled Components (aynı kalabilir) ---
+// --- Styled Components ---
+
 const Items = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-top: 0.6rem;
+  gap: 0.8rem;
+  margin-top: 0.3rem;
 `;
-// ... diğer styled'lar aynı şekilde devam
 
 const Empty = styled.div`
-  color: ${({ theme }) => theme.colors.grey || "#aaa"};
-  font-size: 1.04em;
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   text-align: left;
-  padding: 0.5em 0 0.7em 0;
-  opacity: 0.9;
+  padding: 0.55em 0 0.9em 0;
+  opacity: 0.85;
 `;
+
 const Item = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  padding: 1rem 0.2rem;
-  font-size: 1.07em;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.lightGrey || "#f1f1f1"};
+  align-items: flex-end;
+  padding: 0.85rem 0.35rem 0.7rem 0.35rem;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  background: ${({ theme }) => theme.colors.inputBackgroundLight};
+  border-radius: ${({ theme }) => theme.radii.md};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.borderLight};
+  transition: background 0.2s;
+  min-width: 0;
+  gap: 0.9em;
   &:last-child {
     border-bottom: none;
+  }
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryTransparent};
+  }
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 0.6em;
+    align-items: stretch;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    padding: 0.6rem 0.15rem 0.6rem 0.15rem;
   }
 `;
 
@@ -105,40 +120,52 @@ const Left = styled.div`
   align-items: center;
   gap: 0.65em;
   min-width: 0;
+  flex: 1;
 `;
 
 const ProductName = styled.span`
-  font-weight: 500;
-  color: ${({ theme }) => theme.colors.black || "#1b1b1b"};
-  font-size: 1.05em;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: 1.06em;
   letter-spacing: 0.01em;
-  max-width: 230px;
+  max-width: 210px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  @media (max-width: 500px) {
+    max-width: 95vw;
+  }
 `;
 
 const Right = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.35em;
+  gap: 0.32em;
+  min-width: 120px;
+  justify-content: flex-end;
 `;
 
 const Qty = styled.span`
-  color: ${({ theme }) => theme.colors.black || "#232323"};
+  color: ${({ theme }) => theme.colors.darkGrey};
   font-weight: 500;
-  font-size: 1.03em;
+  font-size: 1.01em;
+  span {
+    margin: 0 0.16em;
+    color: ${({ theme }) => theme.colors.textMuted};
+    font-weight: 700;
+  }
 `;
 
 const Price = styled.span`
-  color: ${({ theme }) => theme.colors.primary || "#183153"};
-  font-weight: 500;
-  font-size: 1.04em;
-  margin-left: 0.12em;
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: 600;
+  font-size: 1.09em;
+  margin-left: 0.14em;
 `;
 
 const Currency = styled.span`
-  color: ${({ theme }) => theme.colors.grey || "#999"};
+  color: ${({ theme }) => theme.colors.textMuted};
   font-size: 0.98em;
-  margin-left: 0.1em;
+  margin-left: 0.12em;
 `;
+

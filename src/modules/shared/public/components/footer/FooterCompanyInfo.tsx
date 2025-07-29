@@ -5,8 +5,9 @@ import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../../locales/footer";
 
-// Address tipini basit tanımla, types'tan import edebilirsin istersen:
+// Tip tanımı daha güçlü ve eksiksiz (varsa id/postalCode/street/city/country)
 type AddressObj = {
+  _id?: string;
   street?: string;
   postalCode?: string;
   city?: string;
@@ -18,25 +19,44 @@ export default function FooterCompanyInfo() {
   const company = useAppSelector((state) => state.company.company);
   const { t } = useI18nNamespace("footer", translations);
   if (!company) return null;
+
   const { email, phone, addresses } = company;
 
-  // Adres (ilk populate ise object, değilse string)
-  let addressLine = "";
-  if (
-    Array.isArray(addresses) &&
-    addresses.length > 0 &&
-    typeof addresses[0] === "object"
-  ) {
-    const addr = addresses[0] as AddressObj;
-    addressLine = [
-      addr.street,
-      addr.postalCode,
-      addr.city,
-      addr.country,
-    ]
-      .filter(Boolean)
-      .join(" ");
-  }
+  // Her adres için satır oluşturalım
+  const addressBlocks = Array.isArray(addresses)
+    ? addresses
+        .map((addrRaw, idx) => {
+          // Hem populate edilmiş obje hem string destekli
+          const addr = typeof addrRaw === "object" && addrRaw !== null
+            ? (addrRaw as AddressObj)
+            : null;
+          if (
+            addr &&
+            (addr.street || addr.postalCode || addr.city || addr.country)
+          ) {
+            const line = [addr.street, addr.postalCode, addr.city, addr.country]
+              .filter(Boolean)
+              .join(", ");
+            return (
+              <InfoRow key={addr._id || idx}>
+                <span>{t("address", "Address")}:</span>
+                <span>{line}</span>
+              </InfoRow>
+            );
+          }
+          // Eğer string (populate edilmemiş), düz göster
+          if (typeof addrRaw === "string" && addrRaw.trim().length > 0) {
+            return (
+              <InfoRow key={idx}>
+                <span>{t("address", "Address")}:</span>
+                <span>{addrRaw}</span>
+              </InfoRow>
+            );
+          }
+          return null;
+        })
+        .filter(Boolean)
+    : [];
 
   return (
     <FooterBlock>
@@ -54,19 +74,14 @@ export default function FooterCompanyInfo() {
             <a href={`tel:${phone}`}>{phone}</a>
           </InfoRow>
         )}
-        {addressLine && (
-          <InfoRow>
-            <span>{t("address", "Address")}:</span>
-            <span>{addressLine}</span>
-          </InfoRow>
-        )}
+        {/* Tüm adresler burada */}
+        {addressBlocks}
       </CompanyLine>
     </FooterBlock>
   );
 }
 
-// --- Styled Components (footer linkleriyle aynı başlık formatı) ---
-// (Aynen kalsın)
+// --- Styled Components (Aynen kalabilir) ---
 const FooterBlock = styled.div`
   margin: 0;
   max-width: 320px;

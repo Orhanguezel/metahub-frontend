@@ -212,6 +212,7 @@ const FooterWrapper = styled.footer`
   ${({ theme }) => theme.media.small} {
     padding: ${({ theme }) => theme.spacings.md} 0 ${({ theme }) => theme.spacings.sm};
     row-gap: ${({ theme }) => theme.spacings.sm};
+
   }
 `;
 
@@ -300,4 +301,7 @@ const Divider = styled.span`
   color: ${({ theme }) => theme.colors.text};
   opacity: 0.6;
   user-select: none;
+  @media (max-width: 600px) {
+    font-size: 0.97rem;
+  }
 `;

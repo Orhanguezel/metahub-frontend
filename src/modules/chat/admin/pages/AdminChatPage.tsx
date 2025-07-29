@@ -107,26 +107,86 @@ export default function AdminChatPage() {
   );
 }
 
-// --- Styles ---
 const Container = styled.div`
-  padding: 2rem;
+  padding: ${({ theme }) => theme.spacings.xxl} 0 ${({ theme }) => theme.spacings.xxl} 0;
+  max-width: ${({ theme }) => theme.layout.containerWidth};
+  margin: 0 auto;
+  min-height: 100vh;
+  background: ${({ theme }) => theme.colors.background};
+
+  ${({ theme }) => theme.media.medium} {
+    padding: ${({ theme }) => theme.spacings.lg} 0 ${({ theme }) => theme.spacings.lg} 0;
+  }
+  ${({ theme }) => theme.media.small} {
+    padding: ${({ theme }) => theme.spacings.md} 0 ${({ theme }) => theme.spacings.md} 0;
+  }
 `;
 
 const Layout = styled.div`
   display: flex;
-  gap: 2rem;
+  gap: ${({ theme }) => theme.spacings.xl};
+  min-height: 75vh;
+
+  ${({ theme }) => theme.media.medium} {
+    gap: ${({ theme }) => theme.spacings.lg};
+  }
+  ${({ theme }) => theme.media.small} {
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacings.md};
+    min-height: 0;
+  }
 `;
 
-const Sidebar = styled.div`
-  width: 300px;
+const Sidebar = styled.aside`
+  width: 320px;
+  min-width: 0;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  padding: ${({ theme }) => theme.spacings.lg};
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: ${({ theme }) => theme.spacings.lg};
+
+  ${({ theme }) => theme.media.medium} {
+    width: 260px;
+    padding: ${({ theme }) => theme.spacings.md};
+    border-radius: ${({ theme }) => theme.radii.md};
+    gap: ${({ theme }) => theme.spacings.md};
+  }
+  ${({ theme }) => theme.media.small} {
+    width: 100%;
+    padding: ${({ theme }) => theme.spacings.sm};
+    border-radius: ${({ theme }) => theme.radii.sm};
+    gap: ${({ theme }) => theme.spacings.sm};
+    box-shadow: none;
+    background: transparent;
+  }
 `;
 
-const Main = styled.div`
+const Main = styled.main`
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-end;
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  min-width: 0;
+  min-height: 540px;
+
+  ${({ theme }) => theme.media.medium} {
+    border-radius: ${({ theme }) => theme.radii.md};
+    min-height: 380px;
+  }
+  ${({ theme }) => theme.media.small} {
+    min-height: 0;
+    border-radius: ${({ theme }) => theme.radii.sm};
+    box-shadow: none;
+    background: ${({ theme }) => theme.colors.backgroundAlt};
+    margin-top: ${({ theme }) => theme.spacings.sm};
+    padding-bottom: ${({ theme }) => theme.spacings.md};
+  }
 `;
+
+

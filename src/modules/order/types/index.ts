@@ -1,4 +1,5 @@
 import type { SupportedLocale } from "@/types/common";
+import type { User } from "@/modules/users/types/user";
 import type { IBikes } from "@/modules/bikes/types";
 import type { IEnsotekprod } from "@/modules/ensotekprod/types";
 import type { ISparepart } from "@/modules/sparepart/types";
@@ -30,7 +31,7 @@ export interface IShippingAddress {
 // --- Sipariş modeli ---
 export interface IOrder {
   _id?: string;
-  user: string;
+  user: string | User; 
   addressId?: string;
   items: IOrderItem[];
   tenant: string;

@@ -16,13 +16,11 @@ import {
 import type { SupportedLocale } from "@/types/common";
 
 export default function AdminDashboardPage() {
-  const { i18n, t } = useI18nNamespace("dashboard", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const { t } = useI18nNamespace("dashboard", translations);
   const [tab, setTab] = useState<
     "modules" | "stats" | "users" | "revenue" | "feedbacks" | "analytics"
   >("modules");
 
-  // --- SENİN MEVCUT TAB KODUN VE COMPONENTLERİN ---
   const stats = useAppSelector((state) => state.dashboard.stats);
 
   const tabs = [
@@ -92,9 +90,9 @@ export default function AdminDashboardPage() {
 
 // --- Module grid sadece selector ile state çeker ---
 function ModulesGrid() {
-  const { i18n, t } = useI18nNamespace("dashboard", translations);
+  const { i18n } = useI18nNamespace("dashboard", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-  const modules = useAppSelector((state) => state.moduleSetting); // moduleSetting slice!
+  const modules = useAppSelector((state) => state.moduleSetting);
 
   const dashboardModules = Array.isArray(modules)
     ? modules
@@ -130,17 +128,30 @@ function ModulesGrid() {
 const Main = styled.div`
   width: 100%;
   padding: ${({ theme }) => theme.spacings.xl};
+  min-height: 76vh;
+  @media (max-width: 900px) {
+    padding: ${({ theme }) => theme.spacings.md};
+  }
+  @media (max-width: 600px) {
+    padding: ${({ theme }) => theme.spacings.sm};
+  }
 `;
 
 const TabBar = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacings.md};
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacings.sm};
   margin-bottom: ${({ theme }) => theme.spacings.xl};
+  @media (max-width: 600px) {
+    gap: ${({ theme }) => theme.spacings.xs};
+    margin-bottom: ${({ theme }) => theme.spacings.md};
+    justify-content: center;
+  }
 `;
 
 const TabBtn = styled.button<{ $active: boolean }>`
   padding: ${({ theme }) => `${theme.spacings.sm} ${theme.spacings.lg}`};
-  font-size: ${({ theme }) => theme.fontSizes.medium};
+  font-size: ${({ theme }) => theme.fontSizes.base};
   border-radius: ${({ theme }) => theme.radii.pill};
   border: none;
   cursor: pointer;
@@ -151,12 +162,26 @@ const TabBtn = styled.button<{ $active: boolean }>`
   font-weight: ${({ $active }) => ($active ? 700 : 400)};
   box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.sm : "none")};
   transition: ${({ theme }) => theme.transition.fast};
+
+  @media (max-width: 600px) {
+    padding: ${({ theme }) => `${theme.spacings.xs} ${theme.spacings.sm}`};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+  }
 `;
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(238px, 1fr));
   gap: ${({ theme }) => theme.spacings.xl};
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: ${({ theme }) => theme.spacings.md};
+  }
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    gap: ${({ theme }) => theme.spacings.sm};
+  }
 `;
 
 const Card = styled.div`
@@ -168,21 +193,36 @@ const Card = styled.div`
   flex-direction: column;
   align-items: center;
   cursor: pointer;
+  min-height: 110px;
   transition: ${({ theme }) => theme.transition.fast};
   &:hover,
   &:focus {
     box-shadow: ${({ theme }) => theme.shadows.lg};
+    background: ${({ theme }) => theme.colors.backgroundAlt};
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+  }
+
+  @media (max-width: 900px) {
+    padding: ${({ theme }) => `${theme.spacings.lg} ${theme.spacings.sm}`};
+    min-height: 90px;
+  }
+  @media (max-width: 600px) {
+    padding: ${({ theme }) => `${theme.spacings.md} ${theme.spacings.xs}`};
+    min-height: 70px;
   }
 `;
 
 const Label = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.large};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   margin-bottom: ${({ theme }) => theme.spacings.sm};
+  text-align: center;
 `;
 
 const Description = styled.div`
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   text-align: center;
+  word-break: break-word;
 `;
+

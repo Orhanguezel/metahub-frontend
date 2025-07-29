@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { useAppDispatch } from "@/store/hooks";
 import { updateOrderStatusAdmin } from "@/modules/order/slice/ordersSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/order";
+import { translations } from "@/modules/order";
 import type { IOrder, OrderStatus } from "@/modules/order/types";
 
 // Statusler union'dan
@@ -24,15 +24,11 @@ type OrderStatusDropdownProps = {
 const OrderStatusDropdown: React.FC<OrderStatusDropdownProps> = ({ order }) => {
   const dispatch = useAppDispatch();
   const { t } = useI18nNamespace("order", translations);
- 
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value as OrderStatus;
-    if (newStatus !== order.status) {
-      // Sadece _id gönder
-      if (order._id) {
-        dispatch(updateOrderStatusAdmin({ id: order._id, status: newStatus }));
-      }
+    if (newStatus !== order.status && order._id) {
+      dispatch(updateOrderStatusAdmin({ id: order._id, status: newStatus }));
     }
   };
 
@@ -44,7 +40,7 @@ const OrderStatusDropdown: React.FC<OrderStatusDropdownProps> = ({ order }) => {
     >
       {ORDER_STATUSES.map((stat) => (
         <option value={stat} key={stat}>
-          {t(stat, stat)}
+          {t(`status.${stat}`, stat)}
         </option>
       ))}
     </StatusSelect>
@@ -53,45 +49,47 @@ const OrderStatusDropdown: React.FC<OrderStatusDropdownProps> = ({ order }) => {
 
 export default OrderStatusDropdown;
 
-// Styled component aynı
-
+// Styled component - responsive & theme uyumlu
 const StatusSelect = styled.select`
-  min-width: 128px;
-  padding: 0.38em 1.3em 0.38em 1em;
+  min-width: 118px;
+  max-width: 170px;
+  padding: 0.34em 1.2em 0.34em 0.7em;
   border-radius: 16px;
-  border: 1.5px solid ${({ theme }) => theme.colors.grey || "#c0c0c0"};
-  background: ${({ theme }) => theme.colors.backgroundSecondary || "#fafafc"};
+  border: 1.5px solid ${({ theme }) => theme.colors.border || "#c0c0c0"};
+  background: ${({ theme }) => theme.colors.inputBackground || "#fafafc"};
   color: ${({ theme }) => theme.colors.text || "#222"};
   font-weight: 600;
-  font-size: 1.07em;
-  transition: border 0.17s, box-shadow 0.17s;
+  font-size: 1em;
+  transition: border 0.16s, box-shadow 0.18s;
   cursor: pointer;
   outline: none;
-  box-shadow: 0 1.5px 8px #0001;
+  box-shadow: 0 1px 6px #0001;
 
   &:focus,
   &:hover {
-    border-color: ${({ theme }) => theme.colors.primary || "#3aaed9"};
-    box-shadow: 0 2px 11px #00a0ff15;
+    border-color: ${({ theme }) => theme.colors.primary || "#2875c2"};
+    box-shadow: 0 2px 13px #00a0ff18;
   }
 
   &:disabled {
-    background: #f2f2f2;
-    color: #aaa;
+    background: ${({ theme }) => theme.colors.disabledBg || "#f2f2f2"};
+    color: ${({ theme }) => theme.colors.disabled || "#aaa"};
     cursor: not-allowed;
     border-color: #eee;
   }
 
   option {
     background: #fff;
-    color: #191919;
+    color: #181819;
     font-weight: 500;
     font-size: 1em;
   }
 
   @media (max-width: 650px) {
-    min-width: 90px;
+    min-width: 78px;
+    max-width: 120px;
     font-size: 0.96em;
-    padding: 0.28em 0.7em 0.28em 0.7em;
+    padding: 0.21em 0.4em 0.21em 0.5em;
+    border-radius: 10px;
   }
 `;

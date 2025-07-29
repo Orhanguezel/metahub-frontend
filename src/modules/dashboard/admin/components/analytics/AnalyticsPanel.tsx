@@ -147,8 +147,7 @@ export default function AnalyticsPanel() {
     setSelectedModule("");
     setSelectedEventType("");
   };
-
-  return (
+ return (
     <PanelWrapper>
       <Header>
         <Title>
@@ -167,7 +166,6 @@ export default function AnalyticsPanel() {
         </BtnGroup>
       </Header>
 
-      {/* --- Modül ve Event Tipi Filtreleri --- */}
       <Row>
         <label htmlFor="moduleSelect">{t("selectModule", "Modül Seç")}</label>
         <select
@@ -272,21 +270,39 @@ export default function AnalyticsPanel() {
   );
 }
 
-// --- Styled Components ---
+// --- THEMED & RESPONSIVE STYLED COMPONENTS ---
 const PanelWrapper = styled.div`
   padding: ${({ theme }) => theme.spacings.xxl};
+  @media (max-width: 1000px) {
+    padding: ${({ theme }) => theme.spacings.lg};
+  }
+  @media (max-width: 700px) {
+    padding: ${({ theme }) => theme.spacings.sm};
+  }
 `;
+
 const Header = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: ${({ theme }) => theme.spacings.xl};
+  gap: ${({ theme }) => theme.spacings.md};
+
+  @media (max-width: 800px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: ${({ theme }) => theme.spacings.sm};
+    margin-bottom: ${({ theme }) => theme.spacings.lg};
+  }
 `;
+
 const BtnGroup = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacings.sm};
   align-items: center;
+  flex-wrap: wrap;
 `;
+
 const ExportBtn = styled.button`
   display: flex;
   align-items: center;
@@ -295,8 +311,7 @@ const ExportBtn = styled.button`
   color: ${({ theme }) => theme.colors.whiteColor};
   border: none;
   border-radius: ${({ theme }) => theme.radii.sm};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   cursor: pointer;
   transition: background ${({ theme }) => theme.transition.fast};
@@ -304,14 +319,18 @@ const ExportBtn = styled.button`
   &:hover {
     background: ${({ theme }) => theme.colors.primaryHover};
   }
+
+  @media (max-width: 700px) {
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    padding: ${({ theme }) => theme.spacings.xs} ${({ theme }) => theme.spacings.sm};
+  }
 `;
+
 const ResetBtn = styled.button`
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
   font-size: ${({ theme }) => theme.fontSizes.small};
   border-radius: ${({ theme }) => theme.radii.md};
-  border: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.textPrimary};
   cursor: pointer;
@@ -320,43 +339,75 @@ const ResetBtn = styled.button`
     background: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.colors.buttonText};
   }
+  @media (max-width: 700px) {
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    padding: ${({ theme }) => theme.spacings.xs} ${({ theme }) => theme.spacings.sm};
+  }
 `;
+
 const Row = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacings.md};
   margin-bottom: ${({ theme }) => theme.spacings.md};
+  flex-wrap: wrap;
 
   label {
     font-size: ${({ theme }) => theme.fontSizes.sm};
     color: ${({ theme }) => theme.colors.textSecondary};
+    min-width: 80px;
   }
 
   select {
     padding: ${({ theme }) => theme.spacings.sm};
     border-radius: ${({ theme }) => theme.radii.sm};
-    border: ${({ theme }) => theme.borders.thin}
-      ${({ theme }) => theme.colors.border};
+    border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
     font-size: ${({ theme }) => theme.fontSizes.sm};
     background: ${({ theme }) => theme.inputs.background};
     color: ${({ theme }) => theme.inputs.text};
+    min-width: 120px;
+  }
+
+  @media (max-width: 700px) {
+    gap: ${({ theme }) => theme.spacings.xs};
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: ${({ theme }) => theme.spacings.sm};
+    label, select { min-width: 0; width: 100%; }
   }
 `;
+
 const Title = styled.h2`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
   color: ${({ theme }) => theme.colors.title};
+  @media (max-width: 700px) {
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+  }
 `;
 const Section = styled.section`
   margin-bottom: ${({ theme }) => theme.spacings.xxl};
+  @media (max-width: 700px) {
+    margin-bottom: ${({ theme }) => theme.spacings.lg};
+  }
 `;
 const SectionTitle = styled.h3`
   font-size: ${({ theme }) => theme.fontSizes.large};
   margin-bottom: ${({ theme }) => theme.spacings.md};
   color: ${({ theme }) => theme.colors.textPrimary};
+  @media (max-width: 700px) {
+    font-size: ${({ theme }) => theme.fontSizes.base};
+    margin-bottom: ${({ theme }) => theme.spacings.sm};
+  }
 `;
 const Error = styled.div`
   color: ${({ theme }) => theme.colors.danger};
   margin-top: ${({ theme }) => theme.spacings.md};
+  font-size: 1.1em;
+  text-align: center;
+  @media (max-width: 700px) {
+    font-size: 1em;
+    margin-top: ${({ theme }) => theme.spacings.sm};
+  }
 `;
 const NoData = styled.div`
   padding: ${({ theme }) => theme.spacings.md};
@@ -364,4 +415,9 @@ const NoData = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.md};
   text-align: center;
+  font-size: 1em;
+  @media (max-width: 700px) {
+    font-size: 0.98em;
+    padding: ${({ theme }) => theme.spacings.sm};
+  }
 `;

@@ -117,38 +117,117 @@ export default function SectionEditModal({
   );
 }
 
-
 const ModalBackdrop = styled.div`
-  position: fixed; z-index: 1111; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.32); display: flex; align-items: center; justify-content: center;
+  position: fixed;
+  z-index: ${({ theme }) => theme.zIndex.modal};
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: ${({ theme }) => theme.colors.overlayBackground};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(1.2px);
 `;
+
 const Modal = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.lg};
-  min-width: 420px;
-  max-width: 96vw;
+  min-width: 330px;
+  max-width: 98vw;
+  width: 420px;
   box-shadow: ${({ theme }) => theme.shadows.lg};
-  padding: 2rem;
+  padding: ${({ theme }) => theme.spacings.xl};
   position: relative;
-`;
-const LangTabs = styled.div`
-  display: flex; gap: 0.5rem; margin-bottom: 0.8rem;
-  button {
-    padding: 0.3rem 0.7rem;
-    border-radius: 6px;
-    background: #faf7f9;
-    border: none;
-    font-size: 0.97em;
-    &.active { background: ${({ theme }) => theme.colors.primary}; color: #fff; }
-    cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacings.lg};
+  font-family: ${({ theme }) => theme.fonts.main};
+
+  ${({ theme }) => theme.media.small} {
+    width: 98vw;
+    min-width: 0;
+    padding: ${({ theme }) => theme.spacings.md};
   }
 `;
+
+const LangTabs = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
+  button {
+    padding: 0.3rem 0.85rem;
+    border-radius: ${({ theme }) => theme.radii.sm};
+    background: ${({ theme }) => theme.colors.inputBackgroundLight};
+    border: 1.5px solid ${({ theme }) => theme.colors.inputBorder};
+    color: ${({ theme }) => theme.colors.text};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
+    transition: background 0.18s, color 0.18s, border 0.18s;
+    cursor: pointer;
+    &.active {
+      background: ${({ theme }) => theme.colors.primary};
+      color: ${({ theme }) => theme.colors.buttonText};
+      border-color: ${({ theme }) => theme.colors.primary};
+      font-weight: ${({ theme }) => theme.fontWeights.bold};
+    }
+    &:hover {
+      border-color: ${({ theme }) => theme.colors.primary};
+    }
+  }
+`;
+
 const Field = styled.div`
-  display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem;
-  label { font-size: 0.98em; font-weight: 500; }
-  input[type="checkbox"] { width: 18px; height: 18px; }
-  input, textarea { border-radius: 7px; border: 1px solid #eee; padding: 0.5rem; }
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+
+  label {
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
+    color: ${({ theme }) => theme.colors.text};
+    margin-bottom: 2px;
+  }
+
+  input[type="checkbox"] {
+    width: 18px; height: 18px;
+    accent-color: ${({ theme }) => theme.colors.primary};
+    margin-top: 5px;
+  }
+
+  input:not([type="checkbox"]), textarea {
+    border-radius: ${({ theme }) => theme.radii.sm};
+    border: 1.5px solid ${({ theme }) => theme.colors.inputBorder};
+    padding: ${({ theme }) => theme.spacings.sm};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    background: ${({ theme }) => theme.colors.inputBackground};
+    color: ${({ theme }) => theme.colors.text};
+    font-family: ${({ theme }) => theme.fonts.body};
+    transition: border 0.18s;
+    &:focus {
+      border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+      outline: 1.5px solid ${({ theme }) => theme.colors.inputOutline};
+    }
+  }
+  textarea {
+    min-height: 60px;
+    resize: vertical;
+  }
 `;
+
 const Footer = styled.div`
-  display: flex; gap: 1rem; justify-content: flex-end;
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.sm};
+  justify-content: flex-end;
+  margin-top: ${({ theme }) => theme.spacings.sm};
+
+  button {
+    min-width: 100px;
+  }
+
+  ${({ theme }) => theme.media.small} {
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacings.xs};
+    button { width: 100%; }
+  }
 `;
+

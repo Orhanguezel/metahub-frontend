@@ -87,8 +87,7 @@ const OrderTable: React.FC<OrderTableProps> = ({
 
 export default OrderTable;
 
-// --- Styles ---
-
+// --- Styled Components ---
 const TableWrapper = styled.div`
   width: 100%;
   overflow-x: auto;
@@ -113,11 +112,13 @@ const StyledTable = styled.table`
     padding: 1.05rem 0.65rem;
     text-align: left;
     border-bottom: 1px solid ${({ theme }) => theme.colors.border || "#e0e3e6"};
+    font-size: 1.04em;
+    white-space: nowrap;
   }
+
   th {
     background: ${({ theme }) => theme.colors.backgroundSecondary || "#f8fafc"};
     font-weight: 600;
-    font-size: 1.04em;
     color: ${({ theme }) => theme.colors.textSecondary || "#444"};
     border-top: none;
   }
@@ -125,19 +126,52 @@ const StyledTable = styled.table`
     border-bottom: none;
   }
 
-  @media (max-width: 600px) {
-    th,
-    td {
-      padding: 0.65rem 0.4rem;
-      font-size: 0.99em;
+  /* ----- MOBILE RESPONSIVE STYLE ----- */
+  @media (max-width: 650px) {
+    min-width: unset;
+    border-radius: 8px;
+    th {
+      display: none;
     }
-    min-width: 520px;
+    tbody,
+    tr,
+    td {
+      display: block;
+      width: 100%;
+    }
+    tr {
+      margin-bottom: 1.3rem;
+      box-shadow: 0 2px 14px rgba(20, 28, 58, 0.06);
+      background: ${({ theme }) => theme.colors.background || "#f7f8fa"};
+      border-radius: 12px;
+      padding: 0.3em 0.5em 1em 0.5em;
+    }
+    td {
+      border: none;
+      position: relative;
+      padding: 0.6em 0.8em 0.45em 2em;
+      font-size: 0.97em;
+      &:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0.7em;
+        top: 0.63em;
+        font-weight: 600;
+        color: ${({ theme }) => theme.colors.textMuted || "#aaa"};
+        font-size: 0.91em;
+        letter-spacing: 0.01em;
+      }
+    }
   }
 `;
 
 const OrderIdTd = styled.td`
   font-family: "JetBrains Mono", "Fira Mono", monospace;
   letter-spacing: 1.3px;
+  background: transparent;
+  @media (max-width: 650px) {
+    padding-top: 1.1em;
+  }
 `;
 
 const OrderId = styled.span`
@@ -174,7 +208,6 @@ const ActionBtn = styled.button`
   cursor: pointer;
   transition: background 0.14s;
   font-weight: 500;
-
   &:hover,
   &:focus {
     background: ${({ theme }) => theme.colors.primaryHover || "#253962"};

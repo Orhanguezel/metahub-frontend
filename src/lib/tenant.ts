@@ -1,3 +1,5 @@
+// src/lib/tenant.ts
+
 const DOMAIN_TENANT_MAP: Record<string, string> = {
   "koenigsmassage.com": "anastasia",
   "www.koenigsmassage.com": "anastasia",

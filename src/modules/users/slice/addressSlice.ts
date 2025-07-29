@@ -1,3 +1,4 @@
+// src/modules/users/slice/addressSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { Address } from "@/modules/users/types/address";
@@ -18,41 +19,96 @@ const initialState: AddressState = {
   successMessage: null,
 };
 
-// 📥 Fetch all addresses
+// 1️⃣ DİNAMİK - Kullanıcı/Şirket veya generic fetch (dinamik owner)
 export const fetchAddresses = createAsyncThunk(
   "address/fetchAddresses",
-  async (_, { rejectWithValue }) =>
-    await apiCall("get", "/address", null, rejectWithValue)
+  async (params: { companyId?: string } = {}, { rejectWithValue }) => {
+    let url = "/address";
+    if (params.companyId) url = `/address/company/${params.companyId}`;
+    // Eğer user ise ya da parametre yoksa, "/address" veya "/address/user"
+    return await apiCall("get", url, null, rejectWithValue);
+  }
 );
 
-// ➕ Create new address
+// 2️⃣ Kullanıcının kendi adresleri (her zaman login user)
+export const fetchUserAddresses = createAsyncThunk(
+  "address/fetchUserAddresses",
+  async (_, { rejectWithValue }) =>
+    await apiCall("get", "/address/user", null, rejectWithValue)
+);
+
+// 3️⃣ Şirketin adresleri
+export const fetchCompanyAddresses = createAsyncThunk(
+  "address/fetchCompanyAddresses",
+  async (companyId: string, { rejectWithValue }) =>
+    await apiCall("get", `/address/company/${companyId}`, null, rejectWithValue)
+);
+
+// 4️⃣ Tekli adres ekle (user veya company, backend'de owner tespit ediyor)
 export const createAddress = createAsyncThunk(
   "address/createAddress",
   async (data: Omit<Address, "_id" | "createdAt" | "updatedAt">, { rejectWithValue }) =>
     await apiCall("post", "/address", data, rejectWithValue)
 );
 
-// ✏️ Update address
+// 5️⃣ Tekli adres güncelle
 export const updateAddress = createAsyncThunk(
   "address/updateAddress",
-  async ({ id, data }: { id: string; data: Omit<Address, "_id" | "createdAt" | "updatedAt"> }, { rejectWithValue }) =>
+  async (
+    { id, data }: { id: string; data: Omit<Address, "_id" | "createdAt" | "updatedAt"> },
+    { rejectWithValue }
+  ) =>
     await apiCall("put", `/address/${id}`, data, rejectWithValue)
 );
 
-// 🗑 Delete address
+// 6️⃣ Tekli adres sil
 export const deleteAddress = createAsyncThunk(
   "address/deleteAddress",
   async (id: string, { rejectWithValue }) =>
     await apiCall("delete", `/address/${id}`, null, rejectWithValue)
 );
 
-// 🔍 Get single address by ID (optional)
+// 7️⃣ Adresleri topluca güncelle (user veya company için dinamik)
+export const updateAllAddresses = createAsyncThunk(
+  "address/updateAllAddresses",
+  async (
+    params: { addresses: Address[]; companyId?: string },
+    { rejectWithValue }
+  ) => {
+    let url = "/address/all/replace";
+    const payload = { addresses: params.addresses };
+    if (params.companyId) {
+      url = `/address/company/${params.companyId}/all/replace`;
+    }
+    return await apiCall("put", url, payload, rejectWithValue);
+  }
+);
+
+// 8️⃣ Kullanıcının adreslerini topluca güncelle
+export const updateAllUserAddresses = createAsyncThunk(
+  "address/updateAllUserAddresses",
+  async (addresses: Address[], { rejectWithValue }) =>
+    await apiCall("put", "/address/user/all/replace", { addresses }, rejectWithValue)
+);
+
+// 9️⃣ Şirket adreslerini topluca güncelle
+export const updateAllCompanyAddresses = createAsyncThunk(
+  "address/updateAllCompanyAddresses",
+  async (
+    { companyId, addresses }: { companyId: string; addresses: Address[] },
+    { rejectWithValue }
+  ) =>
+    await apiCall("put", `/address/company/${companyId}/all/replace`, { addresses }, rejectWithValue)
+);
+
+// 10️⃣ Tekli adres getir
 export const fetchAddressById = createAsyncThunk(
   "address/fetchAddressById",
   async (id: string, { rejectWithValue }) =>
     await apiCall("get", `/address/${id}`, null, rejectWithValue)
 );
 
+// --- SLICE ---
 const addressSlice = createSlice({
   name: "address",
   initialState,
@@ -70,17 +126,14 @@ const addressSlice = createSlice({
       state.loading = true;
       state.error = null;
     };
-
-    // TYPE-SAFE error yakalama:
-    const failed = (state: AddressState, action: PayloadAction<unknown>) => {
+    const failed = (state: AddressState, action: PayloadAction<any>) => {
       state.loading = false;
-      const payload = action.payload as { message?: string } | undefined;
-      state.error = payload?.message || "An error occurred";
+      state.error = action.payload?.message || "An error occurred";
       state.successMessage = null;
     };
 
+    // --- FETCH ---
     builder
-      // Fetch all
       .addCase(fetchAddresses.pending, loading)
       .addCase(fetchAddresses.fulfilled, (state, action) => {
         state.loading = false;
@@ -89,18 +142,38 @@ const addressSlice = createSlice({
       })
       .addCase(fetchAddresses.rejected, failed);
 
-    // Create
+    builder
+      .addCase(fetchUserAddresses.pending, loading)
+      .addCase(fetchUserAddresses.fulfilled, (state, action) => {
+        state.loading = false;
+        state.addresses = action.payload.data;
+        state.error = null;
+      })
+      .addCase(fetchUserAddresses.rejected, failed);
+
+    builder
+      .addCase(fetchCompanyAddresses.pending, loading)
+      .addCase(fetchCompanyAddresses.fulfilled, (state, action) => {
+        state.loading = false;
+        state.addresses = action.payload.data;
+        state.error = null;
+      })
+      .addCase(fetchCompanyAddresses.rejected, failed);
+
+    // --- CREATE ---
     builder
       .addCase(createAddress.pending, loading)
       .addCase(createAddress.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = action.payload.message;
         state.error = null;
-        state.addresses.push(action.payload.data);
+        if (action.payload.data) {
+          state.addresses.push(action.payload.data);
+        }
       })
       .addCase(createAddress.rejected, failed);
 
-    // Update
+    // --- UPDATE ---
     builder
       .addCase(updateAddress.pending, loading)
       .addCase(updateAddress.fulfilled, (state, action) => {
@@ -114,7 +187,7 @@ const addressSlice = createSlice({
       })
       .addCase(updateAddress.rejected, failed);
 
-    // Delete
+    // --- DELETE ---
     builder
       .addCase(deleteAddress.pending, loading)
       .addCase(deleteAddress.fulfilled, (state, action) => {
@@ -126,7 +199,38 @@ const addressSlice = createSlice({
       })
       .addCase(deleteAddress.rejected, failed);
 
-    // Get by ID
+    // --- BULK UPDATE ---
+    builder
+      .addCase(updateAllAddresses.pending, loading)
+      .addCase(updateAllAddresses.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = action.payload.message;
+        state.error = null;
+        state.addresses = action.payload.data;
+      })
+      .addCase(updateAllAddresses.rejected, failed);
+
+    builder
+      .addCase(updateAllUserAddresses.pending, loading)
+      .addCase(updateAllUserAddresses.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = action.payload.message;
+        state.error = null;
+        state.addresses = action.payload.data;
+      })
+      .addCase(updateAllUserAddresses.rejected, failed);
+
+    builder
+      .addCase(updateAllCompanyAddresses.pending, loading)
+      .addCase(updateAllCompanyAddresses.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = action.payload.message;
+        state.error = null;
+        state.addresses = action.payload.data;
+      })
+      .addCase(updateAllCompanyAddresses.rejected, failed);
+
+    // --- GET BY ID ---
     builder
       .addCase(fetchAddressById.pending, loading)
       .addCase(fetchAddressById.fulfilled, (state, action) => {

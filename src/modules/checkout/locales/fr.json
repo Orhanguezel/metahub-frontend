@@ -1,80 +1,23 @@
 {
-  "page": {
-    "allBike": "Tous les vélos",
-    "noBike": "Aucun vélo trouvé.",
-    "price": "Prix",
-    "stock": "Stock",
-    "brand": "Marque",
-    "readMore": "Voir les détails →",
-    "other": "Autres produits",
-    "untitled": "Sans titre",
-    "noSummary": "Pas de description.",
-    "bike": {
-      "title": "Dernier vélo",
-      "readMore": "Voir les détails",
-      "all": "Tous les vélos"
-    }
-  },
-  "admin": {
-    "tabs": {
-      "bike": "Vélos",
-      "create": "Nouveau vélo",
-      "categories": "Catégories"
-    },
-    "bike": {
-      "create": "Ajouter un nouveau vélo",
-      "edit": "Modifier le vélo",
-      "name": "Nom du vélo",
-      "description": "Description",
-      "brand": "Marque",
-      "price": "Prix",
-      "stock": "Stock",
-      "tags": "Tags",
-      "image": "Image",
-      "category": "Catégorie",
-      "select_category": "Sélectionner une catégorie",
-      "publish_status": "Publié ?",
-      "no_images": "Aucune image",
-      "publish": "Publier",
-      "unpublish": "Dépublier",
-      "empty": "Aucun vélo disponible."
-    },
-    "categories": {
-      "title": "Catégories de vélos",
-      "add": "Nouvelle catégorie",
-      "empty": "Aucune catégorie trouvée."
-    },
-    "language": {
-      "en": "Anglais",
-      "tr": "Turc",
-      "de": "Allemand"
-    },
-    "slug": "Slug",
-    "actions": "Actions",
-    "edit": "Modifier",
-    "delete": "Supprimer",
-    "cancel": "Annuler",
-    "update": "Mettre à jour",
-    "create": "Créer",
-    "yes": "Oui",
-    "no": "Non",
-    "loading": "Chargement...",
-    "confirm": {
-      "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
-      "delete_bike": "Êtes-vous sûr de vouloir supprimer ce vélo ?"
-    },
-    "optional_description": "Description (optionnel)",
-    "category_info": "À propos de cette catégorie ?",
-    "saving": "Enregistrement...",
-    "save": "Enregistrer",
-    "update2": "Mettre à jour",
-    "editCategory": "Modifier la catégorie",
-    "newCategory": "Nouvelle catégorie"
-  },
-  "seo": {
-    "title": "Titre SEO",
-    "description": "Description SEO"
-  },
-  "none": "Aucun",
-  "delete_confirm": "Êtes-vous sûr de vouloir supprimer ?"
+  "title": "Validation de la commande",
+  "loading": "Chargement...",
+  "error": "Erreur",
+  "error_product_not_found": "Produit non trouvé!",
+  "shipping_address": "Adresse de livraison",
+  "fullName": "Nom complet",
+  "addressType": "Type d'adresse",
+  "street": "Rue",
+  "city": "Ville",
+  "zipCode": "Code postal",
+  "country": "Pays",
+  "phone": "Téléphone",
+  "email": "E-mail",
+  "order_summary": "Résumé de la commande",
+  "total": "Total",
+  "payment_method": "Méthode de paiement",
+  "payment_credit_card": "Carte de crédit",
+  "payment_paypal": "PayPal",
+  "payment_cash_on_delivery": "Paiement à la livraison",
+  "complete_order": "Valider la commande",
+  "no_shipping_address": "Veuillez d'abord ajouter une adresse de livraison. Redirection en cours..."
 }

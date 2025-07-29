@@ -41,8 +41,8 @@ export default function AdminCompanyPage() {
 
   // --- Form başlangıç değerleri (memoized, yeni modele göre) ---
   const initialValues: ICompany = useMemo(() => ({
-    companyName: fillLabel(company?.companyName),                 // Çoklu dil!
-    companyDesc: fillLabel(company?.companyDesc),                 // Çoklu dil!
+    companyName: fillLabel(company?.companyName),
+    companyDesc: fillLabel(company?.companyDesc),
     email: company?.email ?? "",
     phone: company?.phone ?? "",
     taxNumber: company?.taxNumber ?? "",
@@ -78,7 +78,7 @@ export default function AdminCompanyPage() {
   ) => {
     const payload: any = {
       ...values,
-      images: newImages,                  // Sadece yeni eklenenler
+      images: newImages,
       removedImages: removedImages ?? [],
     };
     if (company && company._id) {
@@ -88,30 +88,77 @@ export default function AdminCompanyPage() {
     }
   };
 
-  // --- Render ---
   return (
     <Container>
-      <Title>{t("title", "Company Information")}</Title>
-      <CompanyInfoCard company={company} />
-      <CompanyForm
-        initialValues={initialValues}
-        onSubmit={handleSubmit}
-        loading={loading}
-      />
+      <InnerWrapper>
+        <Title>{t("title", "Company Information")}</Title>
+        <CardGrid>
+          <CompanyInfoCard company={company} />
+          <CompanyForm
+            initialValues={initialValues}
+            onSubmit={handleSubmit}
+            loading={loading}
+          />
+        </CardGrid>
+      </InnerWrapper>
     </Container>
   );
 }
 
+// --- Styled Components ---
+
 const Container = styled.div`
-  padding: ${({ theme }) => theme.spacings.lg};
   background: ${({ theme }) => theme.colors.sectionBackground};
   min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`;
+
+const InnerWrapper = styled.div`
+  width: 100%;
+  max-width: ${({ theme }) => theme.layout.containerWidth};
+  padding: ${({ theme }) => theme.spacings.xl};
+  margin: 0 auto;
+
+  ${({ theme }) => theme.media.small} {
+    padding: ${({ theme }) => theme.spacings.sm};
+  }
 `;
 
 const Title = styled.h2`
-  margin-bottom: ${({ theme }) => theme.spacings.lg};
-  font-size: ${({ theme }) => theme.fontSizes.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
+  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   text-align: center;
+  letter-spacing: 0.02em;
+
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+    margin-bottom: ${({ theme }) => theme.spacings.lg};
+  }
 `;
+
+const CardGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ theme }) => theme.spacings.xl};
+  align-items: flex-start;
+
+  ${({ theme }) => theme.media.small} {
+    grid-template-columns: 1fr;
+    gap: ${({ theme }) => theme.spacings.md};
+  }
+
+  & > * {
+    background: ${({ theme }) => theme.colors.cardBackground};
+    box-shadow: ${({ theme }) => theme.cards.shadow};
+    border-radius: ${({ theme }) => theme.radii.lg};
+    padding: ${({ theme }) => theme.spacings.lg};
+    ${({ theme }) => theme.media.small} {
+      padding: ${({ theme }) => theme.spacings.sm};
+    }
+  }
+`;
+

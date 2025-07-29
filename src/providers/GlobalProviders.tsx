@@ -5,9 +5,7 @@ import { useAppSelector } from "@/store/hooks";
 import ReduxProvider from "@/providers/ReduxProvider";
 import TenantProvider from "@/providers/TenantProvider";
 import I18nProvider from "@/providers/I18nProvider";
-import ThemeProviderWrapper from "@/providers/ThemeProviderWrapper";
 import ToastProvider from "@/providers/ToastProvider"; // Sadece render amaçlı
-import GlobalStyle from "@/styles/GlobalStyle";
 import i18n from "@/i18n";
 import InitUserLoader from "@/providers/InitUserLoader";
 import { Loading, ErrorMessage } from "@/shared";
@@ -34,11 +32,9 @@ function PostTenantProviders({ children }: { children: React.ReactNode }) {
   return (
     <>
       <InitI18n />
-      <ThemeProviderWrapper>
         <InitUserLoader />
         
           {/* İçerik provider'ları buraya */}
-          <GlobalStyle />
           {loading ? (
             <Loading />
           ) : error ? (
@@ -48,7 +44,6 @@ function PostTenantProviders({ children }: { children: React.ReactNode }) {
           )}
         {/* ToastProvider sadece dışta bağımsız olarak çağrılır */}
         <ToastProvider />
-      </ThemeProviderWrapper>
     </>
   );
 }

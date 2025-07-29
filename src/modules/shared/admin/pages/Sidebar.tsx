@@ -17,21 +17,18 @@ type SidebarProps = {
   onClose: () => void;
 };
 
+const SIDEBAR_WIDTH = 240;
+
 const isActive = (currentPath: string, linkPath: string) => {
   if (linkPath === "/") return currentPath === "/";
   return currentPath.startsWith(linkPath);
 };
 
-// Utility: Güvenli extraction (type-safe)
 function getNavbarLogo(settings: any[], lang: SupportedLocale) {
   const setting = settings.find((s) => s.key === "navbar_logo_text");
   if (!setting?.value || typeof setting.value !== "object") {
-    return {
-      title: "E-Market",
-      slogan: "",
-    };
+    return { title: "E-Market", slogan: "" };
   }
-  // Type-safe extraction
   const title =
     setting.value.title?.label?.[lang] ||
     setting.value.title?.label?.en ||
@@ -49,41 +46,23 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { i18n, t } = useI18nNamespace("sidebar", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { sidebarModules, isLoading } = useSidebarModules();
-
-  // Her zaman settingsAdmin!
   const settings = useAppSelector((state) => state.settings.settingsAdmin);
-
-  // Güvenli çek
   const { title, slogan } = getNavbarLogo(settings, lang);
-
   const router = useRouter();
 
-  const handleLogout = async () => {
-    try {
-      await dispatch(logoutUser()).unwrap();
-      dispatch(resetAuthState());
-      dispatch(resetProfile());
-      onClose();
-      router.replace("/login");
-    } catch (err: any) {
-      alert(t("logoutError"));
-      console.error("Logout error:", err);
-    }
-  };
-
+  // ESC ile kapama (mobilde)
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        onClose();
-      }
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) onClose();
     };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [onClose]);
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
+  }, [isOpen, onClose]);
 
+  // Masaüstünde overlay kapalı, mobilde var
   return (
     <>
-      <SidebarWrapper className={isOpen ? "open" : ""}>
+      <SidebarWrapper $isOpen={isOpen}>
         <LogoSection>
           <LogoHomeLink href="/" onClick={onClose}>
             <LogoIcon>
@@ -95,7 +74,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </LogoTextWrapper>
           </LogoHomeLink>
           <CloseButton onClick={onClose}>
-            <MdClose size={20} />
+            <MdClose size={22} />
           </CloseButton>
         </LogoSection>
         <Nav>
@@ -131,7 +110,17 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           )}
         </Nav>
         <LogoutSection>
-          <LogoutButton type="button" onClick={handleLogout}>
+          <LogoutButton type="button" onClick={async () => {
+            try {
+              await dispatch(logoutUser()).unwrap();
+              dispatch(resetAuthState());
+              dispatch(resetProfile());
+              onClose();
+              router.replace("/login");
+            } catch (err: any) {
+              alert(t("logoutError",err?.message || "Logout failed"));
+            }
+          }}>
             <IconWrapper>
               <MdLogout size={18} />
             </IconWrapper>
@@ -139,54 +128,64 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </LogoutButton>
         </LogoutSection>
       </SidebarWrapper>
-      {isOpen && <Overlay onClick={onClose} />}
+      {/* Overlay sadece mobilde ve açıkken */}
+      <SidebarOverlay $isOpen={isOpen} onClick={onClose} />
     </>
   );
 }
 
 // --- Styled Components ---
 
-const SidebarWrapper = styled.aside`
-  width: 240px;
-  position: fixed;
-  top: 0;
-  left: 0;
+const SidebarWrapper = styled.aside<{ $isOpen: boolean }>`
+  width: ${SIDEBAR_WIDTH}px;
+  min-width: ${SIDEBAR_WIDTH}px;
+  max-width: ${SIDEBAR_WIDTH}px;
   height: 100vh;
   display: flex;
   flex-direction: column;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-right: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
-  transition: ${({ theme }) => theme.transition.normal};
-  z-index: ${({ theme }) => theme.zIndex.dropdown};
-  @media (max-width: 768px) {
-    transform: translateX(-100%);
-    &.open {
-      transform: translateX(0);
-    }
+  border-right: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1301;
+  box-shadow: 0 0 26px #0012;
+  transition: transform 0.27s cubic-bezier(.86,.01,.35,1.06);
+  @media (max-width: 900px) {
+    transform: ${({ $isOpen }) =>
+      $isOpen ? "translateX(0)" : "translateX(-106%)"};
+    min-width: 0;
+    box-shadow: ${({ $isOpen }) => ($isOpen ? "0 0 30px #0017" : "none")};
+  }
+  @media (min-width: 900px) {
+    transform: translateX(0);
+    position: relative;
+    box-shadow: none;
   }
 `;
 
-const Overlay = styled.div`
+const SidebarOverlay = styled.div<{ $isOpen: boolean }>`
   display: none;
-  @media (max-width: 768px) {
-    display: block;
+  @media (max-width: 900px) {
+    display: ${({ $isOpen }) => ($isOpen ? "block" : "none")};
     position: fixed;
     inset: 0;
-    background: ${({ theme }) => theme.colors.overlayBackground};
-    z-index: ${({ theme }) => theme.zIndex.overlay};
+    background: rgba(30,38,61,0.18);
+    z-index: 1200;
+    transition: background 0.19s;
+    cursor: pointer;
   }
 `;
-
 const CloseButton = styled.button`
   display: none;
   margin-left: auto;
-  background: transparent;
+  background: none;
   border: none;
   color: ${({ theme }) => theme.colors.text};
   cursor: pointer;
-  @media (max-width: 768px) {
-    display: block;
+  font-size: 2.1rem;
+  @media (min-width: 900px) {
+    display: none;
   }
 `;
 
@@ -194,8 +193,7 @@ const LogoSection = styled.div`
   display: flex;
   align-items: center;
   padding: ${({ theme }) => theme.spacings.md};
-  border-bottom: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
+  border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
 `;
 
 const LogoHomeLink = styled(Link)`
@@ -258,8 +256,7 @@ const MenuLink = styled(Link)<{ $active?: boolean }>`
   align-items: center;
   gap: ${({ theme }) => theme.spacings.sm};
   font-size: ${({ theme }) => theme.fontSizes.md};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
   margin: ${({ theme }) => theme.spacings.xs} 0;
   text-decoration: none;
   color: ${({ $active, theme }) =>
@@ -289,8 +286,7 @@ const IconWrapper = styled.div<{ $active?: boolean }>`
 
 const LogoutSection = styled.div`
   padding: ${({ theme }) => theme.spacings.md};
-  border-top: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
+  border-top: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
 `;
 
 const LogoutButton = styled.button`
@@ -298,8 +294,7 @@ const LogoutButton = styled.button`
   align-items: center;
   gap: ${({ theme }) => theme.spacings.sm};
   font-size: ${({ theme }) => theme.fontSizes.md};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
   width: 100%;
   background: none;
   border: none;
@@ -325,11 +320,7 @@ const LoadingText = styled.div`
     animation: spin 1s linear infinite;
   }
   @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 `;

@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useActiveTenant } from "@/hooks/useActiveTenant";
 
-// Public endpoint thunks
 import { fetchSectionMetas } from "@/modules/section/slices/sectionMetaSlice";
 import { fetchSectionSettingsByTenant } from "@/modules/section/slices/sectionSettingSlice";
 import { fetchSettings } from "@/modules/settings/slice/settingsSlice";
@@ -34,7 +33,7 @@ export const usePublicLayoutInit = () => {
   const dispatch = useAppDispatch();
   const { tenant, loading: tenantLoading } = useActiveTenant();
 
-  // Sadece array/selectors için ayrı alınması daha okunaklı
+  // Tüm slice'ları çek
   const sectionMeta = useAppSelector((s) => s.sectionMeta);
   const sectionSetting = useAppSelector((s) => s.sectionSetting);
   const settingsSlice = useAppSelector((s) => s.settings);
@@ -59,158 +58,91 @@ export const usePublicLayoutInit = () => {
   const teamSlice = useAppSelector((s) => s.team);
   const faqSlice = useAppSelector((s) => s.faq);
 
-  const didInit = useRef<string | undefined>(undefined);
+const didInit = useRef<{ [key: string]: boolean }>({});
 
-  useEffect(() => {
-    if (tenantLoading || !tenant) return; // Tenant yüklenmeden hiçbir fetch atılmaz
-    if (didInit.current === tenant._id) return; // Objeyle kontrol (slug da olabilir)
-    didInit.current = tenant._id;
+useEffect(() => {
+  if (tenantLoading || !tenant) return;
 
-    // Public fetchler
-    if (
-      (!Array.isArray(sectionMeta.metas) || sectionMeta.metas.length === 0) &&
-      !sectionMeta.loading
-    )
+  // _id yoksa, slug kullan
+  const key = tenant._id || tenant.slug;
+
+  if (didInit.current[key]) return;
+  didInit.current[key] = true;
+
+    // --- Her slice için sadece boş ve idle ise fetch at ---
+    if ((!sectionMeta.metas || sectionMeta.metas.length === 0) && sectionMeta.status === "idle") {
       dispatch(fetchSectionMetas());
-
-    if (
-      (!Array.isArray(sectionSetting.settings) ||
-        sectionSetting.settings.length === 0) &&
-      !sectionSetting.loading
-    )
+    }
+    if ((!sectionSetting.settings || sectionSetting.settings.length === 0) && sectionSetting.status === "idle") {
       dispatch(fetchSectionSettingsByTenant());
-
-    if (!settingsSlice.fetchedSettings) dispatch(fetchSettings());
-    if (servicesSlice.services.length === 0 && servicesSlice.status === "idle")
-      dispatch(fetchServices());
-    if (aboutSlice.about.length === 0 && aboutSlice.status === "idle")
-      dispatch(fetchAbout());
-    if (newsSlice.news.length === 0 && newsSlice.status === "idle")
-      dispatch(fetchNews());
-    if (blogSlice.blog.length === 0 && blogSlice.status === "idle")
-      dispatch(fetchBlog());
-    if (articlesSlice.articles.length === 0 && articlesSlice.status === "idle")
-      dispatch(fetchArticles());
-    if (activitySlice.activity.length === 0 && activitySlice.status === "idle")
-      dispatch(fetchActivity());
-    if (
-      referencesSlice.references.length === 0 &&
-      referencesSlice.status === "idle"
-    )
-      dispatch(fetchReferences());
-    if (bikesSlice.bikes.length === 0 && bikesSlice.status === "idle")
-      dispatch(fetchBikes());
-    if (ensotekprodSlice.ensotekprod.length === 0 && ensotekprodSlice.status === "idle")
-      dispatch(fetchEnsotekprod());
-    if (sparepartSlice.sparepart.length === 0 && sparepartSlice.status === "idle")
-      dispatch(fetchSparepart());
-    if (!companySlice.company && companySlice.status === "idle")
+    }
+    if ((!settingsSlice.settings || settingsSlice.settings.length === 0) && settingsSlice.status === "idle") {
+      dispatch(fetchSettings());
+    }
+    if ((!companySlice.company) && companySlice.status === "idle") {
       dispatch(fetchCompanyInfo());
-    if (!couponSlice.coupons || couponSlice.coupons.length === 0)
+    }
+    if ((servicesSlice.services.length === 0) && servicesSlice.status === "idle") {
+      dispatch(fetchServices());
+    }
+    if ((aboutSlice.about.length === 0) && aboutSlice.status === "idle") {
+      dispatch(fetchAbout());
+    }
+    if ((newsSlice.news.length === 0) && newsSlice.status === "idle") {
+      dispatch(fetchNews());
+    }
+    if ((blogSlice.blog.length === 0) && blogSlice.status === "idle") {
+      dispatch(fetchBlog());
+    }
+    if ((articlesSlice.articles.length === 0) && articlesSlice.status === "idle") {
+      dispatch(fetchArticles());
+    }
+    if ((activitySlice.activity.length === 0) && activitySlice.status === "idle") {
+      dispatch(fetchActivity());
+    }
+    if ((referencesSlice.references.length === 0) && referencesSlice.status === "idle") {
+      dispatch(fetchReferences());
+    }
+    if ((bikesSlice.bikes.length === 0) && bikesSlice.status === "idle") {
+      dispatch(fetchBikes());
+    }
+    if ((ensotekprodSlice.ensotekprod.length === 0) && ensotekprodSlice.status === "idle") {
+      dispatch(fetchEnsotekprod());
+    }
+    if ((sparepartSlice.sparepart.length === 0) && sparepartSlice.status === "idle") {
+      dispatch(fetchSparepart());
+    }
+    if ((!couponSlice.coupons || couponSlice.coupons.length === 0) && couponSlice.status === "idle") {
       dispatch(fetchCoupons());
-
-    // --- SADECE LOGIN OLAN KULLANICIYA CHAT SESSION FETCH ---
+    }
+    if ((gallery.publicImages.length === 0) && gallery.status === "idle") {
+      dispatch(fetchPublishedGalleryItems());
+    }
+    if ((!galleryCategory.categories || galleryCategory.categories.length === 0) && galleryCategory.status === "idle") {
+      dispatch(fetchGalleryCategories());
+    }
+    if ((!librarySlice.library || librarySlice.library.length === 0) && librarySlice.status === "idle") {
+      dispatch(fetchLibrary());
+    }
+    if ((!libraryCategorySlice.categories || libraryCategorySlice.categories.length === 0) && libraryCategorySlice.status === "idle") {
+      dispatch(fetchLibraryCategories());
+    }
+    if ((!teamSlice.team || teamSlice.team.length === 0) && teamSlice.status === "idle") {
+      dispatch(fetchTeam());
+    }
+    if ((!faqSlice.faqs || faqSlice.faqs.length === 0) && faqSlice.status === "idle") {
+      dispatch(fetchFAQs());
+    }
+    // --- Chat sadece login olan için ---
     if (profile) {
       if (chat.sessions.length === 0) dispatch(fetchAllChatSessions());
       if (chat.activeSessions.length === 0) dispatch(fetchActiveChatSessions());
       if (chat.archivedSessions.length === 0) dispatch(fetchArchivedSessions());
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenant?._id, tenantLoading, tenant, dispatch, profile]); // Sadece tenant değişince veya ilk mount'ta çalışır
 
-    if (gallery.publicImages.length === 0 && gallery.status === "idle") {
-      dispatch(fetchPublishedGalleryItems());
-    }
-
-    if (
-      (!galleryCategory.categories ||
-        galleryCategory.categories.length === 0) &&
-      galleryCategory.status === "idle"
-    ) {
-      dispatch(fetchGalleryCategories());
-    }
-    // Library
-if (
-  (!librarySlice.library || librarySlice.library.length === 0) &&
-  !librarySlice.loading
-) {
-  dispatch(fetchLibrary());
-}
-
-// Library Category
-if (
-  (!libraryCategorySlice.categories || libraryCategorySlice.categories.length === 0) &&
-  !libraryCategorySlice.loading
-) {
-  dispatch(fetchLibraryCategories());
-}
-
-if (
-  (!teamSlice.team || teamSlice.team.length === 0) &&
-  !teamSlice.loading
-) {
-  dispatch(fetchTeam());
-}
-
-    if (
-      (!faqSlice.faqs || faqSlice.faqs.length === 0) &&
-      !faqSlice.loading
-    ) {
-      dispatch(fetchFAQs());
-    }
-
-  }, [
-    dispatch,
-    tenant,
-    tenantLoading,
-    profile,
-    // state'lerin tekil array veya nesne referansını ekle (tekrarlı render önlenir)
-    sectionMeta.metas,
-    sectionMeta.loading,
-    sectionSetting.settings,
-    sectionSetting.loading,
-    settingsSlice.fetchedSettings,
-    servicesSlice.services,
-    servicesSlice.status,
-    aboutSlice.about,
-    aboutSlice.status,
-    newsSlice.news,
-    newsSlice.status,
-    blogSlice.blog,
-    blogSlice.status,
-    articlesSlice.articles,
-    articlesSlice.status,
-    activitySlice.activity,
-    activitySlice.status,
-    referencesSlice.references,
-    referencesSlice.status,
-    bikesSlice.bikes,
-    bikesSlice.status,
-    ensotekprodSlice.ensotekprod,
-    ensotekprodSlice.status,
-    sparepartSlice.sparepart,
-    sparepartSlice.status,
-    companySlice.company,
-    companySlice.status,
-    couponSlice.coupons,
-    couponSlice.status,
-    chat.sessions.length,
-    chat.activeSessions.length,
-    chat.archivedSessions.length,
-    gallery.publicImages,
-    galleryCategory.categories,
-    gallery.publicImages.length,
-    gallery.status,
-    galleryCategory.categories.length,
-    galleryCategory.status,
-    librarySlice.library,
-    librarySlice.loading,
-    libraryCategorySlice.categories,
-    libraryCategorySlice.loading,
-    teamSlice.team,
-    teamSlice.loading,
-    faqSlice.faqs,
-    faqSlice.loading
-  ]);
-
+  // Return kısmı aynı kalabilir
   return {
     sectionMetas: sectionMeta.metas,
     sectionMetasStatus: sectionMeta.status,
@@ -272,14 +204,14 @@ if (
     sparepartStatus: sparepartSlice.status,
     sparepartError: sparepartSlice.error,
     library: librarySlice.library,
-  libraryStatus: librarySlice.status,
-  libraryError: librarySlice.error,
-  libraryCategories: libraryCategorySlice.categories,
-  libraryCategoriesError: libraryCategorySlice.error,
-  team: teamSlice.team,
-  teamStatus: teamSlice.status,
-  teamError: teamSlice.error,
-  faqs: faqSlice.faqs,
-  faqsLoading: faqSlice.loading
+    libraryStatus: librarySlice.status,
+    libraryError: librarySlice.error,
+    libraryCategories: libraryCategorySlice.categories,
+    libraryCategoriesError: libraryCategorySlice.error,
+    team: teamSlice.team,
+    teamStatus: teamSlice.status,
+    teamError: teamSlice.error,
+    faqs: faqSlice.faqs,
+    faqsLoading: faqSlice.loading,
   };
 };

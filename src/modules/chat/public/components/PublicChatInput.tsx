@@ -19,7 +19,6 @@ const PublicChatInput: React.FC<Props> = ({
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-focus ilk renderda (UX)
   useEffect(() => {
     textareaRef.current?.focus();
   }, []);
@@ -54,58 +53,85 @@ const PublicChatInput: React.FC<Props> = ({
         spellCheck={true}
         tabIndex={0}
       />
-      <Button type="button" onClick={handleSend} disabled={disabled || !value.trim()}>
+      <SendButton type="button" onClick={handleSend} disabled={disabled || !value.trim()}>
         {sendLabel}
-      </Button>
+      </SendButton>
     </Wrapper>
   );
 };
 
 export default PublicChatInput;
 
-// --- Styled ---
+// --- Styled Components ---
 const Wrapper = styled.div`
   display: flex;
-  gap: 1rem;
+  gap: ${({ theme }) => theme.spacings.sm};
   align-items: flex-end;
-  padding: 1rem;
-  border-top: 1px solid #ddd;
-  background: ${({ theme }) => theme.colors?.cardBackground || "#fafbfc"};
+  padding: ${({ theme }) => theme.spacings.md};
+  border-top: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-bottom-left-radius: ${({ theme }) => theme.radii.md};
+  border-bottom-right-radius: ${({ theme }) => theme.radii.md};
+
+  @media (max-width: 600px) {
+    padding: ${({ theme }) => theme.spacings.sm};
+    gap: ${({ theme }) => theme.spacings.xs};
+    border-radius: 0 0 ${({ theme }) => theme.radii.sm} ${({ theme }) => theme.radii.sm};
+  }
 `;
 
 const Textarea = styled.textarea`
   flex: 1;
-  padding: 0.6rem 0.8rem;
-  font-size: 1rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
+  background: ${({ theme }) => theme.colors.inputBackground};
+  color: ${({ theme }) => theme.colors.text};
+  min-height: 40px;
+  max-height: 90px;
   resize: none;
   font-family: inherit;
   outline: none;
-  background: ${({ theme }) => theme.colors?.inputBackground || "#fff"};
-  color: ${({ theme }) => theme.colors?.text || "#111"};
+  transition: border 0.17s;
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+    box-shadow: 0 0 0 1.5px ${({ theme }) => theme.colors.inputOutline};
+  }
+
   &:disabled {
-    background: #f2f2f2;
-    color: #bbb;
+    background: ${({ theme }) => theme.colors.disabled};
+    color: ${({ theme }) => theme.colors.textMuted};
+    opacity: 0.65;
   }
 `;
 
-const Button = styled.button`
-  background-color: ${({ theme }) => theme.colors?.primary || "#0070f3"};
-  color: #fff;
-  font-weight: 500;
+const SendButton = styled.button`
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   border: none;
-  padding: 0.6rem 1.1rem;
-  border-radius: 6px;
-  font-size: 1rem;
+  padding: 0.65rem 1.1rem;
+  border-radius: ${({ theme }) => theme.radii.sm};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   cursor: pointer;
-  transition: background 0.2s;
-  min-width: 88px;
+  transition: background ${({ theme }) => theme.transition.fast}, color ${({ theme }) => theme.transition.fast};
+  min-width: 90px;
+  box-shadow: ${({ theme }) => theme.shadows.xs};
+
   &:hover:not(:disabled) {
-    background-color: ${({ theme }) => theme.colors?.primaryHover || "#005bbb"};
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+    color: ${({ theme }) => theme.buttons.primary.textHover};
   }
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
+  }
+
+  @media (max-width: 600px) {
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    min-width: 66px;
+    padding: ${({ theme }) => theme.spacings.xs} ${({ theme }) => theme.spacings.sm};
   }
 `;

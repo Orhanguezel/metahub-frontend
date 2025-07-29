@@ -3,7 +3,7 @@
 rm -rf node_modules  .next
 bun install
 npx tsc --noEmit
-bun run build
+npm run build
 bun run dev
 
 

@@ -4,6 +4,7 @@ import type { LibraryCategory, TranslatedField } from "@/modules/library";
 
 interface CategoryState {
   categories: LibraryCategory[];
+  status: "idle" | "loading" | "succeeded" | "failed";
   loading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -11,6 +12,7 @@ interface CategoryState {
 
 const initialState: CategoryState = {
   categories: [],
+  status: "idle",
   loading: false,
   error: null,
   successMessage: null,
@@ -97,17 +99,21 @@ const libraryCategorySlice = createSlice({
     clearLibraryCategoryMessages: (state) => {
       state.error = null;
       state.successMessage = null;
+      state.status = "idle";
     },
   },
   extraReducers: (builder) => {
+    // Universal pattern: Hem status hem loading birlikte kontrol!
     const startLoading = (state: CategoryState) => {
       state.loading = true;
+      state.status = "loading";
       state.error = null;
     };
 
     const setError = (state: CategoryState, action: PayloadAction<any>) => {
       state.loading = false;
-      state.error = action.payload?.message;
+      state.status = "failed";
+      state.error = action.payload?.message || "Unknown error";
     };
 
     builder
@@ -115,6 +121,7 @@ const libraryCategorySlice = createSlice({
       .addCase(fetchLibraryCategories.pending, startLoading)
       .addCase(fetchLibraryCategories.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.categories = action.payload;
       })
       .addCase(fetchLibraryCategories.rejected, setError)
@@ -122,6 +129,7 @@ const libraryCategorySlice = createSlice({
       .addCase(createLibraryCategory.pending, startLoading)
       .addCase(createLibraryCategory.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.successMessage = action.payload?.message;
         if (action.payload?.data?._id) {
           state.categories.unshift(action.payload.data);
@@ -132,6 +140,7 @@ const libraryCategorySlice = createSlice({
       .addCase(updateLibraryCategory.pending, startLoading)
       .addCase(updateLibraryCategory.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.successMessage = action.payload?.message;
         const updated = action.payload?.data || action.payload;
         const index = state.categories.findIndex(
@@ -146,6 +155,7 @@ const libraryCategorySlice = createSlice({
       .addCase(deleteLibraryCategory.pending, startLoading)
       .addCase(deleteLibraryCategory.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.successMessage = action.payload?.message;
         state.categories = state.categories.filter(
           (cat) => cat._id !== action.payload.id

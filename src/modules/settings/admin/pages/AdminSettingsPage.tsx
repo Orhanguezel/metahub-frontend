@@ -105,16 +105,30 @@ export default function AdminSettingsPage() {
   );
 }
 
-// --- Styled Components ---
 const Wrapper = styled.div`
-  padding: ${({ theme }) => theme.spacings.lg};
+  padding: ${({ theme }) => theme.spacings.xl};
   max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacings.lg};
+  gap: ${({ theme }) => theme.spacings.xl};
+  background: ${({ theme }) => theme.colors.sectionBackground};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.md};
+
+  ${({ theme }) => theme.media.medium} {
+    padding: ${({ theme }) => theme.spacings.lg};
+    gap: ${({ theme }) => theme.spacings.lg};
+    border-radius: ${({ theme }) => theme.radii.md};
+  }
   ${({ theme }) => theme.media.small} {
+    padding: ${({ theme }) => theme.spacings.md};
+    gap: ${({ theme }) => theme.spacings.md};
+    border-radius: ${({ theme }) => theme.radii.sm};
+  }
+  ${({ theme }) => theme.media.xsmall} {
     padding: ${({ theme }) => theme.spacings.sm};
+    gap: ${({ theme }) => theme.spacings.sm};
   }
 `;
 
@@ -124,46 +138,80 @@ const TopBar = styled.div`
   align-items: center;
   flex-wrap: wrap;
   gap: ${({ theme }) => theme.spacings.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+
   ${({ theme }) => theme.media.small} {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: ${({ theme }) => theme.spacings.xs};
+    margin-bottom: ${({ theme }) => theme.spacings.sm};
   }
 `;
 
 const Title = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.text};
-  ${({ theme }) => theme.media.small} {
+  color: ${({ theme }) => theme.colors.title};
+  font-family: ${({ theme }) => theme.fonts.heading};
+  margin-bottom: 0;
+
+  ${({ theme }) => theme.media.medium} {
     font-size: ${({ theme }) => theme.fontSizes.xl};
+  }
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.lg};
   }
 `;
 
 const AddButton = styled.button`
-  padding: ${({ theme }) => `${theme.spacings.sm} ${theme.spacings.md}`};
+  padding: ${({ theme }) => `${theme.spacings.sm} ${theme.spacings.xl}`};
   background: ${({ theme }) => theme.buttons.primary.background};
   color: ${({ theme }) => theme.buttons.primary.text};
   border: none;
   border-radius: ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.fast};
-  &:hover {
+  box-shadow: ${({ theme }) => theme.shadows.button};
+  transition: background ${({ theme }) => theme.transition.fast}, box-shadow ${({ theme }) => theme.transition.normal};
+
+  &:hover,
+  &:focus {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+    box-shadow: ${({ theme }) => theme.shadows.lg};
+    outline: none;
   }
+  &:active {
+    opacity: ${({ theme }) => theme.opacity.hover};
+  }
+
   ${({ theme }) => theme.media.small} {
     width: 100%;
-    text-align: center;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    padding: ${({ theme }) => `${theme.spacings.sm} ${theme.spacings.md}`};
+    margin-top: ${({ theme }) => theme.spacings.xs};
   }
 `;
 
 const EmptyMessage = styled.p`
   text-align: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
+  color: ${({ theme }) => theme.colors.textMuted};
   font-size: ${({ theme }) => theme.fontSizes.md};
-  padding: ${({ theme }) => theme.spacings.lg};
-  ${({ theme }) => theme.media.small} {
+  background: ${({ theme }) => theme.colors.inputBackgroundLight};
+  padding: ${({ theme }) => theme.spacings.xl};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  margin: ${({ theme }) => theme.spacings.lg} auto;
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+
+  ${({ theme }) => theme.media.medium} {
     font-size: ${({ theme }) => theme.fontSizes.sm};
+    padding: ${({ theme }) => theme.spacings.md};
+    border-radius: ${({ theme }) => theme.radii.md};
+  }
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
+    padding: ${({ theme }) => theme.spacings.sm};
+    border-radius: ${({ theme }) => theme.radii.sm};
+    margin: ${({ theme }) => theme.spacings.sm} auto;
   }
 `;

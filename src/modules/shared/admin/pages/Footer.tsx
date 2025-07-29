@@ -18,44 +18,43 @@ function isValidSocialUrl(url?: string): boolean {
   return !!url && /^https?:\/\//i.test(url);
 }
 
+
 export default function Footer() {
   const { i18n, t } = useI18nNamespace("footer", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-
   const company = useAppSelector((state) => state.company.companyAdmin);
 
   if (!company) return null;
 
   const images: ICompanyImage[] = Array.isArray(company.images) ? company.images : [];
-
-  // Çoklu dil desteği için firma adı:
   const getCompanyName = () =>
     typeof company.companyName === "object"
       ? company.companyName[lang] || Object.values(company.companyName)[0]
       : company.companyName;
 
- type AddressObj = {
-  street?: string;
-  city?: string;
-  postalCode?: string;
-  country?: string;
-  [key: string]: any;
-};
+  type AddressObj = {
+    street?: string;
+    city?: string;
+    postalCode?: string;
+    country?: string;
+    [key: string]: any;
+  };
 
-let addressLine = "";
-if (
-  Array.isArray(company.addresses) &&
-  company.addresses.length > 0 &&
-  typeof company.addresses[0] === "object"
-) {
-  const addr = company.addresses[0] as AddressObj;
-  addressLine = [
-    addr.street,
-    addr.city,
-    addr.postalCode,
-    addr.country
-  ].filter(Boolean).join(", ");
-}
+  let addressLine = "";
+  if (
+    Array.isArray(company.addresses) &&
+    company.addresses.length > 0 &&
+    typeof company.addresses[0] === "object"
+  ) {
+    const addr = company.addresses[0] as AddressObj;
+    addressLine = [
+      addr.street,
+      addr.city,
+      addr.postalCode,
+      addr.country
+    ].filter(Boolean).join(", ");
+  }
+
   return (
     <FooterContainer>
       <FooterContent>
@@ -105,14 +104,14 @@ if (
   );
 }
 
-// --- Styled Components (DEĞİŞTİRME, AYNEN KALSIN) ---
+// --- Responsive Styled Components ---
 const FooterContainer = styled.footer`
-  background-color: ${({ theme }) => theme.colors.background};
+  background-color: ${({ theme }) => theme.colors.backgroundAlt};
   color: ${({ theme }) => theme.colors.text};
   padding: ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.md};
   text-align: center;
-  transition: background-color ${({ theme }) => theme.transition.normal},
-    color ${({ theme }) => theme.transition.normal};
+  transition: background-color ${({ theme }) => theme.transition.normal}, color ${({ theme }) => theme.transition.normal};
+  width: 100%;
 `;
 
 const FooterContent = styled.div`
@@ -121,43 +120,60 @@ const FooterContent = styled.div`
   align-items: center;
   max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
-  ${({ theme }) => theme.media.small} {
+  gap: 2rem;
+
+  @media (min-width: 600px) {
     flex-direction: row;
-    justify-content: space-between;
     align-items: flex-start;
+    justify-content: space-between;
+    gap: 0;
+    text-align: left;
   }
 `;
 
 const LogoSection = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacings.md};
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
-  ${({ theme }) => theme.media.small} {
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+  @media (min-width: 600px) {
     margin-bottom: 0;
+    justify-content: flex-start;
+    align-items: flex-start;
   }
 `;
 
 const Logo = styled.img`
-  width: 140px;
-  height: 140px;
+  width: 84px;
+  height: 84px;
   border-radius: ${({ theme }) => theme.radii.md};
   transition: transform ${({ theme }) => theme.transition.normal};
   object-fit: contain;
   background: ${({ theme }) => theme.colors.backgroundAlt};
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0);
+  box-shadow: 0 2px 8px rgba(0,0,0,0);
   border: 1px solid ${({ theme }) => theme.colors.border};
-  padding: 12px;
+  padding: 9px;
   &:hover {
-    transform: scale(1.08);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    transform: scale(1.06);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.10);
+  }
+  @media (min-width: 600px) {
+    width: 120px;
+    height: 120px;
+    padding: 14px;
   }
 `;
 
 const InfoSection = styled.div`
-  text-align: center;
-  ${({ theme }) => theme.media.small} {
-    text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2em;
+  @media (min-width: 600px) {
+    align-items: flex-start;
+    gap: 0.35em;
   }
 `;
 
@@ -166,6 +182,7 @@ const CompanyName = styled.h4`
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   color: ${({ theme }) => theme.colors.textPrimary};
+  word-break: break-word;
 `;
 
 const CompanyText = styled.p`
@@ -173,19 +190,18 @@ const CompanyText = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
   line-height: ${({ theme }) => theme.lineHeights.normal};
-`;
-
-const CopyRight = styled.div`
-  margin-top: ${({ theme }) => theme.spacings.md};
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  opacity: ${({ theme }) => theme.opacity.disabled};
+  word-break: break-word;
 `;
 
 const SocialLinks = styled.div`
   margin-top: ${({ theme }) => theme.spacings.sm};
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 13px;
+  justify-content: center;
+  @media (min-width: 600px) {
+    justify-content: flex-start;
+  }
   a {
     color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;
@@ -197,3 +213,13 @@ const SocialLinks = styled.div`
     }
   }
 `;
+
+const CopyRight = styled.div`
+  margin-top: ${({ theme }) => theme.spacings.md};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  opacity: ${({ theme }) => theme.opacity.disabled};
+  text-align: center;
+  word-break: break-word;
+`;
+

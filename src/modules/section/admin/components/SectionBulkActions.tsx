@@ -54,6 +54,19 @@ export default function SectionBulkActions({
 
 const Bar = styled.div`
   display: flex;
-  gap: 0.7rem;
-  margin-bottom: 1.1rem;
+  gap: ${({ theme }) => theme.spacings.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+  align-items: center;
+
+  ${({ theme }) => theme.media.small} {
+    flex-direction: column;
+    align-items: stretch;
+    gap: ${({ theme }) => theme.spacings.xs};
+
+    button {
+      width: 100%;
+      font-size: ${({ theme }) => theme.fontSizes.sm};
+    }
+  }
 `;
+
