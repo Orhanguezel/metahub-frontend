@@ -107,6 +107,19 @@ export const deleteUserAccount = createAsyncThunk(
   }
 );
 
+export const removeProfileImage = createAsyncThunk(
+  "account/removeProfileImage",
+  async (_, thunkAPI) => {
+    return await apiCall(
+      "delete",
+      "/users/account/me/profile-image",
+      null,
+      thunkAPI.rejectWithValue
+    );
+  }
+);
+
+
 // --- Slice ---
 const accountSlice = createSlice({
   name: "account",
@@ -214,7 +227,23 @@ const accountSlice = createSlice({
         state.profile = null;
         state.successMessage = "account.delete.success";
       })
-      .addCase(deleteUserAccount.rejected, failed);
+      .addCase(deleteUserAccount.rejected, failed)
+      .addCase(removeProfileImage.pending, loading)
+      .addCase(removeProfileImage.fulfilled, (state) => {
+        state.loading = false;
+        if (state.profile) {
+          state.profile.profileImage = null;
+        }
+        state.successMessage = "profile.imageRemoved";
+      })
+      .addCase(removeProfileImage.rejected, (state, action) => {
+        state.loading = false;
+        const payload = action.payload as any;
+        state.error =
+          typeof payload === "string"
+            ? payload
+            : payload?.message || "profile.imageRemoveError";
+      });
   },
 });
 

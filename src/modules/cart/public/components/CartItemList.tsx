@@ -4,14 +4,15 @@ import Link from "next/link";
 import type { ICartItem } from "@/modules/cart/types";
 import type { IBikes } from "@/modules/bikes/types";
 import type { IEnsotekprod } from "@/modules/ensotekprod/types";
+import type { ISparepart } from "@/modules/sparepart/types";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { getMultiLang } from "@/types/common";
 
-// Type guard: gerçek obje mi?
+// --- Type guard: gerçek obje mi? ---
 function isPopulatedProduct(
   product: unknown
-): product is IBikes | IEnsotekprod {
+): product is IBikes | IEnsotekprod | ISparepart {
   return (
     !!product &&
     typeof product === "object" &&
@@ -20,12 +21,23 @@ function isPopulatedProduct(
   );
 }
 
+// --- Ürün tipi -> label ve slug base ---
+const PRODUCT_TYPE_LABEL: Record<string, string> = {
+  bike: "Bisiklet",
+  ensotekprod: "Ensotek Ürün",
+  sparepart: "Yedek Parça",
+};
+const PRODUCT_TYPE_SLUG: Record<string, string> = {
+  bike: "/bikes/",
+  ensotekprod: "/ensotekprod/",
+  sparepart: "/sparepart/",
+};
+
 interface Props {
   items: ICartItem[];
 }
 
 export default function CartItemList({ items }: Props) {
-  // Kullanıcının aktif dilini al
   const { i18n } = useTranslation();
   const lang = i18n.language?.split("-")[0] as any; // ex: 'tr', 'en'
 
@@ -43,13 +55,14 @@ export default function CartItemList({ items }: Props) {
         let productImage = "";
 
         if (isPopulatedProduct(item.product)) {
-          // Çoklu dil label'ı için helper fonksiyonunu kullan!
           productName = getMultiLang((item.product as any).name, lang);
 
+          // 🔥 Slug ve route tamamen ürün tipine göre (future-proof!)
+          const slugBase = PRODUCT_TYPE_SLUG[productType] || "/";
           productSlug =
-            productType === "bike"
-              ? `/bikes/${(item.product as any).slug}`
-              : `/ensotekprod/${(item.product as any).slug}`;
+            (slugBase && (item.product as any).slug)
+              ? `${slugBase}${(item.product as any).slug}`
+              : "#";
           productImage = (item.product as any).images?.[0]?.url || "";
         }
 
@@ -74,7 +87,7 @@ export default function CartItemList({ items }: Props) {
                 {productName}
               </ProductName>
               <ProductType>
-                {productType === "bike" ? "Bisiklet" : "Ensotek Ürün"}
+                {PRODUCT_TYPE_LABEL[productType] || productType}
               </ProductType>
               <Qty>
                 <span>Miktar:</span> <b>{item.quantity}</b>
@@ -103,6 +116,7 @@ export default function CartItemList({ items }: Props) {
 }
 
 // --- Styles ---
+// (Aynen bırakabilirsin)
 const ListContainer = styled.div`
   flex: 2;
   min-width: 340px;

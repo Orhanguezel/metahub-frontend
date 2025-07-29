@@ -21,6 +21,7 @@ import {
   Message,
 } from "@/modules/users/styles/AccountStyles";
 
+
 export default function AccountForm() {
   const dispatch = useAppDispatch();
   const { profile, loading, error, successMessage } = useAppSelector(
@@ -45,9 +46,10 @@ export default function AccountForm() {
       {profile && (
         <>
           <Section>
-            <SectionTitle>{t("page.profileImage")}</SectionTitle>
-            <ProfileImageUploader imageUrl={profile?.profile} />
-          </Section>
+  <SectionTitle>{t("page.profileImage")}</SectionTitle>
+  <ProfileImageUploader imageUrl={profile?.profileImage ?? undefined} />
+</Section>
+
           <Section>
             <SectionTitle>{t("page.personalInfo")}</SectionTitle>
             <ProfileForm profile={profile} />

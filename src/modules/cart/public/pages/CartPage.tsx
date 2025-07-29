@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { fetchCart, clearCart } from "@/modules/cart/slice/cartSlice";
@@ -13,18 +13,38 @@ const CartPage = () => {
   const router = useRouter();
   const { cart, loading, error } = useAppSelector((state) => state.cart);
   const { profile } = useAppSelector((state) => state.account);
+  const { addresses, loading: addressLoading } = useAppSelector((state) => state.address);
   const { t } = useTranslation("cart");
 
-  // KOŞULSUZ, FONKSİYONUN EN BAŞINDA!
+  // Sepet yüklemesi
   useEffect(() => {
     if (profile && profile._id) {
-      console.log(">>> fetchCart tetiklendi!", profile._id);
       dispatch(fetchCart());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, profile?._id]);
 
-  // Return blokları hooklardan sonra!
+  // Kullanıcının en az bir shipping adresi var mı?
+  const hasShippingAddress = useMemo(
+    () => (addresses || []).some((addr) => addr.addressType === "shipping"),
+    [addresses]
+  );
+
+  // Checkout butonuna tıklandığında kontrol!
+  const handleCheckout = useCallback(() => {
+    if (!hasShippingAddress) {
+      alert(
+        t(
+          "no_shipping_address",
+          "Sipariş verebilmek için önce teslimat adresi eklemeniz gerekiyor. Şimdi adres sayfasına yönlendiriliyorsunuz."
+        )
+      );
+      router.push("/account");
+      return;
+    }
+    router.push("/checkout");
+  }, [hasShippingAddress, router, t]);
+
+  // --- Render kısmı ---
   if (error) {
     return (
       <PageContainer>
@@ -33,7 +53,6 @@ const CartPage = () => {
       </PageContainer>
     );
   }
-
   if (!profile) {
     return (
       <PageContainer>
@@ -43,11 +62,9 @@ const CartPage = () => {
       </PageContainer>
     );
   }
-
-  if (loading) {
+  if (loading || addressLoading) {
     return <PageContainer>{t("loading", "Loading...")}</PageContainer>;
   }
-
   if (!cart || cart.items.length === 0) {
     return <CartEmpty />;
   }
@@ -60,7 +77,7 @@ const CartPage = () => {
         <CartSummary
           cart={cart}
           onClearCart={() => dispatch(clearCart())}
-          onCheckout={() => router.push("/checkout")}
+          onCheckout={handleCheckout} // <--- Sadece burada kontrol!
         />
       </Content>
     </PageContainer>

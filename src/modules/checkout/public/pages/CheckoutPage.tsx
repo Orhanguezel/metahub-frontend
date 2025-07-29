@@ -13,7 +13,6 @@ import type { SupportedLocale } from "@/types/common";
 import type { Address } from "@/modules/users/types/address";
 import type { PaymentMethod } from "@/modules/order/types";
 
-// Payment methods: Çeviri anahtarları!
 const PAYMENT_METHODS = [
   { value: "credit_card", label: "checkout:payment_credit_card" },
   { value: "paypal", label: "checkout:payment_paypal" },
@@ -23,9 +22,9 @@ const PAYMENT_METHODS = [
 const CheckoutPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { cart, loading, error } = useAppSelector((state) => state.cart);
+  const { cart, loading: cartLoading, error } = useAppSelector((state) => state.cart);
   const { profile } = useAppSelector((state) => state.account);
-  const { addresses } = useAppSelector((state) => state.address);
+  const { addresses, loading: addressLoading } = useAppSelector((state) => state.address);
 
   const { t, i18n } = useI18nNamespace("checkout", checkoutTranslations);
   const { t: tAccount } = useI18nNamespace("account", accountTranslations);
@@ -33,44 +32,66 @@ const CheckoutPage: React.FC = () => {
 
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS[0].value);
   const [placingOrder, setPlacingOrder] = useState(false);
+  const [orderCompleted, setOrderCompleted] = useState(false);
 
   // Sadece "shipping" adresleri
   const shippingAddresses: Address[] = useMemo(
     () => (addresses || []).filter(a => a.addressType === "shipping"),
     [addresses]
   );
-
-  // Default teslimat adresi
   const defaultShippingAddress: Address | undefined = useMemo(
     () =>
-      shippingAddresses.find(a => a.isDefault) ||
-      shippingAddresses[0],
+      shippingAddresses.find(a => a.isDefault) || shippingAddresses[0],
     [shippingAddresses]
   );
 
-  // Router korumaları
+  // Kullanıcı yoksa login’e yönlendir
   useEffect(() => {
-    if (!profile) router.replace("/login?redirected=checkout");
-  }, [profile, router]);
+    if (!profile && !addressLoading) router.replace("/login?redirected=checkout");
+  }, [profile, addressLoading, router]);
 
+  // Sepet yoksa /cart’a yönlendir
   useEffect(() => {
-    if (!cart || !cart.items || cart.items.length === 0) router.replace("/cart");
-  }, [cart, router]);
-
-  useEffect(() => {
-    if (profile && (!shippingAddresses || shippingAddresses.length === 0)) {
-      setTimeout(() => {
-        alert(t("no_shipping_address", "Lütfen önce bir teslimat adresi ekleyin. Yönlendiriliyorsunuz..."));
-        router.replace("/account");
-      }, 300);
+    if ((!cart || !cart.items || cart.items.length === 0) && !cartLoading && !orderCompleted) {
+      router.replace("/cart");
     }
-  }, [profile, shippingAddresses, router, t]);
+  }, [cart, cartLoading, orderCompleted, router]);
 
-  if (!profile || !defaultShippingAddress || !cart) return null;
+  // Sipariş başarıyla tamamlandıysa anında success sayfasına yönlendir
+  useEffect(() => {
+    if (orderCompleted) router.replace("/order/success");
+  }, [orderCompleted, router]);
 
-  // Sipariş oluşturma
+  // Loading sırasında beklet
+  if (cartLoading || addressLoading || placingOrder)
+    return <PageContainer>{t("loading", "Yükleniyor...")}</PageContainer>;
+
+  // Data tam yüklenmeden render etme (adresler veya profil veya sepet yoksa)
+  if (!profile || !cart) return null;
+
+  if (error) {
+    return (
+      <PageContainer>
+        <Title>{t("error", "Hata")}</Title>
+        <div style={{ color: "#ED3030" }}>{error}</div>
+      </PageContainer>
+    );
+  }
+
+  // Sadece butonda adres kontrolü!
   const handleCompleteOrder = async () => {
     if (placingOrder) return;
+    if (!defaultShippingAddress) {
+      alert(
+        t(
+          "no_shipping_address",
+          "Sipariş verebilmek için önce teslimat adresi eklemeniz gerekiyor. Şimdi adres sayfasına yönlendiriliyorsunuz."
+        )
+      );
+      router.push("/account");
+      return;
+    }
+
     setPlacingOrder(true);
 
     const orderData = {
@@ -103,26 +124,14 @@ const CheckoutPage: React.FC = () => {
 
     try {
       await dispatch(createOrder(orderData)).unwrap();
+      setOrderCompleted(true);
       dispatch(clearCart());
-      router.replace("/order/success");
     } catch (err: any) {
       alert(t("error", "Sipariş oluşturulamadı!") + ` ${err.message || err}`);
     } finally {
       setPlacingOrder(false);
     }
   };
-
-  if (loading || placingOrder) {
-    return <PageContainer>{t("loading", "Yükleniyor...")}</PageContainer>;
-  }
-  if (error) {
-    return (
-      <PageContainer>
-        <Title>{t("error", "Hata")}</Title>
-        <div style={{ color: "#ED3030" }}>{error}</div>
-      </PageContainer>
-    );
-  }
 
   // --- Render ---
   return (
@@ -132,48 +141,56 @@ const CheckoutPage: React.FC = () => {
         {/* Adres Bölümü */}
         <FormSection>
           <SectionTitle>{t("shipping_address", "Teslimat Adresi")}</SectionTitle>
-          <InnerFormLayout>
-            <InputGroup>
-              <Label>{t("fullName", "Ad Soyad")}</Label>
-              <Input value={profile.name} disabled readOnly />
-            </InputGroup>
-            <InputGroup>
-              <Label>{tAccount("addressType", "Adres Tipi")}</Label>
-              <Input value={tAccount(`address.type.${defaultShippingAddress.addressType}`)} disabled readOnly />
-
-            </InputGroup>
-            <InputGroup>
-              <Label>{t("street", "Cadde / Sokak")}</Label>
-              <Input
-                value={
-                  defaultShippingAddress.street +
-                  (defaultShippingAddress.houseNumber ? ` ${defaultShippingAddress.houseNumber}` : "")
-                }
-                disabled
-                readOnly
-              />
-            </InputGroup>
-            <InputGroup>
-              <Label>{t("city", "Şehir")}</Label>
-              <Input value={defaultShippingAddress.city} disabled readOnly />
-            </InputGroup>
-            <InputGroup>
-              <Label>{t("zipCode", "Posta Kodu")}</Label>
-              <Input value={defaultShippingAddress.postalCode} disabled readOnly />
-            </InputGroup>
-            <InputGroup>
-              <Label>{t("country", "Ülke")}</Label>
-              <Input value={defaultShippingAddress.country} disabled readOnly />
-            </InputGroup>
-            <InputGroup>
-              <Label>{t("phone", "Telefon")}</Label>
-              <Input value={defaultShippingAddress.phone} disabled readOnly />
-            </InputGroup>
-            <InputGroup>
-              <Label>{t("email", "E-Posta")}</Label>
-              <Input value={profile.email} disabled readOnly />
-            </InputGroup>
-          </InnerFormLayout>
+          {defaultShippingAddress ? (
+            <InnerFormLayout>
+              <InputGroup>
+                <Label>{t("fullName", "Ad Soyad")}</Label>
+                <Input value={profile.name} disabled readOnly />
+              </InputGroup>
+              <InputGroup>
+                <Label>{tAccount("addressType", "Adres Tipi")}</Label>
+                <Input value={tAccount(`address.type.${defaultShippingAddress.addressType}`)} disabled readOnly />
+              </InputGroup>
+              <InputGroup>
+                <Label>{t("street", "Cadde / Sokak")}</Label>
+                <Input
+                  value={
+                    defaultShippingAddress.street +
+                    (defaultShippingAddress.houseNumber ? ` ${defaultShippingAddress.houseNumber}` : "")
+                  }
+                  disabled
+                  readOnly
+                />
+              </InputGroup>
+              <InputGroup>
+                <Label>{t("city", "Şehir")}</Label>
+                <Input value={defaultShippingAddress.city} disabled readOnly />
+              </InputGroup>
+              <InputGroup>
+                <Label>{t("zipCode", "Posta Kodu")}</Label>
+                <Input value={defaultShippingAddress.postalCode} disabled readOnly />
+              </InputGroup>
+              <InputGroup>
+                <Label>{t("country", "Ülke")}</Label>
+                <Input value={defaultShippingAddress.country} disabled readOnly />
+              </InputGroup>
+              <InputGroup>
+                <Label>{t("phone", "Telefon")}</Label>
+                <Input value={defaultShippingAddress.phone} disabled readOnly />
+              </InputGroup>
+              <InputGroup>
+                <Label>{t("email", "E-Posta")}</Label>
+                <Input value={profile.email} disabled readOnly />
+              </InputGroup>
+            </InnerFormLayout>
+          ) : (
+            <NoAddress>
+              {t(
+                "no_shipping_address",
+                "Hiç teslimat adresiniz yok. Lütfen adres ekleyin."
+              )}
+            </NoAddress>
+          )}
         </FormSection>
 
         {/* Sipariş Özeti ve Ödeme */}
@@ -236,6 +253,14 @@ const CheckoutPage: React.FC = () => {
 };
 
 export default CheckoutPage;
+
+// Styled (değişmiyor)
+const NoAddress = styled.div`
+  padding: 1.2em 0 0 0;
+  color: #e00;
+  font-weight: 600;
+`;
+
 
 // --- Styled Components ---
 const PageContainer = styled.div`

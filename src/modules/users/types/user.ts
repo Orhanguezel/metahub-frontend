@@ -2,12 +2,13 @@ import type { Address } from "./address";
 import type { SupportedLocale } from "@/types/common";
 
 // --- Profile Image tipin tek hali ---
-export interface ProfileImageObj {
-  url: string;
+export type ProfileImageObj = {
+  url?: string;
   thumbnail?: string;
   webp?: string;
   publicId?: string;
-}
+  [key: string]: any;
+};
 
 // --- User (DB) ---
 export interface User {
@@ -38,7 +39,7 @@ export interface Account {
   email: string;
   role?: "superadmin" | "admin" | "user" | "moderator" | "staff" | "customer"; // 🟢 ARTIK VAR
   isActive?: boolean;            // Eklenmesi önerilir (dashboard için vs.)
-  profileImage?: string | ProfileImageObj; // ⚡️ Tip güvenli!
+  profileImage?: string | ProfileImageObj | null;
   phone?: string;
   bio?: string;
   birthDate?: string;
