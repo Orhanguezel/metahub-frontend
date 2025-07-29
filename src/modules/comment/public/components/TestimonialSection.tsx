@@ -9,25 +9,9 @@ import { useRouter } from "next/navigation";
 import { SupportedLocale } from "@/types/common";
 import { createComment, fetchCommentsForContent } from "@/modules/comment/slice/commentSlice";
 import { AnimatePresence, motion } from "framer-motion";
-import { getImageSrc } from "@/shared/getImageSrc";
+import { resolveProfileImage } from "@/shared/resolveProfileImage";
 
 
-function resolveProfileImage(img: any): string {
-  if (!img) return "/defaults/profile-thumbnail.png";
-  if (typeof img === "object" && img !== null) {
-    if (img.thumbnail && typeof img.thumbnail === "string" && img.thumbnail.startsWith("http"))
-      return img.thumbnail;
-    if (img.url && typeof img.url === "string" && img.url.startsWith("http"))
-      return img.url;
-    return getImageSrc(img.thumbnail || img.url || "", "profile");
-  }
-  if (typeof img === "string") {
-    if (!img.trim()) return "/defaults/profile-thumbnail.png";
-    if (img.startsWith("http")) return img;
-    return getImageSrc(img, "profile");
-  }
-  return "/defaults/profile-thumbnail.png";
-}
 
 export default function TestimonialSection() {
   const { i18n, t } = useI18nNamespace("testimonial", translations3);
@@ -153,12 +137,12 @@ export default function TestimonialSection() {
           <Card key={item._id || idx}>
             <CardHeader>
               <Avatar
-                src={resolveProfileImage(item.profileImage)}
-                alt={getLangField(item.name) || "Anonim"}
-                loading="lazy"
-                width={62}
-                height={62}
-              />
+  src={resolveProfileImage(item.profileImage, "profile")}
+  alt={getLangField(item.name) || "Anonim"}
+  loading="lazy"
+  width={62}
+  height={62}
+/>
               <CardHeaderText>
                 <CardName>{getLangField(item.name) || t("anon", "Anonim")}</CardName>
                 <CardTitle>

@@ -9,7 +9,8 @@ import translations from "@/modules/shared/locales/navbar";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logoutUser, resetAuthState } from "@/modules/users/slice/authSlice";
 import { resetProfile } from "@/modules/users/slice/accountSlice";
-import { getImageSrc } from "@/shared/getImageSrc";
+import { resolveProfileImage } from "@/shared/resolveProfileImage";
+
 import type { User } from "@/modules/users/types/user";
 import { toast } from "react-toastify";
 import { FaSignInAlt, FaUserPlus } from "react-icons/fa";
@@ -29,29 +30,12 @@ export default function AvatarMenu({
   const dispatch = useAppDispatch();
   const { profile: user } = useAppSelector((state) => state.account);
 
-  // --- Profile image resolver (robust type guard)
-   const resolvedProfileImage = useMemo(() => {
-    const img = user?.profileImage;
+  const resolvedProfileImage = useMemo(
+  () => resolveProfileImage(user?.profileImage, "profile"),
+  [user?.profileImage]
+);
 
-    if (!img) return "/defaults/profile-thumbnail.png";
 
-    if (typeof img === "object" && img !== null) {
-      // ProfileImageObj
-      if (img.thumbnail && typeof img.thumbnail === "string" && img.thumbnail.startsWith("http"))
-        return img.thumbnail;
-      if (img.url && typeof img.url === "string" && img.url.startsWith("http"))
-        return img.url;
-      return getImageSrc(img.thumbnail || img.url || "", "profile");
-    }
-
-    if (typeof img === "string") {
-      if (!img.trim()) return "/defaults/profile-thumbnail.png";
-      if (img.startsWith("http")) return img;
-      return getImageSrc(img, "profile");
-    }
-
-    return "/defaults/profile-thumbnail.png";
-  }, [user?.profileImage]);
 
   // Dropdown dışı tıklama ile kapanır
   useEffect(() => {
