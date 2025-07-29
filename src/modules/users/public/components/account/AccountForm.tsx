@@ -46,7 +46,7 @@ export default function AccountForm() {
         <>
           <Section>
             <SectionTitle>{t("page.profileImage")}</SectionTitle>
-            <ProfileImageUploader imageUrl={profile?.profileImage} />
+            <ProfileImageUploader imageUrl={profile?.profile} />
           </Section>
           <Section>
             <SectionTitle>{t("page.personalInfo")}</SectionTitle>
