@@ -100,10 +100,13 @@ export default function AboutPage() {
                     ))}
                   </Tags>
                 )}
+                <ReadMore href={detailHref}>
+                  {t("page.readMore", "Detayları Gör →")}
+                </ReadMore>
               </CardContent>
             </AboutCard>
           );
-        })}
+        })} 
       </AboutGrid>
     </PageWrapper>
   );
@@ -234,4 +237,22 @@ const EmptyMsg = styled.div`
   text-align: center;
   font-size: 1.18em;
   margin: 2.4em 0 1.7em 0;
+`;
+
+const ReadMore = styled(Link)`
+  margin-top: auto;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  color: ${({ theme }) => theme.colors.primary};
+  text-decoration: none;
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: 0.17em 0.9em;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  box-shadow: ${({ theme }) => theme.shadows.xs};
+  transition: background 0.19s, color 0.16s;
+  &:hover, &:focus-visible {
+    background: ${({ theme }) => theme.colors.primary};
+    color: #fff;
+    text-decoration: none;
+  }
 `;

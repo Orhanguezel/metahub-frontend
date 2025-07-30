@@ -2,7 +2,7 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { ICatalogRequest } from "@/modules/catalog/types";
+import type { CatalogRequestPayload, ICatalogRequest } from "@/modules/catalog/types";
 
 interface CatalogState {
   messagesAdmin: ICatalogRequest[]; // Admin panel için: tüm katalog talepleri
@@ -22,11 +22,8 @@ const initialState: CatalogState = {
 
 // 1️⃣ Public: Yeni katalog talebi gönder (POST /catalog)
 export const sendCatalogRequest = createAsyncThunk<
-  ICatalogRequest,
-  Omit<
-    ICatalogRequest,
-    "_id" | "isRead" | "isArchived" | "createdAt" | "updatedAt" | "tenant" | "sentCatalog"
-  >
+  ICatalogRequest, // Dönüş tipi
+  CatalogRequestPayload // Payload tipi!
 >("catalog/sendCatalogRequest", async (payload, thunkAPI) => {
   try {
     const res = await apiCall("post", "/catalog", payload, thunkAPI.rejectWithValue);

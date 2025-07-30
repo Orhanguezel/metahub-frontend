@@ -22,3 +22,15 @@ export interface ICatalogRequest {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export interface CatalogRequestPayload {
+  name: string;
+  email: string;
+  company?: string;
+  phone?: string;
+  locale: SupportedLocale;
+  subject: string;
+  message?: string;
+  catalogFileUrl: string;
+  catalogFileName?: string;
+}

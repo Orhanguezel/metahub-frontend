@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { sendCatalogRequest, clearCatalogState } from "../../slice/catalogSlice";
 import { SUPPORTED_LOCALES } from "@/types/common";
+import { toast } from "react-toastify";
 
 export default function CatalogRequestModal({
   onClose,
@@ -16,10 +17,15 @@ export default function CatalogRequestModal({
 }) {
   const { t, i18n } = useI18nNamespace("catalogRequest", translations);
   const dispatch = useAppDispatch();
-  const { loading, error, successMessage } = useAppSelector((s) => s.catalog);
+  const { loading, successMessage } = useAppSelector((s) => s.catalog);
 
   // Locale'i i18n veya fallback'ten çek
-  const locale = (i18n.language?.slice(0, 2) as typeof SUPPORTED_LOCALES[number]) || "tr";
+  const locale =
+    (i18n.language?.slice(0, 2) as typeof SUPPORTED_LOCALES[number]) || "tr";
+
+    const KATALOG_URL = "https://res.cloudinary.com/dbozv7wqd/raw/upload/v1753910122/uploads/ensotek/library/ensotekcatalog-1753910118660-672914705";
+const KATALOG_FILE_NAME = "ensotek.catalog.pdf";
+
 
   const [form, setForm] = useState({
     name: "",
@@ -30,7 +36,9 @@ export default function CatalogRequestModal({
     message: "",
   });
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
   }
@@ -38,18 +46,33 @@ export default function CatalogRequestModal({
   // Form gönderimi
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // API'ye POST /catalog
     await dispatch(
-      sendCatalogRequest({
-        ...form,
-        locale,
-      })
-    ).unwrap()
+  sendCatalogRequest({
+    ...form,
+    locale,
+    catalogFileUrl: KATALOG_URL,
+    catalogFileName: KATALOG_FILE_NAME,
+  })
+)
+      .unwrap()
       .then(() => {
         setTimeout(() => {
           dispatch(clearCatalogState());
           onClose();
         }, 1700);
+      })
+      .catch((err: any) => {
+        // Hata mesajlarını yönet
+        // API slice hata mesajı err.message veya err.errors olabilir
+        if (err?.errors?.length) {
+          err.errors.forEach((errorObj: any) => {
+            toast.error(errorObj.msg || errorObj.message || "Bir hata oluştu!");
+          });
+        } else if (err?.message) {
+          toast.error(err.message);
+        } else {
+          toast.error(t("error.unknown", "Bilinmeyen bir hata oluştu!"));
+        }
       });
   }
 
@@ -128,9 +151,10 @@ export default function CatalogRequestModal({
               onChange={handleChange}
               disabled={loading}
             />
-            {error && <ErrorMsg>{t("error", error)}</ErrorMsg>}
             <SubmitBtn type="submit" disabled={loading}>
-              {loading ? t("form.sending", "Gönderiliyor...") : t("form.send", "Gönder")}
+              {loading
+                ? t("form.sending", "Gönderiliyor...")
+                : t("form.send", "Gönder")}
             </SubmitBtn>
           </form>
         )}
@@ -139,16 +163,8 @@ export default function CatalogRequestModal({
   );
 }
 
-// Styled Components aynı kalabilir, sadece ek olarak:
-const ErrorMsg = styled.div`
-  color: #c00;
-  font-size: 1em;
-  margin-bottom: 1em;
-  text-align: center;
-`;
-
-
 // Styled Components...
+
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
@@ -172,14 +188,17 @@ const Modal = styled.div`
 `;
 const CloseButton = styled.button`
   position: absolute;
-  top: 12px; right: 18px;
+  top: 12px;
+  right: 18px;
   font-size: 2em;
   background: none;
   border: none;
   color: #444;
   opacity: 0.6;
   cursor: pointer;
-  &:hover { opacity: 1; }
+  &:hover {
+    opacity: 1;
+  }
 `;
 const ModalTitle = styled.div`
   font-size: 1.36em;
@@ -188,27 +207,49 @@ const ModalTitle = styled.div`
   color: #1e2633;
 `;
 const Input = styled.input`
-  width: 100%; margin-bottom: 1em;
-  padding: 0.9em 1em; font-size: 1em; border-radius: 7px;
+  width: 100%;
+  margin-bottom: 1em;
+  padding: 0.9em 1em;
+  font-size: 1em;
+  border-radius: 7px;
   border: 1.4px solid #e0e0e0;
-  &:focus { border-color: #1976d2; outline: none; }
+  &:focus {
+    border-color: #1976d2;
+    outline: none;
+  }
 `;
 const Textarea = styled.textarea`
-  width: 100%; min-height: 60px;
-  margin-bottom: 1em; padding: 0.9em 1em;
-  border-radius: 7px; border: 1.4px solid #e0e0e0; font-size: 1em;
-  &:focus { border-color: #1976d2; outline: none; }
+  width: 100%;
+  min-height: 60px;
+  margin-bottom: 1em;
+  padding: 0.9em 1em;
+  border-radius: 7px;
+  border: 1.4px solid #e0e0e0;
+  font-size: 1em;
+  &:focus {
+    border-color: #1976d2;
+    outline: none;
+  }
 `;
 const SubmitBtn = styled.button`
-  width: 100%; background: #1976d2;
-  color: #fff; border: none; border-radius: 7px;
-  padding: 0.87em 1em; font-size: 1.08em;
-  font-weight: 600; cursor: pointer;
+  width: 100%;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 0.87em 1em;
+  font-size: 1.08em;
+  font-weight: 600;
+  cursor: pointer;
   box-shadow: 0 2px 14px #1976d244;
   transition: background 0.18s;
-  &:hover { background: #1258a2; }
+  &:hover {
+    background: #1258a2;
+  }
 `;
 const SuccessMsg = styled.div`
-  color: #0b933c; font-size: 1.19em; text-align: center; margin-top: 2.5em;
+  color: #0b933c;
+  font-size: 1.19em;
+  text-align: center;
+  margin-top: 2.5em;
 `;
-
