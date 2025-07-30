@@ -28,12 +28,13 @@ export default function FormModal({
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   // --- STATE ---
- // Sadece selector!
-  const categories = useAppSelector((state) => state.aboutCategory.categories);
+  // Daima boş array fallback!
+  const categories = useAppSelector(
+    (state) => Array.isArray(state.aboutCategory.categories) ? state.aboutCategory.categories : []
+  );
   const successMessage = useAppSelector((state) => state.about.successMessage);
   const error = useAppSelector((state) => state.about.error);
   const currentUser = useAppSelector((state) => state.account.profile);
-  
 
   const [titles, setTitles] = useState<Record<SupportedLocale, string>>(() =>
     SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
@@ -55,36 +56,40 @@ export default function FormModal({
   useEffect(() => {
     if (editingItem) {
       setTitles(
-        SUPPORTED_LOCALES.reduce((acc, lang) => {
-          acc[lang] = editingItem.title?.[lang] || "";
+        SUPPORTED_LOCALES.reduce((acc, lng) => {
+          acc[lng] = editingItem.title?.[lng] || "";
           return acc;
         }, {} as Record<SupportedLocale, string>)
       );
       setSummaries(
-        SUPPORTED_LOCALES.reduce((acc, lang) => {
-          acc[lang] = editingItem.summary?.[lang] || "";
+        SUPPORTED_LOCALES.reduce((acc, lng) => {
+          acc[lng] = editingItem.summary?.[lng] || "";
           return acc;
         }, {} as Record<SupportedLocale, string>)
       );
       setContents(
-        SUPPORTED_LOCALES.reduce((acc, lang) => {
-          acc[lang] = editingItem.content?.[lang] || "";
+        SUPPORTED_LOCALES.reduce((acc, lng) => {
+          acc[lng] = editingItem.content?.[lng] || "";
           return acc;
         }, {} as Record<SupportedLocale, string>)
       );
       setAuthor(editingItem.author || currentUser?.name || "");
-      setTags(editingItem.tags?.join(", ") || "");
+      setTags(Array.isArray(editingItem.tags) ? editingItem.tags.join(", ") : "");
       setCategory(
         typeof editingItem.category === "string"
           ? editingItem.category
           : editingItem.category?._id || ""
       );
-      setExistingImages(editingItem.images?.map((img) => img.url) || []);
+      setExistingImages(
+        Array.isArray(editingItem.images)
+          ? editingItem.images.map((img) => img.url)
+          : []
+      );
     } else {
       // Reset
-      setTitles(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
-      setSummaries(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
-      setContents(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
+      setTitles(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
+      setSummaries(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
+      setContents(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
       setAuthor(currentUser?.name || "");
       setTags("");
       setCategory("");
@@ -95,10 +100,10 @@ export default function FormModal({
   }, [editingItem, isOpen, currentUser]);
 
   // --- TOAST Mesajları ---
- useEffect(() => {
+  useEffect(() => {
     if (successMessage) {
       toast.success(successMessage);
-      onClose(); 
+      onClose();
     } else if (error) {
       toast.error(error);
     }
@@ -107,9 +112,9 @@ export default function FormModal({
   // --- IMAGE HANDLER ---
   const handleImagesChange = useCallback(
     (files: File[], removed: string[], current: string[]) => {
-      setSelectedFiles(files);
-      setRemovedImages(removed);
-      setExistingImages(current);
+      setSelectedFiles(files || []);
+      setRemovedImages(removed || []);
+      setExistingImages(current || []);
     },
     []
   );
@@ -229,7 +234,7 @@ export default function FormModal({
           <option value="" disabled>
             {t("admin.about.select_category", "Select a category")}
           </option>
-          {categories.map((cat: AboutCategory) => (
+          {(Array.isArray(categories) ? categories : []).map((cat: AboutCategory) => (
             <option key={cat._id} value={cat._id}>
               {cat.name?.[lang] || cat.name?.en || Object.values(cat.name || {})[0] || cat.slug}
             </option>
