@@ -23,7 +23,7 @@ import WhatsAppFloatingSection from "@/modules/home/public/components/WhatsAppFl
 import FloatingChatboxSection from "@/modules/chat/public/components/FloatingChatbox"; // Senin chat kutun
 import ScrollToTopSection from "@/modules/home/public/components/ScrollToTop";
 import RequestOfferButton from "@/modules/requestOffer/public/components/RequestOfferButton";
-import CatalogRequestButton from "@/modules/catalogRequest/public/components/CatalogRequestButton";
+import CatalogRequestButton from "@/modules/catalog/public/components/CatalogRequestButton";
 import NewsletterButton from "@/modules/newsletter/public/components/NewsletterButton";
 import TestimonialSection from "@/modules/comment/public/components/TestimonialSection"; 
 

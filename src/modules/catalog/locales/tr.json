@@ -1,0 +1,35 @@
+{
+  "form": {
+    "title": "İletişim",
+    "name": "Adınız",
+    "email": "E-posta Adresiniz",
+    "subject": "Konu",
+    "message": "Mesajınız",
+    "send": "Gönder",
+    "sending": "Gönderiliyor...",
+    "success": "Mesajınız başarıyla gönderildi!",
+    "error": "Mesaj gönderilirken bir hata oluştu."
+  },
+  "location": {
+    "title": "Adresimiz"
+  },
+  "admin": {
+    "title": "İletişim Mesajları",
+    "loading": "Yükleniyor...",
+    "searchPlaceholder": "Ara (isim, e-posta, konu)",
+    "reload": "Yenile",
+    "name": "Ad Soyad",
+    "email": "E-Posta",
+    "subject": "Konu",
+    "isRead": "Okundu",
+    "yes": "Evet",
+    "no": "Hayır",
+    "date": "Tarih",
+    "delete": "Sil",
+    "close": "Kapat",
+    "from": "Gönderen",
+    "message": "Mesaj",
+    "noResults": "Sonuç bulunamadı.",
+    "confirmDelete": "Bu mesajı silmek istediğinize emin misiniz?"
+  }
+}

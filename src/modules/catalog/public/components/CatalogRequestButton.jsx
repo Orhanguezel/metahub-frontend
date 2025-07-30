@@ -1,4 +1,3 @@
-// src/modules/catalogRequest/components/CatalogRequestButton.tsx
 "use client";
 
 import styled from "styled-components";
@@ -6,7 +5,7 @@ import { useState } from "react";
 import { HiOutlineDocumentText } from "react-icons/hi";
 import CatalogRequestModal from "./CatalogRequestModal";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import translations from "../../../catalog/locales";
 
 export default function CatalogRequestButton() {
   const [open, setOpen] = useState(false);

@@ -1,0 +1,35 @@
+{
+  "form": {
+    "title": "Kontakt",
+    "name": "Ihr Name",
+    "email": "Ihre E-Mail",
+    "subject": "Betreff",
+    "message": "Ihre Nachricht",
+    "send": "Senden",
+    "sending": "Wird gesendet...",
+    "success": "Ihre Nachricht wurde gesendet!",
+    "error": "Beim Senden Ihrer Nachricht ist ein Fehler aufgetreten."
+  },
+  "location": {
+    "title": "Unser Standort"
+  },
+  "admin": {
+    "title": "Kontaktanfragen",
+    "loading": "Lädt...",
+    "searchPlaceholder": "Suchen (Name, E-Mail, Betreff)",
+    "reload": "Neu laden",
+    "name": "Name",
+    "email": "E-Mail",
+    "subject": "Betreff",
+    "isRead": "Gelesen",
+    "yes": "Ja",
+    "no": "Nein",
+    "date": "Datum",
+    "delete": "Löschen",
+    "close": "Schließen",
+    "from": "Von",
+    "message": "Nachricht",
+    "noResults": "Keine Ergebnisse gefunden.",
+    "confirmDelete": "Möchten Sie diese Nachricht wirklich löschen?"
+  }
+}

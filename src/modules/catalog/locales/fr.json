@@ -1,0 +1,35 @@
+{
+  "form": {
+    "title": "Catalogez-nous",
+    "name": "Votre nom",
+    "email": "Votre e-mail",
+    "subject": "Sujet",
+    "message": "Votre message",
+    "send": "Envoyer",
+    "sending": "Envoi en cours...",
+    "success": "Votre message a été envoyé !",
+    "error": "Une erreur est survenue lors de l’envoi du message."
+  },
+  "location": {
+    "title": "Notre emplacement"
+  },
+  "admin": {
+    "title": "Messages de catalog",
+    "loading": "Chargement...",
+    "searchPlaceholder": "Recherche (nom, e-mail, sujet)",
+    "reload": "Actualiser",
+    "name": "Nom",
+    "email": "E-mail",
+    "subject": "Sujet",
+    "isRead": "Lu",
+    "yes": "Oui",
+    "no": "Non",
+    "date": "Date",
+    "delete": "Supprimer",
+    "close": "Fermer",
+    "from": "De",
+    "message": "Message",
+    "noResults": "Aucun résultat trouvé.",
+    "confirmDelete": "Voulez-vous vraiment supprimer ce message ?"
+  }
+}
