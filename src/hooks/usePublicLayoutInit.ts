@@ -28,6 +28,7 @@ import { fetchLibrary } from "@/modules/library/slice/librarySlice";
 import { fetchLibraryCategories } from "@/modules/library/slice/libraryCategorySlice";
 import { fetchTeam } from "@/modules/team/slice/teamSlice";
 import { fetchFAQs } from "@/modules/faq/slice/faqSlice";
+import { fetchNotifications } from "@/modules/notification/slice/notificationSlice";
 
 export const usePublicLayoutInit = () => {
   const dispatch = useAppDispatch();
@@ -57,6 +58,7 @@ export const usePublicLayoutInit = () => {
   const libraryCategorySlice = useAppSelector((s) => s.libraryCategory);
   const teamSlice = useAppSelector((s) => s.team);
   const faqSlice = useAppSelector((s) => s.faq);
+  const notificationsSlice = useAppSelector((s) => s.notification);
 
 const didInit = useRef<{ [key: string]: boolean }>({});
 
@@ -132,6 +134,9 @@ useEffect(() => {
     }
     if ((!faqSlice.faqs || faqSlice.faqs.length === 0) && faqSlice.status === "idle") {
       dispatch(fetchFAQs());
+    }
+    if ((!notificationsSlice.notifications || notificationsSlice.notifications.length === 0) && notificationsSlice.status === "idle") {
+      dispatch(fetchNotifications());
     }
     // --- Chat sadece login olan için ---
     if (profile) {
@@ -213,5 +218,11 @@ useEffect(() => {
     teamError: teamSlice.error,
     faqs: faqSlice.faqs,
     faqsLoading: faqSlice.loading,
+    faqsStatus: faqSlice.status,
+    faqsError: faqSlice.error,
+    notifications: notificationsSlice.notifications,
+    notificationsLoading: notificationsSlice.loading,
+    notificationsStatus: notificationsSlice.status,
+    notificationsError: notificationsSlice.error,
   };
 };

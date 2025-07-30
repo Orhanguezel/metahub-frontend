@@ -1,250 +1,159 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { IComment, CommentContentType, CommentType, TranslatedField } from "../types";
+import type { INotification } from "../types";
 
-// --- State ---
-interface CommentsState {
-  comments: IComment[];          // Public (içerik özelinde)
-  commentsAdmin: IComment[];     // Admin (tüm yorumlar)
+interface NotificationState {
+  notifications: INotification[];
   loading: boolean;
-  status: "idle" | "loading" | "succeeded" | "failed";
+  status?: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
-  successMessage: string | null;
-  pagination: {
-    page: number;
-    pages: number;
-    total: number;
-  };
+  message: string | null;
 }
 
-const initialState: CommentsState = {
-  comments: [],
-  commentsAdmin: [],
+const initialState: NotificationState = {
+  notifications: [],
   loading: false,
   status: "idle",
   error: null,
-  successMessage: null,
-  pagination: { page: 1, pages: 1, total: 0 },
+  message: null,
 };
 
-function parseErrorMessage(payload: unknown): string {
-  if (payload && typeof payload === "object" && "message" in payload)
-    return (payload as any).message;
-  if (typeof payload === "string") return payload;
-  return "Something went wrong.";
-}
-
-// 1. Public: Yorum/testimonial oluştur
-export const createComment = createAsyncThunk<
-  IComment,
-  {
-  comment: string;
-  profileImage?: string | { thumbnail?: string; url?: string };
-  label?: string;
-  text?: string;
-  contentType: CommentContentType;
-  contentId: string;
-  type?: CommentType;
-  name?: string;
-  company?: string;
-  position?: string;
-  email?: string;
-  recaptchaToken?: string;
-  rating?: number;
-  isPublished?: boolean; 
-  isActive?: boolean;
+// 🔸 Bildirimleri çek
+export const fetchNotifications = createAsyncThunk<
+  INotification[],
+  void,
+  { rejectValue: string }
+>("notification/fetchNotifications", async (_, { rejectWithValue }) => {
+  try {
+    const res = await apiCall("get", "/notification");
+    return res.notifications;
+  } catch (err: any) {
+    return rejectWithValue(err?.message || "Could not fetch notifications.");
   }
->("comments/createComment", async (data, thunkAPI) => {
-  const res = await apiCall("post", "/comment", data, thunkAPI.rejectWithValue);
-  return res.data as IComment;
 });
 
-// 2. Public: İçeriğe ait yorumları getir (type ile filtre opsiyonel)
-export const fetchCommentsForContent = createAsyncThunk<
-  IComment[],
-  { type: CommentContentType; id: string; commentType?: CommentType }
->("comments/fetchForContent", async (payload, thunkAPI) => {
-  // Eğer commentType varsa, API'ya query param ekle
-  let url = `/comment/${payload.type}/${payload.id}`;
-  if (payload.commentType) url += `?type=${payload.commentType}`;
-  const res = await apiCall("get", url, null, thunkAPI.rejectWithValue);
-  return res.data as IComment[];
-});
-
-// 3. Admin: Tüm yorumları getir (pagination, type ile filtre opsiyonel)
-export const fetchAllCommentsAdmin = createAsyncThunk<
-  { data: IComment[]; pagination: CommentsState["pagination"] },
-  { page?: number; commentType?: CommentType }
->("comments/fetchAllAdmin", async ({ page = 1, commentType }, thunkAPI) => {
-  let url = `/comment?page=${page}`;
-  if (commentType) url += `&type=${commentType}`;
-  const res = await apiCall("get", url, null, thunkAPI.rejectWithValue);
-  return res as { data: IComment[]; pagination: CommentsState["pagination"] };
-});
-
-// 4. Admin: Yayın durumu toggle
-export const togglePublishComment = createAsyncThunk<IComment, string>(
-  "comments/togglePublish",
-  async (id, thunkAPI) => {
-    const res = await apiCall(
-      "put",
-      `/comment/${id}/toggle`,
-      null,
-      thunkAPI.rejectWithValue
-    );
-    return res.data as IComment;
+// 🔸 Bildirim oluştur
+export const createNotification = createAsyncThunk<
+  INotification,
+  Partial<Omit<INotification, "_id" | "createdAt" | "updatedAt">>,
+  { rejectValue: string }
+>("notification/createNotification", async (data, { rejectWithValue }) => {
+  try {
+    const res = await apiCall("post", "/notification", data);
+    return res.notification;
+  } catch (err: any) {
+    return rejectWithValue(err?.message || "Could not create notification.");
   }
-);
+});
 
-// 5. Admin: Yorum sil
-export const deleteComment = createAsyncThunk<string, string>(
-  "comments/delete",
-  async (id, thunkAPI) => {
-    await apiCall("delete", `/comment/${id}`, null, thunkAPI.rejectWithValue);
+// 🔸 Bildirim sil
+export const deleteNotification = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>("notification/deleteNotification", async (id, { rejectWithValue }) => {
+  try {
+    await apiCall("delete", `/notification/${id}`);
     return id;
+  } catch (err: any) {
+    return rejectWithValue(err?.message || "Could not delete notification.");
   }
-);
-
-// 6. Admin: Yoruma admin cevabı ekle
-export const replyToComment = createAsyncThunk<
-  IComment,
-  { id: string; text: TranslatedField }
->("comments/reply", async ({ id, text }, thunkAPI) => {
-  const res = await apiCall(
-    "put",
-    `/comment/${id}/reply`,
-    { text },
-    thunkAPI.rejectWithValue
-  );
-  return res.data as IComment;
 });
 
-// --- Slice ---
-const commentsSlice = createSlice({
-  name: "comments",
+// 🔸 Tek bildirimi okundu işaretle
+export const markNotificationAsRead = createAsyncThunk<
+  INotification,
+  string,
+  { rejectValue: string }
+>("notification/markNotificationAsRead", async (id, { rejectWithValue }) => {
+  try {
+    const res = await apiCall("patch", `/notification/${id}/read`);
+    return res.notification;
+  } catch (err: any) {
+    return rejectWithValue(err?.message || "Could not update notification.");
+  }
+});
+
+// 🔸 Tüm bildirimleri okundu işaretle
+export const markAllNotificationsAsRead = createAsyncThunk<
+  void,
+  void,
+  { rejectValue: string }
+>("notification/markAllNotificationsAsRead", async (_, { rejectWithValue }) => {
+  try {
+    await apiCall("patch", "/notification/mark-all-read");
+    return;
+  } catch (err: any) {
+    return rejectWithValue(err?.message || "Could not update all notifications.");
+  }
+});
+
+// Slice
+const notificationSlice = createSlice({
+  name: "notification",
   initialState,
   reducers: {
-    clearCommentMessages: (state) => {
+    clearNotificationMessages(state) {
+      state.message = null;
       state.error = null;
-      state.successMessage = null;
-      state.status = "idle";
-    },
-    resetComments: (state) => {
-      state.comments = [];
-      state.commentsAdmin = [];
-      state.pagination = { page: 1, pages: 1, total: 0 };
-      state.status = "idle";
-      state.error = null;
-      state.successMessage = null;
-      state.loading = false;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(createComment.pending, (state) => {
+      // Fetch
+      .addCase(fetchNotifications.pending, (state) => {
         state.loading = true;
-        state.status = "loading";
-        state.error = null;
-        state.successMessage = null;
-      })
-      .addCase(createComment.fulfilled, (state) => {
-        state.loading = false;
-        state.status = "succeeded";
-        state.successMessage = "Your comment was submitted successfully.";
-      })
-      .addCase(createComment.rejected, (state, action) => {
-        state.loading = false;
-        state.status = "failed";
-        state.error = parseErrorMessage(action.payload);
-      })
-
-      .addCase(fetchCommentsForContent.pending, (state) => {
-        state.loading = true;
-        state.status = "loading";
         state.error = null;
       })
-      .addCase(fetchCommentsForContent.fulfilled, (state, action) => {
+      .addCase(fetchNotifications.fulfilled, (state, action: PayloadAction<INotification[]>) => {
         state.loading = false;
-        state.status = "succeeded";
-        state.comments = action.payload;
+        state.notifications = action.payload;
       })
-      .addCase(fetchCommentsForContent.rejected, (state, action) => {
+      .addCase(fetchNotifications.rejected, (state, action) => {
         state.loading = false;
-        state.status = "failed";
-        state.error = parseErrorMessage(action.payload);
+        state.error = action.payload || "Fetch error";
       })
-
-      .addCase(fetchAllCommentsAdmin.pending, (state) => {
+      // Create
+      .addCase(createNotification.pending, (state) => {
         state.loading = true;
-        state.status = "loading";
         state.error = null;
+        state.message = null;
       })
-      .addCase(fetchAllCommentsAdmin.fulfilled, (state, action) => {
+      .addCase(createNotification.fulfilled, (state, action: PayloadAction<INotification>) => {
         state.loading = false;
-        state.status = "succeeded";
-        state.commentsAdmin = action.payload.data;
-        state.pagination = action.payload.pagination;
+        state.notifications.unshift(action.payload);
+        state.message = "Notification created successfully.";
       })
-      .addCase(fetchAllCommentsAdmin.rejected, (state, action) => {
+      .addCase(createNotification.rejected, (state, action) => {
         state.loading = false;
-        state.status = "failed";
-        state.error = parseErrorMessage(action.payload);
+        state.error = action.payload || "Create error";
       })
-
-      .addCase(togglePublishComment.pending, (state) => {
-        state.status = "loading";
+      // Delete
+      .addCase(deleteNotification.fulfilled, (state, action: PayloadAction<string>) => {
+        state.notifications = state.notifications.filter(n => n._id !== action.payload);
+        state.message = "Notification deleted.";
       })
-      .addCase(togglePublishComment.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        const updated = action.payload;
-        const index = state.commentsAdmin.findIndex((c) => c._id === updated._id);
-        if (index !== -1) {
-          state.commentsAdmin[index] = updated;
-        }
-        state.successMessage = updated.isPublished
-          ? "Comment published."
-          : "Comment unpublished.";
+      .addCase(deleteNotification.rejected, (state, action) => {
+        state.error = action.payload || "Delete error";
       })
-      .addCase(togglePublishComment.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = parseErrorMessage(action.payload);
+      // Mark as read
+      .addCase(markNotificationAsRead.fulfilled, (state, action: PayloadAction<INotification>) => {
+        state.notifications = state.notifications.map(n =>
+          n._id === action.payload._id ? action.payload : n
+        );
       })
-
-      .addCase(deleteComment.pending, (state) => {
-        state.status = "loading";
+      .addCase(markNotificationAsRead.rejected, (state, action) => {
+        state.error = action.payload || "Update error";
       })
-      .addCase(deleteComment.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.commentsAdmin = state.commentsAdmin.filter((c) => c._id !== action.payload);
-        state.successMessage = "Comment deleted successfully.";
+      // Mark all as read
+      .addCase(markAllNotificationsAsRead.fulfilled, (state) => {
+        state.notifications = state.notifications.map(n => ({ ...n, isRead: true }));
       })
-      .addCase(deleteComment.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = parseErrorMessage(action.payload);
-      })
-
-      .addCase(replyToComment.pending, (state) => {
-        state.loading = true;
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(replyToComment.fulfilled, (state, action) => {
-        state.loading = false;
-        state.status = "succeeded";
-        const updated = action.payload;
-        const index = state.commentsAdmin.findIndex((c) => c._id === updated._id);
-        if (index !== -1) {
-          state.commentsAdmin[index] = updated;
-        }
-        state.successMessage = "Reply saved successfully.";
-      })
-      .addCase(replyToComment.rejected, (state, action) => {
-        state.loading = false;
-        state.status = "failed";
-        state.error = parseErrorMessage(action.payload);
+      .addCase(markAllNotificationsAsRead.rejected, (state, action) => {
+        state.error = action.payload || "Update error";
       });
   },
 });
 
-export const { clearCommentMessages, resetComments } = commentsSlice.actions;
-export default commentsSlice.reducer;
+export const { clearNotificationMessages } = notificationSlice.actions;
+export default notificationSlice.reducer;

@@ -57,6 +57,7 @@ import sparepartCategoryReducer from "@/modules/sparepart/slice/sparepartCategor
 import sparepartReducer from "@/modules/sparepart/slice/sparepartSlice";
 import teamReducer from "@/modules/team/slice/teamSlice";
 import teamCategoryReducer from "@/modules/team/slice/teamCategorySlice";
+import notificationReducer from "@/modules/notification/slice/notificationSlice";
 
 // --- Combine reducers ---
 // Sadece slice bazında persistReducer uygula!
@@ -116,6 +117,7 @@ const rootReducer = combineReducers({
   sparepart: sparepartReducer,
   team: teamReducer,
   teamCategory: teamCategoryReducer,
+  notification: notificationReducer,
 });
 
 // --- Store ---

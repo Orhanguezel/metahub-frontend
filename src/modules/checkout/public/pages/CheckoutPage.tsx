@@ -1,4 +1,3 @@
-"use client";
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
@@ -23,8 +22,7 @@ const CheckoutPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { cart, loading: cartLoading, error } = useAppSelector((state) => state.cart);
-  const { profile } = useAppSelector((state) => state.account);
-  const { addresses, loading: addressLoading } = useAppSelector((state) => state.address);
+  const { profile, loading: profileLoading } = useAppSelector((state) => state.account);
 
   const { t, i18n } = useI18nNamespace("checkout", checkoutTranslations);
   const { t: tAccount } = useI18nNamespace("account", accountTranslations);
@@ -34,10 +32,10 @@ const CheckoutPage: React.FC = () => {
   const [placingOrder, setPlacingOrder] = useState(false);
   const [orderCompleted, setOrderCompleted] = useState(false);
 
-  // Sadece "shipping" adresleri
+  // ✅ Sadece profile'dan shipping adresleri
   const shippingAddresses: Address[] = useMemo(
-    () => (addresses || []).filter(a => a.addressType === "shipping"),
-    [addresses]
+    () => Array.isArray(profile?.addresses) ? profile.addresses.filter(a => a.addressType === "shipping") : [],
+    [profile?.addresses]
   );
   const defaultShippingAddress: Address | undefined = useMemo(
     () =>
@@ -47,8 +45,8 @@ const CheckoutPage: React.FC = () => {
 
   // Kullanıcı yoksa login’e yönlendir
   useEffect(() => {
-    if (!profile && !addressLoading) router.replace("/login?redirected=checkout");
-  }, [profile, addressLoading, router]);
+    if (!profile && !profileLoading) router.replace("/login?redirected=checkout");
+  }, [profile, profileLoading, router]);
 
   // Sepet yoksa /cart’a yönlendir
   useEffect(() => {
@@ -63,7 +61,7 @@ const CheckoutPage: React.FC = () => {
   }, [orderCompleted, router]);
 
   // Loading sırasında beklet
-  if (cartLoading || addressLoading || placingOrder)
+  if (cartLoading || profileLoading || placingOrder)
     return <PageContainer>{t("loading", "Yükleniyor...")}</PageContainer>;
 
   // Data tam yüklenmeden render etme (adresler veya profil veya sepet yoksa)

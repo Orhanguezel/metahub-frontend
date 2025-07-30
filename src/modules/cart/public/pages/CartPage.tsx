@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
@@ -12,8 +10,7 @@ const CartPage = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { cart, loading, error } = useAppSelector((state) => state.cart);
-  const { profile } = useAppSelector((state) => state.account);
-  const { addresses, loading: addressLoading } = useAppSelector((state) => state.address);
+  const { profile, loading: profileLoading } = useAppSelector((state) => state.account);
   const { t } = useTranslation("cart");
 
   // Sepet yüklemesi
@@ -21,12 +18,15 @@ const CartPage = () => {
     if (profile && profile._id) {
       dispatch(fetchCart());
     }
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, profile?._id]);
 
-  // Kullanıcının en az bir shipping adresi var mı?
+  // Kullanıcının en az bir shipping adresi var mı? (profile'dan alıyoruz!)
   const hasShippingAddress = useMemo(
-    () => (addresses || []).some((addr) => addr.addressType === "shipping"),
-    [addresses]
+    () =>
+      Array.isArray(profile?.addresses) &&
+      profile.addresses.some((addr) => addr.addressType === "shipping"),
+    [profile?.addresses]
   );
 
   // Checkout butonuna tıklandığında kontrol!
@@ -62,7 +62,7 @@ const CartPage = () => {
       </PageContainer>
     );
   }
-  if (loading || addressLoading) {
+  if (loading || profileLoading) {
     return <PageContainer>{t("loading", "Loading...")}</PageContainer>;
   }
   if (!cart || cart.items.length === 0) {
@@ -77,7 +77,7 @@ const CartPage = () => {
         <CartSummary
           cart={cart}
           onClearCart={() => dispatch(clearCart())}
-          onCheckout={handleCheckout} // <--- Sadece burada kontrol!
+          onCheckout={handleCheckout}
         />
       </Content>
     </PageContainer>

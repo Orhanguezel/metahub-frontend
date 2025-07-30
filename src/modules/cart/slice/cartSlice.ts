@@ -33,30 +33,19 @@ export const fetchCart = createAsyncThunk<ICart, void, { rejectValue: string }>(
   "cart/fetchCart",
   async (_, thunkAPI) => {
     try {
-      const response = await apiCall(
-        "get",
-        "/cart",
-        null,
-        thunkAPI.rejectWithValue
-      );
-      // Cart yoksa veya session yoksa, null yerine boş bir cart objesi dön
+      const response = await apiCall("get", "/cart", null, thunkAPI.rejectWithValue);
       if (response && response.data) {
         return response.data as ICart;
       }
-      // Hiç data yoksa (yeni kullanıcı, başka browser, session sıfırlandı, vs.)
       return EMPTY_CART;
     } catch (error: any) {
-      // Auth olmayan durum
       if (error.response?.status === 401) {
         return thunkAPI.rejectWithValue("Not logged in");
       }
-      // Cart yoksa (404 veya benzeri)
       if (error.response?.status === 404) {
         return EMPTY_CART;
       }
-      return thunkAPI.rejectWithValue(
-        error.message || "Etwas ist schiefgelaufen!"
-      );
+      return thunkAPI.rejectWithValue(error.message || "Etwas ist schiefgelaufen!");
     }
   }
 );
@@ -70,7 +59,7 @@ export const addToCart = createAsyncThunk<
     const response = await apiCall(
       "post",
       "/cart/add",
-      payload, // Artık productType ile birlikte gönderiyoruz!
+      payload,
       thunkAPI.rejectWithValue
     );
     if (response && response.data) {
@@ -82,16 +71,16 @@ export const addToCart = createAsyncThunk<
   }
 });
 
-// Aynı mantık diğer thunklar için de geçerli!
 export const increaseQuantity = createAsyncThunk<
   ICart,
   { productId: string; productType: "bike" | "ensotekprod" | "sparepart" },
   { rejectValue: string }
->("cart/increaseQuantity", async ({ productId, productType }, thunkAPI) => {
+>("cart/increaseQuantity", async (payload, thunkAPI) => {
+  // PATCH body: { productId, productType }
   const response = await apiCall(
     "patch",
-    `/cart/increase/${productId}?productType=${productType}`,
-    null,
+    "/cart/increase",
+    payload,
     thunkAPI.rejectWithValue
   );
   if (response && response.data) return response.data as ICart;
@@ -102,11 +91,11 @@ export const decreaseQuantity = createAsyncThunk<
   ICart,
   { productId: string; productType: "bike" | "ensotekprod" | "sparepart" },
   { rejectValue: string }
->("cart/decreaseQuantity", async ({ productId, productType }, thunkAPI) => {
+>("cart/decreaseQuantity", async (payload, thunkAPI) => {
   const response = await apiCall(
     "patch",
-    `/cart/decrease/${productId}?productType=${productType}`,
-    null,
+    "/cart/decrease",
+    payload,
     thunkAPI.rejectWithValue
   );
   if (response && response.data) return response.data as ICart;
@@ -117,11 +106,11 @@ export const removeFromCart = createAsyncThunk<
   ICart,
   { productId: string; productType: "bike" | "ensotekprod" | "sparepart" },
   { rejectValue: string }
->("cart/removeFromCart", async ({ productId, productType }, thunkAPI) => {
+>("cart/removeFromCart", async (payload, thunkAPI) => {
   const response = await apiCall(
-    "delete",
-    `/cart/remove/${productId}?productType=${productType}`,
-    null,
+    "patch",
+    "/cart/remove",
+    payload,
     thunkAPI.rejectWithValue
   );
   if (response && response.data) return response.data as ICart;
@@ -188,7 +177,10 @@ const cartSlice = createSlice({
         state.error = (action.payload as string) || "Sepete eklenemedi!";
       })
 
-      // ...Diğer case'ler aynı şekilde (increaseQuantity, decreaseQuantity, vs.)
+      .addCase(increaseQuantity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(
         increaseQuantity.fulfilled,
         (state, action: PayloadAction<ICart>) => {
@@ -200,6 +192,10 @@ const cartSlice = createSlice({
         state.loading = false;
         state.error = (action.payload as string) || "Arttırılamadı!";
       })
+      .addCase(decreaseQuantity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(
         decreaseQuantity.fulfilled,
         (state, action: PayloadAction<ICart>) => {
@@ -210,6 +206,10 @@ const cartSlice = createSlice({
       .addCase(decreaseQuantity.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as string) || "Azaltılamadı!";
+      })
+      .addCase(removeFromCart.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
       .addCase(
         removeFromCart.fulfilled,

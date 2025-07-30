@@ -1,15 +1,17 @@
-"use client";
 import styled from "styled-components";
 import Link from "next/link";
+import Image from "next/image";
+import { useAppDispatch } from "@/store/hooks";
+import { increaseQuantity, decreaseQuantity, removeFromCart } from "@/modules/cart/slice/cartSlice";
 import type { ICartItem } from "@/modules/cart/types";
 import type { IBikes } from "@/modules/bikes/types";
 import type { IEnsotekprod } from "@/modules/ensotekprod/types";
 import type { ISparepart } from "@/modules/sparepart/types";
-import Image from "next/image";
+import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getMultiLang } from "@/types/common";
 
-// --- Type guard: gerçek obje mi? ---
+// Type guard
 function isPopulatedProduct(
   product: unknown
 ): product is IBikes | IEnsotekprod | ISparepart {
@@ -21,7 +23,6 @@ function isPopulatedProduct(
   );
 }
 
-// --- Ürün tipi -> label ve slug base ---
 const PRODUCT_TYPE_LABEL: Record<string, string> = {
   bike: "Bisiklet",
   ensotekprod: "Ensotek Ürün",
@@ -38,8 +39,9 @@ interface Props {
 }
 
 export default function CartItemList({ items }: Props) {
-  const { i18n } = useTranslation();
-  const lang = i18n.language?.split("-")[0] as any; // ex: 'tr', 'en'
+  const { i18n, t } = useTranslation("cart");
+  const lang = i18n.language?.split("-")[0] as any;
+  const dispatch = useAppDispatch();
 
   return (
     <ListContainer>
@@ -53,18 +55,22 @@ export default function CartItemList({ items }: Props) {
         let productName = "-";
         let productSlug = "#";
         let productImage = "";
+        let productStock: number | undefined = undefined;
 
         if (isPopulatedProduct(item.product)) {
           productName = getMultiLang((item.product as any).name, lang);
-
-          // 🔥 Slug ve route tamamen ürün tipine göre (future-proof!)
           const slugBase = PRODUCT_TYPE_SLUG[productType] || "/";
           productSlug =
             (slugBase && (item.product as any).slug)
               ? `${slugBase}${(item.product as any).slug}`
               : "#";
           productImage = (item.product as any).images?.[0]?.url || "";
+          productStock = (item.product as any).stock;
         }
+
+        // Stok kritik: stok bilgisini her zaman kontrol et!
+        const isIncreaseDisabled =
+          typeof productStock === "number" && item.quantity >= productStock;
 
         return (
           <CartItemRow key={productId + "-" + productType}>
@@ -90,7 +96,36 @@ export default function CartItemList({ items }: Props) {
                 {PRODUCT_TYPE_LABEL[productType] || productType}
               </ProductType>
               <Qty>
-                <span>Miktar:</span> <b>{item.quantity}</b>
+                <span>{t("quantity", "Miktar")}:</span>
+                <QuantityControls>
+                  <button
+                    onClick={() => dispatch(decreaseQuantity({ productId, productType }))}
+                    aria-label={t("decrease", "-")}
+                    disabled={item.quantity < 2}
+                  >
+                    -
+                  </button>
+                  <span>{item.quantity}</span>
+                  <button
+                    onClick={() => dispatch(increaseQuantity({ productId, productType }))}
+                    aria-label={t("increase", "+")}
+                    disabled={isIncreaseDisabled}
+                  >
+                    +
+                  </button>
+                  <RemoveBtn
+                    onClick={() => dispatch(removeFromCart({ productId, productType }))}
+                    title={t("remove", "Sil")}
+                  >
+                    <X size={17} />
+                  </RemoveBtn>
+                </QuantityControls>
+                {/* Stok uyarısı */}
+                {isIncreaseDisabled && (
+                  <StockWarning>
+                    {t("stockLimit", "Stokta daha fazla ürün yok!")}
+                  </StockWarning>
+                )}
               </Qty>
             </Details>
             <Price>
@@ -114,6 +149,52 @@ export default function CartItemList({ items }: Props) {
     </ListContainer>
   );
 }
+
+// Uyarı için küçük bir stil (isteğe bağlı)
+const StockWarning = styled.div`
+  color: ${({ theme }) => theme.colors.danger || "#e74c3c"};
+  font-size: 0.9em;
+  margin-top: 3px;
+`;
+
+
+// --- Quantity Controls Style ---
+const QuantityControls = styled.span`
+  margin-left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  button {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: ${({ theme }) => theme.colors.primary};
+    color: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: 600;
+    &:hover {
+      background: ${({ theme }) => theme.colors.primaryHover};
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+`;
+
+const RemoveBtn = styled.button`
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.colors.danger || "red"};
+  cursor: pointer;
+  margin-left: 6px;
+  transition: color 0.14s;
+  &:hover {
+    color: #900;
+  }
+`;
+
 
 // --- Styles ---
 // (Aynen bırakabilirsin)

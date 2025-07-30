@@ -7,6 +7,7 @@ interface AddressState {
   addresses: Address[];
   currentAddress: Address | null;
   loading: boolean;
+  status?: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   successMessage: string | null;
 }
@@ -15,6 +16,7 @@ const initialState: AddressState = {
   addresses: [],
   currentAddress: null,
   loading: false,
+  status: "idle",
   error: null,
   successMessage: null,
 };
@@ -108,7 +110,6 @@ export const fetchAddressById = createAsyncThunk(
     await apiCall("get", `/address/${id}`, null, rejectWithValue)
 );
 
-// --- SLICE ---
 const addressSlice = createSlice({
   name: "address",
   initialState,
@@ -116,68 +117,76 @@ const addressSlice = createSlice({
     clearAddressMessages: (state) => {
       state.error = null;
       state.successMessage = null;
+      state.status = "idle"; // resetlerken idle yap
     },
     resetCurrentAddress: (state) => {
       state.currentAddress = null;
     },
   },
   extraReducers: (builder) => {
-    const loading = (state: AddressState) => {
+    const setLoading = (state: AddressState) => {
       state.loading = true;
+      state.status = "loading";
       state.error = null;
     };
-    const failed = (state: AddressState, action: PayloadAction<any>) => {
+    const setFailed = (state: AddressState, action: PayloadAction<any>) => {
       state.loading = false;
+      state.status = "failed";
       state.error = action.payload?.message || "An error occurred";
       state.successMessage = null;
     };
 
     // --- FETCH ---
     builder
-      .addCase(fetchAddresses.pending, loading)
+      .addCase(fetchAddresses.pending, setLoading)
       .addCase(fetchAddresses.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.addresses = action.payload.data;
         state.error = null;
       })
-      .addCase(fetchAddresses.rejected, failed);
+      .addCase(fetchAddresses.rejected, setFailed);
 
     builder
-      .addCase(fetchUserAddresses.pending, loading)
+      .addCase(fetchUserAddresses.pending, setLoading)
       .addCase(fetchUserAddresses.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.addresses = action.payload.data;
         state.error = null;
       })
-      .addCase(fetchUserAddresses.rejected, failed);
+      .addCase(fetchUserAddresses.rejected, setFailed);
 
     builder
-      .addCase(fetchCompanyAddresses.pending, loading)
+      .addCase(fetchCompanyAddresses.pending, setLoading)
       .addCase(fetchCompanyAddresses.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.addresses = action.payload.data;
         state.error = null;
       })
-      .addCase(fetchCompanyAddresses.rejected, failed);
+      .addCase(fetchCompanyAddresses.rejected, setFailed);
 
     // --- CREATE ---
     builder
-      .addCase(createAddress.pending, loading)
+      .addCase(createAddress.pending, setLoading)
       .addCase(createAddress.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.successMessage = action.payload.message;
         state.error = null;
         if (action.payload.data) {
           state.addresses.push(action.payload.data);
         }
       })
-      .addCase(createAddress.rejected, failed);
+      .addCase(createAddress.rejected, setFailed);
 
     // --- UPDATE ---
     builder
-      .addCase(updateAddress.pending, loading)
+      .addCase(updateAddress.pending, setLoading)
       .addCase(updateAddress.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.successMessage = action.payload.message;
         state.error = null;
         const updated = action.payload.data;
@@ -185,60 +194,65 @@ const addressSlice = createSlice({
           addr._id === updated._id ? updated : addr
         );
       })
-      .addCase(updateAddress.rejected, failed);
+      .addCase(updateAddress.rejected, setFailed);
 
     // --- DELETE ---
     builder
-      .addCase(deleteAddress.pending, loading)
+      .addCase(deleteAddress.pending, setLoading)
       .addCase(deleteAddress.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.successMessage = action.payload.message;
         state.error = null;
         const deletedId = action.meta.arg;
         state.addresses = state.addresses.filter((addr) => addr._id !== deletedId);
       })
-      .addCase(deleteAddress.rejected, failed);
+      .addCase(deleteAddress.rejected, setFailed);
 
     // --- BULK UPDATE ---
     builder
-      .addCase(updateAllAddresses.pending, loading)
+      .addCase(updateAllAddresses.pending, setLoading)
       .addCase(updateAllAddresses.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.successMessage = action.payload.message;
         state.error = null;
         state.addresses = action.payload.data;
       })
-      .addCase(updateAllAddresses.rejected, failed);
+      .addCase(updateAllAddresses.rejected, setFailed);
 
     builder
-      .addCase(updateAllUserAddresses.pending, loading)
+      .addCase(updateAllUserAddresses.pending, setLoading)
       .addCase(updateAllUserAddresses.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.successMessage = action.payload.message;
         state.error = null;
         state.addresses = action.payload.data;
       })
-      .addCase(updateAllUserAddresses.rejected, failed);
+      .addCase(updateAllUserAddresses.rejected, setFailed);
 
     builder
-      .addCase(updateAllCompanyAddresses.pending, loading)
+      .addCase(updateAllCompanyAddresses.pending, setLoading)
       .addCase(updateAllCompanyAddresses.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.successMessage = action.payload.message;
         state.error = null;
         state.addresses = action.payload.data;
       })
-      .addCase(updateAllCompanyAddresses.rejected, failed);
+      .addCase(updateAllCompanyAddresses.rejected, setFailed);
 
     // --- GET BY ID ---
     builder
-      .addCase(fetchAddressById.pending, loading)
+      .addCase(fetchAddressById.pending, setLoading)
       .addCase(fetchAddressById.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.currentAddress = action.payload.data;
         state.error = null;
       })
-      .addCase(fetchAddressById.rejected, failed);
+      .addCase(fetchAddressById.rejected, setFailed);
   },
 });
 

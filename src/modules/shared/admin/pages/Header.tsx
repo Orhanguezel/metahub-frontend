@@ -7,6 +7,8 @@ import translations from "@/modules/shared/locales/header";
 import { ThemeToggle, AvatarMenu } from "@/modules/shared";
 import { FaBars } from "react-icons/fa";
 import { SUPPORTED_LOCALES } from "@/i18n";
+import {NotificationButton} from "@/modules/notification";
+
 
 function getLocaleLabel(locale: string): string {
   return SUPPORTED_LOCALES.includes(locale as any)
@@ -43,6 +45,7 @@ const HeaderAdmin: React.FC<HeaderAdminProps> = ({ onToggleSidebar }) => {
         </Welcome>
       </LeftSection>
       <RightSection>
+        <NotificationButton />
         <LangSelect
           value={i18n.language}
           onChange={handleLangChange}

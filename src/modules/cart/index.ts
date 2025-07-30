@@ -11,7 +11,6 @@ export { default as CartAskPanel } from "./admin/components/CartAskPanel";
 */
 
 // Public Components
-export { default as CartItem } from "./public/components/CartItem";
 export { default as CartItemList } from "./public/components/CartItemList";
 export { default as CartSummary } from "./public/components/CartSummary";
 export { default as CartEmpty } from "./public/components/CartEmpty";

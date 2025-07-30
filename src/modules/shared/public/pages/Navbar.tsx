@@ -9,6 +9,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { fetchCart } from "@/modules/cart/slice/cartSlice";
 import { useThemeContext } from "@/providers/ThemeProviderWrapper";
+import {NotificationButton} from "@/modules/notification";
+
+
 import styled from "styled-components";
 import {
   TopBar,
@@ -89,6 +92,7 @@ export default function Navbar() {
               >
                 {isDark ? <FaSun /> : <FaMoon />}
               </ThemeToggle>
+              <NotificationButton />
               <LangSelect />
               {shouldShowCart && (
                 <CartButton ariaLabel={t("navbar.cart", "Sepetim")} />
@@ -121,6 +125,7 @@ export default function Navbar() {
               {isDark ? <FaSun /> : <FaMoon />}
             </ThemeToggle>
             <LangSelect />
+            <NotificationButton />
             {shouldShowCart && (
               <CartButton ariaLabel={t("navbar.cart", "Sepetim")} />
             )}
