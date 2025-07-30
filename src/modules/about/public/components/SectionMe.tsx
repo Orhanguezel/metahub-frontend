@@ -1,5 +1,4 @@
 import styled from "styled-components";
-import Link from "next/link";
 import translations from "@/modules/about/locales";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { motion } from "framer-motion";
@@ -42,7 +41,7 @@ export default function AboutSection() {
       <Section>
         <AboutGrid>
           <Left>
-            <MainTitle>{t("page.about.allAboutMe", "Hakkımda")}</MainTitle>
+            <MainTitle>{t("page.about.allAboutMe", "Ben Kimim")}</MainTitle>
             <Desc>{t("about.about.empty", "Hakkımda içeriği bulunamadı.")}</Desc>
           </Left>
         </AboutGrid>
@@ -52,7 +51,6 @@ export default function AboutSection() {
 
   const main = about[0];
   const imageUrl = main?.images?.[0]?.url;
- 
 
   return (
     <Section
@@ -67,142 +65,125 @@ export default function AboutSection() {
           <MinorTitle>{t("page.about.minorTitleMe", "HAKKIMDA")}</MinorTitle>
           <MainTitle>{main?.title?.[lang] || main?.title?.en || "-"}</MainTitle>
           <Desc>{main?.summary?.[lang] || main?.summary?.en || "-"}</Desc>
-         
           <SeeAllBtn href={`/aboutme/${main._id || "about"}`}>
             {t("page.about.all", "Daha Fazla Bilgi")}
           </SeeAllBtn>
         </Left>
-
-        {/* SAĞ BLOK - SADECE ANA GÖRSEL VARSA */}
-  {imageUrl && (
-    <Right>
-      <MainImageWrap href={`/aboutme/${main._id}`}>
-        <MainImage
-          src={imageUrl}
-          alt={main.title?.[lang] || "About"}
-          fill
-          priority
-        />
-      </MainImageWrap>
-    </Right>
-  )}
-</AboutGrid>
+        {/* SAĞ BLOK */}
+        <Right>
+          <ImageCard>
+            <StyledImage
+              src={imageUrl}
+              alt={main.title?.[lang] || "About me"}
+              fill
+              priority
+            />
+          </ImageCard>
+        </Right>
+      </AboutGrid>
     </Section>
   );
 }
-
 
 // --- STYLES ---
 const Section = styled(motion.section)`
   background: ${({ theme }) => theme.colors.sectionBackground};
   color: ${({ theme }) => theme.colors.text};
-  padding: ${({ theme }) => theme.spacings.xl} 0 ${({ theme }) => theme.spacings.xl};
+  padding: ${({ theme }) => theme.spacings.xxl} 0 ${({ theme }) => theme.spacings.xxl};
   width: 100%;
 `;
 
 const AboutGrid = styled.div`
-  max-width: 1280px;
+  max-width: 1160px;
   margin: 0 auto;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 4rem;
+  align-items: center;
   padding: 0 ${({ theme }) => theme.spacings.xl};
 
   ${({ theme }) => theme.media.small} {
-    flex-direction: column;
-    gap: 1.2rem;
+    grid-template-columns: 1fr;
+    gap: 2rem;
     padding: 0 ${({ theme }) => theme.spacings.sm};
-    align-items: center;
+    text-align: center;
   }
 `;
-
 
 const Left = styled.div`
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: 1.4rem;
+  justify-content: center;
 
   ${({ theme }) => theme.media.small} {
-    width: 100%;
     align-items: center;
     text-align: center;
-    gap: 0;
-    margin-bottom: 0;
+    gap: 1rem;
   }
 `;
 
-
-
 const MinorTitle = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-size: ${({ theme }) => theme.fontSizes.small};
   color: ${({ theme }) => theme.colors.accent};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   text-transform: uppercase;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.2em;
 `;
 
 const MainTitle = styled.h2`
-  font-size: clamp(2.2rem, 3.3vw, 2.7rem);
+  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
   color: ${({ theme }) => theme.colors.primary};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-  margin: 0 0 0.45em 0;
-  letter-spacing: -0.01em;
-  line-height: 1.13;
+  margin: 0 0 0.2em 0;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 `;
 
 const Desc = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  line-height: 1.5; /* 🔽 Daha sıkı line spacing */
-  margin-bottom: 0; /* 🔽 DÜŞÜRÜLDÜ */
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-family: ${({ theme }) => theme.fonts.body};
+  line-height: 1.55;
+  margin-bottom: 0.4em;
+  max-width: 560px;
+  ${({ theme }) => theme.media.small} {
+    max-width: 100%;
+  }
 `;
 
 const Right = styled.div`
-  flex: 1 1 320px;
   display: flex;
-  justify-content: flex-end;
-
-  ${({ theme }) => theme.media.small} {
-    width: 100%;
-    justify-content: center;
-    margin-top: 0;
-    padding: 0;
-    flex: unset;
-    align-items: center;
-  }
+  justify-content: center;
+  align-items: center;
 `;
 
-
-
-
-
-const MainImageWrap = styled(Link)`
-  position: relative;
-  width: 100%;
-  max-width: 360px;
-  aspect-ratio: 16 / 10;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+const ImageCard = styled.div`
+  width: 270px;
+  height: 270px;
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  border-radius: ${({ theme }) => theme.radii.circle};
   overflow: hidden;
-  display: block;
-
+  box-shadow: 0 8px 32px 0 ${({ theme }) => theme.colors.shadowHighlight};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: box-shadow 0.32s, transform 0.3s;
   &:hover {
-    transform: scale(1.02);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 12px 42px 0 ${({ theme }) => theme.colors.primaryTransparent};
+    transform: scale(1.025);
   }
-
   ${({ theme }) => theme.media.small} {
-    max-width: 100%;
     margin: 0 auto;
-    aspect-ratio: 16 / 10;
   }
 `;
 
-
-const MainImage = styled(Image)`
+const StyledImage = styled(Image)`
   object-fit: cover;
-  z-index: 1;
+  border-radius: ${({ theme }) => theme.radii.circle};
+  border: 4px solid ${({ theme }) => theme.colors.primary};
 `;
+
