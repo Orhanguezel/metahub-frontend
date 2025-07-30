@@ -3,21 +3,32 @@
 import Link from "next/link";
 import styled from "styled-components";
 import { Bell } from "lucide-react";
-import { useAppSelector } from "@/store/hooks";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { useEffect } from "react";
+import { fetchNotifications } from "@/modules/notification/slice/notificationSlice";
 
 interface Props {
   ariaLabel?: string;
 }
 
 export default function NotificationButton({ ariaLabel }: Props) {
-  // Kullanıcı profilini ve rolünü al
   const profile = useAppSelector((state) => state.account.profile);
-  const { notifications = [] } = useAppSelector((state) => state.notification);
+  const notifications = useAppSelector((state) => state.notification?.notifications ?? []);
+  const dispatch = useAppDispatch();
 
-  // Sadece admin veya süperadmin ise göster!
-  if (!profile || (profile.role !== "admin" && profile.role !== "superadmin")) return null;
+  // Sadece admin/superadmin ise fetch çağrısı yap
+  useEffect(() => {
+    if (profile && (profile.role === "admin" || profile.role === "superadmin")) {
+      dispatch(fetchNotifications());
+    }
+    // profile veya role değişirse yeniden çalışır
+  }, [profile, dispatch]);
 
-  // Okunmamış bildirim adedi
+  // Guard: admin/superadmin harici kullanıcı asla render görmez ve fetch tetiklemez
+  if (!profile || !profile.role || (profile.role !== "admin" && profile.role !== "superadmin")) {
+    return null;
+  }
+
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
