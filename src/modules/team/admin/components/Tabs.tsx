@@ -6,25 +6,24 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/team/locales";
 
 const TABS: Array<{
-  key: "list" | "create" | "categories";
+  key: "list" | "create";
   labelKey: string;
   fallback: string;
 }> = [
   { key: "list", labelKey: "tabs.team", fallback: "Team" },
   { key: "create", labelKey: "tabs.create", fallback: "New Team" },
-  { key: "categories", labelKey: "tabs.categories", fallback: "Categories" },
 ];
 
 interface Props {
-  activeTab: "list" | "create" | "categories";
-  onChange: (tab: "list" | "create" | "categories") => void;
+  activeTab: "list" | "create";
+  onChange: (tab: "list" | "create") => void;
 }
 
 export default function TeamTabs({ activeTab, onChange }: Props) {
   const { t } = useI18nNamespace("team", translations);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  // Klavyeden sekme (arrow) ile gezilebilsin
+  // Keyboard navigation (arrow left/right)
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent, idx: number) => {
       if (e.key === "ArrowRight") {
@@ -44,25 +43,24 @@ export default function TeamTabs({ activeTab, onChange }: Props) {
     <Header role="tablist" aria-label="Team Management Tabs">
       {TABS.map((tab, idx) => (
         <TabButton
-  key={tab.key}
-  ref={(el) => { tabRefs.current[idx] = el; }}
-  $active={activeTab === tab.key}
-  onClick={() => onChange(tab.key)}
-  tabIndex={activeTab === tab.key ? 0 : -1}
-  role="tab"
-  aria-selected={activeTab === tab.key}
-  aria-controls={`tabpanel-${tab.key}`}
-  onKeyDown={(e) => handleKeyDown(e, idx)}
->
-  {t(tab.labelKey, tab.fallback)}
-</TabButton>
-
+          key={tab.key}
+          ref={(el) => { tabRefs.current[idx] = el; }}
+          $active={activeTab === tab.key}
+          onClick={() => onChange(tab.key)}
+          tabIndex={activeTab === tab.key ? 0 : -1}
+          role="tab"
+          aria-selected={activeTab === tab.key}
+          aria-controls={`tabpanel-${tab.key}`}
+          onKeyDown={(e) => handleKeyDown(e, idx)}
+        >
+          {t(tab.labelKey, tab.fallback)}
+        </TabButton>
       ))}
     </Header>
   );
 }
 
-// 💅 Gelişmiş stil
+// --- Styles ---
 const Header = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacings.sm};
@@ -95,7 +93,6 @@ const TabButton = styled.button<{ $active: boolean }>`
       ? `0 2px 16px 0 ${theme.colors.primary}44`
       : "none"};
 
-  /* Alt border animasyonu */
   &::after {
     content: "";
     display: block;
@@ -117,4 +114,3 @@ const TabButton = styled.button<{ $active: boolean }>`
     color: #fff;
   }
 `;
-

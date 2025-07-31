@@ -13,46 +13,32 @@ import {
   deleteTeam,
   togglePublishTeam,
 } from "@/modules/team/slice/teamSlice";
-import {
-  createTeamCategory,
-  updateTeamCategory,
-} from "@/modules/team/slice/teamCategorySlice";
 
 import {
   FormModal,
-  CategoryForm,
-  CategoryListPage,
   List,
   Tabs,
 } from "@/modules/team";
 
-import { Modal } from "@/shared";
 import { ITeam } from "@/modules/team/types";
-import { TeamCategory } from "@/modules/team/types";
 
 export default function AdminTeamPage() {
   const { i18n, t } = useI18nNamespace("team", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-const team = useAppSelector((state) => state.team.teamAdmin);
-const loading = useAppSelector((state) => state.team.loading);
-const error = useAppSelector((state) => state.team.error);
-
-
-  const [activeTab, setActiveTab] = useState<"list" | "create" | "categories">(
-    "list"
+  // Sadece teamAdmin slice'tan geliyor
+  const team = useAppSelector((state) =>
+    Array.isArray(state.team.teamAdmin) ? state.team.teamAdmin : []
   );
+  const loading = useAppSelector((state) => state.team.loading);
+  const error = useAppSelector((state) => state.team.error);
+
+  const [activeTab, setActiveTab] = useState<"list" | "create">("list");
   const [editingItem, setEditingItem] = useState<ITeam | null>(null);
-  const [editingCategory, setEditingCategory] =
-    useState<TeamCategory | null>(null);
-  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
   const dispatch = useAppDispatch();
 
-  
-
-  // ---- FETCH YOK! ----
-
+  // --- SUBMIT ---
   const handleSubmit = async (formData: FormData, id?: string) => {
     if (id) {
       await dispatch(updateTeam({ id, formData }));
@@ -75,22 +61,6 @@ const error = useAppSelector((state) => state.team.error);
   const handleTogglePublish = (id: string, isPublished: boolean) => {
     dispatch(togglePublishTeam({ id, isPublished: !isPublished }));
   };
-
-  // Create/Update Category
-const handleCategorySubmit = async (
-  data: { name: Record<SupportedLocale, string>; description?: Record<SupportedLocale, string> },
-  id?: string
-) => {
-  if (id) {
-    await dispatch(updateTeamCategory({ id, data }));
-  } else {
-    await dispatch(createTeamCategory(data));
-  }
-  setEditingCategory(null);
-  setCategoryModalOpen(false);
-};
-
-  
 
   return (
     <Wrapper>
@@ -121,33 +91,8 @@ const handleCategorySubmit = async (
             }}
             editingItem={editingItem}
             onSubmit={handleSubmit}
+            // Artık category bağımlılığı yok!
           />
-        )}
-
-        {activeTab === "categories" && (
-          <>
-            <CategoryListPage
-              onAdd={() => {
-                setEditingCategory(null);
-                setCategoryModalOpen(true);
-              }}
-              onEdit={(category) => {
-                setEditingCategory(category);
-                setCategoryModalOpen(true);
-              }}
-            />
-            <Modal
-              isOpen={categoryModalOpen}
-              onClose={() => setCategoryModalOpen(false)}
-            >
-              <CategoryForm
-                isOpen={categoryModalOpen}
-                onClose={() => setCategoryModalOpen(false)}
-                editingItem={editingCategory}
-                onSubmit={handleCategorySubmit}
-              />
-            </Modal>
-          </>
         )}
       </TabContent>
     </Wrapper>

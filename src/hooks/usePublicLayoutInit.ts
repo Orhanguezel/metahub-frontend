@@ -28,6 +28,8 @@ import { fetchLibrary } from "@/modules/library/slice/librarySlice";
 import { fetchLibraryCategories } from "@/modules/library/slice/libraryCategorySlice";
 import { fetchTeam } from "@/modules/team/slice/teamSlice";
 import { fetchFAQs } from "@/modules/faq/slice/faqSlice";
+import { fetchPortfolio } from "@/modules/portfolio/slice/portfolioSlice";
+import { fetchSkill } from "@/modules/skill/slice/skillSlice";
 
 export const usePublicLayoutInit = () => {
   const dispatch = useAppDispatch();
@@ -57,6 +59,8 @@ export const usePublicLayoutInit = () => {
   const libraryCategorySlice = useAppSelector((s) => s.libraryCategory);
   const teamSlice = useAppSelector((s) => s.team);
   const faqSlice = useAppSelector((s) => s.faq);
+  const skillSlice = useAppSelector((s) => s.skill);
+  const portfolioSlice = useAppSelector((s) => s.portfolio);
 
 const didInit = useRef<{ [key: string]: boolean }>({});
 
@@ -133,6 +137,17 @@ useEffect(() => {
     if ((!faqSlice.faqs || faqSlice.faqs.length === 0) && faqSlice.status === "idle") {
       dispatch(fetchFAQs());
     }
+
+    if ((!skillSlice.skill || skillSlice.skill.length === 0) && skillSlice.status === "idle") {
+      dispatch(fetchSkill());
+    }
+
+    if ((!portfolioSlice.portfolio || portfolioSlice.portfolio.length === 0) && portfolioSlice.status === "idle") {
+      dispatch(fetchPortfolio());
+    }
+
+
+
     // --- Chat sadece login olan için ---
     if (profile) {
       if (chat.sessions.length === 0) dispatch(fetchAllChatSessions());
@@ -215,5 +230,14 @@ useEffect(() => {
     faqsLoading: faqSlice.loading,
     faqsStatus: faqSlice.status,
     faqsError: faqSlice.error,
+    skill:skillSlice,
+    skillLoading: skillSlice.loading,
+    skillStatus: skillSlice.status,
+    skillError: skillSlice.error,
+    portfolio:portfolioSlice,
+    portfolioLoading: portfolioSlice.loading,
+    portfolioStatus: portfolioSlice.status,
+    portfolioError: portfolioSlice.error,
+
   };
 };

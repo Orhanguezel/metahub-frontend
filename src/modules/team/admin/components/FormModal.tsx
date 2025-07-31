@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/team/locales";
-import { TeamCategory, ITeam } from "@/modules/team/types";
+import { ITeam } from "@/modules/team/types";
 import { ImageUploadWithPreview } from "@/shared";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import { toast } from "react-toastify";
@@ -24,25 +24,21 @@ export default function FormModal({
   onSubmit,
 }: Props) {
   // --- DİL ve ÇEVİRİ ---
-  const { i18n, t } = useI18nNamespace("team", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const { t } = useI18nNamespace("team", translations);
 
   // --- STATE ---
- // Sadece selector!
-  const categories = useAppSelector((state) => state.teamCategory.categories);
   const successMessage = useAppSelector((state) => state.team.successMessage);
   const error = useAppSelector((state) => state.team.error);
   const currentUser = useAppSelector((state) => state.account.profile);
-  
 
   const [titles, setTitles] = useState<Record<SupportedLocale, string>>(() =>
-    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
+    SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
   );
   const [summaries, setSummaries] = useState<Record<SupportedLocale, string>>(() =>
-    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
+    SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
   );
   const [contents, setContents] = useState<Record<SupportedLocale, string>>(() =>
-    SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>)
+    SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
   );
   const [author, setAuthor] = useState("");
   const [tags, setTags] = useState("");
@@ -55,36 +51,40 @@ export default function FormModal({
   useEffect(() => {
     if (editingItem) {
       setTitles(
-        SUPPORTED_LOCALES.reduce((acc, lang) => {
-          acc[lang] = editingItem.title?.[lang] || "";
+        SUPPORTED_LOCALES.reduce((acc, lng) => {
+          acc[lng] = editingItem.title?.[lng] || "";
           return acc;
         }, {} as Record<SupportedLocale, string>)
       );
       setSummaries(
-        SUPPORTED_LOCALES.reduce((acc, lang) => {
-          acc[lang] = editingItem.summary?.[lang] || "";
+        SUPPORTED_LOCALES.reduce((acc, lng) => {
+          acc[lng] = editingItem.summary?.[lng] || "";
           return acc;
         }, {} as Record<SupportedLocale, string>)
       );
       setContents(
-        SUPPORTED_LOCALES.reduce((acc, lang) => {
-          acc[lang] = editingItem.content?.[lang] || "";
+        SUPPORTED_LOCALES.reduce((acc, lng) => {
+          acc[lng] = editingItem.content?.[lng] || "";
           return acc;
         }, {} as Record<SupportedLocale, string>)
       );
       setAuthor(editingItem.author || currentUser?.name || "");
-      setTags(editingItem.tags?.join(", ") || "");
+      setTags(Array.isArray(editingItem.tags) ? editingItem.tags.join(", ") : "");
       setCategory(
         typeof editingItem.category === "string"
           ? editingItem.category
-          : editingItem.category?._id || ""
+          : ""
       );
-      setExistingImages(editingItem.images?.map((img) => img.url) || []);
+      setExistingImages(
+        Array.isArray(editingItem.images)
+          ? editingItem.images.map((img) => img.url)
+          : []
+      );
     } else {
       // Reset
-      setTitles(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
-      setSummaries(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
-      setContents(SUPPORTED_LOCALES.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {} as Record<SupportedLocale, string>));
+      setTitles(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
+      setSummaries(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
+      setContents(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
       setAuthor(currentUser?.name || "");
       setTags("");
       setCategory("");
@@ -95,10 +95,10 @@ export default function FormModal({
   }, [editingItem, isOpen, currentUser]);
 
   // --- TOAST Mesajları ---
- useEffect(() => {
+  useEffect(() => {
     if (successMessage) {
       toast.success(successMessage);
-      onClose(); 
+      onClose();
     } else if (error) {
       toast.error(error);
     }
@@ -107,9 +107,9 @@ export default function FormModal({
   // --- IMAGE HANDLER ---
   const handleImagesChange = useCallback(
     (files: File[], removed: string[], current: string[]) => {
-      setSelectedFiles(files);
-      setRemovedImages(removed);
-      setExistingImages(current);
+      setSelectedFiles(files || []);
+      setRemovedImages(removed || []);
+      setExistingImages(current || []);
     },
     []
   );
@@ -132,7 +132,7 @@ export default function FormModal({
           .filter(Boolean)
       )
     );
-    formData.append("category", category);
+    formData.append("category", category.trim()); // Artık düz string, required değil!
     formData.append("isPublished", "true");
 
     for (const file of selectedFiles) {
@@ -217,24 +217,17 @@ export default function FormModal({
           folder="team"
         />
 
+        {/* --- DÜZENLENEN KATEGORİ ALANI (select yerine text input) --- */}
         <label htmlFor="category">
           {t("admin.team.category", "Category")}
         </label>
-        <select
+        <input
           id="category"
+          type="text"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          required
-        >
-          <option value="" disabled>
-            {t("admin.team.select_category", "Select a category")}
-          </option>
-          {categories.map((cat: TeamCategory) => (
-            <option key={cat._id} value={cat._id}>
-              {cat.name?.[lang] || cat.name?.en || Object.values(cat.name || {})[0] || cat.slug}
-            </option>
-          ))}
-        </select>
+          placeholder={t("admin.team.category_placeholder", "Type a category (optional)")}
+        />
 
         <ButtonGroup>
           <button type="submit">
@@ -251,7 +244,7 @@ export default function FormModal({
   );
 }
 
-// --- Styled Components ---
+// --- Styled Components (Aynı kalabilir) ---
 const FormWrapper = styled.div`
   max-width: 600px;
   margin: auto;

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
+import ReactMarkdown from "react-markdown";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
@@ -15,8 +16,21 @@ import {
   fetchTeamBySlug,
   setSelectedTeam,
 } from "@/modules/team/slice/teamSlice";
-import type { ITeam } from "@/modules/team";
-import { SupportedLocale} from "@/types/common";
+import { CommentForm, CommentList } from "@/modules/comment";
+import { SupportedLocale } from "@/types/common";
+import { SocialLinks } from "@/modules/shared";
+import Modal from "@/modules/home/public/components/Modal";
+import type { ITeam, ITeamImage } from "@/modules/team/types";
+
+// Yardımcı fonksiyon (tüm dilleri fallback ile getirir)
+const getMultiLang = (
+  field: Record<string, string> | undefined,
+  lang: SupportedLocale
+) =>
+  field?.[lang] ||
+  field?.en ||
+  (field ? Object.values(field)[0] : "") ||
+  "";
 
 export default function TeamDetailSection() {
   const { i18n, t } = useI18nNamespace("team", translations);
@@ -24,12 +38,16 @@ export default function TeamDetailSection() {
   const { slug } = useParams() as { slug: string };
   const dispatch = useAppDispatch();
 
-  Object.entries(translations).forEach(([locale, resources]) => {
-    if (!i18n.hasResourceBundle(locale, "team")) {
-      i18n.addResourceBundle(locale, "team", resources, true, true);
-    }
-  });
+  // Çeviri dosyası registration
+  useEffect(() => {
+    Object.entries(translations).forEach(([locale, resources]) => {
+      if (!i18n.hasResourceBundle(locale, "team")) {
+        i18n.addResourceBundle(locale, "team", resources, true, true);
+      }
+    });
+  }, [i18n]);
 
+  // --- Redux state
   const {
     selected: team,
     team: allTeam,
@@ -37,83 +55,171 @@ export default function TeamDetailSection() {
     error,
   } = useAppSelector((state) => state.team);
 
+  // Görsel galeri state
+  const [mainIndex, setMainIndex] = useState(0);
+  const [openModal, setOpenModal] = useState(false);
+  const images = team?.images || [];
+  const totalImages = images.length;
+
+  // Navigation fonksiyonları
+  const goNext = useCallback(() => setMainIndex((i) => (i + 1) % totalImages), [totalImages]);
+  const goPrev = useCallback(() => setMainIndex((i) => (i - 1 + totalImages) % totalImages), [totalImages]);
+
+  // Modal açıkken keyboard navigation
   useEffect(() => {
-    if (allTeam && allTeam.length > 0) {
-      const found = allTeam.find((item: ITeam) => item.slug === slug);
-      if (found) {
-        dispatch(setSelectedTeam(found));
-      } else {
-        dispatch(fetchTeamBySlug(slug));
-      }
+    if (!openModal) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") goNext();
+      else if (e.key === "ArrowLeft") goPrev();
+      else if (e.key === "Escape") setOpenModal(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [openModal, goNext, goPrev]);
+
+  // Detay fetch & state temizleme
+  useEffect(() => {
+    // eğer team listesi state’de varsa slug’dan bul, yoksa backend’den çek
+    if (Array.isArray(allTeam) && allTeam.length > 0) {
+      const found = allTeam.find((item) => item.slug === slug);
+      if (found) dispatch(setSelectedTeam(found));
+      else dispatch(fetchTeamBySlug(slug));
     } else {
       dispatch(fetchTeamBySlug(slug));
     }
-    return () => {
-      dispatch(clearTeamMessages());
-    };
-  }, [dispatch, allTeam, slug]);
+   setMainIndex(0);
+  return () => {
+    dispatch(clearTeamMessages());
+    // Cleanup fonksiyonu void dönmeli, herhangi bir şey döndürmemeli!
+  };
+}, [dispatch, allTeam, slug]);
 
-  if (loading) {
-    return (
-      <Container>
-        <Skeleton />
-      </Container>
-    );
+  // Safety: Loading
+  if (loading) return <Container><Skeleton /></Container>;
+  // Safety: Error veya data yoksa
+  if (error || !team) return <Container><ErrorMessage /></Container>;
+
+  // --- Text Helper
+  function formatText(txt: string | undefined) {
+    if (!txt) return "";
+    return txt.replace(/\\n/g, "\n");
   }
 
-  if (error || !team) {
-    return (
-      <Container>
-        <ErrorMessage />
-      </Container>
-    );
-  }
-
-  const otherTeam = allTeam.filter((item: ITeam) => item.slug !== slug);
+  // Main Image, diğer içerikler
+  const mainImage = images[mainIndex];
+  const otherTeam = (allTeam || []).filter((item: ITeam) => item.slug !== slug);
 
   return (
     <Container
-      initial={{ opacity: 0, y: 36 }}
+      initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.57 }}
+      transition={{ duration: 0.6 }}
     >
       {/* Başlık */}
-      <Title>{team.title[lang]}</Title>
+      <Title>{getMultiLang(team.title, lang)}</Title>
 
-      {/* Büyük görsel */}
-      {team.images?.[0]?.url && (
-        <ImageWrapper>
-          <StyledImage
-            src={team.images[0].url}
-            alt={`${team.title[lang]} - team-${team._id}`}
-            width={1080}
-            height={410}
-            priority
-          />
-        </ImageWrapper>
+      {/* Büyük görsel + thumb */}
+      {mainImage?.url && (
+        <ImageSection>
+          <MainImageFrame>
+            <StyledMainImage
+              src={mainImage.url}
+              alt={getMultiLang(team.title, lang)}
+              width={800}
+              height={450}
+              priority
+              style={{ cursor: "zoom-in" }}
+              onClick={() => setOpenModal(true)}
+              tabIndex={0}
+              role="button"
+              aria-label={t("detail.openImage", "Büyüt")}
+            />
+          </MainImageFrame>
+          {/* Modal */}
+          {openModal && (
+            <Modal
+              isOpen={openModal}
+              onClose={() => setOpenModal(false)}
+              onNext={totalImages > 1 ? goNext : undefined}
+              onPrev={totalImages > 1 ? goPrev : undefined}
+            >
+              <div style={{ textAlign: "center", padding: 0 }}>
+                <Image
+                  src={mainImage.url}
+                  alt={getMultiLang(team.title, lang) + "-big"}
+                  width={1280}
+                  height={720}
+                  style={{
+                    maxWidth: "94vw",
+                    maxHeight: "80vh",
+                    borderRadius: 12,
+                    boxShadow: "0 6px 42px #2225",
+                    background: "#111",
+                    width: "auto",
+                    height: "auto"
+                  }}
+                  sizes="(max-width: 800px) 90vw, 1280px"
+                />
+                <div style={{ marginTop: 10, color: "#666", fontSize: 16 }}>
+                  {getMultiLang(team.title, lang)}
+                </div>
+              </div>
+            </Modal>
+          )}
+          {/* Thumbnail galeri */}
+          {images.length > 1 && (
+            <Gallery>
+              {images.map((img: ITeamImage, i: number) => (
+                <ThumbFrame
+                  key={img.url + i}
+                  $active={mainIndex === i}
+                  onClick={() => setMainIndex(i)}
+                  tabIndex={0}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setMainIndex(i)}
+                  aria-label={`Show image ${i + 1}`}
+                >
+                  <StyledThumbImage
+                    src={img.url}
+                    alt={`${getMultiLang(team.title, lang)} thumbnail ${i + 1}`}
+                    width={168}
+                    height={96}
+                    $active={mainIndex === i}
+                  />
+                </ThumbFrame>
+              ))}
+            </Gallery>
+          )}
+        </ImageSection>
       )}
 
+      {/* Sosyal medya paylaşım */}
+      <SocialShareBox>
+        <ShareLabel>{t("page.share", "Paylaş")}:</ShareLabel>
+        <SocialLinks />
+      </SocialShareBox>
+
       {/* Özet (Kısa Bilgi) */}
-      {team.summary && team.summary[lang] && (
+      {team.summary && getMultiLang(team.summary, lang) && (
         <SummaryBox>
-          <div>{team.summary[lang]}</div>
+          <ReactMarkdown>
+            {formatText(getMultiLang(team.summary, lang))}
+          </ReactMarkdown>
         </SummaryBox>
       )}
 
       {/* Ana içerik */}
-      {team.content && team.content[lang] && (
+      {team.content && getMultiLang(team.content, lang) && (
         <ContentBox>
-          <div
-            className="team-content"
-            dangerouslySetInnerHTML={{ __html: team.content[lang] }}
-          />
+          <ReactMarkdown>
+            {formatText(getMultiLang(team.content, lang))}
+          </ReactMarkdown>
         </ContentBox>
       )}
 
       {/* Diğer içerikler */}
       {otherTeam?.length > 0 && (
         <OtherSection>
-          <OtherTitle>{t("page.other", "Diğer Hakkımızda İçerikleri")}</OtherTitle>
+          <OtherTitle>{t("page.other", "Diğer Haberler")}</OtherTitle>
           <OtherGrid>
             {otherTeam.map((item: ITeam) => (
               <OtherCard key={item._id} as={motion.div} whileHover={{ y: -6, scale: 1.025 }}>
@@ -121,8 +227,7 @@ export default function TeamDetailSection() {
                   {item.images?.[0]?.url ? (
                     <OtherImg
                       src={item.images[0].url}
-                      alt={`${item.title[lang]} - team-${item._id}`}
-                      loading="lazy"
+                      alt={getMultiLang(item.title, lang)}
                       width={60}
                       height={40}
                     />
@@ -132,7 +237,7 @@ export default function TeamDetailSection() {
                 </OtherImgWrap>
                 <OtherTitleMini>
                   <Link href={`/team/${item.slug}`}>
-                    {item.title[lang]}
+                    {getMultiLang(item.title, lang)}
                   </Link>
                 </OtherTitleMini>
               </OtherCard>
@@ -140,48 +245,101 @@ export default function TeamDetailSection() {
           </OtherGrid>
         </OtherSection>
       )}
+
+      {/* Yorum Formu ve Liste */}
+      <CommentForm contentId={team._id} contentType="team" />
+      <CommentList contentId={team._id} contentType="team" />
     </Container>
   );
 }
 
-// --------- STYLES -----------
+// --- STYLED COMPONENTS (Hiçbir satır gereksiz veya legacy değil, modern setup!) ---
 
 const Container = styled(motion.section)`
-  max-width: 950px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacings.xxxl} ${({ theme }) => theme.spacings.md};
-  @media (max-width: 650px) {
-    padding: ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.xs};
-  }
+  padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.md};
 `;
 
 const Title = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacings.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-  text-align: center;
-  letter-spacing: 0.01em;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
-const ImageWrapper = styled.div`
+const ImageSection = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
+`;
+
+const MainImageFrame = styled.div`
   width: 100%;
-  margin: 0 auto ${({ theme }) => theme.spacings.xl};
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
-  box-shadow: ${({ theme }) => theme.shadows.md};
+  background: #e7edf3;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  box-shadow: ${({ theme }) => theme.shadows.md};
 `;
 
-const StyledImage = styled(Image)`
+const StyledMainImage = styled(Image)`
   width: 100%;
-  height: 320px;
+  height: 100%;
   object-fit: cover;
-  @media (max-width: 700px) {
-    height: 190px;
+`;
+
+const Gallery = styled.div`
+  margin-top: 1.15rem;
+  display: flex;
+  gap: 1.05rem;
+  flex-wrap: wrap;
+`;
+
+const ThumbFrame = styled.button<{ $active?: boolean }>`
+  border: none;
+  background: none;
+  padding: 0;
+  outline: none;
+  cursor: pointer;
+  width: 168px;
+  height: 96px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #eef5fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.15s, border 0.17s;
+  border: 2.3px solid #e1e8ef;
+
+  &:hover, &:focus-visible {
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 5px 18px 0 rgba(40,117,194,0.13);
+    outline: none;
   }
+`;
+
+const StyledThumbImage = styled(Image)<{ $active?: boolean }>`
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+`;
+
+const SocialShareBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  margin-bottom: 2.3em;
+  margin-top: 0.7em;
+`;
+
+const ShareLabel = styled.div`
+  font-size: 1.02em;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  opacity: 0.85;
 `;
 
 const SummaryBox = styled.div`

@@ -34,7 +34,7 @@ export default function AdminAboutPage() {
   const { i18n, t } = useI18nNamespace("about", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-const about = useAppSelector((state) => state.about.aboutAdmin);
+const about = useAppSelector((state) => Array.isArray(state.about.aboutAdmin) ? state.about.aboutAdmin : []);
 const loading = useAppSelector((state) => state.about.loading);
 const error = useAppSelector((state) => state.about.error);
 

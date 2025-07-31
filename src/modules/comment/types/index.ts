@@ -16,6 +16,10 @@ export type CommentContentType =
   | "company"
   | "ensotekprod"
   | "sparepart"
+  | "portfolio"
+  | "skill"
+  | "team"
+
 
 
 // Yorumun türü (amacı): (isteğe göre genişlet)

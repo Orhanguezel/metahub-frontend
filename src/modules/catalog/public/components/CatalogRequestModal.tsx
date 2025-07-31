@@ -103,7 +103,7 @@ const KATALOG_FILE_NAME = "ensotek.catalog.pdf";
         <CloseButton onClick={handleClose}>×</CloseButton>
         <ModalTitle>{t("modalTitle", "Katalog Talep Formu")}</ModalTitle>
         {successMessage ? (
-          <SuccessMsg>{t("success", successMessage)}</SuccessMsg>
+          <SuccessMsg>{t("success")}</SuccessMsg>
         ) : (
           <form onSubmit={handleSubmit} autoComplete="off">
             <Input

@@ -56,9 +56,10 @@ import ensotekCategoryReducer from "@/modules/ensotekprod/slice/ensotekCategoryS
 import sparepartCategoryReducer from "@/modules/sparepart/slice/sparepartCategorySlice";
 import sparepartReducer from "@/modules/sparepart/slice/sparepartSlice";
 import teamReducer from "@/modules/team/slice/teamSlice";
-import teamCategoryReducer from "@/modules/team/slice/teamCategorySlice";
 import notificationReducer from "@/modules/notification/slice/notificationSlice";
 import catalogReducer from "@/modules/catalog/slice/catalogSlice";
+import portfolioReducer from "@/modules/portfolio/slice/portfolioSlice";
+import skillReducer from "@/modules/skill/slice/skillSlice";
 
 
 // --- Combine reducers ---
@@ -118,9 +119,10 @@ const rootReducer = combineReducers({
   sparepartCategory: sparepartCategoryReducer,
   sparepart: sparepartReducer,
   team: teamReducer,
-  teamCategory: teamCategoryReducer,
   notification: notificationReducer,
   catalog: catalogReducer,
+  portfolio: portfolioReducer,
+  skill: skillReducer,
 });
 
 // --- Store ---

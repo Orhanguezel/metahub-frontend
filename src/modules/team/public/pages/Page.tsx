@@ -3,42 +3,105 @@
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "@/modules/team/locales/index";
+import translations from "@/modules/team/locales";
 import { Skeleton, ErrorMessage } from "@/shared";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import type { SupportedLocale } from "@/types/common";
 import type { ITeam } from "@/modules/team/types";
+import { useState, useMemo } from "react";
+
+// --- Arşiv çıkarma fonksiyonu (Yıl/Ay gruplama) ---
+const getArchives = (team: ITeam[]) => {
+  if (!Array.isArray(team)) return [];
+  const archiveSet = new Set<string>();
+  team.forEach((n) => {
+    const dt = n.publishedAt || n.createdAt;
+    if (dt) {
+      const d = new Date(dt);
+      const label = d.toLocaleString("tr-TR", {
+        year: "numeric",
+        month: "long",
+      });
+      archiveSet.add(label);
+    }
+  });
+  return Array.from(archiveSet);
+};
+
+// --- Kategori çıkarma fonksiyonu (normalize edilmiş) ---
+const getCategories = (team: ITeam[], lang: SupportedLocale) => {
+  if (!Array.isArray(team)) return [];
+  const cats: Record<string, { _id?: string; name: string }> = {};
+  team.forEach((n) => {
+    if (n.category) {
+      if (typeof n.category === "string") {
+        cats[n.category] = { name: n.category };
+      } else if (typeof n.category === "object" && n.category.name) {
+        cats[n.category._id || n.category.name[lang] || "-"] = {
+          _id: n.category._id,
+          name: n.category.name[lang] || n.category.name.en || "-",
+        };
+      }
+    }
+  });
+  return Object.entries(cats).map(([slug, { _id, name }]) => ({ slug, _id, name }));
+};
 
 export default function TeamPage() {
   const { i18n, t } = useI18nNamespace("team", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { team, loading, error } = useAppSelector((state) => state.team);
+  const [search, setSearch] = useState("");
 
+  // Locales eklenmezse SSR hydration hatası çıkabilir, fix.
   Object.entries(translations).forEach(([lng, resources]) => {
     if (!i18n.hasResourceBundle(lng, "team")) {
       i18n.addResourceBundle(lng, "team", resources, true, true);
     }
   });
 
-  // Çoklu dil fallback
-  const getMultiLang = (obj?: Record<string, string>) =>
-    obj?.[lang] || obj?.tr || obj?.en || Object.values(obj || {})[0] || "—";
+  // --- Filter/sort memoize ---
+  const filteredTeam = useMemo(() => {
+    if (!Array.isArray(team)) return [];
+    return team
+      .filter(
+        (n) =>
+          !search ||
+          (n.title?.[lang] ?? "")
+            .toLowerCase()
+            .includes(search.toLowerCase())
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.publishedAt || b.createdAt).getTime() -
+          new Date(a.publishedAt || a.createdAt).getTime()
+      );
+  }, [team, search, lang]);
 
+  // Sidebar data memoize
+  const recentTeam = filteredTeam.slice(0, 4);
+  const archives = useMemo(() => getArchives(team || []), [team]);
+  const categories = useMemo(() => getCategories(team || [], lang), [team, lang]);
+
+  // --- Loading ---
   if (loading) {
     return (
       <PageWrapper>
-        <PageTitle>{t("page.allTeam", "Hakkımızda")}</PageTitle>
-        <TeamGrid>
-          {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} />
-          ))}
-        </TeamGrid>
+        <MainGrid>
+          <LeftColumn>
+            {[...Array(2)].map((_, i) => <Skeleton key={i} />)}
+          </LeftColumn>
+          <RightColumn>
+            <Skeleton />
+          </RightColumn>
+        </MainGrid>
       </PageWrapper>
     );
   }
 
+  // --- Error ---
   if (error) {
     return (
       <PageWrapper>
@@ -47,191 +110,329 @@ export default function TeamPage() {
     );
   }
 
-  if (!team || team.length === 0) {
+  // --- Empty state ---
+  if (!Array.isArray(team) || team.length === 0) {
     return (
       <PageWrapper>
-        <PageTitle>{t("page.allTeam", "Hakkımızda")}</PageTitle>
-        <EmptyMsg>
-          {t("page.noTeam", "Herhangi bir içerik bulunamadı.")}
-        </EmptyMsg>
+        <NoTeam>{t("page.noTeam", "Hiç haber bulunamadı.")}</NoTeam>
       </PageWrapper>
     );
   }
 
+  // --- Main ---
   return (
     <PageWrapper>
-      <PageTitle>{t("page.allTeam", "Hakkımızda")}</PageTitle>
-      <TeamGrid>
-        {team.map((item: ITeam, index: number) => {
-          const detailHref = `/team/${item.slug}`;
-          return (
-            <TeamCard
-              key={item._id}
-              as={motion.div}
-              initial={{ opacity: 0, y: 22 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.09, duration: 0.48 }}
-              viewport={{ once: true }}
-            >
-              <Link href={detailHref} tabIndex={-1} style={{ display: "block" }}>
-                <ImageWrapper>
-                  {item.images?.[0]?.url ? (
-                    <StyledImage
-                      src={item.images[0].url}
-                      alt={getMultiLang(item.title)}
-                      width={440}
-                      height={210}
-                      loading="lazy"
-                    />
-                  ) : (
-                    <ImgPlaceholder />
-                  )}
-                </ImageWrapper>
-              </Link>
-              <CardContent>
-                <CardTitle as={Link} href={detailHref}>
-                  {getMultiLang(item.title)}
-                </CardTitle>
-                <CardSummary>{getMultiLang(item.summary)}</CardSummary>
-                {item.tags?.length > 0 && (
-                  <Tags>
-                    {item.tags.map((tag, i) => (
-                      <Tag key={i}>{tag}</Tag>
+      <MainGrid>
+        {/* Sol: Team Liste */}
+        <LeftColumn>
+          {filteredTeam.map((item: ITeam) => (
+            <TeamItem key={item._id} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
+              {item.images?.[0]?.url && (
+                <MainImageWrap>
+                  <Image
+                    src={item.images[0].url}
+                    alt={item.title?.[lang] || "Team Image"}
+                    width={780}
+                    height={440}
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      objectFit: "cover",
+                      borderRadius: "16px",
+                      display: "block"
+                    }}
+                    loading="lazy"
+                  />
+                </MainImageWrap>
+              )}
+              <TeamTitle>
+                <Link href={`/team/${item.slug}`}>
+                  {item.title?.[lang] || "Untitled"}
+                </Link>
+              </TeamTitle>
+              <TeamMeta>
+                <span>
+                  {new Date(item.publishedAt || item.createdAt).toLocaleDateString("tr-TR", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </span>
+                {Array.isArray(item.tags) && item.tags.length > 0 && (
+                  <span>
+                    {item.tags.map((tag) => (
+                      <CategoryLabel key={tag}>{tag}</CategoryLabel>
                     ))}
-                  </Tags>
+                  </span>
                 )}
-              </CardContent>
-            </TeamCard>
-          );
-        })}
-      </TeamGrid>
+              </TeamMeta>
+              <TeamSummary>
+                {item.summary?.[lang] ||
+                  (item.content?.[lang]
+                    ? item.content?.[lang].substring(0, 180) + "..."
+                    : "")}
+              </TeamSummary>
+              <ReadMoreBtn href={`/team/${item.slug}`}>
+                {t("readMore", "Devamını Oku")}
+              </ReadMoreBtn>
+            </TeamItem>
+          ))}
+        </LeftColumn>
+
+        {/* Sağ: Sidebar */}
+        <RightColumn>
+          <SidebarBox>
+            <SidebarTitle>{t("search", "Arama")}</SidebarTitle>
+            <SearchForm
+              onSubmit={(e) => {
+                e.preventDefault();
+              }}
+            >
+              <input
+                type="text"
+                placeholder={t("search", "Arama")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </SearchForm>
+          </SidebarBox>
+
+          <SidebarBox>
+            <SidebarTitle>{t("recent", "Son Haberler")}</SidebarTitle>
+            <SidebarList>
+              {recentTeam.length ? (
+                recentTeam.map((n) => (
+                  <li key={n._id}>
+                    <Link href={`/team/${n.slug}`}>{n.title?.[lang]}</Link>
+                  </li>
+                ))
+              ) : (
+                <li>-</li>
+              )}
+            </SidebarList>
+          </SidebarBox>
+
+          <SidebarBox>
+            <SidebarTitle>{t("archives", "Arşivler")}</SidebarTitle>
+            <SidebarList>
+              {archives.length
+                ? archives.map((ar: string, i: number) => (
+                    <li key={ar + i}>{ar}</li>
+                  ))
+                : <li>-</li>}
+            </SidebarList>
+          </SidebarBox>
+
+          <SidebarBox>
+            <SidebarTitle>{t("categories", "Kategoriler")}</SidebarTitle>
+            <SidebarList>
+              {categories.length
+                ? categories.map((cat) => (
+                    <li key={cat.slug}>
+                      {cat.name}
+                    </li>
+                  ))
+                : <li>-</li>}
+            </SidebarList>
+          </SidebarBox>
+        </RightColumn>
+      </MainGrid>
     </PageWrapper>
   );
 }
 
-// ----- STYLES -----
+// --- Styled Components ---
 const PageWrapper = styled.div`
-  max-width: 1260px;
+  max-width: 1300px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacings.xxxl} ${({ theme }) => theme.spacings.md};
-  @media (max-width: 600px) {
-    padding: ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.xs};
-  }
+  padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.md};
+  background: ${({ theme }) => theme.colors.sectionBackground};
+  min-height: 90vh;
 `;
 
-const PageTitle = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: ${({ theme }) => theme.spacings.xl};
-  text-align: center;
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  letter-spacing: 0.01em;
-`;
-
-const TeamGrid = styled.div`
+const MainGrid = styled.div`
   display: grid;
-  gap: 2.1rem 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
-  align-items: stretch;
-  margin: 0 auto;
+  grid-template-columns: 2.2fr 1fr;
+  gap: 2.5rem;
+  align-items: flex-start;
 
-  @media (max-width: 800px) {
-    gap: 1.3rem;
+  @media (max-width: 1050px) {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
   }
 `;
 
-const TeamCard = styled(motion.div)`
-  background: ${({ theme }) => theme.colors.cardBackground};
-  box-shadow: ${({ theme }) => theme.shadows.md};
-  border: 1.4px solid ${({ theme }) => theme.colors.borderLight};
-  overflow: hidden;
+const LeftColumn = styled.div`
   display: flex;
   flex-direction: column;
-  transition: box-shadow 0.17s, border 0.17s, transform 0.16s;
-  cursor: pointer;
-  min-height: 335px;
+  gap: 2.5rem;
+`;
 
-  &:hover, &:focus-visible {
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-    border-color: ${({ theme }) => theme.colors.primary};
-    transform: translateY(-8px) scale(1.035);
-    z-index: 1;
+const TeamItem = styled(motion.article)`
+  background: ${({ theme }) => theme.colors.cardBackground || "#fff"};
+  border-radius: 20px;
+  border: 1.5px solid ${({ theme }) => theme.colors.borderLight || "#e5eaf3"};
+  box-shadow: 0 3px 15px 0 rgba(40,117,194,0.09);
+  padding: 2.1rem 2.3rem 1.5rem 2.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+
+  @media (max-width: 650px) {
+    padding: 1.1rem 0.7rem 1.1rem 0.7rem;
+  }
+`;
+const MainImageWrap = styled.div`
+  width: 100%;
+  margin-bottom: 1.1rem;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px 0 rgba(40,117,194,0.11);
+
+  img {
+    width: 100% !important;
+    height: auto !important;  
+    object-fit: cover;
+    display: block;
+    border-radius: 16px;
   }
 `;
 
-const ImageWrapper = styled.div`
-  width: 100%;
-  height: 180px;
-  overflow: hidden;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
+const TeamTitle = styled.h2`
+  font-size: 1.42rem;
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-bottom: 0.23rem;
+  line-height: 1.18;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.17s;
+    &:hover {
+      color: ${({ theme }) => theme.colors.accent};
+    }
+  }
+`;
+
+const TeamMeta = styled.div`
+  font-size: 0.98rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.25rem;
+`;
+
+const CategoryLabel = styled.span`
+  background: ${({ theme }) => theme.colors.primaryTransparent || "#e5f1fb"};
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: 0.9em;
+  border-radius: 8px;
+  padding: 1px 8px;
+  margin-left: 0.32em;
+  font-weight: 500;
+`;
+
+const TeamSummary = styled.p`
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 1.08rem;
+  margin: 0.22em 0 1.22em 0;
+  line-height: 1.64;
+`;
+
+const ReadMoreBtn = styled(Link)`
+  align-self: flex-start;
+  background: linear-gradient(90deg, #2875c2 60%, #0bb6d6 100%);
+  color: #fff;
+  padding: 0.46em 1.35em;
+  border-radius: 22px;
+  font-size: 1.03rem;
+  font-weight: 600;
+  box-shadow: 0 3px 10px 0 rgba(40,117,194,0.06);
+  text-decoration: none;
+  transition: background 0.2s, color 0.18s, transform 0.14s;
+  &:hover, &:focus-visible {
+    background: linear-gradient(90deg, #0bb6d6 0%, #2875c2 90%);
+    color: #fff;
+    transform: translateY(-2px) scale(1.04);
+  }
+`;
+
+const RightColumn = styled.aside`
+  position: sticky;
+  top: 40px;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 2.2rem;
+
+  @media (max-width: 1050px) {
+    position: static;
+    gap: 1.2rem;
+  }
+`;
+
+const SidebarBox = styled.div`
+  background: ${({ theme }) => theme.colors.backgroundAlt || "#f6fafd"};
+  border-radius: 15px;
+  box-shadow: 0 3px 10px 0 rgba(40,117,194,0.04);
+  padding: 1.2rem 1.3rem 1.4rem 1.3rem;
+  margin-bottom: 0.5rem;
+`;
+
+const SidebarTitle = styled.h3`
+  font-size: 1.13rem;
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: 700;
+  margin-bottom: 1.1rem;
+  border-bottom: 1.5px solid ${({ theme }) => theme.colors.primaryTransparent || "#e0eaf3"};
+  padding-bottom: 0.45rem;
+`;
+
+const SearchForm = styled.form`
   display: flex;
   align-items: center;
-  justify-content: center;
-`;
-
-const StyledImage = styled(Image)`
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-`;
-
-const ImgPlaceholder = styled.div`
-  width: 100%;
-  height: 180px;
-  background: ${({ theme }) => theme.colors.skeleton};
-  opacity: 0.38;
-`;
-
-const CardContent = styled.div`
-  padding: ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.md};
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-`;
-
-const CardTitle = styled.h2`
-  font-size: ${({ theme }) => theme.fontSizes.large};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  color: ${({ theme }) => theme.colors.title};
-  margin-bottom: 0.13em;
-  cursor: pointer;
-  transition: color 0.17s;
-  &:hover,
-  &:focus {
-    color: ${({ theme }) => theme.colors.primary};
-    text-decoration: underline;
+  input {
+    flex: 1;
+    padding: 0.41em 1.1em;
+    border-radius: 8px;
+    border: 1.5px solid ${({ theme }) => theme.colors.borderLight || "#e5eaf3"};
+    font-size: 1.05em;
+    color: ${({ theme }) => theme.colors.text};
+    outline: none;
+    background: ${({ theme }) => theme.colors.background};
+    &:focus {
+      border-color: ${({ theme }) => theme.colors.primary};
+      background: #fff;
+    }
   }
 `;
 
-const CardSummary = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.base};
+const SidebarList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  li {
+    margin-bottom: 0.71em;
+    font-size: 1.01em;
+    a {
+      color: ${({ theme }) => theme.colors.text};
+      text-decoration: none;
+      transition: color 0.16s;
+      &:hover {
+        color: ${({ theme }) => theme.colors.primary};
+      }
+    }
+  }
+`;
+
+const NoTeam = styled.div`
   color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: 0.45em;
-  line-height: 1.6;
-`;
-
-const Tags = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 0.3em;
-`;
-
-const Tag = styled.span`
-  background: ${({ theme }) => theme.colors.accent}22;
-  color: ${({ theme }) => theme.colors.primary};
-  padding: 0.21em 1.07em;
-  font-size: 0.96em;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  display: inline-block;
-`;
-
-const EmptyMsg = styled.div`
-  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 1.09rem;
+  padding: 2.1rem 0 3rem 0;
+  opacity: 0.86;
   text-align: center;
-  font-size: 1.18em;
-  margin: 2.4em 0 1.7em 0;
 `;

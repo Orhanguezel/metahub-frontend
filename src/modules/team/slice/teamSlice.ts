@@ -3,8 +3,8 @@ import apiCall from "@/lib/apiCall";
 import type { ITeam } from "@/modules/team";
 
 interface TeamState {
-  team: ITeam[]; // Public (site) için
-  teamAdmin: ITeam[]; // Admin panel için
+  team: ITeam[];
+  teamAdmin: ITeam[];
   selected: ITeam | null;
   status: "idle" | "loading" | "succeeded" | "failed";
   loading: boolean;
@@ -40,6 +40,7 @@ export const fetchTeam = createAsyncThunk<ITeam[]>(
   "team/fetchAll",
   async (_, thunkAPI) => {
     const res = await apiCall("get", `/team`, null, thunkAPI.rejectWithValue);
+    // response: { success, message, data }
     return res.data;
   }
 );
@@ -66,7 +67,8 @@ export const createTeam = createAsyncThunk(
       formData,
       thunkAPI.rejectWithValue
     );
-    return res.data;
+    // return: { success, message, data }
+    return { ...res, data: res.data };
   }
 );
 
@@ -79,7 +81,7 @@ export const updateTeam = createAsyncThunk(
       formData,
       thunkAPI.rejectWithValue
     );
-    return res.data;
+    return { ...res, data: res.data };
   }
 );
 
@@ -92,6 +94,7 @@ export const deleteTeam = createAsyncThunk(
       null,
       thunkAPI.rejectWithValue
     );
+    // return: { success, message }
     return { id, message: res.message };
   }
 );
@@ -110,7 +113,7 @@ export const togglePublishTeam = createAsyncThunk(
       formData,
       thunkAPI.rejectWithValue
     );
-    return res.data;
+    return { ...res, data: res.data };
   }
 );
 
@@ -128,103 +131,107 @@ export const fetchTeamBySlug = createAsyncThunk(
 );
 
 // --- Slice ---
-
 const teamSlice = createSlice({
   name: "team",
   initialState,
   reducers: {
-    clearTeamMessages(state) {
+    clearTeamMessages: (state) => {
       state.error = null;
       state.successMessage = null;
     },
-    setSelectedTeam(state, action: PayloadAction<ITeam | null>) {
+    setSelectedTeam: (state, action: PayloadAction<ITeam | null>) => {
       state.selected = action.payload;
     },
   },
   extraReducers: (builder) => {
-    const startLoading = (state: TeamState) => {
+    const setLoading = (state: TeamState) => {
       state.loading = true;
+      state.status = "loading";
       state.error = null;
     };
 
     const setError = (state: TeamState, action: PayloadAction<any>) => {
       state.loading = false;
+      state.status = "failed";
       state.error = extractErrorMessage(action.payload);
     };
 
-    // --- Public List ---
+    // 🌐 Public
     builder
-      .addCase(fetchTeam.pending, startLoading)
+      .addCase(fetchTeam.pending, setLoading)
       .addCase(fetchTeam.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.team = action.payload;
       })
       .addCase(fetchTeam.rejected, setError);
 
-    // --- Admin List ---
+    // 🔐 Admin List
     builder
-      .addCase(fetchAllTeamAdmin.pending, startLoading)
+      .addCase(fetchAllTeamAdmin.pending, setLoading)
       .addCase(fetchAllTeamAdmin.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.teamAdmin = action.payload;
       })
       .addCase(fetchAllTeamAdmin.rejected, setError);
 
-    // --- Admin Create ---
+    // ➕ Create
     builder
-      .addCase(createTeam.pending, startLoading)
+      .addCase(createTeam.pending, setLoading)
       .addCase(createTeam.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload?.message;
-        if (action.payload?.data) {
-          state.teamAdmin.unshift(action.payload.data);
-        }
+        state.status = "succeeded";
+        state.teamAdmin.unshift(action.payload.data);
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(createTeam.rejected, setError);
 
-    // --- Admin Update ---
+    // 📝 Update
     builder
-      .addCase(updateTeam.pending, startLoading)
+      .addCase(updateTeam.pending, setLoading)
       .addCase(updateTeam.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload?.data || action.payload;
-        const index = state.teamAdmin.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.teamAdmin[index] = updated;
+        state.status = "succeeded";
+        const updated = action.payload.data;
+        const i = state.teamAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.teamAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(updateTeam.rejected, setError);
 
-    // --- Admin Delete ---
+    // 🗑️ Delete
     builder
-      .addCase(deleteTeam.pending, startLoading)
+      .addCase(deleteTeam.pending, setLoading)
       .addCase(deleteTeam.fulfilled, (state, action) => {
         state.loading = false;
-        state.teamAdmin = state.teamAdmin.filter(
-          (a) => a._id !== action.payload.id
-        );
-        state.successMessage = action.payload?.message;
+        state.status = "succeeded";
+        state.teamAdmin = state.teamAdmin.filter((a) => a._id !== action.payload.id);
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(deleteTeam.rejected, setError);
 
-    // --- Admin Toggle Publish ---
+    // 🌍 Toggle Publish
     builder
-      .addCase(togglePublishTeam.pending, startLoading)
+      .addCase(togglePublishTeam.pending, setLoading)
       .addCase(togglePublishTeam.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload?.data || action.payload;
-        const index = state.teamAdmin.findIndex((a) => a._id === updated._id);
-        if (index !== -1) state.teamAdmin[index] = updated;
+        state.status = "succeeded";
+        const updated = action.payload.data;
+        const i = state.teamAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.teamAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(togglePublishTeam.rejected, setError);
 
-    // --- Single Fetch (slug) ---
+    // 🔎 Single (Slug)
     builder
-      .addCase(fetchTeamBySlug.pending, startLoading)
+      .addCase(fetchTeamBySlug.pending, setLoading)
       .addCase(fetchTeamBySlug.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.selected = action.payload;
       })
       .addCase(fetchTeamBySlug.rejected, setError);

@@ -3,8 +3,8 @@ import apiCall from "@/lib/apiCall";
 import type { IAbout } from "@/modules/about";
 
 interface AboutState {
-  about: IAbout[]; // Public (site) için
-  aboutAdmin: IAbout[]; // Admin panel için
+  about: IAbout[];
+  aboutAdmin: IAbout[];
   selected: IAbout | null;
   status: "idle" | "loading" | "succeeded" | "failed";
   loading: boolean;
@@ -40,6 +40,7 @@ export const fetchAbout = createAsyncThunk<IAbout[]>(
   "about/fetchAll",
   async (_, thunkAPI) => {
     const res = await apiCall("get", `/about`, null, thunkAPI.rejectWithValue);
+    // response: { success, message, data }
     return res.data;
   }
 );
@@ -66,7 +67,8 @@ export const createAbout = createAsyncThunk(
       formData,
       thunkAPI.rejectWithValue
     );
-    return res.data;
+    // return: { success, message, data }
+    return { ...res, data: res.data };
   }
 );
 
@@ -79,7 +81,7 @@ export const updateAbout = createAsyncThunk(
       formData,
       thunkAPI.rejectWithValue
     );
-    return res.data;
+    return { ...res, data: res.data };
   }
 );
 
@@ -92,6 +94,7 @@ export const deleteAbout = createAsyncThunk(
       null,
       thunkAPI.rejectWithValue
     );
+    // return: { success, message }
     return { id, message: res.message };
   }
 );
@@ -110,7 +113,7 @@ export const togglePublishAbout = createAsyncThunk(
       formData,
       thunkAPI.rejectWithValue
     );
-    return res.data;
+    return { ...res, data: res.data };
   }
 );
 
@@ -179,8 +182,8 @@ const aboutSlice = createSlice({
       .addCase(createAbout.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        state.aboutAdmin.unshift(action.payload);
-        state.successMessage = "About successfully created.";
+        state.aboutAdmin.unshift(action.payload.data);
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(createAbout.rejected, setError);
 
@@ -190,11 +193,11 @@ const aboutSlice = createSlice({
       .addCase(updateAbout.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        const updated = action.payload;
+        const updated = action.payload.data;
         const i = state.aboutAdmin.findIndex((a) => a._id === updated._id);
         if (i !== -1) state.aboutAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = "About successfully updated.";
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(updateAbout.rejected, setError);
 
@@ -205,7 +208,7 @@ const aboutSlice = createSlice({
         state.loading = false;
         state.status = "succeeded";
         state.aboutAdmin = state.aboutAdmin.filter((a) => a._id !== action.payload.id);
-        state.successMessage = action.payload.message;
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(deleteAbout.rejected, setError);
 
@@ -215,11 +218,11 @@ const aboutSlice = createSlice({
       .addCase(togglePublishAbout.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        const updated = action.payload;
+        const updated = action.payload.data;
         const i = state.aboutAdmin.findIndex((a) => a._id === updated._id);
         if (i !== -1) state.aboutAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = "Publish status updated.";
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(togglePublishAbout.rejected, setError);
 

@@ -39,4 +39,6 @@ export type ImageType =
   | "sparepart"
   | "sparepartCategory"
   | "team"
+  | "portfolio"
+  | "skill"
   | "misc";

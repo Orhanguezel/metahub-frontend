@@ -44,7 +44,7 @@ export default function TeamList({
   if (team.length === 0)
     return <Empty>{t("team.empty", "No team available.")}</Empty>;
 
-  // Fallback fonksiyonu (çok dilli)
+  // Çok dilli alanlar için
   const getMultiLang = (obj?: Record<string, string>) => {
     if (!obj) return "";
     return obj[lang] || obj["en"] || Object.values(obj)[0] || "—";
@@ -56,6 +56,14 @@ export default function TeamList({
         <TeamCard key={item._id}>
           <h2>{getMultiLang(item.title)}</h2>
           <p>{getMultiLang(item.summary)}</p>
+
+          {/* Kategori alanı (string olarak göster) */}
+          <InfoLine>
+            <strong>{t("team.category", "Category")}:</strong>{" "}
+            {typeof item.category === "string"
+              ? item.category
+              : t("none", "None")}
+          </InfoLine>
 
           {item.images?.length > 0 ? (
             <ImageGrid>

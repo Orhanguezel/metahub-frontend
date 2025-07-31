@@ -6,8 +6,7 @@ export { default as Page } from "./public/pages/Page";
 export { default as Tabs } from "./admin/components/Tabs";
 export { default as List } from "./admin/components/List";
 export { default as FormModal } from "./admin/components/FormModal";
-export { default as CategoryListPage } from "./admin/components/CategoryListPage";
-export { default as CategoryForm } from "./admin/components/CategoryForm";
+
 
 // Public Components
 export { default as TeamSection } from "./public/components/Section";

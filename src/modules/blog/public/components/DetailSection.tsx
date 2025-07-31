@@ -358,7 +358,7 @@ const SummaryBox = styled.div`
 `;
 
 const ContentBox = styled.div`
-  background: ${({ theme }) => theme.colors.contentBackground};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   padding: ${({ theme }) => theme.spacings.xl};
   margin-bottom: ${({ theme }) => theme.spacings.xl};
   border-radius: ${({ theme }) => theme.radii.xl};

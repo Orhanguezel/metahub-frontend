@@ -31,6 +31,7 @@ import HeroSlider from "@/modules/home/public/components/HeroSlider";
 import HeroSection from "@/modules/home/public/components/HeroSection";
 import HeroSectionSlayt from "@/modules/home/public/components/HeroSectionSlayt";
 import HeroRobotic from "../components/HeroRobotic";
+import HeroMetahub from "../components/HeroMetahub";
 
 
 // Section Key -> Component Map
@@ -38,6 +39,8 @@ const sectionComponents: Record<string, React.ComponentType<any> | undefined> = 
   heroSlider: HeroSlider,
   heroSection: HeroSection, // Deprecated
   heroSectionSlayt: HeroSectionSlayt, // Deprecated
+  heroRobotic: HeroRobotic,
+  heroMetahub: HeroMetahub,
   couponBanner: WelcomeCouponBanner, 
   about: AboutSection,
   services: ServicesSection,
@@ -57,7 +60,6 @@ const sectionComponents: Record<string, React.ComponentType<any> | undefined> = 
   newsletter:NewsletterButton,
   chatbox: FloatingChatboxSection,
   testimonial: TestimonialSection,
-  herorobotic: HeroRobotic,
   team: TeamSection,
   aboutMe: AboutMeSection,
   contact: ContactFormSection,

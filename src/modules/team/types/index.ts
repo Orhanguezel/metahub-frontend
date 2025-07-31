@@ -26,11 +26,11 @@ export interface ITeam {
   tags: string[];
   images: ITeamImage[];
   category:
-    | string
-    | {
-        _id: string;
-        name: TranslatedField;
-      };
+  | string
+  | {
+    _id: string;
+    name: TranslatedField;
+  };
   author: string;
   isPublished: boolean;
   isActive: boolean;

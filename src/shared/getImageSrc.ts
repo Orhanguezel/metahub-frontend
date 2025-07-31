@@ -39,6 +39,8 @@ const folderMap: Record<ImageType, string> = {
   sparepart: "sparepart-images",
   sparepartCategory: "sparepartCategory-images",
   team: "team-images",
+  skill:"skill-images",
+  portfolio:"portfolio-images",
   misc: "misc",
 };
 
@@ -81,6 +83,8 @@ const defaultImageMap: Record<ImageType, string> = {
   sparepart: "sparepart.png",
   sparepartCategory: "sparepartCategory.png",
   team: "team.png",
+  skill:"skill.png",
+  portfolio:"portfolio.png",
   misc: "default.png",
 };
 

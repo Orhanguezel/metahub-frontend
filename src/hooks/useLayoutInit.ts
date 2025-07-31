@@ -162,10 +162,16 @@ import {
   fetchAllTeamAdmin,
   clearTeamMessages,
 } from "@/modules/team/slice/teamSlice";
+
 import {
-  fetchTeamCategories,
-  clearTeamCategoryMessages,
-} from "@/modules/team/slice/teamCategorySlice";
+  fetchAllSkillAdmin,
+  clearSkillMessages,
+} from "@/modules/skill/slice/skillSlice";
+
+import {
+  fetchAllPortfolioAdmin,
+  clearPortfolioMessages,
+} from "@/modules/portfolio/slice/portfolioSlice";
 
 import {
   fetchAllFAQsAdmin,
@@ -213,7 +219,8 @@ const cleanupActions = [
   clearSparepartMessages,
   clearSparepartCategoryMessages,
   clearTeamMessages,
-  clearTeamCategoryMessages,
+  clearSkillMessages,
+  clearPortfolioMessages,
   clearFAQMessages, 
 ];
 
@@ -274,8 +281,9 @@ export const useLayoutInit = () => {
   const libraryList = useAppSelector((state) => state.library);
 const libraryCategory = useAppSelector((state) => state.libraryCategory);
 const teamList = useAppSelector((state) => state.team);
-const teamCategory = useAppSelector((state) => state.teamCategory);
 const faqList = useAppSelector((state) => state.faq);
+const portfolioList = useAppSelector((state) => state.portfolio);
+const skillList = useAppSelector((state) => state.skill);
 
 
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
@@ -408,11 +416,15 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
 
     if (!teamList.teamAdmin.length && !teamList.loading)
       dispatch(fetchAllTeamAdmin());
-    if (!teamCategory.categories.length && !teamCategory.loading)
-      dispatch(fetchTeamCategories());
 
     if (!faqList.faqsAdmin.length && !faqList.loading)
       dispatch(fetchAllFAQsAdmin());
+
+    if (!portfolioList.portfolioAdmin.length && !portfolioList.loading)
+      dispatch(fetchAllPortfolioAdmin());
+
+     if (!skillList.skillAdmin.length && !skillList.loading)
+      dispatch(fetchAllSkillAdmin());
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantLoaded, tenant?._id, dispatch]);
@@ -467,8 +479,9 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
     libraryList,
   libraryCategory,
   teamList,
-  teamCategory,
   faqList,
+  portfolioList,
+  skillList
     // gerekirse analyticsTrends vs ekleyebilirsin
   };
 };
