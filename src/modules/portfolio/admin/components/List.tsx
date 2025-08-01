@@ -59,11 +59,12 @@ export default function PortfolioList({
 
           {/* Kategori alanı (string olarak göster) */}
           <InfoLine>
-            <strong>{t("portfolio.category", "Category")}:</strong>{" "}
-            {typeof item.category === "string"
-              ? item.category
-              : t("none", "None")}
-          </InfoLine>
+  <strong>{t("portfolio.category", "Category")}:</strong>{" "}
+  {typeof item.category === "string"
+    ? item.category
+    : t("none", "None")}
+</InfoLine>
+
 
           {item.images?.length > 0 ? (
             <ImageGrid>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
@@ -16,13 +16,10 @@ import {
   fetchPortfolioBySlug,
   setSelectedPortfolio,
 } from "@/modules/portfolio/slice/portfolioSlice";
-import { CommentForm, CommentList } from "@/modules/comment";
 import { SupportedLocale } from "@/types/common";
-import { SocialLinks } from "@/modules/shared";
-import Modal from "@/modules/home/public/components/Modal";
 import type { IPortfolio, IPortfolioImage } from "@/modules/portfolio/types";
 
-// Yardımcı fonksiyon (tüm dilleri fallback ile getirir)
+// Çok dilli alanı tek fonksiyondan getir
 const getMultiLang = (
   field: Record<string, string> | undefined,
   lang: SupportedLocale
@@ -57,29 +54,10 @@ export default function PortfolioDetailSection() {
 
   // Görsel galeri state
   const [mainIndex, setMainIndex] = useState(0);
-  const [openModal, setOpenModal] = useState(false);
   const images = portfolio?.images || [];
-  const totalImages = images.length;
-
-  // Navigation fonksiyonları
-  const goNext = useCallback(() => setMainIndex((i) => (i + 1) % totalImages), [totalImages]);
-  const goPrev = useCallback(() => setMainIndex((i) => (i - 1 + totalImages) % totalImages), [totalImages]);
-
-  // Modal açıkken keyboard navigation
-  useEffect(() => {
-    if (!openModal) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") goNext();
-      else if (e.key === "ArrowLeft") goPrev();
-      else if (e.key === "Escape") setOpenModal(false);
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [openModal, goNext, goPrev]);
 
   // Detay fetch & state temizleme
   useEffect(() => {
-    // eğer portfolio listesi state’de varsa slug’dan bul, yoksa backend’den çek
     if (Array.isArray(allPortfolio) && allPortfolio.length > 0) {
       const found = allPortfolio.find((item) => item.slug === slug);
       if (found) dispatch(setSelectedPortfolio(found));
@@ -87,26 +65,20 @@ export default function PortfolioDetailSection() {
     } else {
       dispatch(fetchPortfolioBySlug(slug));
     }
-   setMainIndex(0);
-  return () => {
-    dispatch(clearPortfolioMessages());
-    // Cleanup fonksiyonu void dönmeli, herhangi bir şey döndürmemeli!
-  };
-}, [dispatch, allPortfolio, slug]);
+    setMainIndex(0);
+    return () => {
+      dispatch(clearPortfolioMessages());
+    };
+  }, [dispatch, allPortfolio, slug]);
 
   // Safety: Loading
   if (loading) return <Container><Skeleton /></Container>;
-  // Safety: Error veya data yoksa
   if (error || !portfolio) return <Container><ErrorMessage /></Container>;
 
-  // --- Text Helper
-  function formatText(txt: string | undefined) {
-    if (!txt) return "";
-    return txt.replace(/\\n/g, "\n");
-  }
-
-  // Main Image, diğer içerikler
+  // Ana görsel/galeri
   const mainImage = images[mainIndex];
+
+  // Diğer portfolyo (kısaca, sidebar yerine "Benzer Projeler" kutucuğu en alta)
   const otherPortfolio = (allPortfolio || []).filter((item: IPortfolio) => item.slug !== slug);
 
   return (
@@ -118,55 +90,18 @@ export default function PortfolioDetailSection() {
       {/* Başlık */}
       <Title>{getMultiLang(portfolio.title, lang)}</Title>
 
-      {/* Büyük görsel + thumb */}
+      {/* Büyük görsel + Thumbnail galeri */}
       {mainImage?.url && (
         <ImageSection>
           <MainImageFrame>
             <StyledMainImage
               src={mainImage.url}
               alt={getMultiLang(portfolio.title, lang)}
-              width={800}
+              width={820}
               height={450}
-              priority
-              style={{ cursor: "zoom-in" }}
-              onClick={() => setOpenModal(true)}
-              tabIndex={0}
-              role="button"
-              aria-label={t("detail.openImage", "Büyüt")}
+              loading="eager"
             />
           </MainImageFrame>
-          {/* Modal */}
-          {openModal && (
-            <Modal
-              isOpen={openModal}
-              onClose={() => setOpenModal(false)}
-              onNext={totalImages > 1 ? goNext : undefined}
-              onPrev={totalImages > 1 ? goPrev : undefined}
-            >
-              <div style={{ textAlign: "center", padding: 0 }}>
-                <Image
-                  src={mainImage.url}
-                  alt={getMultiLang(portfolio.title, lang) + "-big"}
-                  width={1280}
-                  height={720}
-                  style={{
-                    maxWidth: "94vw",
-                    maxHeight: "80vh",
-                    borderRadius: 12,
-                    boxShadow: "0 6px 42px #2225",
-                    background: "#111",
-                    width: "auto",
-                    height: "auto"
-                  }}
-                  sizes="(max-width: 800px) 90vw, 1280px"
-                />
-                <div style={{ marginTop: 10, color: "#666", fontSize: 16 }}>
-                  {getMultiLang(portfolio.title, lang)}
-                </div>
-              </div>
-            </Modal>
-          )}
-          {/* Thumbnail galeri */}
           {images.length > 1 && (
             <Gallery>
               {images.map((img: IPortfolioImage, i: number) => (
@@ -175,14 +110,13 @@ export default function PortfolioDetailSection() {
                   $active={mainIndex === i}
                   onClick={() => setMainIndex(i)}
                   tabIndex={0}
-                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setMainIndex(i)}
                   aria-label={`Show image ${i + 1}`}
                 >
                   <StyledThumbImage
                     src={img.url}
                     alt={`${getMultiLang(portfolio.title, lang)} thumbnail ${i + 1}`}
-                    width={168}
-                    height={96}
+                    width={140}
+                    height={90}
                     $active={mainIndex === i}
                   />
                 </ThumbFrame>
@@ -192,17 +126,11 @@ export default function PortfolioDetailSection() {
         </ImageSection>
       )}
 
-      {/* Sosyal medya paylaşım */}
-      <SocialShareBox>
-        <ShareLabel>{t("page.share", "Paylaş")}:</ShareLabel>
-        <SocialLinks />
-      </SocialShareBox>
-
-      {/* Özet (Kısa Bilgi) */}
+      {/* Özet (isteğe bağlı) */}
       {portfolio.summary && getMultiLang(portfolio.summary, lang) && (
         <SummaryBox>
           <ReactMarkdown>
-            {formatText(getMultiLang(portfolio.summary, lang))}
+            {getMultiLang(portfolio.summary, lang)}
           </ReactMarkdown>
         </SummaryBox>
       )}
@@ -211,18 +139,18 @@ export default function PortfolioDetailSection() {
       {portfolio.content && getMultiLang(portfolio.content, lang) && (
         <ContentBox>
           <ReactMarkdown>
-            {formatText(getMultiLang(portfolio.content, lang))}
+            {getMultiLang(portfolio.content, lang)}
           </ReactMarkdown>
         </ContentBox>
       )}
 
-      {/* Diğer içerikler */}
+      {/* Benzer Projeler (isteğe bağlı, min.) */}
       {otherPortfolio?.length > 0 && (
         <OtherSection>
-          <OtherTitle>{t("page.other", "Diğer Haberler")}</OtherTitle>
+          <OtherTitle>{t("page.other", "Diğer Projeler")}</OtherTitle>
           <OtherGrid>
-            {otherPortfolio.map((item: IPortfolio) => (
-              <OtherCard key={item._id} as={motion.div} whileHover={{ y: -6, scale: 1.025 }}>
+            {otherPortfolio.slice(0, 4).map((item: IPortfolio) => (
+              <OtherCard key={item._id} as={motion.div} whileHover={{ y: -4, scale: 1.02 }}>
                 <OtherImgWrap>
                   {item.images?.[0]?.url ? (
                     <OtherImg
@@ -245,15 +173,11 @@ export default function PortfolioDetailSection() {
           </OtherGrid>
         </OtherSection>
       )}
-
-      {/* Yorum Formu ve Liste */}
-      <CommentForm contentId={portfolio._id} contentType="portfolio" />
-      <CommentList contentId={portfolio._id} contentType="portfolio" />
     </Container>
   );
 }
 
-// --- STYLED COMPONENTS (Hiçbir satır gereksiz veya legacy değil, modern setup!) ---
+// --- STYLED COMPONENTS ---
 
 const Container = styled(motion.section)`
   max-width: 900px;
@@ -291,9 +215,9 @@ const StyledMainImage = styled(Image)`
 `;
 
 const Gallery = styled.div`
-  margin-top: 1.15rem;
+  margin-top: 1.1rem;
   display: flex;
-  gap: 1.05rem;
+  gap: 1rem;
   flex-wrap: wrap;
 `;
 
@@ -303,22 +227,16 @@ const ThumbFrame = styled.button<{ $active?: boolean }>`
   padding: 0;
   outline: none;
   cursor: pointer;
-  width: 168px;
-  height: 96px;
+  width: 140px;
+  height: 90px;
   aspect-ratio: 16 / 9;
   overflow: hidden;
   background: #eef5fa;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: box-shadow 0.15s, border 0.17s;
-  border: 2.3px solid #e1e8ef;
-
-  &:hover, &:focus-visible {
-    border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 5px 18px 0 rgba(40,117,194,0.13);
-    outline: none;
-  }
+  border: 2px solid ${({ $active, theme }) => ($active ? theme.colors.primary : "#e1e8ef")};
+  transition: box-shadow 0.15s, border 0.16s;
 `;
 
 const StyledThumbImage = styled(Image)<{ $active?: boolean }>`
@@ -327,24 +245,9 @@ const StyledThumbImage = styled(Image)<{ $active?: boolean }>`
   object-fit: cover;
 `;
 
-const SocialShareBox = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.6em;
-  margin-bottom: 2.3em;
-  margin-top: 0.7em;
-`;
-
-const ShareLabel = styled.div`
-  font-size: 1.02em;
-  font-weight: 500;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  opacity: 0.85;
-`;
-
 const SummaryBox = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  border-left: 5px solid ${({ theme }) => theme.colors.accent};
+  border-left: 4px solid ${({ theme }) => theme.colors.accent};
   padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.lg};
   margin-bottom: ${({ theme }) => theme.spacings.xl};
   border-radius: ${({ theme }) => theme.radii.lg};
@@ -352,16 +255,15 @@ const SummaryBox = styled.div`
 `;
 
 const ContentBox = styled.div`
-  background: ${({ theme }) => theme.colors.contentBackground};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   padding: ${({ theme }) => theme.spacings.xl};
   margin-bottom: ${({ theme }) => theme.spacings.xl};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.sm};
-  border-left: 6px solid ${({ theme }) => theme.colors.primary};
-  line-height: 1.73;
+  border-left: 5px solid ${({ theme }) => theme.colors.primary};
+  line-height: 1.72;
   font-size: ${({ theme }) => theme.fontSizes.base};
   color: ${({ theme }) => theme.colors.text};
-  letter-spacing: 0.01em;
 
   h3 {
     margin-bottom: ${({ theme }) => theme.spacings.md};
@@ -389,7 +291,7 @@ const OtherTitle = styled.h3`
 const OtherGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.25rem 1.8rem;
+  gap: 1.15rem 1.6rem;
   margin-top: 0.7rem;
 `;
 
@@ -397,27 +299,27 @@ const OtherCard = styled(motion.div)`
   background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.xs};
-  border: 1.3px solid ${({ theme }) => theme.colors.borderLight};
-  padding: 1.1rem 1.2rem 1rem 1.2rem;
+  border: 1px solid ${({ theme }) => theme.colors.borderLight};
+  padding: 0.95rem 1.1rem;
   display: flex;
   align-items: center;
-  gap: 1.1rem;
-  transition: box-shadow 0.18s, border 0.18s, transform 0.16s;
+  gap: 1.05rem;
+  transition: box-shadow 0.18s, border 0.18s, transform 0.13s;
   cursor: pointer;
-  min-height: 72px;
+  min-height: 64px;
 
   &:hover, &:focus-visible {
     box-shadow: ${({ theme }) => theme.shadows.md};
     border-color: ${({ theme }) => theme.colors.primary};
-    transform: translateY(-5px) scale(1.035);
+    transform: translateY(-3px) scale(1.02);
     z-index: 2;
   }
 `;
 
 const OtherImgWrap = styled.div`
   flex-shrink: 0;
-  width: 60px;
-  height: 40px;
+  width: 52px;
+  height: 34px;
   border-radius: ${({ theme }) => theme.radii.md};
   overflow: hidden;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
@@ -434,10 +336,10 @@ const OtherImg = styled(Image)`
 `;
 
 const OtherImgPlaceholder = styled.div`
-  width: 60px;
-  height: 40px;
+  width: 52px;
+  height: 34px;
   background: ${({ theme }) => theme.colors.skeleton};
-  opacity: 0.36;
+  opacity: 0.34;
   border-radius: ${({ theme }) => theme.radii.md};
 `;
 

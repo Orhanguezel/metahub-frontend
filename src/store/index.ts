@@ -60,6 +60,7 @@ import notificationReducer from "@/modules/notification/slice/notificationSlice"
 import catalogReducer from "@/modules/catalog/slice/catalogSlice";
 import portfolioReducer from "@/modules/portfolio/slice/portfolioSlice";
 import skillReducer from "@/modules/skill/slice/skillSlice";
+import skillCategoryReducer from "@/modules/skill/slice/skillCategorySlice";
 
 
 // --- Combine reducers ---
@@ -123,6 +124,7 @@ const rootReducer = combineReducers({
   catalog: catalogReducer,
   portfolio: portfolioReducer,
   skill: skillReducer,
+  skillCategory: skillCategoryReducer,
 });
 
 // --- Store ---

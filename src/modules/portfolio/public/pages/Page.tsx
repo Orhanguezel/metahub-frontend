@@ -10,93 +10,26 @@ import Link from "next/link";
 import Image from "next/image";
 import type { SupportedLocale } from "@/types/common";
 import type { IPortfolio } from "@/modules/portfolio/types";
-import { useState, useMemo } from "react";
-
-// --- Arşiv çıkarma fonksiyonu (Yıl/Ay gruplama) ---
-const getArchives = (portfolio: IPortfolio[]) => {
-  if (!Array.isArray(portfolio)) return [];
-  const archiveSet = new Set<string>();
-  portfolio.forEach((n) => {
-    const dt = n.publishedAt || n.createdAt;
-    if (dt) {
-      const d = new Date(dt);
-      const label = d.toLocaleString("tr-TR", {
-        year: "numeric",
-        month: "long",
-      });
-      archiveSet.add(label);
-    }
-  });
-  return Array.from(archiveSet);
-};
-
-// --- Kategori çıkarma fonksiyonu (normalize edilmiş) ---
-const getCategories = (portfolio: IPortfolio[], lang: SupportedLocale) => {
-  if (!Array.isArray(portfolio)) return [];
-  const cats: Record<string, { _id?: string; name: string }> = {};
-  portfolio.forEach((n) => {
-    if (n.category) {
-      if (typeof n.category === "string") {
-        cats[n.category] = { name: n.category };
-      } else if (typeof n.category === "object" && n.category.name) {
-        cats[n.category._id || n.category.name[lang] || "-"] = {
-          _id: n.category._id,
-          name: n.category.name[lang] || n.category.name.en || "-",
-        };
-      }
-    }
-  });
-  return Object.entries(cats).map(([slug, { _id, name }]) => ({ slug, _id, name }));
-};
 
 export default function PortfolioPage() {
   const { i18n, t } = useI18nNamespace("portfolio", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { portfolio, loading, error } = useAppSelector((state) => state.portfolio);
-  const [search, setSearch] = useState("");
 
-  // Locales eklenmezse SSR hydration hatası çıkabilir, fix.
+  // SSR hydration için
   Object.entries(translations).forEach(([lng, resources]) => {
     if (!i18n.hasResourceBundle(lng, "portfolio")) {
       i18n.addResourceBundle(lng, "portfolio", resources, true, true);
     }
   });
 
-  // --- Filter/sort memoize ---
-  const filteredPortfolio = useMemo(() => {
-    if (!Array.isArray(portfolio)) return [];
-    return portfolio
-      .filter(
-        (n) =>
-          !search ||
-          (n.title?.[lang] ?? "")
-            .toLowerCase()
-            .includes(search.toLowerCase())
-      )
-      .sort(
-        (a, b) =>
-          new Date(b.publishedAt || b.createdAt).getTime() -
-          new Date(a.publishedAt || a.createdAt).getTime()
-      );
-  }, [portfolio, search, lang]);
-
-  // Sidebar data memoize
-  const recentPortfolio = filteredPortfolio.slice(0, 4);
-  const archives = useMemo(() => getArchives(portfolio || []), [portfolio]);
-  const categories = useMemo(() => getCategories(portfolio || [], lang), [portfolio, lang]);
-
   // --- Loading ---
   if (loading) {
     return (
       <PageWrapper>
-        <MainGrid>
-          <LeftColumn>
-            {[...Array(2)].map((_, i) => <Skeleton key={i} />)}
-          </LeftColumn>
-          <RightColumn>
-            <Skeleton />
-          </RightColumn>
-        </MainGrid>
+        <ListGrid>
+          {[...Array(2)].map((_, i) => <Skeleton key={i} />)}
+        </ListGrid>
       </PageWrapper>
     );
   }
@@ -114,7 +47,7 @@ export default function PortfolioPage() {
   if (!Array.isArray(portfolio) || portfolio.length === 0) {
     return (
       <PageWrapper>
-        <NoPortfolio>{t("page.noPortfolio", "Hiç haber bulunamadı.")}</NoPortfolio>
+        <NoPortfolio>{t("page.noPortfolio", "Hiç proje bulunamadı.")}</NoPortfolio>
       </PageWrapper>
     );
   }
@@ -122,10 +55,14 @@ export default function PortfolioPage() {
   // --- Main ---
   return (
     <PageWrapper>
-      <MainGrid>
-        {/* Sol: Portfolio Liste */}
-        <LeftColumn>
-          {filteredPortfolio.map((item: IPortfolio) => (
+      <ListGrid>
+        {portfolio
+          .sort(
+            (a, b) =>
+              new Date(b.publishedAt || b.createdAt).getTime() -
+              new Date(a.publishedAt || a.createdAt).getTime()
+          )
+          .map((item: IPortfolio) => (
             <PortfolioItem key={item._id} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
               {item.images?.[0]?.url && (
                 <MainImageWrap>
@@ -177,92 +114,21 @@ export default function PortfolioPage() {
               </ReadMoreBtn>
             </PortfolioItem>
           ))}
-        </LeftColumn>
-
-        {/* Sağ: Sidebar */}
-        <RightColumn>
-          <SidebarBox>
-            <SidebarTitle>{t("search", "Arama")}</SidebarTitle>
-            <SearchForm
-              onSubmit={(e) => {
-                e.preventDefault();
-              }}
-            >
-              <input
-                type="text"
-                placeholder={t("search", "Arama")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </SearchForm>
-          </SidebarBox>
-
-          <SidebarBox>
-            <SidebarTitle>{t("recent", "Son Haberler")}</SidebarTitle>
-            <SidebarList>
-              {recentPortfolio.length ? (
-                recentPortfolio.map((n) => (
-                  <li key={n._id}>
-                    <Link href={`/portfolio/${n.slug}`}>{n.title?.[lang]}</Link>
-                  </li>
-                ))
-              ) : (
-                <li>-</li>
-              )}
-            </SidebarList>
-          </SidebarBox>
-
-          <SidebarBox>
-            <SidebarTitle>{t("archives", "Arşivler")}</SidebarTitle>
-            <SidebarList>
-              {archives.length
-                ? archives.map((ar: string, i: number) => (
-                    <li key={ar + i}>{ar}</li>
-                  ))
-                : <li>-</li>}
-            </SidebarList>
-          </SidebarBox>
-
-          <SidebarBox>
-            <SidebarTitle>{t("categories", "Kategoriler")}</SidebarTitle>
-            <SidebarList>
-              {categories.length
-                ? categories.map((cat) => (
-                    <li key={cat.slug}>
-                      {cat.name}
-                    </li>
-                  ))
-                : <li>-</li>}
-            </SidebarList>
-          </SidebarBox>
-        </RightColumn>
-      </MainGrid>
+      </ListGrid>
     </PageWrapper>
   );
 }
 
 // --- Styled Components ---
 const PageWrapper = styled.div`
-  max-width: 1300px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.md};
   background: ${({ theme }) => theme.colors.sectionBackground};
   min-height: 90vh;
 `;
 
-const MainGrid = styled.div`
-  display: grid;
-  grid-template-columns: 2.2fr 1fr;
-  gap: 2.5rem;
-  align-items: flex-start;
-
-  @media (max-width: 1050px) {
-    grid-template-columns: 1fr;
-    gap: 1.2rem;
-  }
-`;
-
-const LeftColumn = styled.div`
+const ListGrid = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
@@ -358,74 +224,6 @@ const ReadMoreBtn = styled(Link)`
     background: linear-gradient(90deg, #0bb6d6 0%, #2875c2 90%);
     color: #fff;
     transform: translateY(-2px) scale(1.04);
-  }
-`;
-
-const RightColumn = styled.aside`
-  position: sticky;
-  top: 40px;
-  align-self: flex-start;
-  display: flex;
-  flex-direction: column;
-  gap: 2.2rem;
-
-  @media (max-width: 1050px) {
-    position: static;
-    gap: 1.2rem;
-  }
-`;
-
-const SidebarBox = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundAlt || "#f6fafd"};
-  border-radius: 15px;
-  box-shadow: 0 3px 10px 0 rgba(40,117,194,0.04);
-  padding: 1.2rem 1.3rem 1.4rem 1.3rem;
-  margin-bottom: 0.5rem;
-`;
-
-const SidebarTitle = styled.h3`
-  font-size: 1.13rem;
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: 700;
-  margin-bottom: 1.1rem;
-  border-bottom: 1.5px solid ${({ theme }) => theme.colors.primaryTransparent || "#e0eaf3"};
-  padding-bottom: 0.45rem;
-`;
-
-const SearchForm = styled.form`
-  display: flex;
-  align-items: center;
-  input {
-    flex: 1;
-    padding: 0.41em 1.1em;
-    border-radius: 8px;
-    border: 1.5px solid ${({ theme }) => theme.colors.borderLight || "#e5eaf3"};
-    font-size: 1.05em;
-    color: ${({ theme }) => theme.colors.text};
-    outline: none;
-    background: ${({ theme }) => theme.colors.background};
-    &:focus {
-      border-color: ${({ theme }) => theme.colors.primary};
-      background: #fff;
-    }
-  }
-`;
-
-const SidebarList = styled.ul`
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  li {
-    margin-bottom: 0.71em;
-    font-size: 1.01em;
-    a {
-      color: ${({ theme }) => theme.colors.text};
-      text-decoration: none;
-      transition: color 0.16s;
-      &:hover {
-        color: ${({ theme }) => theme.colors.primary};
-      }
-    }
   }
 `;
 

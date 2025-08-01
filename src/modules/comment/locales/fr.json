@@ -45,5 +45,7 @@
   "form.submit": "Envoyer",
   "form.success": "Votre commentaire a été soumis avec succès ! Il sera publié après approbation.",
   "form.error": "Une erreur s'est produite. Veuillez réessayer.",
-  "anon": "Anonyme"
+  "anon": "Anonyme",
+  "sectionTitle2": "Avis des utilisateurs",
+  "form.loginFirst": "Vous devez vous connecter pour laisser un commentaire."
 }

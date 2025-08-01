@@ -3,27 +3,33 @@
 import React, { useCallback, useRef } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "@/modules/skill/locales";
+import { translations } from "@/modules/skill";
 
+// --- Yeni Tab enum
+type SkillTab = "list" | "create" | "multiUpload" | "categories";
+
+// --- Tablar, MultiUpload eklendi
 const TABS: Array<{
-  key: "list" | "create";
+  key: SkillTab;
   labelKey: string;
   fallback: string;
 }> = [
   { key: "list", labelKey: "tabs.skill", fallback: "Skill" },
-  { key: "create", labelKey: "tabs.create", fallback: "New Skill" },
+  { key: "create", labelKey: "tabs.create", fallback: "New Reference" },
+  { key: "multiUpload", labelKey: "tabs.multiUpload", fallback: "Bulk Logo Upload" },
+  { key: "categories", labelKey: "tabs.categories", fallback: "Categories" },
 ];
 
 interface Props {
-  activeTab: "list" | "create";
-  onChange: (tab: "list" | "create") => void;
+  activeTab: SkillTab;
+  onChange: (tab: SkillTab) => void;
 }
 
 export default function SkillTabs({ activeTab, onChange }: Props) {
   const { t } = useI18nNamespace("skill", translations);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  // Keyboard navigation (arrow left/right)
+  // Klavye ile sekme gezme
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent, idx: number) => {
       if (e.key === "ArrowRight") {
@@ -60,7 +66,7 @@ export default function SkillTabs({ activeTab, onChange }: Props) {
   );
 }
 
-// --- Styles ---
+// 💅 Gelişmiş stil
 const Header = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacings.sm};
@@ -93,6 +99,7 @@ const TabButton = styled.button<{ $active: boolean }>`
       ? `0 2px 16px 0 ${theme.colors.primary}44`
       : "none"};
 
+  /* Alt border animasyonu */
   &::after {
     content: "";
     display: block;

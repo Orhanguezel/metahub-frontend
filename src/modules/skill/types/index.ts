@@ -1,7 +1,6 @@
-// src/types/skill.ts
 import type { SupportedLocale } from "@/types/common";
 
-// Çok dilli alanlar için merkezi tanım
+// Çok dilli alanlar için
 export type TranslatedField = {
   [lang in SupportedLocale]?: string;
 };
@@ -15,15 +14,14 @@ export interface ISkillImage {
   _id?: string;
 }
 
-// Ana makale (skill) tipi
+// Ana referans tipi (firma logosu)
 export interface ISkill {
   _id: string;
-  title: TranslatedField;
+  title?: TranslatedField;
   slug: string;
-  summary: TranslatedField;
-  content: TranslatedField;
+  summary?: TranslatedField;
+  content?: TranslatedField;
   tenant: string;
-  tags: string[];
   images: ISkillImage[];
   category:
   | string
@@ -31,14 +29,13 @@ export interface ISkill {
     _id: string;
     name: TranslatedField;
   };
-  author: string;
   isPublished: boolean;
   isActive: boolean;
   publishedAt?: string;
-  comments: string[];
   createdAt: string;
   updatedAt: string;
 }
+
 
 // Kategori modeli
 export interface SkillCategory {

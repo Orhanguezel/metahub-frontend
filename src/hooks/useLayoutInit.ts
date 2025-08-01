@@ -169,6 +169,11 @@ import {
 } from "@/modules/skill/slice/skillSlice";
 
 import {
+  fetchSkillCategories,
+  clearSkillCategoryMessages,
+} from "@/modules/skill/slice/skillCategorySlice";
+
+import {
   fetchAllPortfolioAdmin,
   clearPortfolioMessages,
 } from "@/modules/portfolio/slice/portfolioSlice";
@@ -220,6 +225,7 @@ const cleanupActions = [
   clearSparepartCategoryMessages,
   clearTeamMessages,
   clearSkillMessages,
+  clearSkillCategoryMessages,
   clearPortfolioMessages,
   clearFAQMessages, 
 ];
@@ -284,6 +290,7 @@ const teamList = useAppSelector((state) => state.team);
 const faqList = useAppSelector((state) => state.faq);
 const portfolioList = useAppSelector((state) => state.portfolio);
 const skillList = useAppSelector((state) => state.skill);
+const skillCategories = useAppSelector((state) => state.skillCategory);
 
 
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
@@ -426,6 +433,12 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
      if (!skillList.skillAdmin.length && !skillList.loading)
       dispatch(fetchAllSkillAdmin());
 
+    if (!skillCategories.categories.length && !skillCategories.loading)
+      dispatch(fetchSkillCategories());
+
+    // Cleanup actions
+    cleanupActions.forEach((action) => dispatch(action()));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantLoaded, tenant?._id, dispatch]);
 
@@ -481,7 +494,8 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
   teamList,
   faqList,
   portfolioList,
-  skillList
+  skillList,
+  skillCategories,
     // gerekirse analyticsTrends vs ekleyebilirsin
   };
 };

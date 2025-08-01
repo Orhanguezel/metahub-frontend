@@ -4,8 +4,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "@/modules/skill/locales";
-import { ISkill } from "@/modules/skill/types";
+import { translations } from "@/modules/skill";
+import { SkillCategory, ISkill } from "@/modules/skill/types";
 import { ImageUploadWithPreview } from "@/shared";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import { toast } from "react-toastify";
@@ -23,42 +23,33 @@ export default function FormModal({
   editingItem,
   onSubmit,
 }: Props) {
-  // --- DİL ve ÇEVİRİ ---
-  const { t } = useI18nNamespace("skill", translations);
+  // DİL ve ÇEVİRİ
+  const { i18n, t } = useI18nNamespace("skill", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  // --- STATE ---
+  // Selector
+  const categories = useAppSelector((state) => state.skillCategory.categories);
   const successMessage = useAppSelector((state) => state.skill.successMessage);
   const error = useAppSelector((state) => state.skill.error);
-  const currentUser = useAppSelector((state) => state.account.profile);
 
+  // --- STATE ---
   const [titles, setTitles] = useState<Record<SupportedLocale, string>>(() =>
-    SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
-  );
-  const [summaries, setSummaries] = useState<Record<SupportedLocale, string>>(() =>
     SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
   );
   const [contents, setContents] = useState<Record<SupportedLocale, string>>(() =>
     SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
   );
-  const [author, setAuthor] = useState("");
-  const [tags, setTags] = useState("");
   const [category, setCategory] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
 
-  // --- FILL ON EDIT ---
+  // FILL ON EDIT
   useEffect(() => {
     if (editingItem) {
       setTitles(
         SUPPORTED_LOCALES.reduce((acc, lng) => {
           acc[lng] = editingItem.title?.[lng] || "";
-          return acc;
-        }, {} as Record<SupportedLocale, string>)
-      );
-      setSummaries(
-        SUPPORTED_LOCALES.reduce((acc, lng) => {
-          acc[lng] = editingItem.summary?.[lng] || "";
           return acc;
         }, {} as Record<SupportedLocale, string>)
       );
@@ -68,33 +59,23 @@ export default function FormModal({
           return acc;
         }, {} as Record<SupportedLocale, string>)
       );
-      setAuthor(editingItem.author || currentUser?.name || "");
-      setTags(Array.isArray(editingItem.tags) ? editingItem.tags.join(", ") : "");
       setCategory(
         typeof editingItem.category === "string"
           ? editingItem.category
-          : ""
+          : editingItem.category?._id || ""
       );
-      setExistingImages(
-        Array.isArray(editingItem.images)
-          ? editingItem.images.map((img) => img.url)
-          : []
-      );
+      setExistingImages(editingItem.images?.map((img) => img.url) || []);
     } else {
-      // Reset
       setTitles(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
-      setSummaries(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
       setContents(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
-      setAuthor(currentUser?.name || "");
-      setTags("");
       setCategory("");
       setExistingImages([]);
       setSelectedFiles([]);
       setRemovedImages([]);
     }
-  }, [editingItem, isOpen, currentUser]);
+  }, [editingItem, isOpen]);
 
-  // --- TOAST Mesajları ---
+  // TOAST
   useEffect(() => {
     if (successMessage) {
       toast.success(successMessage);
@@ -104,46 +85,36 @@ export default function FormModal({
     }
   }, [successMessage, error, onClose]);
 
-  // --- IMAGE HANDLER ---
+  // IMAGE HANDLER
   const handleImagesChange = useCallback(
     (files: File[], removed: string[], current: string[]) => {
-      setSelectedFiles(files || []);
-      setRemovedImages(removed || []);
-      setExistingImages(current || []);
+      setSelectedFiles(files);
+      setRemovedImages(removed);
+      setExistingImages(current);
     },
     []
   );
 
-  // --- SUBMIT ---
+  // SUBMIT
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData();
 
     formData.append("title", JSON.stringify(titles));
-    formData.append("summary", JSON.stringify(summaries));
     formData.append("content", JSON.stringify(contents));
-    formData.append("author", author.trim());
-    formData.append(
-      "tags",
-      JSON.stringify(
-        tags
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean)
-      )
-    );
-    formData.append("category", category.trim()); // Artık düz string, required değil!
-    formData.append("isPublished", "true");
+    formData.append("category", category);
 
+    // Zorunlu image(s)
     for (const file of selectedFiles) {
       formData.append("images", file);
     }
     if (removedImages.length > 0) {
       formData.append("removedImages", JSON.stringify(removedImages));
     }
+    // Varsayılan olarak yayında (değilse, isPublished eklenmez!)
+    formData.append("isPublished", "true");
 
     await onSubmit(formData, editingItem?._id);
-    // Başarı durumunu useEffect ile handle edeceğiz
   };
 
   if (!isOpen) return null;
@@ -152,8 +123,8 @@ export default function FormModal({
     <FormWrapper>
       <h2>
         {editingItem
-          ? t("admin.skill.edit", "Edit Skill")
-          : t("admin.skill.create", "Create New Skill")}
+          ? t("admin.skill.edit", "Edit Reference")
+          : t("admin.skill.create", "Add Reference")}
       </h2>
       <form onSubmit={handleSubmit}>
         {SUPPORTED_LOCALES.map((lng) => (
@@ -165,17 +136,6 @@ export default function FormModal({
               id={`title-${lng}`}
               value={titles[lng]}
               onChange={(e) => setTitles({ ...titles, [lng]: e.target.value })}
-            />
-
-            <label htmlFor={`summary-${lng}`}>
-              {t("admin.skill.summary", "Summary")} ({lng.toUpperCase()})
-            </label>
-            <textarea
-              id={`summary-${lng}`}
-              value={summaries[lng]}
-              onChange={(e) =>
-                setSummaries({ ...summaries, [lng]: e.target.value })
-              }
             />
 
             <label htmlFor={`content-${lng}`}>
@@ -191,43 +151,32 @@ export default function FormModal({
           </div>
         ))}
 
-        <label htmlFor="author">{t("admin.skill.author", "Author")}</label>
-        <input
-          id="author"
-          type="text"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-          required
-        />
-
-        <label htmlFor="tags">{t("admin.skill.tags", "Tags")}</label>
-        <input
-          id="tags"
-          type="text"
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
-          placeholder="tag1, tag2, tag3"
-        />
-
-        <label>{t("admin.skill.image", "Images")}</label>
+        <label>{t("admin.skill.image", "Logo Image")}</label>
         <ImageUploadWithPreview
-          max={5}
+          max={1}
           defaultImages={existingImages}
           onChange={handleImagesChange}
           folder="skill"
         />
 
-        {/* --- DÜZENLENEN KATEGORİ ALANI (select yerine text input) --- */}
         <label htmlFor="category">
           {t("admin.skill.category", "Category")}
         </label>
-        <input
+        <select
           id="category"
-          type="text"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          placeholder={t("admin.skill.category_placeholder", "Type a category (optional)")}
-        />
+          required
+        >
+          <option value="" disabled>
+            {t("admin.skill.select_category", "Select a category")}
+          </option>
+          {categories.map((cat: SkillCategory) => (
+            <option key={cat._id} value={cat._id}>
+              {cat.name?.[lang] || cat.name?.en || Object.values(cat.name || {})[0] || cat.slug}
+            </option>
+          ))}
+        </select>
 
         <ButtonGroup>
           <button type="submit">
@@ -244,7 +193,7 @@ export default function FormModal({
   );
 }
 
-// --- Styled Components (Aynı kalabilir) ---
+// --- Styled Components ---
 const FormWrapper = styled.div`
   max-width: 600px;
   margin: auto;

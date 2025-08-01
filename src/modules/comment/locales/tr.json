@@ -45,5 +45,7 @@
   "form.submit": "Gönder",
   "form.success": "Yorumunuz başarıyla gönderildi! Onaylandıktan sonra yayınlanacaktır.",
   "form.error": "Bir hata oluştu. Lütfen tekrar deneyin.",
-  "anon": "Anonim"
+  "anon": "Anonim",
+  "sectionTitle2": "Kullanıcı Yorumları",
+  "form.loginFirst": "Yorum bırakmak için giriş yapmalısınız."
 }

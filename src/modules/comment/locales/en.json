@@ -45,5 +45,11 @@
   "form.submit": "Submit",
   "form.success": "Your comment has been submitted successfully! It will be published after approval.",
   "form.error": "An error occurred. Please try again.",
-  "anon": "Anonymous"
+  "anon": "Anonymous",
+  "sectionTitle2": "User Reviews",
+  "form.loginFirst": "You must log in to leave a comment.",
+  "form.recaptcha": "Please confirm that you are not a robot.",
+  "testimonial": "Testimonial"
+
+
 }

@@ -1,55 +1,144 @@
 "use client";
 
-import styled from "styled-components";
-import Link from "next/link";
-import translations from "@/modules/skill/locales";
-import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import styled, { keyframes } from "styled-components";
 import { motion } from "framer-motion";
 import { useAppSelector } from "@/store/hooks";
-import { Skeleton, ErrorMessage, SeeAllBtn } from "@/shared";
-import Image from "next/image";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import { translations } from "@/modules/skill";
+import { Skeleton, ErrorMessage } from "@/shared";
 import type { SupportedLocale } from "@/types/common";
+import type { ISkill } from "@/modules/skill/types";
+import { useState, useMemo, useEffect } from "react";
+import Image from "next/image";
 
-// --- Lokal yardımcılar ---
-const getTitle = (item: any, lang: SupportedLocale) =>
-  item?.title?.[lang] || item?.title?.en || Object.values(item?.title || {})[0] || "";
-
-const getSummary = (item: any, lang: SupportedLocale) =>
-  item?.summary?.[lang] ||
-  (item?.content?.[lang] ? item.content[lang].slice(0, 120) + "…" : "");
-
-const getLocaleStringFromLang = (lang: SupportedLocale) => {
-  switch (lang) {
-    case "tr":
-      return "tr-TR";
-    case "de":
-      return "de-DE";
-    case "en":
-      return "en-US";
-    default:
-      return lang;
-  }
+type MinSkillCategory = {
+  _id: string;
+  name: Record<string, string>;
+  description?: Record<string, string>;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export default function SkillSection() {
   const { i18n, t } = useI18nNamespace("skill", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const rawSkill = useAppSelector((state) => state.skill.skill);
+  const skill = useMemo(() => rawSkill || [], [rawSkill]);
+  const loading = useAppSelector((state) => state.skill.loading);
+  const error = useAppSelector((state) => state.skill.error);
 
-  const { skill, loading, error } = useAppSelector((state) => state.skill);
+  Object.entries(translations).forEach(([lng, resources]) => {
+    if (!i18n.hasResourceBundle(lng, "skill")) {
+      i18n.addResourceBundle(lng, "skill", resources, true, true);
+    }
+  });
 
+  // Kategorileri referanslardan topla (uniq)
+  const categories = useMemo<MinSkillCategory[]>(() => {
+    const map = new Map<string, MinSkillCategory>();
+    skill.forEach((ref: ISkill) => {
+      const cat = ref.category;
+      if (!cat) return;
+      if (typeof cat === "string") {
+        map.set(cat, {
+          _id: cat,
+          name: {},
+          isActive: true,
+          createdAt: "",
+          updatedAt: "",
+        });
+      } else if (cat._id) {
+        map.set(cat._id, {
+          _id: cat._id,
+          name: cat.name || {},
+          description: (cat as any).description || {},
+          isActive: (cat as any).isActive ?? true,
+          createdAt: (cat as any).createdAt ?? "",
+          updatedAt: (cat as any).updatedAt ?? "",
+        });
+      }
+    });
+    return Array.from(map.values());
+  }, [skill]);
+
+  // Skill'leri kategorilere grupla
+  const grouped = useMemo(() => {
+    const result: Record<string, ISkill[]> = {};
+    skill.forEach((ref: ISkill) => {
+      const catId =
+        typeof ref.category === "string"
+          ? ref.category
+          : ref.category?._id || "none";
+      if (!result[catId]) result[catId] = [];
+      result[catId].push(ref);
+    });
+    return result;
+  }, [skill]);
+
+  const noCategory = grouped["none"] || [];
+
+  const sortedCategories = useMemo(
+    () => categories.filter((cat) => grouped[cat._id]?.length),
+    [categories, grouped]
+  );
+
+  const tabs = useMemo(
+    () => [
+      ...sortedCategories.map((cat) => ({
+        key: cat._id,
+        label: cat.name?.[lang] || cat.name?.en || t("skill.unknown_category", "Kategori"),
+        desc: cat.description?.[lang] || cat.description?.en || "",
+      })),
+      ...(noCategory.length
+        ? [
+            {
+              key: "none",
+              label: t("skill.no_category", "Kategorisiz"),
+              desc: "",
+            },
+          ]
+        : []),
+    ],
+    [sortedCategories, noCategory, lang, t]
+  );
+
+  const [activeTab, setActiveTab] = useState<string>("");
+
+  useEffect(() => {
+    if (tabs.length > 0) {
+      setActiveTab((prev) =>
+        tabs.some((tab) => tab.key === prev) ? prev : tabs[0].key
+      );
+    }
+  }, [tabs]);
+
+  // Filtrelenmiş & görselli (logolu) referanslar
+  const filteredRefs = useMemo(() => {
+    return (grouped[activeTab] || []).filter((item: ISkill) => item.images?.[0]?.url);
+  }, [activeTab, grouped]);
+
+  // Aktif tab'ın adı ve açıklaması
+  const currentTab = useMemo(() => tabs.find((tab) => tab.key === activeTab), [tabs, activeTab]);
+  const sectionTitle = currentTab?.label || t("page.skill.title", "Yeteneklerim");
+  const sectionDesc =
+    currentTab?.desc ||
+    t("page.skill.desc", "Web, backend, devops ve daha fazlası...");
+
+  // --- Render ---
   if (loading) {
     return (
       <Section>
-        <SkillGrid>
-          <Left>
-            <Skeleton />
-            <Skeleton />
-          </Left>
-          <Right>
-            <Skeleton />
-            <Skeleton />
-          </Right>
-        </SkillGrid>
+        <SectionHead>
+          <MinorTitle>{t("page.skill.minorTitle", "YETENEKLER")}</MinorTitle>
+          <MainTitle>{t("page.skill.title", "Yeteneklerim")}</MainTitle>
+          <Desc>{t("page.skill.desc", "Web, backend, devops ve daha fazlası...")}</Desc>
+        </SectionHead>
+        <SkeletonGrid>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} />
+          ))}
+        </SkeletonGrid>
       </Section>
     );
   }
@@ -57,32 +146,26 @@ export default function SkillSection() {
   if (error) {
     return (
       <Section>
-        <SkillGrid>
-          <ErrorMessage message={error} />
-        </SkillGrid>
+        <SectionHead>
+          <MinorTitle>{t("page.skill.minorTitle", "YETENEKLER")}</MinorTitle>
+          <MainTitle>{t("page.skill.title", "Yeteneklerim")}</MainTitle>
+        </SectionHead>
+        <ErrorMessage message={error} />
       </Section>
     );
   }
 
-  if (!Array.isArray(skill) || skill.length === 0) {
+  if (!skill.length) {
     return (
       <Section>
-        <SkillGrid>
-          <Left>
-            <MainTitle>{t("page.skill.title", "Bizden Haberler")}</MainTitle>
-            <Desc>{t("page.skill.noSkill", "Haber bulunamadı.")}</Desc>
-            <SeeAllBtn href="/skill">
-              {t("page.skill.all", "Tüm Haberler")}
-            </SeeAllBtn>
-          </Left>
-        </SkillGrid>
+        <SectionHead>
+          <MinorTitle>{t("page.skill.minorTitle", "YETENEKLER")}</MinorTitle>
+          <MainTitle>{t("page.skill.title", "Yeteneklerim")}</MainTitle>
+        </SectionHead>
+        <Empty>{t("page.noSkill", "Hiç yetenek bulunamadı.")}</Empty>
       </Section>
     );
   }
-
-  // --- Main + 3 small items ---
-  const main = skill[0];
-  const others = skill.slice(1, 4);
 
   return (
     <Section
@@ -91,123 +174,87 @@ export default function SkillSection() {
       transition={{ duration: 0.66 }}
       viewport={{ once: true }}
     >
-      <SkillGrid>
-        {/* SOL BLOK */}
-        <Left>
-          <MinorTitle>{t("page.skill.minorTitle", "NEWS")}</MinorTitle>
-          <StyledLink
-            href={`/skill/${main.slug}`}
-            aria-label={getTitle(main, lang) || "Untitled"}
+      <SectionHead>
+        <MinorTitle>{t("page.skill.minorTitle", "YETENEKLER")}</MinorTitle>
+        <MainTitle>{sectionTitle}</MainTitle>
+        <Desc>{sectionDesc}</Desc>
+      </SectionHead>
+      <TabsWrapper>
+        {tabs.map((tab) => (
+          <TabButton
+            key={tab.key}
+            $active={activeTab === tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            type="button"
           >
-            {getTitle(main, lang) || t("page.skill.title", "Bizden Haberler")}
-          </StyledLink>
-          <Desc>
-            {getSummary(main, lang) || "—"}
-          </Desc>
-          <MainImageWrap as={Link} href={`/skill/${main.slug}`}>
-            {main.images?.[0]?.url ? (
-              <MainImage
-                src={main.images[0].url}
-                alt={getTitle(main, lang) || "Untitled"}
-                width={500}
-                height={210}
-                style={{ objectFit: "cover" }}
-                priority
-              />
-            ) : (
-              <ImgPlaceholder />
-            )}
-          </MainImageWrap>
-          <SeeAllBtn href="/skill">
-            {t("page.skill.all", "Tüm Haberler")}
-          </SeeAllBtn>
-        </Left>
-
-        {/* SAĞ BLOK - DİĞER HABERLER */}
-        <Right>
-          {others.map((item) => (
-            <SkillCard key={item._id} as={motion.article}>
-              <CardImageWrap as={Link} href={`/skill/${item.slug}`}>
-                {item.images?.[0]?.url ? (
-                  <CardImage
-                    src={item.images[0].url}
-                    alt={getTitle(item, lang)}
-                    width={90}
-                    height={56}
-                    style={{ objectFit: "cover" }}
-                  />
-                ) : (
-                  <ImgPlaceholder />
-                )}
-              </CardImageWrap>
-              <CardBody>
-                <CardTitle as={Link} href={`/skill/${item.slug}`}>
-                  {getTitle(item, lang)}
-                </CardTitle>
-                <CardExcerpt>
-                  {getSummary(item, lang).slice(0, 72)}
-                </CardExcerpt>
-                <CardDate>
-                  {item.createdAt
-                    ? new Date(item.createdAt).toLocaleDateString(
-                        getLocaleStringFromLang(lang),
-                        { year: "numeric", month: "short", day: "2-digit" }
-                      )
-                    : ""}
-                </CardDate>
-              </CardBody>
-            </SkillCard>
-          ))}
-        </Right>
-      </SkillGrid>
+            {tab.label}
+          </TabButton>
+        ))}
+      </TabsWrapper>
+      <LogoGrid>
+        {filteredRefs.length === 0 ? (
+          <Empty>
+            {t("skill.empty_in_category", "Bu kategoride yetenek yok.")}
+          </Empty>
+        ) : (
+          filteredRefs.map((item: ISkill) => (
+            <LogoCard key={item._id}>
+              <LogoImgWrap>
+                <Image
+                  src={item.images[0].url}
+                  alt={item.title?.[lang] || item.title?.en || "Skill"}
+                  width={92}
+                  height={72}
+                  style={{ objectFit: "contain", width: "80px", height: "72px" }}
+                  loading="lazy"
+                />
+                <LogoTooltip className="logo-tooltip">
+                  {(item.summary?.[lang] || item.summary?.en || "").slice(0, 90)}
+                </LogoTooltip>
+              </LogoImgWrap>
+              <LogoTitle>
+                {item.title?.[lang] || item.title?.en || "Skill"}
+              </LogoTitle>
+            </LogoCard>
+          ))
+        )}
+      </LogoGrid>
     </Section>
   );
 }
 
-// --- STYLES ---
+// --- THEME-ADAPTED STYLES ---
 
 const Section = styled(motion.section)`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  background: ${({ theme }) => theme.colors.sectionBackground};
   color: ${({ theme }) => theme.colors.text};
   padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xxl};
   width: 100%;
-`;
-
-const SkillGrid = styled.div`
   max-width: 1280px;
   margin: 0 auto;
-  display: flex;
-  gap: 2.6rem;
-  align-items: flex-start;
-  padding: 0 ${({ theme }) => theme.spacings.xl};
-  flex-wrap: wrap;
-
-  ${({ theme }) => theme.media.medium} {
-    padding: 0 ${({ theme }) => theme.spacings.md};
-    gap: 2rem;
+  box-sizing: border-box;
+  @media (max-width: 900px) {
+    padding: ${({ theme }) => theme.spacings.xl} 0;
   }
-
-  ${({ theme }) => theme.media.small} {
-    flex-direction: column;
-    gap: 2.5rem;
-    padding: 0 ${({ theme }) => theme.spacings.sm};
-    align-items: center;
+  @media (max-width: 600px) {
+    padding: ${({ theme }) => theme.spacings.lg} 0 ${({ theme }) => theme.spacings.xl} 0;
   }
 `;
 
-const Left = styled.div`
-  flex: 1.2 1 390px;
-  min-width: 320px;
-  max-width: 600px;
-  display: flex;
-  flex-direction: column;
-  gap: 1.12rem;
-  justify-content: flex-start;
-  ${({ theme }) => theme.media.small} {
-    max-width: 100%;
-    align-items: center;
+const SectionHead = styled.div`
+  width: 100%;
+  margin: 0 0 2.2rem 0;
+  padding-left: ${({ theme }) => theme.spacings.xl};
+  box-sizing: border-box;
+  text-align: left;
+
+  @media (max-width: 900px) {
+    padding-left: ${({ theme }) => theme.spacings.md};
+  }
+  @media (max-width: 600px) {
+    padding-left: ${({ theme }) => theme.spacings.sm};
+    margin-bottom: 1.1rem;
     text-align: center;
-    gap: 2rem;
   }
 `;
 
@@ -217,6 +264,7 @@ const MinorTitle = styled.div`
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   text-transform: uppercase;
   letter-spacing: 0.025em;
+  margin-bottom: 0.21em;
 `;
 
 const MainTitle = styled.h2`
@@ -224,26 +272,9 @@ const MainTitle = styled.h2`
   color: ${({ theme }) => theme.colors.primary};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-  margin: 0 0 0.45em 0;
+  margin: 0 0 0.23em 0;
   letter-spacing: -0.01em;
   line-height: 1.13;
-`;
-
-const StyledLink = styled(Link)`
-  color: ${({ theme }) => theme.colors.primary};
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-size: clamp(2.2rem, 3.3vw, 2.7rem);
-  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-  letter-spacing: -0.01em;
-  line-height: 1.13;
-  text-decoration: none;
-  margin: 0 0 0.45em 0;
-  display: inline-block;
-  transition: color 0.2s;
-  &:hover, &:focus-visible {
-    color: ${({ theme }) => theme.colors.accent};
-    text-decoration: underline;
-  }
 `;
 
 const Desc = styled.p`
@@ -251,156 +282,192 @@ const Desc = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.base};
   line-height: 1.7;
   margin-bottom: 0.7rem;
+  max-width: 510px;
+  opacity: 0.93;
+  padding-right: 2vw;
 `;
 
-const MainImageWrap = styled(Link)`
-  width: 100%;
-  max-width: 520px;
-  min-height: 190px;
-  max-height: 270px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  overflow: hidden;
-  box-shadow: 0 8px 30px 0 rgba(40,117,194,0.16), ${({ theme }) => theme.shadows.lg};
-  margin-bottom: 1.2rem;
-  position: relative;
-  isolation: isolate;
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(-16px);}
+  to { opacity: 1; transform: translateY(0);}
+`;
+
+const TabsWrapper = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem 1.1rem;
+  margin: 0 0 1.9rem 0;
+  justify-content: center;
+  animation: ${fadeIn} 0.7s cubic-bezier(0.37, 0, 0.63, 1);
+`;
+
+const TabButton = styled.button<{ $active: boolean }>`
+  padding: 0.48em 1.32em;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  border: ${({ $active, theme }) => $active ? theme.borders.thick : theme.borders.thin} ${({ theme }) => theme.colors.achievementGradientEnd};
+  background: ${({ $active, theme }) =>
+    $active
+      ? `linear-gradient(100deg, ${theme.colors.achievementGradientStart} 50%, ${theme.colors.achievementGradientEnd} 100%)`
+      : theme.colors.backgroundAlt};
+  color: ${({ $active, theme }) =>
+    $active ? "#fff" : theme.colors.text};
+  font-family: ${({ theme }) => theme.fonts.main};
+  font-weight: 700;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  letter-spacing: 0.02em;
+  box-shadow: ${({ $active, theme }) =>
+    $active
+      ? `0 3px 14px 0 ${theme.colors.achievementGradientEnd}1a`
+      : "0 1px 3px 0 rgba(25,214,227,0.03)"};
   cursor: pointer;
-  display: block;
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(120deg, rgba(40,117,194,0.07) 12%, rgba(11,182,214,0.06) 100%);
-    z-index: 1;
-  }
-
-  &:hover, &:focus-visible {
-    box-shadow: 0 12px 38px 0 rgba(40,117,194,0.25), ${({ theme }) => theme.shadows.xl};
-    transform: scale(1.025);
-  }
-
-  ${({ theme }) => theme.media.small} {
-    width: 100%;
-    min-width: 140px;
-    min-height: 110px;
-    height: auto;
-    margin: 0 auto 0.6rem auto;
+  outline: none;
+  transition:
+    background 0.18s,
+    color 0.18s,
+    box-shadow 0.22s,
+    transform 0.15s,
+    border 0.12s;
+  transform: ${({ $active }) => ($active ? "scale(1.07)" : "scale(1)")};
+  &:hover,
+  &:focus-visible {
+    background: linear-gradient(
+      105deg,
+      ${({ theme }) => theme.colors.achievementGradientEnd},
+      ${({ theme }) => theme.colors.achievementGradientStart}
+    );
+    color: #fff;
+    box-shadow: 0 7px 18px 0 ${({ theme }) => theme.colors.achievementGradientEnd}18;
+    transform: scale(1.10);
   }
 `;
 
-const MainImage = styled(Image)`
+const LogoGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 1.1rem 1rem;
+  align-items: stretch;
   width: 100%;
-  object-fit: cover;
-  display: block;
-  position: relative;
-  z-index: 2;
+  justify-items: center;
+
+  @media (max-width: 900px) {
+    gap: 0.8rem 0.7rem;
+  }
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.32rem 0.35rem;
+  }
+  @media (max-width: 400px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.21rem 0.21rem;
+  }
 `;
 
-const ImgPlaceholder = styled.div`
-  width: 100%;
-  height: 100%;
-  min-height: 170px;
-  background: ${({ theme }) => theme.colors.skeleton};
-  opacity: 0.36;
-`;
-
-const Right = styled.div`
-  flex: 1.1 1 320px;
-  min-width: 270px;
+const LogoCard = styled.div`
+  background: linear-gradient(120deg, #22344a 55%, #19d6e3 100%);
+  border-radius: ${({ theme }) => theme.radii.xl};
+  border: 1.5px solid ${({ theme }) => theme.colors.achievementGradientEnd}11;
+  box-shadow: ${({ theme }) => theme.shadows.sm};
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 1.45rem;
-  ${({ theme }) => theme.media.small} {
-    width: 100%;
-    max-width: 420px;
-    margin: 0 auto;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 122px;
+  min-width: 125px;
+  padding: 0.38rem 0.04rem 0.31rem 0.04rem;
+  position: relative;
+  transition:
+    box-shadow 0.21s cubic-bezier(0.4, 0.12, 0.42, 1.15),
+    transform 0.13s cubic-bezier(0.36,0.04,0.56,1.07),
+    border 0.12s,
+    background 0.11s;
+  will-change: transform, box-shadow;
+  cursor: pointer;
+  overflow: visible;
+
+  &:hover,
+  &:focus-visible {
+    box-shadow: 0 8px 22px 0 ${({ theme }) => theme.colors.achievementGradientEnd}1a;
+    border-color: ${({ theme }) => theme.colors.achievementGradientEnd};
+    background: linear-gradient(110deg, #1b2838 38%, #19d6e3 90%);
+    transform: scale(1.08) translateY(-2px);
+    z-index: 2;
+    
+    .logo-tooltip {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
   }
 `;
 
-const SkillCard = styled(motion.div)`
-  width: 100%;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  box-shadow: 0 8px 30px 0 rgba(40,117,194,0.10);
-  overflow: hidden;
-  display: flex;
-  flex-direction: row;
-  min-height: 86px;
-  max-width: 390px;
-  border: 1px solid ${({ theme }) => theme.colors.borderLight};
-  transition: box-shadow 0.16s, transform 0.11s;
-  &:hover {
-    box-shadow: 0 14px 36px 0 rgba(40,117,194,0.17);
-    transform: scale(1.024) translateY(-2px);
-  }
-`;
-
-const CardImageWrap = styled(Link)`
-  min-width: 72px;
-  width: 72px;
-  height: 56px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
+const LogoImgWrap = styled.div`
+  width: 56px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  margin-bottom: 0.18rem;
   position: relative;
+  @media (max-width: 600px) {
+    width: 42px;
+    height: 28px;
+  }
 `;
 
-const CardImage = styled(Image)`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-`;
-
-const CardBody = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  padding: 0.7rem 0.8rem 0.7rem 0.5rem;
-`;
-
-const CardTitle = styled.h3`
-  font-size: 1.01rem;
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin-bottom: 0.25rem;
-  line-height: 1.15;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-`;
-
-const CardExcerpt = styled.p`
-  font-size: 0.93rem;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: 0.56rem;
-  opacity: 0.98;
-  line-height: 1.37;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  text-overflow: ellipsis;
-  min-height: 2em;
-`;
-
-const CardDate = styled.span`
-  background: linear-gradient(90deg, #2875c2 50%, #0bb6d6 100%);
-  color: #fff;
-  font-size: 0.91em;
-  padding: 0.13em 0.62em;
-  border-radius: 10px;
-  font-weight: 600;
-  box-shadow: 0 3px 8px 0 rgba(40,117,194,0.08);
+const LogoTitle = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  font-family: ${({ theme }) => theme.fonts.main};
+  color: ${({ theme }) => theme.colors.textAlt};
+  text-align: center;
+  margin-top: 0.08em;
+  font-weight: 700;
+  line-height: 1.1;
   letter-spacing: 0.01em;
-  margin-top: auto;
-  margin-right: 7px;
+  opacity: 0.87;
+  user-select: text;
 `;
+
+// Tooltip hover açıklama
+const LogoTooltip = styled.div`
+  position: absolute;
+  left: 50%;
+  top: 110%;
+  transform: translateX(-50%) translateY(10px);
+  min-width: 140px;
+  max-width: 200px;
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  padding: 0.54em 0.93em;
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  font-family: ${({ theme }) => theme.fonts.body};
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  white-space: pre-line;
+  line-height: 1.43;
+  transition: all 0.18s;
+  text-align: left;
+
+  @media (max-width: 600px) {
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
+    min-width: 90px;
+    max-width: 140px;
+    padding: 0.32em 0.44em;
+  }
+`;
+
+const SkeletonGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 1.1rem 1rem;
+`;
+
+const Empty = styled.p`
+  text-align: center;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 1.12em;
+  margin: 1.1rem 0 0.7rem 0;
+`;
+

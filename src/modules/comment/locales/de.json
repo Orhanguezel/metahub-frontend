@@ -45,5 +45,8 @@
   "form.submit": "Absenden",
   "form.success": "Ihr Kommentar wurde erfolgreich übermittelt! Er wird nach Genehmigung veröffentlicht.",
   "form.error": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
-  "anon": "Anonym"
+  "anon": "Anonym",
+  "form.recaptcha": "Bitte bestätigen Sie, dass Sie kein Roboter sind.",
+  "sectionTitle2": "Nutzerbewertungen",
+  "form.loginFirst": "Sie müssen sich anmelden, um einen Kommentar zu hinterlassen."
 }
