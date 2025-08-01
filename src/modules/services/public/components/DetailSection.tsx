@@ -19,7 +19,7 @@ import type { IServices } from "@/modules/services";
 import type { SupportedLocale } from "@/types/common";
 import Modal from "@/modules/home/public/components/Modal"; // Modal path'ini kendi projene göre ayarla
 
-export default function ServicesDetailSection() {
+export default function DetailSection() {
   const { i18n, t } = useI18nNamespace("services", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const params = useParams();
@@ -215,17 +215,9 @@ export default function ServicesDetailSection() {
       )}
 
       {/* Diğer bilgiler */}
-      <div>
-        <p>
-          <strong>{t("detail.durationMinutes", "Süre")}:</strong> {services.durationMinutes || "—"} {t("detail.minutes", "dakika")}
-        </p>
-        <p>
-          <strong>{t("detail.price", "Fiyat")}:</strong> {services.price ? `${services.price} ${t("currency", "EUR")}` : t("detail.free", "Ücretsiz")}
-        </p>
-        </div>
 
-        <RandevuButton onClick={() => router.push(`/booking?service=${services.slug ?? services._id}`)}>
-  {t("form.bookNow", "Randevu Al")}
+        <RandevuButton onClick={() => router.push(`/contactme`)}>
+  {t("form.bookNow", "Get a Quote")}
 </RandevuButton>
 
 

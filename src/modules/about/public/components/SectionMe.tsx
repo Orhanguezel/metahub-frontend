@@ -89,12 +89,13 @@ export default function AboutSection() {
 const Section = styled(motion.section)`
   background: ${({ theme }) => theme.colors.sectionBackground};
   color: ${({ theme }) => theme.colors.text};
-  padding: ${({ theme }) => theme.spacings.xxl} 0 ${({ theme }) => theme.spacings.xxl};
+  padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xxl};
   width: 100%;
 `;
 
+
 const AboutGrid = styled.div`
-  max-width: 1160px;
+  max-width: 1280px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1.25fr 1fr;

@@ -9,6 +9,7 @@ export type CommentContentType =
   | "product"
   | "articles"
   | "services"
+  | "massage"
   | "bikes"
   | "about"
   | "references"

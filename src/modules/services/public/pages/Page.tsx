@@ -11,11 +11,12 @@ import Image from "next/image";
 import type { SupportedLocale } from "@/types/common";
 import type { IServices } from "@/modules/services/types";
 
-export default function ServicesPage() {
+export default function Page() {
   const { i18n, t } = useI18nNamespace("services", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { services, loading, error } = useAppSelector((state) => state.services);
 
+  // Register translations (multi-language)
   Object.entries(translations).forEach(([lng, resources]) => {
     if (!i18n.hasResourceBundle(lng, "services")) {
       i18n.addResourceBundle(lng, "services", resources, true, true);
@@ -25,7 +26,7 @@ export default function ServicesPage() {
   if (loading) {
     return (
       <PageWrapper>
-        <PageTitle>{t("page.allServices", "Tüm Faaliyetlerimiz")}</PageTitle>
+        <PageTitle>{t("page.allServices", "All Our Services")}</PageTitle>
         <ServicesGrid>
           {[...Array(3)].map((_, i) => (
             <Skeleton key={i} />
@@ -46,15 +47,15 @@ export default function ServicesPage() {
   if (!services || services.length === 0) {
     return (
       <PageWrapper>
-        <PageTitle>{t("page.allServices", "Tüm Hizmetlerimiz")}</PageTitle>
-        <EmptyMsg>{t("page.noServices", "Herhangi bir hizmet bulunamadı.")}</EmptyMsg>
+        <PageTitle>{t("page.allServices", "All Our Services")}</PageTitle>
+        <EmptyMsg>{t("page.noServices", "No services found.")}</EmptyMsg>
       </PageWrapper>
     );
   }
 
   return (
     <PageWrapper>
-      <PageTitle>{t("page.allServices", "Tüm Hizmetlerimiz")}</PageTitle>
+      <PageTitle>{t("page.allServices", "All Our Services")}</PageTitle>
       <ServicesGrid>
         {services.map((item: IServices, index: number) => (
           <ServicesCard
@@ -62,29 +63,28 @@ export default function ServicesPage() {
             as={motion.div}
             initial={{ opacity: 0, y: 32 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.07, durationMinutes: 0.44 }}
+            transition={{ delay: index * 0.07, duration: 0.44 }}
             viewport={{ once: true }}
           >
             <Link href={`/services/${item.slug}`} tabIndex={-1}>
-  <ImageWrapper>
-    {item.images?.[0]?.url ? (
-      <Image
-        src={item.images[0].url}
-        alt={item.title[lang] || Object.values(item.title)[0] || `services-${index}`}
-        width={520}
-        height={290}
-        style={{
-          objectFit: "cover",
-          width: "100%",
-          height: "210px",
-        }}
-      />
-    ) : (
-      <ImgPlaceholder />
-    )}
-  </ImageWrapper>
-</Link>
-
+              <ImageWrapper>
+                {item.images?.[0]?.url ? (
+                  <Image
+                    src={item.images[0].url}
+                    alt={item.title[lang] || Object.values(item.title)[0] || `services-${index}`}
+                    width={520}
+                    height={290}
+                    style={{
+                      objectFit: "cover",
+                      width: "100%",
+                      height: "210px",
+                    }}
+                  />
+                ) : (
+                  <ImgPlaceholder />
+                )}
+              </ImageWrapper>
+            </Link>
             <CardContent>
               <CardTitle as={Link} href={`/services/${item.slug}`}>
                 {item.title[lang] || Object.values(item.title)[0] || "—"}
@@ -94,16 +94,15 @@ export default function ServicesPage() {
               </CardSummary>
               <Meta>
                 <span>
-                  {t("tags", "Etiketler")}: <i>{item.tags?.join(", ") || "-"}</i>
+                  {t("tags", "Tags")}: <i>{item.tags?.join(", ") || "-"}</i>
                 </span>
               </Meta>
               <ReadMore href={`/services/${item.slug}`}>
-                {t("readMore", "Devamını Oku →")}
+                {t("readMore", "Read More →")}
               </ReadMore>
-              <BookNowButton href={`/booking?service=${item._id}`}>
-  {t("bookNow", "Randevu Al")}
-</BookNowButton>
-
+              <BookNowButton href="/contactme">
+                {t("form.bookNow", "Get a Quote")}
+              </BookNowButton>
             </CardContent>
           </ServicesCard>
         ))}
@@ -274,4 +273,3 @@ const BookNowButton = styled(Link)`
     border-color: ${({ theme }) => theme.colors.accent};
   }
 `;
-

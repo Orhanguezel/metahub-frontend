@@ -7,6 +7,7 @@ import { useAppSelector } from "@/store/hooks";
 import { AboutSection } from "@/modules/about";
 import { AboutMeSection } from "@/modules/about";
 import { ServicesSection } from "@/modules/services";
+import { MassageSection } from "@/modules/massage";
 import { NewsSection } from "@/modules/news";
 import { BlogSection } from "@/modules/blog";
 import { ArticlesSection } from "@/modules/articles";
@@ -46,6 +47,7 @@ const sectionComponents: Record<string, React.ComponentType<any> | undefined> = 
   couponBanner: WelcomeCouponBanner, 
   about: AboutSection,
   services: ServicesSection,
+  massage: MassageSection,
   news: NewsSection,
   blog: BlogSection,
   articles: ArticlesSection,

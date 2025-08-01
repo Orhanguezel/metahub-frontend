@@ -47,9 +47,5 @@
   "form.error": "An error occurred. Please try again.",
   "anon": "Anonymous",
   "sectionTitle2": "User Reviews",
-  "form.loginFirst": "You must log in to leave a comment.",
-  "form.recaptcha": "Please confirm that you are not a robot.",
-  "testimonial": "Testimonial"
-
-
+  "form.loginFirst": "You must log in to leave a comment."
 }

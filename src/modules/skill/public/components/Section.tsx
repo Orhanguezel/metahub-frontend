@@ -34,7 +34,6 @@ export default function SkillSection() {
     }
   });
 
-  // Kategorileri referanslardan topla (uniq)
   const categories = useMemo<MinSkillCategory[]>(() => {
     const map = new Map<string, MinSkillCategory>();
     skill.forEach((ref: ISkill) => {
@@ -62,7 +61,6 @@ export default function SkillSection() {
     return Array.from(map.values());
   }, [skill]);
 
-  // Skill'leri kategorilere grupla
   const grouped = useMemo(() => {
     const result: Record<string, ISkill[]> = {};
     skill.forEach((ref: ISkill) => {
@@ -113,19 +111,16 @@ export default function SkillSection() {
     }
   }, [tabs]);
 
-  // Filtrelenmiş & görselli (logolu) referanslar
   const filteredRefs = useMemo(() => {
     return (grouped[activeTab] || []).filter((item: ISkill) => item.images?.[0]?.url);
   }, [activeTab, grouped]);
 
-  // Aktif tab'ın adı ve açıklaması
   const currentTab = useMemo(() => tabs.find((tab) => tab.key === activeTab), [tabs, activeTab]);
   const sectionTitle = currentTab?.label || t("page.skill.title", "Yeteneklerim");
   const sectionDesc =
     currentTab?.desc ||
     t("page.skill.desc", "Web, backend, devops ve daha fazlası...");
 
-  // --- Render ---
   if (loading) {
     return (
       <Section>
@@ -203,9 +198,9 @@ export default function SkillSection() {
                 <Image
                   src={item.images[0].url}
                   alt={item.title?.[lang] || item.title?.en || "Skill"}
-                  width={92}
-                  height={72}
-                  style={{ objectFit: "contain", width: "80px", height: "72px" }}
+                  fill
+                  sizes="56px"
+                  style={{ objectFit: "contain" }}
                   loading="lazy"
                 />
                 <LogoTooltip className="logo-tooltip">
@@ -226,25 +221,16 @@ export default function SkillSection() {
 // --- THEME-ADAPTED STYLES ---
 
 const Section = styled(motion.section)`
-  background: ${({ theme }) => theme.colors.sectionBackground};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
   color: ${({ theme }) => theme.colors.text};
   padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xxl};
   width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  box-sizing: border-box;
-  @media (max-width: 900px) {
-    padding: ${({ theme }) => theme.spacings.xl} 0;
-  }
-  @media (max-width: 600px) {
-    padding: ${({ theme }) => theme.spacings.lg} 0 ${({ theme }) => theme.spacings.xl} 0;
-  }
 `;
 
 const SectionHead = styled.div`
-  width: 100%;
-  margin: 0 0 2.2rem 0;
-  padding-left: ${({ theme }) => theme.spacings.xl};
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 ${({ theme }) => theme.spacings.xl};
   box-sizing: border-box;
   text-align: left;
 
@@ -343,37 +329,39 @@ const TabButton = styled.button<{ $active: boolean }>`
 
 const LogoGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
-  gap: 1.1rem 1rem;
-  align-items: stretch;
-  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 1.2rem 1rem;
+  align-items: end;
+  max-width: 1280px;
+  margin: 0 auto;
   justify-items: center;
+  padding: 0 ${({ theme }) => theme.spacings.xl};
 
   @media (max-width: 900px) {
     gap: 0.8rem 0.7rem;
   }
   @media (max-width: 600px) {
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.32rem 0.35rem;
+    gap: 0.42rem 0.35rem;
   }
   @media (max-width: 400px) {
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.21rem 0.21rem;
+    gap: 0.19rem 0.19rem;
   }
 `;
 
 const LogoCard = styled.div`
-  background: linear-gradient(120deg, #22344a 55%, #19d6e3 100%);
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
   border-radius: ${({ theme }) => theme.radii.xl};
-  border: 1.5px solid ${({ theme }) => theme.colors.achievementGradientEnd}11;
+  border: 1.5px solid ${({ theme }) => theme.colors.achievementGradientEnd}12;
   box-shadow: ${({ theme }) => theme.shadows.sm};
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 122px;
-  min-width: 125px;
-  padding: 0.38rem 0.04rem 0.31rem 0.04rem;
+  justify-content: flex-start;
+  min-height: 126px;
+  min-width: 110px;
+  padding: 0.5rem 0.2rem 0.31rem 0.2rem;
   position: relative;
   transition:
     box-shadow 0.21s cubic-bezier(0.4, 0.12, 0.42, 1.15),
@@ -388,7 +376,6 @@ const LogoCard = styled.div`
   &:focus-visible {
     box-shadow: 0 8px 22px 0 ${({ theme }) => theme.colors.achievementGradientEnd}1a;
     border-color: ${({ theme }) => theme.colors.achievementGradientEnd};
-    background: linear-gradient(110deg, #1b2838 38%, #19d6e3 90%);
     transform: scale(1.08) translateY(-2px);
     z-index: 2;
     
@@ -402,15 +389,16 @@ const LogoCard = styled.div`
 
 const LogoImgWrap = styled.div`
   width: 56px;
-  height: 42px;
+  aspect-ratio: 1 / 1;
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 0.18rem;
+  margin-bottom: 0.33rem;
   position: relative;
   @media (max-width: 600px) {
-    width: 42px;
-    height: 28px;
+    width: 38px;
+    margin-bottom: 0.14rem;
   }
 `;
 
@@ -421,9 +409,9 @@ const LogoTitle = styled.div`
   text-align: center;
   margin-top: 0.08em;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.13;
   letter-spacing: 0.01em;
-  opacity: 0.87;
+  opacity: 0.89;
   user-select: text;
 `;
 
@@ -433,13 +421,13 @@ const LogoTooltip = styled.div`
   left: 50%;
   top: 110%;
   transform: translateX(-50%) translateY(10px);
-  min-width: 140px;
-  max-width: 200px;
+  min-width: 120px;
+  max-width: 180px;
   background: ${({ theme }) => theme.colors.backgroundAlt};
   color: ${({ theme }) => theme.colors.textSecondary};
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.md};
-  padding: 0.54em 0.93em;
+  padding: 0.39em 0.73em;
   font-size: ${({ theme }) => theme.fontSizes.xsmall};
   font-family: ${({ theme }) => theme.fonts.body};
   opacity: 0;
@@ -452,9 +440,9 @@ const LogoTooltip = styled.div`
 
   @media (max-width: 600px) {
     font-size: ${({ theme }) => theme.fontSizes.xsmall};
-    min-width: 90px;
-    max-width: 140px;
-    padding: 0.32em 0.44em;
+    min-width: 76px;
+    max-width: 120px;
+    padding: 0.21em 0.34em;
   }
 `;
 
@@ -470,4 +458,3 @@ const Empty = styled.p`
   font-size: 1.12em;
   margin: 1.1rem 0 0.7rem 0;
 `;
-

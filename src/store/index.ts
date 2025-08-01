@@ -61,6 +61,8 @@ import catalogReducer from "@/modules/catalog/slice/catalogSlice";
 import portfolioReducer from "@/modules/portfolio/slice/portfolioSlice";
 import skillReducer from "@/modules/skill/slice/skillSlice";
 import skillCategoryReducer from "@/modules/skill/slice/skillCategorySlice";
+import massageReducer from "@/modules/massage/slice/massageSlice";
+import massageCategoryReducer from "@/modules/massage/slice/massageCategorySlice";
 
 
 // --- Combine reducers ---
@@ -125,6 +127,8 @@ const rootReducer = combineReducers({
   portfolio: portfolioReducer,
   skill: skillReducer,
   skillCategory: skillCategoryReducer,
+  massage: massageReducer,
+  massageCategory: massageCategoryReducer,
 });
 
 // --- Store ---

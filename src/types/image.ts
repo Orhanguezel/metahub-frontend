@@ -16,6 +16,7 @@ export type ImageType =
   | "galleryCategory"
   | "faq"
   | "services"
+  | "massage"
   | "notification"
   | "settings"
   | "contact"

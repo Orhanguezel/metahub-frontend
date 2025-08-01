@@ -201,17 +201,21 @@ const MainImageFrame = styled.div`
   max-width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: #e7edf3;
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.md};
+  position: relative;
 `;
 
 const StyledMainImage = styled(Image)`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important; // Kırpmadan, orijinal oranı korur
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
 `;
 
 const Gallery = styled.div`
@@ -221,22 +225,22 @@ const Gallery = styled.div`
   flex-wrap: wrap;
 `;
 
+// Thumbnail galeri (contain!)
 const ThumbFrame = styled.button<{ $active?: boolean }>`
-  border: none;
-  background: none;
-  padding: 0;
-  outline: none;
-  cursor: pointer;
+  border: 2px solid ${({ $active, theme }) => ($active ? theme.colors.primary : "#e1e8ef")};
+  background: ${({ theme, $active }) => $active ? theme.colors.primaryTransparent : theme.colors.backgroundSecondary};
+  border-radius: ${({ theme }) => theme.radii.md};
   width: 140px;
   height: 90px;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: #eef5fa;
+  padding: 0;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid ${({ $active, theme }) => ($active ? theme.colors.primary : "#e1e8ef")};
   transition: box-shadow 0.15s, border 0.16s;
+  outline: none;
 `;
 
 const StyledThumbImage = styled(Image)<{ $active?: boolean }>`
@@ -316,6 +320,7 @@ const OtherCard = styled(motion.div)`
   }
 `;
 
+// OtherGrid kartlar (minik görsel)
 const OtherImgWrap = styled.div`
   flex-shrink: 0;
   width: 52px;
@@ -331,8 +336,9 @@ const OtherImgWrap = styled.div`
 const OtherImg = styled(Image)`
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: contain !important;
   border-radius: ${({ theme }) => theme.radii.md};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
 `;
 
 const OtherImgPlaceholder = styled.div`

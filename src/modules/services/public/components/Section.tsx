@@ -11,7 +11,7 @@ import type { IServices } from "@/modules/services/types";
 import type { SupportedLocale } from "@/types/common";
 
 
-export default function ServicesSection() {
+export default function ServiceSection() {
   const { i18n, t } = useI18nNamespace("services", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { services, loading } = useAppSelector((state) => state.services);

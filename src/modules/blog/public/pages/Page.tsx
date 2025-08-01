@@ -11,7 +11,7 @@ import type { SupportedLocale } from "@/types/common";
 import type { IBlog } from "@/modules/blog/types";
 import { useState } from "react";
 
-// Dinamik arşiv (Ay/Yıl) çıkarma fonksiyonu
+// Arşiv (Ay/Yıl)
 const getArchives = (blog: IBlog[]) => {
   if (!Array.isArray(blog)) return [];
   const archiveSet = new Set<string>();
@@ -29,18 +29,16 @@ const getArchives = (blog: IBlog[]) => {
   return Array.from(archiveSet);
 };
 
-// Dinamik kategori çıkarma fonksiyonu
+// Kategori (çoklu dil destekli)
 const getCategories = (blog: IBlog[], lang: SupportedLocale) => {
   if (!Array.isArray(blog)) return [];
   const cats: { [slug: string]: { _id?: string; name: string } } = {};
   blog.forEach((n) => {
     if (n.category) {
       if (typeof n.category === "string") {
-        // Sadece slug varsa, slug ile göster
         cats[n.category] = { name: n.category };
       } else if (typeof n.category === "object" && n.category.name) {
-        // Objeyse, lokalize isim
-        cats[ n.category._id || n.category.name[lang] || "-"] = {
+        cats[n.category._id || n.category.name[lang] || "-"] = {
           _id: n.category._id,
           name: n.category.name[lang] || n.category.name["en"] || "-",
         };
@@ -79,7 +77,6 @@ export default function BlogPage() {
           )
       : [];
 
-  // Sidebar data
   const recentBlog = filteredBlog.slice(0, 4);
   const archives = getArchives(blog || []);
   const categories = getCategories(blog || [], lang);
@@ -112,7 +109,7 @@ export default function BlogPage() {
   if (!blog || blog.length === 0) {
     return (
       <PageWrapper>
-        <NoBlog>{t("page.noBlog", "Hiç haber bulunamadı.")}</NoBlog>
+        <NoBlog>{t("page.noBlog", "Hiç blog bulunamadı.")}</NoBlog>
       </PageWrapper>
     );
   }
@@ -120,38 +117,24 @@ export default function BlogPage() {
   return (
     <PageWrapper>
       <MainGrid>
-        {/* SOL ANA KOLON */}
         <LeftColumn>
           {filteredBlog.map((item: IBlog) => (
             <BlogItem key={item._id}>
               {item.images?.[0]?.url && (
                 <MainImageWrap>
-  <Image
-    src={item.images[0].url}
-    alt={item.title?.[lang] || "Blog Image"}
-    width={780}
-    height={440} 
-    style={{
-      width: "100%",
-      height: "auto", 
-      objectFit: "cover",
-      borderRadius: "16px",
-      display: "block"
-    }}
-    loading="lazy"
-  />
-</MainImageWrap>
-
+                  <StyledImage
+                    src={item.images[0].url}
+                    alt={item.title?.[lang] || "Blog Image"}
+                    width={800}
+                    height={460}
+                    loading="lazy"
+                  />
+                </MainImageWrap>
               )}
               <BlogTitle>
                 <Link href={`/blog/${item.slug}`}>{item.title?.[lang] || "Untitled"}</Link>
               </BlogTitle>
               <BlogMeta>
-                {/* <span>
-                  <b>{t("author", "Yazar")}: </b>
-                  {item.author || t("unknown", "Bilinmiyor")}
-                </span> */}
-                
                 <span>
                   {new Date(item.publishedAt || item.createdAt).toLocaleDateString("tr-TR", {
                     year: "numeric",
@@ -178,7 +161,6 @@ export default function BlogPage() {
           ))}
         </LeftColumn>
 
-        {/* SAĞ SABİT KOLON */}
         <RightColumn>
           <SidebarBox>
             <SidebarTitle>{t("search", "Arama")}</SidebarTitle>
@@ -197,7 +179,7 @@ export default function BlogPage() {
           </SidebarBox>
 
           <SidebarBox>
-            <SidebarTitle>{t("recent", "Son Haberler")}</SidebarTitle>
+            <SidebarTitle>{t("recent", "Son Bloglar")}</SidebarTitle>
             <SidebarList>
               {recentBlog.length ? (
                 recentBlog.map((n) => (
@@ -240,13 +222,19 @@ export default function BlogPage() {
   );
 }
 
-// --- Styled Components (aynen kalabilir, gerekirse modernize edilir) ---
+// --- Styled Components ---
+
 const PageWrapper = styled.div`
-  max-width: 1300px;
-  margin: 0 auto;
-  padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.md};
+  width: 100%;
+  min-height: 92vh;
   background: ${({ theme }) => theme.colors.sectionBackground};
-  min-height: 90vh;
+  padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.md};
+  box-sizing: border-box;
+
+  ${({ theme }) => theme.media.small} {
+    padding: ${({ theme }) => theme.spacings.lg} 0;
+    
+  }
 `;
 
 const MainGrid = styled.div`
@@ -254,8 +242,11 @@ const MainGrid = styled.div`
   grid-template-columns: 2.2fr 1fr;
   gap: 2.5rem;
   align-items: flex-start;
+  width: 100%;
+  max-width: ${({ theme }) => theme.layout.containerWidth};
+  margin: 0 auto;
 
-  @media (max-width: 1050px) {
+  ${({ theme }) => theme.media.medium} {
     grid-template-columns: 1fr;
     gap: 1.2rem;
   }
@@ -265,42 +256,62 @@ const LeftColumn = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
+
+  ${({ theme }) => theme.media.small} {
+    gap: 1.4rem;
+  }
 `;
 
 const BlogItem = styled(motion.article)`
-  background: ${({ theme }) => theme.colors.cardBackground || "#fff"};
-  border-radius: 20px;
-  border: 1.5px solid ${({ theme }) => theme.colors.borderLight || "#e5eaf3"};
-  box-shadow: 0 3px 15px 0 rgba(40,117,194,0.09);
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderLight};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
   padding: 2.1rem 2.3rem 1.5rem 2.3rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   margin-bottom: 0.5rem;
 
-  @media (max-width: 650px) {
-    padding: 1.1rem 0.7rem 1.1rem 0.7rem;
+  ${({ theme }) => theme.media.small} {
+    padding: 0.6rem 0.3rem 1rem 0.3rem;
+    border-radius: ${({ theme }) => theme.radii.md};
   }
 `;
+
 const MainImageWrap = styled.div`
   width: 100%;
   margin-bottom: 1.1rem;
-  border-radius: 16px;
+  border-radius: ${({ theme }) => theme.radii.lg};
   overflow: hidden;
-  box-shadow: 0 8px 24px 0 rgba(40,117,194,0.11);
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  img {
-    width: 100% !important;
-    height: auto !important;  
-    object-fit: cover;
-    display: block;
-    border-radius: 16px;
+  ${({ theme }) => theme.media.small} {
+    margin-bottom: 0.5rem;
+    border-radius: ${({ theme }) => theme.radii.md};
   }
 `;
 
+const StyledImage = styled(Image)`
+  width: 100% !important;
+  max-width: 100vw !important;
+  height: auto !important;
+  object-fit: cover;
+  display: block;
+  border-radius: ${({ theme }) => theme.radii.lg};
+
+  ${({ theme }) => theme.media.small} {
+    border-radius: ${({ theme }) => theme.radii.md};
+    max-width: 99vw !important;
+    height: auto !important;
+  }
+`;
 
 const BlogTitle = styled.h2`
-  font-size: 1.42rem;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   margin-bottom: 0.23rem;
@@ -314,23 +325,27 @@ const BlogTitle = styled.h2`
       color: ${({ theme }) => theme.colors.accent};
     }
   }
+
+  ${({ theme }) => theme.media.small} {
+    font-size: ${({ theme }) => theme.fontSizes.medium};
+  }
 `;
 
 const BlogMeta = styled.div`
-  font-size: 0.98rem;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
   display: flex;
-  gap: 1.25rem;
+  gap: 1.05rem;
   align-items: center;
   flex-wrap: wrap;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.18rem;
 `;
 
 const CategoryLabel = styled.span`
-  background: ${({ theme }) => theme.colors.primaryTransparent || "#e5f1fb"};
+  background: ${({ theme }) => theme.colors.primaryTransparent};
   color: ${({ theme }) => theme.colors.primary};
   font-size: 0.9em;
-  border-radius: 8px;
+  border-radius: ${({ theme }) => theme.radii.md};
   padding: 1px 8px;
   margin-left: 0.32em;
   font-weight: 500;
@@ -338,18 +353,18 @@ const CategoryLabel = styled.span`
 
 const BlogSummary = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 1.08rem;
-  margin: 0.22em 0 1.22em 0;
-  line-height: 1.64;
+  font-size: 1.06rem;
+  margin: 0.14em 0 1.05em 0;
+  line-height: 1.62;
 `;
 
 const ReadMoreBtn = styled(Link)`
   align-self: flex-start;
   background: linear-gradient(90deg, #2875c2 60%, #0bb6d6 100%);
   color: #fff;
-  padding: 0.46em 1.35em;
-  border-radius: 22px;
-  font-size: 1.03rem;
+  padding: 0.46em 1.18em;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  font-size: 1.01rem;
   font-weight: 600;
   box-shadow: 0 3px 10px 0 rgba(40,117,194,0.06);
   text-decoration: none;
@@ -363,33 +378,42 @@ const ReadMoreBtn = styled(Link)`
 
 const RightColumn = styled.aside`
   position: sticky;
-  top: 40px;
+  top: 84px;
   align-self: flex-start;
   display: flex;
   flex-direction: column;
-  gap: 2.2rem;
+  gap: 2rem;
+  min-width: 260px;
+  max-width: 380px;
+  z-index: 30;
+  height: fit-content;
 
-  @media (max-width: 1050px) {
-    position: static;
+  ${({ theme }) => theme.media.medium} {
+    position: static !important;
+    min-width: 0;
+    max-width: 100%;
     gap: 1.2rem;
+    z-index: 1;
+    height: auto !important;
   }
 `;
 
 const SidebarBox = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundAlt || "#f6fafd"};
-  border-radius: 15px;
-  box-shadow: 0 3px 10px 0 rgba(40,117,194,0.04);
-  padding: 1.2rem 1.3rem 1.4rem 1.3rem;
-  margin-bottom: 0.5rem;
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderLight};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  padding: 1.3rem 1.3rem 1.4rem 1.3rem;
+  margin-bottom: 0.4rem;
 `;
 
 const SidebarTitle = styled.h3`
-  font-size: 1.13rem;
+  font-size: ${({ theme }) => theme.fontSizes.medium};
   color: ${({ theme }) => theme.colors.primary};
-  font-weight: 700;
-  margin-bottom: 1.1rem;
-  border-bottom: 1.5px solid ${({ theme }) => theme.colors.primaryTransparent || "#e0eaf3"};
-  padding-bottom: 0.45rem;
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  margin-bottom: 1rem;
+  border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.primaryTransparent};
+  padding-bottom: 0.38rem;
 `;
 
 const SearchForm = styled.form`
@@ -397,16 +421,16 @@ const SearchForm = styled.form`
   align-items: center;
   input {
     flex: 1;
-    padding: 0.41em 1.1em;
-    border-radius: 8px;
-    border: 1.5px solid ${({ theme }) => theme.colors.borderLight || "#e5eaf3"};
-    font-size: 1.05em;
+    padding: 0.37em 1em;
+    border-radius: ${({ theme }) => theme.radii.md};
+    border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderLight};
+    font-size: 1em;
     color: ${({ theme }) => theme.colors.text};
     outline: none;
-    background: ${({ theme }) => theme.colors.background};
+    background: ${({ theme }) => theme.colors.inputBackground};
     &:focus {
       border-color: ${({ theme }) => theme.colors.primary};
-      background: #fff;
+      background: #1b2838;
     }
   }
 `;
@@ -416,8 +440,8 @@ const SidebarList = styled.ul`
   margin: 0;
   padding: 0;
   li {
-    margin-bottom: 0.71em;
-    font-size: 1.01em;
+    margin-bottom: 0.61em;
+    font-size: 1em;
     a {
       color: ${({ theme }) => theme.colors.text};
       text-decoration: none;
@@ -431,7 +455,7 @@ const SidebarList = styled.ul`
 
 const NoBlog = styled.div`
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 1.09rem;
+  font-size: 1.08rem;
   padding: 2.1rem 0 3rem 0;
   opacity: 0.86;
   text-align: center;

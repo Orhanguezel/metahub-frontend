@@ -18,6 +18,11 @@ export default function PortfolioSection() {
   if (loading) {
     return (
       <Section>
+        <SectionHead>
+          <MinorTitle>{t("page.portfolio.minorTitle", "PORTFOLYO")}</MinorTitle>
+          <MainTitle>{t("page.portfolio.title", "Projelerim")}</MainTitle>
+          <Desc>{t("page.portfolio.desc", "Modern SaaS, B2B ve dijital dönüşüm projelerim.")}</Desc>
+        </SectionHead>
         <PortfolioGrid>
           <PortfolioCard as={Skeleton} />
           <PortfolioCard as={Skeleton} />
@@ -30,6 +35,10 @@ export default function PortfolioSection() {
   if (error) {
     return (
       <Section>
+        <SectionHead>
+          <MinorTitle>{t("page.portfolio.minorTitle", "PORTFOLYO")}</MinorTitle>
+          <MainTitle>{t("page.portfolio.title", "Projelerim")}</MainTitle>
+        </SectionHead>
         <PortfolioGrid>
           <ErrorMessage message={error} />
         </PortfolioGrid>
@@ -40,10 +49,13 @@ export default function PortfolioSection() {
   if (!Array.isArray(portfolio) || portfolio.length === 0) {
     return (
       <Section>
+        <SectionHead>
+          <MinorTitle>{t("page.portfolio.minorTitle", "PORTFOLYO")}</MinorTitle>
+          <MainTitle>{t("page.portfolio.title", "Projelerim")}</MainTitle>
+          <Desc>{t("page.portfolio.noPortfolio", "Henüz proje eklenmedi.")}</Desc>
+        </SectionHead>
         <PortfolioGrid>
           <NoPortfolio>
-            <MainTitle>{t("page.portfolio.title", "Projelerim")}</MainTitle>
-            <Desc>{t("page.portfolio.noPortfolio", "Henüz proje eklenmedi.")}</Desc>
             <SeeAllBtn href="/portfolio">
               {t("page.portfolio.all", "Tüm Projeler")}
             </SeeAllBtn>
@@ -62,6 +74,11 @@ export default function PortfolioSection() {
       transition={{ duration: 0.66 }}
       viewport={{ once: true }}
     >
+      <SectionHead>
+        <MinorTitle>{t("page.portfolio.minorTitle", "PORTFOLYO")}</MinorTitle>
+        <MainTitle>{t("page.portfolio.title", "Projelerim")}</MainTitle>
+        <Desc>{t("page.portfolio.desc", "Modern SaaS, B2B ve dijital dönüşüm projelerim.")}</Desc>
+      </SectionHead>
       <PortfolioGrid>
         {shownPortfolio.map((item) => (
           <PortfolioCard key={item._id} as={motion.article}>
@@ -88,17 +105,15 @@ export default function PortfolioSection() {
                   || (item.content?.[lang]?.slice(0, 90) + "…")
                   || ""}
               </CardExcerpt>
-              {/* Burada tarih damgası kaldırıldı! */}
-              {/* <CardDate>...</CardDate> */}
             </CardBody>
           </PortfolioCard>
         ))}
       </PortfolioGrid>
       <div style={{ textAlign: "center" }}>
-  <SeeAllBtn href="/portfolio">
-    {t("page.portfolio.all", "Tüm Projeler")}
-  </SeeAllBtn>
-</div>
+        <SeeAllBtn href="/portfolio">
+          {t("page.portfolio.all", "Tüm Projeler")}
+        </SeeAllBtn>
+      </div>
     </Section>
   );
 }
@@ -110,6 +125,52 @@ const Section = styled(motion.section)`
   color: ${({ theme }) => theme.colors.text};
   padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xxl};
   width: 100%;
+`;
+
+const SectionHead = styled.div`
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-left: ${({ theme }) => theme.spacings.xl};
+  box-sizing: border-box;
+  text-align: left;
+
+  @media (max-width: 900px) {
+    padding-left: ${({ theme }) => theme.spacings.md};
+  }
+  @media (max-width: 600px) {
+    padding-left: ${({ theme }) => theme.spacings.sm};
+    margin-bottom: 1.1rem;
+    text-align: center;
+  }
+`;
+
+const MinorTitle = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.accent};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  margin-bottom: 0.21em;
+`;
+
+const MainTitle = styled.h2`
+  font-size: clamp(2.2rem, 3.3vw, 2.7rem);
+  color: ${({ theme }) => theme.colors.primary};
+  font-family: ${({ theme }) => theme.fonts.heading};
+  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
+  margin: 0 0 0.23em 0;
+  letter-spacing: -0.01em;
+  line-height: 1.13;
+`;
+
+const Desc = styled.p`
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  line-height: 1.7;
+  margin-bottom: 0.7rem;
+  max-width: 520px;
+  opacity: 0.93;
+  padding-right: 2vw;
 `;
 
 const PortfolioGrid = styled.div`
@@ -136,23 +197,6 @@ const PortfolioGrid = styled.div`
 const NoPortfolio = styled.div`
   text-align: center;
   width: 100%;
-`;
-
-const MainTitle = styled.h2`
-  font-size: clamp(2.2rem, 3.3vw, 2.7rem);
-  color: ${({ theme }) => theme.colors.primary};
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-  margin: 0 0 0.45em 0;
-  letter-spacing: -0.01em;
-  line-height: 1.13;
-`;
-
-const Desc = styled.p`
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  line-height: 1.7;
-  margin-bottom: 0.7rem;
 `;
 
 const PortfolioCard = styled(motion.div)`

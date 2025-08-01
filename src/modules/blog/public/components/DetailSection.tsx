@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import { useParams } from "next/navigation";
@@ -41,11 +40,8 @@ export default function BlogDetailSection() {
     error,
   } = useAppSelector((state) => state.blog);
 
-  // Görsel state'leri
   const [mainIndex, setMainIndex] = useState(0);
   const [openModal, setOpenModal] = useState(false);
-
-  // Memoize navigasyon fonksiyonları
   const images = blog?.images || [];
   const totalImages = images.length;
 
@@ -57,7 +53,6 @@ export default function BlogDetailSection() {
     setMainIndex((prev) => (prev - 1 + totalImages) % totalImages);
   }, [totalImages]);
 
-  // Modal açıkken klavye navigasyonu
   const handleModalKey = useCallback(
     (e: KeyboardEvent) => {
       if (!openModal) return;
@@ -68,7 +63,6 @@ export default function BlogDetailSection() {
     [openModal, goNext, goPrev]
   );
 
-  // Klavye eventi sadece modal açıkken ekle
   useEffect(() => {
     if (!openModal) return;
     window.addEventListener("keydown", handleModalKey);
@@ -128,21 +122,20 @@ export default function BlogDetailSection() {
       {/* Büyük görsel + thumb */}
       {mainImage?.url && (
         <ImageSection>
-          <MainImageFrame>
-            <StyledMainImage
-              src={mainImage.url}
-              alt={blog.title[lang] || "Blog Title"}
-              width={800}
-              height={450}
-              priority
-              style={{ cursor: "zoom-in" }}
-              onClick={() => setOpenModal(true)}
-              tabIndex={0}
-              role="button"
-              aria-label={t("detail.openImage", "Büyüt")}
-            />
-          </MainImageFrame>
-          {/* Modal */}
+         <MainImageFrame>
+  <StyledMainImage
+    src={mainImage.url}
+    alt={blog.title[lang] || "Blog Title"}
+    fill // <-- width/height yerine fill
+    priority
+    style={{ cursor: "zoom-in" }}
+    onClick={() => setOpenModal(true)}
+    tabIndex={0}
+    role="button"
+    aria-label={t("detail.openImage", "Büyüt")}
+  />
+</MainImageFrame>
+
           {openModal && (
             <Modal
               isOpen={openModal}
@@ -159,8 +152,8 @@ export default function BlogDetailSection() {
                   style={{
                     maxWidth: "94vw",
                     maxHeight: "80vh",
-                    borderRadius: 12,
-                    boxShadow: "0 6px 42px #2225",
+                    borderRadius: 14,
+                    boxShadow: "0 6px 42px #2226",
                     background: "#111",
                     width: "auto",
                     height: "auto"
@@ -173,7 +166,6 @@ export default function BlogDetailSection() {
               </div>
             </Modal>
           )}
-          {/* Thumbnail Galeri */}
           {images.length > 1 && (
             <Gallery>
               {images.map((img, i) => (
@@ -205,7 +197,7 @@ export default function BlogDetailSection() {
         <SocialLinks />
       </SocialShareBox>
 
-      {/* Özet (Kısa Bilgi) */}
+      {/* Özet */}
       {blog.summary && blog.summary[lang] && (
         <SummaryBox>
           <ReactMarkdown>
@@ -226,7 +218,7 @@ export default function BlogDetailSection() {
       {/* Diğer içerikler */}
       {otherBlog?.length > 0 && (
         <OtherSection>
-          <OtherTitle>{t("page.other", "Diğer Haberler")}</OtherTitle>
+          <OtherTitle>{t("page.other", "Diğer Bloglar")}</OtherTitle>
           <OtherGrid>
             {otherBlog.map((item: IBlog) => (
               <OtherCard key={item._id} as={motion.div} whileHover={{ y: -6, scale: 1.025 }}>
@@ -259,93 +251,120 @@ export default function BlogDetailSection() {
   );
 }
 
-// ...styled-components (değişmedi)
+// --- Styled Components ---
 
 const Container = styled(motion.section)`
-  max-width: 900px;
+  max-width: 950px;
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.md};
+  background: ${({ theme }) => theme.colors.sectionBackground};
+
+  @media (max-width: 900px) {
+    padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.sm};
+  }
+  @media (max-width: 600px) {
+    padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.sm};
+  }
 `;
 
 const Title = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  margin-bottom: ${({ theme }) => theme.spacings.lg};
   color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  font-family: ${({ theme }) => theme.fonts.heading};
+  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
+
+  @media (max-width: 600px) {
+    font-size: 1.35rem;
+    margin-bottom: ${({ theme }) => theme.spacings.lg};
+  }
 `;
 
 const ImageSection = styled.div`
   margin-bottom: ${({ theme }) => theme.spacings.xl};
+
+  @media (max-width: 600px) {
+    margin-bottom: ${({ theme }) => theme.spacings.md};
+  }
 `;
 
 const MainImageFrame = styled.div`
   width: 100%;
-  max-width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 16/9;
   overflow: hidden;
-  background: #e7edf3;
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.md};
+  position: relative;
 `;
 
 const StyledMainImage = styled(Image)`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important; // aspect ratio KORUNUR, taşmaz, kesilmez
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
 `;
 
 const Gallery = styled.div`
-  margin-top: 1.15rem;
+  margin-top: 1.05rem;
   display: flex;
-  gap: 1.05rem;
+  gap: 0.8rem;
   flex-wrap: wrap;
+
+  @media (max-width: 600px) {
+    gap: 0.45rem;
+  }
 `;
 
+// Thumbnail (gallery) Image
 const ThumbFrame = styled.button<{ $active?: boolean }>`
-  border: none;
-  background: none;
-  padding: 0;
-  outline: none;
-  cursor: pointer;
-  width: 168px;
-  height: 96px;
-  aspect-ratio: 16 / 9;
+  border: 2px solid ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.borderLight};
+  background: ${({ theme, $active }) => $active ? theme.colors.primaryTransparent : theme.colors.backgroundSecondary};
+  border-radius: ${({ theme }) => theme.radii.md};
+  width: 88px;
+  height: 52px;
+  aspect-ratio: 16/9;
   overflow: hidden;
-  background: #eef5fa;
+  padding: 0;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: box-shadow 0.15s, border 0.17s;
-  border: 2.3px solid #e1e8ef;
+  transition: border 0.15s, background 0.15s, box-shadow 0.14s;
+  outline: none;
+  box-shadow: ${({ $active, theme }) => $active ? theme.shadows.sm : "none"};
 
   &:hover, &:focus-visible {
     border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 5px 18px 0 rgba(40,117,194,0.13);
-    outline: none;
+    box-shadow: 0 5px 18px 0 ${({ theme }) => theme.colors.primaryTransparent};
+    background: ${({ theme }) => theme.colors.primaryTransparent};
   }
 `;
 
 const StyledThumbImage = styled(Image)<{ $active?: boolean }>`
   width: 100% !important;
   height: 100% !important;
-  object-fit: cover;
+  object-fit: contain !important; // aspect ratio KORUNUR
+  border-radius: ${({ theme }) => theme.radii.md};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
 `;
 
 const SocialShareBox = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.6em;
-  margin-bottom: 2.3em;
-  margin-top: 0.7em;
+  gap: 0.7em;
+  margin: 1.2em 0 2.1em 0;
 `;
 
 const ShareLabel = styled.div`
-  font-size: 1.02em;
+  font-size: ${({ theme }) => theme.fontSizes.small};
   font-weight: 500;
   color: ${({ theme }) => theme.colors.textSecondary};
-  opacity: 0.85;
+  opacity: 0.88;
 `;
 
 const SummaryBox = styled.div`
@@ -355,6 +374,13 @@ const SummaryBox = styled.div`
   margin-bottom: ${({ theme }) => theme.spacings.xl};
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.xs};
+  font-family: ${({ theme }) => theme.fonts.body};
+  font-size: ${({ theme }) => theme.fontSizes.medium};
+
+  @media (max-width: 600px) {
+    padding: ${({ theme }) => theme.spacings.md};
+    font-size: ${({ theme }) => theme.fontSizes.small};
+  }
 `;
 
 const ContentBox = styled.div`
@@ -364,18 +390,26 @@ const ContentBox = styled.div`
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.sm};
   border-left: 6px solid ${({ theme }) => theme.colors.primary};
-  line-height: 1.73;
+  line-height: ${({ theme }) => theme.lineHeights.loose};
   font-size: ${({ theme }) => theme.fontSizes.base};
   color: ${({ theme }) => theme.colors.text};
   letter-spacing: 0.01em;
 
-  h3 {
+  h2, h3 {
     margin-bottom: ${({ theme }) => theme.spacings.md};
     color: ${({ theme }) => theme.colors.primary};
     font-size: ${({ theme }) => theme.fontSizes.lg};
+    font-family: ${({ theme }) => theme.fonts.heading};
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
   }
   p, div {
     margin-bottom: ${({ theme }) => theme.spacings.sm};
+    font-family: ${({ theme }) => theme.fonts.body};
+  }
+
+  @media (max-width: 600px) {
+    padding: ${({ theme }) => theme.spacings.sm};
+    font-size: ${({ theme }) => theme.fontSizes.small};
   }
 `;
 
@@ -390,27 +424,33 @@ const OtherTitle = styled.h3`
   font-size: ${({ theme }) => theme.fontSizes.large};
   margin-bottom: ${({ theme }) => theme.spacings.lg};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  font-family: ${({ theme }) => theme.fonts.heading};
 `;
 
 const OtherGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.25rem 1.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1.1rem 1.7rem;
   margin-top: 0.7rem;
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+  }
 `;
 
 const OtherCard = styled(motion.div)`
   background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.shadows.xs};
-  border: 1.3px solid ${({ theme }) => theme.colors.borderLight};
-  padding: 1.1rem 1.2rem 1rem 1.2rem;
+  border: 1.2px solid ${({ theme }) => theme.colors.borderLight};
+  padding: 1rem 1.2rem;
   display: flex;
   align-items: center;
   gap: 1.1rem;
   transition: box-shadow 0.18s, border 0.18s, transform 0.16s;
   cursor: pointer;
-  min-height: 72px;
+  min-height: 62px;
 
   &:hover, &:focus-visible {
     box-shadow: ${({ theme }) => theme.shadows.md};
@@ -422,8 +462,8 @@ const OtherCard = styled(motion.div)`
 
 const OtherImgWrap = styled.div`
   flex-shrink: 0;
-  width: 60px;
-  height: 40px;
+  width: 54px;
+  height: 36px;
   border-radius: ${({ theme }) => theme.radii.md};
   overflow: hidden;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
@@ -440,23 +480,25 @@ const OtherImg = styled(Image)`
 `;
 
 const OtherImgPlaceholder = styled.div`
-  width: 60px;
-  height: 40px;
+  width: 54px;
+  height: 36px;
   background: ${({ theme }) => theme.colors.skeleton};
-  opacity: 0.36;
+  opacity: 0.33;
   border-radius: ${({ theme }) => theme.radii.md};
 `;
 
 const OtherTitleMini = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.base};
+  font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   color: ${({ theme }) => theme.colors.primary};
 
   a {
     color: inherit;
     text-decoration: none;
-    &:hover {
+    &:hover, &:focus {
       text-decoration: underline;
+      color: ${({ theme }) => theme.colors.accent};
     }
   }
 `;

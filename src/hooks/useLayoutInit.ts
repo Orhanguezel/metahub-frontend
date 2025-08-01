@@ -83,6 +83,14 @@ import {
   fetchServicesCategories,
   clearServicesCategoryMessages,
 } from "@/modules/services/slice/servicesCategorySlice";
+import{
+  fetchAllMassageAdmin,
+  clearMassageMessages,
+} from "@/modules/massage/slice/massageSlice";
+import {
+  fetchMassageCategories,
+  clearMassageCategoryMessages,
+} from "@/modules/massage/slice/massageCategorySlice";
 import {
   fetchBikesAdmin,
   clearBikesMessages,
@@ -214,6 +222,8 @@ const cleanupActions = [
   clearReferencesCategoryMessages,
   clearServicesMessages,
   clearServicesCategoryMessages,
+  clearMassageMessages,
+  clearMassageCategoryMessages,
   clearContactMessages,
   clearSectionMetaMessages,
   clearSectionSettingMessages,
@@ -278,6 +288,8 @@ export const useLayoutInit = () => {
   );
   const servicesList = useAppSelector((state) => state.services);
   const servicesCategories = useAppSelector((state) => state.servicesCategory);
+  const massageList = useAppSelector((state) => state.massage);
+  const massageCategories = useAppSelector((state) => state.massageCategory);
   const contactMessagesAdmin = useAppSelector((state) => state.contact);
   const sectionMetasAdmin = useAppSelector((s) => s.sectionMeta.metasAdmin);
   const sectionSettingsAdmin = useAppSelector(
@@ -398,6 +410,11 @@ const skillCategories = useAppSelector((state) => state.skillCategory);
     if (!servicesCategories.categories.length && !servicesCategories.loading)
       dispatch(fetchServicesCategories());
 
+    if (!massageList.massageAdmin.length && !massageList.loading)
+      dispatch(fetchAllMassageAdmin());
+    if (!massageCategories.categories.length && !massageCategories.loading)
+      dispatch(fetchMassageCategories());
+
     if (
       !contactMessagesAdmin.messagesAdmin.length &&
       !contactMessagesAdmin.loading
@@ -485,6 +502,8 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
     referencesCategories,
     servicesList,
     servicesCategories,
+    massageList,
+    massageCategories,
     contactMessagesAdmin,
     sectionMetasAdmin,
     sectionSettingsAdmin,

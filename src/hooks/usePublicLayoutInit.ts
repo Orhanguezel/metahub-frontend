@@ -7,6 +7,7 @@ import { fetchSectionSettingsByTenant } from "@/modules/section/slices/sectionSe
 import { fetchSettings } from "@/modules/settings/slice/settingsSlice";
 import { fetchCompanyInfo } from "@/modules/company/slice/companySlice";
 import { fetchServices } from "@/modules/services/slice/servicesSlice";
+import { fetchMassage } from "@/modules/massage/slice/massageSlice";
 import { fetchPublishedGalleryItems } from "@/modules/gallery/slice/gallerySlice";
 import { fetchGalleryCategories } from "@/modules/gallery/slice/galleryCategorySlice";
 import { fetchAbout } from "@/modules/about/slice/aboutSlice";
@@ -41,6 +42,7 @@ export const usePublicLayoutInit = () => {
   const settingsSlice = useAppSelector((s) => s.settings);
   const companySlice = useAppSelector((s) => s.company);
   const servicesSlice = useAppSelector((s) => s.services);
+  const massageSlice = useAppSelector((s) => s.massage);
   const gallery = useAppSelector((s) => s.gallery);
   const galleryCategory = useAppSelector((s) => s.galleryCategory);
   const aboutSlice = useAppSelector((s) => s.about);
@@ -88,6 +90,9 @@ useEffect(() => {
     }
     if ((servicesSlice.services.length === 0) && servicesSlice.status === "idle") {
       dispatch(fetchServices());
+    }
+    if ((massageSlice.massage.length === 0) && massageSlice.status === "idle") {
+      dispatch(fetchMassage());
     }
     if ((aboutSlice.about.length === 0) && aboutSlice.status === "idle") {
       dispatch(fetchAbout());
@@ -177,6 +182,9 @@ useEffect(() => {
     services: servicesSlice.services,
     servicesStatus: servicesSlice.status,
     servicesError: servicesSlice.error,
+    massage: massageSlice.massage,
+    massageStatus: massageSlice.status,
+    massageError: massageSlice.error,
     gallery: {
       publicImages: gallery.publicImages,
       status: gallery.status,

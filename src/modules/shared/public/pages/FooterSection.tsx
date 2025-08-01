@@ -71,7 +71,7 @@ export default function FooterSection() {
   // Diğer bloklar
   const footerBlocks: FooterBlock[] = [
     services && Array.isArray(services) && services.length > 0 && {
-      title: t("massageTypes", "Massage Types"),
+      title: t("serviceTypes", "Service Types"),
       links: services
         .filter((s: IServices) => s.isActive && s.isPublished)
         .slice(0, 5)
