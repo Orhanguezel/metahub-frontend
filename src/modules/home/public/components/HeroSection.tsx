@@ -249,6 +249,7 @@ const SliderContent = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  color: ${({ theme }) => theme.colors.whiteColor};
   padding-bottom: ${({ theme }) => theme.spacings.xxl};
 
   @media ${({ theme }) => theme.media.mobile} {
@@ -300,16 +301,15 @@ const HeroCard = styled.div`
 `;
 
 const GradientTitle = styled.span`
-  background: linear-gradient(90deg, #e5549c 24%, #b53075 58%, #52404b 95%);
-  background-clip: text;
+  background: ${({ theme }) => theme.buttons.primary.background};
   -webkit-background-clip: text;
-  color: transparent;
+  color: ${({ theme }) => theme.buttons.primary.text};
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 1.5px 1.5px #fbeaf0);
 `;
 
 const HeroDesc = styled.span`
-  color: ${({ theme }) => theme.colors.textLight};
+  color: ${({ theme }) => theme.colors.whiteColor};
   font-weight: 500;
   text-shadow: 0 2px 14px #fbeaf0cc, 0 2px 16px #e5549c13;
 `;

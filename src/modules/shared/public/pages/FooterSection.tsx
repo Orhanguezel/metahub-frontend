@@ -42,6 +42,7 @@ function slugToTitle(slug: string = "") {
 export default function FooterSection() {
   // Çoklu modül: services (massage), ensotekprod, sparepart, library...
   const { services, status: servicesStatus } = useAppSelector((state) => state.services || {});
+  const { massage } = useAppSelector((state) => state.massage || {});
   const { ensotekprod } = useAppSelector((state) => state.ensotekprod || {});
   const { sparepart } = useAppSelector((state) => state.sparepart || {});
   const { library } = useAppSelector((state) => state.library || {});
@@ -78,6 +79,16 @@ export default function FooterSection() {
         .map((srv: IServices) => ({
           label: getServiceTitle(srv, lang),
           href: srv.slug ? `/services/${srv.slug}` : "#",
+        })),
+    },
+    massage && Array.isArray(massage) && massage.length > 0 && {
+      title: t("massageType", "Massage"),
+      links: massage
+        .filter((m) => m.isActive && m.isPublished)
+        .slice(0, 5)
+        .map((m) => ({
+          label: m.title?.[lang]?.trim?.() || m.title?.en?.trim?.() || slugToTitle(m.slug) || "Massage",
+          href: m.slug ? `/massage/${m.slug}` : "#",
         })),
     },
     ensotekprod && Array.isArray(ensotekprod) && ensotekprod.length > 0 && {

@@ -157,22 +157,21 @@ const Section = styled(motion.section)`
 `;
 
 const BlogGrid = styled.div`
-  max-width: 1280px;
+  max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
   display: flex;
-  gap: 2.6rem;
+  gap: ${({ theme }) => theme.spacings.xl};
   align-items: flex-start;
   padding: 0 ${({ theme }) => theme.spacings.xl};
   flex-wrap: wrap;
 
   ${({ theme }) => theme.media.medium} {
     padding: 0 ${({ theme }) => theme.spacings.md};
-    gap: 2rem;
+    gap: ${({ theme }) => theme.spacings.lg};
   }
-
   ${({ theme }) => theme.media.small} {
     flex-direction: column;
-    gap: 2.5rem;
+    gap: ${({ theme }) => theme.spacings.xl};
     padding: 0 ${({ theme }) => theme.spacings.sm};
     align-items: center;
   }
@@ -295,30 +294,33 @@ const Right = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 1.45rem;
+  gap: ${({ theme }) => theme.spacings.md};
+
   ${({ theme }) => theme.media.small} {
     width: 100%;
     max-width: 420px;
     margin: 0 auto;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: ${({ theme }) => theme.spacings.sm};
   }
 `;
 
 const BlogCard = styled(motion.div)`
   width: 100%;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  box-shadow: 0 8px 30px 0 rgba(40,117,194,0.10);
+  background: ${({ theme }) => theme.cards.background};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
   overflow: hidden;
   display: flex;
   flex-direction: row;
   min-height: 86px;
   max-width: 390px;
-  border: 1px solid ${({ theme }) => theme.colors.borderLight};
-  transition: box-shadow 0.16s, transform 0.11s;
+  border: 1px solid ${({ theme }) => theme.cards.border};
+  border-radius: ${({ theme }) => theme.radii.md};
+  transition: box-shadow ${({ theme }) => theme.transition.normal}, transform ${({ theme }) => theme.transition.fast};
+
   &:hover {
-    box-shadow: 0 14px 36px 0 rgba(40,117,194,0.17);
+    box-shadow: ${({ theme }) => theme.shadows.xl};
     transform: scale(1.024) translateY(-2px);
   }
 `;
@@ -327,7 +329,7 @@ const CardImageWrap = styled(Link)`
   min-width: 72px;
   width: 72px;
   height: 56px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -346,14 +348,14 @@ const CardBody = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding: 0.7rem 0.8rem 0.7rem 0.5rem;
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.sm};
 `;
 
 const CardTitle = styled.h3`
-  font-size: 1.01rem;
+  font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin-bottom: 0.25rem;
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   line-height: 1.15;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -362,9 +364,9 @@ const CardTitle = styled.h3`
 `;
 
 const CardExcerpt = styled.p`
-  font-size: 0.93rem;
+  font-size: ${({ theme }) => theme.fontSizes.small};
   color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: 0.56rem;
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   opacity: 0.98;
   line-height: 1.37;
   overflow: hidden;
@@ -376,13 +378,17 @@ const CardExcerpt = styled.p`
 `;
 
 const CardDate = styled.span`
-  background: linear-gradient(90deg, #2875c2 50%, #0bb6d6 100%);
-  color: #fff;
+  background: linear-gradient(
+    90deg,
+    ${({ theme }) => theme.colors.primary} 50%,
+    ${({ theme }) => theme.colors.accent} 100%
+  );
+  color: ${({ theme }) => theme.colors.white};
   font-size: 0.91em;
   padding: 0.13em 0.62em;
-  border-radius: 10px;
+  border-radius: ${({ theme }) => theme.radii.pill};
   font-weight: 600;
-  box-shadow: 0 3px 8px 0 rgba(40,117,194,0.08);
+  box-shadow: 0 3px 8px 0 ${({ theme }) => theme.colors.shadowHighlight};
   letter-spacing: 0.01em;
   margin-top: auto;
   margin-right: 7px;

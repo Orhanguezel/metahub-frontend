@@ -210,13 +210,16 @@ const CardGrid = styled.div`
     grid-template-rows: none;
     gap: 1.2rem 1.2rem;
     max-width: 99vw;
+    justify-items: center;
   }
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr 1fr; // Hala iki sütun!
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr 1fr;
     gap: 0.65rem 0.65rem;
     padding: 0 0.2rem;
+    justify-items: center;
   }
 `;
+
 
 
 const CardLink = styled(Link)`
@@ -224,7 +227,7 @@ const CardLink = styled(Link)`
   color: inherit;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: center;  // Ortala
   justify-content: flex-start;
   background: ${({ theme }) => theme.colors.cardBackground};
   box-shadow: ${({ theme }) => theme.shadows.sm};
@@ -242,6 +245,11 @@ const CardLink = styled(Link)`
     transform: translateY(-8px) scale(1.06);
     z-index: 1;
     text-decoration: none;
+  }
+
+  @media (max-width: 600px) {
+    align-items: center;   // Mobilde de garanti ortalı
+    text-align: center;
   }
 `;
 
@@ -285,7 +293,7 @@ const CardTitle = styled.h3`
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   margin-top: 0.6rem;
-  text-align: center;
+  text-align: center; // HER ZAMAN ortalı
   letter-spacing: 0.01em;
   min-height: 2.2em;
   line-height: 1.14;

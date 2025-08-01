@@ -354,20 +354,21 @@ const StyledThumbImage = styled(Image)<{ $active?: boolean }>`
 `;
 
 const SummaryBlock = styled.div`
-  background: ${({ theme }) => theme.colors.achievementBackground};
+  background: ${({ theme }) => theme.colors.sectionBackground};
+  color: ${({ theme }) => theme.colors.text};
   border-left: 6px solid ${({ theme }) => theme.colors.primary};
   padding: 1.45rem 2.1rem 1.2rem 2rem;
   margin-bottom: 2.1rem;
   border-radius: 14px;
   box-shadow: ${({ theme }) => theme.shadows.xs};
   h3 {
-    color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.white};
     font-size: ${({ theme }) => theme.fontSizes.md};
     font-weight: ${({ theme }) => theme.fontWeights.semiBold};
     margin-bottom: 0.7em;
   }
   div {
-    color: ${({ theme }) => theme.colors.textSecondary};
+    color: ${({ theme }) => theme.colors.text};
     font-size: ${({ theme }) => theme.fontSizes.base};
     line-height: 1.7;
   }
