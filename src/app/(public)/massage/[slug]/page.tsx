@@ -1,6 +1,6 @@
-import ServiceDetailSection from "@/modules/services/public/components/ServiceDetailSection";
+import DetailSection from "@/modules/massage/public/components/DetailSection";
 
 export default function Page() {
-  return <ServiceDetailSection />;
+  return <DetailSection />;
 }
 

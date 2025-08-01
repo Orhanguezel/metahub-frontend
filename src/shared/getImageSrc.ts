@@ -16,6 +16,7 @@ const folderMap: Record<ImageType, string> = {
   galleryCategory: "galleryCategory-images",
   faq: "faq-images",
   services: "services-images",
+  massage: "massage-images", // Yeni eklenen tip
   notification: "notification-images",
   settings: "settings-images",
   contact: "contact-files",
@@ -60,6 +61,7 @@ const defaultImageMap: Record<ImageType, string> = {
   galleryCategory: "galleryCategory.png",
   faq: "faq.png",
   services: "service.png",
+  massage: "massage.png", // Yeni eklenen varsayılan resim
   notification: "notification.png",
   settings: "setting.png",
   contact: "contact.png",
