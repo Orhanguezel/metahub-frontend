@@ -7,8 +7,8 @@ import type { Offer } from "@/modules/offer/types";
 import { getMultiLang, type SupportedLocale } from "@/types/common";
 import { OfferStatusDropdown } from "@/modules/offer";
 
-// CUSTOMER companyName/contactName gösterimi (string/obj farkı ve fallback'lı)
-function getCustomerCompany(val: any, lang: SupportedLocale, fallback = "-") {
+// Helper fonksiyonlar (yukarıdan al)
+function getCompanyName(val: any, lang: SupportedLocale, fallback = "-") {
   if (!val) return fallback;
   if (typeof val === "string") return val;
   if (typeof val.companyName === "object")
@@ -16,7 +16,7 @@ function getCustomerCompany(val: any, lang: SupportedLocale, fallback = "-") {
   if (typeof val.companyName === "string") return val.companyName;
   return fallback;
 }
-function getCustomerContact(val: any, lang: SupportedLocale, fallback = "-") {
+function getContactName(val: any, lang: SupportedLocale, fallback = "-") {
   if (!val) return fallback;
   if (typeof val === "string") return fallback;
   if (typeof val.contactName === "object")
@@ -45,9 +45,9 @@ const OfferDetailModal: React.FC<Props> = ({
 
   if (!offer) return null;
 
-  // Customer ve Company populate edildiğinde obje, aksi halde string id!
+  // Populate edildi ise obje, aksi halde string!
   const customer = typeof offer.customer === "object" && offer.customer ? offer.customer : null;
-  //const company = typeof offer.company === "object" && offer.company ? offer.company : null;
+  const company = typeof offer.company === "object" && offer.company ? offer.company : null;
 
   return (
     <ModalOverlay>
@@ -69,6 +69,7 @@ const OfferDetailModal: React.FC<Props> = ({
             </Value>
             <Label>{t("status", "Status")}</Label>
             <OfferStatusDropdown offer={offer} />
+
             <Label>{t("pdf", "PDF")}</Label>
             {offer.pdfUrl ? (
               <PdfLink href={offer.pdfUrl} target="_blank" rel="noopener">
@@ -77,28 +78,28 @@ const OfferDetailModal: React.FC<Props> = ({
             ) : (
               <NoPdf>{t("noPdf", "Not generated")}</NoPdf>
             )}
+
             <Label>{t("customer", "Customer")}</Label>
             <Value>
               {customer
-                ? getCustomerCompany(customer, lang) +
-                  (getCustomerContact(customer, lang)
-                    ? " - " + getCustomerContact(customer, lang)
+                ? getCompanyName(customer, lang) +
+                  (getContactName(customer, lang)
+                    ? " - " + getContactName(customer, lang)
                     : "")
                 : typeof offer.customer === "string"
                 ? offer.customer
                 : "-"}
             </Value>
+
             <Label>{t("company", "Company")}</Label>
-            {/*   <Value>
+            <Value>
               {company
-                ? company.companyName[lang] ||
-                  (company.companyName as string) ||
-                  "-"
+                ? getCompanyName(company, lang)
                 : typeof offer.company === "string"
                 ? offer.company
                 : "-"}
-            </Value> */}
-           
+            </Value>
+
             <Label>{t("validUntil", "Valid Until")}</Label>
             <Value>
               {offer.validUntil
@@ -106,6 +107,7 @@ const OfferDetailModal: React.FC<Props> = ({
                 : "-"}
             </Value>
           </div>
+
           <RightCol>
             <Label>{t("paymentTerms", "Payment Terms")}</Label>
             <Value>{getMultiLang(offer.paymentTerms, lang)}</Value>
@@ -128,11 +130,11 @@ const OfferDetailModal: React.FC<Props> = ({
                 </tr>
               </thead>
               <tbody>
-                {offer.items.map((item, i) => (
+                {offer.items.map((item: any, i: number) => (
                   <tr key={i}>
                     <td>{i + 1}</td>
                     <td>
-                      {getMultiLang(item.productName, lang) ||
+                      {item.productName[lang] ||
                         (item.product ?? item.ensotekprod ?? "-")}
                     </td>
                     <td>{item.quantity}</td>
@@ -217,7 +219,7 @@ const OfferDetailModal: React.FC<Props> = ({
                         ? new Date(rev.updatedAt).toLocaleString(lang)
                         : "-"}
                     </td>
-                    <td>{rev.by}</td>
+                    <td>{typeof rev.by === "object" && rev.by && "name" in rev.by ? (rev.by as any).name : rev.by || "-"}</td>
                     <td>{rev.note || "-"}</td>
                     <td>
                       <a
@@ -254,7 +256,6 @@ const OfferDetailModal: React.FC<Props> = ({
 };
 
 export default OfferDetailModal;
-
 // --- Styled Components ---
 const ModalOverlay = styled.div`
   position: fixed;

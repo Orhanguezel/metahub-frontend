@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { Offer } from "../types";
+import type { Offer } from "@/modules/offer/types";
 
 // --- State ---
 interface OffersState {

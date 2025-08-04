@@ -1,9 +1,11 @@
 import type { TranslatedLabel } from "@/types/common";
+type ObjectIdLike = string | { _id: string; [key: string]: any } | null;
 
-// Teklifteki ürün kalemi (hem product hem ensotekprod desteği)
+
+// --- Product kalemi
 export interface OfferItem {
-  product?: string;         // ObjectId as string
-  ensotekprod?: string;     // ObjectId as string
+  product?: ObjectIdLike;         // string (id) veya { _id, ... }
+  ensotekprod?: ObjectIdLike;
   productName: TranslatedLabel;
   quantity: number;
   unitPrice: number;
@@ -12,22 +14,22 @@ export interface OfferItem {
   total: number;
 }
 
-// PDF revizyon geçmişi
+// --- Revizyon geçmişi
 export interface OfferRevision {
   pdfUrl: string;
-  updatedAt: string;        // ISO tarih stringi
-  by: string;               // user ObjectId as string
+  updatedAt: string;            // ISO string (Date.toISOString())
+  by: ObjectIdLike;
   note?: string;
 }
 
-// Ana teklif tipi
+// --- Ana teklif tipi
 export interface Offer {
   _id?: string;
   tenant: string;
   offerNumber: string;
-  user: string;
-  company: string;
-  customer: string;
+  user?: ObjectIdLike;
+  company?: ObjectIdLike;
+  customer?: ObjectIdLike;
   contactPerson?: string;
   items: OfferItem[];
   shippingCost?: number;
@@ -36,7 +38,7 @@ export interface Offer {
   currency: string;
   paymentTerms: TranslatedLabel;
   notes?: TranslatedLabel;
-  validUntil: string; // ISO tarih stringi
+  validUntil: string;           // ISO tarih stringi
   status: "draft" | "preparing" | "sent" | "pending" | "approved" | "rejected";
   totalNet: number;
   totalVat: number;
@@ -47,11 +49,10 @@ export interface Offer {
   acceptedAt?: string;
   declinedAt?: string;
   revisionHistory?: OfferRevision[];
-  createdBy: string;
+  createdBy?: ObjectIdLike;
   createdAt: string;
   updatedAt: string;
 }
-
 
 export interface RequestOfferPayload {
   name: string;
@@ -59,6 +60,7 @@ export interface RequestOfferPayload {
   company?: string;
   phone?: string;
   message?: string;
-  productId?: string; // seçilen ürünün _id'si
-  productType?: "product" | "ensotekprod" | "specialprod"; // Ürün tipi
+  productId?: string;
+  productType?: "product" | "ensotekprod" | "specialprod";
 }
+

@@ -7,6 +7,7 @@ import { translations } from "@/modules/offer";
 import {
   deleteOffer,
   generateOfferPdf,
+  updateOffer,
   clearOfferMessages,
 } from "@/modules/offer/slice/offerSlice";
 import styled from "styled-components";
@@ -16,17 +17,17 @@ import OfferTable from "@/modules/offer/admin/components/OfferTable";
 import OfferDetailModal from "@/modules/offer/admin/components/OfferDetailModal";
 import OfferDeleteConfirmModal from "@/modules/offer/admin/components/OfferDeleteConfirmModal";
 import OfferToolbar from "@/modules/offer/admin/components/OfferToolbar";
+import OfferEditModal from "@/modules/offer/admin/components/OfferEditModal"; // Eklendi
 
 const AdminOfferPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { adminOffers, loading, error, successMessage } = useAppSelector(
-    (state) => state.offer
-  );
+  const { adminOffers, loading, error, successMessage } = useAppSelector((state) => state.offer);
   const { t } = useI18nNamespace("offer", translations);
 
   // Modal State
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [deleteOfferId, setDeleteOfferId] = useState<string | null>(null);
+  const [editOffer, setEditOffer] = useState<Offer | null>(null);
 
   // Mesajlar temizlensin (unmountta)
   useEffect(() => {
@@ -50,8 +51,10 @@ const AdminOfferPage: React.FC = () => {
         offers={adminOffers}
         onShowDetail={setSelectedOffer}
         onDelete={setDeleteOfferId}
+        onEdit={setEditOffer} // --- Burada Edit butonu için handler ekliyoruz
       />
 
+      {/* Detay Modal */}
       <OfferDetailModal
         offer={selectedOffer}
         onClose={() => setSelectedOffer(null)}
@@ -62,6 +65,22 @@ const AdminOfferPage: React.FC = () => {
         loading={loading}
       />
 
+      {/* Düzenleme Modalı */}
+      {editOffer && (
+      <OfferEditModal
+  offer={editOffer}
+  onClose={() => setEditOffer(null)}
+  onSubmit={update => {
+    dispatch(updateOffer({ id: editOffer._id!, data: update }));
+    setEditOffer(null);
+  }}
+  loading={loading}
+/>
+
+
+      )}
+
+      {/* Silme Onayı Modalı */}
       <OfferDeleteConfirmModal
         offerId={deleteOfferId}
         onCancel={() => setDeleteOfferId(null)}

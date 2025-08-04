@@ -13,12 +13,14 @@ interface OfferTableProps {
   offers: Offer[];
   onShowDetail: (offer: Offer) => void;
   onDelete: (offerId: string) => void;
+  onEdit: (offer: Offer) => void;
 }
 
 const OfferTable: React.FC<OfferTableProps> = ({
   offers = [],
   onShowDetail,
   onDelete,
+  onEdit,
 }) => {
   const { t, i18n } = useI18nNamespace("offer", translations);
   const lang = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
@@ -58,18 +60,18 @@ const OfferTable: React.FC<OfferTableProps> = ({
 
             return (
               <tr key={offer._id}>
-                <OfferIdTd>
+                <OfferIdTd data-label={t("offerNumber", "Offer #")}>
                   <OfferId>
                     #{(offer.offerNumber || offer._id || "").toString().slice(-6)}
                   </OfferId>
                 </OfferIdTd>
-                <td>
+                <td data-label={t("createdAt", "Date")}>
                   {offer.createdAt
                     ? new Date(offer.createdAt).toLocaleDateString(lang)
                     : "-"}
                 </td>
-                <td>{customerName}</td>
-                <td>
+                <td data-label={t("customer", "Customer")}>{customerName}</td>
+                <td data-label={t("totalGross", "Total")}>
                   <Price>
                     {(offer.totalGross ?? 0).toLocaleString(lang, {
                       minimumFractionDigits: 2,
@@ -77,13 +79,16 @@ const OfferTable: React.FC<OfferTableProps> = ({
                     <Currency>{offer.currency || "EUR"}</Currency>
                   </Price>
                 </td>
-                <td>
+                <td data-label={t("status", "Status")}>
                   <OfferStatusDropdown offer={offer} />
                 </td>
-                <td>
+                <td data-label={t("actions", "Actions")}>
                   <ActionBtn onClick={() => onShowDetail(offer)}>
                     {t("detail", "Detail")}
                   </ActionBtn>
+                  <EditBtn onClick={() => onEdit(offer)}>
+                    {t("edit", "Edit")}
+                  </EditBtn>
                   <DeleteBtn onClick={() => onDelete(offer._id ?? "")}>
                     {t("delete", "Delete")}
                   </DeleteBtn>
@@ -224,6 +229,21 @@ const ActionBtn = styled.button`
   }
   &:active {
     background: ${({ theme }) => theme.colors.primaryDark || "#0f2547"};
+  }
+`;
+
+const EditBtn = styled(ActionBtn)`
+  background: ${({ theme }) => theme.colors.warning || "#ffb300"};
+  color: #222;
+  margin-right: 0.5em;
+  &:hover,
+  &:focus {
+    background: #ffc947;
+    color: #111;
+  }
+  &:active {
+    background: #f8ae20;
+    color: #222;
   }
 `;
 
