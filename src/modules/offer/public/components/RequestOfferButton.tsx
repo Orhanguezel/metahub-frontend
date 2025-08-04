@@ -5,7 +5,7 @@ import { useState } from "react";
 import { HiOutlineTag } from "react-icons/hi";
 import RequestOfferModal from "./RequestOfferModal";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import translations from "../../../requestOffer/locales";
 
 export default function RequestOfferButton() {
   const [open, setOpen] = useState(false);

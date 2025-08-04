@@ -32,6 +32,8 @@ import { fetchFAQs } from "@/modules/faq/slice/faqSlice";
 import { fetchPortfolio } from "@/modules/portfolio/slice/portfolioSlice";
 import { fetchSkill } from "@/modules/skill/slice/skillSlice";
 
+
+
 export const usePublicLayoutInit = () => {
   const dispatch = useAppDispatch();
   const { tenant, loading: tenantLoading } = useActiveTenant();

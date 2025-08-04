@@ -1,4 +1,3 @@
-// src/modules/newsletter/components/NewsletterModal.tsx
 "use client";
 
 import styled from "styled-components";
@@ -6,19 +5,39 @@ import { motion } from "framer-motion";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
 import { useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  subscribeNewsletter,
+  clearNewsletterState,
+} from "@/modules/newsletter/slice/newsletterSlice";
 
 export default function NewsletterModal({ onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useI18nNamespace("newsletter", translations);
-  const [sent, setSent] = useState(false);
+  const dispatch = useAppDispatch();
+
+  const [email, setEmail] = useState("");
+  const { loading, error, successMessage } = useAppSelector((state) => state.newsletter);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSent(true);
-    setTimeout(onClose, 1400);
+    dispatch(subscribeNewsletter({ email })).then((res) => {
+      if (res.meta.requestStatus === "fulfilled") {
+        setTimeout(() => {
+          dispatch(clearNewsletterState());
+          onClose();
+        }, 1400);
+      }
+    });
+  }
+
+  // Modal kapandığında state sıfırlama
+  function handleClose() {
+    dispatch(clearNewsletterState());
+    onClose();
   }
 
   return (
-    <Overlay onClick={onClose}>
+    <Overlay onClick={handleClose}>
       <Modal
         as={motion.div}
         initial={{ x: 360, opacity: 0 }}
@@ -27,18 +46,25 @@ export default function NewsletterModal({ onClose }: { open: boolean; onClose: (
         transition={{ duration: 0.4 }}
         onClick={e => e.stopPropagation()}
       >
-        <CloseButton onClick={onClose}>×</CloseButton>
+        <CloseButton onClick={handleClose} aria-label={t("admin.close", "Kapat")}>×</CloseButton>
         <ModalTitle>{t("modalTitle", "E-Bülten Aboneliği")}</ModalTitle>
-        {sent ? (
+        {successMessage ? (
           <SuccessMsg>{t("success", "Teşekkürler! E-bültenimize abone oldunuz.")}</SuccessMsg>
         ) : (
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} autoComplete="off">
             <Input
               placeholder={t("form.email", "E-posta adresiniz")}
               type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               required
+              disabled={loading}
+              aria-label={t("form.email", "E-posta adresiniz")}
             />
-            <SubmitBtn type="submit">{t("form.subscribe", "Abone Ol")}</SubmitBtn>
+            <SubmitBtn type="submit" disabled={loading}>
+              {loading ? t("form.loading", "Gönderiliyor...") : t("form.subscribe", "Abone Ol")}
+            </SubmitBtn>
+            {error && <ErrorMsg>{error}</ErrorMsg>}
           </form>
         )}
       </Modal>
@@ -46,59 +72,119 @@ export default function NewsletterModal({ onClose }: { open: boolean; onClose: (
   );
 }
 
+// --- THEME SUPPORTED STYLES ---
+
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(30, 38, 51, 0.38);
-  z-index: 1400;
+  background: ${({ theme }) => theme.colors.overlayBackground};
+  z-index: ${({ theme }) => theme.zIndex.overlay};
   display: flex;
   justify-content: flex-end;
   align-items: flex-start;
 `;
+
 const Modal = styled.div`
-  width: 350px;
-  background: #fff;
-  border-radius: 16px 0 0 16px;
-  margin: 2.7rem 0 0 0;
-  padding: 2.1rem 2rem 1.5rem 2rem;
-  box-shadow: 0 10px 32px #2226;
+  width: 370px;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.xl} 0 0 ${({ theme }) => theme.radii.xl};
+  margin: ${({ theme }) => theme.spacings.xxl} 0 0 0;
+  padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.lg};
+  box-shadow: ${({ theme }) => theme.shadows.lg};
   position: relative;
   display: flex;
   flex-direction: column;
   min-height: 180px;
+  font-family: ${({ theme }) => theme.fonts.main};
+  ${({ theme }) => theme.media.small} {
+    width: 100vw;
+    margin: 0;
+    border-radius: ${({ theme }) => theme.radii.md} 0 0 ${({ theme }) => theme.radii.md};
+    min-height: unset;
+    padding: ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.sm};
+  }
 `;
+
 const CloseButton = styled.button`
   position: absolute;
   top: 12px; right: 18px;
   font-size: 2em;
   background: none;
   border: none;
-  color: #444;
-  opacity: 0.6;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  opacity: 0.65;
   cursor: pointer;
+  transition: opacity ${({ theme }) => theme.transition.fast};
   &:hover { opacity: 1; }
 `;
+
 const ModalTitle = styled.div`
-  font-size: 1.28em;
-  font-weight: 700;
-  margin-bottom: 1.1em;
-  color: #1e2633;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  color: ${({ theme }) => theme.colors.primary};
+  font-family: ${({ theme }) => theme.fonts.heading};
+  letter-spacing: -0.5px;
 `;
+
 const Input = styled.input`
-  width: 100%; margin-bottom: 1em;
-  padding: 0.95em 1em; font-size: 1em; border-radius: 7px;
-  border: 1.4px solid #e0e0e0;
-  &:focus { border-color: #F97316; outline: none; }
+  width: 100%; margin-bottom: ${({ theme }) => theme.spacings.sm};
+  padding: 0.9em 1em;
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.inputBorder};
+  background: ${({ theme }) => theme.colors.inputBackground};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-family: ${({ theme }) => theme.fonts.body};
+  transition: border ${({ theme }) => theme.transition.fast};
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+    background: ${({ theme }) => theme.colors.inputBackgroundFocus};
+    outline: 0;
+  }
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.placeholder};
+    opacity: 1;
+  }
 `;
+
 const SubmitBtn = styled.button`
-  width: 100%; background: #F97316;
-  color: #fff; border: none; border-radius: 7px;
-  padding: 0.85em 1em; font-size: 1.08em;
-  font-weight: 600; cursor: pointer;
-  box-shadow: 0 2px 14px #F9731633;
-  transition: background 0.18s;
-  &:hover { background: #EA580C; }
+  width: 100%;
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: 0.85em 1em;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  cursor: pointer;
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
+  transition: background ${({ theme }) => theme.transition.fast};
+  &:hover, &:focus-visible {
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+  }
+  &:disabled {
+    background: ${({ theme }) => theme.colors.disabledBg};
+    color: ${({ theme }) => theme.colors.textMuted};
+    cursor: not-allowed;
+    opacity: ${({ theme }) => theme.opacity.disabled};
+  }
 `;
+
 const SuccessMsg = styled.div`
-  color: #0b933c; font-size: 1.13em; text-align: center; margin-top: 2em;
+  color: ${({ theme }) => theme.colors.success};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  text-align: center;
+  margin-top: ${({ theme }) => theme.spacings.xl};
+  font-family: ${({ theme }) => theme.fonts.body};
 `;
+
+const ErrorMsg = styled.div`
+  color: ${({ theme }) => theme.colors.error};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  text-align: center;
+  margin-top: ${({ theme }) => theme.spacings.md};
+  font-family: ${({ theme }) => theme.fonts.body};
+`;
+

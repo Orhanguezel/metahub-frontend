@@ -1,34 +1,12 @@
-// src/modules/cart/types/index.ts
-
 import type { SupportedLocale } from "@/types/common";
-import type { IBikes } from "@/modules/bikes/types";
-import type { IEnsotekprod } from "@/modules/ensotekprod/types";
-import type { ISparepart } from "@/modules/sparepart/types";
 
-
-// Sepet item'ı; hangi ürün tipi olduğunu belirten bir alan ekliyoruz
-export interface ICartItem {
-  product: IBikes | IEnsotekprod | ISparepart | string;
-  productType: "Bike" | "Ensotekprod" | "Sparepart"; // Yeni alan: ürün tipi
-  quantity: number;
+export interface INewsletter {
+  _id: string;                 // MongoDB ObjectId
   tenant: string;
-  unitPrice: number;
-  priceAtAddition: number;
-  totalPriceAtAddition: number;
-}
-
-// Sepet (cart) ana tipi
-export interface ICart {
-  _id?: string;
-  user?: string;
-  tenant?: string;
-  items: ICartItem[];
-  totalPrice: number;
-  couponCode?: string | null;
-  status: "open" | "ordered" | "cancelled";
-  isActive: boolean;
-  discount?: number;
-  language?: SupportedLocale;
-  createdAt?: string;
-  updatedAt?: string;
+  email: string;
+  verified: boolean;
+  subscribeDate: string;       // ISO Date
+  unsubscribeDate?: string;
+  lang?: SupportedLocale;
+  meta?: any;
 }

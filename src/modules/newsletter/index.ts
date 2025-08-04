@@ -1,20 +1,26 @@
-// Pages
+// 📦 Module Index: /src/modules/dashboard/index.ts
+
+// 📦 Admin 
+export { default as AdminNewsletterPage } from "./admin/pages/AdminNewsletterPage";
 
 
-// Admin Components
-/*
-export { default as CartForm } from "./admin/components/CartForm";
-export { default as CartMultiForm } from "./admin/components/CartMultiForm";
-export { default as CartList } from "./admin/components/CartList";
-export { default as CartEditModal } from "./admin/components/CartEditModal";
-export { default as CartAskPanel } from "./admin/components/CartAskPanel";
-*/
+// 🔐 Admin Components
+export { default as SubscriberList } from "./admin/components/SubscriberList";
+export { default as SubscriberModal } from "./admin/components/SubscriberModal";
+export { default as BulkSendModal } from "./admin/components/BulkSendModal";
+export { default as SingleSendModal } from "./admin/components/SingleSendModal";
+export { default as PreviewModal } from "./admin/components/PreviewModal";
 
-// Public Components
+// 📦 Public Components
+export { default as NewsletterButton } from "./public/components/NewsletterButton";
+export { default as NewsletterModal } from "./public/components/NewsletterModal";
+
+// 📊 Redux Slices
+
+export { default as newsletterSlice } from "./slice/newsletterSlice";
 
 
-// Slice
+// 📝 Types
+//export * from "./types";
 
-
-// Types
-
+// 🌐 i18n dosyaları modül içi kullanılır (otomatik yüklenir, elle export gerekmez)

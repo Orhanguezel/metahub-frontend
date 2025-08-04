@@ -45,7 +45,7 @@ interface AddressFormProps {
   addresses?: Address[];
   setAddresses?: (addresses: Address[]) => void;
   loading?: boolean;
-  parentType?: "user" | "company";
+  parentType?: "user" | "company" | "customer";
   parentId?: string;
   onChanged?: () => void;
   renderAsForm?: boolean; // 🔥 Artık tek prop bu!
@@ -116,6 +116,10 @@ const AddressForm: React.FC<AddressFormProps> = ({
   useEffect(() => {
     if (parentType === "company" && parentId) {
       dispatch(fetchAddresses({ companyId: parentId }));
+    } else if (parentType === "customer" && parentId) {
+      dispatch(fetchAddresses({ customerId: parentId }));
+    } else if (parentType === "user" && parentId) {
+      dispatch(fetchAddresses({ userId: parentId }));
     } else if (parentType === "user") {
       dispatch(fetchAddresses({}));
     }
@@ -141,8 +145,11 @@ const AddressForm: React.FC<AddressFormProps> = ({
       postalCode: data.postalCode || data.zipCode, // mapping!
     };
     delete sendData.countryCode;
+
+    // ✅ Dinamik parentType desteği!
     if (parentType === "company" && parentId) sendData.companyId = parentId;
-    if (parentType === "user" && parentId) sendData.userId = parentId;
+    else if (parentType === "customer" && parentId) sendData.customerId = parentId;
+    else if (parentType === "user" && parentId) sendData.userId = parentId;
 
     try {
       if (editId) {
@@ -152,9 +159,14 @@ const AddressForm: React.FC<AddressFormProps> = ({
         await dispatch(createAddress(sendData)).unwrap();
         toast.success(t("address.success"));
       }
+      // Listeyi güncelle
       if (parentType === "company" && parentId) {
         dispatch(fetchAddresses({ companyId: parentId }));
-      } else {
+      } else if (parentType === "customer" && parentId) {
+        dispatch(fetchAddresses({ customerId: parentId }));
+      } else if (parentType === "user" && parentId) {
+        dispatch(fetchAddresses({ userId: parentId }));
+      } else if (parentType === "user") {
         dispatch(fetchAddresses({}));
       }
       triggerOnChanged();
@@ -183,9 +195,14 @@ const AddressForm: React.FC<AddressFormProps> = ({
   const handleDelete = async (id: string) => {
     try {
       await dispatch(deleteAddress(id)).unwrap();
+      // Listeyi güncelle
       if (parentType === "company" && parentId) {
         dispatch(fetchAddresses({ companyId: parentId }));
-      } else {
+      } else if (parentType === "customer" && parentId) {
+        dispatch(fetchAddresses({ customerId: parentId }));
+      } else if (parentType === "user" && parentId) {
+        dispatch(fetchAddresses({ userId: parentId }));
+      } else if (parentType === "user") {
         dispatch(fetchAddresses({}));
       }
       triggerOnChanged();

@@ -137,6 +137,11 @@ import {
   clearContactMessages,
 } from "@/modules/contact/slice/contactSlice";
 import {
+  fetchAllSubscribers,
+  clearNewsletterSubscribers,
+} from "@/modules/newsletter/slice/newsletterSlice";
+
+import {
   fetchSectionMetasAdmin,
   clearSectionMetaMessages,
 } from "@/modules/section/slices/sectionMetaSlice";
@@ -192,6 +197,17 @@ import {
 } from "@/modules/faq/slice/faqSlice";
 
 
+import {
+  fetchAdminOffers,
+  clearOfferMessages,
+} from "@/modules/offer/slice/offerSlice";
+
+import { 
+  fetchCustomersAdmin, 
+  clearCustomerMessages 
+} from "@/modules/customer/slice/customerSlice";
+
+
 
 // -- Cleanup aksiyonları merkezi:
 const cleanupActions = [
@@ -237,7 +253,10 @@ const cleanupActions = [
   clearSkillMessages,
   clearSkillCategoryMessages,
   clearPortfolioMessages,
-  clearFAQMessages, 
+  clearFAQMessages,
+  clearNewsletterSubscribers,
+  clearOfferMessages,
+  clearCustomerMessages,
 ];
 
 // --- useLayoutInit ---
@@ -303,7 +322,9 @@ const faqList = useAppSelector((state) => state.faq);
 const portfolioList = useAppSelector((state) => state.portfolio);
 const skillList = useAppSelector((state) => state.skill);
 const skillCategories = useAppSelector((state) => state.skillCategory);
-
+const newsletterSubscribers = useAppSelector((state) => state.newsletter);
+const offerList = useAppSelector((state) => state.offer);
+const customerList = useAppSelector((state) => state.customer);
 
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
   useEffect(() => {
@@ -453,6 +474,15 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
     if (!skillCategories.categories.length && !skillCategories.loading)
       dispatch(fetchSkillCategories());
 
+    if (!newsletterSubscribers.subscribersAdmin.length && !newsletterSubscribers.loading)
+      dispatch(fetchAllSubscribers());
+
+    if (!offerList.adminOffers.length && !offerList.loading)
+      dispatch(fetchAdminOffers());
+
+    if (!customerList.customerAdmin.length && !customerList.loading)
+      dispatch(fetchCustomersAdmin());
+
     // Cleanup actions
     cleanupActions.forEach((action) => dispatch(action()));
 
@@ -515,6 +545,8 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
   portfolioList,
   skillList,
   skillCategories,
+  newsletterSubscribers,
+  offerList,
     // gerekirse analyticsTrends vs ekleyebilirsin
   };
 };

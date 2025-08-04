@@ -63,6 +63,10 @@ import skillReducer from "@/modules/skill/slice/skillSlice";
 import skillCategoryReducer from "@/modules/skill/slice/skillCategorySlice";
 import massageReducer from "@/modules/massage/slice/massageSlice";
 import massageCategoryReducer from "@/modules/massage/slice/massageCategorySlice";
+import newsletterReducer from "@/modules/newsletter/slice/newsletterSlice";
+import offerReducer from "@/modules/offer/slice/offerSlice";
+import customerReducer from "@/modules/customer/slice/customerSlice";
+import requestOfferSlice from "@/modules/offer/slice/requestOfferSlice";
 
 
 // --- Combine reducers ---
@@ -129,6 +133,10 @@ const rootReducer = combineReducers({
   skillCategory: skillCategoryReducer,
   massage: massageReducer,
   massageCategory: massageCategoryReducer,
+  newsletter: newsletterReducer,
+  offer: offerReducer,
+  customer: customerReducer,
+  requestOffer: requestOfferSlice,
 });
 
 // --- Store ---

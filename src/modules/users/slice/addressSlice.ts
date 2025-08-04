@@ -1,4 +1,3 @@
-// src/modules/users/slice/addressSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { Address } from "@/modules/users/types/address";
@@ -21,13 +20,19 @@ const initialState: AddressState = {
   successMessage: null,
 };
 
-// 1️⃣ DİNAMİK - Kullanıcı/Şirket veya generic fetch (dinamik owner)
+// 1️⃣ DİNAMİK - Kullanıcı/Şirket/Müşteri veya generic fetch (dinamik owner)
 export const fetchAddresses = createAsyncThunk(
   "address/fetchAddresses",
-  async (params: { companyId?: string } = {}, { rejectWithValue }) => {
+  async (
+    params: { companyId?: string; userId?: string; customerId?: string } = {},
+    { rejectWithValue }
+  ) => {
+    // Dinamik endpoint seçimi (backend tam uyumlu)
     let url = "/address";
     if (params.companyId) url = `/address/company/${params.companyId}`;
-    // Eğer user ise ya da parametre yoksa, "/address" veya "/address/user"
+    else if (params.customerId) url = `/address?customerId=${params.customerId}`;
+    else if (params.userId) url = `/address/user`; // login user için
+    // (Dilersen sadece ?userId=... ile fetch de yazabilirsin)
     return await apiCall("get", url, null, rejectWithValue);
   }
 );
@@ -46,14 +51,24 @@ export const fetchCompanyAddresses = createAsyncThunk(
     await apiCall("get", `/address/company/${companyId}`, null, rejectWithValue)
 );
 
-// 4️⃣ Tekli adres ekle (user veya company, backend'de owner tespit ediyor)
+// 4️⃣ Müşterinin adresleri
+export const fetchCustomerAddresses = createAsyncThunk(
+  "address/fetchCustomerAddresses",
+  async (customerId: string, { rejectWithValue }) =>
+    await apiCall("get", `/address?customerId=${customerId}`, null, rejectWithValue)
+);
+
+// 5️⃣ Tekli adres ekle (user/company/customer, backend owner otomatik)
 export const createAddress = createAsyncThunk(
   "address/createAddress",
-  async (data: Omit<Address, "_id" | "createdAt" | "updatedAt">, { rejectWithValue }) =>
+  async (
+    data: Omit<Address, "_id" | "createdAt" | "updatedAt"> & { companyId?: string; userId?: string; customerId?: string },
+    { rejectWithValue }
+  ) =>
     await apiCall("post", "/address", data, rejectWithValue)
 );
 
-// 5️⃣ Tekli adres güncelle
+// 6️⃣ Tekli adres güncelle
 export const updateAddress = createAsyncThunk(
   "address/updateAddress",
   async (
@@ -63,37 +78,47 @@ export const updateAddress = createAsyncThunk(
     await apiCall("put", `/address/${id}`, data, rejectWithValue)
 );
 
-// 6️⃣ Tekli adres sil
+// 7️⃣ Tekli adres sil
 export const deleteAddress = createAsyncThunk(
   "address/deleteAddress",
   async (id: string, { rejectWithValue }) =>
     await apiCall("delete", `/address/${id}`, null, rejectWithValue)
 );
 
-// 7️⃣ Adresleri topluca güncelle (user veya company için dinamik)
+// 8️⃣ Adresleri topluca güncelle (user/company/customer için dinamik)
 export const updateAllAddresses = createAsyncThunk(
   "address/updateAllAddresses",
   async (
-    params: { addresses: Address[]; companyId?: string },
+    params: {
+      addresses: Address[];
+      companyId?: string;
+      userId?: string;
+      customerId?: string;
+    },
     { rejectWithValue }
   ) => {
+    // Dinamik endpoint belirle
     let url = "/address/all/replace";
-    const payload = { addresses: params.addresses };
-    if (params.companyId) {
-      url = `/address/company/${params.companyId}/all/replace`;
-    }
+    if (params.companyId) url = `/address/company/${params.companyId}/all/replace`;
+    else if (params.customerId) url = `/address?customerId=${params.customerId}&bulk=1`; // opsiyonel, backendde bu şekilde route varsa
+    else if (params.userId) url = "/address/user/all/replace";
+    // NOT: Eğer customer için bulk özel endpointin yoksa, generic "/address/all/replace" ile customerId body'de gönder
+    const payload: any = { addresses: params.addresses };
+    if (params.customerId) payload.customerId = params.customerId;
+    if (params.companyId) payload.companyId = params.companyId;
+    if (params.userId) payload.userId = params.userId;
     return await apiCall("put", url, payload, rejectWithValue);
   }
 );
 
-// 8️⃣ Kullanıcının adreslerini topluca güncelle
+// 9️⃣ Kullanıcının adreslerini topluca güncelle
 export const updateAllUserAddresses = createAsyncThunk(
   "address/updateAllUserAddresses",
   async (addresses: Address[], { rejectWithValue }) =>
     await apiCall("put", "/address/user/all/replace", { addresses }, rejectWithValue)
 );
 
-// 9️⃣ Şirket adreslerini topluca güncelle
+// 🔟 Şirket adreslerini topluca güncelle
 export const updateAllCompanyAddresses = createAsyncThunk(
   "address/updateAllCompanyAddresses",
   async (
@@ -103,13 +128,14 @@ export const updateAllCompanyAddresses = createAsyncThunk(
     await apiCall("put", `/address/company/${companyId}/all/replace`, { addresses }, rejectWithValue)
 );
 
-// 10️⃣ Tekli adres getir
+// 11️⃣ Tekli adres getir
 export const fetchAddressById = createAsyncThunk(
   "address/fetchAddressById",
   async (id: string, { rejectWithValue }) =>
     await apiCall("get", `/address/${id}`, null, rejectWithValue)
 );
 
+// --- SLICE ---
 const addressSlice = createSlice({
   name: "address",
   initialState,
@@ -166,6 +192,16 @@ const addressSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchCompanyAddresses.rejected, setFailed);
+
+    builder
+      .addCase(fetchCustomerAddresses.pending, setLoading)
+      .addCase(fetchCustomerAddresses.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = "succeeded";
+        state.addresses = action.payload.data;
+        state.error = null;
+      })
+      .addCase(fetchCustomerAddresses.rejected, setFailed);
 
     // --- CREATE ---
     builder
