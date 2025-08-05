@@ -20,7 +20,7 @@ import {
   Select,
 } from "@/modules/users/styles/AccountStyles";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import { accountTranslations } from "@/modules/users";
+import translations from "@/modules/users/locales/account";
 import { toast } from "react-toastify";
 import styled from "styled-components";
 import { ADDRESS_TYPE_OPTIONS, Address, AddressType } from "@/modules/users/types/address";
@@ -64,7 +64,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
   onChanged,
   renderAsForm = true, // default: true
 }) => {
-  const { t } = useI18nNamespace("account", accountTranslations);
+  const { t } = useI18nNamespace("account", translations);
   const dispatch = useAppDispatch();
   const addressState = useAppSelector((state) => state.address);
   const reduxAddresses = addressState.addresses;
@@ -82,11 +82,11 @@ const AddressForm: React.FC<AddressFormProps> = ({
       addressType: yup
         .mixed<AddressType>()
         .oneOf(ADDRESS_TYPE_OPTIONS)
-        .required(t("address.errors.addressType")),
+        .required(t("address.errors.addressType", "Adres tipi seçilmelidir.")),
     };
     fields.forEach((field) => {
       let y = yup.string();
-      if (field.required) y = y.required(t(`address.errors.${field.name}`));
+      if (field.required) y = y.required(t(`address.errors.${field.name}`, { defaultMessage: `${field.label} alanı zorunludur.` }));
       shape[field.name] = y;
     });
     return yup.object(shape).required();
@@ -173,7 +173,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
       reset(EMPTY);
       setEditId(null);
     } catch (err: any) {
-      toast.error(err?.message || t("address.error"));
+      toast.error(err?.message || t("address.error", { defaultMessage: "An error occurred while saving the address." }));
     }
   });
 
@@ -206,13 +206,13 @@ const AddressForm: React.FC<AddressFormProps> = ({
         dispatch(fetchAddresses({}));
       }
       triggerOnChanged();
-      toast.success(t("address.deleted"));
+      toast.success(t("address.deleted", { defaultMessage: "Address deleted successfully." }));
       if (editId === id) {
         reset(EMPTY);
         setEditId(null);
       }
     } catch (err: any) {
-      toast.error(err?.message || t("address.error"));
+      toast.error(err?.message || t("address.error", { defaultMessage: "An error occurred while deleting the address." }));
     }
   };
 
@@ -246,7 +246,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
         <React.Fragment key={field.name}>
           <Input
             {...register(field.name)}
-            placeholder={t(`address.${field.name}`) || field.label}
+            placeholder={t(`address.${field.name}`, { defaultMessage: field.label }) || field.label}
             autoComplete="off"
           />
           {errors[field.name] && (
@@ -263,10 +263,10 @@ const AddressForm: React.FC<AddressFormProps> = ({
         onClick={!renderAsForm ? onSubmit : undefined}
       >
         {isSubmitting
-          ? t("address.saving")
+          ? t("address.saving", { defaultMessage: "Saving..." })
           : editId
-          ? t("address.update")
-          : t("address.add")}
+          ? t("address.update", { defaultMessage: "Update Address" })
+          : t("address.add", { defaultMessage: "Add Address" })}
       </Button>
       {editId && (
         <Button
@@ -277,7 +277,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
             reset(EMPTY);
           }}
         >
-          {t("address.cancel")}
+          {t("address.cancel", { defaultMessage: "Cancel" })}
         </Button>
       )}
     </DivForm>
@@ -285,7 +285,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
 
   return (
     <Wrapper>
-      <Title>{t("address.title")}</Title>
+      <Title>{t("address.title", { defaultMessage: "Address Management" })}</Title>
       {renderAsForm ? <form onSubmit={onSubmit}>{Content}</form> : Content}
 
       <AddressList>
@@ -302,14 +302,14 @@ const AddressForm: React.FC<AddressFormProps> = ({
             </p>
             <div style={{ display: "flex", gap: "1rem" }}>
               <Button type="button" onClick={() => handleEdit(address)}>
-                {t("address.edit")}
+                {t("address.edit", { defaultMessage: "Edit Address" })}
               </Button>
               <Button
                 $danger
                 type="button"
                 onClick={() => handleDelete(address._id!)}
               >
-                {t("address.remove")}
+                {t("address.remove", { defaultMessage: "Remove Address" })}
               </Button>
             </div>
           </AddressItem>

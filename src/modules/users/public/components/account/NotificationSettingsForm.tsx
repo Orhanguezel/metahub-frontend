@@ -6,7 +6,7 @@ import { useAppDispatch } from "@/store/hooks";
 import { updateNotificationSettings } from "@/modules/users/slice/accountSlice";
 import type { Account } from "@/modules/users/types/user";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {accountTranslations} from "@/modules/users";
+import translations from "@/modules/users/locales/account";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { toast } from "react-toastify";
@@ -30,7 +30,7 @@ interface Props {
 }
 
 const NotificationSettingsForm = ({ profile }: Props) => {
-  const { t } = useI18nNamespace("account", accountTranslations);
+  const { t } = useI18nNamespace("account", translations);
   const dispatch = useAppDispatch();
 
   const {

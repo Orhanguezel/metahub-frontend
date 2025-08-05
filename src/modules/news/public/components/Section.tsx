@@ -374,16 +374,25 @@ const CardExcerpt = styled.p`
   text-overflow: ellipsis;
   min-height: 2em;
 `;
-
 const CardDate = styled.span`
-  background: linear-gradient(90deg, #2875c2 50%, #0bb6d6 100%);
-  color: #fff;
-  font-size: 0.91em;
-  padding: 0.13em 0.62em;
-  border-radius: 10px;
-  font-weight: 600;
-  box-shadow: 0 3px 8px 0 rgba(40,117,194,0.08);
+  background: linear-gradient(
+    90deg,
+    ${({ theme }) => theme.colors.primary} 55%,
+    ${({ theme }) => theme.colors.accent} 100%
+  );
+  color: ${({ theme }) => theme.colors.accentText}; // Genellikle #fff
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  padding: 0.15em 0.7em 0.17em 0.6em;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  box-shadow: 0 3px 8px 0 rgba(40,117,194,0.08), ${({ theme }) => theme.shadows.xs};
   letter-spacing: 0.01em;
   margin-top: auto;
   margin-right: 7px;
+  line-height: 1.16;
+  font-family: ${({ theme }) => theme.fonts.body};
+  border: 1px solid ${({ theme }) => theme.colors.primaryTransparent};
+  user-select: none;
+  display: inline-block;
 `;
+

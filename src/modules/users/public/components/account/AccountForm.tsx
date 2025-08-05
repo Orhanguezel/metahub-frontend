@@ -12,7 +12,7 @@ import {
   ChangePasswordForm,
 } from "@/modules/users";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {accountTranslations} from "@/modules/users";
+import translations from "@/modules/users/locales/account";
 import {
   Wrapper,
   Title,
@@ -27,7 +27,7 @@ export default function AccountForm() {
   const { profile, loading, error, successMessage } = useAppSelector(
     (state) => state.account
   );
-  const { t } = useI18nNamespace("account", accountTranslations);
+  const { t } = useI18nNamespace("account", translations);
 
   useEffect(() => {
     return () => {
@@ -37,41 +37,41 @@ export default function AccountForm() {
 
   return (
     <Wrapper>
-      <Title>{t("page.title")}</Title>
+      <Title>{t("page.title", { defaultMessage: "Account Settings" })}</Title>
 
       {error && <Message $error>{error}</Message>}
       {successMessage && <Message $success>{successMessage}</Message>}
-      {loading && <p>{t("page.loading")}</p>}
+      {loading && <p>{t("page.loading", { defaultMessage: "Loading..." })}</p>}
 
       {profile && (
         <>
           <Section>
-  <SectionTitle>{t("page.profileImage")}</SectionTitle>
+  <SectionTitle>{t("page.profileImage", { defaultMessage: "Profile Image" })}</SectionTitle>
   <ProfileImageUploader imageUrl={profile?.profileImage ?? undefined} />
 </Section>
 
           <Section>
-            <SectionTitle>{t("page.personalInfo")}</SectionTitle>
+            <SectionTitle>{t("page.personalInfo", { defaultMessage: "Personal Information" })}</SectionTitle>
             <ProfileForm profile={profile} />
           </Section>
           <Section>
-            <SectionTitle>{t("page.address")}</SectionTitle>
+            <SectionTitle>{t("page.address", { defaultMessage: "Address" })}</SectionTitle>
             <AddressForm />
           </Section>
           <Section>
-            <SectionTitle>{t("page.notifications")}</SectionTitle>
+            <SectionTitle>{t("page.notifications", { defaultMessage: "Notifications" })}</SectionTitle>
             <NotificationSettingsForm profile={profile} />
           </Section>
           <Section>
-            <SectionTitle>{t("page.social")}</SectionTitle>
+            <SectionTitle>{t("page.social", { defaultMessage: "Social Links" })}</SectionTitle>
             <SocialLinksForm profile={profile} />
           </Section>
           <Section>
-            <SectionTitle>{t("page.password")}</SectionTitle>
+            <SectionTitle>{t("page.password", { defaultMessage: "Change Password" })}</SectionTitle>
             <ChangePasswordForm />
           </Section>
           <Section>
-            <SectionTitle>{t("page.deleteAccount")}</SectionTitle>
+            <SectionTitle>{t("page.deleteAccount", { defaultMessage: "Delete Account" })}</SectionTitle>
             <DeleteAccountSection profile={profile} />
           </Section>
         </>

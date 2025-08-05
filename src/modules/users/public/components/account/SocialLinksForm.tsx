@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAppDispatch } from "@/store/hooks";
 import { updateSocialMediaLinks } from "@/modules/users/slice/accountSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {accountTranslations} from "@/modules/users";
+import translations from "@/modules/users/locales/account";
 import { toast } from "react-toastify";
 import {
   Form,
@@ -41,7 +41,7 @@ const socialLinksSchema = z.object({
 type SocialLinksFormData = z.infer<typeof socialLinksSchema>;
 
 const SocialLinksForm: React.FC<{ profile: any }> = ({ profile }) => {
-  const { t } = useI18nNamespace("account", accountTranslations);
+  const { t } = useI18nNamespace("account", translations);
   const dispatch = useAppDispatch();
 
   const {

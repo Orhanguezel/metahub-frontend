@@ -38,7 +38,7 @@ const StyledButton = styled.button<{
       : theme.fontSizes.md};
 
   border-radius: ${({ theme }) => theme.radii.pill};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   box-shadow: ${({ theme }) => theme.shadows.button};
   transition: all ${({ theme }) => theme.transition.normal};
   cursor: ${({ $loading, disabled }) => ($loading || disabled ? "not-allowed" : "pointer")};
@@ -62,24 +62,25 @@ const StyledButton = styled.button<{
       : $variant === "outline"
       ? css`
           background: transparent;
-          color: ${theme.buttons.primary.text};
+          color: ${theme.colors.primary};
           border: ${theme.borders.thin} ${theme.colors.primary};
           &:hover,
           &:focus {
-            background: ${theme.buttons.primary.backgroundHover};
-            color: ${theme.buttons.primary.textHover};
+            background: ${theme.colors.primaryTransparent};
+            color: ${theme.colors.primaryHover};
             border-color: ${theme.colors.primaryHover};
+            box-shadow: ${theme.shadows.sm};
           }
         `
       : $variant === "ghost"
       ? css`
           background: transparent;
-          color: ${theme.buttons.primary.text};
+          color: ${theme.colors.primary};
           border: none;
           &:hover,
           &:focus {
-            background: ${theme.buttons.primary.backgroundHover};
-            color: ${theme.buttons.primary.textHover};
+            background: ${theme.colors.primaryTransparent};
+            color: ${theme.colors.primaryHover};
           }
         `
       : css`
@@ -100,6 +101,11 @@ const StyledButton = styled.button<{
     box-shadow: none;
     border-color: ${({ theme }) => theme.colors.disabledBg};
     opacity: ${({ theme }) => theme.opacity.disabled};
+    background: ${({ theme, $variant }) =>
+      $variant === "outline" || $variant === "ghost"
+        ? theme.colors.backgroundSecondary
+        : theme.colors.disabledBg};
+    color: ${({ theme }) => theme.colors.textMuted};
   }
 `;
 

@@ -11,21 +11,21 @@
     "loading": "Loading..."
   },
   "form": {
-    "title": "Update My Info",
-    "name": "Name",
-    "email": "E-mail",
+    "title": "Update My Information",
+    "name": "Full Name",
+    "email": "Email",
     "phone": "Phone",
     "save": "Save",
     "saving": "Saving...",
-    "success": "Profile updated successfully.",
-    "error": "Error while updating.",
+    "success": "Information updated successfully.",
+    "error": "An error occurred during update.",
     "errors": {
       "name": "Please enter your name.",
-      "email": "Please enter your e-mail.",
-      "emailInvalid": "Please enter a valid e-mail address."
+      "email": "Please enter your email address.",
+      "emailInvalid": "Please enter a valid email address."
     },
     "imageSuccess": "Profile photo updated.",
-    "imageError": "Image upload failed.",
+    "imageError": "Photo could not be uploaded.",
     "loading": "Loading...",
     "upload": "Upload Photo"
   },
@@ -52,12 +52,12 @@
       "branch": "Branch",
       "other": "Other"
     },
-    "addressLine": "Full Address",
-    "street": "Street",
-    "houseNumber": "House Number",
+    "addressLine": "Address (Single Line)",
+    "street": "Street / Avenue",
+    "houseNumber": "Building / No",
     "city": "City",
     "district": "District",
-    "province": "State/Province",
+    "province": "Province / Region",
     "postalCode": "Postal Code",
     "zipCode": "Postal Code",
     "country": "Country",
@@ -66,16 +66,16 @@
     "countryCode": "Country Code",
     "errors": {
       "addressType": "Address type is required.",
-      "addressLine": "Address is required.",
+      "addressLine": "Address field is required.",
       "street": "Street is required.",
-      "houseNumber": "House number is required.",
+      "houseNumber": "Building/No is required.",
       "city": "City is required.",
       "district": "District is required.",
-      "province": "State/Province not required.",
+      "province": "Province/Region is optional.",
       "postalCode": "Postal code is required.",
       "zipCode": "Postal code is required.",
       "country": "Country is required.",
-      "countryCode": "Select a country.",
+      "countryCode": "Country selection is required.",
       "phone": "Phone is required.",
       "email": "Email is required.",
       "email_format": "Invalid email format."
@@ -90,13 +90,13 @@
     "PL": "Poland"
   },
   "notifications": {
-    "email": "E-mail Notification",
+    "email": "Email Notification",
     "sms": "SMS Notification",
     "save": "Save",
     "saving": "Saving...",
-    "success": "Notification settings saved.",
-    "error": "Failed to save notifications.",
-    "emailRequired": "E-mail notification is required.",
+    "success": "Notification settings updated.",
+    "error": "Notification settings could not be updated.",
+    "emailRequired": "Email notification is required.",
     "smsRequired": "SMS notification is required."
   },
   "social": {
@@ -112,18 +112,18 @@
     "success": "Social media links saved.",
     "error": "Links could not be saved.",
     "errors": {
-      "instagramInvalid": "Enter a valid Instagram link.",
-      "facebookInvalid": "Enter a valid Facebook link.",
-      "twitterInvalid": "Enter a valid Twitter link."
+      "instagramInvalid": "Please enter a valid Instagram address.",
+      "facebookInvalid": "Please enter a valid Facebook address.",
+      "twitterInvalid": "Please enter a valid Twitter address."
     }
   },
   "delete": {
     "title": "Delete Account",
-    "warning": "This action cannot be undone! Enter your password and type 'delete' to confirm.",
+    "warning": "This action cannot be undone! Enter your password and type 'delete' to delete your account.",
     "loggedInAs": "Logged in as:",
     "confirmation": "Type 'delete' to confirm",
     "confirmationError": "Please type 'delete' to confirm.",
-    "password": "Password",
+    "password": "Your password",
     "passwordError": "Please enter your password.",
     "button": "Permanently Delete Account",
     "success": "Your account has been deleted.",

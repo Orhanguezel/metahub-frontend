@@ -2,7 +2,7 @@ import React from "react";
 import { Select } from "@/modules/users/styles/AccountStyles";
 import { COUNTRY_OPTIONS, CountryCode } from "@/types/common";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import { accountTranslations } from "@/modules/users";
+import translations from "@/modules/users/locales/account";
 
 type Props = {
   value: CountryCode;
@@ -10,7 +10,7 @@ type Props = {
 };
 
 const CountrySelector: React.FC<Props> = ({ value, onChange }) => {
-  const { t } = useI18nNamespace("account", accountTranslations);
+  const { t } = useI18nNamespace("account", translations);
 
   return (
     <Select value={value} onChange={e => onChange(e.target.value as CountryCode)}>
