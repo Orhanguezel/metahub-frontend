@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {registerTranslations} from "@/modules/users";
+import { registerTranslations } from "@/modules/users";
 import { StepperNav } from "@/shared";
 import {
   RegisterSuccessStep,
@@ -11,10 +11,7 @@ import {
   OtpVerifyStep,
 } from "@/modules/users";
 import { AuthStep, AuthStepType } from "@/modules/users";
-import {
-  Wrapper,    
-  Section,       
-} from "@/modules/users/styles/AccountStyles";
+import { Wrapper, Section } from "@/modules/users/styles/AccountStyles";
 
 interface StepLabel {
   key: AuthStepType;
@@ -29,31 +26,39 @@ interface Props {
 export default function RegisterStepper({ onAuthSuccess, steps }: Props) {
   const { t } = useI18nNamespace("register", registerTranslations);
 
-  const stepList = steps || [
+  // Varsayılan adım listesi, label çevirisi otomatik
+  const DEFAULT_STEPS: StepLabel[] = [
     { key: "register", label: t("steps.register", "Kayıt Ol") },
     { key: "verifyEmail", label: t("steps.verifyEmail", "E-posta Doğrulama") },
     { key: "otp", label: t("steps.otp", "Kod Onayı") },
     { key: "done", label: t("steps.done", "Tamamlandı") },
   ];
+  const stepList = steps || DEFAULT_STEPS;
 
   const [step, setStep] = useState<AuthStepType>("register");
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [payload, setPayload] = useState<Record<string, any>>({});
 
   const nextStep = (next: AuthStep) => {
     setStep(next.step);
-    setFormData(next.payload || {});
+    setPayload(next.payload || {});
   };
 
   return (
     <Wrapper style={{ maxWidth: 480, margin: "0 auto" }}>
       <StepperNav currentStep={step} steps={stepList} />
-      <Section style={{ marginTop: 0, boxShadow: "none", background: "transparent", border: "none", padding: 0 }}>
+      <Section style={{
+        marginTop: 0,
+        boxShadow: "none",
+        background: "transparent",
+        border: "none",
+        padding: 0
+      }}>
         {step === "register" && <RegisterFormStep onNext={nextStep} />}
         {step === "verifyEmail" && (
-          <EmailVerifyStep email={formData.email} onNext={nextStep} />
+          <EmailVerifyStep email={payload.email} onNext={nextStep} />
         )}
         {step === "otp" && (
-          <OtpVerifyStep email={formData.email} onNext={nextStep} />
+          <OtpVerifyStep email={payload.email} onNext={nextStep} />
         )}
         {step === "done" && (
           <RegisterSuccessStep onAuthSuccess={onAuthSuccess} />

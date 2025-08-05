@@ -11,6 +11,9 @@
     "loading": "Lädt..."
   },
   "form": {
+    "chooseImage": "Foto auswählen",
+    "remove": "Entfernen",
+    "imageRemoveSuccess": "Profilfoto wurde entfernt.",
     "title": "Meine Daten aktualisieren",
     "name": "Vollständiger Name",
     "email": "E-Mail",

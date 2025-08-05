@@ -3,10 +3,12 @@ import React from "react";
 
 import { RegisterPage } from "@/modules/users";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {registerTranslations} from "@/modules/users";
+
 
 export default function RegisterRouterPage() {
-  const { t } = useTranslation("register");
+  const { t } = useI18nNamespace("register", registerTranslations);
 
   return (
     <OuterWrapper>

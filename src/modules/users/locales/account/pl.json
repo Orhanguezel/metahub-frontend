@@ -11,6 +11,9 @@
     "loading": "Ładowanie..."
   },
   "form": {
+    "chooseImage": "Wybierz zdjęcie",
+    "remove": "Usuń",
+    "imageRemoveSuccess": "Zdjęcie profilowe zostało usunięte.",
     "title": "Aktualizuj moje dane",
     "name": "Imię i nazwisko",
     "email": "E-mail",

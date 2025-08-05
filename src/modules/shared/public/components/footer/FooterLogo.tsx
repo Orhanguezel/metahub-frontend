@@ -105,28 +105,6 @@ const Fallback = styled.div`
   min-width: 120px;
   background: transparent;
 `;
-
-const LogoSlogan = styled.span`
-  margin-top: 0.15em;
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-style: italic;
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  text-align: center;
-  letter-spacing: 0.01em;
-  line-height: 1.28;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  opacity: 0.92;
-  transition: color 0.25s, opacity 0.25s;
-
-  ${({ theme }) => theme.media.small} {
-    font-size: ${({ theme }) => theme.fontSizes.xsmall};
-    max-width: 90vw;
-  }
-`;
 const LogoTitle = styled.span`
   margin-top: -10px;
   font-size: ${({ theme }) => theme.fontSizes.xlarge};
@@ -134,18 +112,53 @@ const LogoTitle = styled.span`
   color: ${({ theme }) => theme.colors.primaryDark};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   letter-spacing: 0.015em;
-  line-height: 1.08;
   text-align: center;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  transition: color 0.2s;
+  line-height: 1.11;
+  max-width: 680px;
+  white-space: normal;            // Satır sonu kırılır
+  overflow-wrap: break-word;      // Kelime bölünebilir (taşmaz)
+  word-break: break-word;         // Aşırı uzun kelime taşmaz
+  display: block;                 // Responsive uyumlu
 
-  ${({ theme }) => theme.media.small} {
+  @media (max-width: 1100px) {
     font-size: ${({ theme }) => theme.fontSizes.lg};
-    max-width: 90vw;
+    max-width: 92vw;
+  }
+
+  @media (max-width: 700px) {
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    max-width: 96vw;
   }
 `;
+
+const LogoSlogan = styled.span`
+  margin-top: 0.10em;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-family: ${({ theme }) => theme.fonts.body};
+  font-style: italic;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  text-align: center;
+  letter-spacing: 0.01em;
+  line-height: 1.13;
+  max-width: 400px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  display: block;
+  opacity: 0.92;
+  transition: color 0.25s, opacity 0.25s;
+
+  @media (max-width: 1100px) {
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    max-width: 90vw;
+  }
+  @media (max-width: 700px) {
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
+    max-width: 92vw;
+  }
+`;
+
 
 const LogoWrapper = styled(Link)`
   display: flex;

@@ -11,6 +11,9 @@
     "loading": "Yükleniyor..."
   },
   "form": {
+    "chooseImage": "Fotoğraf Seç",
+    "remove": "Sil",
+    "imageRemoveSuccess": "Profil fotoğrafı silindi.",
     "title": "Bilgilerimi Güncelle",
     "name": "Ad Soyad",
     "email": "E-posta",

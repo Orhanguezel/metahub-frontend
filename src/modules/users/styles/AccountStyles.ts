@@ -15,9 +15,6 @@ export const Wrapper = styled.div`
   max-width: 900px;
   margin: ${({ theme }) => `${theme.spacings.md} auto`};
   padding: ${({ theme }) => `${theme.spacings.xl} ${theme.spacings.xl}`};
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.form};
-  color: ${({ theme }) => theme.colors.text};
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -28,7 +25,6 @@ export const Wrapper = styled.div`
   @media ${({ theme }) => theme.media.small} {
     max-width: 98vw;
     padding: ${({ theme }) => `${theme.spacings.lg} ${theme.spacings.sm}`};
-    border-radius: ${({ theme }) => theme.radii.lg};
   }
 `;
 

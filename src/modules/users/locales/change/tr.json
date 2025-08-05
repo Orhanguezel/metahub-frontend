@@ -1,23 +1,22 @@
 {
   "title": "Şifre Değiştir",
-  "description": "Mevcut şifrenizi değiştirin. Yeni şifreniz en az 8 karakter olmalıdır.",
+  "description": "Mevcut şifrenizi değiştirin. Yeni şifre en az 8 karakter olmalıdır.",
   "steps": {
     "change": "Şifre Değiştir",
     "done": "Tamamlandı"
   },
   "placeholders": {
-    "current": "Mevcut şifreniz",
-    "new": "Yeni şifreniz",
-    "confirm": "Yeni şifrenizi tekrar girin"
+    "current": "Mevcut Şifre",
+    "new": "Yeni Şifre",
+    "confirm": "Yeni Şifreyi Onayla"
   },
   "submit": "Şifreyi Değiştir",
   "loading": "Kaydediliyor...",
   "success": "Şifreniz başarıyla değiştirildi.",
   "errors": {
-    "currentRequired": "Lütfen mevcut şifrenizi girin.",
-    "newLength": "Yeni şifre en az 8 karakter olmalı.",
+    "currentRequired": "Mevcut şifrenizi girin.",
+    "newLength": "Yeni şifre en az 8 karakter olmalıdır.",
     "confirmMismatch": "Şifreler eşleşmiyor.",
     "default": "Bir hata oluştu. Lütfen tekrar deneyin."
   }
 }
-

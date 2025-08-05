@@ -5,12 +5,13 @@ import { useParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { verifyEmail } from "@/modules/users/slice/advancedSlice";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {registerTranslations} from "@/modules/users";
 
 export default function VerifyEmailPage() {
   const dispatch = useAppDispatch();
   const { token } = useParams() as { token: string };
-  const { t } = useTranslation("register");
+  const { t } = useI18nNamespace("register", registerTranslations);
   const { loading, successMessage, error } = useAppSelector(
     (state) => state.auth
   );

@@ -1,80 +1,81 @@
 {
-  "page": {
-    "allBike": "Tous les vélos",
-    "noBike": "Aucun vélo trouvé.",
-    "price": "Prix",
-    "stock": "Stock",
-    "brand": "Marque",
-    "readMore": "Voir les détails →",
-    "other": "Autres produits",
-    "untitled": "Sans titre",
-    "noSummary": "Pas de description.",
-    "bike": {
-      "title": "Dernier vélo",
-      "readMore": "Voir les détails",
-      "all": "Tous les vélos"
-    }
+  "title": "S'inscrire",
+  "description": "Veuillez remplir le formulaire suivant pour créer un nouveau compte.",
+  "steps": {
+    "register": "S'inscrire",
+    "verifyEmail": "Vérifier l'e-mail",
+    "otp": "Vérification du code",
+    "done": "Terminé",
+    "ariaLabel": "Étapes d'inscription"
   },
-  "admin": {
-    "tabs": {
-      "bike": "Vélos",
-      "create": "Nouveau vélo",
-      "categories": "Catégories"
-    },
-    "bike": {
-      "create": "Ajouter un nouveau vélo",
-      "edit": "Modifier le vélo",
-      "name": "Nom du vélo",
-      "description": "Description",
-      "brand": "Marque",
-      "price": "Prix",
-      "stock": "Stock",
-      "tags": "Tags",
-      "image": "Image",
-      "category": "Catégorie",
-      "select_category": "Sélectionner une catégorie",
-      "publish_status": "Publié ?",
-      "no_images": "Aucune image",
-      "publish": "Publier",
-      "unpublish": "Dépublier",
-      "empty": "Aucun vélo disponible."
-    },
-    "categories": {
-      "title": "Catégories de vélos",
-      "add": "Nouvelle catégorie",
-      "empty": "Aucune catégorie trouvée."
-    },
-    "language": {
-      "en": "Anglais",
-      "tr": "Turc",
-      "de": "Allemand"
-    },
-    "slug": "Slug",
-    "actions": "Actions",
-    "edit": "Modifier",
-    "delete": "Supprimer",
-    "cancel": "Annuler",
-    "update": "Mettre à jour",
-    "create": "Créer",
-    "yes": "Oui",
-    "no": "Non",
-    "loading": "Chargement...",
-    "confirm": {
-      "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
-      "delete_bike": "Êtes-vous sûr de vouloir supprimer ce vélo ?"
-    },
-    "optional_description": "Description (optionnel)",
-    "category_info": "À propos de cette catégorie ?",
-    "saving": "Enregistrement...",
-    "save": "Enregistrer",
-    "update2": "Mettre à jour",
-    "editCategory": "Modifier la catégorie",
-    "newCategory": "Nouvelle catégorie"
+  "username": "Nom d'utilisateur",
+  "email": "E-mail",
+  "password": "Mot de passe",
+  "confirmPassword": "Confirmez le mot de passe",
+  "submit": "S'inscrire",
+  "loading": "Inscription en cours...",
+  "haveAccount": "Vous avez déjà un compte ?",
+  "loginNow": "Se connecter",
+  "agree": "En vous inscrivant, vous acceptez les",
+  "terms": "Conditions d'utilisation",
+  "and": "et",
+  "privacy": "Politique de confidentialité",
+  "placeholders": {
+    "username": "Entrez votre nom",
+    "email": "Entrez votre adresse e-mail",
+    "password": "Entrez votre mot de passe",
+    "confirmPassword": "Confirmez votre mot de passe"
   },
-  "seo": {
-    "title": "Titre SEO",
-    "description": "Description SEO"
+  "info": {
+    "usernameInfo": "Entrez votre vrai nom ou votre pseudo.",
+    "emailInfo": "Veuillez saisir une adresse e-mail valide."
   },
-  "none": "Aucun",
-  "delete_confirm": "Êtes-vous sûr de vouloir supprimer ?"
+  "hidePassword": "Masquer le mot de passe",
+  "showPassword": "Afficher le mot de passe",
+  "otpTitle": "Entrer le code",
+  "otpDesc": "Veuillez entrer le code de vérification envoyé à {{email}}.",
+  "otpPlaceholder": "Code à 6 chiffres",
+  "otpRequired": "Veuillez entrer le code.",
+  "otpFailed": "Échec de la vérification du code.",
+  "otpVerified": "Code vérifié avec succès !",
+  "otpNoCode": "Vous n'avez pas reçu de code ?",
+  "otpResend": "Renvoyer le code",
+  "otpResent": "Code renvoyé !",
+  "otpResendFailed": "Impossible de renvoyer le code.",
+  "verifyEmailTitle": "Vérification de l'e-mail",
+  "verifyEmailDesc": "Un e-mail de confirmation a été envoyé à {{email}}. Veuillez vérifier votre boîte de réception.",
+  "spamCheck": "N'oubliez pas de vérifier votre dossier spam !",
+  "resendVerification": "Renvoyer l'e-mail de confirmation",
+  "verificationEmailSent": "E-mail de confirmation envoyé !",
+  "verificationEmailFailed": "Impossible d'envoyer l'e-mail de confirmation.",
+  "haveCode": "J'ai un code",
+  "success": "Inscription réussie !",
+  "successTitle": "Inscription terminée !",
+  "successDesc": "Votre compte a été créé et confirmé avec succès. Vous pouvez maintenant vous connecter.",
+  "goToLogin": "Aller à la connexion",
+  "redirectingToLogin": "Vous serez redirigé vers la page de connexion dans un instant...",
+  "pwStrength": {
+    "veryWeak": "Très faible",
+    "weak": "Faible",
+    "medium": "Moyen",
+    "strong": "Fort",
+    "veryStrong": "Très fort"
+  },
+  "errors": {
+    "username": "Le nom d'utilisateur est requis.",
+    "email": "L'e-mail est requis.",
+    "emailInvalid": "Adresse e-mail invalide.",
+    "password": "Le mot de passe est requis.",
+    "passwordLength": "Le mot de passe doit comporter au moins 8 caractères.",
+    "weakPassword": "Votre mot de passe est trop faible.",
+    "confirmPassword": "Les mots de passe ne correspondent pas.",
+    "recaptchaFailed": "Échec de la vérification reCAPTCHA.",
+    "error": "Une erreur s'est produite. Veuillez réessayer."
+  },
+  "verifyEmail": {
+    "title": "Vérification de l'e-mail",
+    "verifying": "Vérification de votre e-mail...",
+    "success": "E-mail vérifié avec succès. Vous pouvez maintenant vous connecter.",
+    "error": "Échec de la vérification ou lien expiré. Veuillez demander un nouvel e-mail de vérification."
+  }
 }

@@ -1,80 +1,93 @@
 {
   "page": {
-    "allBike": "Todas las bicicletas",
-    "noBike": "No se encontraron bicicletas.",
-    "price": "Precio",
-    "stock": "Stock",
-    "brand": "Marca",
-    "readMore": "Ver detalles →",
-    "other": "Otros productos",
-    "untitled": "Sin título",
-    "noSummary": "Sin descripción.",
-    "bike": {
-      "title": "Bicicleta destacada",
-      "readMore": "Ver detalles",
-      "all": "Todas las bicicletas"
+    "title": "Configuración de la cuenta",
+    "profileImage": "Foto de perfil",
+    "personalInfo": "Información personal",
+    "address": "Información de dirección",
+    "notifications": "Configuración de notificaciones",
+    "social": "Enlaces a redes sociales",
+    "password": "Cambiar contraseña",
+    "deleteAccount": "Eliminar cuenta",
+    "loading": "Cargando..."
+  },
+  "form": {
+    "title": "Actualizar mi información",
+    "name": "Nombre completo",
+    "email": "Correo electrónico",
+    "phone": "Teléfono",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "success": "La información se actualizó correctamente.",
+    "error": "Ocurrió un error al actualizar.",
+    "errors": {
+      "name": "Introduce tu nombre.",
+      "email": "Introduce tu correo electrónico.",
+      "emailInvalid": "Introduce un correo electrónico válido."
+    },
+    "imageSuccess": "La foto de perfil se actualizó.",
+    "imageError": "No se pudo subir la foto.",
+    "loading": "Cargando...",
+    "upload": "Subir foto"
+  },
+  "address": {
+    "title": "Información de dirección",
+    "street": "Calle",
+    "houseNumber": "Nº",
+    "city": "Ciudad",
+    "zipCode": "Código postal",
+    "add": "Agregar",
+    "saving": "Guardando...",
+    "update": "Actualizar",
+    "remove": "Eliminar",
+    "success": "Dirección guardada.",
+    "deleted": "Dirección eliminada.",
+    "error": "Error al procesar la dirección.",
+    "errors": {
+      "street": "El nombre de la calle es obligatorio.",
+      "houseNumber": "El número de la casa es obligatorio.",
+      "city": "La ciudad es obligatoria.",
+      "zipCode": "El código postal es obligatorio."
     }
   },
-  "admin": {
-    "tabs": {
-      "bike": "Bicicletas",
-      "create": "Nueva bicicleta",
-      "categories": "Categorías"
-    },
-    "bike": {
-      "create": "Agregar nueva bicicleta",
-      "edit": "Editar bicicleta",
-      "name": "Nombre de la bicicleta",
-      "description": "Descripción",
-      "brand": "Marca",
-      "price": "Precio",
-      "stock": "Stock",
-      "tags": "Etiquetas",
-      "image": "Imagen",
-      "category": "Categoría",
-      "select_category": "Seleccionar categoría",
-      "publish_status": "¿Publicado?",
-      "no_images": "Sin imágenes",
-      "publish": "Publicar",
-      "unpublish": "Ocultar",
-      "empty": "No hay bicicletas disponibles."
-    },
-    "categories": {
-      "title": "Categorías de bicicletas",
-      "add": "Nueva categoría",
-      "empty": "No se encontraron categorías."
-    },
-    "language": {
-      "en": "Inglés",
-      "tr": "Turco",
-      "de": "Alemán"
-    },
-    "slug": "Slug",
-    "actions": "Acciones",
-    "edit": "Editar",
-    "delete": "Eliminar",
-    "cancel": "Cancelar",
-    "update": "Actualizar",
-    "create": "Crear",
-    "yes": "Sí",
-    "no": "No",
-    "loading": "Cargando...",
-    "confirm": {
-      "delete": "¿Estás seguro de que quieres eliminar esta categoría?",
-      "delete_bike": "¿Estás seguro de que quieres eliminar esta bicicleta?"
-    },
-    "optional_description": "Descripción (opcional)",
-    "category_info": "¿De qué trata esta categoría?",
-    "saving": "Guardando...",
+  "notifications": {
+    "email": "Notificación por correo",
+    "sms": "Notificación por SMS",
     "save": "Guardar",
-    "update2": "Actualizar",
-    "editCategory": "Editar categoría",
-    "newCategory": "Nueva categoría"
+    "saving": "Guardando...",
+    "success": "Configuración de notificaciones actualizada.",
+    "error": "No se pudo actualizar la configuración de notificaciones.",
+    "emailRequired": "La notificación por correo es obligatoria.",
+    "smsRequired": "La notificación por SMS es obligatoria."
   },
-  "seo": {
-    "title": "Título SEO",
-    "description": "Descripción SEO"
+  "social": {
+    "title": "Enlaces a redes sociales",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "twitter": "Twitter",
+    "instagramPlaceholder": "Introduce el enlace de tu perfil de Instagram",
+    "facebookPlaceholder": "Introduce el enlace de tu perfil de Facebook",
+    "twitterPlaceholder": "Introduce el enlace de tu perfil de Twitter",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "success": "Enlaces a redes sociales guardados.",
+    "error": "No se pudieron guardar los enlaces.",
+    "errors": {
+      "instagramInvalid": "Introduce una dirección de Instagram válida.",
+      "facebookInvalid": "Introduce una dirección de Facebook válida.",
+      "twitterInvalid": "Introduce una dirección de Twitter válida."
+    }
   },
-  "none": "Ninguno",
-  "delete_confirm": "¿Estás seguro de que quieres eliminar?"
+  "delete": {
+    "title": "Eliminar cuenta",
+    "warning": "¡Esta acción no se puede deshacer! Para eliminar tu cuenta, ingresa tu contraseña y escribe 'delete'.",
+    "loggedInAs": "Conectado como:",
+    "confirmation": "Escribe 'delete' para eliminar",
+    "confirmationError": "Por favor, escribe 'delete' para confirmar.",
+    "password": "Tu contraseña",
+    "passwordError": "Introduce tu contraseña.",
+    "button": "Eliminar cuenta permanentemente",
+    "success": "Tu cuenta ha sido eliminada.",
+    "error": "No se pudo eliminar la cuenta.",
+    "loading": "Procesando..."
+  }
 }

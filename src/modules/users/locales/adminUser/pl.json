@@ -1,80 +1,93 @@
 {
   "page": {
-    "allBike": "Wszystkie rowery",
-    "noBike": "Nie znaleziono rowerów.",
-    "price": "Cena",
-    "stock": "Stan",
-    "brand": "Marka",
-    "readMore": "Zobacz szczegóły →",
-    "other": "Inne produkty",
-    "untitled": "Bez tytułu",
-    "noSummary": "Brak opisu.",
-    "bike": {
-      "title": "Najnowszy rower",
-      "readMore": "Zobacz szczegóły",
-      "all": "Wszystkie rowery"
+    "title": "Ustawienia konta",
+    "profileImage": "Zdjęcie profilowe",
+    "personalInfo": "Dane osobowe",
+    "address": "Informacje adresowe",
+    "notifications": "Ustawienia powiadomień",
+    "social": "Linki do mediów społecznościowych",
+    "password": "Zmień hasło",
+    "deleteAccount": "Usuń konto",
+    "loading": "Ładowanie..."
+  },
+  "form": {
+    "title": "Zaktualizuj moje dane",
+    "name": "Imię i nazwisko",
+    "email": "E-mail",
+    "phone": "Telefon",
+    "save": "Zapisz",
+    "saving": "Zapisywanie...",
+    "success": "Dane zostały pomyślnie zaktualizowane.",
+    "error": "Wystąpił błąd podczas aktualizacji.",
+    "errors": {
+      "name": "Wprowadź swoje imię i nazwisko.",
+      "email": "Wprowadź adres e-mail.",
+      "emailInvalid": "Wprowadź poprawny adres e-mail."
+    },
+    "imageSuccess": "Zdjęcie profilowe zostało zaktualizowane.",
+    "imageError": "Nie udało się przesłać zdjęcia.",
+    "loading": "Ładowanie...",
+    "upload": "Wyślij zdjęcie"
+  },
+  "address": {
+    "title": "Informacje adresowe",
+    "street": "Ulica",
+    "houseNumber": "Nr domu",
+    "city": "Miasto",
+    "zipCode": "Kod pocztowy",
+    "add": "Dodaj",
+    "saving": "Zapisywanie...",
+    "update": "Aktualizuj",
+    "remove": "Usuń",
+    "success": "Adres został zapisany.",
+    "deleted": "Adres został usunięty.",
+    "error": "Błąd podczas operacji na adresie.",
+    "errors": {
+      "street": "Nazwa ulicy jest wymagana.",
+      "houseNumber": "Numer domu jest wymagany.",
+      "city": "Miasto jest wymagane.",
+      "zipCode": "Kod pocztowy jest wymagany."
     }
   },
-  "admin": {
-    "tabs": {
-      "bike": "Rowery",
-      "create": "Nowy rower",
-      "categories": "Kategorie"
-    },
-    "bike": {
-      "create": "Dodaj nowy rower",
-      "edit": "Edytuj rower",
-      "name": "Nazwa roweru",
-      "description": "Opis",
-      "brand": "Marka",
-      "price": "Cena",
-      "stock": "Stan",
-      "tags": "Tagi",
-      "image": "Obraz",
-      "category": "Kategoria",
-      "select_category": "Wybierz kategorię",
-      "publish_status": "Opublikowano?",
-      "no_images": "Brak zdjęć",
-      "publish": "Opublikuj",
-      "unpublish": "Ukryj",
-      "empty": "Brak dostępnych rowerów."
-    },
-    "categories": {
-      "title": "Kategorie rowerów",
-      "add": "Nowa kategoria",
-      "empty": "Nie znaleziono kategorii."
-    },
-    "language": {
-      "en": "Angielski",
-      "tr": "Turecki",
-      "de": "Niemiecki"
-    },
-    "slug": "Slug",
-    "actions": "Akcje",
-    "edit": "Edytuj",
-    "delete": "Usuń",
-    "cancel": "Anuluj",
-    "update": "Aktualizuj",
-    "create": "Utwórz",
-    "yes": "Tak",
-    "no": "Nie",
-    "loading": "Ładowanie...",
-    "confirm": {
-      "delete": "Czy na pewno chcesz usunąć tę kategorię?",
-      "delete_bike": "Czy na pewno chcesz usunąć ten rower?"
-    },
-    "optional_description": "Opis (opcjonalnie)",
-    "category_info": "Czego dotyczy ta kategoria?",
-    "saving": "Zapisywanie...",
+  "notifications": {
+    "email": "Powiadomienie e-mail",
+    "sms": "Powiadomienie SMS",
     "save": "Zapisz",
-    "update2": "Aktualizuj",
-    "editCategory": "Edytuj kategorię",
-    "newCategory": "Nowa kategoria"
+    "saving": "Zapisywanie...",
+    "success": "Ustawienia powiadomień zostały zaktualizowane.",
+    "error": "Nie udało się zaktualizować ustawień powiadomień.",
+    "emailRequired": "Powiadomienie e-mail jest wymagane.",
+    "smsRequired": "Powiadomienie SMS jest wymagane."
   },
-  "seo": {
-    "title": "Tytuł SEO",
-    "description": "Opis SEO"
+  "social": {
+    "title": "Linki do mediów społecznościowych",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "twitter": "Twitter",
+    "instagramPlaceholder": "Wprowadź link do profilu Instagram",
+    "facebookPlaceholder": "Wprowadź link do profilu Facebook",
+    "twitterPlaceholder": "Wprowadź link do profilu Twitter",
+    "save": "Zapisz",
+    "saving": "Zapisywanie...",
+    "success": "Linki do mediów społecznościowych zapisane.",
+    "error": "Nie udało się zapisać linków.",
+    "errors": {
+      "instagramInvalid": "Wprowadź poprawny adres Instagram.",
+      "facebookInvalid": "Wprowadź poprawny adres Facebook.",
+      "twitterInvalid": "Wprowadź poprawny adres Twitter."
+    }
   },
-  "none": "Brak",
-  "delete_confirm": "Czy na pewno chcesz usunąć?"
+  "delete": {
+    "title": "Usuń konto",
+    "warning": "Tej operacji nie można cofnąć! Aby usunąć konto, wpisz swoje hasło i 'delete'.",
+    "loggedInAs": "Zalogowano jako:",
+    "confirmation": "Wpisz 'delete', aby usunąć",
+    "confirmationError": "Aby potwierdzić, wpisz 'delete'.",
+    "password": "Twoje hasło",
+    "passwordError": "Wpisz swoje hasło.",
+    "button": "Usuń konto na stałe",
+    "success": "Twoje konto zostało usunięte.",
+    "error": "Nie udało się usunąć konta.",
+    "loading": "Trwa operacja..."
+  }
 }

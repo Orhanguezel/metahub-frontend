@@ -11,6 +11,9 @@
     "loading": "Chargement..."
   },
   "form": {
+    "chooseImage": "Choisir une photo",
+    "remove": "Supprimer",
+    "imageRemoveSuccess": "La photo de profil a été supprimée.",
     "title": "Mettre à jour mes informations",
     "name": "Nom Prénom",
     "email": "E-mail",

@@ -1,80 +1,93 @@
 {
   "page": {
-    "allBike": "Tous les vélos",
-    "noBike": "Aucun vélo trouvé.",
-    "price": "Prix",
-    "stock": "Stock",
-    "brand": "Marque",
-    "readMore": "Voir les détails →",
-    "other": "Autres produits",
-    "untitled": "Sans titre",
-    "noSummary": "Pas de description.",
-    "bike": {
-      "title": "Dernier vélo",
-      "readMore": "Voir les détails",
-      "all": "Tous les vélos"
+    "title": "Paramètres du compte",
+    "profileImage": "Photo de profil",
+    "personalInfo": "Informations personnelles",
+    "address": "Informations d'adresse",
+    "notifications": "Paramètres de notification",
+    "social": "Liens vers les réseaux sociaux",
+    "password": "Changer le mot de passe",
+    "deleteAccount": "Supprimer le compte",
+    "loading": "Chargement..."
+  },
+  "form": {
+    "title": "Mettre à jour mes informations",
+    "name": "Nom complet",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "success": "Les informations ont été mises à jour avec succès.",
+    "error": "Une erreur s'est produite lors de la mise à jour.",
+    "errors": {
+      "name": "Veuillez entrer votre nom.",
+      "email": "Veuillez entrer votre adresse e-mail.",
+      "emailInvalid": "Veuillez entrer une adresse e-mail valide."
+    },
+    "imageSuccess": "La photo de profil a été mise à jour.",
+    "imageError": "Impossible de télécharger la photo.",
+    "loading": "Chargement...",
+    "upload": "Télécharger la photo"
+  },
+  "address": {
+    "title": "Informations d'adresse",
+    "street": "Rue",
+    "houseNumber": "N°",
+    "city": "Ville",
+    "zipCode": "Code postal",
+    "add": "Ajouter",
+    "saving": "Enregistrement...",
+    "update": "Mettre à jour",
+    "remove": "Supprimer",
+    "success": "Adresse enregistrée.",
+    "deleted": "Adresse supprimée.",
+    "error": "Erreur lors du traitement de l'adresse.",
+    "errors": {
+      "street": "Le nom de la rue est requis.",
+      "houseNumber": "Le numéro de la maison est requis.",
+      "city": "La ville est requise.",
+      "zipCode": "Le code postal est requis."
     }
   },
-  "admin": {
-    "tabs": {
-      "bike": "Vélos",
-      "create": "Nouveau vélo",
-      "categories": "Catégories"
-    },
-    "bike": {
-      "create": "Ajouter un nouveau vélo",
-      "edit": "Modifier le vélo",
-      "name": "Nom du vélo",
-      "description": "Description",
-      "brand": "Marque",
-      "price": "Prix",
-      "stock": "Stock",
-      "tags": "Tags",
-      "image": "Image",
-      "category": "Catégorie",
-      "select_category": "Sélectionner une catégorie",
-      "publish_status": "Publié ?",
-      "no_images": "Aucune image",
-      "publish": "Publier",
-      "unpublish": "Dépublier",
-      "empty": "Aucun vélo disponible."
-    },
-    "categories": {
-      "title": "Catégories de vélos",
-      "add": "Nouvelle catégorie",
-      "empty": "Aucune catégorie trouvée."
-    },
-    "language": {
-      "en": "Anglais",
-      "tr": "Turc",
-      "de": "Allemand"
-    },
-    "slug": "Slug",
-    "actions": "Actions",
-    "edit": "Modifier",
-    "delete": "Supprimer",
-    "cancel": "Annuler",
-    "update": "Mettre à jour",
-    "create": "Créer",
-    "yes": "Oui",
-    "no": "Non",
-    "loading": "Chargement...",
-    "confirm": {
-      "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
-      "delete_bike": "Êtes-vous sûr de vouloir supprimer ce vélo ?"
-    },
-    "optional_description": "Description (optionnel)",
-    "category_info": "À propos de cette catégorie ?",
-    "saving": "Enregistrement...",
+  "notifications": {
+    "email": "Notification par e-mail",
+    "sms": "Notification par SMS",
     "save": "Enregistrer",
-    "update2": "Mettre à jour",
-    "editCategory": "Modifier la catégorie",
-    "newCategory": "Nouvelle catégorie"
+    "saving": "Enregistrement...",
+    "success": "Paramètres de notification mis à jour.",
+    "error": "Impossible de mettre à jour les paramètres de notification.",
+    "emailRequired": "La notification par e-mail est requise.",
+    "smsRequired": "La notification par SMS est requise."
   },
-  "seo": {
-    "title": "Titre SEO",
-    "description": "Description SEO"
+  "social": {
+    "title": "Liens vers les réseaux sociaux",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "twitter": "Twitter",
+    "instagramPlaceholder": "Entrez votre lien de profil Instagram",
+    "facebookPlaceholder": "Entrez votre lien de profil Facebook",
+    "twitterPlaceholder": "Entrez votre lien de profil Twitter",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "success": "Liens vers les réseaux sociaux enregistrés.",
+    "error": "Impossible d'enregistrer les liens.",
+    "errors": {
+      "instagramInvalid": "Veuillez entrer une adresse Instagram valide.",
+      "facebookInvalid": "Veuillez entrer une adresse Facebook valide.",
+      "twitterInvalid": "Veuillez entrer une adresse Twitter valide."
+    }
   },
-  "none": "Aucun",
-  "delete_confirm": "Êtes-vous sûr de vouloir supprimer ?"
+  "delete": {
+    "title": "Supprimer le compte",
+    "warning": "Cette action est irréversible ! Pour supprimer votre compte, saisissez votre mot de passe et écrivez 'delete'.",
+    "loggedInAs": "Connecté en tant que :",
+    "confirmation": "Écrivez 'delete' pour supprimer",
+    "confirmationError": "Veuillez écrire 'delete' pour confirmer la suppression.",
+    "password": "Votre mot de passe",
+    "passwordError": "Veuillez saisir votre mot de passe.",
+    "button": "Supprimer le compte définitivement",
+    "success": "Votre compte a été supprimé.",
+    "error": "Impossible de supprimer le compte.",
+    "loading": "Traitement en cours..."
+  }
 }

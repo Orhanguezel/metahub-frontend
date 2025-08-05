@@ -1,12 +1,17 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { Account, NotificationSettings, SocialMediaLinks,ProfileImageObj } from "@/modules/users/types/user";
-
-
+import type {
+  Account,
+  NotificationSettings,
+  SocialMediaLinks,
+  ProfileImageObj,
+} from "@/modules/users/types/user";
+import { setAuthUser } from "@/modules/users/slice/authSlice";
 
 export interface AccountState {
   profile: Account | null;
   loading: boolean;
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   successMessage: string | null;
 }
@@ -14,19 +19,23 @@ export interface AccountState {
 const initialState: AccountState = {
   profile: null,
   loading: false,
+  status: "idle",
   error: null,
   successMessage: null,
 };
 
+// --- Async Thunks ---
 export const fetchCurrentUser = createAsyncThunk(
   "account/fetchCurrentUser",
   async (_, thunkAPI) => {
-    return await apiCall(
+    const response = await apiCall(
       "get",
       "/users/account/me",
       null,
       thunkAPI.rejectWithValue
     );
+    thunkAPI.dispatch(setAuthUser(response?.user || response));
+    return response;
   }
 );
 
@@ -67,7 +76,7 @@ export const updateProfileImage = createAsyncThunk(
       "/users/account/me/profile-image",
       formData,
       thunkAPI.rejectWithValue
-  );
+    );
   }
 );
 
@@ -84,7 +93,7 @@ export const updateNotificationSettings = createAsyncThunk(
 );
 
 export const updateSocialMediaLinks = createAsyncThunk(
-  "users/account/updateSocialMediaLinks",
+  "account/updateSocialMediaLinks",
   async (data: SocialMediaLinks, thunkAPI) => {
     return await apiCall(
       "patch",
@@ -119,6 +128,25 @@ export const removeProfileImage = createAsyncThunk(
   }
 );
 
+// --- Reducer helpers ---
+const setLoading = (state: AccountState) => {
+  state.loading = true;
+  state.status = "loading";
+  state.error = null;
+  state.successMessage = null;
+};
+const setSucceeded = (state: AccountState) => {
+  state.loading = false;
+  state.status = "succeeded";
+};
+const setFailed = (state: AccountState, action: PayloadAction<any>) => {
+  state.loading = false;
+  state.status = "failed";
+  state.error =
+    typeof action.payload === "string"
+      ? action.payload
+      : action.payload?.message || "An error occurred.";
+};
 
 // --- Slice ---
 const accountSlice = createSlice({
@@ -128,37 +156,23 @@ const accountSlice = createSlice({
     clearAccountMessages: (state) => {
       state.error = null;
       state.successMessage = null;
+      state.status = "idle";
     },
     resetProfile: (state) => {
-      state.profile = null;
-      state.loading = false;
-      state.error = null;
-      state.successMessage = null;
+      Object.assign(state, initialState);
     },
   },
   extraReducers: (builder) => {
-    const loading = (state: AccountState) => {
-      state.loading = true;
-      state.error = null;
-    };
-
-    const failed = (state: AccountState, action: PayloadAction<any>) => {
-      state.loading = false;
-      state.error =
-        typeof action.payload === "string"
-          ? action.payload
-          : action.payload?.message || "An error occurred.";
-    };
-
     builder
-      .addCase(fetchCurrentUser.pending, loading)
+      // FETCH USER
+      .addCase(fetchCurrentUser.pending, setLoading)
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
-        state.loading = false;
+        setSucceeded(state);
         state.profile = action.payload?.user || action.payload;
       })
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.loading = false;
-        // Eğer hata 401/unauthorized ise, error alanını null bırak!
+        state.status = "failed";
         const payload = action.payload as any;
         const isAuthError =
           (typeof payload === "object" &&
@@ -181,56 +195,69 @@ const accountSlice = createSlice({
         }
       })
 
-      .addCase(updateMyProfile.pending, loading)
+      // UPDATE PROFILE
+      .addCase(updateMyProfile.pending, setLoading)
       .addCase(updateMyProfile.fulfilled, (state, action) => {
-        state.loading = false;
+        setSucceeded(state);
         state.successMessage = action.payload.message;
         state.profile = { ...state.profile, ...action.payload.user };
       })
-      .addCase(updateMyProfile.rejected, failed)
-      .addCase(updateMyPassword.pending, loading)
+      .addCase(updateMyProfile.rejected, setFailed)
+
+      // UPDATE PASSWORD
+      .addCase(updateMyPassword.pending, setLoading)
       .addCase(updateMyPassword.fulfilled, (state, action) => {
-        state.loading = false;
+        setSucceeded(state);
         state.successMessage = action.payload.message;
       })
-      .addCase(updateMyPassword.rejected, failed)
-      .addCase(updateNotificationSettings.pending, loading)
+      .addCase(updateMyPassword.rejected, setFailed)
+
+      // NOTIFICATION SETTINGS
+      .addCase(updateNotificationSettings.pending, setLoading)
       .addCase(updateNotificationSettings.fulfilled, (state, action) => {
-        state.loading = false;
+        setSucceeded(state);
         if (state.profile)
           state.profile.notifications = action.payload.notifications;
         state.successMessage = action.payload.message;
       })
-      .addCase(updateNotificationSettings.rejected, failed)
-      .addCase(updateSocialMediaLinks.pending, loading)
+      .addCase(updateNotificationSettings.rejected, setFailed)
+
+      // SOCIAL MEDIA LINKS
+      .addCase(updateSocialMediaLinks.pending, setLoading)
       .addCase(updateSocialMediaLinks.fulfilled, (state, action) => {
-        state.loading = false;
+        setSucceeded(state);
         if (state.profile)
           state.profile.socialMedia = action.payload.socialMedia;
         state.successMessage = action.payload.message;
       })
-      .addCase(updateSocialMediaLinks.rejected, failed)
-      .addCase(updateProfileImage.pending, loading)
-      .addCase(updateProfileImage.fulfilled, (state, action: PayloadAction<{
-        profileImage: ProfileImageObj;
-        message?: string;
-      }>) => {
-        state.loading = false;
-        if (state.profile)
-          state.profile.profileImage = action.payload.profileImage;
-        state.successMessage = action.payload.message || "profile.imageUpdated";
-      })
-      .addCase(updateProfileImage.rejected, failed)
-      .addCase(deleteUserAccount.pending, loading)
+      .addCase(updateSocialMediaLinks.rejected, setFailed)
+
+      // PROFILE IMAGE
+      .addCase(updateProfileImage.pending, setLoading)
+      .addCase(
+        updateProfileImage.fulfilled,
+        (state, action: PayloadAction<{ profileImage: ProfileImageObj; message?: string }>) => {
+          setSucceeded(state);
+          if (state.profile)
+            state.profile.profileImage = action.payload.profileImage;
+          state.successMessage = action.payload.message || "profile.imageUpdated";
+        }
+      )
+      .addCase(updateProfileImage.rejected, setFailed)
+
+      // DELETE USER ACCOUNT
+      .addCase(deleteUserAccount.pending, setLoading)
       .addCase(deleteUserAccount.fulfilled, (state) => {
-        state.loading = false;
+        setSucceeded(state);
         state.profile = null;
         state.successMessage = "account.delete.success";
       })
-      .addCase(deleteUserAccount.rejected, failed)
-      .addCase(removeProfileImage.pending, loading)
+      .addCase(deleteUserAccount.rejected, setFailed)
+
+      // REMOVE PROFILE IMAGE
+      .addCase(removeProfileImage.pending, setLoading)
       .addCase(removeProfileImage.fulfilled, (state) => {
-        state.loading = false;
+        setSucceeded(state);
         if (state.profile) {
           state.profile.profileImage = null;
         }
@@ -238,6 +265,7 @@ const accountSlice = createSlice({
       })
       .addCase(removeProfileImage.rejected, (state, action) => {
         state.loading = false;
+        state.status = "failed";
         const payload = action.payload as any;
         state.error =
           typeof payload === "string"

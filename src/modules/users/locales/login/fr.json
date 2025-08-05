@@ -1,80 +1,76 @@
 {
-  "page": {
-    "allBike": "Tous les vélos",
-    "noBike": "Aucun vélo trouvé.",
-    "price": "Prix",
-    "stock": "Stock",
-    "brand": "Marque",
-    "readMore": "Voir les détails →",
-    "other": "Autres produits",
-    "untitled": "Sans titre",
-    "noSummary": "Pas de description.",
-    "bike": {
-      "title": "Dernier vélo",
-      "readMore": "Voir les détails",
-      "all": "Tous les vélos"
-    }
+  "title": "Connexion",
+  "description": "Veuillez vous connecter pour accéder au panneau d'administration.",
+  "form": {
+    "title": "Connexion"
   },
-  "admin": {
-    "tabs": {
-      "bike": "Vélos",
-      "create": "Nouveau vélo",
-      "categories": "Catégories"
-    },
-    "bike": {
-      "create": "Ajouter un nouveau vélo",
-      "edit": "Modifier le vélo",
-      "name": "Nom du vélo",
-      "description": "Description",
-      "brand": "Marque",
-      "price": "Prix",
-      "stock": "Stock",
-      "tags": "Tags",
-      "image": "Image",
-      "category": "Catégorie",
-      "select_category": "Sélectionner une catégorie",
-      "publish_status": "Publié ?",
-      "no_images": "Aucune image",
-      "publish": "Publier",
-      "unpublish": "Dépublier",
-      "empty": "Aucun vélo disponible."
-    },
-    "categories": {
-      "title": "Catégories de vélos",
-      "add": "Nouvelle catégorie",
-      "empty": "Aucune catégorie trouvée."
-    },
-    "language": {
-      "en": "Anglais",
-      "tr": "Turc",
-      "de": "Allemand"
-    },
-    "slug": "Slug",
-    "actions": "Actions",
-    "edit": "Modifier",
-    "delete": "Supprimer",
-    "cancel": "Annuler",
-    "update": "Mettre à jour",
-    "create": "Créer",
-    "yes": "Oui",
-    "no": "Non",
-    "loading": "Chargement...",
-    "confirm": {
-      "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
-      "delete_bike": "Êtes-vous sûr de vouloir supprimer ce vélo ?"
-    },
-    "optional_description": "Description (optionnel)",
-    "category_info": "À propos de cette catégorie ?",
-    "saving": "Enregistrement...",
-    "save": "Enregistrer",
-    "update2": "Mettre à jour",
-    "editCategory": "Modifier la catégorie",
-    "newCategory": "Nouvelle catégorie"
+  "email": "E-mail",
+  "password": "Mot de passe",
+  "remember": "Se souvenir de moi",
+  "forgotPassword": "Mot de passe oublié",
+  "registerNow": "Créer un compte",
+  "noAccount": "Vous n'avez pas de compte ?",
+  "submit": "Connexion",
+  "loading": "Connexion en cours...",
+  "otpRequired": "Veuillez saisir votre code de sécurité",
+  "success": "Vous vous êtes connecté avec succès !",
+  "otpTitle": "Vérification du code de sécurité",
+  "otpDesc": "Veuillez entrer le code à 6 chiffres envoyé par {{channel}}.",
+  "otpLabel": "Code à 6 chiffres",
+  "sms": "SMS",
+  "emailChannel": "E-mail",
+  "verifying": "Vérification...",
+  "verify": "Vérifier",
+  "resendCode": "Renvoyer le code",
+  "resending": "Réenvoi en cours...",
+  "otpVerified": "Vérification réussie !",
+  "otpFailed": "Le code n'a pas pu être vérifié.",
+  "otpResent": "Code renvoyé !",
+  "otpResendFailed": "Le code n'a pas pu être envoyé.",
+  "loginSuccess": "Connexion réussie !",
+  "welcomeUser": "Bienvenue, {{name}} !",
+  "userMail": "Votre adresse e-mail",
+  "goToDashboard": "Aller au panneau d'administration",
+  "goToAdminDashboard": "Aller au panneau d'administration",
+  "goToAccount": "Mon compte",
+  "redirectingToDashboard": "Redirection vers le panneau d'administration...",
+  "redirectingToAccount": "Redirection vers votre compte...",
+  "hidePassword": "Masquer le mot de passe",
+  "showPassword": "Afficher le mot de passe",
+  "otp": "Vérification du code",
+  "done": "Terminé",
+  "forgot": "Mot de passe oublié",
+  "register": "Créer un compte",
+  "mfa": "Authentification à deux facteurs",
+  "steps": {
+    "login": "Connexion",
+    "otp": "Vérification du code",
+    "done": "Terminé",
+    "forgot": "Mot de passe oublié",
+    "register": "Créer un compte",
+    "mfa": "Authentification à deux facteurs"
   },
-  "seo": {
-    "title": "Titre SEO",
-    "description": "Description SEO"
+  "placeholders": {
+    "email": "Votre adresse e-mail",
+    "password": "Votre mot de passe"
   },
-  "none": "Aucun",
-  "delete_confirm": "Êtes-vous sûr de vouloir supprimer ?"
+  "errors": {
+    "email": "L'adresse e-mail est requise",
+    "emailInvalid": "Veuillez saisir une adresse e-mail valide",
+    "password": "Le mot de passe est requis",
+    "passwordLength": "Le mot de passe doit comporter au moins 8 caractères",
+    "default": "Une erreur est survenue. Veuillez réessayer."
+  },
+  "otpStep": {
+    "otpTitle": "Vérification du code de sécurité",
+    "otpDesc": "Veuillez entrer le code à 6 chiffres envoyé par {{channel}}.",
+    "verify": "Vérifier",
+    "verifying": "Vérification...",
+    "resendCode": "Renvoyer le code",
+    "resending": "Réenvoi en cours...",
+    "otpVerified": "Vérification réussie !",
+    "otpFailed": "Le code n'a pas pu être vérifié.",
+    "otpResent": "Code renvoyé !",
+    "otpResendFailed": "Le code n'a pas pu être envoyé."
+  }
 }

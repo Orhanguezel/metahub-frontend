@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useAppDispatch } from "@/store/hooks";
 import { updateProfileImage,removeProfileImage } from "@/modules/users/slice/accountSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "@/modules/users/locales/account";
+import accountTranslations from "@/modules/users/locales/account";
 import { toast } from "react-toastify";
 import { Wrapper, ImagePreview, FileInput, Button } from "@/modules/users/styles/AccountStyles";
 import { resolveProfileImage } from "@/shared/resolveProfileImage";
@@ -17,7 +17,7 @@ const fallbackThumbnail = "/defaults/profile-thumbnail.png";
 
 const ProfileImageUploader: React.FC<Props> = ({ imageUrl }) => {
   const dispatch = useAppDispatch();
-  const { t } = useI18nNamespace("account", translations);
+  const { t } = useI18nNamespace("account", accountTranslations);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // State: gerçek yüklü resim (backend’den gelen/varsayılan)

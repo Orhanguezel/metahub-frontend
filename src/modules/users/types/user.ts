@@ -54,7 +54,6 @@ export interface Account {
   cart?: any;
   orders?: any[];
   payment?: any;
-  profile?: any;
 }
 
 // --- Bildirim Ayarları ---

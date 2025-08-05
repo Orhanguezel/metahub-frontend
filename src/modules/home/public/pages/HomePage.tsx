@@ -29,7 +29,8 @@ import RequestOfferButton from "@/modules/offer/public/components/RequestOfferBu
 import CatalogRequestButton from "@/modules/catalog/public/components/CatalogRequestButton";
 import NewsletterButton from "@/modules/newsletter/public/components/NewsletterButton";
 import NewsletterSection from "@/modules/newsletter/public/components/NewsletterSection";
-import TestimonialSection from "@/modules/comment/public/components/TestimonialSection"; 
+import TestimonialSection from "@/modules/comment/public/components/TestimonialSection";
+import TestimonialSectionAlt from "@/modules/comment/public/components/TestimonialSectionAlt";  
 
 import HeroSlider from "@/modules/home/public/components/HeroSlider";
 import HeroSection from "@/modules/home/public/components/HeroSection";
@@ -71,6 +72,7 @@ const sectionComponents: Record<string, React.ComponentType<any> | undefined> = 
   contact: ContactFormSection,
   portfolio: PortfolioSection,
   skills: SkillSection,
+  testimonialAlt: TestimonialSectionAlt,
 };
 
 const isDev = process.env.NODE_ENV === "development";

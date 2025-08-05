@@ -29,7 +29,6 @@ export { default as LoginForm } from "./public/components/login/LoginForm";
 export { default as LoginSuccessStep } from "./public/components/login/LoginSuccessStep";
 export { default as OtpStep } from "./public/components/login/OtpStep";
 export { default as LoginStepperNav} from "./public/components/login/LoginStepperNav";
-export { default as LoginFormStep } from "./public/components/login/LoginFormStep";
 
 export { default as LoginStepper } from "./public/components/stepper/LoginStepper";
 export { default as RegisterStepper } from "./public/components/stepper/RegisterStepper";

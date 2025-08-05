@@ -3,10 +3,11 @@ import React from "react";
 
 import { ChangePasswordStepper } from "@/modules/users";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {changeTranslations} from "@/modules/users";
 
 export default function ChangePasswordRouterPage() {
-  const { t } = useTranslation("changePassword");
+  const { t } = useI18nNamespace("changePassword", changeTranslations);
 
   return (
     <OuterWrapper>

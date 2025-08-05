@@ -1,80 +1,81 @@
 {
-  "page": {
-    "allBike": "Todas las bicicletas",
-    "noBike": "No se encontraron bicicletas.",
-    "price": "Precio",
-    "stock": "Stock",
-    "brand": "Marca",
-    "readMore": "Ver detalles →",
-    "other": "Otros productos",
-    "untitled": "Sin título",
-    "noSummary": "Sin descripción.",
-    "bike": {
-      "title": "Bicicleta destacada",
-      "readMore": "Ver detalles",
-      "all": "Todas las bicicletas"
-    }
+  "title": "Registrarse",
+  "description": "Por favor, complete el siguiente formulario para crear una nueva cuenta.",
+  "steps": {
+    "register": "Registrarse",
+    "verifyEmail": "Verificar correo electrónico",
+    "otp": "Verificación de código",
+    "done": "Completado",
+    "ariaLabel": "Pasos de registro"
   },
-  "admin": {
-    "tabs": {
-      "bike": "Bicicletas",
-      "create": "Nueva bicicleta",
-      "categories": "Categorías"
-    },
-    "bike": {
-      "create": "Agregar nueva bicicleta",
-      "edit": "Editar bicicleta",
-      "name": "Nombre de la bicicleta",
-      "description": "Descripción",
-      "brand": "Marca",
-      "price": "Precio",
-      "stock": "Stock",
-      "tags": "Etiquetas",
-      "image": "Imagen",
-      "category": "Categoría",
-      "select_category": "Seleccionar categoría",
-      "publish_status": "¿Publicado?",
-      "no_images": "Sin imágenes",
-      "publish": "Publicar",
-      "unpublish": "Ocultar",
-      "empty": "No hay bicicletas disponibles."
-    },
-    "categories": {
-      "title": "Categorías de bicicletas",
-      "add": "Nueva categoría",
-      "empty": "No se encontraron categorías."
-    },
-    "language": {
-      "en": "Inglés",
-      "tr": "Turco",
-      "de": "Alemán"
-    },
-    "slug": "Slug",
-    "actions": "Acciones",
-    "edit": "Editar",
-    "delete": "Eliminar",
-    "cancel": "Cancelar",
-    "update": "Actualizar",
-    "create": "Crear",
-    "yes": "Sí",
-    "no": "No",
-    "loading": "Cargando...",
-    "confirm": {
-      "delete": "¿Estás seguro de que quieres eliminar esta categoría?",
-      "delete_bike": "¿Estás seguro de que quieres eliminar esta bicicleta?"
-    },
-    "optional_description": "Descripción (opcional)",
-    "category_info": "¿De qué trata esta categoría?",
-    "saving": "Guardando...",
-    "save": "Guardar",
-    "update2": "Actualizar",
-    "editCategory": "Editar categoría",
-    "newCategory": "Nueva categoría"
+  "username": "Nombre de usuario",
+  "email": "Correo electrónico",
+  "password": "Contraseña",
+  "confirmPassword": "Confirmar contraseña",
+  "submit": "Registrarse",
+  "loading": "Registrando...",
+  "haveAccount": "¿Ya tienes una cuenta?",
+  "loginNow": "Iniciar sesión",
+  "agree": "Al registrarse, usted acepta los",
+  "terms": "Términos de servicio",
+  "and": "y",
+  "privacy": "Política de privacidad",
+  "placeholders": {
+    "username": "Ingrese su nombre",
+    "email": "Ingrese su correo electrónico",
+    "password": "Ingrese su contraseña",
+    "confirmPassword": "Repita su contraseña"
   },
-  "seo": {
-    "title": "Título SEO",
-    "description": "Descripción SEO"
+  "info": {
+    "usernameInfo": "Ingrese su nombre real o apodo.",
+    "emailInfo": "Por favor, ingrese un correo electrónico activo."
   },
-  "none": "Ninguno",
-  "delete_confirm": "¿Estás seguro de que quieres eliminar?"
+  "hidePassword": "Ocultar contraseña",
+  "showPassword": "Mostrar contraseña",
+  "otpTitle": "Ingrese el código",
+  "otpDesc": "Ingrese el código de verificación enviado a {{email}}.",
+  "otpPlaceholder": "Código de 6 dígitos",
+  "otpRequired": "Por favor ingrese el código.",
+  "otpFailed": "La verificación del código falló.",
+  "otpVerified": "¡Código verificado exitosamente!",
+  "otpNoCode": "¿No recibiste el código?",
+  "otpResend": "Reenviar código",
+  "otpResent": "¡Código reenviado!",
+  "otpResendFailed": "No se pudo reenviar el código.",
+  "verifyEmailTitle": "Verificación de correo electrónico",
+  "verifyEmailDesc": "Se ha enviado un correo de confirmación a {{email}}. Por favor, revisa tu bandeja de entrada.",
+  "spamCheck": "¡No olvides revisar tu carpeta de spam!",
+  "resendVerification": "Reenviar correo de verificación",
+  "verificationEmailSent": "¡Correo de verificación enviado!",
+  "verificationEmailFailed": "No se pudo enviar el correo de verificación.",
+  "haveCode": "Tengo un código",
+  "success": "¡Registro exitoso!",
+  "successTitle": "¡Registro completado!",
+  "successDesc": "Tu cuenta se ha creado y confirmado correctamente. Ahora puedes iniciar sesión.",
+  "goToLogin": "Ir a inicio de sesión",
+  "redirectingToLogin": "Serás redirigido a la página de inicio de sesión en breve...",
+  "pwStrength": {
+    "veryWeak": "Muy débil",
+    "weak": "Débil",
+    "medium": "Medio",
+    "strong": "Fuerte",
+    "veryStrong": "Muy fuerte"
+  },
+  "errors": {
+    "username": "El nombre de usuario es obligatorio.",
+    "email": "El correo electrónico es obligatorio.",
+    "emailInvalid": "Correo electrónico inválido.",
+    "password": "La contraseña es obligatoria.",
+    "passwordLength": "La contraseña debe tener al menos 8 caracteres.",
+    "weakPassword": "Tu contraseña es demasiado débil.",
+    "confirmPassword": "Las contraseñas no coinciden.",
+    "recaptchaFailed": "La verificación de reCAPTCHA falló.",
+    "error": "Ha ocurrido un error. Por favor, inténtalo de nuevo."
+  },
+  "verifyEmail": {
+    "title": "Verificación de correo electrónico",
+    "verifying": "Verificando tu correo electrónico...",
+    "success": "Correo electrónico verificado correctamente. Ahora puedes iniciar sesión.",
+    "error": "La verificación falló o el enlace ha expirado. Por favor, solicita un nuevo correo de verificación."
+  }
 }

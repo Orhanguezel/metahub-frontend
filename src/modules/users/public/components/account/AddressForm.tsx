@@ -20,7 +20,7 @@ import {
   Select,
 } from "@/modules/users/styles/AccountStyles";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "@/modules/users/locales/account";
+import accountTranslations from "@/modules/users/locales/account";
 import { toast } from "react-toastify";
 import styled from "styled-components";
 import { ADDRESS_TYPE_OPTIONS, Address, AddressType } from "@/modules/users/types/address";
@@ -64,7 +64,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
   onChanged,
   renderAsForm = true, // default: true
 }) => {
-  const { t } = useI18nNamespace("account", translations);
+  const { t } = useI18nNamespace("account", accountTranslations);
   const dispatch = useAppDispatch();
   const addressState = useAppSelector((state) => state.address);
   const reduxAddresses = addressState.addresses;

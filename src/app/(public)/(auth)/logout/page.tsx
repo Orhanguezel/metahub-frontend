@@ -5,11 +5,12 @@ import { useAppDispatch } from "@/store/hooks";
 import { logoutUser, clearAuthMessages } from "@/modules/users/slice/authSlice";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {logoutTranslations} from "@/modules/users";
 
 export default function LogoutPage() {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("logout");
+  const { t } = useI18nNamespace("logout", logoutTranslations);
   const router = useRouter();
 
   useEffect(() => {

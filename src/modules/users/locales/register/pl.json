@@ -1,80 +1,81 @@
 {
-  "page": {
-    "allBike": "Wszystkie rowery",
-    "noBike": "Nie znaleziono rowerów.",
-    "price": "Cena",
-    "stock": "Stan",
-    "brand": "Marka",
-    "readMore": "Zobacz szczegóły →",
-    "other": "Inne produkty",
-    "untitled": "Bez tytułu",
-    "noSummary": "Brak opisu.",
-    "bike": {
-      "title": "Najnowszy rower",
-      "readMore": "Zobacz szczegóły",
-      "all": "Wszystkie rowery"
-    }
+  "title": "Rejestracja",
+  "description": "Wypełnij poniższy formularz, aby utworzyć nowe konto.",
+  "steps": {
+    "register": "Zarejestruj się",
+    "verifyEmail": "Potwierdź e-mail",
+    "otp": "Weryfikacja kodu",
+    "done": "Zakończone",
+    "ariaLabel": "Kroki rejestracji"
   },
-  "admin": {
-    "tabs": {
-      "bike": "Rowery",
-      "create": "Nowy rower",
-      "categories": "Kategorie"
-    },
-    "bike": {
-      "create": "Dodaj nowy rower",
-      "edit": "Edytuj rower",
-      "name": "Nazwa roweru",
-      "description": "Opis",
-      "brand": "Marka",
-      "price": "Cena",
-      "stock": "Stan",
-      "tags": "Tagi",
-      "image": "Obraz",
-      "category": "Kategoria",
-      "select_category": "Wybierz kategorię",
-      "publish_status": "Opublikowano?",
-      "no_images": "Brak zdjęć",
-      "publish": "Opublikuj",
-      "unpublish": "Ukryj",
-      "empty": "Brak dostępnych rowerów."
-    },
-    "categories": {
-      "title": "Kategorie rowerów",
-      "add": "Nowa kategoria",
-      "empty": "Nie znaleziono kategorii."
-    },
-    "language": {
-      "en": "Angielski",
-      "tr": "Turecki",
-      "de": "Niemiecki"
-    },
-    "slug": "Slug",
-    "actions": "Akcje",
-    "edit": "Edytuj",
-    "delete": "Usuń",
-    "cancel": "Anuluj",
-    "update": "Aktualizuj",
-    "create": "Utwórz",
-    "yes": "Tak",
-    "no": "Nie",
-    "loading": "Ładowanie...",
-    "confirm": {
-      "delete": "Czy na pewno chcesz usunąć tę kategorię?",
-      "delete_bike": "Czy na pewno chcesz usunąć ten rower?"
-    },
-    "optional_description": "Opis (opcjonalnie)",
-    "category_info": "Czego dotyczy ta kategoria?",
-    "saving": "Zapisywanie...",
-    "save": "Zapisz",
-    "update2": "Aktualizuj",
-    "editCategory": "Edytuj kategorię",
-    "newCategory": "Nowa kategoria"
+  "username": "Nazwa użytkownika",
+  "email": "E-mail",
+  "password": "Hasło",
+  "confirmPassword": "Powtórz hasło",
+  "submit": "Zarejestruj się",
+  "loading": "Rejestrowanie...",
+  "haveAccount": "Masz już konto?",
+  "loginNow": "Zaloguj się",
+  "agree": "Rejestrując się, akceptujesz",
+  "terms": "Regulamin",
+  "and": "i",
+  "privacy": "Politykę prywatności",
+  "placeholders": {
+    "username": "Wpisz nazwę",
+    "email": "Wpisz adres e-mail",
+    "password": "Wpisz hasło",
+    "confirmPassword": "Powtórz hasło"
   },
-  "seo": {
-    "title": "Tytuł SEO",
-    "description": "Opis SEO"
+  "info": {
+    "usernameInfo": "Podaj swoje prawdziwe imię lub pseudonim.",
+    "emailInfo": "Podaj aktywny adres e-mail."
   },
-  "none": "Brak",
-  "delete_confirm": "Czy na pewno chcesz usunąć?"
+  "hidePassword": "Ukryj hasło",
+  "showPassword": "Pokaż hasło",
+  "otpTitle": "Wpisz kod",
+  "otpDesc": "Wprowadź kod weryfikacyjny wysłany na {{email}}.",
+  "otpPlaceholder": "6-cyfrowy kod",
+  "otpRequired": "Wprowadź kod.",
+  "otpFailed": "Weryfikacja kodu nie powiodła się.",
+  "otpVerified": "Kod został poprawnie zweryfikowany!",
+  "otpNoCode": "Nie otrzymałeś kodu?",
+  "otpResend": "Wyślij kod ponownie",
+  "otpResent": "Kod wysłany ponownie!",
+  "otpResendFailed": "Nie można wysłać kodu ponownie.",
+  "verifyEmailTitle": "Weryfikacja e-mail",
+  "verifyEmailDesc": "Wiadomość potwierdzająca została wysłana na {{email}}. Sprawdź swoją skrzynkę odbiorczą.",
+  "spamCheck": "Nie zapomnij sprawdzić folderu spam!",
+  "resendVerification": "Wyślij ponownie e-mail weryfikacyjny",
+  "verificationEmailSent": "E-mail weryfikacyjny został wysłany!",
+  "verificationEmailFailed": "Nie udało się wysłać e-maila weryfikacyjnego.",
+  "haveCode": "Mam kod",
+  "success": "Rejestracja zakończona sukcesem!",
+  "successTitle": "Rejestracja zakończona!",
+  "successDesc": "Twoje konto zostało utworzone i potwierdzone. Teraz możesz się zalogować.",
+  "goToLogin": "Przejdź do logowania",
+  "redirectingToLogin": "Za chwilę nastąpi przekierowanie do strony logowania...",
+  "pwStrength": {
+    "veryWeak": "Bardzo słabe",
+    "weak": "Słabe",
+    "medium": "Średnie",
+    "strong": "Mocne",
+    "veryStrong": "Bardzo mocne"
+  },
+  "errors": {
+    "username": "Nazwa użytkownika jest wymagana.",
+    "email": "Adres e-mail jest wymagany.",
+    "emailInvalid": "Nieprawidłowy adres e-mail.",
+    "password": "Hasło jest wymagane.",
+    "passwordLength": "Hasło musi mieć co najmniej 8 znaków.",
+    "weakPassword": "Twoje hasło jest zbyt słabe.",
+    "confirmPassword": "Hasła nie są zgodne.",
+    "recaptchaFailed": "Błąd weryfikacji reCAPTCHA.",
+    "error": "Wystąpił błąd. Spróbuj ponownie."
+  },
+  "verifyEmail": {
+    "title": "Weryfikacja e-mail",
+    "verifying": "Trwa weryfikacja adresu e-mail...",
+    "success": "Adres e-mail został pomyślnie zweryfikowany. Możesz się teraz zalogować.",
+    "error": "Weryfikacja nie powiodła się lub link wygasł. Proszę poprosić o nowy e-mail weryfikacyjny."
+  }
 }

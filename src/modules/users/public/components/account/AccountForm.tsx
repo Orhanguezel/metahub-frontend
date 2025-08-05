@@ -12,7 +12,7 @@ import {
   ChangePasswordForm,
 } from "@/modules/users";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "@/modules/users/locales/account";
+import accountTranslations from "@/modules/users/locales/account";
 import {
   Wrapper,
   Title,
@@ -27,7 +27,7 @@ export default function AccountForm() {
   const { profile, loading, error, successMessage } = useAppSelector(
     (state) => state.account
   );
-  const { t } = useI18nNamespace("account", translations);
+  const { t } = useI18nNamespace("account", accountTranslations);
 
   useEffect(() => {
     return () => {

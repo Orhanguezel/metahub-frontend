@@ -3,10 +3,11 @@ import React from "react";
 
 import { LoginPage } from "@/modules/users";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import {loginTranslations} from "@/modules/users";
 
 export default function LoginRouterPage() {
-  const { t } = useTranslation("login");
+  const { t } = useI18nNamespace("login", loginTranslations);
 
   return (
     <OuterWrapper>

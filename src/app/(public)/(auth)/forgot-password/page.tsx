@@ -3,10 +3,11 @@ import React from "react";
 
 import { ForgotPasswordPage } from "@/modules/users";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import { forgotTranslations } from "@/modules/users";
 
 export default function ForgotPasswordRouterPage() {
-  const { t } = useTranslation("forgotPassword");
+  const { t } = useI18nNamespace("forgotPassword", forgotTranslations);
 
   return (
     <OuterWrapper>

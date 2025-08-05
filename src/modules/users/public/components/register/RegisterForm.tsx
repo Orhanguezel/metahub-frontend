@@ -253,7 +253,7 @@ export default function RegisterForm({ onSwitch, onAuthSuccess }: Props) {
       {/* Terms */}
       <Terms>
         {t("agree")} <Link href="/terms">{t("terms")}</Link> {t("and")}{" "}
-        <Link href="/privacy">{t("privacy")}</Link>.
+        <Link href="/privacy-policy">{t("privacy")}</Link>.
       </Terms>
 
       {/* Submit */}

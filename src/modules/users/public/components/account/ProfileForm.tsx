@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAppDispatch } from "@/store/hooks";
 import { updateMyProfile } from "@/modules/users/slice/accountSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "@/modules/users/locales/account";
+import accountTranslations from "@/modules/users/locales/account";
 import { toast } from "react-toastify";
 import {
   Wrapper,
@@ -30,7 +30,7 @@ interface Props {
 
 export default function ProfileForm({ profile }: Props) {
   const dispatch = useAppDispatch();
-  const { t } = useI18nNamespace("account", translations);
+  const { t } = useI18nNamespace("account", accountTranslations);
 
   const profileSchema = z.object({
     name: z.string().min(1, { message: t("form.errors.name") }),

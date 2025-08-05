@@ -1,80 +1,18 @@
 {
-  "page": {
-    "allBike": "Todas las bicicletas",
-    "noBike": "No se encontraron bicicletas.",
-    "price": "Precio",
-    "stock": "Stock",
-    "brand": "Marca",
-    "readMore": "Ver detalles →",
-    "other": "Otros productos",
-    "untitled": "Sin título",
-    "noSummary": "Sin descripción.",
-    "bike": {
-      "title": "Bicicleta destacada",
-      "readMore": "Ver detalles",
-      "all": "Todas las bicicletas"
-    }
+  "title": "Olvidé mi contraseña",
+  "instruction": "Introduce tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.",
+  "steps": {
+    "forgot": "Olvidé mi contraseña",
+    "done": "Terminado"
   },
-  "admin": {
-    "tabs": {
-      "bike": "Bicicletas",
-      "create": "Nueva bicicleta",
-      "categories": "Categorías"
-    },
-    "bike": {
-      "create": "Agregar nueva bicicleta",
-      "edit": "Editar bicicleta",
-      "name": "Nombre de la bicicleta",
-      "description": "Descripción",
-      "brand": "Marca",
-      "price": "Precio",
-      "stock": "Stock",
-      "tags": "Etiquetas",
-      "image": "Imagen",
-      "category": "Categoría",
-      "select_category": "Seleccionar categoría",
-      "publish_status": "¿Publicado?",
-      "no_images": "Sin imágenes",
-      "publish": "Publicar",
-      "unpublish": "Ocultar",
-      "empty": "No hay bicicletas disponibles."
-    },
-    "categories": {
-      "title": "Categorías de bicicletas",
-      "add": "Nueva categoría",
-      "empty": "No se encontraron categorías."
-    },
-    "language": {
-      "en": "Inglés",
-      "tr": "Turco",
-      "de": "Alemán"
-    },
-    "slug": "Slug",
-    "actions": "Acciones",
-    "edit": "Editar",
-    "delete": "Eliminar",
-    "cancel": "Cancelar",
-    "update": "Actualizar",
-    "create": "Crear",
-    "yes": "Sí",
-    "no": "No",
-    "loading": "Cargando...",
-    "confirm": {
-      "delete": "¿Estás seguro de que quieres eliminar esta categoría?",
-      "delete_bike": "¿Estás seguro de que quieres eliminar esta bicicleta?"
-    },
-    "optional_description": "Descripción (opcional)",
-    "category_info": "¿De qué trata esta categoría?",
-    "saving": "Guardando...",
-    "save": "Guardar",
-    "update2": "Actualizar",
-    "editCategory": "Editar categoría",
-    "newCategory": "Nueva categoría"
+  "placeholders": {
+    "email": "Tu correo electrónico"
   },
-  "seo": {
-    "title": "Título SEO",
-    "description": "Descripción SEO"
-  },
-  "none": "Ninguno",
-  "delete_confirm": "¿Estás seguro de que quieres eliminar?"
+  "submit": "Enviar enlace de restablecimiento",
+  "loading": "Enviando...",
+  "success": "Se ha enviado un enlace de restablecimiento de contraseña a tu correo electrónico. Por favor revisa tu bandeja de entrada.",
+  "errors": {
+    "email": "Por favor introduce una dirección de correo electrónico válida.",
+    "default": "Ocurrió un error. Inténtalo de nuevo."
+  }
 }

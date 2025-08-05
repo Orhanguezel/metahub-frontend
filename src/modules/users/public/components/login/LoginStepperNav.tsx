@@ -2,7 +2,7 @@
 
 import { AuthStepType } from "@/modules/users";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {loginTranslations} from "@/modules/users";
+import { loginTranslations } from "@/modules/users";
 import {
   StepperBar,
   StepItem,
@@ -18,9 +18,9 @@ export interface StepLabel {
 }
 
 const DEFAULT_STEPS: StepLabel[] = [
-  { label: "login", key: "login" },
-  { label: "otp", key: "otp" },
-  { label: "done", key: "done" },
+  { key: "login", label: "login" },
+  { key: "otp", label: "otp" },
+  { key: "done", label: "done" },
 ];
 
 interface Props {
@@ -29,7 +29,7 @@ interface Props {
 }
 
 export default function LoginStepperNav({ currentStep, steps }: Props) {
- const { t } = useI18nNamespace("login", loginTranslations);
+  const { t } = useI18nNamespace("login", loginTranslations);
   const stepList = steps || DEFAULT_STEPS;
 
   return (

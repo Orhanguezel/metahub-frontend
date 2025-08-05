@@ -1,77 +1,59 @@
 "use client";
-
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { loginUser, clearAuthMessages } from "@/modules/users/slice/authSlice";
-import { fetchCurrentUser } from "@/modules/users/slice/accountSlice";
+import { loginUser } from "@/modules/users/slice/authSlice";
 import { AppDispatch } from "@/store";
-import { toast } from "react-toastify";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-import { useRouter } from "next/navigation";
-import type { AuthStep } from "@/modules/users";
+import type { AuthStepType } from "@/modules/users";
+import { toast } from "react-toastify";
 import {
   Form,
-  Title,
-  InputGroup,
+  FormGroup,
+  Label,
   Input,
   Button,
   Message,
 } from "@/modules/users/styles/AccountStyles";
 import {
-  InputIconWrapper,
-  Icon,
+  InputWrapper,
+  InputIcon,
   TogglePassword,
-  OptionsRow,
-  RememberMe,
-  ActionLink,
-  AltAction,
 } from "@/modules/users/styles/AuthStyles";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {loginTranslations} from "@/modules/users";
+import { loginTranslations } from "@/modules/users";
 
 interface Props {
-  onNext?: (next: AuthStep) => void;
-  onAuthSuccess?: () => void;
+  onNext: (step: { step: AuthStepType; payload?: any }) => void;
 }
 
-export default function LoginForm({ onNext, onAuthSuccess }: Props) {
-  const router = useRouter();
+export default function LoginForm({ onNext }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const { t } = useI18nNamespace("login", loginTranslations);
 
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-    rememberMe: false,
-  });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {}
-  );
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [loading, setLoading] = useState(false);
 
-  // Validation
+  // ---- VALIDATION
   const validate = () => {
     const errs: typeof errors = {};
-    if (!form.email.trim()) errs.email = t("errors.email");
+    if (!form.email.trim()) errs.email = t("errors.email", "Please enter your email.");
     else if (!/\S+@\S+\.\S+/.test(form.email))
-      errs.email = t("errors.emailInvalid");
-    if (!form.password) errs.password = t("errors.password");
+      errs.email = t("errors.emailInvalid", "Invalid email format.");
+    if (!form.password) errs.password = t("errors.password", "Please enter your password.");
     else if (form.password.length < 8)
-      errs.password = t("errors.passwordLength");
+      errs.password = t("errors.passwordLength", "Password must be at least 8 characters.");
     return errs;
   };
 
-  // Input handler
+  // ---- INPUT CHANGE HANDLER
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-    setErrors((prev) => ({ ...prev, [name]: undefined }));
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setErrors((prev) => ({ ...prev, [e.target.name]: undefined }));
   };
 
+  // ---- SUBMIT HANDLER
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const validationErrors = validate();
@@ -81,122 +63,80 @@ export default function LoginForm({ onNext, onAuthSuccess }: Props) {
     }
     setLoading(true);
     try {
-      const result = await dispatch(
-        loginUser({ email: form.email, password: form.password })
-      ).unwrap();
-
-      if (result?.needOtp || result?.mfaRequired) {
-        onNext?.({ step: "otp", payload: { email: form.email } });
-        toast.info(t("otpRequired"));
-        return;
+      const res: any = await dispatch(loginUser(form)).unwrap();
+      // Eğer MFA/OTP gerekiyorsa step'i değiştir
+      if (res?.mfaRequired || res?.needOtp) {
+        onNext({ step: "otp", payload: { email: form.email } });
+      } else {
+        onNext({ step: "done" });
       }
-
-      await dispatch(fetchCurrentUser()).unwrap();
-      toast.success(t("success"));
-      if (onAuthSuccess) onAuthSuccess();
-      else onNext?.({ step: "done" });
     } catch (err: any) {
-      toast.error(err?.message || t("errors.default"));
+      toast.error(
+        typeof err?.message === "string"
+          ? err.message
+          : t("errors.default", "Login failed!")
+      );
     } finally {
       setLoading(false);
-      dispatch(clearAuthMessages());
     }
   };
 
+  // ---- RENDER
   return (
     <Form onSubmit={handleSubmit} autoComplete="off">
-      <Title>{t("form.title", "Giriş Yap")}</Title>
-
       {/* Email */}
-      <InputGroup>
-        <label htmlFor="email">{t("email")}</label>
-        <InputIconWrapper $hasError={!!errors.email}>
-          <Icon>
+      <FormGroup>
+        <Label htmlFor="email">{t("email", "Email")}</Label>
+        <InputWrapper $hasError={!!errors.email}>
+          <InputIcon>
             <FaEnvelope />
-          </Icon>
+          </InputIcon>
           <Input
             id="email"
             name="email"
             type="email"
-            placeholder={t("placeholders.email")}
             value={form.email}
             onChange={handleChange}
-            autoComplete="email"
+            placeholder={t("placeholders.email", "Email")}
             disabled={loading}
-            $hasError={!!errors.email}
+            autoComplete="email"
           />
-        </InputIconWrapper>
+        </InputWrapper>
         {errors.email && <Message $error>{errors.email}</Message>}
-      </InputGroup>
+      </FormGroup>
 
       {/* Password */}
-      <InputGroup>
-        <label htmlFor="password">{t("password")}</label>
-        <InputIconWrapper $hasError={!!errors.password}>
-          <Icon>
+      <FormGroup>
+        <Label htmlFor="password">{t("password", "Password")}</Label>
+        <InputWrapper $hasError={!!errors.password}>
+          <InputIcon>
             <FaLock />
-          </Icon>
+          </InputIcon>
           <Input
             id="password"
             name="password"
             type={showPassword ? "text" : "password"}
-            placeholder={t("placeholders.password")}
             value={form.password}
             onChange={handleChange}
-            autoComplete="current-password"
+            placeholder={t("placeholders.password", "Password")}
             disabled={loading}
-            $hasError={!!errors.password}
+            autoComplete="current-password"
           />
           <TogglePassword
             type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            aria-label={showPassword ? t("hidePassword", "Hide password") : t("showPassword", "Show password")}
             tabIndex={-1}
-            aria-label={showPassword ? t("hidePassword") : t("showPassword")}
-            onClick={() => setShowPassword((s) => !s)}
           >
             {showPassword ? <FaEyeSlash /> : <FaEye />}
           </TogglePassword>
-        </InputIconWrapper>
+        </InputWrapper>
         {errors.password && <Message $error>{errors.password}</Message>}
-      </InputGroup>
+      </FormGroup>
 
-      <OptionsRow>
-        <RememberMe>
-          <input
-            type="checkbox"
-            id="rememberMe"
-            name="rememberMe"
-            checked={form.rememberMe}
-            onChange={handleChange}
-          />
-          <label htmlFor="rememberMe">{t("remember")}</label>
-        </RememberMe>
-        <ActionLink
-          as="button"
-          type="button"
-          onClick={() => router.push("/forgot-password")}
-        >
-          {t("forgotPassword")}
-        </ActionLink>
-      </OptionsRow>
-
-      <Button
-        type="submit"
-        disabled={loading}
-        style={{ width: "100%", marginTop: 16 }}
-      >
-        {loading ? t("loading") : t("submit")}
+      <Button type="submit" disabled={loading} style={{ width: "100%" }}>
+        {loading ? t("loading", "Logging in...") : t("submit", "Login")}
       </Button>
-
-      <AltAction>
-        {t("noAccount")}{" "}
-        <ActionLink
-          as="button"
-          type="button"
-          onClick={() => router.push("/register")} 
-        >
-          {t("registerNow")}
-        </ActionLink>
-      </AltAction>
     </Form>
   );
 }

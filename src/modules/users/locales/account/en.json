@@ -11,6 +11,9 @@
     "loading": "Loading..."
   },
   "form": {
+    "chooseImage": "Choose Image",
+    "remove": "Remove",
+    "imageRemoveSuccess": "Profile photo has been removed.",
     "title": "Update My Information",
     "name": "Full Name",
     "email": "Email",

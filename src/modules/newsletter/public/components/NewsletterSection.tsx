@@ -81,7 +81,7 @@ export default function NewsletterSection() {
 // --- THEME-ADAPTED STYLES ---
 
 const Section = styled(motion.section)`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  background: ${({ theme }) => theme.colors.sectionBackground};
   color: ${({ theme }) => theme.colors.text};
   width: 100%;
   padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xxl};

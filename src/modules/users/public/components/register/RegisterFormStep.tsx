@@ -221,7 +221,7 @@ export default function RegisterFormStep({ onNext }: Props) {
       {/* Terms */}
       <Terms>
         {t("agree")} <Link href="/terms">{t("terms")}</Link> {t("and")}{" "}
-        <Link href="/privacy">{t("privacy")}</Link>.
+        <Link href="/privacy-policy">{t("privacy")}</Link>.
       </Terms>
 
       <Button type="submit" disabled={loading} style={{ width: "100%" }}>

@@ -1,80 +1,76 @@
 {
-  "page": {
-    "allBike": "Wszystkie rowery",
-    "noBike": "Nie znaleziono rowerów.",
-    "price": "Cena",
-    "stock": "Stan",
-    "brand": "Marka",
-    "readMore": "Zobacz szczegóły →",
-    "other": "Inne produkty",
-    "untitled": "Bez tytułu",
-    "noSummary": "Brak opisu.",
-    "bike": {
-      "title": "Najnowszy rower",
-      "readMore": "Zobacz szczegóły",
-      "all": "Wszystkie rowery"
-    }
+  "title": "Zaloguj się",
+  "description": "Zaloguj się, aby uzyskać dostęp do panelu administracyjnego.",
+  "form": {
+    "title": "Zaloguj się"
   },
-  "admin": {
-    "tabs": {
-      "bike": "Rowery",
-      "create": "Nowy rower",
-      "categories": "Kategorie"
-    },
-    "bike": {
-      "create": "Dodaj nowy rower",
-      "edit": "Edytuj rower",
-      "name": "Nazwa roweru",
-      "description": "Opis",
-      "brand": "Marka",
-      "price": "Cena",
-      "stock": "Stan",
-      "tags": "Tagi",
-      "image": "Obraz",
-      "category": "Kategoria",
-      "select_category": "Wybierz kategorię",
-      "publish_status": "Opublikowano?",
-      "no_images": "Brak zdjęć",
-      "publish": "Opublikuj",
-      "unpublish": "Ukryj",
-      "empty": "Brak dostępnych rowerów."
-    },
-    "categories": {
-      "title": "Kategorie rowerów",
-      "add": "Nowa kategoria",
-      "empty": "Nie znaleziono kategorii."
-    },
-    "language": {
-      "en": "Angielski",
-      "tr": "Turecki",
-      "de": "Niemiecki"
-    },
-    "slug": "Slug",
-    "actions": "Akcje",
-    "edit": "Edytuj",
-    "delete": "Usuń",
-    "cancel": "Anuluj",
-    "update": "Aktualizuj",
-    "create": "Utwórz",
-    "yes": "Tak",
-    "no": "Nie",
-    "loading": "Ładowanie...",
-    "confirm": {
-      "delete": "Czy na pewno chcesz usunąć tę kategorię?",
-      "delete_bike": "Czy na pewno chcesz usunąć ten rower?"
-    },
-    "optional_description": "Opis (opcjonalnie)",
-    "category_info": "Czego dotyczy ta kategoria?",
-    "saving": "Zapisywanie...",
-    "save": "Zapisz",
-    "update2": "Aktualizuj",
-    "editCategory": "Edytuj kategorię",
-    "newCategory": "Nowa kategoria"
+  "email": "E-mail",
+  "password": "Hasło",
+  "remember": "Zapamiętaj mnie",
+  "forgotPassword": "Nie pamiętasz hasła?",
+  "registerNow": "Zarejestruj się",
+  "noAccount": "Nie masz konta?",
+  "submit": "Zaloguj się",
+  "loading": "Logowanie...",
+  "otpRequired": "Wpisz swój kod bezpieczeństwa",
+  "success": "Zalogowano pomyślnie!",
+  "otpTitle": "Weryfikacja kodu bezpieczeństwa",
+  "otpDesc": "Wpisz 6-cyfrowy kod wysłany przez {{channel}}.",
+  "otpLabel": "6-cyfrowy kod",
+  "sms": "SMS",
+  "emailChannel": "E-mail",
+  "verifying": "Weryfikacja...",
+  "verify": "Zweryfikuj",
+  "resendCode": "Wyślij kod ponownie",
+  "resending": "Wysyłanie ponowne...",
+  "otpVerified": "Weryfikacja zakończona sukcesem!",
+  "otpFailed": "Nie udało się zweryfikować kodu.",
+  "otpResent": "Kod wysłany ponownie!",
+  "otpResendFailed": "Nie udało się wysłać kodu.",
+  "loginSuccess": "Logowanie powiodło się!",
+  "welcomeUser": "Witamy, {{name}}!",
+  "userMail": "Twój adres e-mail",
+  "goToDashboard": "Przejdź do panelu administracyjnego",
+  "goToAdminDashboard": "Przejdź do panelu administracyjnego",
+  "goToAccount": "Moje konto",
+  "redirectingToDashboard": "Za chwilę nastąpi przekierowanie do panelu administracyjnego...",
+  "redirectingToAccount": "Za chwilę nastąpi przekierowanie do Twojego konta...",
+  "hidePassword": "Ukryj hasło",
+  "showPassword": "Pokaż hasło",
+  "otp": "Weryfikacja kodu",
+  "done": "Zakończono",
+  "forgot": "Nie pamiętasz hasła?",
+  "register": "Zarejestruj się",
+  "mfa": "Uwierzytelnianie dwuskładnikowe",
+  "steps": {
+    "login": "Zaloguj się",
+    "otp": "Weryfikacja kodu",
+    "done": "Zakończono",
+    "forgot": "Nie pamiętasz hasła?",
+    "register": "Zarejestruj się",
+    "mfa": "Uwierzytelnianie dwuskładnikowe"
   },
-  "seo": {
-    "title": "Tytuł SEO",
-    "description": "Opis SEO"
+  "placeholders": {
+    "email": "Twój adres e-mail",
+    "password": "Twoje hasło"
   },
-  "none": "Brak",
-  "delete_confirm": "Czy na pewno chcesz usunąć?"
+  "errors": {
+    "email": "Adres e-mail jest wymagany",
+    "emailInvalid": "Wpisz poprawny adres e-mail",
+    "password": "Hasło jest wymagane",
+    "passwordLength": "Hasło musi mieć co najmniej 8 znaków",
+    "default": "Wystąpił błąd. Spróbuj ponownie."
+  },
+  "otpStep": {
+    "otpTitle": "Weryfikacja kodu bezpieczeństwa",
+    "otpDesc": "Wpisz 6-cyfrowy kod wysłany przez {{channel}}.",
+    "verify": "Zweryfikuj",
+    "verifying": "Weryfikacja...",
+    "resendCode": "Wyślij kod ponownie",
+    "resending": "Wysyłanie ponowne...",
+    "otpVerified": "Weryfikacja zakończona sukcesem!",
+    "otpFailed": "Nie udało się zweryfikować kodu.",
+    "otpResent": "Kod wysłany ponownie!",
+    "otpResendFailed": "Nie udało się wysłać kodu."
+  }
 }
