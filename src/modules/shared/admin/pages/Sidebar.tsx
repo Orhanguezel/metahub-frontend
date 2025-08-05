@@ -24,20 +24,18 @@ const isActive = (currentPath: string, linkPath: string) => {
   return currentPath.startsWith(linkPath);
 };
 
-function getNavbarLogo(settings: any[], lang: SupportedLocale) {
-  const setting = settings.find((s) => s.key === "navbar_logo_text");
-  if (!setting?.value || typeof setting.value !== "object") {
-    return { title: "E-Market", slogan: "" };
-  }
-  const title =
-    setting.value.title?.label?.[lang] ||
-    setting.value.title?.label?.en ||
-    "E-Market";
-  const slogan =
-    setting.value.slogan?.label?.[lang] ||
-    setting.value.slogan?.label?.en ||
-    "";
-  return { title, slogan };
+// --- Şirket adı ve sloganını Footer ile aynı mantıkta alan fonksiyon ---
+function getCompanyName(company: any, lang: SupportedLocale) {
+  if (!company) return "E-Market";
+  if (typeof company.companyName === "object")
+    return company.companyName[lang] || Object.values(company.companyName)[0] || "E-Market";
+  return company.companyName || "E-Market";
+}
+function getCompanySlogan(company: any, lang: SupportedLocale) {
+  if (!company) return "";
+  if (typeof company.slogan === "object")
+    return company.slogan[lang] || Object.values(company.slogan)[0] || "";
+  return company.slogan || "";
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
@@ -46,8 +44,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { i18n, t } = useI18nNamespace("sidebar", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { sidebarModules, isLoading } = useSidebarModules();
-  const settings = useAppSelector((state) => state.settings.settingsAdmin);
-  const { title, slogan } = getNavbarLogo(settings, lang);
+  const company = useAppSelector((state) => state.company.companyAdmin);
+  const title = getCompanyName(company, lang);
+  const slogan = getCompanySlogan(company, lang);
   const router = useRouter();
 
   // ESC ile kapama (mobilde)
@@ -59,7 +58,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return () => window.removeEventListener("keydown", esc);
   }, [isOpen, onClose]);
 
-  // Masaüstünde overlay kapalı, mobilde var
   return (
     <>
       <SidebarWrapper $isOpen={isOpen}>
@@ -128,7 +126,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </LogoutButton>
         </LogoutSection>
       </SidebarWrapper>
-      {/* Overlay sadece mobilde ve açıkken */}
       <SidebarOverlay $isOpen={isOpen} onClick={onClose} />
     </>
   );

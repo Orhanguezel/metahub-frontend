@@ -5,11 +5,11 @@ import { useState } from "react";
 import { HiOutlineTag } from "react-icons/hi";
 import RequestOfferModal from "./RequestOfferModal";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../requestOffer/locales";
+import translations from "../../../offer/locales";
 
 export default function RequestOfferButton() {
   const [open, setOpen] = useState(false);
-  const { t } = useI18nNamespace("requestOffer", translations);
+  const { t } = useI18nNamespace("offer", translations);
 
   return (
     <>
@@ -29,37 +29,50 @@ const FloatingButton = styled.button`
   position: fixed;
   top: 400px;
   right: 0;
-  z-index: 1201;
+  z-index: ${({ theme }) => theme.zIndex.modal + 1};
   background: ${({ theme }) => theme.colors.primary};
-  color: #fff;
+  color: ${({ theme }) => theme.colors.buttonText};
   border: none;
-  border-radius: ${({ theme }) => theme.radii.md} 0 0 ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.md};
+  border-radius: ${({ theme }) => theme.radii.lg} 0 0 ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.lg};
   display: flex;
   align-items: center;
-  gap: 0.75em;
+  gap: ${({ theme }) => theme.spacings.sm};
   cursor: pointer;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
-  padding: 1.1em 0.25em 1.1em 0.45em;
-  font-size: 1.1em;
-  font-weight: 600;
+  padding: 1.1em 0.32em 1.1em 0.47em;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  font-family: ${({ theme }) => theme.fonts.body};
+  transition: 
+    background ${({ theme }) => theme.transition.fast},
+    color ${({ theme }) => theme.transition.fast},
+    box-shadow ${({ theme }) => theme.transition.fast};
 
   span {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
-    font-size: 1.04em;
+    font-size: ${({ theme }) => theme.fontSizes.base};
     letter-spacing: 0.01em;
     display: inline;
-    transition: opacity 0.16s;
+    font-family: ${({ theme }) => theme.fonts.body};
+    transition: opacity ${({ theme }) => theme.transition.fast};
   }
 
   &:hover, &:focus-visible {
     background: ${({ theme }) => theme.colors.primaryHover};
+    color: ${({ theme }) => theme.colors.buttonText};
+    box-shadow: ${({ theme }) => theme.shadows.xl};
+    outline: none;
   }
 
-  // MOBİLDE: SADECE KÜÇÜK İKON!
+  &:active {
+    background: ${({ theme }) => theme.colors.primaryDark};
+  }
+
+  // Mobilde: Sadece ikon ve 36x36, radius optimize
   @media (max-width: 600px) {
     top: 286px;
     width: 36px;

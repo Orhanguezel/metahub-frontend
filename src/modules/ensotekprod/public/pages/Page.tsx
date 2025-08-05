@@ -104,13 +104,15 @@ export default function EnsotekprodPage() {
                     : "-"}
                 </span>
               </Meta>
+              {/* Etiketler
               {item.tags && item.tags.length > 0 && (
                 <Tags>
                   {item.tags.map((tag, i) => (
                     <Tag key={i}>{tag}</Tag>
                   ))}
                 </Tags>
-              )}
+              )} 
+               */}
               <ReadMore href={`/ensotekprod/${item.slug}`}>
                 {t("page.readMore", "Detayları Gör →")}
               </ReadMore>
@@ -337,6 +339,8 @@ const Meta = styled.div`
   margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
+/*
+
 const Tags = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -354,6 +358,7 @@ const Tag = styled.span`
   display: inline-block;
 `;
 
+*/
 const ReadMore = styled(Link)`
   margin-top: auto;
   font-size: ${({ theme }) => theme.fontSizes.sm};

@@ -211,83 +211,179 @@ export default function RequestOfferModal({
     </Overlay>
   );
 }
-
-// --- Styled Components (aynen kalsın) ---
+// --- Styled Components (ensotekTheme ile tam uyumlu) ---
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(30, 38, 51, 0.42);
-  z-index: 1400;
+  background: ${({ theme }) => theme.colors.overlayBackground};
+  z-index: ${({ theme }) => theme.zIndex.overlay};
   display: flex;
   justify-content: flex-end;
   align-items: flex-start;
 `;
+
 const Modal = styled.div`
-  width: 360px;
-  background: #fff;
-  border-radius: 16px 0 0 16px;
-  margin: 2.7rem 0 0 0;
-  padding: 2.1rem 2rem 1.5rem 2rem;
-  box-shadow: 0 10px 32px #2227;
+  width: 380px;
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  border-radius: ${({ theme }) => theme.radii.xl} 0 0 ${({ theme }) => theme.radii.xl};
+  margin: 2.8rem 0 0 0;
+  padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.xl};
+  box-shadow: ${({ theme }) => theme.shadows.form};
   position: relative;
   display: flex;
   flex-direction: column;
   min-height: 350px;
+  font-family: ${({ theme }) => theme.fonts.body};
+  ${({ theme }) => theme.media.xsmall} {
+    width: 100vw;
+    border-radius: 0;
+    margin: 0;
+    padding: ${({ theme }) => theme.spacings.lg};
+  }
 `;
+
 const CloseButton = styled.button`
   position: absolute;
-  top: 12px; right: 18px;
-  font-size: 2em;
+  top: ${({ theme }) => theme.spacings.md};
+  right: ${({ theme }) => theme.spacings.lg};
+  font-size: 2.1em;
   background: none;
   border: none;
-  color: #444;
-  opacity: 0.6;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  opacity: 0.66;
   cursor: pointer;
+  z-index: 2;
+  transition: opacity ${({ theme }) => theme.transition.fast};
   &:hover { opacity: 1; }
 `;
+
 const ModalTitle = styled.div`
-  font-size: 1.36em;
-  font-weight: 700;
-  margin-bottom: 1.1em;
-  color: #1e2633;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  color: ${({ theme }) => theme.colors.primary};
+  font-family: ${({ theme }) => theme.fonts.heading};
+  letter-spacing: 0.01em;
 `;
+
 const Input = styled.input`
-  width: 100%; margin-bottom: 1em;
-  padding: 0.9em 1em; font-size: 1em; border-radius: 7px;
-  border: 1.4px solid #e0e0e0;
-  &:focus { border-color: #F97316; outline: none; }
+  width: 100%;
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  padding: 0.95em 1em;
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.inputBorder};
+  background: ${({ theme }) => theme.colors.inputBackground};
+  color: ${({ theme }) => theme.colors.text};
+  transition: border ${({ theme }) => theme.transition.fast};
+  font-family: ${({ theme }) => theme.fonts.body};
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+    background: ${({ theme }) => theme.colors.inputBackgroundFocus};
+    outline: none;
+  }
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.placeholder};
+    opacity: 1;
+  }
+  &:disabled {
+    opacity: ${({ theme }) => theme.opacity.disabled};
+    background: ${({ theme }) => theme.colors.inputBackgroundLight};
+    cursor: not-allowed;
+  }
 `;
+
 const Textarea = styled.textarea`
-  width: 100%; min-height: 60px;
-  margin-bottom: 1em; padding: 0.9em 1em;
-  border-radius: 7px; border: 1.4px solid #e0e0e0; font-size: 1em;
-  &:focus { border-color: #F97316; outline: none; }
+  width: 100%;
+  min-height: 66px;
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  padding: 0.95em 1em;
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.inputBorder};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  color: ${({ theme }) => theme.colors.text};
+  background: ${({ theme }) => theme.colors.inputBackground};
+  font-family: ${({ theme }) => theme.fonts.body};
+  resize: vertical;
+  transition: border ${({ theme }) => theme.transition.fast};
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+    background: ${({ theme }) => theme.colors.inputBackgroundFocus};
+    outline: none;
+  }
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.placeholder};
+    opacity: 1;
+  }
+  &:disabled {
+    opacity: ${({ theme }) => theme.opacity.disabled};
+    background: ${({ theme }) => theme.colors.inputBackgroundLight};
+    cursor: not-allowed;
+  }
 `;
+
 const SubmitBtn = styled.button`
-  width: 100%; background: #F97316;
-  color: #fff; border: none; border-radius: 7px;
-  padding: 0.87em 1em; font-size: 1.08em;
-  font-weight: 600; cursor: pointer;
-  box-shadow: 0 2px 14px #F9731633;
-  transition: background 0.18s;
-  &:hover { background: #EA580C; }
+  width: 100%;
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: 1em 1em;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  cursor: pointer;
+  box-shadow: ${({ theme }) => theme.shadows.button};
+  margin-top: ${({ theme }) => theme.spacings.sm};
+  transition: background ${({ theme }) => theme.transition.fast};
+  font-family: ${({ theme }) => theme.fonts.body};
+  letter-spacing: 0.01em;
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+  }
+  &:disabled {
+    opacity: ${({ theme }) => theme.opacity.disabled};
+    cursor: not-allowed;
+    background: ${({ theme }) => theme.colors.disabledBg};
+  }
 `;
+
 const SuccessMsg = styled.div`
-  color: #0b933c; font-size: 1.19em; text-align: center; margin-top: 2.5em;
-`;
-const ErrorMsg = styled.div`
-  color: #c62a2a;
-  font-size: 1.03em;
-  margin-bottom: 1.1em;
+  color: ${({ theme }) => theme.colors.success};
+  font-size: ${({ theme }) => theme.fontSizes.md};
   text-align: center;
+  margin-top: ${({ theme }) => theme.spacings.xl};
+  font-family: ${({ theme }) => theme.fonts.body};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
 `;
+
+const ErrorMsg = styled.div`
+  color: ${({ theme }) => theme.colors.danger};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  text-align: center;
+  font-family: ${({ theme }) => theme.fonts.body};
+`;
+
 const Select = styled.select`
   width: 100%;
-  margin-bottom: 1em;
-  padding: 0.85em 1em;
-  font-size: 1em;
-  border-radius: 7px;
-  border: 1.4px solid #e0e0e0;
-  background: #fff;
-  &:focus { border-color: #F97316; outline: none; }
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  padding: 0.95em 1em;
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.inputBorder};
+  background: ${({ theme }) => theme.colors.inputBackground};
+  color: ${({ theme }) => theme.colors.text};
+  font-family: ${({ theme }) => theme.fonts.body};
+  transition: border ${({ theme }) => theme.transition.fast};
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+    background: ${({ theme }) => theme.colors.inputBackgroundFocus};
+    outline: none;
+  }
+  &:disabled {
+    opacity: ${({ theme }) => theme.opacity.disabled};
+    background: ${({ theme }) => theme.colors.inputBackgroundLight};
+    cursor: not-allowed;
+  }
 `;
+

@@ -29,39 +29,53 @@ const FloatingButton = styled.button`
   position: fixed;
   top: 600px;
   right: 0;
-  z-index: 1201;
+  z-index: ${({ theme }) => theme.zIndex.modal + 1};
   background: ${({ theme }) => theme.colors.accent};
-  color: #fff;
+  color: ${({ theme }) => theme.colors.accentText};
   border: none;
-  border-radius: ${({ theme }) => theme.radii.md} 0 0 ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.md};
+  border-radius: ${({ theme }) => theme.radii.lg} 0 0 ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.lg};
   display: flex;
   align-items: center;
-  gap: 0.75em;
+  gap: ${({ theme }) => theme.spacings.sm};
   cursor: pointer;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
-  padding: 1.1em 0.25em 1.1em 0.45em;
-  font-size: 1.1em;
-  font-weight: 600;
+  padding: 1.1em 0.32em 1.1em 0.47em;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  font-family: ${({ theme }) => theme.fonts.body};
+  transition:
+    background ${({ theme }) => theme.transition.fast},
+    color ${({ theme }) => theme.transition.fast},
+    box-shadow ${({ theme }) => theme.transition.fast};
 
   span {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
-    font-size: 1.04em;
+    font-size: ${({ theme }) => theme.fontSizes.base};
     letter-spacing: 0.01em;
     display: inline;
-    transition: opacity 0.16s;
+    font-family: ${({ theme }) => theme.fonts.body};
+    transition: opacity ${({ theme }) => theme.transition.fast};
   }
 
   &:hover, &:focus-visible {
     background: ${({ theme }) => theme.colors.accentHover};
+    color: ${({ theme }) => theme.colors.accentText};
+    box-shadow: ${({ theme }) => theme.shadows.xl};
+    outline: none;
   }
 
-  // Mobilde: sadece ikon!
+  &:active {
+    background: ${({ theme }) => theme.colors.accent};
+    opacity: ${({ theme }) => theme.opacity.hover};
+  }
+
+  // Mobilde sadece ikon (aynen eskisi gibi)
   @media (max-width: 600px) {
-    top: 224px;
+    top: 198px;
     width: 36px;
     height: 36px;
     min-width: 36px;

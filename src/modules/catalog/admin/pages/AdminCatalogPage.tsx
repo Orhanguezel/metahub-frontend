@@ -15,7 +15,7 @@ import translations from "../../locales";
 import { toast } from "react-toastify";
 
 export default function AdminCatalogRequestsPage() {
-  const { t } = useI18nNamespace("catalog", translations);
+  const { t } = useI18nNamespace("catalogRequest", translations);
   const dispatch = useAppDispatch();
 
   const {

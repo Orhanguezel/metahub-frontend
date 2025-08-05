@@ -11,7 +11,7 @@ import { FaUsers, FaGlobe, FaRegLightbulb, FaTrophy } from "react-icons/fa";
 
 const YEARS_OF_EXPERIENCE = 40;
 const PROJECTS_COUNT = 1200;
-const COUNTRIES_COUNT = 12;
+const COUNTRIES_COUNT = 45;
 
 export default function ReferencesAchievementsSection() {
   const { i18n, t } = useI18nNamespace("references", translations);
@@ -34,7 +34,7 @@ export default function ReferencesAchievementsSection() {
     },
     {
       icon: <FaGlobe size={44} />,
-      value: COUNTRIES_COUNT,
+      value: COUNTRIES_COUNT > 0 ? `${COUNTRIES_COUNT}+` : "—",
       label: t("stats.countries", "Ülkede Hizmet"),
     },
     {

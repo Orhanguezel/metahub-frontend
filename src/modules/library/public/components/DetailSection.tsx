@@ -294,11 +294,11 @@ export default function LibraryDetailSection() {
 }
 
 // --- Styled Components (Thumbnail Gallery + Modal destekli) ---
-
 const Container = styled(motion.section)`
   max-width: 950px;
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacings.xxxl} ${({ theme }) => theme.spacings.md};
+  background: ${({ theme }) => theme.colors.background};
   @media (max-width: 650px) {
     padding: ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.xs};
   }
@@ -322,29 +322,35 @@ const MainImageFrame = styled.div`
   max-width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: #e7edf3;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: ${({ theme }) => theme.shadows.md};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  position: relative;
 `;
 
 const StyledMainImage = styled(Image)`
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain !important;
+  object-position: center center;
+  aspect-ratio: 16 / 9 !important;
+  background: transparent;
+  border-radius: ${({ theme }) => theme.radii.xl};
 `;
 
 const Gallery = styled.div`
-  margin-top: 1.15rem;
+  margin-top: ${({ theme }) => theme.spacings.md};
   display: flex;
-  gap: 1.05rem;
+  gap: ${({ theme }) => theme.spacings.sm};
   flex-wrap: wrap;
 `;
 
 const ThumbFrame = styled.button<{ $active?: boolean }>`
-  border: none;
-  background: none;
+  border: 2px solid ${({ $active, theme }) => $active ? theme.colors.primary : theme.colors.borderLight};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
   padding: 0;
   outline: none;
   cursor: pointer;
@@ -352,16 +358,19 @@ const ThumbFrame = styled.button<{ $active?: boolean }>`
   height: 96px;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: #eef5fa;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: box-shadow 0.15s, border 0.17s;
-  border: 2.3px solid #e1e8ef;
+  box-shadow: ${({ $active, theme }) => $active ? theme.shadows.md : theme.shadows.xs};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  transition:
+    border ${({ theme }) => theme.transition.fast},
+    box-shadow ${({ theme }) => theme.transition.fast};
 
-  &:hover, &:focus-visible {
+  &:hover,
+  &:focus-visible {
     border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 5px 18px 0 rgba(40,117,194,0.13);
+    box-shadow: ${({ theme }) => theme.shadows.md};
     outline: none;
   }
 `;
@@ -369,16 +378,20 @@ const ThumbFrame = styled.button<{ $active?: boolean }>`
 const StyledThumbImage = styled(Image)<{ $active?: boolean }>`
   width: 100% !important;
   height: 100% !important;
-  object-fit: cover;
+  object-fit: contain !important;
+  aspect-ratio: 16 / 9 !important;
+  background: transparent;
+  border-radius: ${({ theme }) => theme.radii.lg};
+  display: block;
 `;
 
 const SummaryBox = styled.div`
-  background: ${({ theme }) => theme.colors.cardBackground};
+  background: ${({ theme }) => theme.cards.background};
   border-left: 5px solid ${({ theme }) => theme.colors.accent};
   padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.lg};
   margin-bottom: ${({ theme }) => theme.spacings.xl};
   border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.xs};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
 `;
 
 const ContentBox = styled.div`
@@ -388,7 +401,7 @@ const ContentBox = styled.div`
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.sm};
   border-left: 6px solid ${({ theme }) => theme.colors.primary};
-  line-height: 1.73;
+  line-height: ${({ theme }) => theme.lineHeights.relaxed};
   font-size: ${({ theme }) => theme.fontSizes.base};
   color: ${({ theme }) => theme.colors.text};
   letter-spacing: 0.01em;
@@ -488,9 +501,9 @@ const OtherTitleMini = styled.div`
 const FilesSection = styled.div`
   margin-top: ${({ theme }) => theme.spacings.lg};
   padding: ${({ theme }) => theme.spacings.md};
-  background: ${({ theme }) => theme.colors.cardBackground};
+  background: ${({ theme }) => theme.cards.background};
   border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.xs};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
 `;
 
 const FilesTitle = styled.h4`
@@ -565,4 +578,3 @@ const DownloadBtn = styled.a`
     color: #fff;
   }
 `;
-

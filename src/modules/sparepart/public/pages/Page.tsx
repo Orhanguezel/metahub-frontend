@@ -103,7 +103,7 @@ export default function SparepartPage() {
                     <b>{t("page.price", "Fiyat")}:</b> {item.price} €
                   </span> */}
                 </Meta>
-                {/* Etiketler */}
+                {/* Etiketler 
                 {item.tags && item.tags.length > 0 && (
                   <Tags>
                     {item.tags.map((tag, i) => (
@@ -111,6 +111,7 @@ export default function SparepartPage() {
                     ))}
                   </Tags>
                 )}
+                */}
                 <ReadMore href={detailHref}>
                   {t("page.readMore", "Detayları Gör →")}
                 </ReadMore>
@@ -219,7 +220,7 @@ const Meta = styled.div`
   gap: 4px;
   margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
-
+/*
 const Tags = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -236,7 +237,7 @@ const Tag = styled.span`
   letter-spacing: 0.01em;
   display: inline-block;
 `;
-
+*/
 const ReadMore = styled(Link)`
   margin-top: auto;
   font-size: ${({ theme }) => theme.fontSizes.sm};

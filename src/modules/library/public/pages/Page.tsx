@@ -87,7 +87,7 @@ export default function LibraryPage() {
                 {item.title?.[lang] || "Untitled"}
               </CardTitle>
               <CardSummary>{item.summary?.[lang] || "No summary available."}</CardSummary>
-              {/* --- TAGS --- */}
+              {/* --- TAGS --- 
               {Array.isArray(item.tags) && item.tags.length > 0 && (
                 <Tags>
                   {item.tags.map((tag, i) => (
@@ -95,6 +95,7 @@ export default function LibraryPage() {
                   ))}
                 </Tags>
               )}
+              */}
               {/* --- PDF dosyası varsa göster --- */}
               {item.files && item.files.length > 0 && (
                 <FileSection>
@@ -231,7 +232,7 @@ const CardSummary = styled.p`
   margin-bottom: 0.45em;
   line-height: 1.6;
 `;
-
+/*
 const Tags = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -249,6 +250,8 @@ const Tag = styled.span`
   letter-spacing: 0.01em;
   display: inline-block;
 `;
+
+*/
 
 const FileSection = styled.div`
   margin: 0.8rem 0 0.2rem 0;

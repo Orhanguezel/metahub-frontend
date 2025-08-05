@@ -20,44 +20,56 @@ export default function CatalogRequestButton() {
       {open && <CatalogRequestModal open={open} onClose={() => setOpen(false)} />}
     </>
   );
-}
-const FloatingButton = styled.button`
+}const FloatingButton = styled.button`
   position: fixed;
   top: 160px;
   right: 0;
-  z-index: 1201;
+  z-index: ${({ theme }) => theme.zIndex.modal + 1};
   background: ${({ theme }) => theme.colors.primary};
-  color: #fff;
+  color: ${({ theme }) => theme.colors.buttonText};
   border: none;
-  border-radius: ${({ theme }) => theme.radii.md} 0 0 ${({ theme }) => theme.radii.md};
-  padding: 1.1em 0.25em 1.1em 0.45em;
-  box-shadow: ${({ theme }) => theme.shadows.md};
-  font-size: 1.1em;
-  font-weight: 600;
+  border-radius: ${({ theme }) => theme.radii.lg} 0 0 ${({ theme }) => theme.radii.lg};
+  padding: 1.1em 0.32em 1.1em 0.47em;
+  box-shadow: ${({ theme }) => theme.shadows.lg};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  font-family: ${({ theme }) => theme.fonts.body};
   display: flex;
   align-items: center;
-  gap: 0.75em;
+  gap: ${({ theme }) => theme.spacings.sm};
   cursor: pointer;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
+  transition:
+    background ${({ theme }) => theme.transition.fast},
+    color ${({ theme }) => theme.transition.fast},
+    box-shadow ${({ theme }) => theme.transition.fast};
 
   span {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
-    font-size: 1.04em;
+    font-size: ${({ theme }) => theme.fontSizes.base};
     letter-spacing: 0.01em;
     display: inline;
-    transition: opacity 0.16s;
+    font-family: ${({ theme }) => theme.fonts.body};
+    transition: opacity ${({ theme }) => theme.transition.fast};
   }
 
-  &:hover {
+  &:hover, &:focus-visible {
     background: ${({ theme }) => theme.colors.primaryHover};
+    color: ${({ theme }) => theme.colors.buttonText};
+    box-shadow: ${({ theme }) => theme.shadows.xl};
+    outline: none;
   }
 
-  // SADECE MOBİLDE YAZIYI GİZLE, BUTONU KÜÇÜLT
+  &:active {
+    background: ${({ theme }) => theme.colors.primaryDark};
+  }
+
+  // SADECE MOBİLDE YAZIYI GİZLE, BUTONU KÜÇÜLT (aynen önceki gibi)
   @media (max-width: 600px) {
-    padding: 0;
+    top: 114px;
     width: 36px;
     height: 36px;
     min-width: 36px;
@@ -66,6 +78,7 @@ const FloatingButton = styled.button`
     box-shadow: 0 3px 16px 0 rgba(20,80,180,0.08);
     justify-content: center;
     align-items: center;
+    padding: 0;
 
     span {
       display: none;

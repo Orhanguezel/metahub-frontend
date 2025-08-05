@@ -22,8 +22,8 @@ function resolveLogoSrc(images: any): string {
 }
 
 export default function Logo({
-  height = 44,
-  maxWidth = 130,
+  height = 64,
+  maxWidth = 200,
 }: {
   height?: number;
   maxWidth?: number;
@@ -79,7 +79,7 @@ const LogoWrapper = styled(Link)`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.14em;
+  gap: 0.04em;
   text-decoration: none;
   background: transparent;
   min-width: 0;
@@ -102,21 +102,21 @@ const LogoImgBox = styled.div`
 `;
 
 const Fallback = styled.div`
-  height: 44px;
+  height: 64px;
   min-width: 32px;
   background: transparent;
 `;
 
 const LogoSlogan = styled.span`
-  margin-top: 3px;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
+  margin-top: 1px;
+  font-size: ${({ theme }) => theme.fontSizes.xs};
   color: ${({ theme }) => theme.colors.secondary};
   font-family: ${({ theme }) => theme.fonts.body};
   font-style: italic;
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  font-weight: ${({ theme }) => theme.fontWeights.light};
   text-align: center;
   letter-spacing: 0.01em;
-  line-height: 1.25;
+  line-height: 1.2;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;

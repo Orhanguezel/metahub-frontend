@@ -220,6 +220,7 @@ export default function EnsotekprodDetailSection() {
           <b>{t("page.isElectric", "Elektrikli mi?")}:</b>{" "}
           {ensotekprod.isElectric ? t("yes", "Evet") : t("no", "Hayır")}
         </MetaItem>
+        {/* Etiketler 
         {ensotekprod.tags?.length ? (
           <MetaItem>
             <b>{t("page.tags", "Etiketler")}:</b>{" "}
@@ -228,6 +229,7 @@ export default function EnsotekprodDetailSection() {
             ))}
           </MetaItem>
         ) : null}
+         */}
       </MetaInfo>
 
       {/* TANIM VE TEKNİK ÖZELLİKLER */}
@@ -400,7 +402,7 @@ const MetaItem = styled.div`
   gap: 6px;
   flex-wrap: wrap;
 `;
-
+/*
 const Tag = styled.span`
   background: ${({ theme }) => theme.colors.tagBackground || "#eee"};
   color: ${({ theme }) => theme.colors.primary};
@@ -411,7 +413,7 @@ const Tag = styled.span`
   margin-right: 0.3em;
   margin-bottom: 0.15em;
 `;
-
+*/
 const StockBadge = styled.span<{ $inStock?: boolean }>`
   display: inline-flex;
   align-items: center;
