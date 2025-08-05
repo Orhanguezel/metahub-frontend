@@ -24,89 +24,103 @@ const initialState: CustomerState = {
 
 // --- Async Thunks ---
 
-// 1️⃣ Public: Tüm müşteriler (veya müşteri portalı için)
-export const fetchCustomers = createAsyncThunk<
-  ICustomer[],
-  void,
-  { rejectValue: string }
->("customer/fetchCustomers", async (_, { rejectWithValue }) => {
-  try {
-    const result = await apiCall("get", "/customer", null, rejectWithValue);
-    return result.data as ICustomer[];
-  } catch (error: any) {
-    return rejectWithValue(error?.message || "Müşteri listesi getirilemedi.");
-  }
-});
-
-// 2️⃣ Admin: Tüm müşterileri getir
+// 1️⃣ ADMIN - Tüm müşteriler (admin)
 export const fetchCustomersAdmin = createAsyncThunk<
   ICustomer[],
   void,
   { rejectValue: string }
 >("customer/fetchCustomersAdmin", async (_, { rejectWithValue }) => {
   try {
-    const result = await apiCall("get", "/customer", null, rejectWithValue);
+    const result = await apiCall("get", "/customer/admin", null, rejectWithValue);
     return result.data as ICustomer[];
   } catch (error: any) {
     return rejectWithValue(error?.message || "Admin müşteri listesi getirilemedi.");
   }
 });
 
-// 3️⃣ Tek müşteri getir (ID ile)
+// 2️⃣ ADMIN - Tek müşteri getir (admin)
 export const fetchCustomerById = createAsyncThunk<
   ICustomer,
   string,
   { rejectValue: string }
 >("customer/fetchCustomerById", async (id, { rejectWithValue }) => {
   try {
-    const result = await apiCall("get", `/customer/${id}`, null, rejectWithValue);
+    const result = await apiCall("get", `/customer/admin/${id}`, null, rejectWithValue);
     return result.data as ICustomer;
   } catch (error: any) {
     return rejectWithValue(error?.message || "Müşteri bulunamadı.");
   }
 });
 
-// 4️⃣ Müşteri oluştur (admin)
+// 3️⃣ ADMIN - Müşteri oluştur (admin)
 export const createCustomerAdmin = createAsyncThunk<
   ICustomer,
   Partial<ICustomer>,
   { rejectValue: string }
 >("customer/createCustomerAdmin", async (data, { rejectWithValue }) => {
   try {
-    const result = await apiCall("post", "/customer", data, rejectWithValue);
+    const result = await apiCall("post", "/customer/admin", data, rejectWithValue);
     return result.data as ICustomer;
   } catch (error: any) {
     return rejectWithValue(error?.message || "Müşteri oluşturulamadı.");
   }
 });
 
-// 5️⃣ Müşteri güncelle (admin)
+// 4️⃣ ADMIN - Müşteri güncelle (admin)
 export const updateCustomerAdmin = createAsyncThunk<
   ICustomer,
   { id: string; data: Partial<ICustomer> },
   { rejectValue: string }
 >("customer/updateCustomerAdmin", async ({ id, data }, { rejectWithValue }) => {
   try {
-    const result = await apiCall("put", `/customer/${id}`, data, rejectWithValue);
+    const result = await apiCall("put", `/customer/admin/${id}`, data, rejectWithValue);
     return result.data as ICustomer;
   } catch (error: any) {
     return rejectWithValue(error?.message || "Müşteri güncellenemedi.");
   }
 });
 
-// 6️⃣ Müşteri sil (admin)
+// 5️⃣ ADMIN - Müşteri sil (admin)
 export const deleteCustomerAdmin = createAsyncThunk<
-  string, // Silinen müşteri id döneriz
+  string,
   string,
   { rejectValue: string }
 >("customer/deleteCustomerAdmin", async (id, { rejectWithValue }) => {
   try {
-    await apiCall("delete", `/customer/${id}`, null, rejectWithValue);
+    await apiCall("delete", `/customer/admin/${id}`, null, rejectWithValue);
     return id;
   } catch (error: any) {
     return rejectWithValue(error?.message || "Müşteri silinemedi.");
   }
 });
+
+// --- PUBLIC --- Kendi müşteri kaydını oku/güncelle (login müşteri)
+export const fetchCustomerPublicById = createAsyncThunk<
+  ICustomer,
+  string,
+  { rejectValue: string }
+>("customer/fetchCustomerPublicById", async (id, { rejectWithValue }) => {
+  try {
+    const result = await apiCall("get", `/customer/public/${id}`, null, rejectWithValue);
+    return result.data as ICustomer;
+  } catch (error: any) {
+    return rejectWithValue(error?.message || "Müşteri bulunamadı.");
+  }
+});
+
+export const updateCustomerPublic = createAsyncThunk<
+  ICustomer,
+  { id: string; data: Partial<ICustomer> },
+  { rejectValue: string }
+>("customer/updateCustomerPublic", async ({ id, data }, { rejectWithValue }) => {
+  try {
+    const result = await apiCall("put", `/customer/public/${id}`, data, rejectWithValue);
+    return result.data as ICustomer;
+  } catch (error: any) {
+    return rejectWithValue(error?.message || "Bilgiler güncellenemedi.");
+  }
+});
+
 
 // --- SLICE ---
 const customerSlice = createSlice({
@@ -131,87 +145,41 @@ const customerSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Public Fetch (müşteri portalı)
-      .addCase(fetchCustomers.pending, (state) => {
-        state.loading = true;
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(fetchCustomers.fulfilled, (state, action) => {
-        state.loading = false;
-        state.status = "succeeded";
-        state.customers = action.payload;
-      })
-      .addCase(fetchCustomers.rejected, (state, action) => {
-        state.loading = false;
-        state.status = "failed";
-        state.error = action.payload || "Müşteri listesi getirilemedi.";
-      })
-
-      // Admin Fetch
+      // --- ADMIN ---
       .addCase(fetchCustomersAdmin.pending, (state) => {
-        state.loading = true;
-        state.status = "loading";
-        state.error = null;
+        state.loading = true; state.status = "loading"; state.error = null;
       })
       .addCase(fetchCustomersAdmin.fulfilled, (state, action) => {
-        state.loading = false;
-        state.status = "succeeded";
-        state.customerAdmin = action.payload;
+        state.loading = false; state.status = "succeeded"; state.customerAdmin = action.payload;
       })
       .addCase(fetchCustomersAdmin.rejected, (state, action) => {
-        state.loading = false;
-        state.status = "failed";
-        state.error = action.payload || "Admin müşteri listesi getirilemedi.";
+        state.loading = false; state.status = "failed"; state.error = action.payload || "Admin müşteri listesi getirilemedi.";
       })
-
-      // Fetch By Id
       .addCase(fetchCustomerById.pending, (state) => {
-        state.loading = true;
-        state.status = "loading";
-        state.error = null;
+        state.loading = true; state.status = "loading"; state.error = null;
       })
       .addCase(fetchCustomerById.fulfilled, (state, action) => {
-        state.loading = false;
-        state.status = "succeeded";
-        state.selected = action.payload;
+        state.loading = false; state.status = "succeeded"; state.selected = action.payload;
       })
       .addCase(fetchCustomerById.rejected, (state, action) => {
-        state.loading = false;
-        state.status = "failed";
-        state.error = action.payload || "Müşteri bulunamadı.";
+        state.loading = false; state.status = "failed"; state.error = action.payload || "Müşteri bulunamadı.";
       })
-
-      // Admin Create
       .addCase(createCustomerAdmin.pending, (state) => {
-        state.loading = true;
-        state.status = "loading";
-        state.error = null;
-        state.successMessage = null;
+        state.loading = true; state.status = "loading"; state.error = null; state.successMessage = null;
       })
       .addCase(createCustomerAdmin.fulfilled, (state, action) => {
-        state.loading = false;
-        state.status = "succeeded";
+        state.loading = false; state.status = "succeeded";
         state.customerAdmin.unshift(action.payload);
         state.successMessage = "Müşteri başarıyla eklendi.";
       })
       .addCase(createCustomerAdmin.rejected, (state, action) => {
-        state.loading = false;
-        state.status = "failed";
-        state.error = action.payload || "Müşteri oluşturulamadı.";
+        state.loading = false; state.status = "failed"; state.error = action.payload || "Müşteri oluşturulamadı.";
       })
-
-      // Admin Update
       .addCase(updateCustomerAdmin.pending, (state) => {
-        state.loading = true;
-        state.status = "loading";
-        state.error = null;
-        state.successMessage = null;
+        state.loading = true; state.status = "loading"; state.error = null; state.successMessage = null;
       })
       .addCase(updateCustomerAdmin.fulfilled, (state, action) => {
-        state.loading = false;
-        state.status = "succeeded";
-        state.successMessage = "Müşteri güncellendi.";
+        state.loading = false; state.status = "succeeded"; state.successMessage = "Müşteri güncellendi.";
         state.customerAdmin = state.customerAdmin.map((c) =>
           c._id === action.payload._id ? action.payload : c
         );
@@ -220,31 +188,48 @@ const customerSlice = createSlice({
         }
       })
       .addCase(updateCustomerAdmin.rejected, (state, action) => {
-        state.loading = false;
-        state.status = "failed";
-        state.error = action.payload || "Müşteri güncellenemedi.";
+        state.loading = false; state.status = "failed"; state.error = action.payload || "Müşteri güncellenemedi.";
       })
-
-      // Admin Delete
       .addCase(deleteCustomerAdmin.pending, (state) => {
-        state.loading = true;
-        state.status = "loading";
-        state.error = null;
-        state.successMessage = null;
+        state.loading = true; state.status = "loading"; state.error = null; state.successMessage = null;
       })
       .addCase(deleteCustomerAdmin.fulfilled, (state, action) => {
-        state.loading = false;
-        state.status = "succeeded";
-        state.successMessage = "Müşteri silindi.";
+        state.loading = false; state.status = "succeeded"; state.successMessage = "Müşteri silindi.";
         state.customerAdmin = state.customerAdmin.filter((c) => c._id !== action.payload);
-        if (state.selected?._id === action.payload) {
-          state.selected = null;
-        }
+        if (state.selected?._id === action.payload) state.selected = null;
       })
       .addCase(deleteCustomerAdmin.rejected, (state, action) => {
-        state.loading = false;
-        state.status = "failed";
-        state.error = action.payload || "Müşteri silinemedi.";
+        state.loading = false; state.status = "failed"; state.error = action.payload || "Müşteri silinemedi.";
+      })
+
+      // --- PUBLIC ---
+      .addCase(fetchCustomerPublicById.pending, (state) => {
+        state.loading = true; state.status = "loading"; state.error = null;
+      })
+      .addCase(fetchCustomerPublicById.fulfilled, (state, action) => {
+        state.loading = false; state.status = "succeeded"; state.selected = action.payload;
+        // Liste varsa güncelle (opsiyonel)
+        state.customers = state.customers.map((c) =>
+          c._id === action.payload._id ? action.payload : c
+        );
+      })
+      .addCase(fetchCustomerPublicById.rejected, (state, action) => {
+        state.loading = false; state.status = "failed"; state.error = action.payload || "Müşteri bulunamadı.";
+      })
+      .addCase(updateCustomerPublic.pending, (state) => {
+        state.loading = true; state.status = "loading"; state.error = null; state.successMessage = null;
+      })
+      .addCase(updateCustomerPublic.fulfilled, (state, action) => {
+        state.loading = false; state.status = "succeeded"; state.successMessage = "Müşteri bilgileri güncellendi.";
+        if (state.selected?._id === action.payload._id) {
+          state.selected = action.payload;
+        }
+        state.customers = state.customers.map((c) =>
+          c._id === action.payload._id ? action.payload : c
+        );
+      })
+      .addCase(updateCustomerPublic.rejected, (state, action) => {
+        state.loading = false; state.status = "failed"; state.error = action.payload || "Müşteri güncellenemedi.";
       });
   },
 });

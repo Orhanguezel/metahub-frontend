@@ -7,6 +7,9 @@ const DOMAIN_TENANT_MAP: Record<string, string> = {
   "www.metahub.guezelwebdesign.com": "metahub",
   "md-hygienelogistik.de": "ensotek",
   "www.md-hygienelogistik.de": "ensotek",
+  "ensotek.de": "ensotek",
+  "www.ensotek.de": "ensotek",
+  "guezelwebdesign.com": "metahub",
   // ... diğerleri
 };
 

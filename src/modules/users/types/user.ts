@@ -15,6 +15,7 @@ export interface User {
   _id: string;
   name: string;
   company?: string; // Yeni: Kullanıcının şirketi
+  customerId?: string; // Yeni: Kullanıcının müşteri ID'si
   position?: string; // Yeni: Kullanıcının pozisyonu
   tenant: string; // Yeni: Tenant ID
   email: string;
@@ -34,6 +35,7 @@ export interface Account {
   _id: string;
   name: string;
   company?: string; // Yeni: Kullanıcının şirketi
+  customerId?: string; // Yeni: Kullanıcının müşteri ID'si
   position?: string; // Yeni: Kullanıcının pozisyonu
   tenant: string; // Yeni: Tenant ID
   email: string;

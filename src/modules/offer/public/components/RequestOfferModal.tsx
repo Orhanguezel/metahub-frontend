@@ -4,13 +4,14 @@ import styled from "styled-components";
 import { motion } from "framer-motion";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../../offer/locales";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   sendRequestOffer,
   clearRequestOfferMessages,
 } from "@/modules/offer/slice/requestOfferSlice";
 import type { RequestOfferPayload } from "@/modules/offer/types";
+import { useRouter } from "next/navigation"; // <-- eklendi
 
 interface Props {
   open: boolean;
@@ -27,7 +28,8 @@ export default function RequestOfferModal({
   const { t, i18n } = useI18nNamespace("offer", translations);
   const lang = (i18n.language?.slice(0, 2) as any) || "en";
   const dispatch = useAppDispatch();
-  const { loading, error, successMessage } = useAppSelector((s) => s.requestOffer);
+  const router = useRouter(); // <-- eklendi
+  const { loading, error, successMessage, customerId, offerId } = useAppSelector((s) => s.requestOffer);
 
   // Tüm ürün state'lerini alın
   const { ensotekprod } = useAppSelector((s) => s.ensotekprod);
@@ -55,8 +57,6 @@ export default function RequestOfferModal({
     email: "",
     company: "",
     phone: "",
-    // Adres opsiyonel veya zorunlu olabilir:
-    // address: { street: "", city: "", postalCode: "", country: "" },
     message: "",
     productId: defaultProductId || "",
     productType: defaultProductType || (productTypes[0]?.value ?? undefined),
@@ -78,16 +78,23 @@ export default function RequestOfferModal({
   const currentType = productTypes.find((pt) => pt.value === form.productType);
   const currentOptions = currentType?.options || [];
 
+  // --- BAŞARIYLA YANIT ALINCA YÖNLENDİR ---
+  useEffect(() => {
+    if (successMessage && customerId && offerId) {
+      // 1.7 saniye sonra yönlendir ve modalı kapat
+      const timeout = setTimeout(() => {
+        onClose(); // modalı kapat
+        router.push(`/offer?customerId=${customerId}&offerId=${offerId}`);
+        dispatch(clearRequestOfferMessages());
+      }, 1700);
+      return () => clearTimeout(timeout);
+    }
+  }, [successMessage, customerId, offerId, onClose, router, dispatch]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    dispatch(sendRequestOffer(form))
-      .unwrap()
-      .then(() => {
-        setTimeout(() => {
-          dispatch(clearRequestOfferMessages());
-          onClose();
-        }, 1600);
-      });
+    dispatch(sendRequestOffer(form));
+    // Unwrap artık gerek yok, yönlendirme useEffect ile
   }
 
   return (
@@ -139,15 +146,6 @@ export default function RequestOfferModal({
               onChange={handleChange}
               disabled={loading}
             />
-            {/* Eğer adresi de almak istersen:
-            <Input
-              name="address.street"
-              placeholder={t("form.street", "Sokak")}
-              value={form.address?.street || ""}
-              onChange={handleChange}
-              disabled={loading}
-            /> */}
-            {/* Ürün tipi dropdown */}
             {productTypes.length > 0 && (
               <Select
                 name="productType"
@@ -164,7 +162,6 @@ export default function RequestOfferModal({
                 ))}
               </Select>
             )}
-            {/* Ürün seçimi dropdown */}
             {currentOptions?.length > 0 && (
               <Select
                 name="productId"
@@ -215,7 +212,7 @@ export default function RequestOfferModal({
   );
 }
 
-// --- Styled Components ---
+// --- Styled Components (aynen kalsın) ---
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
