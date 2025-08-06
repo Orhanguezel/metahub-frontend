@@ -3,13 +3,12 @@ import styled from "styled-components";
 import Link from "next/link";
 import Image from "next/image";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales/navbar";
+import translations from "@/modules/shared/locales/navbar";
 import { SupportedLocale } from "@/types/common";
 import { useAppSelector } from "@/store/hooks";
 
-// Slogan extraction
-function isLogoTextValue(val: any): val is { title: any; slogan: any } {
-  return val && typeof val === "object" && ("slogan" in val || "title" in val);
+function isLogoTextValue(val: any): val is { title?: any; slogan: any } {
+  return val && typeof val === "object" && "slogan" in val;
 }
 function resolveLogoSrc(images: any): string {
   if (!images) return "";
@@ -21,9 +20,9 @@ function resolveLogoSrc(images: any): string {
   return "";
 }
 
-export default function Logo({
-  height = 250,
-  maxWidth = 330,
+export default function NavbarLogo({
+  height = 264,
+  maxWidth = 400,
 }: {
   height?: number;
   maxWidth?: number;
@@ -36,160 +35,128 @@ export default function Logo({
   const navbarLogoText = settings.find((s: any) => s.key === "navbar_logo_text");
 
   let title = "";
-let slogan = "";
+  let slogan = "";
   if (isLogoTextValue(navbarLogoText?.value)) {
     title =
       navbarLogoText.value.title?.label?.[lang] ||
+      navbarLogoText.value.title?.label?.en ||
       "";
     slogan =
       navbarLogoText.value.slogan?.label?.[lang] ||
+      navbarLogoText.value.slogan?.label?.en ||
       "";
   }
 
   return (
     <LogoWrapper href="/">
-  {logoSrc ? (
-    <LogoImgBox>
-      <Image
-        src={logoSrc}
-        alt={title || "Ensotek Logo"}
-        width={maxWidth}
-        height={height}
-        style={{
-          width: "auto",
-          height: `${height}px`,
-          maxWidth: `${maxWidth}px`,
-          minWidth: "32px",
-          objectFit: "contain",
-          background: "transparent",
-          border: "none",
-          borderRadius: 0,
-          display: "block",
-        }}
-        priority
-      />
-    </LogoImgBox>
-  ) : (
-    <Fallback style={{ height }}>{/* fallback */}</Fallback>
-  )}
-  {title && <LogoTitle>{title}</LogoTitle>}
-  {slogan && <LogoSlogan>{slogan}</LogoSlogan>}
-</LogoWrapper>
+      {logoSrc ? (
+        <LogoImgBox>
+          <Image
+            src={logoSrc}
+            alt={title || "Ensotek Logo"}
+            width={maxWidth}
+            height={height}
+            sizes={`${maxWidth}px`}
+            style={{
+              width: "100%",
+              height: "auto",
+              maxHeight: `${height}px`,
+              maxWidth: `${maxWidth}px`,
+              objectFit: "contain",
+              background: "transparent",
+              display: "block",
+            }}
+            priority
+          />
+        </LogoImgBox>
+      ) : (
+        <Fallback style={{ height }} />
+      )}
+      {/* Title aşağıda */}
+      {title && <LogoTitle>{title}</LogoTitle>}
+      {slogan && <LogoSlogan>{slogan}</LogoSlogan>}
+    </LogoWrapper>
   );
 }
 
 // --- Styled Components ---
-
-
-
-const LogoImgBox = styled.div`
-  padding: ${({ theme }) => theme.spacings.sm};
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: 0 2px 8px ${({ theme }) => theme.colors.primaryTransparent};
-  transition: box-shadow 0.3s, background 0.3s;
-
-  /* Mobilde padding daha küçük */
-  ${({ theme }) => theme.media.small} {
-    padding: ${({ theme }) => theme.spacings.xs};
-    margin-bottom: ${({ theme }) => theme.spacings.sm};
-  }
-`;
-
-const Fallback = styled.div`
-  height: 180px;
-  min-width: 120px;
-  background: transparent;
-`;
-const LogoTitle = styled.span`
-  margin-top: -10px;
-  font-size: ${({ theme }) => theme.fontSizes.xlarge};
-  font-family: ${({ theme }) => theme.fonts.heading};
-  color: ${({ theme }) => theme.colors.primaryDark};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  letter-spacing: 0.015em;
-  text-align: center;
-  line-height: 1.11;
-  max-width: 680px;
-  white-space: normal;            // Satır sonu kırılır
-  overflow-wrap: break-word;      // Kelime bölünebilir (taşmaz)
-  word-break: break-word;         // Aşırı uzun kelime taşmaz
-  display: block;                 // Responsive uyumlu
-
-  @media (max-width: 1100px) {
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-    max-width: 92vw;
-  }
-
-  @media (max-width: 700px) {
-    font-size: ${({ theme }) => theme.fontSizes.md};
-    max-width: 96vw;
-  }
-`;
-
-const LogoSlogan = styled.span`
-  margin-top: 0.10em;
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-style: italic;
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  text-align: center;
-  letter-spacing: 0.01em;
-  line-height: 1.13;
-  max-width: 400px;
-  white-space: normal;
-  overflow-wrap: break-word;
-  word-break: break-word;
-  display: block;
-  opacity: 0.92;
-  transition: color 0.25s, opacity 0.25s;
-
-  @media (max-width: 1100px) {
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-    max-width: 90vw;
-  }
-  @media (max-width: 700px) {
-    font-size: ${({ theme }) => theme.fontSizes.xsmall};
-    max-width: 92vw;
-  }
-`;
-
-
 const LogoWrapper = styled(Link)`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.1em;
+  gap: 0.08em;
   text-decoration: none;
   background: transparent;
-  min-width: 110px;
+  min-width: 0;
   padding: 0;
   margin: 0;
-
-  &:hover,
-  &:focus-visible {
-    text-decoration: none;
-    outline: none;
-
-    /* Logo'ya parlama ve shadow efekti */
-    ${LogoImgBox} {
-      box-shadow: 0 4px 24px ${({ theme }) => theme.colors.primaryTransparent};
-      background: linear-gradient(
-        90deg,
-        ${({ theme }) => theme.colors.primaryTransparent} 0%,
-        ${({ theme }) => theme.colors.footerBackground} 100%
-      );
-      border-radius: ${({ theme }) => theme.radii.md};
-    }
-    ${LogoSlogan} {
-      color: ${({ theme }) => theme.colors.primary};
-      opacity: 1;
-    }
+  width: 100%;
+  max-width: 220px;
+  @media (max-width: 600px) {
+    max-width: 130px;
   }
 `;
 
+const LogoImgBox = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  height: auto;
+  width: 100%;
+  max-width: 200px;
+  @media (max-width: 600px) {
+    max-width: 110px;
+  }
+`;
+
+const Fallback = styled.div`
+  height: 64px;
+  min-width: 32px;
+  background: transparent;
+  @media (max-width: 600px) {
+    height: 38px;
+    min-width: 24px;
+  }
+`;
+
+const LogoTitle = styled.span`
+  margin-top: 3px;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.primaryDark};
+  font-family: ${({ theme }) => theme.fonts.heading};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  text-align: center;
+  letter-spacing: 0.01em;
+  line-height: 1.13;
+  white-space: nowrap;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  @media (max-width: 600px) {
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
+    max-width: 80vw;
+  }
+`;
+
+const LogoSlogan = styled.span`
+  margin-top: 0.5px;
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.secondary};
+  font-family: ${({ theme }) => theme.fonts.body};
+  font-style: italic;
+  font-weight: ${({ theme }) => theme.fontWeights.light};
+  text-align: center;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 160px;
+  @media (max-width: 600px) {
+    font-size: ${({ theme }) => theme.fontSizes.xsmall};
+    max-width: 80vw;
+  }
+`;

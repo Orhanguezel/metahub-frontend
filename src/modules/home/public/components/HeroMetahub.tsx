@@ -13,6 +13,8 @@ import type { IGallery } from "@/modules/gallery/types";
 import useModal from "@/hooks/useModal";
 
 const SLIDER_CATEGORY_SLUG = "carousel";
+const BLUR_PLACEHOLDER =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAIklEQVQoU2NkQAP/Gf4zBgYGBqAEEzQwMDCQ8CkEAAAj3A7lRZefwAAAABJRU5ErkJggg=="; // 10x10px blur base64
 
 type GalleryItem = IGallery["images"][0] & {
   _galleryId?: string;
@@ -26,13 +28,11 @@ const HeroRobotic = () => {
   const { publicImages, loading } = useAppSelector((state) => state.gallery);
   const { categories } = useAppSelector((state) => state.galleryCategory);
 
-  // Kategori bul
   const targetCategory = useMemo(
     () => categories?.find((cat) => cat.slug === SLIDER_CATEGORY_SLUG),
     [categories]
   );
 
-  // Slide görselleri array
   const flatItems = useMemo<GalleryItem[]>(() => {
     if (!Array.isArray(publicImages) || !targetCategory) return [];
     const filtered = publicImages.filter((gallery) =>
@@ -56,14 +56,12 @@ const HeroRobotic = () => {
 
   const modal = useModal(flatItems);
 
-  // Oto slider
   useEffect(() => {
     if (flatItems.length === 0) return;
     const timer = setInterval(() => modal.next(), 6200);
     return () => clearInterval(timer);
   }, [flatItems, modal]);
 
-  // Swipe (mobil)
   const handleSwipe = useCallback((e: React.TouchEvent) => {
     const startX = e.changedTouches[0].clientX;
     const handler = (endEvent: TouchEvent) => {
@@ -75,7 +73,6 @@ const HeroRobotic = () => {
     window.addEventListener("touchend", handler);
   }, [modal]);
 
-  // Loading / boş durum
   if (loading) {
     return (
       <HeroWrapper>
@@ -95,7 +92,6 @@ const HeroRobotic = () => {
     );
   }
 
-  // Aktif slide item (sadece içerik)
   const heroItem = flatItems[modal.currentIndex];
   const title =
     heroItem?.name?.[lang] ||
@@ -107,7 +103,7 @@ const HeroRobotic = () => {
     t("hero.desc", "Cutting-edge solutions for the new digital age.");
 
   const ctaLabel = t("hero.cta", "Explore Now");
-  const ctaHref = "/about";
+  const ctaHref = "/contactme";
 
   return (
     <HeroWrapper onTouchStart={handleSwipe}>
@@ -131,14 +127,17 @@ const HeroRobotic = () => {
                 }
                 alt="Background"
                 fill
+                priority={idx === 0}
+                loading={idx === 0 ? "eager" : "lazy"}
+                sizes="100vw"
+                placeholder="blur"
+                blurDataURL={BLUR_PLACEHOLDER}
                 style={{
                   objectFit: "cover",
                   filter: "blur(1.5px) brightness(0.7) saturate(1.1)",
                   zIndex: 0,
                   pointerEvents: "none"
                 }}
-                priority
-                sizes="100vw"
               />
               <GradientOverlay />
             </BgImage>
@@ -192,7 +191,8 @@ const BgImage = styled.div`
   position: absolute;
   inset: 0;
   width: 100vw;
-  height: 100%;
+  min-height: 74vh;
+  aspect-ratio: 16/9;
   z-index: 0;
   animation: ${fadeIn} 1.2s;
   pointer-events: none;
@@ -247,11 +247,18 @@ const Description = styled.p`
   margin-bottom: 36px;
   max-width: 98%;
   line-height: 1.55;
+  word-break: break-word;
+  overflow-wrap: anywhere;   // Özellikle mobilde uzun kelimeler için
+  text-align: center;        // Ekstra: ortala
   @media (max-width: 600px) {
     font-size: 1.05rem;
     margin-bottom: 24px;
+    max-width: 92vw;        // Mobilde kesinlikle taşmaz
+    padding-left: 6vw;
+    padding-right: 6vw;
   }
 `;
+
 
 const Actions = styled.div`
   display: flex;

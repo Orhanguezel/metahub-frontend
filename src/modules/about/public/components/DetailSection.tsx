@@ -175,12 +175,12 @@ const ImageWrapper = styled.div`
 `;
 
 const StyledImage = styled(Image)`
-  width: 100%;
-  height: 320px;
-  object-fit: cover;
-  @media (max-width: 700px) {
-    height: 190px;
-  }
+  max-width: 100%;
+  height: auto;
+  object-fit: contain !important;
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  display: block;
 `;
 
 const SummaryBox = styled.div`

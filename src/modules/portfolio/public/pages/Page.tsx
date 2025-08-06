@@ -56,7 +56,7 @@ export default function PortfolioPage() {
   return (
     <PageWrapper>
       <ListGrid>
-        {portfolio
+        {[...portfolio]
           .sort(
             (a, b) =>
               new Date(b.publishedAt || b.createdAt).getTime() -
@@ -66,20 +66,15 @@ export default function PortfolioPage() {
             <PortfolioItem key={item._id} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
               {item.images?.[0]?.url && (
                 <MainImageWrap>
-                  <Image
-                    src={item.images[0].url}
-                    alt={item.title?.[lang] || "Portfolio Image"}
-                    width={780}
-                    height={440}
-                    style={{
-                      width: "100%",
-                      height: "auto",
-                      objectFit: "cover",
-                      borderRadius: "16px",
-                      display: "block"
-                    }}
-                    loading="lazy"
-                  />
+                  <RatioBox>
+                    <StyledImage
+                      src={item.images[0].url}
+                      alt={item.title?.[lang] || "Portfolio Image"}
+                      fill
+                      sizes="(max-width: 900px) 100vw, 780px"
+                      priority={false}
+                    />
+                  </RatioBox>
                 </MainImageWrap>
               )}
               <PortfolioTitle>
@@ -89,7 +84,7 @@ export default function PortfolioPage() {
               </PortfolioTitle>
               <PortfolioMeta>
                 <span>
-                  {new Date(item.publishedAt || item.createdAt).toLocaleDateString("tr-TR", {
+                  {new Date(item.publishedAt || item.createdAt).toLocaleDateString(lang === "en" ? "en-GB" : "tr-TR", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
@@ -120,8 +115,9 @@ export default function PortfolioPage() {
 }
 
 // --- Styled Components ---
+
 const PageWrapper = styled.div`
-  max-width: 1000px;
+  max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.md};
   background: ${({ theme }) => theme.colors.sectionBackground};
@@ -131,51 +127,62 @@ const PageWrapper = styled.div`
 const ListGrid = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: ${({ theme }) => theme.spacings.xxl};
 `;
 
 const PortfolioItem = styled(motion.article)`
-  background: ${({ theme }) => theme.colors.cardBackground || "#fff"};
-  border-radius: 20px;
-  border: 1.5px solid ${({ theme }) => theme.colors.borderLight || "#e5eaf3"};
-  box-shadow: 0 3px 15px 0 rgba(40,117,194,0.09);
-  padding: 2.1rem 2.3rem 1.5rem 2.3rem;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderLight};
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.xl};
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
+  gap: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 
-  @media (max-width: 650px) {
-    padding: 1.1rem 0.7rem 1.1rem 0.7rem;
+  ${({ theme }) => theme.media.mobile} {
+    padding: ${({ theme }) => theme.spacings.md};
   }
 `;
+
 const MainImageWrap = styled.div`
   width: 100%;
-  margin-bottom: 1.1rem;
-  border-radius: 16px;
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  border-radius: ${({ theme }) => theme.radii.lg};
   overflow: hidden;
-  box-shadow: 0 8px 24px 0 rgba(40,117,194,0.11);
+  box-shadow: ${({ theme }) => theme.shadows.lg};
+`;
 
-  img {
-    width: 100% !important;
-    height: auto !important;  
-    object-fit: cover;
-    display: block;
-    border-radius: 16px;
-  }
+// --- Responsive aspect ratio box for image ---
+const RatioBox = styled.div`
+  position: relative;
+  width: 100%;
+  padding-top: 56.4%; /* 16:9 ratio. Adjust as needed */
+  overflow: hidden;
+`;
+
+const StyledImage = styled(Image)`
+  position: absolute !important;
+  top: 0; left: 0; width: 100% !important; height: 100% !important;
+  object-fit: cover;
+  border-radius: ${({ theme }) => theme.radii.lg};
+  display: block;
+  background: ${({ theme }) => theme.colors.skeletonBackground};
 `;
 
 const PortfolioTitle = styled.h2`
-  font-size: 1.42rem;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   margin-bottom: 0.23rem;
   line-height: 1.18;
+  font-family: ${({ theme }) => theme.fonts.heading};
 
   a {
     color: inherit;
     text-decoration: none;
-    transition: color 0.17s;
+    transition: color ${({ theme }) => theme.transition.fast};
     &:hover {
       color: ${({ theme }) => theme.colors.accent};
     }
@@ -183,54 +190,56 @@ const PortfolioTitle = styled.h2`
 `;
 
 const PortfolioMeta = styled.div`
-  font-size: 0.98rem;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
   display: flex;
-  gap: 1.25rem;
+  gap: ${({ theme }) => theme.spacings.lg};
   align-items: center;
   flex-wrap: wrap;
   margin-bottom: 0.25rem;
 `;
 
 const CategoryLabel = styled.span`
-  background: ${({ theme }) => theme.colors.primaryTransparent || "#e5f1fb"};
+  background: ${({ theme }) => theme.colors.primaryTransparent};
   color: ${({ theme }) => theme.colors.primary};
   font-size: 0.9em;
-  border-radius: 8px;
+  border-radius: ${({ theme }) => theme.radii.md};
   padding: 1px 8px;
   margin-left: 0.32em;
-  font-weight: 500;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
 `;
 
 const PortfolioSummary = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 1.08rem;
+  font-size: ${({ theme }) => theme.fontSizes.md};
   margin: 0.22em 0 1.22em 0;
-  line-height: 1.64;
+  line-height: ${({ theme }) => theme.lineHeights.relaxed};
 `;
 
 const ReadMoreBtn = styled(Link)`
   align-self: flex-start;
-  background: linear-gradient(90deg, #2875c2 60%, #0bb6d6 100%);
-  color: #fff;
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
   padding: 0.46em 1.35em;
-  border-radius: 22px;
-  font-size: 1.03rem;
-  font-weight: 600;
-  box-shadow: 0 3px 10px 0 rgba(40,117,194,0.06);
+  border-radius: ${({ theme }) => theme.radii.pill};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  box-shadow: ${({ theme }) => theme.shadows.button};
   text-decoration: none;
-  transition: background 0.2s, color 0.18s, transform 0.14s;
+  transition: background ${({ theme }) => theme.transition.normal}, color ${({ theme }) => theme.transition.fast}, transform ${({ theme }) => theme.transition.fast};
+
   &:hover, &:focus-visible {
-    background: linear-gradient(90deg, #0bb6d6 0%, #2875c2 90%);
-    color: #fff;
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+    color: ${({ theme }) => theme.buttons.primary.textHover};
     transform: translateY(-2px) scale(1.04);
   }
 `;
 
 const NoPortfolio = styled.div`
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 1.09rem;
-  padding: 2.1rem 0 3rem 0;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  padding: ${({ theme }) => theme.spacings.xl} 0 ${({ theme }) => theme.spacings.xxl} 0;
   opacity: 0.86;
   text-align: center;
 `;
+

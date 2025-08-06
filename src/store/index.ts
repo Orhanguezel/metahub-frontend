@@ -67,6 +67,7 @@ import newsletterReducer from "@/modules/newsletter/slice/newsletterSlice";
 import offerReducer from "@/modules/offer/slice/offerSlice";
 import customerReducer from "@/modules/customer/slice/customerSlice";
 import requestOfferSlice from "@/modules/offer/slice/requestOfferSlice";
+import pricingSlice from "@/modules/pricing/slice/pricingSlice";
 
 
 // --- Combine reducers ---
@@ -137,6 +138,7 @@ const rootReducer = combineReducers({
   offer: offerReducer,
   customer: customerReducer,
   requestOffer: requestOfferSlice,
+  pricing: pricingSlice,
 });
 
 // --- Store ---

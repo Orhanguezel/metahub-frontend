@@ -140,28 +140,22 @@ export default function AboutSection() {
             <MainImageWrap as={Link} href={`/about/${main.slug}`}>
               <MainImage
                 src={main.images[0].url}
-                alt={main.title?.[lang] || "About"}
-                width={330}
-                height={210}
-                style={{ objectFit: "cover" }}
-                priority
+  alt={main.title?.[lang] || "About"}
+  fill
+  sizes="(max-width: 600px) 100vw, 340px"  // ← responsive!
+  priority
               />
             </MainImageWrap>
           )}
           <StackedImages>
-            {rightImages.map((item, idx) =>
+            {rightImages.map((item) =>
               item?.images?.[0]?.url && item?.slug ? (
                 <StackedImageLink key={item.slug} href={`/about/${item.slug}`}>
                   <StackedImage
                     src={item.images[0].url}
-                    alt={item.title?.[lang] || "About"}
-                    width={135}
-                    height={90}
-                    style={{
-                      objectFit: "cover",
-                      marginTop: idx === 1 ? "12px" : "0",
-                    }}
-                    loading="lazy"
+  alt={item.title?.[lang] || "About"}
+  fill
+  sizes="(max-width: 600px) 50vw, 135px"
                   />
                 </StackedImageLink>
               ) : null
@@ -364,7 +358,7 @@ const Right = styled.div`
 
 const MainImageWrap = styled(Link)`
   width: 340px;
-  height: 220px;
+  aspect-ratio: 16 / 9;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   overflow: hidden;
   box-shadow: 0 8px 30px 0 rgba(40,117,194,0.16), ${({ theme }) => theme.shadows.lg};
@@ -399,12 +393,14 @@ const MainImageWrap = styled(Link)`
 
 const MainImage = styled(Image)`
   width: 100%;
-  height: 100%;
+  height: auto;
   object-fit: cover;
   display: block;
   position: relative;
   z-index: 2;
 `;
+
+
 
 const StackedImages = styled.div`
   display: flex;
@@ -421,8 +417,8 @@ const StackedImages = styled.div`
 `;
 
 const StackedImage = styled(Image)`
-  width: 110px;
-  height: 72px;
+  width: 100%;
+  height: auto;
   object-fit: cover;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   box-shadow: 0 2px 14px 0 rgba(40,117,194,0.07);
@@ -440,4 +436,5 @@ const StackedImage = styled(Image)`
     max-height: 120px;
   }
 `;
+
 

@@ -5,7 +5,8 @@
   },
   "hero": {
     "products": "Products",
-    "bookAppointment": "Book Appointment"
+    "bookAppointment": "Book Appointment",
+    "cta": "Get Quote"
   },
   "noItemsFound": "No products found."
 }

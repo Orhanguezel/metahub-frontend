@@ -5,7 +5,9 @@
   },
   "hero": {
     "products": "Ürünler",
-    "bookAppointment": "Randevu Al"
+    "bookAppointment": "Randevu Al",
+    "cta": "Teklif Al"
+
 
   },
   "noItemsFound": "Hiçbir ürün bulunamadı."

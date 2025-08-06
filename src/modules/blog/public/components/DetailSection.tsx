@@ -302,12 +302,14 @@ const MainImageFrame = styled.div`
 `;
 
 const StyledMainImage = styled(Image)`
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: contain !important; // aspect ratio KORUNUR, taşmaz, kesilmez
+  max-width: 100%;
+  height: auto;
+  object-fit: contain !important;
   border-radius: ${({ theme }) => theme.radii.lg};
   background: ${({ theme }) => theme.colors.backgroundSecondary};
+  display: block;
 `;
+
 
 const Gallery = styled.div`
   margin-top: 1.05rem;
@@ -347,11 +349,11 @@ const ThumbFrame = styled.button<{ $active?: boolean }>`
 
 const StyledThumbImage = styled(Image)<{ $active?: boolean }>`
   width: 100% !important;
-  height: 100% !important;
-  object-fit: contain !important; // aspect ratio KORUNUR
-  border-radius: ${({ theme }) => theme.radii.md};
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  height: auto !important;
+  object-fit: cover;
+  display: block;
 `;
+
 
 const SocialShareBox = styled.div`
   display: flex;

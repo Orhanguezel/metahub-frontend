@@ -5,7 +5,8 @@
   },
   "hero": {
     "products": "Productos",
-    "bookAppointment": "Reservar cita"
+    "bookAppointment": "Reservar cita",
+    "cta": "Obtener oferta"
   },
   "noItemsFound": "No se encontraron productos."
 }

@@ -209,11 +209,20 @@ const Hero = styled.section`
   overflow: hidden;
   background: ${({ theme }) => theme.colors.background};
 
-  @media ${({ theme }) => theme.media.mobile} {
+  @media (max-width: 900px) {
     min-height: 320px;
+    height: 50vh;
+    max-height: 600px;
+    padding-bottom: ${({ theme }) => theme.spacings.lg};
+  }
+  @media (max-width: 600px) {
+    min-height: 210px;
     height: 45vh;
+    max-height: 380px;
+    padding-bottom: ${({ theme }) => theme.spacings.md};
   }
 `;
+
 
 const BackgroundImageWrapper = styled.div`
   position: absolute;
@@ -221,15 +230,22 @@ const BackgroundImageWrapper = styled.div`
   width: 100%;
   height: 100%;
   z-index: 0;
+  aspect-ratio: 16/9;
+  min-height: 320px;
+  @media (max-width: 600px) {
+    min-height: 210px;
+    aspect-ratio: 16/9;
+  }
 `;
 
 const StyledImage = styled(Image)`
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
   object-fit: cover;
   border-radius: ${({ theme }) => theme.radii.xl};
   background: ${({ theme }) => theme.colors.cardBackground};
   cursor: pointer;
+  transition: filter 0.16s;
 `;
 
 const Overlay = styled.div`
@@ -252,16 +268,18 @@ const SliderContent = styled.div`
   color: ${({ theme }) => theme.colors.whiteColor};
   padding-bottom: ${({ theme }) => theme.spacings.xxl};
 
-  @media ${({ theme }) => theme.media.mobile} {
-    padding-bottom: ${({ theme }) => theme.spacings.xl};
+  @media (max-width: 900px) {
+    padding-bottom: ${({ theme }) => theme.spacings.lg};
+  }
+  @media (max-width: 600px) {
+    padding-bottom: ${({ theme }) => theme.spacings.md};
   }
 `;
 
 const HeroCard = styled.div`
   background: rgba(255,255,255,0.12);
   border-radius: ${({ theme }) => theme.radii.xl};
-  padding: ${({ theme }) => theme.spacings.xl}
-    ${({ theme }) => theme.spacings.xxl};
+  padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.xxl};
   box-shadow: 0 8px 40px 0 rgba(229,84,156,0.10), ${({ theme }) => theme.shadows.lg};
   max-width: 620px;
   width: 100%;
@@ -278,6 +296,9 @@ const HeroCard = styled.div`
     margin: 0 0 ${({ theme }) => theme.spacings.sm} 0;
     letter-spacing: 0.01em;
     line-height: 1.13;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    hyphens: auto;
   }
 
   p {
@@ -287,15 +308,20 @@ const HeroCard = styled.div`
     font-family: ${({ theme }) => theme.fonts.body};
     line-height: 1.5;
     text-shadow: 0 2px 12px rgba(229,84,156,0.08);
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    hyphens: auto;
   }
 
-  @media ${({ theme }) => theme.media.mobile} {
+  @media (max-width: 900px) {
     padding: ${({ theme }) => theme.spacings.md};
+    max-width: 98vw;
     h1 {
       font-size: ${({ theme }) => theme.fontSizes.xl};
     }
     p {
       font-size: ${({ theme }) => theme.fontSizes.md};
+      padding: 0 5vw;
     }
   }
 `;
@@ -312,7 +338,19 @@ const HeroDesc = styled.span`
   color: ${({ theme }) => theme.colors.whiteColor};
   font-weight: 500;
   text-shadow: 0 2px 14px #fbeaf0cc, 0 2px 16px #e5549c13;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  display: block;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  @media (max-width: 900px) {
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    padding: 0 5vw;
+    max-width: 96vw;
+    margin: 0 auto;
+  }
 `;
+
 
 const CTAButton = styled.button`
   padding: ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.xl};
@@ -407,17 +445,23 @@ const ModalImage = styled(Image)`
   object-fit: contain;
   border-radius: ${({ theme }) => theme.radii.lg};
   background: #fff;
+  @media (max-width: 600px) {
+    height: 200px;
+    min-height: 120px;
+    object-fit: contain;
+  }
 `;
 
 const ModalCaption = styled.div`
   margin-top: 1.3em;
   text-align: center;
-
   h3 {
     font-size: 1.38em;
     color: ${({ theme }) => theme.colors.primary};
     font-weight: ${({ theme }) => theme.fontWeights.bold};
     margin-bottom: 0.2em;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
   p {
     color: ${({ theme }) => theme.colors.textSecondary};
@@ -425,5 +469,7 @@ const ModalCaption = styled.div`
     font-weight: 400;
     margin: 0 auto;
     max-width: 420px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 `;

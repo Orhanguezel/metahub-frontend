@@ -218,7 +218,7 @@ const PortfolioCard = styled(motion.div)`
 
 const CardImageWrap = styled(Link)`
   width: 100%;
-  height: 116px;
+  aspect-ratio: 200 / 116; 
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   display: flex;
   align-items: center;
@@ -227,11 +227,15 @@ const CardImageWrap = styled(Link)`
   position: relative;
 `;
 
+
 const CardImage = styled(Image)`
   width: 100%;
-  height: 100%;
+  height: auto; 
   object-fit: cover;
+  display: block;
 `;
+
+
 
 const ImgPlaceholder = styled.div`
   width: 100%;

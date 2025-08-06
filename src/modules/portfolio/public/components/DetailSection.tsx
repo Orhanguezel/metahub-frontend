@@ -212,11 +212,14 @@ const MainImageFrame = styled.div`
 
 const StyledMainImage = styled(Image)`
   width: 100% !important;
-  height: 100% !important;
-  object-fit: contain !important; // Kırpmadan, orijinal oranı korur
+  height: auto !important;
+  max-height: 100%;
+  object-fit: contain !important;
   border-radius: ${({ theme }) => theme.radii.lg};
   background: ${({ theme }) => theme.colors.backgroundSecondary};
+  display: block;
 `;
+
 
 const Gallery = styled.div`
   margin-top: 1.1rem;
@@ -245,8 +248,9 @@ const ThumbFrame = styled.button<{ $active?: boolean }>`
 
 const StyledThumbImage = styled(Image)<{ $active?: boolean }>`
   width: 100% !important;
-  height: 100% !important;
+  height: auto !important;
   object-fit: cover;
+  display: block;
 `;
 
 const SummaryBox = styled.div`

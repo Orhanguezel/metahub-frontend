@@ -326,10 +326,9 @@ const BlogCard = styled(motion.div)`
 `;
 
 const CardImageWrap = styled(Link)`
-  min-width: 72px;
-  width: 72px;
-  height: 56px;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  width: 100%;
+  aspect-ratio: 200 / 116; 
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -337,11 +336,15 @@ const CardImageWrap = styled(Link)`
   position: relative;
 `;
 
+
+
 const CardImage = styled(Image)`
-  width: 100%;
+  width: auto;
   height: 100%;
   object-fit: cover;
+  display: block;
 `;
+
 
 const CardBody = styled.div`
   flex: 1;

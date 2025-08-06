@@ -5,7 +5,8 @@
   },
   "hero": {
     "products": "Produkte",
-    "bookAppointment": "Termin buchen"
+    "bookAppointment": "Termin buchen",
+    "cta": "Angebot erhalten"
   },
   "noItemsFound": "Keine Produkte gefunden."
 }

@@ -3,11 +3,10 @@ import styled from "styled-components";
 import Link from "next/link";
 import Image from "next/image";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales/navbar";
+import translations from "@/modules/shared/locales/navbar";
 import { SupportedLocale } from "@/types/common";
 import { useAppSelector } from "@/store/hooks";
 
-// Slogan extraction
 function isLogoTextValue(val: any): val is { slogan: any } {
   return val && typeof val === "object" && "slogan" in val;
 }
@@ -21,7 +20,7 @@ function resolveLogoSrc(images: any): string {
   return "";
 }
 
-export default function Logo({
+export default function NavbarLogo({
   height = 64,
   maxWidth = 200,
 }: {
@@ -47,27 +46,27 @@ export default function Logo({
     <LogoWrapper href="/">
       {logoSrc ? (
         <LogoImgBox>
-          <Image
-            src={logoSrc}
-            alt="Ensotek Logo"
-            width={maxWidth}
-            height={height}
-            style={{
-              width: "auto",
-              height: `${height}px`,
-              maxWidth: `${maxWidth}px`,
-              minWidth: "32px",
-              objectFit: "contain",
-              background: "transparent",
-              border: "none",
-              borderRadius: 0,
-              display: "block",
-            }}
-            priority
-          />
-        </LogoImgBox>
+  <Image
+    src={logoSrc}
+    alt="Ensotek Logo"
+    width={maxWidth}
+    height={height}
+    sizes={`${maxWidth}px`}
+    style={{
+      width: "100%",        // Sadece bunu verirsen:
+      height: "auto",       // Mutlaka bunu da ver!
+      maxHeight: `${height}px`,
+      maxWidth: `${maxWidth}px`,
+      objectFit: "contain",
+      background: "transparent",
+      display: "block",
+    }}
+    priority
+  />
+</LogoImgBox>
+
       ) : (
-        <Fallback style={{ height }}>{/* fallback kullanılmazsa logoyu yüklemez */}</Fallback>
+        <Fallback style={{ height }}>{/* fallback */}</Fallback>
       )}
       {slogan && <LogoSlogan>{slogan}</LogoSlogan>}
     </LogoWrapper>
@@ -85,9 +84,11 @@ const LogoWrapper = styled(Link)`
   min-width: 0;
   padding: 0;
   margin: 0;
+  width: 100%;
+  max-width: 220px;
 
-  &:hover, &:focus-visible {
-    text-decoration: none;
+  @media (max-width: 600px) {
+    max-width: 130px;
   }
 `;
 
@@ -99,16 +100,26 @@ const LogoImgBox = styled.div`
   padding: 0;
   margin: 0;
   height: auto;
+  width: 100%;
+  max-width: 200px;
+
+  @media (max-width: 600px) {
+    max-width: 110px;
+  }
 `;
 
 const Fallback = styled.div`
   height: 64px;
   min-width: 32px;
   background: transparent;
+  @media (max-width: 600px) {
+    height: 38px;
+    min-width: 24px;
+  }
 `;
 
 const LogoSlogan = styled.span`
-  margin-top: 1px;
+  margin-top: 2px;
   font-size: ${({ theme }) => theme.fontSizes.xs};
   color: ${({ theme }) => theme.colors.secondary};
   font-family: ${({ theme }) => theme.fonts.body};
@@ -120,6 +131,7 @@ const LogoSlogan = styled.span`
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+  max-width: 160px;
 
   @media (max-width: 600px) {
     font-size: ${({ theme }) => theme.fontSizes.xsmall};

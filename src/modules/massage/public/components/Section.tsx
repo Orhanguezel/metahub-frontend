@@ -134,7 +134,7 @@ const FirstMassageImage = styled.img`
 
 const Section = styled.section`
   padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xxl};
-  background: ${({ theme }) => theme.colors.sectionBackground};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
   color: ${({ theme }) => theme.colors.text};
 `;
 

@@ -76,7 +76,7 @@ export default function AboutSection() {
               src={imageUrl}
               alt={main.title?.[lang] || "About me"}
               fill
-              priority
+  sizes="(max-width: 600px) 50vw, 135px"
             />
           </ImageCard>
         </Right>

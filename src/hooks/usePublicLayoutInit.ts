@@ -31,7 +31,7 @@ import { fetchTeam } from "@/modules/team/slice/teamSlice";
 import { fetchFAQs } from "@/modules/faq/slice/faqSlice";
 import { fetchPortfolio } from "@/modules/portfolio/slice/portfolioSlice";
 import { fetchSkill } from "@/modules/skill/slice/skillSlice";
-
+import { fetchPricing } from "@/modules/pricing/slice/pricingSlice";
 
 
 export const usePublicLayoutInit = () => {
@@ -65,6 +65,7 @@ export const usePublicLayoutInit = () => {
   const faqSlice = useAppSelector((s) => s.faq);
   const skillSlice = useAppSelector((s) => s.skill);
   const portfolioSlice = useAppSelector((s) => s.portfolio);
+  const pricingSlice = useAppSelector((s) => s.pricing);
 
 const didInit = useRef<{ [key: string]: boolean }>({});
 
@@ -151,6 +152,10 @@ useEffect(() => {
 
     if ((!portfolioSlice.portfolio || portfolioSlice.portfolio.length === 0) && portfolioSlice.status === "idle") {
       dispatch(fetchPortfolio());
+    }
+
+    if ((!pricingSlice.pricing || pricingSlice.pricing.length === 0) && pricingSlice.status === "idle") {
+      dispatch(fetchPricing());
     }
 
 

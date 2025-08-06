@@ -207,6 +207,11 @@ import {
   clearCustomerMessages 
 } from "@/modules/customer/slice/customerSlice";
 
+import {
+  fetchAllPricingAdmin,
+  clearPricingMessages,
+} from "@/modules/pricing/slice/pricingSlice";
+
 
 
 // -- Cleanup aksiyonları merkezi:
@@ -257,6 +262,7 @@ const cleanupActions = [
   clearNewsletterSubscribers,
   clearOfferMessages,
   clearCustomerMessages,
+  clearPricingMessages, 
 ];
 
 // --- useLayoutInit ---
@@ -325,6 +331,7 @@ const skillCategories = useAppSelector((state) => state.skillCategory);
 const newsletterSubscribers = useAppSelector((state) => state.newsletter);
 const offerList = useAppSelector((state) => state.offer);
 const customerList = useAppSelector((state) => state.customer);
+const pricingList = useAppSelector((state) => state.pricing);
 
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
   useEffect(() => {
@@ -483,6 +490,9 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
     if (!customerList.customerAdmin.length && !customerList.loading)
       dispatch(fetchCustomersAdmin());
 
+    if (!pricingList.pricingAdmin.length && !pricingList.loading)
+      dispatch(fetchAllPricingAdmin());
+
     // Cleanup actions
     cleanupActions.forEach((action) => dispatch(action()));
 
@@ -547,6 +557,8 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
   skillCategories,
   newsletterSubscribers,
   offerList,
+  customerList,
+  pricingList,
     // gerekirse analyticsTrends vs ekleyebilirsin
   };
 };

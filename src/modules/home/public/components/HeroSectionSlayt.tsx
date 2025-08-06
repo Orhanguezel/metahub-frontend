@@ -200,20 +200,23 @@ const HeroWrapper = styled.section`
   padding: 0;
   margin: 0 auto;
   max-width: ${({ theme }) => theme.layout.containerWidth};
+  min-height: 540px;
+  @media (max-width: 900px) {
+    min-height: 320px;
+  }
 `;
 
 const Slide = styled(motion.div)`
   position: relative;
   width: 100%;
-  height: 320px;
+  height: 340px;
   min-height: 220px;
-  max-height: 400px;
+  max-height: 460px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: ${({ theme }) => theme.radii.lg};
   overflow: hidden;
-
   @media (min-width: 768px) {
     height: 420px;
     min-height: 320px;
@@ -223,6 +226,11 @@ const Slide = styled(motion.div)`
     height: 520px;
     max-height: 640px;
   }
+  @media (max-width: 600px) {
+    height: 180px;
+    min-height: 110px;
+    max-height: 240px;
+  }
 `;
 
 const Background = styled.div`
@@ -231,6 +239,11 @@ const Background = styled.div`
   width: 100%;
   height: 100%;
   z-index: 1;
+  aspect-ratio: 16/9;
+  min-height: 100%;
+  @media (max-width: 600px) {
+    aspect-ratio: 16/9;
+  }
 `;
 
 const StyledImage = styled(Image)`
@@ -240,6 +253,9 @@ const StyledImage = styled(Image)`
   object-position: center;
   display: block;
   filter: brightness(0.70);
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  transition: filter 0.18s;
 `;
 
 const Overlay = styled.div`
@@ -273,31 +289,24 @@ const HeroGlass = styled.div`
   padding: 2.4rem 2.2rem 1.8rem 2.2rem;
   backdrop-filter: blur(10px) brightness(1.06);
   color: ${({ theme }) => theme.colors.primaryDark};
-
-  h2 {
-    font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-    font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-    margin-bottom: 0.65em;
-    background: linear-gradient(90deg,#e5549c 22%, #b53075 68%, #52404b 98%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-    text-shadow: 0 3px 15px #fff4, 0 0.5px 2px #e5549c77;
-  }
-  p {
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-    color: ${({ theme }) => theme.colors.textLight};
-    text-shadow: 0 2px 14px #fbeaf0cc;
-    font-weight: 500;
-    margin: 0;
-  }
+  max-width: 600px;
+  margin: 0 auto;
   @media (max-width: 600px) {
     padding: 1.2rem 0.8rem;
-    h2 { font-size: ${({ theme }) => theme.fontSizes.xl}; }
-    p { font-size: ${({ theme }) => theme.fontSizes.md}; }
+    max-width: 98vw;
+  }
+  h2, h1 {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+  p {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    hyphens: auto;
   }
 `;
+
 
 const Nav = styled.div`
   position: absolute;
@@ -338,7 +347,11 @@ const ModalContent = styled.div`
 const ModalImageWrap = styled.div`
   margin: 0 auto 18px auto;
   max-width: 99vw;
+  @media (max-width: 600px) {
+    max-width: 98vw;
+  }
 `;
+
 
 const ModalGlass = styled.div`
   background: rgba(255,255,255,0.17);
@@ -351,31 +364,22 @@ const ModalGlass = styled.div`
   margin-top: -10px;
   backdrop-filter: blur(9px) brightness(1.05);
   color: ${({ theme }) => theme.colors.primaryDark};
-
-  h2 {
-    font-size: ${({ theme }) => theme.fontSizes.xl};
-    font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-    margin-bottom: 0.65em;
-    background: linear-gradient(90deg,#e5549c 22%, #b53075 68%, #52404b 98%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-    text-shadow: 0 2px 10px #fff4, 0 0.5px 2px #e5549c77;
-  }
-  p {
-    font-size: ${({ theme }) => theme.fontSizes.md};
-    color: ${({ theme }) => theme.colors.textLight};
-    text-shadow: 0 1.5px 10px #fbeaf099;
-    font-weight: 500;
-    margin: 0;
-  }
   @media (max-width: 600px) {
     padding: 1.1rem 0.6rem;
-    h2 { font-size: ${({ theme }) => theme.fontSizes.lg}; }
-    p { font-size: ${({ theme }) => theme.fontSizes.sm}; }
+    max-width: 98vw;
+  }
+  h2, h1 {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+  p {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    hyphens: auto;
   }
 `;
+
 
 const Title = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
@@ -383,6 +387,14 @@ const Title = styled.h1`
   margin: 0 0 ${({ theme }) => theme.spacings.sm} 0;
   letter-spacing: 0.01em;
   line-height: 1.13;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  max-width: 96vw;
+  @media (max-width: 600px) {
+    font-size: ${({ theme }) => theme.fontSizes.xl};
+    padding: 0 6vw;
+  }
 `;
 
 const Subtitle = styled.p`
@@ -392,5 +404,15 @@ const Subtitle = styled.p`
   font-family: ${({ theme }) => theme.fonts.body};
   line-height: 1.5;
   text-shadow: 0 2px 12px rgba(229,84,156,0.08);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  max-width: 95vw;
+  @media (max-width: 600px) {
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    padding: 0 8vw;
+    max-width: 99vw;
+  }
 `;
+
 

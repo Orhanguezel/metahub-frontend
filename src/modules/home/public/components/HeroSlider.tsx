@@ -115,15 +115,14 @@ const HeroSlider = () => {
       <HeroWrapper>
         <ImageCol>
           <MainImage
-            src={imageSrc}
-            alt={title}
-            fill
-            priority
-            onClick={() => open(currentIndex)}
-            sizes="60vw"
-            quality={90}
-            style={{ objectFit: "cover" }}
-          />
+  src={imageSrc}
+  alt={title}
+  fill
+  priority
+  sizes="60vw"
+  quality={90}
+  style={{ objectFit: "cover" }}
+/>
           <DotRow>
             {flatItems.map((_, index) => (
               <Dot
@@ -207,8 +206,13 @@ const HeroWrapper = styled.section`
   position: relative;
   @media (max-width: 1100px) {
     flex-direction: column;
+    min-height: 380px;
+  }
+  @media (max-width: 600px) {
+    min-height: 260px;
   }
 `;
+
 
 const ImageCol = styled.div`
   flex: 1.3;
@@ -221,10 +225,15 @@ const ImageCol = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   overflow: hidden;
   aspect-ratio: 16/9;
+  min-height: 340px;
   box-shadow: ${({ theme }) => theme.shadows.lg};
   @media (max-width: 1100px) {
     min-height: 210px;
     aspect-ratio: 16/9;
+    margin-right: 0;
+  }
+  @media (max-width: 600px) {
+    min-height: 172px;
   }
 `;
 
@@ -236,6 +245,8 @@ const MainImage = styled(Image)`
   object-fit: cover;
   cursor: pointer;
   box-shadow: ${({ theme }) => theme.shadows.lg};
+  transition: filter 0.16s;
+  filter: blur(0.2px);
 `;
 
 const DotRow = styled.div`
@@ -280,8 +291,11 @@ const ContentCol = styled.div`
     align-items: center;
     text-align: center;
     gap: 15px;
+    min-width: 0;
+    width: 100%;
   }
 `;
+
 
 const HeroTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
@@ -301,7 +315,20 @@ const HeroDesc = styled.p`
   line-height: 1.6;
   text-shadow: 0 2px 10px rgba(30,80,160,0.09);
   margin-bottom: 18px;
+  max-width: 94%;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  text-align: left;
+  hyphens: auto;
+  @media (max-width: 1100px) {
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    max-width: 96vw;
+    text-align: center;
+    padding-left: 7vw;
+    padding-right: 7vw;
+  }
 `;
+
 
 const SliderControls = styled.div`
   display: flex;
@@ -373,7 +400,11 @@ const StyledLink = styled(Link)`
 const ModalContent = styled.div`
   text-align: center;
   padding: 22px 12px;
+  max-width: 98vw;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 `;
+
 
 const ModalTitle = styled.h2`
   color: ${({ theme }) => theme.colors.white};
