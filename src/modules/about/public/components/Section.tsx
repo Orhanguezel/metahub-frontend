@@ -48,7 +48,6 @@ export default function AboutSection() {
     );
   }
 
-  // Güvenli array check ve fallback
   if (!Array.isArray(about) || about.filter(Boolean).length === 0) {
     return (
       <Section>
@@ -62,18 +61,13 @@ export default function AboutSection() {
     );
   }
 
-  // Null-safe, slug'lı main seçimi (hiçbiri yoksa en baştaki eleman)
   const validAbout = about.filter((item) => !!item && typeof item === "object");
   const main =
     validAbout.find((x) => !!x?.slug && x.slug === "ensotek-su-sogutma-kuleleri") ||
     (validAbout.length > 2 ? validAbout[2] : validAbout[0]) ||
     {};
 
-  // Vizyon & Misyon kartları
-  const featuresData = [
-    validAbout[0] || {},
-    validAbout[1] || {},
-  ];
+  const featuresData = [validAbout[0] || {}, validAbout[1] || {}];
 
   const icons = [
     <FaChartLine size={32} color="#2875c2" key="vizyon" />,
@@ -87,15 +81,16 @@ export default function AboutSection() {
     slug: item?.slug || "",
   }));
 
-  // Sağdaki ek görseller (main ile slug aynıysa filtreleniyor)
+  // Sağdaki ek görseller
   const rightImages = validAbout
-    .filter((item) =>
-      !!item &&
-      !!main &&
-      typeof item.slug === "string" &&
-      typeof main.slug === "string" &&
-      item.slug !== main.slug &&
-      item.images?.[0]?.url
+    .filter(
+      (item) =>
+        !!item &&
+        !!main &&
+        typeof item.slug === "string" &&
+        typeof main.slug === "string" &&
+        item.slug !== main.slug &&
+        item.images?.[0]?.url
     )
     .slice(0, 2);
 
@@ -133,32 +128,35 @@ export default function AboutSection() {
             {t("page.about.all", "Daha Fazla Bilgi")}
           </SeeAllBtn>
         </Left>
-
-        {/* SAĞ BLOK - GÖRSEL + küçük resimler */}
+        {/* SAĞ BLOK */}
         <Right>
           {main?.slug && main?.images?.[0]?.url && (
             <MainImageWrap as={Link} href={`/about/${main.slug}`}>
               <MainImage
                 src={main.images[0].url}
-  alt={main.title?.[lang] || "About"}
-  fill
-  sizes="(max-width: 600px) 100vw, 340px"  // ← responsive!
-  priority
+                alt={main.title?.[lang] || "About"}
+                width={340}
+                height={191} // 16:9 oranı
+                sizes="(max-width: 600px) 100vw, 340px"
+                priority
               />
             </MainImageWrap>
           )}
           <StackedImages>
-            {rightImages.map((item) =>
-              item?.images?.[0]?.url && item?.slug ? (
-                <StackedImageLink key={item.slug} href={`/about/${item.slug}`}>
-                  <StackedImage
-                    src={item.images[0].url}
-  alt={item.title?.[lang] || "About"}
-  fill
-  sizes="(max-width: 600px) 50vw, 135px"
-                  />
-                </StackedImageLink>
-              ) : null
+            {rightImages.map(
+              (item) =>
+                item?.images?.[0]?.url &&
+                item?.slug && (
+                  <StackedImageLink key={item.slug} href={`/about/${item.slug}`}>
+                    <StackedImage
+                      src={item.images[0].url}
+                      alt={item.title?.[lang] || "About"}
+                      width={135}
+                      height={90}
+                      sizes="(max-width: 600px) 50vw, 135px"
+                    />
+                  </StackedImageLink>
+                )
             )}
           </StackedImages>
         </Right>
@@ -167,26 +165,8 @@ export default function AboutSection() {
   );
 }
 
-// --- Styled Components aynı şekilde bırakılabilir ---
+// --- Styled Components (güncel, overflow & stacking fixli) ---
 
-
-const StackedImageLink = styled(Link)`
-  display: block;
-  overflow: hidden;
-  cursor: pointer;
-
-  &:hover img,
-  &:focus-visible img {
-    box-shadow: 0 7px 32px 0 rgba(40,117,194,0.14);
-    transform: scale(1.055);
-    outline: none;
-  }
-`;
-
-// Diğer styled'lar aynı!
-
-
-// --- STYLES ---
 const Section = styled(motion.section)`
   background: ${({ theme }) => theme.colors.sectionBackground};
   color: ${({ theme }) => theme.colors.text};
@@ -207,7 +187,6 @@ const AboutGrid = styled.div`
     padding: 0 ${({ theme }) => theme.spacings.md};
     gap: 2rem;
   }
-
   ${({ theme }) => theme.media.small} {
     flex-direction: column;
     gap: 2.5rem;
@@ -229,6 +208,107 @@ const Left = styled.div`
     align-items: center;
     text-align: center;
     gap: 2rem;
+  }
+`;
+
+const Right = styled.div`
+  flex: 1.5 1 320px;
+  min-width: 270px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1.7rem;
+
+  ${({ theme }) => theme.media.small} {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+`;
+
+const MainImageWrap = styled(Link)`
+  width: 340px;
+  aspect-ratio: 16/9;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  overflow: hidden;
+  box-shadow: 0 8px 30px 0 rgba(40,117,194,0.16), ${({ theme }) => theme.shadows.lg};
+  margin-bottom: 0.8rem;
+  position: relative;
+  isolation: isolate;
+  cursor: pointer;
+  display: block;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(120deg, rgba(40,117,194,0.07) 12%, rgba(11,182,214,0.06) 100%);
+    z-index: 1;
+  }
+
+  &:hover, &:focus-visible {
+    box-shadow: 0 12px 38px 0 rgba(40,117,194,0.25), ${({ theme }) => theme.shadows.xl};
+    transform: scale(1.025);
+  }
+  ${({ theme }) => theme.media.small} {
+    width: 100%;
+    max-width: 340px;
+    min-width: 170px;
+    height: 175px;
+    margin: 0 auto 0.5rem auto;
+  }
+`;
+
+const MainImage = styled(Image)`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  position: relative;
+  z-index: 2;
+`;
+
+const StackedImages = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  ${({ theme }) => theme.media.small} {
+    width: 100%;
+    max-width: 340px;
+    flex-direction: row;
+    justify-content: center;
+    gap: 0.85rem;
+  }
+`;
+
+const StackedImageLink = styled(Link)`
+  display: block;
+  overflow: hidden;
+  cursor: pointer;
+
+  &:hover img,
+  &:focus-visible img {
+    box-shadow: 0 7px 32px 0 rgba(40,117,194,0.14);
+    transform: scale(1.055);
+    outline: none;
+  }
+`;
+
+const StackedImage = styled(Image)`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  box-shadow: 0 2px 14px 0 rgba(40,117,194,0.07);
+  transition: box-shadow 0.17s, transform 0.15s;
+  cursor: pointer;
+  ${({ theme }) => theme.media.small} {
+    width: 50%;
+    max-height: 120px;
   }
 `;
 
@@ -313,7 +393,7 @@ const FeatureText = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0; /* clamp için */
+  min-width: 0;
 `;
 
 const FeatureTitle = styled.h3`
@@ -332,109 +412,8 @@ const FeatureDesc = styled.div`
   line-height: 1.55;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 3;    /* En fazla 3 satır! */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   text-overflow: ellipsis;
   min-height: 2.7em;
 `;
-
-const Right = styled.div`
-  flex: 1.5 1 320px;
-  min-width: 270px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1.7rem;
-
-  ${({ theme }) => theme.media.small} {
-    width: 100%;
-    max-width: 420px; /* Mobilde çok genişlemesin */
-    margin: 0 auto;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-`;
-
-const MainImageWrap = styled(Link)`
-  width: 340px;
-  aspect-ratio: 16 / 9;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  overflow: hidden;
-  box-shadow: 0 8px 30px 0 rgba(40,117,194,0.16), ${({ theme }) => theme.shadows.lg};
-  margin-bottom: 0.8rem;
-  position: relative;
-  isolation: isolate;
-  cursor: pointer;
-  display: block;
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(120deg, rgba(40,117,194,0.07) 12%, rgba(11,182,214,0.06) 100%);
-    z-index: 1;
-  }
-
-  &:hover, &:focus-visible {
-    box-shadow: 0 12px 38px 0 rgba(40,117,194,0.25), ${({ theme }) => theme.shadows.xl};
-    transform: scale(1.025);
-  }
-
-  ${({ theme }) => theme.media.small} {
-    width: 100%;
-    max-width: 340px;
-    min-width: 170px;
-    height: 175px;
-    margin: 0 auto 0.5rem auto;
-  }
-`;
-
-const MainImage = styled(Image)`
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-  display: block;
-  position: relative;
-  z-index: 2;
-`;
-
-
-
-const StackedImages = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1.15rem;
-
-  ${({ theme }) => theme.media.small} {
-    width: 100%;
-    max-width: 340px;
-    flex-direction: row;
-    justify-content: center;
-    gap: 0.85rem;
-  }
-`;
-
-const StackedImage = styled(Image)`
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  box-shadow: 0 2px 14px 0 rgba(40,117,194,0.07);
-  transition: box-shadow 0.17s, transform 0.15s;
-  cursor: pointer;
-
-  &:hover, &:focus-visible {
-    box-shadow: 0 7px 32px 0 rgba(40,117,194,0.14);
-    transform: scale(1.055);
-    outline: none;
-  }
-
-  ${({ theme }) => theme.media.small} {
-    width: 50%;
-    max-height: 120px;
-  }
-`;
-
-
