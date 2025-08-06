@@ -190,15 +190,17 @@ export default function EnsotekprodFormModal({
           .filter(Boolean)
       )
     );
-    if (material) formData.append("material", material);
-    if (weightKg) formData.append("weightKg", weightKg);
-    if (size) formData.append("size", size);
-    if (powerW) formData.append("powerW", powerW);
-    if (voltageV) formData.append("voltageV", voltageV);
-    if (flowRateM3H) formData.append("flowRateM3H", flowRateM3H);
-    if (coolingCapacityKw) formData.append("coolingCapacityKw", coolingCapacityKw);
-    if (batteryRangeKm) formData.append("batteryRangeKm", batteryRangeKm);
-    if (motorPowerW) formData.append("motorPowerW", motorPowerW);
+    // --- TEKNİK ALANLARDA BOŞ OLANLARI DA GÖNDER! ---
+formData.append("material", material ?? "");
+formData.append("weightKg", weightKg ?? "");
+formData.append("size", size ?? "");
+formData.append("powerW", powerW ?? "");
+formData.append("voltageV", voltageV ?? "");
+formData.append("flowRateM3H", flowRateM3H ?? "");
+formData.append("coolingCapacityKw", coolingCapacityKw ?? "");
+formData.append("batteryRangeKm", batteryRangeKm ?? "");
+formData.append("motorPowerW", motorPowerW ?? "");
+
 
     for (const file of selectedFiles) {
       formData.append("images", file);

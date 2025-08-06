@@ -26,26 +26,25 @@ export default function ThemeProviderWrapper({
   children: React.ReactNode;
   admin?: boolean;
 }) {
-  // 👇 HOOKLAR DAİMA EN ÜSTTE ve KOŞULSUZ
+  // Always get settings at the top
   const settings = useAppSelector(state =>
-  admin ? state.settings.settingsAdmin : state.settings.settings
-);
-
-  const [themeMode, toggleThemeMode] = useThemeMode(); // 👈 DAİMA EN ÜSTTE!
+    admin ? state.settings.settingsAdmin : state.settings.settings
+  );
+  const [themeMode, toggleThemeMode] = useThemeMode();
   const isDark = themeMode === "dark";
 
-
-  // --- AYAR/SETTING KONTROL ---
-  if (!settings || !Array.isArray(settings)) {
-    return <div style={{ minHeight: "100vh", background: "#f8f8fb" }}>Theme settings missing!</div>;
+  // EN KRİTİK: Tema/Settings gelmeden hiçbir şey render etme!
+  if (!settings || !Array.isArray(settings) || settings.length === 0) {
+    // **Sadece null veya loading döndür**
+    return null;
+    // veya bir <LoadingSpinner /> ekle, ama styled component kullanmadan!
   }
+
   const siteTemplateSetting = settings.find((s: ISetting) => s.key === "site_template");
   const selectedTemplate: ThemeName = siteTemplateSetting?.value as ThemeName;
+  const templateTheme = themes[selectedTemplate || "classic"] || themes["classic"];
 
-  // Tema seçimi (Fallback her zaman anastasia)
-  const templateTheme = themes[selectedTemplate || "anastasia"] || themes["anastasia"];
-
-  // Dark mode override (sadece renkler)
+  // Dark mode override
   const darkOverrides: Partial<DefaultTheme["colors"]> = {
     background: "#18121a",
     backgroundSecondary: "#24162b",
