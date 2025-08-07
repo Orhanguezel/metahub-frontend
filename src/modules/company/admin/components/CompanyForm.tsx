@@ -9,6 +9,7 @@ import { SUPPORTED_LOCALES, LANG_LABELS } from "@/types/common";
 import { AddressForm } from "@/modules/users";
 import { SocialLinksForm } from "@/modules/company";
 import { useAppSelector } from "@/store/hooks";
+import type { Address } from "@/modules/users/types/address";
 
 // Helpers
 const getUrlArray = (images?: ICompanyImage[]): string[] =>
@@ -36,7 +37,6 @@ export default function CompanyForm({
   loading,
 }: Props) {
   const { t } = useI18nNamespace("company", translations);
-  // Doğrudan redux’tan company çek!
   const company = useAppSelector((state) => state.company.companyAdmin);
 
   // --- STATE'ler ---
@@ -58,7 +58,12 @@ export default function CompanyForm({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(getUrlArray(initialValues.images));
+  // --- Adresler state (sadece object olanlar tutulacak) ---
+  const [addresses, setAddresses] = useState<Address[]>(
+    (initialValues.addresses ?? []).filter((a): a is Address => typeof a === "object" && a !== null)
+  );
 
+  // --- Sync initialValues ile state ---
   useEffect(() => {
     setCompanyName(fillLabel(initialValues.companyName));
     setCompanyDesc(fillLabel(initialValues.companyDesc));
@@ -78,7 +83,28 @@ export default function CompanyForm({
     setExistingImages(getUrlArray(initialValues.images));
     setSelectedFiles([]);
     setRemovedImages([]);
-  }, [JSON.stringify(initialValues)]);
+    setAddresses(
+      Array.isArray(initialValues.addresses)
+        ? initialValues.addresses.filter(
+            (a): a is Address => typeof a === "object" && a !== null
+          )
+        : []
+    );
+  }, [
+    initialValues.companyName,
+    initialValues.companyDesc,
+    initialValues.email,
+    initialValues.phone,
+    initialValues.taxNumber,
+    initialValues.handelsregisterNumber,
+    initialValues.registerCourt,
+    initialValues.website,
+    initialValues.bankDetails,
+    initialValues.socialLinks,
+    initialValues.managers,
+    initialValues.images,
+    initialValues.addresses,
+  ]);
 
   // --- BANK DETAILS LOGIC ---
   const handleBankChange = (field: keyof typeof bankDetails, value: string) => {
@@ -118,6 +144,7 @@ export default function CompanyForm({
         bankDetails,
         managers,
         socialLinks,
+        addresses: addresses.map(a => a._id!).filter(Boolean), // sadece object adreslerin _id'leri
       },
       selectedFiles,
       removedImages
@@ -190,9 +217,15 @@ export default function CompanyForm({
       <Label htmlFor="website">{t("website", "Website")}</Label>
       <Input id="website" name="website" value={website} onChange={e => setWebsite(e.target.value)} disabled={loading} />
 
-      {/* --- Çoklu Adres Alanı (AccountForm patterniyle tam uyumlu) --- */}
+      {/* --- Çoklu Adres Alanı --- */}
       <SectionTitle>{t("addresses", "Addresses")}</SectionTitle>
-      <AddressForm parentType="company" parentId={company?._id} renderAsForm={false} />
+      <AddressForm
+        parentType="company"
+        parentId={company?._id}
+        addresses={addresses}
+        setAddresses={setAddresses}
+        renderAsForm={false}
+      />
 
       <SectionTitle>{t("bankDetails", "Bank Details")}</SectionTitle>
       <Label htmlFor="bankDetails.bankName">{t("bankName", "Bank Name")}</Label>
@@ -245,7 +278,7 @@ export default function CompanyForm({
   );
 }
 
-// --- Styled Components (değişiklik yok) ---
+// --- Styled Components ---
 const FormStyled = styled.form`
   max-width: 800px;
   margin: 0 auto;

@@ -20,7 +20,7 @@ function resolveLogoSrc(images: any): string {
   return "";
 }
 
-export default function NavbarLogo({
+export default function FooterLogo({
   height = 264,
   maxWidth = 400,
 }: {
@@ -72,9 +72,10 @@ export default function NavbarLogo({
       ) : (
         <Fallback style={{ height }} />
       )}
-      {/* Title aşağıda */}
-      {title && <LogoTitle>{title}</LogoTitle>}
+      {/* Slogan logonun hemen altında */}
       {slogan && <LogoSlogan>{slogan}</LogoSlogan>}
+      {/* Title sloganın altında, asla kesilmez */}
+      {title && <LogoTitle>{title}</LogoTitle>}
     </LogoWrapper>
   );
 }
@@ -91,9 +92,6 @@ const LogoWrapper = styled(Link)`
   padding: 0;
   margin: 0;
   width: 100%;
-  max-width: 220px;
-  @media (max-width: 600px) {
-    max-width: 130px;
   }
 `;
 
@@ -106,9 +104,10 @@ const LogoImgBox = styled.div`
   margin: 0;
   height: auto;
   width: 100%;
-  max-width: 200px;
+  max-width: 180px;
   @media (max-width: 600px) {
-    max-width: 110px;
+    max-width: 48vw;
+    min-width: 70px;
   }
 `;
 
@@ -122,41 +121,49 @@ const Fallback = styled.div`
   }
 `;
 
-const LogoTitle = styled.span`
-  margin-top: 3px;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.primaryDark};
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  text-align: center;
-  letter-spacing: 0.01em;
-  line-height: 1.13;
-  white-space: nowrap;
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  @media (max-width: 600px) {
-    font-size: ${({ theme }) => theme.fontSizes.xsmall};
-    max-width: 80vw;
-  }
-`;
-
 const LogoSlogan = styled.span`
-  margin-top: 0.5px;
-  font-size: ${({ theme }) => theme.fontSizes.xs};
+  margin-top: 14px;
+  font-size: clamp(0.85rem, 1.5vw, 1.05rem);
   color: ${({ theme }) => theme.colors.secondary};
   font-family: ${({ theme }) => theme.fonts.body};
   font-style: italic;
-  font-weight: ${({ theme }) => theme.fontWeights.light};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
   text-align: center;
-  letter-spacing: 0.01em;
-  line-height: 1.2;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  max-width: 160px;
+  line-height: 1.14;
+  width: 100%;
+  max-width: 450px;
+  padding: 0 4px;
   @media (max-width: 600px) {
-    font-size: ${({ theme }) => theme.fontSizes.xsmall};
-    max-width: 80vw;
+    max-width: 96vw;
+    margin-top: 10px;
+    font-size: clamp(0.81rem, 3.6vw, 0.99rem);
   }
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 `;
+
+
+const LogoTitle = styled.span`
+  display: block;
+  font-size: clamp(1.5rem, 3vw, 2.6rem);
+  color: ${({ theme }) => theme.colors.primaryDark};
+  font-family: ${({ theme }) => theme.fonts.heading};
+  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
+  text-align: center;
+  line-height: 1.13;
+  margin-top: 22px;
+  max-width: 700px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  white-space: normal;           // <--- Sadece bu!
+  overflow-wrap: anywhere;       // <--- DENE! break-word yerine anywhere
+  word-break: normal;
+`;
+
+
+
+
+
+

@@ -188,9 +188,10 @@ const AboutGrid = styled.div`
     gap: 2rem;
   }
   ${({ theme }) => theme.media.small} {
-    flex-direction: column;
-    gap: 2.5rem;
+    flex-direction: column;  // <-- kritik!
+    gap: 2rem;
     padding: 0 ${({ theme }) => theme.spacings.sm};
+    text-align: center;
     align-items: center;
   }
 `;
@@ -203,8 +204,11 @@ const Left = styled.div`
   flex-direction: column;
   gap: 1.1rem;
   justify-content: flex-start;
+
   ${({ theme }) => theme.media.small} {
-    max-width: 100%;
+    min-width: 0 !important;      // <-- kritik!
+    max-width: 100% !important;   // <-- kritik!
+    width: 100% !important;       // <-- kritik!
     align-items: center;
     text-align: center;
     gap: 2rem;
@@ -220,8 +224,9 @@ const Right = styled.div`
   gap: 1.7rem;
 
   ${({ theme }) => theme.media.small} {
-    width: 100%;
-    max-width: 420px;
+    min-width: 0 !important;      // <-- kritik!
+    max-width: 100% !important;   // <-- kritik!
+    width: 100% !important;       // <-- kritik!
     margin: 0 auto;
     flex-direction: column;
     align-items: center;
