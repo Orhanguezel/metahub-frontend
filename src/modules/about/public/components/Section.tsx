@@ -62,12 +62,9 @@ export default function AboutSection() {
   }
 
   const validAbout = about.filter((item) => !!item && typeof item === "object");
-  const main =
-    validAbout.find((x) => !!x?.slug && x.slug === "ensotek-su-sogutma-kuleleri") ||
-    (validAbout.length > 2 ? validAbout[2] : validAbout[0]) ||
-    {};
+  const main = validAbout[0] || {};
+const featuresData = [validAbout[1] || {}, validAbout[2] || {}];
 
-  const featuresData = [validAbout[0] || {}, validAbout[1] || {}];
 
   const icons = [
     <FaChartLine size={32} color="#2875c2" key="vizyon" />,

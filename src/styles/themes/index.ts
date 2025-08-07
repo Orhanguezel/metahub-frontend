@@ -9,6 +9,8 @@ import ensotekTheme from "./ensotekTheme";
 import anastasiaTheme from "./anastasiaTheme"; 
 import guezelwebTheme from "./guezelwebTheme";
 import radanorTheme from "./radanorTheme";
+import gzlTheme from "./gzlTheme";
+
 
 
 // Yeni tema ekledikçe buraya import edip ekleyeceğiz.
@@ -23,6 +25,7 @@ export const themes = {
   anastasia: anastasiaTheme,
   guezelweb: guezelwebTheme,
   radanor: radanorTheme,
+  gzl: gzlTheme,
 
 };
 

@@ -60,5 +60,6 @@
   "admin.language.de": "Almanca",
   "admin.language.fr": "Fransızca",
   "admin.language.es": "İspanyolca",
-  "admin.language.pl": "Lehçe"
+  "admin.language.pl": "Lehçe",
+  "admin.about.order_placeholder": "Sıralama numarasını girin (0 = ilk)"
 }

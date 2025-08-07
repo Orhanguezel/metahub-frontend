@@ -57,5 +57,6 @@
   "admin.language.de": "German",
   "admin.language.fr": "French",
   "admin.language.es": "Spanish",
-  "admin.language.pl": "Polish"
+  "admin.language.pl": "Polish",
+  "admin.about.order_placeholder": "Enter order number (0 = first)"
 }

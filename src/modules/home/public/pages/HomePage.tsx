@@ -13,6 +13,7 @@ import { BlogSection } from "@/modules/blog";
 import { ArticlesSection } from "@/modules/articles";
 import { ActivitySection } from "@/modules/activity";
 import { ReferencesSection } from "@/modules/references";
+import { ReferencesAltSection } from "@/modules/references";
 import { BikesSection } from "@/modules/bikes";
 import { LibrarySection } from "@/modules/library";
 import { EnsotekprodSection } from "@/modules/ensotekprod";
@@ -56,6 +57,7 @@ const sectionComponents: Record<string, React.ComponentType<any> | undefined> = 
   articles: ArticlesSection,
   activity: ActivitySection,
   references: ReferencesSection,
+  referencesAlt: ReferencesAltSection,
   bikes: BikesSection,
   library: LibrarySection,
   ensotekprod: EnsotekprodSection,

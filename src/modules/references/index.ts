@@ -12,6 +12,8 @@ export { default as MultiUploadModal } from "./admin/components/MultiUploadModal
 
 // Public Components
 export { default as ReferencesSection } from "./public/components/Section";
+export { default as ReferencesAltSection } from "./public/components/SectionAlt";
+
 export { default as DetailSection } from "./public/components/DetailSection";
 
 // Types (if any)

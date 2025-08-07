@@ -88,7 +88,7 @@ const LogoWrapper = styled(Link)`
   max-width: 220px;
 
   @media (max-width: 600px) {
-    max-width: 130px;
+    max-width: 220px;
   }
 `;
 
@@ -128,13 +128,16 @@ const LogoSlogan = styled.span`
   text-align: center;
   letter-spacing: 0.01em;
   line-height: 1.2;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  max-width: 160px;
+
+  white-space: nowrap;                // 👈 Sadece tek satır!
+  overflow: hidden;                   // 👈 Taşan kısmı gizle
+  text-overflow: ellipsis;            // 👈 ... göster
+  max-width: 220px;
 
   @media (max-width: 600px) {
     font-size: ${({ theme }) => theme.fontSizes.xsmall};
-    max-width: 80vw;
+    max-width: 75vw;                  // Mobilde daha fazla esneklik
   }
 `;
+
+

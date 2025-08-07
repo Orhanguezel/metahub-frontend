@@ -57,5 +57,6 @@
   "admin.language.de": "Deutsch",
   "admin.language.fr": "Französisch",
   "admin.language.es": "Spanisch",
-  "admin.language.pl": "Polnisch"
+  "admin.language.pl": "Polnisch",
+  "admin.about.order_placeholder": "Reihenfolge eingeben (0 = erste)"
 }

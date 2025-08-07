@@ -47,6 +47,7 @@ export default function FormModal({
   );
   const [author, setAuthor] = useState("");
   const [tags, setTags] = useState("");
+  const [order, setOrder] = useState<number>(0);
   const [category, setCategory] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
@@ -75,6 +76,7 @@ export default function FormModal({
       );
       setAuthor(editingItem.author || currentUser?.name || "");
       setTags(Array.isArray(editingItem.tags) ? editingItem.tags.join(", ") : "");
+      setOrder(typeof editingItem.order === "number" ? editingItem.order : 0);
       setCategory(
         typeof editingItem.category === "string"
           ? editingItem.category
@@ -92,6 +94,7 @@ export default function FormModal({
       setContents(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
       setAuthor(currentUser?.name || "");
       setTags("");
+      setOrder(0);
       setCategory("");
       setExistingImages([]);
       setSelectedFiles([]);
@@ -137,6 +140,7 @@ export default function FormModal({
           .filter(Boolean)
       )
     );
+    formData.append("order", order.toString());
     formData.append("category", category);
     formData.append("isPublished", "true");
 
@@ -213,6 +217,17 @@ export default function FormModal({
           onChange={(e) => setTags(e.target.value)}
           placeholder="tag1, tag2, tag3"
         />
+
+        <label htmlFor="order">{t("admin.about.order", "Order (Sıra)")}</label>
+<input
+  id="order"
+  type="number"
+  value={order}
+  min={0}
+  max={999}
+  onChange={(e) => setOrder(Number(e.target.value))}
+  placeholder={t("admin.about.order_placeholder", "Display order (0 = first)")}
+/>
 
         <label>{t("admin.about.image", "Images")}</label>
         <ImageUploadWithPreview
