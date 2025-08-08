@@ -10,6 +10,7 @@ import anastasiaTheme from "./anastasiaTheme";
 import guezelwebTheme from "./guezelwebTheme";
 import radanorTheme from "./radanorTheme";
 import gzlTheme from "./gzlTheme";
+import antalyaTheme from "./antalyaTheme";
 
 
 
@@ -26,6 +27,7 @@ export const themes = {
   guezelweb: guezelwebTheme,
   radanor: radanorTheme,
   gzl: gzlTheme,
+  antalya: antalyaTheme,
 
 };
 

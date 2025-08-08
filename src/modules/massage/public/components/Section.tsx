@@ -97,8 +97,6 @@ export default function MassageSection() {
   );
 }
 
-// ... diğer styled-components aynı şekilde devam ...
-
 // --- EK: Ana faaliyet görseli için özel wrap ve stil ---
 const FirstMassageImageWrap = styled(Link)`
   width: 100%;
@@ -134,7 +132,7 @@ const FirstMassageImage = styled.img`
 
 const Section = styled.section`
   padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xxl};
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  background: ${({ theme }) => theme.colors.sectionBackground};
   color: ${({ theme }) => theme.colors.text};
 `;
 
@@ -198,25 +196,26 @@ const Right = styled.div`
 
 const CardGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, minmax(140px, 1fr));
-  grid-template-rows: repeat(3, minmax(168px, 1fr));
-  gap: 2.2rem 2.7rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4rem 1.7rem;
   width: 100%;
-  max-width: 720px;
+  max-width: 900px;
   margin: 0 auto;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1100px) {
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: none;
-    gap: 1.2rem 1.2rem;
-    max-width: 99vw;
-    justify-items: center;
+    gap: 1.1rem 1.1rem;
+    max-width: 650px;
   }
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr 1fr;
-    gap: 0.65rem 0.65rem;
-    padding: 0 0.2rem;
-    justify-items: center;
+  @media (max-width: 700px) {
+    grid-template-columns: repeat(2, 1fr);   // Mobilde de 2 sütun!
+    gap: 0.8rem 0.8rem;
+    max-width: 99vw;
+  }
+  @media (max-width: 430px) {
+    grid-template-columns: 1fr;    // Çok dar ekranda tek sütun, taşmasın diye!
+    gap: 0.5rem 0.5rem;
+    padding: 0 0.1rem;
   }
 `;
 
@@ -227,49 +226,53 @@ const CardLink = styled(Link)`
   color: inherit;
   display: flex;
   flex-direction: column;
-  align-items: center;  // Ortala
+  align-items: stretch;
   justify-content: flex-start;
   background: ${({ theme }) => theme.colors.cardBackground};
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  padding: 2.1rem 1rem 1.25rem 1rem;
-  min-height: 220px;
-  transition: box-shadow 0.17s, border-color 0.17s, transform 0.16s;
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  padding: 0;
+  min-height: 250px;
+  overflow: hidden;
+  transition: box-shadow 0.18s, transform 0.18s;
   cursor: pointer;
-  position: relative;
-  will-change: transform;
-  outline: none;
+
+  @media (max-width: 700px) {
+    min-height: 148px;  /* Mobilde çok daha kısa! */
+  }
+  @media (max-width: 430px) {
+    min-height: 122px;
+  }
 
   &:hover, &:focus-visible {
     box-shadow: ${({ theme }) => theme.shadows.lg};
-    border-color: ${({ theme }) => theme.colors.accent};
-    transform: translateY(-8px) scale(1.06);
-    z-index: 1;
-    text-decoration: none;
-  }
-
-  @media (max-width: 600px) {
-    align-items: center;   // Mobilde de garanti ortalı
-    text-align: center;
+    transform: translateY(-6px) scale(1.035);
+    z-index: 2;
   }
 `;
+
 
 
 const CardImgBox = styled.div`
-  width: 140px;
-  height: 110px;
+  width: 100%;
+  height: 160px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.1rem;
   overflow: hidden;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  box-shadow: 0 4px 22px 0 rgba(40, 117, 194, 0.07);
 
-  @media (max-width: 600px) {
-    width: 100px;
-    height: 78px;
+  @media (max-width: 1100px) {
+    height: 120px;
+  }
+  @media (max-width: 700px) {
+    height: 100px;
+  }
+  @media (max-width: 430px) {
+    height: 86px;
   }
 `;
+
 
 const CardImg = styled.img`
   width: 95%;
@@ -282,19 +285,26 @@ const CardImg = styled.img`
 `;
 
 const CardImgPlaceholder = styled.div`
-  width: 80px;
-  height: 80px;
+  width: 100%;
+  height: 100%;
   background: ${({ theme }) => theme.colors.skeleton};
   opacity: 0.43;
 `;
 
 const CardTitle = styled.h3`
-  font-size: 1.15em;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin-top: 0.6rem;
-  text-align: center; // HER ZAMAN ortalı
+  text-align: center;
+  padding: 0.5rem 0 0.3rem 0;    // Eskisine göre daha az
+  line-height: 1.18;
+  min-height: 1.9em;             // Eskiden 2.4em idi, artık daha kısa
   letter-spacing: 0.01em;
-  min-height: 2.2em;
-  line-height: 1.14;
+
+  @media (max-width: 700px) {
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    padding: 0.36rem 0 0.17rem 0;
+    min-height: 1.4em;
+  }
 `;
+
