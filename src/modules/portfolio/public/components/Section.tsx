@@ -121,7 +121,7 @@ export default function PortfolioSection() {
 // --- STYLES ---
 
 const Section = styled(motion.section)`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  background: ${({ theme }) => theme.colors.sectionBackground};
   color: ${({ theme }) => theme.colors.text};
   padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xxl};
   width: 100%;
@@ -176,23 +176,23 @@ const Desc = styled.p`
 const PortfolioGrid = styled.div`
   max-width: 1100px;
   margin: 0 auto;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Daima 3 kart tek satırda */
   gap: 2.2rem;
   align-items: stretch;
   justify-content: center;
   padding: 0 ${({ theme }) => theme.spacings.xl};
-  flex-wrap: wrap;
   ${({ theme }) => theme.media.medium} {
-    padding: 0 ${({ theme }) => theme.spacings.md};
     gap: 1.6rem;
+    padding: 0 ${({ theme }) => theme.spacings.md};
   }
   ${({ theme }) => theme.media.small} {
-    flex-direction: column;
+    grid-template-columns: 1fr;   // Mobilde tek sütuna düş
     gap: 1.5rem;
     padding: 0 ${({ theme }) => theme.spacings.sm};
-    align-items: center;
   }
 `;
+
 
 const NoPortfolio = styled.div`
   text-align: center;
