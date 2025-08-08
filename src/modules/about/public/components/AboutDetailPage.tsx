@@ -322,8 +322,8 @@ const CvText = styled.div`
     font-family: ${({ theme }) => theme.fonts.heading};
     font-weight: ${({ theme }) => theme.fontWeights.bold};
     color: ${({ theme }) => theme.colors.title};
-    background: linear-gradient(90deg, ${({ theme }) => theme.colors.primary} 25%, ${({ theme }) => theme.colors.primaryLight} 80%);
     background: ${({ theme }) => theme.colors.cardBackground};
+    color: ${({ theme }) => theme.colors.textSecondary};
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
