@@ -23,15 +23,14 @@ import { TeamSection } from "@/modules/team";
 import { ContactFormSection } from "@/modules/contact";
 import { PortfolioSection } from "@/modules/portfolio";
 import { SkillSection } from "@/modules/skill";
+import { TestimonialSection,TestimonialSectionAlt,TestimonialSectionGzl } from "@/modules/comment";
 import WhatsAppFloatingSection from "@/modules/home/public/components/WhatsAppFloatingSection";
-import FloatingChatboxSection from "@/modules/chat/public/components/FloatingChatbox"; // Senin chat kutun
+import FloatingChatboxSection from "@/modules/chat/public/components/FloatingChatbox";
 import ScrollToTopSection from "@/modules/home/public/components/ScrollToTop";
 import RequestOfferButton from "@/modules/offer/public/components/RequestOfferButton";
 import CatalogRequestButton from "@/modules/catalog/public/components/CatalogRequestButton";
 import NewsletterButton from "@/modules/newsletter/public/components/NewsletterButton";
 import NewsletterSection from "@/modules/newsletter/public/components/NewsletterSection";
-import TestimonialSection from "@/modules/comment/public/components/TestimonialSection";
-import TestimonialSectionAlt from "@/modules/comment/public/components/TestimonialSectionAlt";
 import PricingSection from "@/modules/pricing/public/components/Section";
 
 import HeroSlider from "@/modules/home/public/components/HeroSlider";
@@ -70,12 +69,13 @@ const sectionComponents: Record<string, React.ComponentType<any> | undefined> = 
   newsletterSection: NewsletterSection,
   chatbox: FloatingChatboxSection,
   testimonial: TestimonialSection,
+  testimonialAlt: TestimonialSectionAlt,
+  testimonialGzl: TestimonialSectionGzl,
   team: TeamSection,
   aboutMe: AboutMeSection,
   contact: ContactFormSection,
   portfolio: PortfolioSection,
   skills: SkillSection,
-  testimonialAlt: TestimonialSectionAlt,
   pricing: PricingSection,
 };
 

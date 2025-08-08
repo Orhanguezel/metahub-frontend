@@ -1,6 +1,11 @@
 // Pages
 export { default as AdminCommentPage } from "./admin/pages/AdminCommentPage";
 
+// Components
+export { default as TestimonialSection } from "./public/components/TestimonialSection";
+export { default as TestimonialSectionAlt } from "./public/components/TestimonialSectionAlt";
+export { default as TestimonialSectionGzl } from "./public/components/TestimonialSectionGzl";
+
 // Admin Components
 export { default as CommentDetailsModal } from "./admin/components/CommentDetailsModal";
 export { default as CommentForm } from "./admin/components/CommentForm";
