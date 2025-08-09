@@ -314,7 +314,7 @@ const BlogCard = styled(motion.div)`
   display: flex;
   flex-direction: row;
   min-height: 86px;
-  max-width: 390px;
+  max-width: 490px;
   border: 1px solid ${({ theme }) => theme.cards.border};
   border-radius: ${({ theme }) => theme.radii.md};
   transition: box-shadow ${({ theme }) => theme.transition.normal}, transform ${({ theme }) => theme.transition.fast};

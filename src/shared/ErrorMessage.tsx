@@ -3,9 +3,10 @@
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
+import classicTheme from "@/styles/themes/classicTheme"; // ⬅️ fallback
 
 interface Props {
-  onAuthSuccess?: () => void; 
+  onAuthSuccess?: () => void;
   message?: string;
   type?: "success" | "error";
   buttonText?: string;
@@ -21,10 +22,7 @@ export default function RegisterSuccessStep({
 }: Props) {
   const { t } = useTranslation("register");
 
-
   const finalType = type || (message ? "error" : "success");
-
-  // Butonun işlevi ve metni duruma göre değişir
   const showButton = Boolean(onAuthSuccess || onButtonClick);
   const handleClick = onAuthSuccess || onButtonClick;
   const btnText =
@@ -33,13 +31,9 @@ export default function RegisterSuccessStep({
       ? t("goToLogin", "Girişe Git")
       : t("retry", "Tekrar Dene"));
 
-  // Başlık ve ikon
   const icon =
-    finalType === "success" ? (
-      <FaCheckCircle size={52} />
-    ) : (
-      <FaExclamationCircle size={52} />
-    );
+    finalType === "success" ? <FaCheckCircle size={52} /> : <FaExclamationCircle size={52} />;
+
   const title =
     finalType === "success"
       ? t("successTitle", "Kayıt tamamlandı!")
@@ -68,49 +62,55 @@ export default function RegisterSuccessStep({
   );
 }
 
-// Styled Components
+/* --- Styled Components (classicTheme fallback'lı) --- */
 const Wrapper = styled.div`
   max-width: 400px;
   margin: 2rem auto;
   padding: 2rem;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  color: ${({ theme }) => theme.colors.text};
+  background: ${({ theme }) =>
+    theme?.colors?.backgroundSecondary ?? classicTheme.colors.backgroundSecondary};
+  border-radius: ${({ theme }) => theme?.radii?.md ?? classicTheme.radii.md};
+  box-shadow: ${({ theme }) => theme?.shadows?.sm ?? classicTheme.shadows.sm};
+  color: ${({ theme }) => theme?.colors?.text ?? classicTheme.colors.text};
   text-align: center;
 `;
 
 const IconWrap = styled.div<{ $type?: "success" | "error" }>`
   color: ${({ theme, $type }) =>
-    $type === "error" ? theme.colors.danger : theme.colors.success};
+    $type === "error"
+      ? (theme?.colors?.danger ?? classicTheme.colors.danger)
+      : (theme?.colors?.success ?? classicTheme.colors.success)};
   margin-bottom: 1rem;
 `;
 
 const Title = styled.h2`
   font-size: 1.4rem;
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  font-weight: ${({ theme }) => theme?.fontWeights?.bold ?? classicTheme.fontWeights.bold};
   margin-bottom: 1rem;
+  color: ${({ theme }) => theme?.colors?.text ?? classicTheme.colors.text};
 `;
 
 const Desc = styled.p`
-  color: ${({ theme }) => theme.colors.textSecondary};
+  color: ${({ theme }) =>
+    theme?.colors?.textSecondary ?? classicTheme.colors.textSecondary};
   margin-bottom: 2rem;
 `;
 
 const Button = styled.button`
   width: 100%;
   padding: 0.9rem 0;
-  background-color: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.buttonText};
+  background-color: ${({ theme }) => theme?.colors?.primary ?? classicTheme.colors.primary};
+  color: ${({ theme }) => theme?.colors?.buttonText ?? classicTheme.colors.buttonText};
   border: none;
-  border-radius: ${({ theme }) => theme.radii.md};
+  border-radius: ${({ theme }) => theme?.radii?.md ?? classicTheme.radii.md};
   font-weight: 600;
-  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-size: ${({ theme }) => theme?.fontSizes?.base ?? classicTheme.fontSizes.base};
   cursor: pointer;
   transition: background 0.2s;
   &:hover,
   &:focus {
-    background: ${({ theme }) => theme.colors.primaryHover};
+    background: ${({ theme }) =>
+      theme?.colors?.primaryHover ?? classicTheme.colors.primaryHover};
   }
   &:disabled {
     opacity: 0.6;

@@ -6,15 +6,16 @@ const getLang = (): string => {
   if (typeof window === "undefined") return "de";
   const storedLang = localStorage.getItem("lang");
   if (storedLang) return storedLang;
-  const navLang = window.navigator.language || (window.navigator as any).userLanguage || "";
+  const navLang =
+    window.navigator.language ||
+    (window.navigator as any).userLanguage ||
+    "";
   return navLang.split("-")[0] || "de";
 };
 
 const isDev = process.env.NODE_ENV === "development";
 
 const getTenantSlug = (): string | undefined => {
-  // Her iki ortamda da tenant mantığı çalışır.
-  // Dev'de env veya hostname, prod'da host header/NGINX veya window.location
   try {
     return detectTenantFromHost();
   } catch {
@@ -35,11 +36,9 @@ const apiCall = async (
       if (data) console.log("📤 Payload:", data);
     }
 
-    // Tüm ortamlarda tenant slug kullanılsın (NGINX header ile taşınan tenant da buradan okunacak)
     const tenantSlug = getTenantSlug();
-
-    // FormData kontrolü
-    const isFormData = typeof FormData !== "undefined" && data instanceof FormData;
+    const isFormData =
+      typeof FormData !== "undefined" && data instanceof FormData;
 
     const finalConfig = {
       ...config,
@@ -52,18 +51,17 @@ const apiCall = async (
       },
     };
 
-const response =
-  method === "get"
-    // GET: data -> params (aynı)
-    ? await API.get(url, { ...finalConfig, params: data })
-    : method === "delete"
-    // DELETE: axios.delete(url, config) — body varsa config.data'ya konur
-    ? await API.delete(url, { ...finalConfig, ...(data != null ? { data } : {}) })
-    // POST/PUT/PATCH: axios[method](url, data, config) (aynı)
-    : await (API as any)[method](url, data, finalConfig);
+    const response =
+      method === "get"
+        ? await API.get(url, { ...finalConfig, params: data })
+        : method === "delete"
+        ? await API.delete(url, {
+            ...finalConfig,
+            ...(data != null ? { data } : {}),
+          })
+        : await (API as any)[method](url, data, finalConfig);
 
-return response.data;
-
+    return response.data;
   } catch (error: any) {
     const status = error?.response?.status || "Unknown";
     const errorData = error?.response?.data ?? {};
@@ -74,9 +72,16 @@ return response.data;
       error?.message ||
       "Etwas ist schiefgelaufen!";
 
-    if (status === 401 && url === "/account/me") {
+    // 🔁 path normalizasyonu (absolute/relative fark etmez)
+    const raw = typeof url === "string" ? url : "";
+    const pathOnly = raw.replace(/^https?:\/\/[^/]+/i, "").split("?")[0] || raw;
+
+    // 🔐 401'de "me" endpointlerini misafir kabul et
+    // /account/me, /users/account/me, /users/me ... hepsini kapsar
+    const isMeEndpoint = /\/(users\/)?(account\/)?me$/i.test(pathOnly);
+    if (status === 401 && isMeEndpoint) {
       if (isDev) {
-        console.warn("🔐 [account/me] için 401 — kullanıcı login değil.");
+        console.warn(`🔐 401 on "${pathOnly}" — user not logged in (guest).`);
       }
       return null;
     }
@@ -84,14 +89,14 @@ return response.data;
     if (error?.response) {
       const res = error.response;
       const logObj = {
-        url: res?.config?.url || url || "Unbekannte URL",
+        url: res?.config?.url || pathOnly || "Unbekannte URL",
         status: res?.status ?? "-",
         data: res?.data ?? "-",
         method:
           (res?.config?.method &&
             res.config.method.toUpperCase &&
             res.config.method.toUpperCase()) ||
-          (method && method.toUpperCase && method.toUpperCase()) ||
+          (typeof method === "string" && method.toUpperCase?.()) ||
           "-",
       };
       const isEmptyObj = Object.values(logObj).every(
@@ -111,6 +116,7 @@ return response.data;
         error,
       });
     }
+
     if (rejectWithValue) {
       return rejectWithValue({ status, message, data: errorData });
     }

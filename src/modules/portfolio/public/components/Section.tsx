@@ -79,6 +79,7 @@ export default function PortfolioSection() {
         <MainTitle>{t("page.portfolio.title", "Projelerim")}</MainTitle>
         <Desc>{t("page.portfolio.desc", "Modern SaaS, B2B ve dijital dönüşüm projelerim.")}</Desc>
       </SectionHead>
+
       <PortfolioGrid>
         {shownPortfolio.map((item) => (
           <PortfolioCard key={item._id} as={motion.article}>
@@ -87,28 +88,28 @@ export default function PortfolioSection() {
                 <CardImage
                   src={item.images[0].url}
                   alt={item.title?.[lang] || item.title?.en || ""}
-                  width={200}
-                  height={116}
-                  style={{ objectFit: "cover" }}
+                  width={800}
+                  height={450}
                   priority
                 />
               ) : (
                 <ImgPlaceholder />
               )}
             </CardImageWrap>
+
             <CardBody>
               <CardTitle as={Link} href={`/portfolio/${item.slug}`}>
                 {item.title?.[lang] || item.title?.en || ""}
               </CardTitle>
               <CardExcerpt>
-                {item.summary?.[lang]
-                  || (item.content?.[lang]?.slice(0, 90) + "…")
-                  || ""}
+                {item.summary?.[lang] ||
+                  (item.content?.[lang]?.slice(0, 90) ? item.content?.[lang]!.slice(0, 90) + "…" : "")}
               </CardExcerpt>
             </CardBody>
           </PortfolioCard>
         ))}
       </PortfolioGrid>
+
       <div style={{ textAlign: "center" }}>
         <SeeAllBtn href="/portfolio">
           {t("page.portfolio.all", "Tüm Projeler")}
@@ -118,7 +119,7 @@ export default function PortfolioSection() {
   );
 }
 
-// --- STYLES ---
+/* ========== STYLES ========== */
 
 const Section = styled(motion.section)`
   background: ${({ theme }) => theme.colors.sectionBackground};
@@ -174,25 +175,35 @@ const Desc = styled.p`
 `;
 
 const PortfolioGrid = styled.div`
-  max-width: 1100px;
+  /* Kartlar her zaman ortalı */
+  --card-max: 360px;
+
+  width: 100%;
+  max-width: 1280px;
   margin: 0 auto;
+
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Daima 3 kart tek satırda */
-  gap: 2.2rem;
-  align-items: stretch;
-  justify-content: center;
+  gap: 2rem;
   padding: 0 ${({ theme }) => theme.spacings.xl};
+
+  /* Desktop: 3 kolon */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  place-items: center;
+
   ${({ theme }) => theme.media.medium} {
+    /* Tablet: 2 kolon */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.6rem;
     padding: 0 ${({ theme }) => theme.spacings.md};
   }
+
   ${({ theme }) => theme.media.small} {
-    grid-template-columns: 1fr;   // Mobilde tek sütuna düş
-    gap: 1.5rem;
+    /* Mobile: 1 kolon */
+    grid-template-columns: 1fr;
+    gap: 1.4rem;
     padding: 0 ${({ theme }) => theme.spacings.sm};
   }
 `;
-
 
 const NoPortfolio = styled.div`
   text-align: center;
@@ -200,7 +211,10 @@ const NoPortfolio = styled.div`
 `;
 
 const PortfolioCard = styled(motion.div)`
-  width: 340px;
+  width: 100%;
+  max-width: var(--card-max);
+  margin-inline: auto;
+
   background: ${({ theme }) => theme.colors.cardBackground};
   box-shadow: 0 8px 30px 0 rgba(40,117,194,0.10);
   overflow: hidden;
@@ -210,6 +224,7 @@ const PortfolioCard = styled(motion.div)`
   border: 1px solid ${({ theme }) => theme.colors.borderLight};
   border-radius: 16px;
   transition: box-shadow 0.16s, transform 0.11s;
+
   &:hover {
     box-shadow: 0 14px 36px 0 rgba(40,117,194,0.17);
     transform: scale(1.024) translateY(-2px);
@@ -218,7 +233,7 @@ const PortfolioCard = styled(motion.div)`
 
 const CardImageWrap = styled(Link)`
   width: 100%;
-  aspect-ratio: 200 / 116; 
+  aspect-ratio: 16 / 9;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   display: flex;
   align-items: center;
@@ -227,15 +242,12 @@ const CardImageWrap = styled(Link)`
   position: relative;
 `;
 
-
 const CardImage = styled(Image)`
   width: 100%;
-  height: auto; 
+  height: 100%;
   object-fit: cover;
   display: block;
 `;
-
-
 
 const ImgPlaceholder = styled.div`
   width: 100%;

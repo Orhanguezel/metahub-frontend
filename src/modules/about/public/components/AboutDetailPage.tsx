@@ -284,13 +284,16 @@ const HeroSummary = styled.p`
 `;
 
 // Özgeçmiş/CV Card
+// --- Özgeçmiş/CV Card ---
 const CvCard = styled.div`
   margin: 0 auto ${({ theme }) => theme.spacings.xxl} auto;
   max-width: 980px;
   background: ${({ theme }) => theme.colors.cardBackground};
+  color: ${({ theme }) => theme.colors.text};               /* 👈 metin rengi garanti */
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.md};
-  padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.xl};
+  padding: ${({ theme }) => theme.spacings.xl};
   display: flex;
   align-items: center;
   position: relative;
@@ -303,46 +306,55 @@ const CvCard = styled.div`
 `;
 
 const CvText = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.lg};
+  width: 100%;
   font-family: ${({ theme }) => theme.fonts.body};
   font-weight: ${({ theme }) => theme.fontWeights.regular};
   line-height: ${({ theme }) => theme.lineHeights.loose};
-  width: 100%;
-  animation: fadeIn 1.2s cubic-bezier(.2,.67,.41,1.13);
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  color: ${({ theme }) => theme.colors.text};               /* 👈 default */
   letter-spacing: 0.01em;
+  animation: fadeIn 1.2s cubic-bezier(.2,.67,.41,1.13);
 
   ${({ theme }) => theme.media.small} {
     font-size: ${({ theme }) => theme.fontSizes.md};
   }
 
+  /* İlk paragraf – net, okunur başlık tonu */
   .intro {
     display: block;
     margin-bottom: 16px;
     font-size: 1.13em;
     font-family: ${({ theme }) => theme.fonts.heading};
     font-weight: ${({ theme }) => theme.fontWeights.bold};
-    color: ${({ theme }) => theme.colors.title};
-    background: ${({ theme }) => theme.colors.cardBackground};
-    color: ${({ theme }) => theme.colors.textSecondary};
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: ${({ theme }) => theme.colors.title};            /* 👈 belirgin başlık rengi */
+    background: none !important;                            /* 👈 clip hilesini kapat */
+    -webkit-text-fill-color: currentColor;                  /* 👈 Safari */
     letter-spacing: 0.014em;
   }
 
+  /* Geri kalan içerik */
   .rest {
     color: ${({ theme }) => theme.colors.text};
-    font-family: ${({ theme }) => theme.fonts.body};
-    font-size: 1em;
-    font-weight: ${({ theme }) => theme.fontWeights.regular};
-    line-height: ${({ theme }) => theme.lineHeights.loose};
-    background: none;
-    -webkit-text-fill-color: unset;
-    margin: 0;
-    padding: 0;
     display: block;
   }
+
+  /* İçeride gelen HTML parçaları da daima okunur olsun */
+  .rest :where(p, li, ul, ol, blockquote, h1, h2, h3, h4, h5, h6) {
+    color: ${({ theme }) => theme.colors.text};
+    margin: 0 0 ${({ theme }) => theme.spacings.sm};
+  }
+
+  .rest a {
+    color: ${({ theme }) => theme.colors.link};
+    text-decoration: underline;
+  }
+
+  .rest strong, .rest b {
+    color: ${({ theme }) => theme.colors.textAlt};
+    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  }
 `;
+
 
 // Galeri
 const GallerySection = styled.section`
