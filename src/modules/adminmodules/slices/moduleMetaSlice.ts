@@ -3,7 +3,7 @@ import apiCall from "@/lib/apiCall";
 import { toast } from "react-toastify";
 import type { IModuleMeta } from "../types";
 
-// --- STATE TİPİ ---
+// --- STATE ---
 interface ModuleMetaState {
   modules: IModuleMeta[];
   selectedModule: IModuleMeta | null;
@@ -24,67 +24,54 @@ const initialState: ModuleMetaState = {
 
 // --- ASYNC THUNKS ---
 
-// 1. Create meta
+// 1) CREATE
 export const createModuleMeta = createAsyncThunk<
   IModuleMeta,
   Partial<IModuleMeta>,
   { rejectValue: string }
 >("moduleMeta/create", async (payload, thunkAPI) => {
   try {
-    const res = await apiCall(
-      "post",
-      "/modules/meta",
-      payload,
-      thunkAPI.rejectWithValue,
-      { withCredentials: true }
-    );
-    return res.data;
+    const res = await apiCall("post", "/modules/meta", payload);
+    // backend: { success, data }
+    return res?.data as IModuleMeta;
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message ?? "Module creation failed");
+    const msg =
+      err?.data?.message || err?.message || "Module creation failed";
+    return thunkAPI.rejectWithValue(msg);
   }
 });
 
-// 2. Fetch all meta
+// 2) FETCH ALL
 export const fetchModuleMetas = createAsyncThunk<
   IModuleMeta[],
   void,
   { rejectValue: string }
 >("moduleMeta/fetchAll", async (_, thunkAPI) => {
   try {
-    const res = await apiCall(
-      "get",
-      "/modules/meta",
-      null,
-      thunkAPI.rejectWithValue,
-      { withCredentials: true }
-    );
-    return res.data;
+    const res = await apiCall("get", "/modules/meta");
+    return (res?.data as IModuleMeta[]) ?? [];
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message ?? "Fetch failed");
+    const msg = err?.data?.message || err?.message || "Fetch failed";
+    return thunkAPI.rejectWithValue(msg);
   }
 });
 
-// 3. Fetch single meta
+// 3) FETCH BY NAME
 export const fetchModuleMetaByName = createAsyncThunk<
   IModuleMeta,
   string,
   { rejectValue: string }
 >("moduleMeta/fetchByName", async (name, thunkAPI) => {
   try {
-    const res = await apiCall(
-      "get",
-      `/modules/meta/${name}`,
-      null,
-      thunkAPI.rejectWithValue,
-      { withCredentials: true }
-    );
-    return res.data;
+    const res = await apiCall("get", `/modules/meta/${encodeURIComponent(name)}`);
+    return res?.data as IModuleMeta;
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message ?? "Fetch failed");
+    const msg = err?.data?.message || err?.message || "Fetch failed";
+    return thunkAPI.rejectWithValue(msg);
   }
 });
 
-// 4. Update meta
+// 4) UPDATE
 export const updateModuleMeta = createAsyncThunk<
   IModuleMeta,
   { name: string; updates: Partial<IModuleMeta> },
@@ -93,55 +80,45 @@ export const updateModuleMeta = createAsyncThunk<
   try {
     const res = await apiCall(
       "patch",
-      `/modules/meta/${name}`,
-      updates,
-      thunkAPI.rejectWithValue,
-      { withCredentials: true }
+      `/modules/meta/${encodeURIComponent(name)}`,
+      updates
     );
-    return res.data;
+    return res?.data as IModuleMeta;
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message ?? "Update failed");
+    const msg = err?.data?.message || err?.message || "Update failed";
+    return thunkAPI.rejectWithValue(msg);
   }
 });
 
-// 5. Delete meta
+// 5) DELETE
 export const deleteModuleMeta = createAsyncThunk<
-  string,
+  { name: string },
   string,
   { rejectValue: string }
 >("moduleMeta/delete", async (name, thunkAPI) => {
   try {
-    await apiCall(
-      "delete",
-      `/modules/meta/${name}`,
-      null,
-      thunkAPI.rejectWithValue,
-      { withCredentials: true }
-    );
-    return name;
+    await apiCall("delete", `/modules/meta/${encodeURIComponent(name)}`);
+    return { name };
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message ?? "Delete failed");
+    const msg = err?.data?.message || err?.message || "Delete failed";
+    return thunkAPI.rejectWithValue(msg);
   }
 });
 
-// 6. Import meta listesi (bulk)
+// 6) BULK IMPORT
 export const importModuleMetas = createAsyncThunk<
   IModuleMeta[],
   IModuleMeta[],
   { rejectValue: string }
 >("moduleMeta/importBulk", async (metaArray, thunkAPI) => {
   try {
-    const res = await apiCall(
-      "post",
-      "/modules/meta/bulk-import",
-      metaArray,
-      thunkAPI.rejectWithValue,
-      { withCredentials: true }
-    );
-    // Eğer backend'de { data: [...] } dönerse ona göre ayarla:
-    return res.data?.data ?? res.data ?? [];
+    const res = await apiCall("post", "/modules/meta/bulk-import", {
+      metas: metaArray,
+    });
+    return (res?.data as IModuleMeta[]) ?? [];
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message ?? "Bulk import failed");
+    const msg = err?.data?.message || err?.message || "Bulk import failed";
+    return thunkAPI.rejectWithValue(msg);
   }
 });
 
@@ -160,130 +137,144 @@ const moduleMetaSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(
-        createModuleMeta.fulfilled,
-        (state, action: PayloadAction<IModuleMeta>) => {
+      // CREATE
+      .addCase(createModuleMeta.fulfilled, (state, action: PayloadAction<IModuleMeta>) => {
+        if (action.payload) {
           state.modules.push(action.payload);
           state.successMessage = `Module "${action.payload.name}" created.`;
-          state.loading = false;
           toast.success(state.successMessage);
         }
-      )
+        state.loading = false;
+        state.status = "succeeded";
+      })
       .addCase(createModuleMeta.rejected, (state, action: any) => {
         state.loading = false;
-        state.error =
-          action.payload?.message ||
-          action.payload ||
-          "Module creation failed!";
+        state.status = "failed";
+        state.error = action.payload || "Module creation failed!";
         toast.error(state.error);
       })
+
+      // FETCH ALL
       .addCase(fetchModuleMetas.pending, (state) => {
         state.loading = true;
+        state.status = "loading";
         state.error = null;
       })
-      .addCase(
-        fetchModuleMetas.fulfilled,
-        (state, action: PayloadAction<IModuleMeta[]>) => {
-          state.modules = action.payload;
-          state.loading = false;
-        }
-      )
+      .addCase(fetchModuleMetas.fulfilled, (state, action: PayloadAction<IModuleMeta[]>) => {
+        state.modules = action.payload || [];
+        state.loading = false;
+        state.status = "succeeded";
+      })
       .addCase(fetchModuleMetas.rejected, (state, action: any) => {
         state.loading = false;
-        state.error =
-          action.payload?.message ||
-          action.payload ||
-          "Modules could not be fetched!";
+        state.status = "failed";
+        state.error = action.payload || "Modules could not be fetched!";
         toast.error(state.error);
       })
+
+      // FETCH BY NAME
       .addCase(fetchModuleMetaByName.pending, (state) => {
         state.loading = true;
+        state.status = "loading";
         state.error = null;
       })
-      .addCase(
-        fetchModuleMetaByName.fulfilled,
-        (state, action: PayloadAction<IModuleMeta>) => {
-          state.selectedModule = action.payload;
-          state.loading = false;
-        }
-      )
-      .addCase(updateModuleMeta.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(
-        updateModuleMeta.fulfilled,
-        (state, action: PayloadAction<IModuleMeta>) => {
-          const idx = state.modules.findIndex(
-            (m) => m.name === action.payload.name
-          );
-          if (idx !== -1) state.modules[idx] = action.payload;
-          state.selectedModule = action.payload;
-          state.successMessage = "Module meta updated.";
-          toast.success(state.successMessage);
-          state.loading = false;
-        }
-      )
-      .addCase(updateModuleMeta.rejected, (state, action: any) => {
+      .addCase(fetchModuleMetaByName.fulfilled, (state, action: PayloadAction<IModuleMeta>) => {
+        state.selectedModule = action.payload ?? null;
         state.loading = false;
-        state.error =
-          action.payload?.message ||
-          action.payload ||
-          "Module meta could not be updated!";
+        state.status = "succeeded";
+      })
+      .addCase(fetchModuleMetaByName.rejected, (state, action: any) => {
+        state.loading = false;
+        state.status = "failed";
+        state.error = action.payload || "Fetch failed!";
         toast.error(state.error);
       })
+
+      // UPDATE
+      .addCase(updateModuleMeta.pending, (state) => {
+        state.loading = true;
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(updateModuleMeta.fulfilled, (state, action: PayloadAction<IModuleMeta>) => {
+        const updated = action.payload;
+        if (updated) {
+          const idx = state.modules.findIndex((m) => m.name === updated.name);
+          if (idx !== -1) state.modules[idx] = updated;
+          state.selectedModule = updated;
+        }
+        state.successMessage = "Module meta updated.";
+        toast.success(state.successMessage);
+        state.loading = false;
+        state.status = "succeeded";
+      })
+      .addCase(updateModuleMeta.rejected, (state, action: any) => {
+        state.loading = false;
+        state.status = "failed";
+        state.error = action.payload || "Module meta could not be updated!";
+        toast.error(state.error);
+      })
+
+      // DELETE
       .addCase(deleteModuleMeta.pending, (state) => {
         state.loading = true;
+        state.status = "loading";
         state.error = null;
       })
-      .addCase(
-        deleteModuleMeta.fulfilled,
-        (state, action: PayloadAction<string>) => {
-          state.modules = state.modules.filter(
-            (m) => m.name !== action.payload
-          );
-          state.successMessage = "Module meta deleted.";
-          toast.success(state.successMessage);
-          state.loading = false;
-        }
-      )
+      .addCase(deleteModuleMeta.fulfilled, (state, action: PayloadAction<{ name: string }>) => {
+        state.modules = state.modules.filter((m) => m.name !== action.payload.name);
+        state.successMessage = "Module meta deleted.";
+        toast.success(state.successMessage);
+        state.loading = false;
+        state.status = "succeeded";
+      })
+      .addCase(deleteModuleMeta.rejected, (state, action: any) => {
+        state.loading = false;
+        state.status = "failed";
+        state.error = action.payload || "Delete failed!";
+        toast.error(state.error);
+      })
+
+      // BULK IMPORT
       .addCase(importModuleMetas.pending, (state) => {
         state.loading = true;
+        state.status = "loading";
         state.error = null;
       })
-      .addCase(
-        importModuleMetas.fulfilled,
-        (state, action: PayloadAction<IModuleMeta[]>) => {
-          state.modules = action.payload;
-          state.successMessage = "Module metas imported successfully.";
-          toast.success(state.successMessage);
-          state.loading = false;
-        }
-      )
-      // --- Matcherlar EN SONDA ---
+      .addCase(importModuleMetas.fulfilled, (state, action: PayloadAction<IModuleMeta[]>) => {
+        state.modules = action.payload || [];
+        state.successMessage = "Module metas imported successfully.";
+        toast.success(state.successMessage);
+        state.loading = false;
+        state.status = "succeeded";
+      })
+      .addCase(importModuleMetas.rejected, (state, action: any) => {
+        state.loading = false;
+        state.status = "failed";
+        state.error = action.payload || "Bulk import failed!";
+        toast.error(state.error);
+      })
+
+      // --- GENEL MATCHERLAR ---
       .addMatcher(
-        (action) =>
-          action.type.startsWith("moduleMeta/") &&
-          action.type.endsWith("/pending"),
+        (action) => action.type.startsWith("moduleMeta/") && action.type.endsWith("/pending"),
         (state) => {
           state.loading = true;
+          state.status = "loading";
           state.error = null;
         }
       )
       .addMatcher(
-        (action) =>
-          action.type.startsWith("moduleMeta/") &&
-          action.type.endsWith("/rejected"),
+        (action) => action.type.startsWith("moduleMeta/") && action.type.endsWith("/rejected"),
         (state, action: any) => {
           state.loading = false;
-          state.error =
-            action.payload?.message || action.payload || "Operation failed!";
+          state.status = "failed";
+          state.error = action.payload?.message || action.payload || "Operation failed!";
           toast.error(state.error);
         }
       );
   },
 });
 
-export const { clearModuleMetaMessages, clearSelectedModule } =
-  moduleMetaSlice.actions;
+export const { clearModuleMetaMessages, clearSelectedModule } = moduleMetaSlice.actions;
 export default moduleMetaSlice.reducer;

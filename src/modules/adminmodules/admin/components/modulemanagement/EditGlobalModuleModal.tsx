@@ -1,17 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import React, { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 import styled from "styled-components";
 import { XCircle } from "lucide-react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/adminmodules";
+import { translations } from "@/modules/adminmodules";
 import { useAppDispatch } from "@/store/hooks";
 import { updateModuleMeta } from "@/modules/adminmodules/slices/moduleMetaSlice";
 import { SUPPORTED_LOCALES } from "@/i18n";
 import type { IModuleMeta } from "@/modules/adminmodules/types";
 import type { TranslatedLabel } from "@/types/common";
+import { toast } from "react-toastify";
 
-// --- Props tipi ---
+// --- Props ---
 interface EditGlobalModuleModalProps {
   module: IModuleMeta;
   onClose: () => void;
@@ -21,7 +22,7 @@ interface EditGlobalModuleModalProps {
 interface FormState {
   label: TranslatedLabel;
   icon: string;
-  roles: string;
+  roles: string; // comma separated input
   enabled: boolean;
   order: number;
 }
@@ -33,22 +34,26 @@ const EditGlobalModuleModal: React.FC<EditGlobalModuleModalProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const { t } = useI18nNamespace("adminModules", translations);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // label’ı her dilde başlat (TranslatedLabel garantili)
-  const safeLabel: TranslatedLabel = SUPPORTED_LOCALES.reduce(
-    (acc, l) => ({ ...acc, [l]: module.label?.[l] ?? "" }),
-    {} as TranslatedLabel
-  );
-
-  const [form, setForm] = useState<FormState>({
-    label: safeLabel,
+  const [form, setForm] = useState<FormState>(() => ({
+    label: SUPPORTED_LOCALES.reduce(
+      (acc, l) => ({ ...acc, [l]: module.label?.[l] ?? "" }),
+      {} as TranslatedLabel
+    ),
     icon: module.icon || "box",
     roles: Array.isArray(module.roles) ? module.roles.join(", ") : "",
     enabled: !!module.enabled,
     order: typeof module.order === "number" ? module.order : 0,
-  });
+  }));
 
+  // Accessibility refs
+  const modalRef = useRef<HTMLDivElement>(null);
+  const firstFocusRef = useRef<HTMLButtonElement>(null);
+  const titleId = "edit-module-title";
+  const descId = "edit-module-desc";
+
+  // sync when module prop changes
   useEffect(() => {
     setForm({
       label: SUPPORTED_LOCALES.reduce(
@@ -62,7 +67,48 @@ const EditGlobalModuleModal: React.FC<EditGlobalModuleModalProps> = ({
     });
   }, [module]);
 
-  // Çoklu dil label handler
+  // Body scroll lock + focus trap + Esc / Enter behavior
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    // initial focus
+    firstFocusRef.current?.focus();
+
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+
+      // focus trap
+      if (e.key === "Tab" && modalRef.current) {
+        const focusables = modalRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        } else if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", handleKey);
+    };
+  }, [onClose]);
+
+  // Backdrop close
+  const onBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
+  // i18n labels
   const handleLabelChange = (l: string, value: string) => {
     setForm((prev) => ({
       ...prev,
@@ -70,36 +116,39 @@ const EditGlobalModuleModal: React.FC<EditGlobalModuleModalProps> = ({
     }));
   };
 
-  // Diğer input handlerlar
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  // generic changes
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     let newValue: string | number | boolean = value;
+
     if (type === "checkbox") {
       newValue = (e.target as HTMLInputElement).checked;
     } else if (type === "number") {
-      newValue = parseInt(value, 10) || 0;
+      const parsed = parseInt(value, 10);
+      newValue = Number.isNaN(parsed) ? 0 : Math.max(0, parsed);
     }
-    setForm((prev) => ({
-      ...prev,
-      [name]: newValue,
-    }));
+
+    setForm((prev) => ({ ...prev, [name]: newValue }));
   };
 
-  // Submit
+  // submit
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     setIsSubmitting(true);
-
     try {
-      // roles string’ini array’e çevir
-      const rolesArray = form.roles
-        .split(",")
-        .map((r) => r.trim())
-        .filter(Boolean);
+      // roles -> array (trim + dedup + filter)
+      const rolesArray = Array.from(
+        new Set(
+          form.roles
+            .split(",")
+            .map((r) => r.trim())
+            .filter(Boolean)
+        )
+      );
 
-      // Sadece güncellenebilir alanlar:
+      // allowed fields (controller zaten filtreliyor)
       const metaUpdate: Partial<IModuleMeta> = {
         label: form.label,
         icon: form.icon,
@@ -109,36 +158,50 @@ const EditGlobalModuleModal: React.FC<EditGlobalModuleModalProps> = ({
       };
 
       await dispatch(
-        updateModuleMeta({
-          name: module.name,
-          updates: metaUpdate,
-        })
+        updateModuleMeta({ name: module.name, updates: metaUpdate })
       ).unwrap();
 
       onAfterAction?.();
       onClose();
     } catch (err: any) {
-      alert(
-        t("updateError", "Update failed.") +
-          (err?.message ? `: ${err.message}` : "")
-      );
+      const msg =
+        err?.message ||
+        t("updateError", "Update failed.");
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Overlay>
-      <Modal>
+    <Overlay onClick={onBackdropClick}>
+      <Modal
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descId}
+        onClick={(e) => e.stopPropagation()}
+      >
         <Header>
-          <Title>{t("editTitle", "Edit Module")}</Title>
-          <CloseButton onClick={onClose} aria-label={t("close", "Close")}>
+          <Title id={titleId}>{t("editTitle", "Edit Module")}</Title>
+          <CloseButton
+            type="button"
+            onClick={onClose}
+            aria-label={t("close", "Close")}
+            title={t("close", "Close")}
+            ref={firstFocusRef}
+          >
             <XCircle size={22} />
           </CloseButton>
         </Header>
 
+        <Description id={descId}>
+          {t("editDesc", "Update module meta for this tenant.")}
+        </Description>
+
         <form onSubmit={handleSubmit} autoComplete="off">
-          {/* Çoklu dil label alanı */}
+          {/* Çoklu dil label alanları */}
           {SUPPORTED_LOCALES.map((l) => (
             <InputGroup key={l}>
               <label htmlFor={`label-${l}`}>{l.toUpperCase()}</label>
@@ -151,42 +214,48 @@ const EditGlobalModuleModal: React.FC<EditGlobalModuleModalProps> = ({
                   "Module name in this language"
                 )}
                 autoComplete="off"
-                required={l === "en" || l === "de"} // ihtiyaca göre zorunlu
+                disabled={isSubmitting}
               />
             </InputGroup>
           ))}
 
           <InputGroup>
-            <label>{t("icon", "Icon")}</label>
+            <label htmlFor="icon">{t("icon", "Icon")}</label>
             <input
+              id="icon"
               name="icon"
               value={form.icon}
               onChange={handleChange}
               placeholder={t("iconPlaceholder", "Icon")}
               autoComplete="off"
+              disabled={isSubmitting}
             />
           </InputGroup>
 
           <InputGroup>
-            <label>{t("roles", "Roles (comma separated)")}</label>
+            <label htmlFor="roles">{t("roles", "Roles (comma separated)")}</label>
             <input
+              id="roles"
               name="roles"
               value={form.roles}
               onChange={handleChange}
               placeholder="admin, editor"
               autoComplete="off"
+              disabled={isSubmitting}
             />
           </InputGroup>
 
           <InputGroup>
-            <label>{t("order", "Order")}</label>
+            <label htmlFor="order">{t("order", "Order")}</label>
             <input
+              id="order"
               type="number"
               name="order"
               value={form.order}
               onChange={handleChange}
               min={0}
               autoComplete="off"
+              disabled={isSubmitting}
             />
           </InputGroup>
 
@@ -204,14 +273,14 @@ const EditGlobalModuleModal: React.FC<EditGlobalModuleModalProps> = ({
             {!form.enabled && (
               <WarnText>
                 {t(
-                  "globalDisabledWarn",
-                  "Disabling globally will disable this module for all tenants."
+                  "tenantDisabledWarn",
+                  "Disabling here will hide this module for this tenant; tenant overrides will be ignored."
                 )}
               </WarnText>
             )}
           </CheckboxGroup>
 
-          <SubmitButton type="submit" disabled={isSubmitting}>
+          <SubmitButton type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
             {isSubmitting ? t("saving", "Saving...") : t("save", "Save")}
           </SubmitButton>
         </form>
@@ -222,11 +291,12 @@ const EditGlobalModuleModal: React.FC<EditGlobalModuleModalProps> = ({
 
 export default EditGlobalModuleModal;
 
-// --- Styled Components ---
+/* --- styled --- */
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -238,15 +308,16 @@ const Modal = styled.div`
   padding: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.md};
   width: 95%;
-  max-width: 500px;
+  max-width: 520px;
   box-shadow: ${({ theme }) => theme.shadows.lg};
+  outline: none;
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: ${({ theme }) => theme.spacings.md};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
 const Title = styled.h3`
@@ -259,11 +330,19 @@ const CloseButton = styled.button`
   background: none;
   border: none;
   cursor: pointer;
-  color: ${({ theme }) => theme.colors.danger};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  padding: ${({ theme }) => theme.spacings.xs};
+  border-radius: ${({ theme }) => theme.radii.sm};
   transition: color ${({ theme }) => theme.transition.fast};
   &:hover {
-    color: ${({ theme }) => theme.colors.error};
+    color: ${({ theme }) => theme.colors.danger};
   }
+`;
+
+const Description = styled.p`
+  margin: 0 0 ${({ theme }) => theme.spacings.md};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const InputGroup = styled.div`
@@ -279,8 +358,7 @@ const InputGroup = styled.div`
   select {
     padding: ${({ theme }) => theme.spacings.sm};
     border-radius: ${({ theme }) => theme.radii.sm};
-    border: ${({ theme }) => theme.borders.thin}
-      ${({ theme }) => theme.colors.border};
+    border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
     font-size: ${({ theme }) => theme.fontSizes.md};
     background: ${({ theme }) => theme.inputs.background};
     color: ${({ theme }) => theme.inputs.text};
@@ -309,7 +387,7 @@ const CheckboxLabel = styled.label`
 const WarnText = styled.span`
   color: ${({ theme }) => theme.colors.danger};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  opacity: 0.8;
+  opacity: 0.9;
   margin-top: 4px;
 `;
 
@@ -327,5 +405,9 @@ const SubmitButton = styled.button`
   transition: background ${({ theme }) => theme.transition.fast};
   &:hover {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+  }
+  &:disabled {
+    opacity: 0.85;
+    cursor: not-allowed;
   }
 `;

@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { XCircle, Pencil } from "lucide-react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/adminmodules";
+import { translations } from "@/modules/adminmodules";
 import { SupportedLocale } from "@/types/common";
-import { EditGlobalModuleModal } from "@/modules/adminmodules";
 import { SUPPORTED_LOCALES } from "@/i18n";
+import { EditGlobalModuleModal } from "@/modules/adminmodules";
 import type { IModuleMeta } from "@/modules/adminmodules/types";
 
-// --- Props tipi ---
 interface GlobalModuleDetailModalProps {
   module: IModuleMeta;
   onClose: () => void;
@@ -22,35 +21,54 @@ export default function GlobalModuleDetailModal({
   onClose,
   onAfterAction,
 }: GlobalModuleDetailModalProps) {
-   const { i18n, t } = useI18nNamespace("adminModules", translations);
-    const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const { i18n, t } = useI18nNamespace("adminModules", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+
   const [isEditModalOpen, setEditModalOpen] = useState(false);
 
-  // Çoklu dilde label (gösterim için)
-  const moduleLabel =
-    module?.label?.[lang]?.trim() ||
-    module?.label?.en?.trim() ||
-    module?.name ||
-    "";
+  // ESC ile kapat
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
-  // Versiyon geçmişi
+  // Label (tercihen aktif dil, yoksa EN, yoksa name)
+  const moduleLabel = useMemo(
+    () =>
+      module?.label?.[lang]?.trim() ||
+      module?.label?.en?.trim() ||
+      module?.name ||
+      "",
+    [module, lang]
+  );
+
+  // Versiyon geçmişi (son 5)
   const shownHistory = Array.isArray(module?.history)
     ? module.history.slice(-5)
     : [];
   const hasMoreHistory =
     Array.isArray(module?.history) && module.history.length > 5;
 
+  // Bilgiler
+  const rolesText = Array.isArray(module?.roles)
+    ? module.roles.join(", ")
+    : "";
+  const routesCount = Array.isArray(module?.routes) ? module.routes.length : 0;
+
   const handleEditSuccess = () => {
     setEditModalOpen(false);
-    if (onAfterAction) onAfterAction();
+    onAfterAction?.();
   };
 
   return (
     <>
       <Overlay>
-        <Modal>
+        <Modal role="dialog" aria-modal="true" aria-labelledby="global-module-title">
           <Header>
-            <Title>
+            <Title id="global-module-title">
               {moduleLabel}
               <ModuleName>({module?.name})</ModuleName>
             </Title>
@@ -59,6 +77,7 @@ export default function GlobalModuleDetailModal({
                 type="button"
                 onClick={() => setEditModalOpen(true)}
                 aria-label={t("edit", "Edit")}
+                title={t("edit", "Edit")}
               >
                 <Pencil size={18} />
               </EditButton>
@@ -66,6 +85,7 @@ export default function GlobalModuleDetailModal({
                 type="button"
                 onClick={onClose}
                 aria-label={t("close", "Close")}
+                title={t("close", "Close")}
               >
                 <XCircle size={18} />
               </CloseButton>
@@ -73,7 +93,47 @@ export default function GlobalModuleDetailModal({
           </Header>
 
           <Content>
-            {/* Çoklu dilde label gösterimi */}
+            {/* Genel Bilgiler */}
+            <SectionTitle>{t("details", "Details")}</SectionTitle>
+            <DetailGrid>
+              <DetailRow>
+                <dt>{t("icon", "Icon")}</dt>
+                <dd>{module?.icon || <em>-</em>}</dd>
+              </DetailRow>
+              <DetailRow>
+                <dt>{t("roles", "Roles")}</dt>
+                <dd>{rolesText || <em>-</em>}</dd>
+              </DetailRow>
+              <DetailRow>
+                <dt>{t("language", "Language")}</dt>
+                <dd>{module?.language?.toUpperCase?.() || <em>-</em>}</dd>
+              </DetailRow>
+              <DetailRow>
+                <dt>{t("order", "Order")}</dt>
+                <dd>{Number.isFinite(module?.order) ? module.order : <em>-</em>}</dd>
+              </DetailRow>
+              <DetailRow>
+                <dt>{t("version", "Version")}</dt>
+                <dd>{module?.version || <em>-</em>}</dd>
+              </DetailRow>
+              <DetailRow>
+                <dt>{t("statsKey", "Stats Key")}</dt>
+                <dd>{module?.statsKey || <em>-</em>}</dd>
+              </DetailRow>
+              <DetailRow>
+                <dt>{t("routes", "Routes")}</dt>
+                <dd>{routesCount}</dd>
+              </DetailRow>
+              <DetailRow>
+                <dt>{t("enabled", "Enabled")}</dt>
+                <dd>
+                  <BoolDot $active={!!module.enabled} />
+                  <span>{module.enabled ? t("yes", "Yes") : t("no", "No")}</span>
+                </dd>
+              </DetailRow>
+            </DetailGrid>
+
+            {/* Çoklu dil label gösterimi */}
             <SectionTitle>{t("labels", "Module Labels")}</SectionTitle>
             <LabelTable>
               <tbody>
@@ -85,12 +145,6 @@ export default function GlobalModuleDetailModal({
                 ))}
               </tbody>
             </LabelTable>
-
-            <DetailItem>
-              <strong>{t("enabled", "Enabled")}:</strong>{" "}
-              <BoolDot $active={!!module.enabled} />
-              <span>{module.enabled ? t("yes", "Yes") : t("no", "No")}</span>
-            </DetailItem>
 
             {/* Versiyon geçmişi */}
             {shownHistory.length > 0 && (
@@ -115,7 +169,6 @@ export default function GlobalModuleDetailModal({
                       {h.note && <NoteText>{h.note}</NoteText>}
                     </HistoryItem>
                   ))}
-
                   {hasMoreHistory && (
                     <HistoryItem>
                       <em style={{ opacity: 0.7 }}>
@@ -142,7 +195,7 @@ export default function GlobalModuleDetailModal({
   );
 }
 
-// --- Styled Components ---
+/* --- styled --- */
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
@@ -151,23 +204,29 @@ const Overlay = styled.div`
   z-index: ${({ theme }) => theme.zIndex.modal};
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding: 4vh 16px;
+  overflow: auto; /* küçük ekranlar için */
 `;
 
 const Modal = styled.div`
   background: ${({ theme }) => theme.colors.background};
   padding: ${({ theme }) => theme.spacings.lg};
-  max-width: 600px;
-  width: 95%;
+  width: 100%;
+  max-width: 720px;
+  max-height: 92vh;            /* yükseklik sınırlı */
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.lg};
+  display: flex;
+  flex-direction: column;
   @media (max-width: 480px) {
     padding: ${({ theme }) => theme.spacings.md};
   }
 `;
 
 const Header = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacings.lg};
+  flex: 0 0 auto;
+  margin-bottom: ${({ theme }) => theme.spacings.md};
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -216,18 +275,38 @@ const CloseButton = styled.button`
 `;
 
 const Content = styled.div`
+  flex: 1 1 auto;
+  overflow-y: auto;            /* içerik kaydırılabilir */
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacings.sm};
 `;
 
 const SectionTitle = styled.h4`
-  margin-top: ${({ theme }) => theme.spacings.lg};
-  margin-bottom: ${({ theme }) => theme.spacings.md};
+  margin-top: ${({ theme }) => theme.spacings.md};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
   font-size: ${({ theme }) => theme.fontSizes.md};
-  border-bottom: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
+  border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   padding-bottom: ${({ theme }) => theme.spacings.xs};
+`;
+
+const DetailGrid = styled.dl`
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: ${({ theme }) => theme.spacings.xs} ${({ theme }) => theme.spacings.md};
+`;
+
+const DetailRow = styled.div`
+  display: contents;
+  dt {
+    color: ${({ theme }) => theme.colors.textSecondary};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+  }
+  dd {
+    margin: 0;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    color: ${({ theme }) => theme.colors.text};
+  }
 `;
 
 const LabelTable = styled.table`
@@ -251,11 +330,6 @@ const LabelTable = styled.table`
     background: ${({ theme }) => theme.cards.background};
     color: ${({ theme }) => theme.colors.text};
   }
-`;
-
-const DetailItem = styled.p`
-  margin: 0;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
 const BoolDot = styled.span<{ $active: boolean }>`
@@ -302,8 +376,7 @@ const NoteText = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   opacity: 0.85;
   padding-left: ${({ theme }) => theme.spacings.md};
-  border-left: ${({ theme }) => theme.borders.thick}
-    ${({ theme }) => theme.colors.primary};
+  border-left: ${({ theme }) => theme.borders.thick} ${({ theme }) => theme.colors.primary};
 `;
 
 const HistoryDate = styled.span`

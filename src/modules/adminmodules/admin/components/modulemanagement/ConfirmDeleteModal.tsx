@@ -4,9 +4,9 @@ import React, { useEffect, useRef } from "react";
 import styled from "styled-components";
 import { XCircle } from "lucide-react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/adminmodules";
+import { translations } from "@/modules/adminmodules";
 
-// --- Props tipi ---
+// --- Props ---
 interface ConfirmDeleteModalProps {
   moduleName?: string | null;
   onCancel: () => void;
@@ -26,10 +26,22 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
 }) => {
   const { t } = useI18nNamespace("adminModules", translations);
   const confirmRef = useRef<HTMLButtonElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const descId = "delete-module-desc";
+  const titleId = "delete-module-title";
 
-  // Escape ile kapama & focus yönetimi
+  // Body scroll kilidi
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
+  // ESC / Enter ve ilk focus
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onCancel();
       if (
         (e.key === "Enter" || e.key === " ") &&
@@ -38,23 +50,47 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
         e.preventDefault();
         if (!loading) onConfirm();
       }
+      // Focus trap (Tab/Shift+Tab)
+      if (e.key === "Tab" && modalRef.current) {
+        const focusables = modalRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        } else if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      }
     };
-    window.addEventListener("keydown", handleEsc);
+    window.addEventListener("keydown", handleKey);
+    // İlk odak
     confirmRef.current?.focus();
-    return () => window.removeEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleKey);
   }, [onCancel, onConfirm, loading]);
 
+  // Backdrop click ile kapat
+  const onBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) onCancel();
+  };
+
   return (
-    <Overlay>
+    <Overlay onClick={onBackdropClick} data-testid="confirm-delete-overlay">
       <Modal
-        role="dialog"
+        ref={modalRef}
+        role="alertdialog"
         aria-modal="true"
-        aria-labelledby="delete-module-title"
+        aria-labelledby={titleId}
+        aria-describedby={descId}
+        onClick={(e) => e.stopPropagation()}
+        data-testid="confirm-delete-modal"
       >
         <Header>
-          <Title id="delete-module-title">
-            {t("deleteTitle", "Delete Module")}
-          </Title>
+          <Title id={titleId}>{t("deleteTitle", "Delete Module")}</Title>
           <CloseButton
             onClick={onCancel}
             aria-label={t("close", "Close")}
@@ -66,16 +102,14 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
         </Header>
 
         <Content>
-          <WarningText>
+          <WarningText id={descId}>
             {t(
               "deleteWarning",
               "Are you sure you want to permanently delete this module?"
             )}
           </WarningText>
           <ModuleName>
-            {moduleName
-              ? moduleName
-              : t("moduleUnknown", "Module name unknown")}
+            {moduleName || t("moduleUnknown", "Module name unknown")}
           </ModuleName>
         </Content>
 
@@ -98,6 +132,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
             aria-label={t("confirmDelete", "Delete Permanently")}
             title={t("confirmDelete", "Delete Permanently")}
             disabled={loading}
+            aria-busy={loading}
           >
             {loading
               ? t("deleting", "Deleting...")
@@ -111,7 +146,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
 
 export default ConfirmDeleteModal;
 
-// --- Styled Components ---
+/* --- styled --- */
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
@@ -130,6 +165,7 @@ const Modal = styled.div`
   width: 95%;
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: ${({ theme }) => theme.shadows.md};
+  outline: none;
 `;
 
 const Header = styled.div`
@@ -180,11 +216,11 @@ const ButtonGroup = styled.div`
   justify-content: flex-end;
   gap: ${({ theme }) => theme.spacings.sm};
 `;
+
 const CancelButton = styled.button`
   background: ${({ theme }) => theme.colors.muted};
   color: ${({ theme }) => theme.colors.text};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
   border: none;
   border-radius: ${({ theme }) => theme.radii.sm};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
@@ -203,8 +239,7 @@ const CancelButton = styled.button`
 const ConfirmButton = styled.button`
   background: ${({ theme }) => theme.colors.danger};
   color: ${({ theme }) => theme.colors.whiteColor};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
   border: none;
   border-radius: ${({ theme }) => theme.radii.sm};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};

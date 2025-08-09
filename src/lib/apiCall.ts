@@ -52,16 +52,18 @@ const apiCall = async (
       },
     };
 
-    const response =
-      method === "get"
-        ? await API.get(url, { ...finalConfig, params: data })
-        : await (API as any)[method](url, data, finalConfig);
+const response =
+  method === "get"
+    // GET: data -> params (aynı)
+    ? await API.get(url, { ...finalConfig, params: data })
+    : method === "delete"
+    // DELETE: axios.delete(url, config) — body varsa config.data'ya konur
+    ? await API.delete(url, { ...finalConfig, ...(data != null ? { data } : {}) })
+    // POST/PUT/PATCH: axios[method](url, data, config) (aynı)
+    : await (API as any)[method](url, data, finalConfig);
 
-    if (isDev) {
-      console.log(`✅ [API] ${method.toUpperCase()} ${url}`, response.data);
-    }
+return response.data;
 
-    return response.data;
   } catch (error: any) {
     const status = error?.response?.status || "Unknown";
     const errorData = error?.response?.data ?? {};

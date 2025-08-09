@@ -1,11 +1,10 @@
 "use client";
-import React from "react";
+import React, { memo } from "react";
 import styled, { keyframes } from "styled-components";
 import { Check, X } from "lucide-react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/adminmodules";
+import { translations } from "@/modules/adminmodules";
 
-// Props tipi
 interface ModuleStatusToggleProps {
   isActive: boolean;
   onToggle: (
@@ -18,7 +17,6 @@ interface ModuleStatusToggleProps {
   title?: string;
 }
 
-// loading ve disabled destekli toggle
 const ModuleStatusToggle: React.FC<ModuleStatusToggleProps> = ({
   isActive,
   onToggle,
@@ -27,36 +25,28 @@ const ModuleStatusToggle: React.FC<ModuleStatusToggleProps> = ({
   title,
 }) => {
   const { t } = useI18nNamespace("adminModules", translations);
-  const label = isActive
-    ? t("toggleActive", "Active")
-    : t("toggleInactive", "Inactive");
+  const label = isActive ? t("toggleActive", "Active") : t("toggleInactive", "Inactive");
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    if (!disabled && !loading && typeof onToggle === "function") onToggle(e);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-    if ((e.key === "Enter" || e.key === " ") && !disabled && !loading) {
-      e.preventDefault();
-      if (typeof onToggle === "function") onToggle(e);
-    }
+    if (!disabled && !loading) onToggle(e);
   };
 
   return (
     <ToggleButton
+      type="button"
       onClick={handleClick}
-      onKeyDown={handleKeyDown}
       $active={isActive}
       aria-pressed={isActive}
+      aria-busy={loading}
       aria-label={label}
-      title={title}
+      title={title ?? label}
       tabIndex={0}
-      type="button"
       disabled={disabled || loading}
+      data-loading={loading ? "true" : "false"}
     >
       {loading ? (
-        <Spinner />
+        <Spinner aria-hidden="true" />
       ) : isActive ? (
         <>
           <Check size={16} />
@@ -72,26 +62,26 @@ const ModuleStatusToggle: React.FC<ModuleStatusToggleProps> = ({
   );
 };
 
-export default ModuleStatusToggle;
+export default memo(ModuleStatusToggle);
 
-// --- Spinner (minik loading animasyonu) ---
-const spin = keyframes`
-  to { transform: rotate(360deg); }
-`;
+// Spinner
+const spin = keyframes`to { transform: rotate(360deg); }`;
 const Spinner = styled.span`
   width: 16px;
   height: 16px;
-  border: 2px solid #fff6;
-  border-top: 2px solid #fff;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: ${({ theme }) => theme.colors.whiteColor || "#fff"};
   border-radius: 50%;
   display: inline-block;
   animation: ${spin} 0.8s linear infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `;
 
-// --- Styled Components ---
+// Button
 const ToggleButton = styled.button<{ $active: boolean }>`
-  background: ${({ theme, $active }) =>
-    $active ? theme.colors.success : theme.colors.danger};
+  background: ${({ theme, $active }) => ($active ? theme.colors.success : theme.colors.danger)};
   color: #fff;
   border: none;
   padding: 4px 10px 4px 6px;
@@ -111,9 +101,11 @@ const ToggleButton = styled.button<{ $active: boolean }>`
     letter-spacing: 0.01em;
     user-select: none;
   }
-  &:hover,
-  &:focus {
-    opacity: 0.85;
-    outline: none;
+  &:hover {
+    opacity: ${({ disabled }) => (disabled ? 0.7 : 0.85)};
+  }
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
   }
 `;

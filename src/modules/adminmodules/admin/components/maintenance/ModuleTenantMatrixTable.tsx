@@ -3,89 +3,166 @@ import React from "react";
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/adminmodules";
+import { translations } from "@/modules/adminmodules";
 
-// Eğer tipi ayrı dosyada ise import { ModuleTenantMatrix } from "@/modules/adminmodules/types";
-// Yoksa burada tekrar tanımlayabilirsin:
+// Backend ile hizalı tip
 type ModuleTenantMatrix = Record<string, Record<string, boolean>>;
 
 const ModuleTenantMatrixTable: React.FC = () => {
-   const { t } = useI18nNamespace("adminModules", translations);
-  // State tipi import ettiğin RootState ise tipini ver (tercihen):
-  // const { moduleTenantMatrix = {} } = useAppSelector((s: RootState) => s.moduleMaintenance);
-  // Yoksa aşağıdaki gibi kalabilir:
-  const { moduleTenantMatrix = {} } = useAppSelector(
-    (s: any): { moduleTenantMatrix: ModuleTenantMatrix } => s.moduleMaintenance
+  const { t } = useI18nNamespace("adminModules", translations);
+
+  // Not: RootState tipi hazırsa burayı tipe bağlayabilirsin.
+  const { moduleTenantMatrix = {} as ModuleTenantMatrix } = useAppSelector(
+    (s: any) => s.moduleMaintenance
   );
 
- const modules = Object.keys(moduleTenantMatrix || {});
-const tenants =
-  modules.length > 0 ? Object.keys(moduleTenantMatrix[modules[0]] || {}) : [];
+  const modules = Object.keys(moduleTenantMatrix || {}).sort();
 
-if (!modules.length || !tenants.length) {
+  // Tüm modüllerin tenant’larını birleştir (bazı modüllerde eksik olabilir)
+  const tenants = Array.from(
+    new Set(
+      modules.flatMap((m) => Object.keys(moduleTenantMatrix[m] || {}))
+    )
+  ).sort();
+
+  if (!modules.length || !tenants.length) {
+    return (
+      <EmptyWrap>
+        <EmptyTitle>{t("tenantMatrix.empty", "No module-tenant mapping data available.")}</EmptyTitle>
+        <EmptyHint>
+          {t("tenantMatrix.hint", "Use “Fetch Module-Tenant Matrix” to load the latest data.")}
+        </EmptyHint>
+      </EmptyWrap>
+    );
+    }
+
   return (
-    <InfoText>
-      {t("tenantMatrix.empty", "No module-tenant mapping data available.")}
-    </InfoText>
-  );
-}
+    <Wrap>
+      <Legend>
+        <LegendItem>
+          <ActiveDot aria-hidden />
+          <span>{t("matrix.assigned", "Assigned")}</span>
+        </LegendItem>
+        <LegendItem>
+          <InactiveDot aria-hidden />
+          <span>{t("matrix.notAssigned", "Not assigned")}</span>
+        </LegendItem>
+      </Legend>
 
-return (
-  <TableContainer>
-    <MatrixTable>
-      <thead>
-        <tr>
-          <th>{t("matrix.module", "Module")}</th>
-          {tenants.map((tenant) => (
-            <th key={tenant}>{tenant}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {modules.map((mod) => (
-          <tr key={mod}>
-            <td>{mod}</td>
-            {tenants.map((tenant) => (
-              <td key={tenant}>
-                {moduleTenantMatrix[mod][tenant] ? (
-                  <ActiveDot title="Assigned" />
-                ) : (
-                  <InactiveDot title="Not assigned" />
-                )}
-              </td>
+      <TableContainer>
+        <MatrixTable role="table">
+          <caption className="sr-only">
+            {t("matrix.caption", "Module to tenant assignment matrix")}
+          </caption>
+          <thead>
+            <tr>
+              <Th scope="col">{t("matrix.module", "Module")}</Th>
+              {tenants.map((tenant) => (
+                <Th key={tenant} scope="col">{tenant}</Th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {modules.map((mod) => (
+              <tr key={mod}>
+                <ModuleCell scope="row" title={mod}>{mod}</ModuleCell>
+                {tenants.map((tenant) => {
+                  const assigned = !!moduleTenantMatrix[mod]?.[tenant];
+                  return (
+                    <Td key={`${mod}:${tenant}`} aria-label={`${mod} → ${tenant}`}>
+                      {assigned ? (
+                        <ActiveDot title={t("matrix.assigned", "Assigned")} />
+                      ) : (
+                        <InactiveDot title={t("matrix.notAssigned", "Not assigned")} />
+                      )}
+                    </Td>
+                  );
+                })}
+              </tr>
             ))}
-          </tr>
-        ))}
-      </tbody>
-    </MatrixTable>
-  </TableContainer>
-);
-
+          </tbody>
+        </MatrixTable>
+      </TableContainer>
+    </Wrap>
+  );
 };
 
 export default ModuleTenantMatrixTable;
 
-// --- Styled Components ---
+/* --- styles (classicTheme uyumlu) --- */
+
+const Wrap = styled.div`
+  margin-top: ${({ theme }) => theme.spacings.lg};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacings.sm};
+`;
+
+const Legend = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.md};
+  align-items: center;
+  flex-wrap: wrap;
+`;
+
+const LegendItem = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacings.xs};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
 const TableContainer = styled.div`
-  margin-top: 18px;
   overflow-x: auto;
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  background: ${({ theme }) => theme.cards.background};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
 `;
 
 const MatrixTable = styled.table`
-  border-collapse: collapse;
   width: 100%;
-  th,
-  td {
-    border: 1px solid #ddd;
-    padding: 7px 11px;
-    font-size: 14px;
-    text-align: center;
+  border-collapse: collapse;
+
+  thead tr {
+    background: ${({ theme }) => theme.colors.tableHeader};
   }
-  th {
-    background: #f4f5fb;
-    font-weight: bold;
-    color: #333;
+`;
+
+const Th = styled.th`
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: center;
+  padding: ${({ theme }) => theme.spacings.sm};
+  border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  color: ${({ theme }) => theme.colors.text};
+  white-space: nowrap;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+`;
+
+const Td = styled.td`
+  text-align: center;
+  padding: ${({ theme }) => theme.spacings.sm};
+  border-top: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-left: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  &:first-of-type {
+    border-left: none;
   }
+`;
+
+const ModuleCell = styled.td.attrs({ as: "th" })`
+  text-align: left;
+  padding: ${({ theme }) => theme.spacings.sm};
+  border-top: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.cardBackground};
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  white-space: nowrap;
+  position: sticky;
+  left: 0;
 `;
 
 const ActiveDot = styled.span`
@@ -94,20 +171,34 @@ const ActiveDot = styled.span`
   height: 14px;
   background: ${({ theme }) => theme.colors.success};
   border-radius: 50%;
+  box-shadow: ${({ theme }) => theme.shadows.xs};
 `;
 
 const InactiveDot = styled.span`
   display: inline-block;
   width: 14px;
   height: 14px;
-  background: #eee;
+  background: ${({ theme }) => theme.colors.inputBackgroundLight};
   border-radius: 50%;
-  border: 1.5px solid #ccc;
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
 `;
 
-const InfoText = styled.div`
-  margin: 20px 0;
-  color: #888;
+const EmptyWrap = styled.div`
+  margin: ${({ theme }) => theme.spacings.md} 0;
   text-align: center;
-  font-size: 16px;
+  background: ${({ theme }) => theme.colors.contentBackground};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: ${({ theme }) => theme.spacings.lg};
+`;
+
+const EmptyTitle = styled.div`
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+`;
+
+const EmptyHint = styled.div`
+  margin-top: ${({ theme }) => theme.spacings.xs};
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
 `;

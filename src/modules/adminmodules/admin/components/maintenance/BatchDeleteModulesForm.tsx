@@ -2,40 +2,76 @@
 import React, { useState, FormEvent, ChangeEvent } from "react";
 import styled from "styled-components";
 import { useAppDispatch } from "@/store/hooks";
-import {
-  deleteModuleMeta,
-} from "@/modules/adminmodules/slices/moduleMetaSlice";
+import { deleteModuleMeta } from "@/modules/adminmodules/slices/moduleMetaSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/adminmodules";
+import { translations } from "@/modules/adminmodules";
 import { toast } from "react-toastify";
 
 const BatchDeleteModulesForm: React.FC = () => {
-   const { t } = useI18nNamespace("adminModules", translations);
+  const { t } = useI18nNamespace("adminModules", translations);
   const dispatch = useAppDispatch();
   const [names, setNames] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
+  const parseNames = (raw: string) =>
+    Array.from(
+      new Set(
+        raw
+          .split(/[\n,]+/g)
+          .map((n) => n.trim())
+          .filter(Boolean)
+      )
+    );
+
   const handleBatchDelete = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const modules = names
-      .split(/[\n,]+/)
-      .map((n) => n.trim())
-      .filter(Boolean);
+    const modules = parseNames(names);
     if (!modules.length) return;
+
+    const ok = window.confirm(
+      t(
+        "confirmBatchDelete",
+        "Are you sure you want to delete {count} module(s)?"
+      ).replace("{count}", String(modules.length))
+    );
+    if (!ok) return;
+
     setLoading(true);
     try {
-      await Promise.all(
+      const results = await Promise.allSettled(
         modules.map((m) => dispatch(deleteModuleMeta(m)).unwrap())
       );
-      setNames("");
-      toast.success(t("batchDeleteSuccess", "Modules deleted successfully!"));
+
+      const successes = results.filter((r) => r.status === "fulfilled").length;
+      const failures = results
+        .map((r, i) => (r.status === "rejected" ? modules[i] : null))
+        .filter(Boolean) as string[];
+
+      if (successes) {
+        toast.success(
+          t("batchDeleteSuccess", "Modules deleted successfully!") +
+            ` (${successes}/${modules.length})`
+        );
+      }
+
+      if (failures.length) {
+        toast.error(
+          t("batchDeleteError", "Batch delete failed!") +
+            ` (${failures.length}/${modules.length})`
+        );
+        // Retry kolaylığı için sadece başarısızları bırak
+        setNames(failures.join("\n"));
+      } else {
+        setNames("");
+      }
     } catch (err: any) {
       toast.error(
         t("batchDeleteError", "Batch delete failed!") +
           (err?.message ? `: ${err.message}` : "")
       );
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -55,7 +91,11 @@ const BatchDeleteModulesForm: React.FC = () => {
           disabled={loading}
           aria-label={t("moduleNames", "Module names")}
         />
-        <DeleteButton type="submit" disabled={loading || !names.trim()}>
+        <DeleteButton
+          type="submit"
+          disabled={loading || !parseNames(names).length}
+          aria-busy={loading}
+        >
           {loading ? t("deleting", "Deleting...") : t("delete", "Delete")}
         </DeleteButton>
       </StyledForm>
@@ -71,7 +111,7 @@ const BatchDeleteModulesForm: React.FC = () => {
 
 export default BatchDeleteModulesForm;
 
-// --- STYLED COMPONENTS ---
+/* --- STYLED COMPONENTS --- */
 const PanelCard = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border-radius: ${({ theme }) => theme.radii.md};
@@ -101,7 +141,7 @@ const TextArea = styled.textarea`
   width: 100%;
   min-height: 66px;
   padding: 9px 12px;
-  border: 1.3px solid #bbb;
+  border: 1.3px solid ${({ theme }) => theme.colors.border || "#bbb"};
   border-radius: 7px;
   font-size: 15px;
   font-family: inherit;

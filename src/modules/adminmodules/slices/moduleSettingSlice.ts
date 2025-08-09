@@ -2,9 +2,8 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import { toast } from "react-toastify";
 import type { IModuleSetting } from "../types";
-import { RootState } from "@/store";
 
-// --- State Tipi ---
+// --- State ---
 interface ModuleSettingState {
   tenantModules: IModuleSetting[];
   loading: boolean;
@@ -23,101 +22,67 @@ const initialState: ModuleSettingState = {
 
 // --- THUNKS ---
 
-// 1. Fetch all settings for a tenant
+// 1) Header'daki tenant için tüm module settings
+// GET /modules/setting
 export const fetchTenantModuleSettings = createAsyncThunk<
   IModuleSetting[],
   void,
-  { rejectValue: string; state: RootState }
+  { rejectValue: string }
 >("moduleSetting/fetchTenantModules", async (_, thunkAPI) => {
-  const tenantId = thunkAPI.getState().tenants.selectedTenantId; // ✅ Doğrusu tenants!
-  if (!tenantId) return thunkAPI.rejectWithValue("No tenant selected!");
-  const res = await apiCall(
-    "get",
-    `/modules/setting/${tenantId}`,
-    null,
-    thunkAPI.rejectWithValue,
-    { withCredentials: true }
-  );
-  return res.data;
+  try {
+    const res = await apiCall("get", "/modules/setting");
+    return (res?.data as IModuleSetting[]) ?? [];
+  } catch (err: any) {
+    const msg = err?.data?.message || err?.message || "Fetch failed";
+    return thunkAPI.rejectWithValue(msg);
+  }
 });
 
-// 2. Update setting (override)
+// 2) Tek module setting override
+// PATCH /modules/setting   (body: { module, ...overrides })
 export const updateModuleSetting = createAsyncThunk<
   IModuleSetting,
-  Partial<IModuleSetting>,
+  Partial<IModuleSetting> & { module: string },
   { rejectValue: string }
 >("moduleSetting/update", async (payload, thunkAPI) => {
   try {
-    const res = await apiCall(
-      "patch",
-      "/modules/setting",
-      payload,
-      thunkAPI.rejectWithValue,
-      { withCredentials: true }
-    );
-    return res.data;
+    const res = await apiCall("patch", "/modules/setting", payload);
+    return res?.data as IModuleSetting;
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message ?? "Update failed");
+    const msg = err?.data?.message || err?.message || "Update failed";
+    return thunkAPI.rejectWithValue(msg);
   }
 });
 
-// 3. Batch update
-export const batchUpdateModuleSetting = createAsyncThunk<
-  IModuleSetting[],
-  Partial<IModuleSetting>[],
-  { rejectValue: string }
->("moduleSetting/batchUpdate", async (payload, thunkAPI) => {
-  try {
-    const res = await apiCall(
-      "patch",
-      "/modules/setting/batch-update",
-      payload,
-      thunkAPI.rejectWithValue,
-      { withCredentials: true }
-    );
-    return res.data;
-  } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message ?? "Batch update failed");
-  }
-});
-
-// 4. Delete module setting (tenant+module)
+// 3) Tek mapping sil
+// DELETE /modules/setting    (body: { module })
 export const deleteModuleSetting = createAsyncThunk<
-  { module: string; tenant: string },
-  { module: string; tenant: string },
+  unknown,
+  { module: string },
   { rejectValue: string }
 >("moduleSetting/delete", async (payload, thunkAPI) => {
   try {
-    await apiCall(
-      "delete",
-      "/modules/setting",
-      payload,
-      thunkAPI.rejectWithValue,
-      { withCredentials: true }
-    );
-    return payload;
+    const res = await apiCall("delete", "/modules/setting", payload);
+    return res?.data; // genelde undefined
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message ?? "Delete failed");
+    const msg = err?.data?.message || err?.message || "Delete failed";
+    return thunkAPI.rejectWithValue(msg);
   }
 });
 
-// 5. Delete all settings for tenant
+// 4) Header’daki tenant için TÜM mappingleri sil (cleanup)
+// DELETE /modules/setting/tenant
 export const deleteAllSettingsForTenant = createAsyncThunk<
-  string,
-  string,
+  unknown,
+  void,
   { rejectValue: string }
->("moduleSetting/deleteAllForTenant", async (tenant, thunkAPI) => {
+>("moduleSetting/deleteAllForTenant", async (_, thunkAPI) => {
   try {
-    await apiCall(
-      "delete",
-      `/modules/setting/tenant/${tenant}`,
-      null,
-      thunkAPI.rejectWithValue,
-      { withCredentials: true }
-    );
-    return tenant;
+    const res = await apiCall("delete", "/modules/setting/tenant");
+    return res?.data; // genelde undefined
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message ?? "Delete failed");
+    const msg = err?.data?.message || err?.message || "Delete failed";
+    return thunkAPI.rejectWithValue(msg);
   }
 });
 
@@ -132,62 +97,53 @@ const moduleSettingSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // GET tenantModules
+    // FETCH tenant modules
     builder.addCase(
       fetchTenantModuleSettings.fulfilled,
       (state, action: PayloadAction<IModuleSetting[]>) => {
-        state.tenantModules = action.payload; // ✅
+        state.tenantModules = action.payload;
         state.loading = false;
+        state.status = "succeeded";
       }
     );
+
     // UPDATE one
     builder.addCase(
       updateModuleSetting.fulfilled,
       (state, action: PayloadAction<IModuleSetting>) => {
+        const updated = action.payload;
         const idx = state.tenantModules.findIndex(
-          (m: IModuleSetting) =>
-            m.module === action.payload.module &&
-            m.tenant === action.payload.tenant
+          (m) => m.module === updated.module && m.tenant === updated.tenant
         );
-        if (idx !== -1) state.tenantModules[idx] = action.payload;
+        if (idx !== -1) state.tenantModules[idx] = updated;
+        else state.tenantModules.push(updated);
+
         state.successMessage = "Tenant module setting updated.";
-        toast.success(state.successMessage);
         state.loading = false;
+        state.status = "succeeded";
+        toast.success(state.successMessage);
       }
     );
-    // BATCH update
-    builder.addCase(
-      batchUpdateModuleSetting.fulfilled,
-      (state, action: PayloadAction<IModuleSetting[]>) => {
-        state.tenantModules = action.payload;
-        state.successMessage = "Batch module settings updated.";
-        toast.success(state.successMessage);
-        state.loading = false;
-      }
-    );
-    // DELETE one
-    builder.addCase(
-      deleteModuleSetting.fulfilled,
-      (state, action: PayloadAction<{ module: string; tenant: string }>) => {
-        const { module, tenant } = action.payload;
-        state.tenantModules = state.tenantModules.filter(
-          (m: IModuleSetting) => m.module !== module || m.tenant !== tenant
-        );
-        state.successMessage = "Tenant module setting deleted.";
-        toast.success(state.successMessage);
-        state.loading = false;
-      }
-    );
+
+    // DELETE one (aynı tenant context'inde, module'a göre düş)
+    builder.addCase(deleteModuleSetting.fulfilled, (state, action) => {
+      const { module } = action.meta.arg;
+      state.tenantModules = state.tenantModules.filter((m) => m.module !== module);
+      state.successMessage = "Tenant module setting deleted.";
+      state.loading = false;
+      state.status = "succeeded";
+      toast.success(state.successMessage);
+    });
+
     // DELETE all for tenant
-    builder.addCase(
-      deleteAllSettingsForTenant.fulfilled,
-      (state, action: PayloadAction<string>) => {
-        state.tenantModules = [];
-        state.successMessage = "All tenant settings deleted.";
-        toast.success(`${state.successMessage} for tenant: ${action.payload}`);
-        state.loading = false;
-      }
-    );
+    builder.addCase(deleteAllSettingsForTenant.fulfilled, (state) => {
+      state.tenantModules = [];
+      state.successMessage = "All tenant settings deleted.";
+      state.loading = false;
+      state.status = "succeeded";
+      toast.success(state.successMessage);
+    });
+
     // PENDING matcher
     builder.addMatcher(
       (action) =>
@@ -196,8 +152,10 @@ const moduleSettingSlice = createSlice({
       (state) => {
         state.loading = true;
         state.error = null;
+        state.status = "loading";
       }
     );
+
     // REJECTED matcher
     builder.addMatcher(
       (action) =>
@@ -205,6 +163,7 @@ const moduleSettingSlice = createSlice({
         action.type.endsWith("/rejected"),
       (state, action: any) => {
         state.loading = false;
+        state.status = "failed";
         state.error =
           action.payload?.message || action.payload || "Operation failed!";
         toast.error(state.error);

@@ -1,65 +1,116 @@
 "use client";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import styled from "styled-components";
 import { SUPPORTED_LOCALES } from "@/i18n";
-import {
-  createTenant,
-} from "@/modules/tenants/slice/tenantSlice";
+import { createTenant } from "@/modules/tenants/slice/tenantSlice";
 import { useAppDispatch } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/adminmodules";
+import { translations } from "@/modules/adminmodules";
 import { toast } from "react-toastify";
 
-const BatchAddTenantsForm: React.FC = () => {
-  console.log("BatchAddTenantsForm render edildi");
+const slugify = (raw: string) =>
+  raw
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // diacritics
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 
-   const { t } = useI18nNamespace("adminModules", translations);
+const BatchAddTenantsForm: React.FC = () => {
+  const { t } = useI18nNamespace("adminModules", translations);
   const dispatch = useAppDispatch();
+
   const [tenantNames, setTenantNames] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
-  const handleBatchAdd = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const tenants = tenantNames
+  // Girilen metni tek bir yerde normalize et (trim, boşları at, uniq)
+  const parsedTenants = useMemo(() => {
+    const list = tenantNames
       .split(/[\n,]+/)
       .map((n) => n.trim())
       .filter(Boolean);
+    // dedupe (case-insensitive)
+    const set = new Set(list.map((x) => x.toLowerCase()));
+    // ilk orijinal değerleri korumak için sırayla topla
+    const uniq: string[] = [];
+    list.forEach((original) => {
+      const key = original.toLowerCase();
+      if (set.has(key) && !uniq.find((u) => u.toLowerCase() === key)) {
+        uniq.push(original);
+      }
+    });
+    return uniq;
+  }, [tenantNames]);
 
-    if (!tenants.length) return;
+  const handleBatchAdd = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!parsedTenants.length) {
+      toast.info(t("batchAddEmpty", "Please enter at least one tenant name."));
+      return;
+    }
+
     setLoading(true);
+    let ok = 0;
+    const failed: Array<{ name: string; reason?: string }> = [];
 
     try {
-      // Her tenant için FormData oluştur
-      await Promise.all(
-        tenants.map(async (tenant) => {
-          const formData = new FormData();
-          // Desteklenen dillere doldur
-          SUPPORTED_LOCALES.forEach((locale) =>
-            formData.append(`name[${locale}]`, tenant)
-          );
-          // Diğer zorunlu alanlar
-          formData.append(
-            "slug",
-            tenant
-              .toLowerCase()
-              .replace(/[^a-z0-9-]/g, "-")
-              .replace(/-+/g, "-")
-              .replace(/^-|-$/g, "")
-          );
-          // Örnek: formData.append("isActive", "true");
+      // Her tenant için FormData oluştur ve dispatch et
+      for (const tenant of parsedTenants) {
+        const formData = new FormData();
 
+        // Çok dilli isimler — hepsine aynı değeri basıyoruz (isteğe göre özelleştirilebilir)
+        SUPPORTED_LOCALES.forEach((locale) =>
+          formData.append(`name[${locale}]`, tenant)
+        );
+
+        // Güvenli slug
+        const slug = slugify(tenant);
+        if (!slug) {
+          failed.push({ name: tenant, reason: "invalid-slug" });
+          continue;
+        }
+        formData.append("slug", slug);
+
+        try {
           await dispatch(createTenant(formData)).unwrap();
-        })
-      );
-      setTenantNames("");
-      toast.success(t("batchAddSuccess", "Tenants added successfully!"));
-    } catch (err: any) {
-      toast.error(
-        t("batchAddError", "Batch add failed!") +
-          (err?.message ? `: ${err.message}` : "")
-      );
+          ok++;
+        } catch (err: any) {
+          failed.push({
+            name: tenant,
+            reason:
+              err?.message ||
+              (typeof err === "string" ? err : t("unknownError", "Unknown error")),
+          });
+        }
+      }
+
+      // Sonuç bildirimi
+      if (ok > 0) {
+        toast.success(
+          t("batchAddSuccess", "Tenants added successfully!") +
+            ` (${ok}/${parsedTenants.length})`
+        );
+      }
+      if (failed.length > 0) {
+        const msg =
+          failed.length > 3
+            ? failed
+                .slice(0, 3)
+                .map((f) => f.name)
+                .join(", ") + "…"
+            : failed.map((f) => f.name).join(", ");
+        toast.error(
+          t("batchAddError", "Batch add failed!") +
+            ` (${failed.length})` +
+            (msg ? ` — ${msg}` : "")
+        );
+      }
+
+      // Hepsi bittiyse input’u temizle
+      if (ok && failed.length === 0) setTenantNames("");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -77,7 +128,18 @@ const BatchAddTenantsForm: React.FC = () => {
           disabled={loading}
           aria-label={t("tenantNames", "Tenant names")}
         />
-        <AddButton type="submit" disabled={loading || !tenantNames.trim()}>
+        <RowHint>
+          <SmallMuted>
+            {t("parsedCount", "Parsed")}: {parsedTenants.length}
+          </SmallMuted>
+          <SmallMuted>
+            {t(
+              "slugHint",
+              "Non-ASCII characters will be normalized for slugs."
+            )}
+          </SmallMuted>
+        </RowHint>
+        <AddButton type="submit" disabled={loading || parsedTenants.length === 0}>
           {loading ? t("adding", "Adding...") : t("add", "Add")}
         </AddButton>
       </StyledForm>
@@ -93,7 +155,7 @@ const BatchAddTenantsForm: React.FC = () => {
 
 export default BatchAddTenantsForm;
 
-// --- STYLED COMPONENTS ---
+/* ---------------- styled ---------------- */
 const PanelCard = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border-radius: ${({ theme }) => theme.radii.md};
@@ -119,11 +181,22 @@ const StyledForm = styled.form`
   gap: 8px;
 `;
 
+const RowHint = styled.div`
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+`;
+
+const SmallMuted = styled.span`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
 const TextArea = styled.textarea`
   width: 100%;
   min-height: 66px;
   padding: 9px 12px;
-  border: 1.3px solid #bbb;
+  border: 1.3px solid ${({ theme }) => theme.colors.border};
   border-radius: 7px;
   font-size: 15px;
   font-family: inherit;
@@ -145,7 +218,7 @@ const AddButton = styled.button`
   margin-top: 5px;
   &:hover,
   &:focus {
-    background: ${({ theme }) => theme.colors.primaryHover || "#1890ff"};
+    background: ${({ theme }) => theme.buttons?.primary?.backgroundHover || theme.colors.primaryHover || "#1890ff"};
   }
   &:disabled {
     opacity: 0.6;

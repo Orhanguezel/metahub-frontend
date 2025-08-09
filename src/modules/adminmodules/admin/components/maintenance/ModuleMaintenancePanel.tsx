@@ -6,9 +6,10 @@ import {
   repairModuleSettings,
   assignAllModulesToTenant,
   cleanupOrphanModuleSettings,
+  fetchModuleTenantMatrix,
 } from "@/modules/adminmodules/slices/moduleMaintenanceSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/adminmodules";
+import { translations } from "@/modules/adminmodules";
 
 import {
   ModuleTenantMatrixTable,
@@ -21,7 +22,6 @@ import {
   MaintenanceLogBox,
 } from "@/modules/adminmodules";
 
-
 interface ModuleMaintenancePanelProps {
   selectedTenant?: string;
 }
@@ -30,16 +30,17 @@ const ModuleMaintenancePanel: React.FC<ModuleMaintenancePanelProps> = ({
   selectedTenant,
 }) => {
   const dispatch = useAppDispatch();
-   const { t } = useI18nNamespace("adminModules", translations);
+  const { t } = useI18nNamespace("adminModules", translations);
   const { maintenanceLoading, maintenanceError, lastAction } = useAppSelector(
     (state) => state.moduleMaintenance
   );
 
+  const canAssignAllToTenant = Boolean(selectedTenant);
+
   return (
-    <PanelContainer>
-      <SectionTitle>
-        🛠 {t("maintenance", "Maintenance & Batch Actions")}
-      </SectionTitle>
+    <PanelContainer aria-busy={maintenanceLoading}>
+      <SectionTitle>🛠 {t("maintenance", "Maintenance & Batch Actions")}</SectionTitle>
+
       <ButtonRow>
         <MaintButton
           onClick={() => dispatch(repairModuleSettings())}
@@ -47,22 +48,30 @@ const ModuleMaintenancePanel: React.FC<ModuleMaintenancePanelProps> = ({
         >
           {t("repairSettings", "Repair Missing Settings")}
         </MaintButton>
+
         <MaintButton
           onClick={() =>
-            selectedTenant && dispatch(assignAllModulesToTenant(selectedTenant))
+            canAssignAllToTenant && dispatch(assignAllModulesToTenant(selectedTenant!))
           }
-          disabled={maintenanceLoading}
+          disabled={maintenanceLoading || !canAssignAllToTenant}
+          title={
+            !canAssignAllToTenant
+              ? t("selectTenantHint", "Please select a tenant first")
+              : undefined
+          }
         >
           {t("assignAllToTenant", "Assign All To Tenant")}
         </MaintButton>
+
         <MaintButton
           onClick={() => dispatch(cleanupOrphanModuleSettings())}
           disabled={maintenanceLoading}
         >
           {t("cleanupOrphan", "Cleanup Orphan Settings")}
         </MaintButton>
+
         <MaintButton
-          onClick={() => {}}
+          onClick={() => dispatch(fetchModuleTenantMatrix())}
           disabled={maintenanceLoading}
         >
           {t("fetchMatrix", "Fetch Module-Tenant Matrix")}
@@ -71,10 +80,8 @@ const ModuleMaintenancePanel: React.FC<ModuleMaintenancePanelProps> = ({
 
       {(maintenanceError || maintenanceLoading || lastAction) && (
         <FeedbackArea>
-          {maintenanceError && <ErrorBox>{maintenanceError}</ErrorBox>}
-          {maintenanceLoading && (
-            <InfoBox>{t("loading", "Loading...")}</InfoBox>
-          )}
+          {maintenanceError && <ErrorBox role="alert">{maintenanceError}</ErrorBox>}
+          {maintenanceLoading && <InfoBox>{t("loading", "Loading...")}</InfoBox>}
           {lastAction && (
             <SmallInfo>
               <b>{t("lastAction", "Last action")}:</b> {lastAction}
@@ -84,24 +91,12 @@ const ModuleMaintenancePanel: React.FC<ModuleMaintenancePanelProps> = ({
       )}
 
       <CardSection>
-        <MaintCard>
-          <BatchUpdateModuleForm />
-        </MaintCard>
-        <MaintCard>
-          <BatchCleanupOrphanSettings />
-        </MaintCard>
-        <MaintCard>
-          <BatchAssignModuleForm />
-        </MaintCard>
-        <MaintCard>
-          <BatchDeleteModulesForm />
-        </MaintCard>
-        <MaintCard>
-          <BatchAddTenantsForm />
-        </MaintCard>
-        <MaintCard>
-          <ModuleJsonImportExportPanel />
-        </MaintCard>
+        <MaintCard><BatchUpdateModuleForm /></MaintCard>
+        <MaintCard><BatchCleanupOrphanSettings /></MaintCard>
+        <MaintCard><BatchAssignModuleForm /></MaintCard>
+        <MaintCard><BatchDeleteModulesForm /></MaintCard>
+        <MaintCard><BatchAddTenantsForm /></MaintCard>
+        <MaintCard><ModuleJsonImportExportPanel /></MaintCard>
       </CardSection>
 
       <LogSection>
@@ -114,99 +109,114 @@ const ModuleMaintenancePanel: React.FC<ModuleMaintenancePanelProps> = ({
 
 export default ModuleMaintenancePanel;
 
-// ---- STYLED COMPONENTS ----
+/* ---- STYLED COMPONENTS (classicTheme uyumlu) ---- */
+
 const PanelContainer = styled.div`
   margin-top: ${({ theme }) => theme.spacings.lg};
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  background: ${({ theme }) => theme.colors.sectionBackground};
   border-radius: ${({ theme }) => theme.radii.lg};
-  padding: 38px 36px 28px 36px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.09);
+  padding: ${({ theme }) => theme.spacings.xl};
+  box-shadow: ${({ theme }) => theme.shadows.lg};
 `;
 
 const SectionTitle = styled.h3`
-  font-size: 1.42rem;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: 18px;
+  font-family: ${({ theme }) => theme.fonts.heading};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  color: ${({ theme }) => theme.colors.title};
+  margin: 0 0 ${({ theme }) => theme.spacings.md} 0;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
 const ButtonRow = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
-  margin-bottom: 30px;
+  gap: ${({ theme }) => theme.spacings.sm};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
 `;
 
 const MaintButton = styled.button`
-  background: ${({ theme }) => theme.colors.primary};
-  color: #fff;
-  padding: 10px 28px;
-  border: none;
-  border-radius: 7px;
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
+  padding: 10px 20px;
+  border: ${({ theme }) => theme.borders.thin} transparent;
+  border-radius: ${({ theme }) => theme.radii.md};
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  box-shadow: 0 2px 10px rgba(10, 20, 40, 0.09);
-  transition: background 0.18s, box-shadow 0.18s;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  box-shadow: ${({ theme }) => theme.shadows.button};
+  transition: background ${({ theme }) => theme.transition.fast},
+    box-shadow ${({ theme }) => theme.transition.fast}, opacity ${({ theme }) =>
+      theme.transition.fast};
   &:hover {
-    background: ${({ theme }) => theme.colors.primaryHover || "#12c8ef"};
-    box-shadow: 0 6px 18px rgba(10, 20, 40, 0.17);
-    opacity: 0.93;
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+    box-shadow: ${({ theme }) => theme.shadows.md};
+    opacity: ${({ theme }) => theme.opacity.hover};
   }
   &:disabled {
-    background: ${({ theme }) => theme.colors.disabledBg || "#ccc"};
+    background: ${({ theme }) => theme.colors.disabledBg};
+    color: ${({ theme }) => theme.colors.textSecondary};
     cursor: not-allowed;
-    opacity: 0.5;
+    opacity: ${({ theme }) => theme.opacity.disabled};
+    box-shadow: none;
   }
 `;
 
 const CardSection = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 26px;
-  margin-top: 20px;
-  margin-bottom: 24px;
+  gap: ${({ theme }) => theme.spacings.lg};
+  margin: ${({ theme }) => theme.spacings.md} 0 ${({ theme }) => theme.spacings.lg};
 `;
 
 const MaintCard = styled.div`
-  background: #222b3d;
-  border-radius: 11px;
-  padding: 24px 18px 18px 18px;
-  box-shadow: 0 2px 10px rgba(10, 20, 40, 0.06);
+  background: ${({ theme }) => theme.cards.background};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
   display: flex;
   flex-direction: column;
   min-height: 100px;
 `;
 
 const FeedbackArea = styled.div`
-  margin-bottom: 16px;
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacings.xs};
 `;
 
 const ErrorBox = styled.div`
-  color: ${({ theme }) => theme.colors.danger};
-  font-weight: 600;
-  margin-bottom: 6px;
-  background: #2a1417;
-  border-radius: 6px;
-  padding: 8px 13px;
+  color: ${({ theme }) => theme.colors.textOnDanger};
+  background: ${({ theme }) => theme.colors.dangerBg};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.danger};
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 `;
 
 const InfoBox = styled.div`
-  color: ${({ theme }) => theme.colors.info || "#999"};
-  background: #171e2e;
-  border-radius: 6px;
-  padding: 8px 13px;
-  margin-bottom: 6px;
+  color: ${({ theme }) => theme.colors.text};
+  background: ${({ theme }) => theme.colors.contentBackground};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
 `;
 
 const SmallInfo = styled.div`
-  color: #7fe1c1;
-  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
 `;
 
 const LogSection = styled.div`
-  margin-top: 28px;
+  margin-top: ${({ theme }) => theme.spacings.lg};
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: ${({ theme }) => theme.spacings.lg};
+
+  ${props => props.theme.media.small} {
+    grid-template-columns: 1fr;
+  }
 `;

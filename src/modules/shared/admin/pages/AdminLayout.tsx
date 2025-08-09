@@ -110,6 +110,7 @@ function AdminLayoutContent({
 
 // --- Styled Components ---
 const Wrapper = styled.div`
+font-family: ${({ theme }) => theme.fonts.body};
   display: flex;
   min-height: 100vh;
   background: ${({ theme }) => theme.colors.background};

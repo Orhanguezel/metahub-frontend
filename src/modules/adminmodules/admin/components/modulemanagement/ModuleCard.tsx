@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, KeyboardEvent } from "react";
 import styled from "styled-components";
 import { Globe, Trash2, AlertCircle } from "lucide-react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/adminmodules";
+import { translations } from "@/modules/adminmodules";
 import { SupportedLocale } from "@/types/common";
 import * as MdIcons from "react-icons/md";
 import { ModuleStatusToggle } from "@/modules/adminmodules";
@@ -25,8 +25,8 @@ interface ModuleCardProps {
   module: IModuleMeta | (IModuleSetting & { globalEnabled?: boolean });
   search?: string;
   type?: ModuleType;
-  onShowDetail?: (module: any, type: ModuleType) => void;
-  onDelete?: (moduleKey: string) => void;
+  onShowDetail?: (module: IModuleMeta | IModuleSetting, type: ModuleType) => void;
+  onDelete?: (moduleKey: string) => void; // sadece meta için
 }
 
 // --- Dynamic icon function ---
@@ -38,7 +38,7 @@ const dynamicIcon = (iconName?: string) =>
 // --- Highlight helper ---
 const highlightMatch = (text: string, search: string) => {
   if (!search) return text;
-  const regex = new RegExp(`(${search})`, "gi");
+  const regex = new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
   const parts = text.split(regex);
   return parts.map((part, i) =>
     part.toLowerCase() === search.toLowerCase() ? (
@@ -62,39 +62,32 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
   const [updatingModuleKey, setUpdatingModuleKey] = useState<string | null>(null);
 
   const isMeta = type === "meta";
-  const moduleKey = isMeta
-    ? (module as IModuleMeta).name
-    : (module as IModuleSetting).module;
+  const asMeta = module as IModuleMeta;
+  const asSetting = module as IModuleSetting & { globalEnabled?: boolean };
 
-  const globalEnabled = isMeta
-    ? undefined
-    : (module as IModuleSetting & { globalEnabled?: boolean }).globalEnabled ?? true;
+  const moduleKey = isMeta ? asMeta.name : asSetting.module;
+  const globalEnabled = isMeta ? undefined : asSetting.globalEnabled ?? true;
 
   // Label (çoklu dil için)
   const moduleLabel = isMeta
-    ? ((module as IModuleMeta).label?.[lang] &&
-        (module as IModuleMeta).label[lang].trim()) ||
-      ((module as IModuleMeta).label?.en &&
-        (module as IModuleMeta).label.en.trim()) ||
-      (module as IModuleMeta).name ||
-      ""
+    ? (asMeta.label?.[lang]?.trim() ||
+        asMeta.label?.[("en" as SupportedLocale)]?.trim() ||
+        asMeta.name ||
+        "")
     : moduleKey;
 
-  const IconComponent = dynamicIcon(
-    isMeta ? (module as IModuleMeta).icon : undefined
-  );
+  const IconComponent = dynamicIcon(isMeta ? asMeta.icon : undefined);
 
-  // --- Sadece globalde silme ---
+  // --- Delete (sadece meta) ---
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isMeta && onDelete) onDelete(moduleKey);
   };
 
   // --- Toggle handler ---
-  const handleToggle = async (key: string) => {
+  const handleToggle = async (key: keyof (IModuleMeta & IModuleSetting)) => {
     setUpdatingModuleKey(moduleKey);
     try {
-      // Tenant'ta, global enabled kapalıysa toggle yapma!
       if (!isMeta && globalEnabled === false) {
         toast.warn(t("globalDisabledWarn", "Globally disabled, cannot activate!"));
         return;
@@ -103,36 +96,40 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
         await dispatch(
           updateModuleSetting({
             module: moduleKey,
-            [key]: !(module as any)[key],
-          })
+            [key]: !(asSetting as any)[key],
+          } as any)
         ).unwrap();
       } else {
         await dispatch(
           updateModuleMeta({
             name: moduleKey,
-            updates: { [key]: !(module as any)[key] },
+            updates: { [key]: !(asMeta as any)[key] },
           })
         ).unwrap();
       }
-    } catch (err) {
-      toast.error(t("updateError", "Update error!") + (err as any).message);
+    } catch (err: any) {
+      toast.error(
+        t("updateError", "Update error!") + (err?.message ? `: ${err.message}` : "")
+      );
     } finally {
       setUpdatingModuleKey(null);
     }
   };
 
-  // --- Düzgün ve doğru tiplerle çağır! ---
   const handleCardClick = () => {
-    if (typeof onShowDetail === "function") {
-      onShowDetail(module, type as ModuleType);
+    onShowDetail?.(module as any, type);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleCardClick();
     }
   };
 
   const tenantBadge = (
     <BadgeTenant>
-      {(module as IModuleSetting).tenant
-        ? (module as IModuleSetting).tenant
-        : t("tenant", "Tenant")}
+      {asSetting.tenant || t("tenant", "Tenant")}
       {globalEnabled === false && (
         <DisabledWarn title={t("globalDisabled", "Globally disabled")}>
           <AlertCircle size={14} />
@@ -141,42 +138,32 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
     </BadgeTenant>
   );
 
-  const shownRoutes =
-    isMeta &&
-    Array.isArray((module as IModuleMeta).routes) &&
-    (module as IModuleMeta).routes.length > 0
-      ? (module as IModuleMeta).routes.slice(-5)
+  const shownRoutes: RouteMeta[] =
+    isMeta && Array.isArray(asMeta.routes) && asMeta.routes.length > 0
+      ? asMeta.routes.slice(-5)
       : [];
-  const shownHistory =
-    isMeta &&
-    Array.isArray((module as IModuleMeta).history) &&
-    (module as IModuleMeta).history.length > 0
-      ? (module as IModuleMeta).history.slice(-5)
-      : [];
+
 
   return (
     <Card
-      onClick={handleCardClick}
+      role="button"
       tabIndex={0}
+      aria-label={moduleLabel}
+      onClick={handleCardClick}
+      onKeyDown={handleKeyDown}
       data-disabled={!isMeta && globalEnabled === false}
-      style={
-        !isMeta && globalEnabled === false
-          ? { opacity: 0.5, pointerEvents: "auto" }
-          : {}
-      }
+      style={!isMeta && globalEnabled === false ? { opacity: 0.5 } : {}}
     >
       <CardHeader>
         <IconWrapper>
           <IconComponent />
         </IconWrapper>
+
         <ModuleInfo>
-          <LabelText title={moduleLabel}>
-            {highlightMatch(moduleLabel, search)}
-          </LabelText>
-          <NameText title={moduleKey}>
-            {highlightMatch(moduleKey, search)}
-          </NameText>
+          <LabelText title={moduleLabel}>{highlightMatch(moduleLabel, search)}</LabelText>
+          <NameText title={moduleKey}>{highlightMatch(moduleKey, search)}</NameText>
         </ModuleInfo>
+
         <CardBadges>
           {isMeta ? (
             <BadgeGlobal title={t("global", "Global Meta")}>
@@ -187,11 +174,13 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
             tenantBadge
           )}
         </CardBadges>
+
         <Actions>
           {isMeta && (
             <TrashButton
               onClick={handleDeleteClick}
               title={t("delete", "Delete Module")}
+              aria-label={t("delete", "Delete Module")}
             >
               <Trash2 size={18} />
             </TrashButton>
@@ -201,33 +190,28 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
 
       <Divider />
 
-      {/* --- TOGGLE GRUBU --- */}
+      {/* --- TOGGLES --- */}
       <StatusGroup>
-        {isMeta && "enabled" in module && (
+        {isMeta && "enabled" in asMeta && (
           <StatusItem>
             <span>{t("enabled", "Enabled")}</span>
             <ModuleStatusToggle
-              isActive={!!(module as any).enabled}
+              isActive={!!(asMeta as any).enabled}
               onToggle={() => handleToggle("enabled")}
               disabled={updatingModuleKey === moduleKey}
             />
           </StatusItem>
         )}
 
-        {/* TENANT: sadece setting modelindeki alanlar */}
         {!isMeta && (
           <>
-            {"enabled" in module && (
+            {"enabled" in asSetting && (
               <StatusItem>
                 <span>{t("enabled", "Enabled")}</span>
                 <ModuleStatusToggle
-                  isActive={
-                    !!(module as any).enabled && globalEnabled !== false
-                  }
+                  isActive={!!asSetting.enabled && globalEnabled !== false}
                   onToggle={() => handleToggle("enabled")}
-                  disabled={
-                    updatingModuleKey === moduleKey || globalEnabled === false
-                  }
+                  disabled={updatingModuleKey === moduleKey || globalEnabled === false}
                   title={
                     globalEnabled === false
                       ? t(
@@ -239,46 +223,33 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
                 />
               </StatusItem>
             )}
-            {"visibleInSidebar" in module && (
+            {"visibleInSidebar" in asSetting && (
               <StatusItem>
                 <span>{t("visibleInSidebar", "Sidebar")}</span>
                 <ModuleStatusToggle
-                  isActive={
-                    !!(module as any).visibleInSidebar &&
-                    globalEnabled !== false
-                  }
+                  isActive={!!asSetting.visibleInSidebar && globalEnabled !== false}
                   onToggle={() => handleToggle("visibleInSidebar")}
-                  disabled={
-                    updatingModuleKey === moduleKey || globalEnabled === false
-                  }
+                  disabled={updatingModuleKey === moduleKey || globalEnabled === false}
                 />
               </StatusItem>
             )}
-            {"useAnalytics" in module && (
+            {"useAnalytics" in asSetting && (
               <StatusItem>
                 <span>{t("useAnalytics", "Analytics")}</span>
                 <ModuleStatusToggle
-                  isActive={
-                    !!(module as any).useAnalytics && globalEnabled !== false
-                  }
+                  isActive={!!asSetting.useAnalytics && globalEnabled !== false}
                   onToggle={() => handleToggle("useAnalytics")}
-                  disabled={
-                    updatingModuleKey === moduleKey || globalEnabled === false
-                  }
+                  disabled={updatingModuleKey === moduleKey || globalEnabled === false}
                 />
               </StatusItem>
             )}
-            {"showInDashboard" in module && (
+            {"showInDashboard" in asSetting && (
               <StatusItem>
                 <span>{t("showInDashboard", "Dashboard")}</span>
                 <ModuleStatusToggle
-                  isActive={
-                    !!(module as any).showInDashboard && globalEnabled !== false
-                  }
+                  isActive={!!asSetting.showInDashboard && globalEnabled !== false}
                   onToggle={() => handleToggle("showInDashboard")}
-                  disabled={
-                    updatingModuleKey === moduleKey || globalEnabled === false
-                  }
+                  disabled={updatingModuleKey === moduleKey || globalEnabled === false}
                 />
               </StatusItem>
             )}
@@ -289,14 +260,14 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
       <MetaInfo>
         <small>{t("createdAt", "Created at")}:</small>
         <TimeText>
-          {"createdAt" in module && module.createdAt
-            ? new Date(module.createdAt).toLocaleString(lang)
+          {"createdAt" in module && (module as any).createdAt
+            ? new Date((module as any).createdAt).toLocaleString(lang)
             : "-"}
         </TimeText>
         <small>{t("updatedAt", "Updated at")}:</small>
         <TimeText>
-          {"updatedAt" in module && module.updatedAt
-            ? new Date(module.updatedAt).toLocaleString(lang)
+          {"updatedAt" in module && (module as any).updatedAt
+            ? new Date((module as any).updatedAt).toLocaleString(lang)
             : "-"}
         </TimeText>
       </MetaInfo>
@@ -311,22 +282,21 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
                 <span>{r.path}</span>
               </li>
             ))}
-            {Array.isArray((module as IModuleMeta).routes) &&
-              (module as IModuleMeta).routes.length > 5 && (
-                <li className="more">...{t("andMore", "and more")}</li>
-              )}
+            {Array.isArray(asMeta.routes) && asMeta.routes.length > 5 && (
+              <li className="more">...{t("andMore", "and more")}</li>
+            )}
           </RouteList>
         </>
       )}
 
-      {isMeta && shownHistory.length > 0 && (
+      {isMeta && Array.isArray(asMeta.history) && asMeta.history.length > 0 && (
         <>
           <Divider />
           <RouteList>
             <li>
               <strong>{t("history", "Change History")}:</strong>
             </li>
-            {shownHistory.map((h, idx) => (
+            {asMeta.history.slice(-5).map((h, idx) => (
               <li key={idx}>
                 <span>
                   {h.date ? new Date(h.date).toLocaleString(lang) : "-"}
@@ -336,10 +306,9 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
                 </span>
               </li>
             ))}
-            {Array.isArray((module as IModuleMeta).history) &&
-              (module as IModuleMeta).history.length > 5 && (
-                <li className="more">...{t("andMore", "and more")}</li>
-              )}
+            {asMeta.history.length > 5 && (
+              <li className="more">...{t("andMore", "and more")}</li>
+            )}
           </RouteList>
         </>
       )}
@@ -361,11 +330,10 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
 
 export default ModuleCard;
 
-// --- Styled Components (kendi kodundaki ile aynı) ---
+/* --- styled --- */
 const Card = styled.div`
   background: ${({ theme }) => theme.cards.background};
-  border: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.md};
   padding: 1.5rem;
   display: flex;
@@ -467,18 +435,13 @@ const Highlight = styled.span`
   padding: 0 2px;
   animation: highlightFlash 0.8s ease-in-out;
   @keyframes highlightFlash {
-    from {
-      background-color: transparent;
-    }
-    to {
-      background-color: ${({ theme }) => theme.colors.warning};
-    }
+    from { background-color: transparent; }
+    to { background-color: ${({ theme }) => theme.colors.warning}; }
   }
 `;
 const Divider = styled.hr`
   border: none;
-  border-top: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
+  border-top: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   margin: 0.3rem 0;
 `;
 const StatusGroup = styled.div`
