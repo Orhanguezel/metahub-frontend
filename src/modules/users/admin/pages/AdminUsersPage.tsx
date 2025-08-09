@@ -3,28 +3,15 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {adminUserTranslations} from "@/modules/users";
+import { adminUserTranslations } from "@/modules/users";
 import { UserTableFilters, UserTable } from "@/modules/users";
-
-
-
-
-
-const Container = styled.div`
-  max-width: 1000px;
-  margin: 2rem auto;
-`;
-
-const Title = styled.h2`
-  text-align: center;
-  margin-bottom: 1.5rem;
-`;
 
 export interface UserFilterState {
   query: string;
   role: string;
   isActive: string;
 }
+
 
 export default function UsersPage() {
   const { t } = useI18nNamespace("adminUser", adminUserTranslations);
@@ -35,10 +22,42 @@ export default function UsersPage() {
   });
 
   return (
-    <Container>
-      <Title>{t("users.title")}</Title>
+    <PageWrap>
+      <Head>
+        <Title>{t("users.title", "Kullanıcılar")}</Title>
+        <Sub>{t("users.subtitle", "Kullanıcılarınızı yönetin, filtreleyin ve düzenleyin.")}</Sub>
+      </Head>
+
       <UserTableFilters onFilterChange={setFilters} />
+
       <UserTable filters={filters} />
-    </Container>
+    </PageWrap>
   );
 }
+
+
+
+const PageWrap = styled.div`
+  max-width: ${({ theme }) => theme.layout.containerWidth};
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacings.xxxl} ${({ theme }) => theme.spacings.md};
+`;
+
+const Head = styled.header`
+  text-align: center;
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
+`;
+
+const Title = styled.h2`
+  color: ${({ theme }) => theme.colors.title};
+  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+  font-family: ${({ theme }) => theme.fonts.heading};
+  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
+  letter-spacing: -0.01em;
+  margin: 0 0 0.25em 0;
+`;
+
+const Sub = styled.p`
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin: 0;
+`;

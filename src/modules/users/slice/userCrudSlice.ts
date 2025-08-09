@@ -1,10 +1,32 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+// src/modules/users/store/userCrudSlice.ts
+import { createSlice, createAsyncThunk, isAnyOf } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { User } from "@/modules/users/types/user";
 
+/* ---------- API response tipleri ---------- */
+type UsersMeta = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+} | null;
+
+type ApiError = { status: number | string; message: string; data?: any };
+
+type ListRes   = { success: boolean; message?: string | null; data: User[]; meta?: UsersMeta };
+type OneRes    = { success: boolean; message?: string | null; data: User };
+type UpdateRes = { success: boolean; message?: string | null; data: User };
+type RoleRes   = { success: boolean; message?: string | null; data: User };
+type ToggleRes = { success: boolean; message?: string | null; userId: string; isActive: boolean };
+type DeleteRes = { success: boolean; message?: string | null; data: { userId: string } };
+
+type ThunkConfig = { rejectValue: ApiError };
+
+/* ---------- Slice state ---------- */
 interface UserState {
   users: User[];
   selectedUser: User | null;
+  meta: UsersMeta;
   loading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -13,54 +35,70 @@ interface UserState {
 const initialState: UserState = {
   users: [],
   selectedUser: null,
+  meta: null,
   loading: false,
   error: null,
   successMessage: null,
 };
 
-// --- Fetch All Users ---
-export const fetchUsers = createAsyncThunk(
+/* ---------- Thunks ---------- */
+
+// Filtre/paginasyon istersen query geç; geçmezsen tümünü çek
+type FetchUsersQuery = Partial<{
+  q: string;
+  role: User["role"];
+  isActive: "true" | "false";
+  emailVerified: "true" | "false";
+  page: string | number;
+  limit: string | number;
+  sortBy: "createdAt" | "updatedAt" | "name" | "email" | "role";
+  sortDir: "asc" | "desc";
+}>;
+
+export const fetchUsers = createAsyncThunk<ListRes, FetchUsersQuery | undefined, ThunkConfig>(
   "userCrud/fetchUsers",
-  async (_, thunkAPI) => {
-    return await apiCall("get", "/users/users", null, thunkAPI.rejectWithValue);
+  async (query = undefined, thunkAPI) => {
+    return await apiCall("get", "/users/users", query ?? null, thunkAPI.rejectWithValue);
   }
 );
 
-// --- Fetch User By ID ---
-export const fetchUserById = createAsyncThunk(
+export const fetchUserById = createAsyncThunk<OneRes, string, ThunkConfig>(
   "userCrud/fetchUserById",
-  async (id: string, thunkAPI) => {
+  async (id, thunkAPI) => {
     return await apiCall("get", `/users/users/${id}`, null, thunkAPI.rejectWithValue);
   }
 );
 
-// --- Update User (FormData destekli) ---
-export const updateUser = createAsyncThunk(
+export const updateUser = createAsyncThunk<UpdateRes, { id: string; formData: FormData }, ThunkConfig>(
   "userCrud/updateUser",
-  async (payload: { id: string; formData: FormData }, thunkAPI) => {
-    return await apiCall(
-      "put",
-      `/users/users/${payload.id}`,
-      payload.formData,
-      thunkAPI.rejectWithValue 
-    );
+  async ({ id, formData }, thunkAPI) => {
+    return await apiCall("put", `/users/users/${id}`, formData, thunkAPI.rejectWithValue);
   }
 );
 
+export const updateUserRole = createAsyncThunk<RoleRes, { id: string; role: User["role"] }, ThunkConfig>(
+  "userCrud/updateUserRole",
+  async ({ id, role }, thunkAPI) => {
+    return await apiCall("put", `/users/users/${id}/role`, { role }, thunkAPI.rejectWithValue);
+  }
+);
 
-// --- Delete User ---
-export const deleteUser = createAsyncThunk(
+export const toggleUserStatus = createAsyncThunk<ToggleRes, { id: string; isActive?: boolean }, ThunkConfig>(
+  "userCrud/toggleUserStatus",
+  async ({ id, isActive }, thunkAPI) => {
+    const body = isActive === undefined ? {} : { isActive };
+    return await apiCall("put", `/users/users/${id}/status`, body, thunkAPI.rejectWithValue);
+  }
+);
+
+export const deleteUser = createAsyncThunk<DeleteRes, string, ThunkConfig>(
   "userCrud/deleteUser",
-  async (id: string, thunkAPI) => {
-    return await apiCall(
-      "delete",
-      `/users/users/${id}`,
-      null,
-      thunkAPI.rejectWithValue
-    );
+  async (id, thunkAPI) => {
+    return await apiCall("delete", `/users/users/${id}`, null, thunkAPI.rejectWithValue);
   }
 );
 
+/* ---------- Slice ---------- */
 const userCrudSlice = createSlice({
   name: "userCrud",
   initialState,
@@ -69,64 +107,139 @@ const userCrudSlice = createSlice({
       state.error = null;
       state.successMessage = null;
     },
+    resetSelectedUser: (state) => {
+      state.selectedUser = null;
+    },
   },
   extraReducers: (builder) => {
-    const loading = (state: UserState) => {
+    /* commons */
+    const onPending = (state: UserState) => {
       state.loading = true;
       state.error = null;
       state.successMessage = null;
     };
 
-    const failed = (state: UserState, action: PayloadAction<any>) => {
+    type AnyRejected =
+      | ReturnType<typeof fetchUsers.rejected>
+      | ReturnType<typeof fetchUserById.rejected>
+      | ReturnType<typeof updateUser.rejected>
+      | ReturnType<typeof updateUserRole.rejected>
+      | ReturnType<typeof toggleUserStatus.rejected>
+      | ReturnType<typeof deleteUser.rejected>;
+
+    const onRejected = (state: UserState, action: AnyRejected) => {
       state.loading = false;
-      state.error = typeof action.payload === "string"
-        ? action.payload
-        : action.payload?.message || "Beklenmeyen bir hata oluştu!";
+      state.error =
+        (typeof action.payload === "string" && action.payload) ||
+        (typeof action.payload === "object" && (action.payload as any)?.message) ||
+        action.error?.message ||
+        "Unexpected error.";
     };
 
     builder
-      .addCase(fetchUsers.pending, loading)
+      /* LIST */
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.loading = false;
-        // Eğer API { users: [...] } dönerse
-        state.users = action.payload?.users || action.payload || [];
+        state.users = action.payload.data || [];
+        state.meta = action.payload.meta ?? null;
+        state.successMessage = action.payload.message ?? null;
       })
-      .addCase(fetchUsers.rejected, failed)
 
-      .addCase(fetchUserById.pending, loading)
+      /* READ */
       .addCase(fetchUserById.fulfilled, (state, action) => {
         state.loading = false;
-        state.selectedUser = action.payload?.user || action.payload || null;
+        state.selectedUser = action.payload.data || null;
+        state.successMessage = action.payload.message ?? null;
       })
-      .addCase(fetchUserById.rejected, failed)
 
-      .addCase(updateUser.pending, loading)
+      /* UPDATE */
       .addCase(updateUser.fulfilled, (state, action) => {
         state.loading = false;
-        const updatedUser = action.payload?.user || action.payload;
-        state.successMessage = "Benutzer wurde erfolgreich aktualisiert.";
-        state.users = state.users.map((u) =>
-          u._id === updatedUser._id ? updatedUser : u
-        );
-        if (state.selectedUser?._id === updatedUser._id) {
-          state.selectedUser = updatedUser;
+        const updatedUser = action.payload.data;
+        state.successMessage = action.payload.message ?? null;
+
+        if (updatedUser?._id) {
+          state.users = state.users.map((u) =>
+            u._id === updatedUser._id ? ({ ...u, ...updatedUser } as User) : u
+          );
+          if (state.selectedUser?._id === updatedUser._id) {
+            state.selectedUser = { ...(state.selectedUser as User), ...updatedUser };
+          }
         }
       })
-      .addCase(updateUser.rejected, failed)
 
-      .addCase(deleteUser.pending, loading)
+      /* UPDATE ROLE */
+      .addCase(updateUserRole.fulfilled, (state, action) => {
+        state.loading = false;
+        const updated = action.payload.data;
+        state.successMessage = action.payload.message ?? null;
+
+        if (updated?._id) {
+          state.users = state.users.map((u) =>
+            u._id === updated._id ? ({ ...u, ...updated } as User) : u
+          );
+          if (state.selectedUser?._id === updated._id) {
+            state.selectedUser = { ...(state.selectedUser as User), ...updated };
+          }
+        }
+      })
+
+      /* TOGGLE STATUS (payload: userId + isActive) */
+      .addCase(toggleUserStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        const { userId, isActive } = action.payload;
+        state.successMessage = action.payload.message ?? null;
+
+        if (userId) {
+          state.users = state.users.map((u) =>
+            u._id === userId ? ({ ...u, isActive: isActive ?? !u.isActive } as User) : u
+          );
+          if (state.selectedUser?._id === userId) {
+            state.selectedUser = {
+              ...(state.selectedUser as User),
+              isActive: isActive ?? !state.selectedUser!.isActive,
+            };
+          }
+        }
+      })
+
+      /* DELETE */
       .addCase(deleteUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Benutzer wurde erfolgreich gelöscht.";
-        const deletedId = action.meta.arg;
-        state.users = state.users.filter((u) => u._id !== deletedId);
-        if (state.selectedUser?._id === deletedId) {
-          state.selectedUser = null;
+        const deletedId = action.payload?.data?.userId ?? action.meta.arg;
+        state.successMessage = action.payload.message ?? null;
+
+        if (deletedId) {
+          state.users = state.users.filter((u) => u._id !== deletedId);
+          if (state.selectedUser?._id === deletedId) state.selectedUser = null;
         }
       })
-      .addCase(deleteUser.rejected, failed);
+
+      /* --- Matchers: ortak pending/rejected --- */
+      .addMatcher(
+        isAnyOf(
+          fetchUsers.pending,
+          fetchUserById.pending,
+          updateUser.pending,
+          updateUserRole.pending,
+          toggleUserStatus.pending,
+          deleteUser.pending
+        ),
+        onPending
+      )
+      .addMatcher(
+        isAnyOf(
+          fetchUsers.rejected,
+          fetchUserById.rejected,
+          updateUser.rejected,
+          updateUserRole.rejected,
+          toggleUserStatus.rejected,
+          deleteUser.rejected
+        ),
+        onRejected
+      );
   },
 });
 
-export const { clearUserCrudMessages } = userCrudSlice.actions;
+export const { clearUserCrudMessages, resetSelectedUser } = userCrudSlice.actions;
 export default userCrudSlice.reducer;

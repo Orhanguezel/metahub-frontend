@@ -1,17 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store";
-import { toast } from "react-toastify";
-import { deleteUser } from "@/modules/users/slice/userCrudSlice";
 import {
+  deleteUser,
   toggleUserStatus,
   updateUserRole,
-} from "@/modules/users/slice/userStatusSlice";
+} from "@/modules/users/slice/userCrudSlice";
+import { toast } from "react-toastify";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {adminUserTranslations} from "@/modules/users";
-import { User } from "@/modules/users/types/user";
+import { adminUserTranslations } from "@/modules/users";
+import type { User } from "@/modules/users/types/user";
 
 interface Props {
   userId: string;
@@ -22,74 +23,152 @@ interface Props {
 export default function UserActions({ userId, currentRole, onRefresh }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const { t } = useI18nNamespace("adminUser", adminUserTranslations);
+  const [busy, setBusy] = useState<"role" | "status" | "delete" | null>(null);
 
-  const handleRoleChange = () => {
-    const newRole: User["role"] =
-      currentRole === "admin" || currentRole === "superadmin"
-        ? "user"
-        : "admin";
-    dispatch(updateUserRole({ id: userId, role: newRole }))
-      .unwrap()
-      .then(() => {
-        toast.success(t("users.actions.roleUpdated"));
-        onRefresh();
-      })
-      .catch((err) => toast.error(err));
+  const handleRoleChange = async () => {
+    try {
+      setBusy("role");
+      // basit toggle: admin/superadmin -> user, diğerleri -> admin
+      const nextRole: User["role"] =
+        currentRole === "admin" || currentRole === "superadmin" ? "user" : "admin";
+
+      const res = await dispatch(
+        updateUserRole({ id: userId, role: nextRole })
+      ).unwrap();
+
+      toast.success(res?.message || t("users.actions.roleUpdated", "Rol güncellendi"));
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err?.message || t("errors.unexpected", "Beklenmeyen bir hata oluştu"));
+    } finally {
+      setBusy(null);
+    }
   };
 
-  const handleStatusToggle = () => {
-    dispatch(toggleUserStatus(userId))
-      .unwrap()
-      .then(() => {
-        toast.success(t("users.actions.statusUpdated"));
-        onRefresh();
-      })
-      .catch((err) => toast.error(err));
+  const handleStatusToggle = async () => {
+    try {
+      setBusy("status");
+      const res = await dispatch(
+        toggleUserStatus({ id: userId }) // isActive opsiyonel, backend toggle ediyor
+      ).unwrap();
+
+      toast.success(res?.message || t("users.actions.statusUpdated", "Durum güncellendi"));
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err?.message || t("errors.unexpected", "Beklenmeyen bir hata oluştu"));
+    } finally {
+      setBusy(null);
+    }
   };
 
-  const handleDelete = () => {
-    dispatch(deleteUser(userId))
-      .unwrap()
-      .then(() => {
-        toast.success(t("users.actions.deleted"));
-        onRefresh();
-      })
-      .catch((err) => toast.error(err));
+  const handleDelete = async () => {
+    const ok = window.confirm(
+      t("users.actions.confirmDelete", "Bu kullanıcıyı silmek istediğinize emin misiniz?")
+    );
+    if (!ok) return;
+
+    try {
+      setBusy("delete");
+      const res = await dispatch(deleteUser(userId)).unwrap();
+      toast.success(res?.message || t("users.actions.deleted", "Kullanıcı silindi"));
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err?.message || t("errors.unexpected", "Beklenmeyen bir hata oluştu"));
+    } finally {
+      setBusy(null);
+    }
   };
 
   return (
-    <ActionContainer>
-      <Button onClick={handleRoleChange}>
-        {currentRole === "admin"
-          ? t("users.actions.demote")
-          : t("users.actions.promote")}
-      </Button>
-      <Button color="#e67e22" onClick={handleStatusToggle}>
-        {t("users.actions.toggleStatus")}
-      </Button>
-      <Button color="#e74c3c" onClick={handleDelete}>
-        {t("users.actions.delete")}
-      </Button>
-    </ActionContainer>
+    <ActionsWrap role="group" aria-label={t("users.actions.group", "Kullanıcı işlemleri")}>
+      <Btn
+        onClick={handleRoleChange}
+        disabled={busy !== null}
+        aria-label={
+          currentRole === "admin" || currentRole === "superadmin"
+            ? t("users.actions.demote", "Yetki düşür")
+            : t("users.actions.promote", "Yükselt")
+        }
+        $variant="secondary"
+      >
+        {currentRole === "admin" || currentRole === "superadmin"
+          ? t("users.actions.demote", "Yetki düşür")
+          : t("users.actions.promote", "Yükselt")}
+      </Btn>
+
+      <Btn
+        onClick={handleStatusToggle}
+        disabled={busy !== null}
+        aria-label={t("users.actions.toggleStatus", "Durumu değiştir")}
+        $variant="warning"
+      >
+        {t("users.actions.toggleStatus", "Durumu değiştir")}
+      </Btn>
+
+      <Btn
+        onClick={handleDelete}
+        disabled={busy !== null}
+        aria-label={t("users.actions.delete", "Sil")}
+        $variant="danger"
+      >
+        {t("users.actions.delete", "Sil")}
+      </Btn>
+    </ActionsWrap>
   );
 }
 
-const ActionContainer = styled.div`
+/* =================== styles =================== */
+
+const ActionsWrap = styled.div`
   display: flex;
-  gap: 0.5rem;
+  gap: ${({ theme }) => theme.spacings.xs};
   flex-wrap: wrap;
+  justify-content: flex-start;
 `;
 
-const Button = styled.button<{ color?: string }>`
-  padding: 6px 12px;
-  background: ${({ color }) => color || "#3498db"};
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
+type Variant = "primary" | "secondary" | "warning" | "danger";
 
-  &:hover {
-    opacity: 0.9;
+const Btn = styled.button<{ $variant?: Variant }>`
+  height: 34px;
+  padding: 0 ${({ theme }) => theme.spacings.md};
+  border-radius: ${({ theme }) => theme.radii.pill};
+  border: 1px solid transparent;
+  font-size: 0.85rem;
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+  color: #fff;
+
+  ${({ theme, $variant }) => {
+    switch ($variant) {
+      case "secondary":
+        return `
+          background: ${theme.buttons.secondary.background};
+          color: ${theme.buttons.secondary.text};
+          border-color: ${theme.buttons.secondary.background};
+        `;
+      case "warning":
+        return `
+          background: ${theme.buttons.warning.background};
+          border-color: ${theme.buttons.warning.background};
+        `;
+      case "danger":
+        return `
+          background: ${theme.buttons.danger.background};
+          border-color: ${theme.buttons.danger.background};
+        `;
+      default:
+        return `
+          background: ${theme.buttons.primary.background};
+          border-color: ${theme.buttons.primary.background};
+        `;
+    }
+  }}
+
+  &:hover { filter: brightness(${({ theme }) => theme.opacity.hover}); }
+  &:active { transform: translateY(1px); }
+  &:disabled {
+    opacity: ${({ theme }) => theme.opacity.disabled};
+    cursor: not-allowed;
   }
 `;
