@@ -212,6 +212,15 @@ import {
   clearPricingMessages,
 } from "@/modules/pricing/slice/pricingSlice";
 
+import {
+  fetchAllApartmentAdmin,
+  clearApartmentMessages,
+} from "@/modules/apartment/slice/apartmentSlice";
+import {
+  fetchApartmentCategories,
+  clearApartmentCategoryMessages,
+} from "@/modules/apartment/slice/apartmentCategorySlice";
+
 
 
 // -- Cleanup aksiyonları merkezi:
@@ -263,6 +272,8 @@ const cleanupActions = [
   clearOfferMessages,
   clearCustomerMessages,
   clearPricingMessages, 
+  clearApartmentMessages,
+  clearApartmentCategoryMessages,
 ];
 
 // --- useLayoutInit ---
@@ -332,6 +343,8 @@ const newsletterSubscribers = useAppSelector((state) => state.newsletter);
 const offerList = useAppSelector((state) => state.offer);
 const customerList = useAppSelector((state) => state.customer);
 const pricingList = useAppSelector((state) => state.pricing);
+const apartmentList = useAppSelector((state) => state.apartment);
+const apartmentCategories = useAppSelector((state) => state.apartmentCategory);
 
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
   useEffect(() => {
@@ -493,6 +506,12 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
     if (!pricingList.pricingAdmin.length && !pricingList.loading)
       dispatch(fetchAllPricingAdmin());
 
+    if (!apartmentList.apartmentAdmin.length && !apartmentList.loading)
+      dispatch(fetchAllApartmentAdmin());
+
+    if (!apartmentCategories.categories.length && !apartmentCategories.loading)
+      dispatch(fetchApartmentCategories());
+
     // Cleanup actions
     cleanupActions.forEach((action) => dispatch(action()));
 
@@ -559,6 +578,8 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
   offerList,
   customerList,
   pricingList,
+  apartmentList,
+  apartmentCategories,
     // gerekirse analyticsTrends vs ekleyebilirsin
   };
 };

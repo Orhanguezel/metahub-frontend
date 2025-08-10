@@ -42,4 +42,5 @@ export type ImageType =
   | "team"
   | "portfolio"
   | "skill"
+  | "apartment"
   | "misc";

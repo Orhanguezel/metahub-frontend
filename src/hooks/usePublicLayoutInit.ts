@@ -32,6 +32,9 @@ import { fetchFAQs } from "@/modules/faq/slice/faqSlice";
 import { fetchPortfolio } from "@/modules/portfolio/slice/portfolioSlice";
 import { fetchSkill } from "@/modules/skill/slice/skillSlice";
 import { fetchPricing } from "@/modules/pricing/slice/pricingSlice";
+import { fetchApartment } from "@/modules/apartment/slice/apartmentSlice";
+import { fetchApartmentCategories } from "@/modules/apartment/slice/apartmentCategorySlice";
+
 
 
 export const usePublicLayoutInit = () => {
@@ -66,6 +69,8 @@ export const usePublicLayoutInit = () => {
   const skillSlice = useAppSelector((s) => s.skill);
   const portfolioSlice = useAppSelector((s) => s.portfolio);
   const pricingSlice = useAppSelector((s) => s.pricing);
+  const apartmentSlice = useAppSelector((s) => s.apartment);
+  const apartmentCategorySlice = useAppSelector((s) => s.apartmentCategory);
 
 const didInit = useRef<{ [key: string]: boolean }>({});
 
@@ -158,7 +163,13 @@ useEffect(() => {
       dispatch(fetchPricing());
     }
 
+    if ((!apartmentSlice.apartment || apartmentSlice.apartment.length === 0) && apartmentSlice.status === "idle") {
+      dispatch(fetchApartment());
+    }
 
+    if ((!apartmentCategorySlice.categories || apartmentCategorySlice.categories.length === 0) && apartmentCategorySlice.status === "idle") {
+      dispatch(fetchApartmentCategories());
+    }
 
     // --- Chat sadece login olan için ---
     if (profile) {
@@ -253,6 +264,11 @@ useEffect(() => {
     portfolioLoading: portfolioSlice.loading,
     portfolioStatus: portfolioSlice.status,
     portfolioError: portfolioSlice.error,
-
+    apartment: apartmentSlice.apartment,
+    apartmentStatus: apartmentSlice.status,
+    apartmentError: apartmentSlice.error,
+    apartmentCategories: apartmentCategorySlice.categories,
+    apartmentCategoriesStatus: apartmentCategorySlice.status,
+    apartmentCategoriesError: apartmentCategorySlice.error,
   };
 };

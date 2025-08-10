@@ -68,6 +68,8 @@ import offerReducer from "@/modules/offer/slice/offerSlice";
 import customerReducer from "@/modules/customer/slice/customerSlice";
 import requestOfferSlice from "@/modules/offer/slice/requestOfferSlice";
 import pricingSlice from "@/modules/pricing/slice/pricingSlice";
+import apartmentReducer from "@/modules/apartment/slice/apartmentSlice";
+import apartmentCategoryReducer from "@/modules/apartment/slice/apartmentCategorySlice";
 
 
 // --- Combine reducers ---
@@ -139,6 +141,8 @@ const rootReducer = combineReducers({
   customer: customerReducer,
   requestOffer: requestOfferSlice,
   pricing: pricingSlice,
+  apartment: apartmentReducer,
+  apartmentCategory: apartmentCategoryReducer,
 });
 
 // --- Store ---
