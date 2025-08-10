@@ -42,6 +42,7 @@ const folderMap: Record<ImageType, string> = {
   team: "team-images",
   skill:"skill-images",
   portfolio:"portfolio-images",
+  apartment:"apartment-images",
   misc: "misc",
 };
 
@@ -87,6 +88,7 @@ const defaultImageMap: Record<ImageType, string> = {
   team: "team.png",
   skill:"skill.png",
   portfolio:"portfolio.png",
+  apartment:"apartment.png",
   misc: "default.png",
 };
 
