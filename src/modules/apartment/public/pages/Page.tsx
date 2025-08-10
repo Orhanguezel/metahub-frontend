@@ -5,13 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { useAppSelector} from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/apartment";
 import { Skeleton, ErrorMessage } from "@/shared";
 import type { SupportedLocale } from "@/types/common";
 import type { IApartment } from "@/modules/apartment/types";
-import { fetchApartment } from "@/modules/apartment/slice/apartmentSlice";
 
 // Haritayı SSR'siz lazy-load edelim (MapLibre requirement)
 const ApartmentMap = dynamic(
@@ -32,7 +31,6 @@ type MinApartmentCategory = {
 };
 
 export default function ApartmentPage() {
-  const dispatch = useAppDispatch();
   const { i18n, t } = useI18nNamespace("apartment", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
@@ -53,10 +51,6 @@ export default function ApartmentPage() {
     });
   }, [i18n]);
 
-  // İlk yüklemede public listeyi getir
-  useEffect(() => {
-    dispatch(fetchApartment({ isPublished: true }));
-  }, [dispatch]);
 
   // Kategorileri referanslardan topla (uniq)
   const categories = useMemo<MinApartmentCategory[]>(() => {
@@ -220,45 +214,48 @@ export default function ApartmentPage() {
           <ApartmentMap height={560} />
         </MapWrap>
       ) : (
-        <LogoGrid>
-          {filtered.length === 0 ? (
-            <Empty>
-              {t(
-                "apartment.empty_in_category",
-                "Bu kategoride apartman bulunamadı."
-              )}
-            </Empty>
-          ) : (
-            filtered
-              .filter((item) => item.images?.[0]?.url)
-              .map((item) => (
-                <LogoCard
-                  key={item._id}
-                  onClick={() => openModal(item)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") openModal(item);
-                  }}
-                >
-                  <div className="logo-img-wrap">
-                    <Image
-                      src={item.images[0].url}
-                      alt={item.title?.[lang] || "Logo"}
-                      width={132}
-                      height={88}
-                      style={{
-                        objectFit: "contain",
-                        width: "100%",
-                        height: "auto",
-                      }}
-                      loading="lazy"
-                    />
-                  </div>
-                </LogoCard>
-              ))
-          )}
-        </LogoGrid>
+       <LogoGrid>
+  {filtered.length === 0 ? (
+    <Empty>
+      {t("apartment.empty_in_category", "Bu kategoride apartman bulunamadı.")}
+    </Empty>
+  ) : (
+    filtered
+      .filter((item) => item.images?.[0]?.url)
+      .map((item) => {
+        const itemTitle =
+          item.title?.[lang] ||
+          item.title?.en ||
+          (Object.values(item.title || {})[0] as string) ||
+          item.slug;
+
+        return (
+          <LogoCard
+            key={item._id}
+            onClick={() => openModal(item)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter") openModal(item); }}
+            aria-label={itemTitle}
+            title={itemTitle}
+          >
+            <div className="logo-img-wrap">
+              <Image
+                src={item.images[0].url}
+                alt={itemTitle || "Logo"}
+                width={132}
+                height={88}
+                style={{ objectFit: "contain", width: "100%", height: "auto" }}
+                loading="lazy"
+              />
+            </div>
+            <CardTitle>{itemTitle}</CardTitle>
+          </LogoCard>
+        );
+      })
+  )}
+</LogoGrid>
+
       )}
 
       {/* MODAL */}
@@ -377,15 +374,13 @@ export default function ApartmentPage() {
             )}
 
             <Footer>
-              <Link href={`/apartment/${selected.slug}`} passHref>
-                <DetailLink>
-                  {t("page.gotoDetail", "Detaya Git")}
-                </DetailLink>
-              </Link>
-              <CloseGhost onClick={closeModal}>
-                {t("close", "Kapat")}
-              </CloseGhost>
-            </Footer>
+  <DetailLink href={selected?.slug ? `/apartment/${selected.slug}` : "#"}>
+    {t("page.gotoDetail", "Detaya Git")}
+  </DetailLink>
+  <CloseGhost onClick={closeModal}>
+    {t("close", "Kapat")}
+  </CloseGhost>
+</Footer>
           </Dialog>
         </Overlay>
       )}
@@ -486,12 +481,16 @@ const LogoCard = styled.div`
   border-radius: 22px;
   border: 1.8px solid ${({ theme }) => theme.colors.achievementGradientStart}19;
   box-shadow: ${({ theme }) => theme.shadows.md};
+
   display: flex;
-  align-items: center;
+  flex-direction: column;     /* ⬅️ ALT ALTA */
+  align-items: center;        /* ⬅️ ORTALA */
   justify-content: center;
-  min-height: 120px;
+  gap: .55rem;                /* ⬅️ resim–başlık arası boşluk */
+
+  min-height: 150px;
   min-width: 150px;
-  padding: 1.1rem 0.3rem;
+  padding: 1.1rem 0.6rem;
   position: relative;
   transition:
     box-shadow 0.22s cubic-bezier(0.4, 0.12, 0.42, 1.15),
@@ -507,6 +506,9 @@ const LogoCard = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
+    /* opsiyonel: metin hep altta kalsın diye küçük bir alt boşluk */
+    margin-bottom: .1rem;
+
     @media (max-width: 600px) { width: 96px; height: 62px; }
     @media (max-width: 430px) { width: 82vw; height: auto; }
   }
@@ -520,6 +522,17 @@ const LogoCard = styled.div`
     z-index: 2;
   }
 `;
+
+
+const CardTitle = styled.div`
+  text-align: center;
+  font-size: .95rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  line-height: 1.25;
+  word-break: break-word;
+`;
+
 
 const SkeletonGrid = styled.div`
   display: grid;
@@ -659,7 +672,8 @@ const Footer = styled.div`
   justify-content: flex-end;
 `;
 
-const DetailLink = styled.a`
+
+const DetailLink = styled(Link)`
   display: inline-block;
   background: ${({ theme }) => theme.colors.primary};
   color: #fff;
