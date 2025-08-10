@@ -33,7 +33,6 @@ import type { ApartmentCategory } from "@/modules/apartment/types";
 
 // Backend gereği: multi-upload sırasında zorunlu meta
 type MultiUploadMeta = {
-  // address: city + country zorunlu, diğerleri opsiyonel
   address: {
     city: string;
     country: string;
@@ -44,7 +43,6 @@ type MultiUploadMeta = {
     zip?: string;
     fullText?: string;
   };
-  // contact: name zorunlu
   contact: {
     name: string;
     phone?: string;
@@ -53,7 +51,6 @@ type MultiUploadMeta = {
     customerRef?: string;
     userRef?: string;
   };
-  // opsiyonel
   title?: Record<SupportedLocale, string>;
   content?: Record<SupportedLocale, string>;
   isPublished?: boolean;
@@ -80,8 +77,6 @@ export default function AdminApartmentPage() {
 
   const dispatch = useAppDispatch();
 
-  // Tekli create/update (FormModal gerekli tüm alanları göndermeli:
-  // images[], category, address{city,country}, contact{name} vs.)
   const handleSubmit = async (formData: FormData, id?: string) => {
     if (id) {
       await dispatch(updateApartment({ id, formData }));
@@ -92,16 +87,12 @@ export default function AdminApartmentPage() {
     setActiveTab("list");
   };
 
-  // Çoklu yükleme: backend zorunlulukları için meta bekliyoruz.
-  // MultiUploadModal'ı buna göre güncellersen süper olur.
   const handleMultiUpload = async (
     images: File[],
     category: string,
     meta?: MultiUploadMeta
   ) => {
     if (!category) return alert(t("category_required", "Kategori seçmelisiniz!"));
-
-    // Minimum doğrulama
     if (!meta?.address?.city || !meta?.address?.country) {
       return alert(t("address_required", "Adres (şehir + ülke) zorunludur."));
     }
@@ -113,17 +104,13 @@ export default function AdminApartmentPage() {
       const fd = new FormData();
       fd.append("images", file);
       fd.append("category", category);
-
-      // JSON alanlar string olarak gönderilmeli (backend transformNestedFields ile parse ediyor)
       fd.append("address", JSON.stringify(meta.address));
       fd.append("contact", JSON.stringify(meta.contact));
-
       if (meta.title) fd.append("title", JSON.stringify(meta.title));
       if (meta.content) fd.append("content", JSON.stringify(meta.content));
       if (typeof meta.isPublished === "boolean") {
         fd.append("isPublished", String(meta.isPublished));
       }
-
       return dispatch(createApartment(fd));
     });
 
@@ -146,7 +133,6 @@ export default function AdminApartmentPage() {
     dispatch(togglePublishApartment({ id, isPublished: !isPublished }));
   };
 
-  // Kategori işlemleri — backend: name (i18n), slug?, city?, district?, zip?, isActive?
   const handleCategorySubmit = async (
     data: {
       name: Record<SupportedLocale, string>;
@@ -177,7 +163,14 @@ export default function AdminApartmentPage() {
 
   return (
     <Wrapper>
-      <Tabs activeTab={activeTab} onChange={handleTabChange} loading={status === "loading"} />
+      {/* Yatay kaydırmalı tab sarmalayıcı (mobil uyum) */}
+      <TabsBar>
+        <Tabs
+          activeTab={activeTab}
+          onChange={handleTabChange}
+          loading={status === "loading"}
+        />
+      </TabsBar>
 
       <TabContent>
         {activeTab === "list" && (
@@ -198,7 +191,6 @@ export default function AdminApartmentPage() {
             <MultiUploadModal
               isOpen={multiUploadOpen}
               onClose={() => setMultiUploadOpen(false)}
-              // MultiUploadModal, (images, category, meta) şeklinde çağırmalı.
               onUpload={handleMultiUpload}
             />
           </>
@@ -245,17 +237,63 @@ export default function AdminApartmentPage() {
   );
 }
 
-// --- Styled Components ---
+/* ---------------- Styles (classicTheme uyumlu) ---------------- */
+
 const Wrapper = styled.div`
-  max-width: 1200px;
-  margin: auto;
-  padding: ${({ theme }) => theme.layout.sectionspacings}
-    ${({ theme }) => theme.spacings.md};
+  max-width: ${({ theme }) => theme.layout.containerWidth};
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.layout.sectionspacings} ${({ theme }) => theme.spacings.md};
+
+  ${({ theme }) => theme.media.small} {
+    padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.sm};
+  }
+
+  ${({ theme }) => theme.media.xsmall} {
+    padding: ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.xs};
+  }
+`;
+
+/* Tabs’ı yatay kaydırmalı, snap’li ve scrollbar gizli hale getiriyoruz */
+const TabsBar = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+
+  /* Tabs bileşeni içindeki başlık role="tablist" olarak render ediliyor */
+  & [role="tablist"] {
+    display: flex;
+    gap: ${({ theme }) => theme.spacings.sm};
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    padding: 0 ${({ theme }) => theme.spacings.xs};
+    scrollbar-width: none; /* Firefox */
+    mask-image: linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
+  }
+
+  & [role="tablist"]::-webkit-scrollbar {
+    display: none; /* WebKit */
+  }
+
+  /* Tek tek tab’lar genişlik dayatmasın; mobile’da scroll-snap ile güzel kayar */
+  & [role="tablist"] > * {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
 `;
 
 const TabContent = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   padding: ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.md};
+  box-shadow: ${({ theme }) => theme.shadows.form};
+
+  ${({ theme }) => theme.media.small} {
+    padding: ${({ theme }) => theme.spacings.md};
+    border-radius: ${({ theme }) => theme.radii.sm};
+  }
+
+  ${({ theme }) => theme.media.xsmall} {
+    padding: ${({ theme }) => theme.spacings.sm};
+    border-radius: ${({ theme }) => theme.radii.sm};
+  }
 `;

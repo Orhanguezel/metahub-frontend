@@ -138,9 +138,10 @@ const Section = styled.section`
   color: ${({ theme }) => theme.colors.text};
 `;
 
+// 1) Container: mobilde çocukları ortala
 const Container = styled.div`
   display: flex;
-  align-items: flex-start;
+  align-items: flex-start;          /* desktop */
   gap: 3rem;
   max-width: 1300px;
   margin: 0 auto;
@@ -150,8 +151,10 @@ const Container = styled.div`
     flex-direction: column;
     gap: 2.5rem;
     padding: 0 ${({ theme }) => theme.spacings.sm};
+    align-items: center;            /* 🔑 mobilde sol yapışmayı çözer */
   }
 `;
+
 
 const Left = styled.div`
   flex: 1.12 1 300px;
@@ -191,39 +194,54 @@ const Desc = styled.div`
 
 const Right = styled.div`
   flex: 2.8 1 500px;
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
+  width: 100%;
+  display: block;
 `;
+
 
 const CardGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.4rem 1.7rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.lg};
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
+  justify-items: stretch;
+  align-items: stretch;
 
-  @media (max-width: 1100px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.1rem 1.1rem;
-    max-width: 650px;
+  /* ≤1024px: 2 sütun */
+  ${({ theme }) => theme.media.medium} {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 680px;
+    gap: ${({ theme }) => theme.spacings.md};
   }
-  @media (max-width: 700px) {
-    grid-template-columns: repeat(2, 1fr);   // Mobilde de 2 sütun!
-    gap: 0.8rem 0.8rem;
-    max-width: 99vw;
+
+  /* ≤768px: 2 sütun + yanlarda nefes */
+  ${({ theme }) => theme.media.mobile} {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 680px;                      /* ortalamayı görünür kılar */
+    padding-inline: ${({ theme }) => theme.spacings.sm};
+    gap: ${({ theme }) => theme.spacings.sm};
   }
-  @media (max-width: 430px) {
-    grid-template-columns: 1fr;    // Çok dar ekranda tek sütun, taşmasın diye!
-    gap: 0.5rem 0.5rem;
-    padding: 0 0.1rem;
-  }
+
+  /* ≤375px: tek sütun, tam satır ve ortalı */
+  ${({ theme }) => `
+    @media (max-width: ${theme.breakpoints.mobileM}) {
+      grid-template-columns: minmax(0, 1fr);
+      max-width: 520px;
+      padding-inline: ${theme.spacings.sm};
+      gap: ${theme.spacings.sm};
+      justify-items: stretch;
+    }
+  `}
 `;
 
 
 
 const CardLink = styled(Link)`
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
   text-decoration: none;
   color: inherit;
   display: flex;
@@ -234,24 +252,30 @@ const CardLink = styled(Link)`
   box-shadow: ${({ theme }) => theme.cards.shadow};
   border-radius: ${({ theme }) => theme.radii.lg};
   padding: 0;
-  min-height: 250px;
+  min-height: 240px;
   overflow: hidden;
   transition: box-shadow 0.18s, transform 0.18s;
   cursor: pointer;
 
-  @media (max-width: 700px) {
-    min-height: 148px;  /* Mobilde çok daha kısa! */
-  }
-  @media (max-width: 430px) {
-    min-height: 122px;
-  }
+  ${({ theme }) => theme.media.medium} { min-height: 200px; }
+  ${({ theme }) => theme.media.mobile} { min-height: 150px; }
 
-  &:hover, &:focus-visible {
+  /* ≤375px güvene alma */
+  ${({ theme }) => `
+    @media (max-width: ${theme.breakpoints.mobileM}) {
+      width: 100%;
+      margin-inline: auto;
+    }
+  `}
+
+  &:hover,
+  &:focus-visible {
     box-shadow: ${({ theme }) => theme.shadows.lg};
     transform: translateY(-6px) scale(1.035);
     z-index: 2;
   }
 `;
+
 
 
 
@@ -264,14 +288,16 @@ const CardImgBox = styled.div`
   justify-content: center;
   overflow: hidden;
 
-  @media (max-width: 1100px) {
+  ${({ theme }) => theme.media.medium} {
     height: 120px;
   }
-  @media (max-width: 700px) {
-    height: 100px;
+
+  ${({ theme }) => theme.media.mobile} {
+    height: 96px;
   }
-  @media (max-width: 430px) {
-    height: 86px;
+
+  ${({ theme }) => theme.media.xsmall} {
+    height: 84px;
   }
 `;
 

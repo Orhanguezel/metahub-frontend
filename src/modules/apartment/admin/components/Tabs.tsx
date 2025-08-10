@@ -19,7 +19,7 @@ const TABS: Array<{ key: ApartmentTab; labelKey: string; fallback: string }> = [
 interface Props {
   activeTab: ApartmentTab;
   onChange: (tab: ApartmentTab) => void;
-  loading?: boolean; // <-- eklendi
+  loading?: boolean;
 }
 
 export default function ApartmentTabs({ activeTab, onChange, loading = false }: Props) {
@@ -71,50 +71,93 @@ export default function ApartmentTabs({ activeTab, onChange, loading = false }: 
   );
 }
 
-// --- Styles
+/* ---------------- Styles (classicTheme uyumlu) ---------------- */
+
 const Header = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacings.sm};
-  margin-bottom: ${({ theme }) => theme.spacings.lg};
-  justify-content: flex-start;
+  align-items: center;
+
+  /* Mobilde taşma olmaması için yatay kaydırma + snap */
   overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  padding: 0 ${({ theme }) => theme.spacings.xs};
+
+  /* kenarlarda yumuşak fade efekti */
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 14px,
+    black calc(100% - 14px),
+    transparent 100%
+  );
+
+  /* scrollbar gizle */
   &::-webkit-scrollbar { display: none; }
+  scrollbar-width: none;
+
+  /* Çocuklar satır dışına taşmasın, snap noktasına otursun */
+  & > * {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  /* Tablet ve üstü: boşlukları biraz aç */
+  ${({ theme }) => theme.media.desktop} {
+    gap: ${({ theme }) => theme.spacings.md};
+    padding: 0;
+    mask-image: none;
+  }
 `;
 
 const TabButton = styled.button<{ $active: boolean; $disabled?: boolean }>`
   position: relative;
-  padding: 0.75rem 1.75rem;
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.md};
-  background: ${({ $active, theme }) => ($active ? theme.colors.primary : theme.colors.background)};
-  color: ${({ $active, theme }) => ($active ? "#fff" : theme.colors.text)};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.pill};
+  padding: 0.55rem 1.15rem;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
-  opacity: ${({ $disabled }) => ($disabled ? 0.7 : 1)};
-  transition: background 0.2s, box-shadow 0.2s, color 0.2s, opacity 0.2s;
   outline: none;
-  box-shadow: ${({ $active, theme }) =>
-    $active ? `0 2px 16px 0 ${theme.colors.primary}44` : "none"};
 
-  &::after {
-    content: "";
-    display: block;
-    position: absolute;
-    left: 32%;
-    right: 32%;
-    bottom: 0;
-    height: 3px;
-    border-radius: 3px;
-    background: ${({ $active, theme }) => ($active ? theme.colors.primary : "transparent")};
-    transition: background 0.3s, left 0.2s, right 0.2s;
-  }
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.primary : theme.colors.background};
+  color: ${({ $active, theme }) => ($active ? "#fff" : theme.colors.text)};
+  box-shadow: ${({ $active, theme }) =>
+    $active ? theme.shadows.button : "none"};
+  transition: transform ${props => props.theme.transition.fast},
+              background ${props => props.theme.transition.fast},
+              color ${props => props.theme.transition.fast},
+              box-shadow ${props => props.theme.transition.fast},
+              border-color ${props => props.theme.transition.fast};
 
   &:hover,
   &:focus-visible {
-    background: ${({ theme, $active, $disabled }) =>
-      $disabled ? theme.colors.background : ($active ? theme.colors.primary : theme.colors.primaryHover)};
-    color: ${({ $disabled }) => ($disabled ? "inherit" : "#fff")};
+    background: ${({ theme }) => theme.colors.primaryHover};
+    color: #fff;
+    border-color: ${({ theme }) => theme.colors.borderHighlight};
+    box-shadow: ${({ theme }) => theme.colors.shadowHighlight};
+  }
+
+  &:active {
+    transform: translateY(1px) scale(0.99);
+  }
+
+  /* Disabled görünüm */
+  &:disabled {
+    opacity: ${({ theme }) => theme.opacity.disabled};
+    pointer-events: none;
+  }
+
+  /* Küçük ekranlarda biraz daha kompakt */
+  ${({ theme }) => theme.media.small} {
+    padding: 0.5rem 1rem;
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+  }
+
+  ${({ theme }) => theme.media.xsmall} {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.8rem;
   }
 `;

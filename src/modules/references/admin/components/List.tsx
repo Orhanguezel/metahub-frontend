@@ -7,7 +7,7 @@ import { translations } from "@/modules/references";
 import { Skeleton } from "@/shared";
 import { SupportedLocale } from "@/types/common";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useAppSelector } from "@/store/hooks";
 
 interface Props {
@@ -35,23 +35,23 @@ export default function ReferencesList({
   );
 
   const [activeTab, setActiveTab] = useState<string>("all");
-
-  // Çoklu seçim için state
   const [selected, setSelected] = useState<string[]>([]);
 
-  // Çok dilli yardımcı
+  // pagination
+  const [page, setPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(12);
+
   const getMultiLang = (obj?: Record<string, string>) => {
     if (!obj) return "";
     return obj[lang] || obj["en"] || Object.values(obj)[0] || "—";
   };
 
-  // --- Kategorilere göre grupla ---
   const safeReferences = useMemo(
     () => (Array.isArray(references) ? references : []),
     [references]
   );
 
-  // Group by categoryId
+  // group by category
   const grouped = useMemo(() => {
     const result: Record<string, IReferences[]> = {};
     for (const ref of safeReferences) {
@@ -65,41 +65,65 @@ export default function ReferencesList({
     return result;
   }, [safeReferences]);
 
-  // Kategorisiz olanlar
   const noCategory = grouped["none"] || [];
-  // Tüm kategoriler sırasıyla
   const sortedCategories = categories.filter((cat) => grouped[cat._id]?.length);
 
-  // Tabs: Tümü, kategoriler ve “Kategorisiz”
   const tabs: { key: string; label: string }[] = [
-    {
-      key: "all",
-      label: t("references.all_categories", "All Categories"),
-    },
+    { key: "all", label: t("references.all_categories", "All Categories") },
     ...sortedCategories.map((cat) => ({
       key: cat._id,
       label: getMultiLang(cat.name),
     })),
     ...(noCategory.length
-      ? [
-          {
-            key: "none",
-            label: t("references.no_category", "No Category"),
-          },
-        ]
+      ? [{ key: "none", label: t("references.no_category", "No Category") }]
       : []),
   ];
 
-  // Filtrelenmiş referanslar
   const filteredRefs = useMemo(() => {
     if (activeTab === "all") return safeReferences;
     return grouped[activeTab] || [];
   }, [activeTab, safeReferences, grouped]);
 
-  // --- Çoklu seçim fonksiyonları ---
+  // --- derive pagination ---
+  const total = filteredRefs.length;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const clampedPage = Math.min(page, totalPages);
+  const start = (clampedPage - 1) * limit;
+  const end = start + limit;
+  const pageItems = filteredRefs.slice(start, end);
+
+  // sekme/limit değişince 1. sayfaya dön ve seçimleri temizle
+  useEffect(() => {
+    setPage(1);
+    setSelected([]);
+  }, [activeTab, limit]);
+
+  // total değişince sayfa sınırını düzelt
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [totalPages, page]);
+
+  // ...’li sayfa listesi
+  const pageList = useMemo(() => {
+    const list: (number | string)[] = [];
+    const win = 1; // current ±1
+    const add = (v: number | string) => list.push(v);
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) add(i);
+      return list;
+    }
+    add(1);
+    if (clampedPage > 2 + win) add("…");
+    for (let i = Math.max(2, clampedPage - win); i <= Math.min(totalPages - 1, clampedPage + win); i++) add(i);
+    if (clampedPage < totalPages - (1 + win)) add("…");
+    add(totalPages);
+    return list;
+  }, [clampedPage, totalPages]);
+
+  // selection
   const isAllSelected =
-    filteredRefs.length > 0 &&
-    filteredRefs.every((item) => selected.includes(item._id));
+    pageItems.length > 0 && pageItems.every((it) => selected.includes(it._id));
 
   const handleSelect = (id: string) => {
     setSelected((prev) =>
@@ -109,17 +133,13 @@ export default function ReferencesList({
 
   const handleSelectAll = () => {
     if (isAllSelected) {
-      // Hepsini kaldır
       setSelected((prev) =>
-        prev.filter((id) => !filteredRefs.some((item) => item._id === id))
+        prev.filter((id) => !pageItems.some((it) => it._id === id))
       );
     } else {
-      // Hepsini ekle
       setSelected((prev) => [
         ...prev,
-        ...filteredRefs
-          .map((item) => item._id)
-          .filter((id) => !prev.includes(id)),
+        ...pageItems.map((it) => it._id).filter((id) => !prev.includes(id)),
       ]);
     }
   };
@@ -134,14 +154,15 @@ export default function ReferencesList({
         )
       )
     ) {
-      selected.forEach((id) => onDelete(id));
-      setSelected((prev) =>
-        prev.filter((id) => !filteredRefs.some((item) => item._id === id))
+      const toDelete = selected.filter((id) =>
+        pageItems.some((it) => it._id === id)
       );
+      toDelete.forEach((id) => onDelete(id));
+      setSelected((prev) => prev.filter((id) => !toDelete.includes(id)));
     }
   };
 
-  // --- Render ---
+  // --- Render guards ---
   if (loading) {
     return (
       <SkeletonWrapper>
@@ -151,7 +172,6 @@ export default function ReferencesList({
       </SkeletonWrapper>
     );
   }
-
   if (error) return <ErrorText>❌ {error}</ErrorText>;
   if (!safeReferences.length)
     return <Empty>{t("references.empty", "No references available.")}</Empty>;
@@ -171,27 +191,50 @@ export default function ReferencesList({
         ))}
       </TabsWrapper>
 
-      {/* Toplu Seçim & Silme Butonu */}
-      <BulkActions>
-        <label>
-          <input
-            type="checkbox"
-            checked={isAllSelected}
-            onChange={handleSelectAll}
-            disabled={filteredRefs.length === 0}
-          />
-          {t("references.select_all", "Select All")}
-        </label>
-        {selected.length > 0 && (
-          <DeleteSelectedButton onClick={handleDeleteSelected}>
-            {t("references.delete_selected", "Delete Selected")}
-            <span>({selected.length})</span>
-          </DeleteSelectedButton>
-        )}
-      </BulkActions>
+      <TopRow>
+        <BulkActions>
+          <label>
+            <input
+              type="checkbox"
+              checked={isAllSelected}
+              onChange={handleSelectAll}
+              disabled={pageItems.length === 0}
+            />
+            {t("references.select_all", "Select All (this page)")}
+          </label>
+          {selected.length > 0 && (
+            <DeleteSelectedButton onClick={handleDeleteSelected}>
+              {t("references.delete_selected", "Delete Selected")}
+              <span>({selected.length})</span>
+            </DeleteSelectedButton>
+          )}
+        </BulkActions>
+
+        <RightControls>
+          <SmallInfo>
+            {t("references.total", "{{count}} items", { count: total as any })}
+          </SmallInfo>
+          <PerPageWrap>
+            <label htmlFor="per-page">
+              {t("references.per_page", "Per page")}
+            </label>
+            <select
+              id="per-page"
+              value={limit}
+              onChange={(e) => setLimit(Number(e.target.value))}
+            >
+              {[12, 24, 48, 96].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </PerPageWrap>
+        </RightControls>
+      </TopRow>
 
       <Grid>
-        {filteredRefs.map((item) => (
+        {pageItems.map((item) => (
           <Card key={item._id} $selected={selected.includes(item._id)}>
             <CheckboxWrapper>
               <input
@@ -200,6 +243,7 @@ export default function ReferencesList({
                 onChange={() => handleSelect(item._id)}
               />
             </CheckboxWrapper>
+
             <LogoBox>
               {item.images?.[0]?.url ? (
                 <Image
@@ -210,14 +254,12 @@ export default function ReferencesList({
                   style={{ objectFit: "contain" }}
                 />
               ) : (
-                <NoLogo>
-                  {t("references.no_images", "No logo")}
-                </NoLogo>
+                <NoLogo>{t("references.no_images", "No logo")}</NoLogo>
               )}
             </LogoBox>
-            <CompanyName>
-              {getMultiLang(item.title) || <>&nbsp;</>}
-            </CompanyName>
+
+            <CompanyName>{getMultiLang(item.title) || <>&nbsp;</>}</CompanyName>
+
             <CardActions>
               {onEdit && (
                 <ActionButton
@@ -255,16 +297,54 @@ export default function ReferencesList({
           </Card>
         ))}
       </Grid>
-      {filteredRefs.length === 0 && (
+
+      {pageItems.length === 0 && (
         <Empty>
           {t("references.empty_in_category", "No references in this category.")}
         </Empty>
+      )}
+
+      {totalPages > 1 && (
+        <PaginationBar role="navigation" aria-label="Pagination">
+          <PageButton
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={clampedPage === 1}
+            aria-label={t("pagination.prev", "Previous")}
+          >
+            ‹
+          </PageButton>
+
+          {pageList.map((p, i) =>
+            typeof p === "number" ? (
+              <PageButton
+                key={`${p}-${i}`}
+                $active={p === clampedPage}
+                onClick={() => setPage(p)}
+                aria-current={p === clampedPage ? "page" : undefined}
+              >
+                {p}
+              </PageButton>
+            ) : (
+              <Ellipsis key={`e-${i}`} aria-hidden>
+                …
+              </Ellipsis>
+            )
+          )}
+
+          <PageButton
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={clampedPage === totalPages}
+            aria-label={t("pagination.next", "Next")}
+          >
+            ›
+          </PageButton>
+        </PaginationBar>
       )}
     </div>
   );
 }
 
-// --- Styles ---
+/* ---------- Styles ---------- */
 const SkeletonWrapper = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -275,7 +355,7 @@ const TabsWrapper = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
 `;
 
 const TabButton = styled.button<{ $active: boolean }>`
@@ -284,16 +364,16 @@ const TabButton = styled.button<{ $active: boolean }>`
   border-radius: 24px;
   background: ${({ $active, theme }) =>
     $active ? theme.colors.primary : theme.colors.background};
-  color: ${({ $active, theme }) =>
-    $active ? "#fff" : theme.colors.text};
+  color: ${({ $active, theme }) => ($active ? "#fff" : theme.colors.text)};
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
   box-shadow: ${({ $active, theme }) =>
     $active ? `0 2px 12px 0 ${theme.colors.primary}33` : "none"};
   outline: none;
-  border: 1px solid ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.border};
+  border: 1px solid
+    ${({ $active, theme }) =>
+      $active ? theme.colors.primary : theme.colors.border};
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
   &:hover,
   &:focus-visible {
@@ -302,19 +382,53 @@ const TabButton = styled.button<{ $active: boolean }>`
   }
 `;
 
+const TopRow = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+`;
+
 const BulkActions = styled.div`
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  margin-bottom: 0.75rem;
   flex-wrap: wrap;
   font-size: 0.97em;
-
   label {
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 0.5em;
+  }
+`;
+
+const RightControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+const SmallInfo = styled.div`
+  font-size: 0.92em;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const PerPageWrap = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  label {
+    font-size: 0.9em;
+    color: ${({ theme }) => theme.colors.textSecondary};
+  }
+  select {
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    background: ${({ theme }) => theme.colors.cardBackground};
   }
 `;
 
@@ -445,4 +559,35 @@ const ErrorText = styled.p`
   color: ${({ theme }) => theme.colors.danger};
   font-weight: bold;
   margin: 2rem 0;
+`;
+
+const PaginationBar = styled.div`
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  justify-content: center;
+  margin: 1.25rem 0 0.5rem;
+  flex-wrap: wrap;
+`;
+
+const PageButton = styled.button<{ $active?: boolean }>`
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.6rem;
+  border-radius: 8px;
+  border: 1px solid
+    ${({ $active, theme }) =>
+      $active ? theme.colors.primary : theme.colors.border};
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.primary : theme.colors.cardBackground};
+  color: ${({ $active, theme }) => ($active ? "#fff" : theme.colors.text)};
+  font-weight: 600;
+  cursor: pointer;
+  &:disabled { opacity: .5; cursor: not-allowed; }
+`;
+
+const Ellipsis = styled.span`
+  padding: 0 0.35rem;
+  user-select: none;
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;

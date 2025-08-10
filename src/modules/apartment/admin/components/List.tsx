@@ -7,7 +7,7 @@ import { translations } from "@/modules/apartment";
 import { Skeleton } from "@/shared";
 import { SupportedLocale } from "@/types/common";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useAppSelector } from "@/store/hooks";
 
 interface Props {
@@ -37,6 +37,10 @@ export default function ApartmentList({
   const [activeTab, setActiveTab] = useState<string>("all");
   const [selected, setSelected] = useState<string[]>([]);
 
+  // pagination
+  const [page, setPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(25);
+
   const getMultiLang = (obj?: Record<string, string>) => {
     if (!obj) return "";
     return obj[lang] || obj["en"] || Object.values(obj)[0] || "—";
@@ -47,7 +51,7 @@ export default function ApartmentList({
     [apartment]
   );
 
-  // Kategoriye göre grupla
+  // group by category
   const grouped = useMemo(() => {
     const result: Record<string, IApartment[]> = {};
     for (const ref of safeApartment) {
@@ -80,9 +84,47 @@ export default function ApartmentList({
     return grouped[activeTab] || [];
   }, [activeTab, safeApartment, grouped]);
 
+  // derive pagination
+  const total = filteredRefs.length;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const clampedPage = Math.min(page, totalPages);
+  const start = (clampedPage - 1) * limit;
+  const end = start + limit;
+  const pageItems = filteredRefs.slice(start, end);
+
+  useEffect(() => {
+    setPage(1);
+    setSelected([]);
+  }, [activeTab, limit]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [totalPages, page]);
+
+  const pageList = useMemo(() => {
+    const list: (number | string)[] = [];
+    const windowSize = 1;
+    const add = (v: number | string) => list.push(v);
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) add(i);
+      return list;
+    }
+    add(1);
+    if (clampedPage > 2 + windowSize) add("…");
+    for (
+      let i = Math.max(2, clampedPage - windowSize);
+      i <= Math.min(totalPages - 1, clampedPage + windowSize);
+      i++
+    ) add(i);
+    if (clampedPage < totalPages - (1 + windowSize)) add("…");
+    add(totalPages);
+    return list;
+  }, [clampedPage, totalPages]);
+
   const isAllSelected =
-    filteredRefs.length > 0 &&
-    filteredRefs.every((item) => selected.includes(item._id));
+    pageItems.length > 0 &&
+    pageItems.every((item) => selected.includes(item._id));
 
   const handleSelect = (id: string) => {
     setSelected((prev) =>
@@ -93,14 +135,12 @@ export default function ApartmentList({
   const handleSelectAll = () => {
     if (isAllSelected) {
       setSelected((prev) =>
-        prev.filter((id) => !filteredRefs.some((item) => item._id === id))
+        prev.filter((id) => !pageItems.some((item) => item._id === id))
       );
     } else {
       setSelected((prev) => [
         ...prev,
-        ...filteredRefs
-          .map((item) => item._id)
-          .filter((id) => !prev.includes(id)),
+        ...pageItems.map((item) => item._id).filter((id) => !prev.includes(id)),
       ]);
     }
   };
@@ -115,14 +155,15 @@ export default function ApartmentList({
         )
       )
     ) {
-      selected.forEach((id) => onDelete(id));
-      setSelected((prev) =>
-        prev.filter((id) => !filteredRefs.some((item) => item._id === id))
+      const toDelete = selected.filter((id) =>
+        pageItems.some((it) => it._id === id)
       );
+      toDelete.forEach((id) => onDelete(id));
+      setSelected((prev) => prev.filter((id) => !toDelete.includes(id)));
     }
   };
 
-  // --- Render guards ---
+  // guards
   if (loading) {
     return (
       <SkeletonWrapper>
@@ -141,37 +182,63 @@ export default function ApartmentList({
     <div>
       <TabsWrapper>
         {tabs.map((tab) => (
-          <TabButton
+          <Chip
             key={tab.key}
             $active={activeTab === tab.key}
             onClick={() => setActiveTab(tab.key)}
             type="button"
           >
             {tab.label}
-          </TabButton>
+          </Chip>
         ))}
       </TabsWrapper>
 
-      <BulkActions>
-        <label>
-          <input
-            type="checkbox"
-            checked={isAllSelected}
-            onChange={handleSelectAll}
-            disabled={filteredRefs.length === 0}
-          />
-          {t("apartment.select_all", "Select All")}
-        </label>
-        {selected.length > 0 && (
-          <DeleteSelectedButton onClick={handleDeleteSelected}>
-            {t("apartment.delete_selected", "Delete Selected")}
-            <span>({selected.length})</span>
-          </DeleteSelectedButton>
-        )}
-      </BulkActions>
+      <TopRow>
+        <BulkActions>
+          <label>
+            <input
+              type="checkbox"
+              checked={isAllSelected}
+              onChange={handleSelectAll}
+              disabled={pageItems.length === 0}
+            />
+            {t("apartment.select_all", "Select All (this page)")}
+          </label>
+          {selected.length > 0 && (
+            <DeleteSelectedButton onClick={handleDeleteSelected}>
+              {t("apartment.delete_selected", "Delete Selected")}
+              <span>({selected.length})</span>
+            </DeleteSelectedButton>
+          )}
+        </BulkActions>
+
+        <RightControls>
+          <SmallInfo>
+            {t("apartment.total", "{{count}} items", {
+              count: total as any,
+            })}
+          </SmallInfo>
+          <PerPageWrap>
+            <label htmlFor="per-page">
+              {t("apartment.per_page", "Per page")}
+            </label>
+            <select
+              id="per-page"
+              value={limit}
+              onChange={(e) => setLimit(Number(e.target.value))}
+            >
+              {[12, 24, 48, 96].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </PerPageWrap>
+        </RightControls>
+      </TopRow>
 
       <Grid>
-        {filteredRefs.map((item) => {
+        {pageItems.map((item) => {
           const previewSrc =
             item.images?.[0]?.thumbnail || item.images?.[0]?.url || "";
           const title = getMultiLang(item.title) || "";
@@ -191,14 +258,10 @@ export default function ApartmentList({
 
               <Badges>
                 <Badge $type={item.isActive ? "active" : "inactive"}>
-                  {item.isActive
-                    ? t("active", "Active")
-                    : t("inactive", "Inactive")}
+                  {item.isActive ? t("active", "Active") : t("inactive", "Inactive")}
                 </Badge>
                 <Badge $type={item.isPublished ? "published" : "unpublished"}>
-                  {item.isPublished
-                    ? t("published", "Published")
-                    : t("unpublished", "Unpublished")}
+                  {item.isPublished ? t("published", "Published") : t("unpublished", "Unpublished")}
                 </Badge>
               </Badges>
 
@@ -207,9 +270,9 @@ export default function ApartmentList({
                   <Image
                     src={previewSrc}
                     alt={title || "image"}
-                    width={90}
-                    height={60}
-                    style={{ objectFit: "contain" }}
+                    width={180}
+                    height={110}
+                    style={{ objectFit: "contain", width: "100%", height: "auto" }}
                   />
                 ) : (
                   <NoLogo>{t("apartment.no_images", "No image")}</NoLogo>
@@ -217,40 +280,27 @@ export default function ApartmentList({
               </LogoBox>
 
               <CompanyName title={title}>{title || <>&nbsp;</>}</CompanyName>
-
               {addressLine && <AddressLine>{addressLine}</AddressLine>}
 
               <CardActions>
                 {onEdit && (
-                  <ActionButton
-                    onClick={() => onEdit(item)}
-                    aria-label={t("edit", "Edit")}
-                  >
+                  <ActionButton onClick={() => onEdit(item)} aria-label={t("edit", "Edit")}>
                     {t("edit", "Edit")}
                   </ActionButton>
                 )}
                 {onDelete && (
-                  <DeleteButton
-                    onClick={() => onDelete(item._id)}
-                    aria-label={t("delete", "Delete")}
-                  >
+                  <DeleteButton onClick={() => onDelete(item._id)} aria-label={t("delete", "Delete")}>
                     {t("delete", "Delete")}
                   </DeleteButton>
                 )}
                 {onTogglePublish && (
                   <ToggleButton
-                    onClick={() =>
-                      onTogglePublish(item._id, item.isPublished)
-                    }
+                    onClick={() => onTogglePublish(item._id, item.isPublished)}
                     aria-label={
-                      item.isPublished
-                        ? t("apartment.unpublish", "Unpublish")
-                        : t("apartment.publish", "Publish")
+                      item.isPublished ? t("apartment.unpublish", "Unpublish") : t("apartment.publish", "Publish")
                     }
                   >
-                    {item.isPublished
-                      ? t("apartment.unpublish", "Unpublish")
-                      : t("apartment.publish", "Publish")}
+                    {item.isPublished ? t("apartment.unpublish", "Unpublish") : t("apartment.publish", "Publish")}
                   </ToggleButton>
                 )}
               </CardActions>
@@ -259,215 +309,283 @@ export default function ApartmentList({
         })}
       </Grid>
 
-      {filteredRefs.length === 0 && (
-        <Empty>
-          {t("apartment.empty_in_category", "No apartment in this category.")}
-        </Empty>
+      {pageItems.length === 0 && (
+        <Empty>{t("apartment.empty_in_category", "No apartment in this category.")}</Empty>
+      )}
+
+      {totalPages > 1 && (
+        <PaginationBar role="navigation" aria-label="Pagination">
+          <PageButton
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={clampedPage === 1}
+            aria-label={t("pagination.prev", "Previous")}
+          >
+            ‹
+          </PageButton>
+
+          {pageList.map((p, i) =>
+            typeof p === "number" ? (
+              <PageButton
+                key={`${p}-${i}`}
+                $active={p === clampedPage}
+                onClick={() => setPage(p)}
+                aria-current={p === clampedPage ? "page" : undefined}
+              >
+                {p}
+              </PageButton>
+            ) : (
+              <Ellipsis key={`e-${i}`} aria-hidden>
+                …
+              </Ellipsis>
+            )
+          )}
+
+          <PageButton
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={clampedPage === totalPages}
+            aria-label={t("pagination.next", "Next")}
+          >
+            ›
+          </PageButton>
+        </PaginationBar>
       )}
     </div>
   );
 }
 
-// --- Styles ---
+/* ---------- Styles ---------- */
 const SkeletonWrapper = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1.5rem;
 `;
 
+/* yatay kaydırılan kategori chip'leri */
 const TabsWrapper = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+
+  ${({ theme }) => theme.media.small} {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: .25rem;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+    & > * { flex: 0 0 auto; scroll-snap-align: start; }
+  }
 `;
 
-const TabButton = styled.button<{ $active: boolean }>`
-  padding: 0.55rem 1.3rem;
-  border: none;
-  border-radius: 24px;
-  background: ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.background};
-  color: ${({ $active, theme }) =>
-    $active ? "#fff" : theme.colors.text};
+const Chip = styled.button<{ $active: boolean }>`
+  padding: 0.5rem 1.1rem;
+  border: 1px solid ${({ $active, theme }) => ($active ? theme.colors.primary : theme.colors.border)};
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ $active, theme }) => ($active ? theme.colors.primary : theme.colors.cardBackground)};
+  color: ${({ $active }) => ($active ? "#fff" : "inherit")};
   font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  box-shadow: ${({ $active, theme }) =>
-    $active ? `0 2px 12px 0 ${theme.colors.primary}33` : "none"};
-  outline: none;
-  border: 1px solid ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.border};
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-  &:hover,
-  &:focus-visible {
-    background: ${({ theme }) => theme.colors.primaryHover};
-    color: #fff;
+  white-space: nowrap;
+`;
+
+const TopRow = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+
+  ${({ theme }) => theme.media.small} {
+    align-items: stretch;
+    gap: .6rem;
   }
 `;
 
 const BulkActions = styled.div`
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 0.75rem;
+  gap: 1rem;
   flex-wrap: wrap;
   font-size: 0.97em;
+  label { cursor: pointer; display: flex; align-items: center; gap: 0.5em; }
+`;
+
+const RightControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  ${({ theme }) => theme.media.small} {
+    width: 100%;
+    justify-content: space-between;
+  }
+`;
+
+const SmallInfo = styled.div`
+  font-size: 0.92em;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const PerPageWrap = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
 
   label {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
+    font-size: 0.9em;
+    color: ${({ theme }) => theme.colors.textSecondary};
+  }
+
+  select {
+    padding: 0.35rem 0.55rem;
+    border-radius: 8px;
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    background: ${({ theme }) => theme.colors.cardBackground};
+  }
+
+  ${({ theme }) => theme.media.small} {
+    label { display: none; }      /* mobilde sadeleştir */
   }
 `;
 
 const DeleteSelectedButton = styled.button`
-  padding: 0.45rem 1.1rem;
+  padding: 0.5rem 1rem;
   background: ${({ theme }) => theme.colors.danger};
   color: #fff;
   border: none;
-  border-radius: 4px;
-  font-size: 1em;
-  font-weight: 500;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.4em;
 `;
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 1.1rem 1.5rem;
-`;
+  gap: 1rem 1.2rem;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
 
-const Card = styled.div<{ $selected?: boolean }>`
-  border: 2px solid
-    ${({ $selected, theme }) =>
-      $selected ? theme.colors.primary : theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.lg || "12px"};
-  padding: 1rem 0.5rem 0.7rem 0.5rem;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  min-height: 170px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  box-shadow: ${({ $selected }) =>
-    $selected ? "0 0 0 2px #4b9efc33" : "none"};
-  transition: border 0.2s, box-shadow 0.2s;
-`;
-
-const CheckboxWrapper = styled.div`
-  position: absolute;
-  top: 0.7rem;
-  left: 0.7rem;
-  z-index: 2;
-  input[type="checkbox"] {
-    width: 1.1em;
-    height: 1.1em;
-    accent-color: ${({ theme }) => theme.colors.primary};
-    cursor: pointer;
+  ${({ theme }) => theme.media.small} {
+    grid-template-columns: 1fr; /* telefonda tek sütun */
   }
 `;
 
+const Card = styled.div<{ $selected?: boolean }>`
+  border: 2px solid ${({ $selected, theme }) => ($selected ? theme.colors.primary : theme.colors.border)};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  padding: 1rem 0.75rem 0.9rem;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  display: flex; flex-direction: column; align-items: center;
+  position: relative; transition: border .2s, box-shadow .2s;
+
+  ${({ theme }) => theme.media.small} {
+    padding: 1rem;
+  }
+`;
+
+const CheckboxWrapper = styled.div`
+  position: absolute; top: .7rem; left: .7rem; z-index: 2;
+  input[type="checkbox"] { width: 1.2em; height: 1.2em; accent-color: ${({ theme }) => theme.colors.primary}; }
+`;
+
 const Badges = styled.div`
-  position: absolute;
-  top: 0.6rem;
-  right: 0.6rem;
-  display: flex;
-  gap: 0.35rem;
+  position: absolute; top: .6rem; right: .6rem;
+  display: flex; gap: .35rem;
+
+  ${({ theme }) => theme.media.small} {
+    gap: .25rem;
+  }
 `;
 
 const Badge = styled.span<{ $type: "active" | "inactive" | "published" | "unpublished" }>`
-  padding: 0.15rem 0.45rem;
+  padding: 0.1rem 0.45rem;
   border-radius: 999px;
-  font-size: 0.72em;
+  font-size: 0.7em;
   font-weight: 700;
   color: #fff;
   background: ${({ $type, theme }) =>
-    $type === "active"
-      ? theme.colors.success
-      : $type === "published"
-      ? theme.colors.primary
-      : $type === "unpublished"
-      ? theme.colors.warning
-      : theme.colors.textSecondary};
+    $type === "active" ? theme.colors.success
+    : $type === "published" ? theme.colors.primary
+    : $type === "unpublished" ? theme.colors.warning
+    : theme.colors.textSecondary};
 `;
 
 const LogoBox = styled.div`
-  margin-bottom: 0.7rem;
+  width: 100%;
+  height: 110px;
+  margin-bottom: .6rem;
   background: #fff;
-  border-radius: 7px;
+  border-radius: 10px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 90px;
-  height: 60px;
+  display: grid; place-items: center;
   overflow: hidden;
+
+  ${({ theme }) => theme.media.small} {
+    height: 120px;
+  }
 `;
 
 const NoLogo = styled.span`
   font-size: 0.9em;
   color: ${({ theme }) => theme.colors.textSecondary};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 60px;
 `;
 
 const CompanyName = styled.div`
   font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.15rem;
+  font-weight: 700;
   text-align: center;
+  margin-bottom: .2rem;
   width: 100%;
   word-break: break-word;
 `;
 
 const AddressLine = styled.div`
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: ${({ theme }) => theme.colors.textSecondary};
   text-align: center;
-  margin-bottom: 0.4rem;
+  margin-bottom: .5rem;
 `;
 
 const CardActions = styled.div`
-  display: flex;
-  gap: 0.5rem;
+  display: grid;
+  grid-auto-flow: column;
+  gap: .5rem;
   margin-top: auto;
+
+  ${({ theme }) => theme.media.small} {
+    width: 100%;
+    grid-auto-flow: initial;
+    grid-template-columns: 1fr 1fr;
+  }
 `;
 
-const ActionButton = styled.button`
-  padding: 0.25rem 0.7rem;
-  background: ${({ theme }) => theme.colors.warning};
-  color: white;
+const ButtonBase = styled.button`
   border: none;
-  border-radius: 4px;
+  border-radius: 10px;
+  padding: .55rem .8rem;
+  font-weight: 700;
   cursor: pointer;
-  font-size: 0.96em;
 `;
 
-const DeleteButton = styled.button`
-  padding: 0.25rem 0.7rem;
-  background: ${({ theme }) => theme.colors.danger};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.96em;
+const ActionButton = styled(ButtonBase)`
+  background: ${({ theme }) => theme.buttons.warning.background};
+  color: ${({ theme }) => theme.buttons.warning.text};
+  &:hover { background: ${({ theme }) => theme.buttons.warning.backgroundHover}; }
 `;
 
-const ToggleButton = styled.button`
-  padding: 0.25rem 0.7rem;
-  background: ${({ theme }) => theme.colors.success};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.96em;
+const DeleteButton = styled(ButtonBase)`
+  background: ${({ theme }) => theme.buttons.danger.background};
+  color: ${({ theme }) => theme.buttons.danger.text};
+  &:hover { background: ${({ theme }) => theme.buttons.danger.backgroundHover}; }
+`;
+
+const ToggleButton = styled(ButtonBase)`
+  background: ${({ theme }) => theme.buttons.success.background};
+  color: ${({ theme }) => theme.buttons.success.text};
+  &:hover { background: ${({ theme }) => theme.buttons.success.backgroundHover}; }
+
+  ${({ theme }) => theme.media.small} {
+    grid-column: 1 / -1; /* mobilde altta tam genişlik */
+  }
 `;
 
 const Empty = styled.p`
@@ -480,4 +598,22 @@ const ErrorText = styled.p`
   color: ${({ theme }) => theme.colors.danger};
   font-weight: bold;
   margin: 2rem 0;
+`;
+
+const PaginationBar = styled.div`
+  display: flex; gap: .35rem; align-items: center; justify-content: center;
+  margin: 1.25rem 0 .5rem; flex-wrap: wrap;
+`;
+
+const PageButton = styled.button<{ $active?: boolean }>`
+  min-width: 40px; height: 40px; padding: 0 .6rem; border-radius: 10px;
+  border: 1px solid ${({ $active, theme }) => ($active ? theme.colors.primary : theme.colors.border)};
+  background: ${({ $active, theme }) => ($active ? theme.colors.primary : theme.colors.cardBackground)};
+  color: ${({ $active }) => ($active ? "#fff" : "inherit")};
+  font-weight: 700; cursor: pointer;
+  &:disabled { opacity: .5; cursor: not-allowed; }
+`;
+
+const Ellipsis = styled.span`
+  padding: 0 .35rem; user-select: none; color: ${({ theme }) => theme.colors.textSecondary};
 `;

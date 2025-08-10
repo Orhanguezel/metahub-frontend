@@ -9,7 +9,6 @@ import { Modal } from "@/shared";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import type { ApartmentCategory } from "@/modules/apartment/types";
 
-// ✅ GÜNCEL: onUpload imzası genişletildi
 interface MultiUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -31,18 +30,15 @@ export default function MultiUploadModal({ isOpen, onClose, onUpload }: MultiUpl
 
   const categories = useAppSelector((state) => state.apartmentCategory.categories);
 
-  // seçimler
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // zorunlu (backend)
   const [city, setCity] = useState("");
-  const [country, setCountry] = useState(""); // ISO-2 önerilir: TR, DE, ...
+  const [country, setCountry] = useState("");
   const [contactName, setContactName] = useState("");
 
-  // opsiyoneller
   const [zip, setZip] = useState("");
   const [district, setDistrict] = useState("");
   const [street, setStreet] = useState("");
@@ -52,11 +48,10 @@ export default function MultiUploadModal({ isOpen, onClose, onUpload }: MultiUpl
   const [role, setRole] = useState("");
   const [isPublished, setIsPublished] = useState(true);
 
-  // başlık (mevcut dile göre tek satır; gönderirken çok dilliye çeviriyoruz)
   const [titleCurrentLang, setTitleCurrentLang] = useState("");
 
   const getLabel = (item: ApartmentCategory) =>
-    item.name?.[lang] || item.name?.en || Object.values(item.name || {})[0] || "–";
+    item.name?.[lang] || item.name?.en || (Object.values(item.name || {})[0] as string) || "–";
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) setFiles(Array.from(e.target.files));
@@ -64,22 +59,21 @@ export default function MultiUploadModal({ isOpen, onClose, onUpload }: MultiUpl
 
   const handleUpload = async () => {
     setError(null);
-
-    // basit doğrulamalar
     if (!selectedCategory) return setError(t("category_required", "Kategori seçmelisiniz!"));
     if (!files.length) return setError(t("apartment.upload.no_files", "Dosya seçmelisiniz!"));
-    if (!city.trim() || !country.trim()) return setError(t("apartment.required_address", "Şehir ve ülke zorunludur."));
-    if (!contactName.trim()) return setError(t("apartment.required_contact", "Sorumlu kişi adı zorunludur."));
+    if (!city.trim() || !country.trim())
+      return setError(t("apartment.required_address", "Şehir ve ülke zorunludur."));
+    if (!contactName.trim())
+      return setError(t("apartment.required_contact", "Sorumlu kişi adı zorunludur."));
 
     setLoading(true);
     try {
-      // başlık objesi (sadece aktif dile set; diğer diller boş kalabilir)
       const titleObj =
         titleCurrentLang.trim()
-          ? (SUPPORTED_LOCALES.reduce((acc, l) => {
+          ? SUPPORTED_LOCALES.reduce((acc, l) => {
               if (l === lang) acc[l] = titleCurrentLang.trim();
               return acc;
-            }, {} as Record<SupportedLocale, string>))
+            }, {} as Record<SupportedLocale, string>)
           : undefined;
 
       await onUpload(files, selectedCategory, {
@@ -136,7 +130,6 @@ export default function MultiUploadModal({ isOpen, onClose, onUpload }: MultiUpl
       <Box>
         <Title>{t("apartment.bulk_upload", "Toplu Firma/Logo Yükle")}</Title>
 
-        {/* Kategori */}
         <Label>
           {t("apartment.select_category", "Kategori Seçiniz")}
           <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} disabled={loading}>
@@ -149,7 +142,6 @@ export default function MultiUploadModal({ isOpen, onClose, onUpload }: MultiUpl
           </Select>
         </Label>
 
-        {/* Başlık (aktif dil) */}
         <Label>
           {t("apartment.title", "Başlık")} ({lang.toUpperCase()}){" "}
           <Hint>{t("apartment.title_hint", "Opsiyonel; slug üretimine yardımcı olur")}</Hint>
@@ -164,11 +156,11 @@ export default function MultiUploadModal({ isOpen, onClose, onUpload }: MultiUpl
 
         {/* Adres (min: city & country) */}
         <Row>
-          <Label flex>
+          <Label $flex>
             {t("city", "Şehir")}*
             <InputText value={city} onChange={(e) => setCity(e.target.value)} disabled={loading} />
           </Label>
-          <Label flex>
+          <Label $flex>
             {t("country", "Ülke")}* <Hint>ISO-2</Hint>
             <InputText
               value={country}
@@ -180,22 +172,22 @@ export default function MultiUploadModal({ isOpen, onClose, onUpload }: MultiUpl
         </Row>
 
         <Row>
-          <Label flex>
+          <Label $flex>
             {t("district", "İlçe/Mahalle")}
             <InputText value={district} onChange={(e) => setDistrict(e.target.value)} disabled={loading} />
           </Label>
-          <Label flex>
+          <Label $flex>
             {t("zip", "Posta Kodu")}
             <InputText value={zip} onChange={(e) => setZip(e.target.value)} disabled={loading} />
           </Label>
         </Row>
 
         <Row>
-          <Label flex>
+          <Label $flex>
             {t("street", "Sokak/Cadde")}
             <InputText value={street} onChange={(e) => setStreet(e.target.value)} disabled={loading} />
           </Label>
-          <Label flex>
+          <Label $flex>
             {t("number", "No")}
             <InputText value={number} onChange={(e) => setNumber(e.target.value)} disabled={loading} />
           </Label>
@@ -203,28 +195,27 @@ export default function MultiUploadModal({ isOpen, onClose, onUpload }: MultiUpl
 
         {/* İlgili kişi */}
         <Row>
-          <Label flex>
+          <Label $flex>
             {t("contact.name", "Sorumlu Adı")}*
             <InputText value={contactName} onChange={(e) => setContactName(e.target.value)} disabled={loading} />
           </Label>
-          <Label flex>
+          <Label $flex>
             {t("role", "Rol")}
             <InputText value={role} onChange={(e) => setRole(e.target.value)} disabled={loading} />
           </Label>
         </Row>
 
         <Row>
-          <Label flex>
+          <Label $flex>
             {t("phone", "Telefon")}
             <InputText value={phone} onChange={(e) => setPhone(e.target.value)} disabled={loading} />
           </Label>
-          <Label flex>
+          <Label $flex>
             {t("email", "E-posta")}
             <InputText value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} />
           </Label>
         </Row>
 
-        {/* Dosyalar */}
         <Label>
           {t("apartment.select_files", "Görselleri seçiniz")}
           <Input type="file" accept="image/*" multiple onChange={handleFileChange} disabled={loading} />
@@ -249,7 +240,6 @@ export default function MultiUploadModal({ isOpen, onClose, onUpload }: MultiUpl
           </FileList>
         )}
 
-        {/* Yayınlama */}
         <PublishRow>
           <label>
             <input type="checkbox" checked={isPublished} onChange={(e) => setIsPublished(e.target.checked)} />
@@ -257,7 +247,7 @@ export default function MultiUploadModal({ isOpen, onClose, onUpload }: MultiUpl
           </label>
         </PublishRow>
 
-        {error && <ErrorBox>{error}</ErrorBox>}
+        {error && <ErrorBox role="alert">{error}</ErrorBox>}
 
         <ActionRow>
           <ActionButton type="button" onClick={handleUpload} disabled={loading}>
@@ -279,16 +269,22 @@ const Box = styled.div`
   min-width: 360px;
   max-width: 520px;
   margin: auto;
+
+  ${({ theme }) => theme.media.small} {
+    min-width: 100%;
+    max-width: 100%;
+    padding: 1rem;
+  }
 `;
 
 const Title = styled.h2`
   margin-bottom: 1.2rem;
   color: ${({ theme }) => theme.colors.primary};
-  font-size: 1.25rem;
+  font-size: ${({ theme }) => theme.fontSizes.md};
 `;
 
-const Label = styled.label<{ flex?: boolean }>`
-  display: ${({ flex }) => (flex ? "flex" : "block")};
+const Label = styled.label<{ $flex?: boolean }>`
+  display: ${({ $flex }) => ($flex ? "flex" : "block")};
   flex-direction: column;
   gap: 0.35rem;
   font-weight: 500;
@@ -329,6 +325,10 @@ const Row = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: .8rem;
+
+  ${({ theme }) => theme.media.small} {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const FileList = styled.ul`
@@ -395,6 +395,11 @@ const ActionRow = styled.div`
   gap: 1rem;
   justify-content: flex-end;
   margin-top: 1.2rem;
+
+  ${({ theme }) => theme.media.small} {
+    flex-direction: column-reverse;
+    gap: .6rem;
+  }
 `;
 
 const ActionButton = styled.button`
