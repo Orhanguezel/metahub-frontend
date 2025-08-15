@@ -1,0 +1,137 @@
+
+{
+  "title": "Harmonogramy",
+  "newPlan": "Nowy plan",
+  "counts": { "plans": "Plany" },
+  "sections": { "plans": "Plany" },
+
+  "actions": {
+    "refresh": "Odśwież",
+    "apply": "Zastosuj",
+    "reset": "Resetuj",
+    "view": "Pokaż",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "close": "Zamknij",
+    "cancel": "Anuluj",
+    "create": "Utwórz",
+    "update": "Zaktualizuj"
+  },
+
+  "common": { "loading": "Ładowanie...", "yes": "Tak", "no": "Nie" },
+
+  "status": { "active": "Aktywny", "paused": "Wstrzymany", "archived": "Zarchiwizowany" },
+
+  "list": {
+    "filters": "Filtry planu",
+    "qPh": "Szukaj (kod/tytuł)",
+    "qLabel": "Szukaj",
+    "status": "Status",
+    "apartment": "ID mieszkania",
+    "service": "ID usługi",
+    "template": "ID szablonu",
+    "contract": "ID umowy",
+    "tag": "Tag",
+    "from": "Od",
+    "to": "Do",
+    "tableLabel": "Plany",
+    "empty": "Brak wyników",
+    "confirmDelete": "Usunąć plan {{code}}?",
+    "th": {
+      "code": "Kod",
+      "title": "Tytuł",
+      "status": "Status",
+      "nextRun": "Następne uruchomienie",
+      "start": "Start",
+      "pattern": "Cykliczność",
+      "actions": "Akcje"
+    }
+  },
+
+  "form": {
+    "a11y": "Utwórz lub zaktualizuj plan.",
+    "code": "Kod",
+    "codePh": "auto gdy puste",
+    "timezone": "Strefa czasowa",
+    "status": "Status",
+    "tags": "Tagi (przecinkami)",
+    "tagsPh": "sprzątanie, tygodniowy, ...",
+    "titleI18n": "Tytuł (i18n JSON)",
+    "descI18n": "Opis (i18n JSON)",
+    "anchor": "Kontekst",
+    "pattern": "Cykliczność",
+    "windowPolicy": "Okno czasowe i polityka",
+    "startDate": "Data rozpoczęcia",
+    "endDate": "Data zakończenia",
+    "exceptions": "Wyjątki",
+    "required": "Wymagane",
+    "apartmentRef": "Ref. mieszkania",
+    "categoryRef": "Ref. kategorii",
+    "serviceRef": "Ref. usługi",
+    "templateRef": "Ref. szablonu",
+    "contractRef": "Ref. umowy"
+  },
+
+  "anchor": { "title": "Kontekst" },
+
+  "blackouts": {
+    "titleSkipDates": "Daty do pominięcia (YYYY-MM-DD)",
+    "skipDate": "Data do pominięcia",
+    "add": "Dodaj",
+    "remove": "Usuń",
+    "titleBlackouts": "Okresy niedostępności",
+    "from": "Od",
+    "to": "Do",
+    "reason": "Powód",
+    "reasonPh": "Powód"
+  },
+
+  "pattern": {
+    "title": "Wzorzec powtarzania",
+    "type": "Typ",
+    "types": {
+      "weekly": "tygodniowo",
+      "dayOfMonth": "dzień miesiąca",
+      "nthWeekday": "n-ty dzień tygodnia w miesiącu",
+      "yearly": "rocznie"
+    },
+    "everyWeeks": "Co (tygodnie)",
+    "daysOfWeek": "Dni tygodnia",
+    "everyMonths": "Co (miesiące)",
+    "day": "Dzień",
+    "nth": "N-ty",
+    "weekday": "Dzień tygodnia",
+    "month": "Miesiąc",
+    "summary": {
+      "weekly": "tygodniowo/{{every}} [{{days}}]",
+      "dayOfMonth": "dzień miesiąca/{{every}} dzień={{day}}",
+      "nthWeekday": "n-ty dzień/{{every}} {{nth}}.{{weekday}}",
+      "yearly": "rocznie {{month}}/{{day}}"
+    }
+  },
+
+  "window": {
+    "title": "Okno czasowe",
+    "start": "Początek",
+    "end": "Koniec",
+    "duration": "Czas trwania (min)"
+  },
+
+  "policy": {
+    "title": "Zasady generowania",
+    "leadTimeDays": "Wyprzedzenie (dni)",
+    "lockAhead": "Okresy blokowane z góry",
+    "autoAssign": "Automatyczne przypisanie",
+    "preferredEmployees": "Preferowani pracownicy (ID, przecinek)",
+    "minCrew": "Min. zespół",
+    "maxCrew": "Maks. zespół"
+  },
+
+  "detail": {
+    "title": "Szczegóły planu",
+    "plan": "Plan",
+    "status": "Status",
+    "next": "Następny",
+    "json": "Plan JSON"
+  }
+}

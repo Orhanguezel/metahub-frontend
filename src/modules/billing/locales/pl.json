@@ -1,0 +1,103 @@
+
+{
+  "admin": {
+    "title": "Administracja rozliczeń",
+    "planCount": "{{count}} plan"
+  },
+  "sections": {
+    "plans": "Plany",
+    "occurrences": "Zdarzenia"
+  },
+  "actions": {
+    "newPlan": "Nowy plan",
+    "refresh": "Odśwież",
+    "edit": "Edytuj",
+    "activate": "Aktywuj",
+    "pause": "Wstrzymaj",
+    "end": "Zakończ",
+    "delete": "Usuń",
+    "cancel": "Anuluj",
+    "update": "Zaktualizuj",
+    "create": "Utwórz",
+    "apply": "Zastosuj",
+    "reset": "Resetuj"
+  },
+  "list": {
+    "code": "Kod",
+    "status": "Status",
+    "amount": "Kwota",
+    "period": "Okres",
+    "dueRule": "Reguła płatności",
+    "nextDue": "Następny termin",
+    "actions": "Akcje"
+  },
+  "status": {
+    "draft": "Szkic",
+    "active": "Aktywny",
+    "paused": "Wstrzymany",
+    "ended": "Zakończony",
+    "pending": "Oczekujące",
+    "invoiced": "Zafakturowane",
+    "skipped": "Pominięte",
+    "canceled": "Anulowane"
+  },
+  "period": {
+    "weekly": "tygodniowy",
+    "monthly": "miesięczny",
+    "quarterly": "kwartalny",
+    "yearly": "roczny"
+  },
+  "due": {
+    "dayOfMonth": "dzień miesiąca",
+    "nthWeekday": "n-ty dzień tygodnia",
+    "day": "Dzień",
+    "weekday": "dzień tygodnia"
+  },
+  "form": {
+    "code": "Kod",
+    "codePlaceholder": "(auto, jeśli puste)",
+    "mode": "Tryb",
+    "contract": "Umowa (ObjectId)",
+    "contractLine": "Pozycja umowy (opcjonalnie)",
+    "amount": "Kwota",
+    "currency": "Waluta",
+    "period": "Okres",
+    "graceDays": "Dni karencji",
+    "dueType": "Typ terminu",
+    "day": "Dzień",
+    "nth": "N-ty",
+    "weekday": "Dzień tygodnia (0=Nd..6=Sob)",
+    "startDate": "Data rozpoczęcia",
+    "endDate": "Data zakończenia"
+  },
+  "mode": {
+    "fixed": "stały",
+    "perLine": "na linię"
+  },
+  "occ": {
+    "filters": {
+      "title": "Filtry zdarzeń",
+      "planId": "ID planu",
+      "status": "Status",
+      "dueFrom": "Termin od",
+      "dueTo": "Termin do",
+      "invoice": "ID faktury",
+      "seqFrom": "Sekw. od",
+      "seqTo": "Sekw. do",
+      "limit": "Limit"
+    },
+    "columns": {
+      "plan": "Plan",
+      "seq": "Sekw.",
+      "window": "Okno",
+      "due": "Termin",
+      "amount": "Kwota",
+      "status": "Status",
+      "invoice": "Faktura"
+    }
+  },
+  "common": {
+    "empty": "Brak danych",
+    "plan": "plan"
+  }
+}

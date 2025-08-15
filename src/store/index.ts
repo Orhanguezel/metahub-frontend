@@ -44,7 +44,7 @@ import ordersReducer from "@/modules/order/slice/ordersSlice";
 import couponReducer from "@/modules/coupon/slice/couponSlice";
 import bikesReducer from "@/modules/bikes/slice/bikesSlice";
 import bikesCategoryReducer from "@/modules/bikes/slice/bikesCategorySlice";
-import paymentReducer from "@/modules/payment/slice/paymentSlice";
+import paymentsReducer from "@/modules/payments/slice/paymentsSlice";
 import tenantsReducer from "@/modules/tenants/slice/tenantSlice";
 import contactReducer from "@/modules/contact/slice/contactSlice";
 import sectionMetaReducer from "@/modules/section/slices/sectionMetaSlice";
@@ -69,7 +69,22 @@ import customerReducer from "@/modules/customer/slice/customerSlice";
 import requestOfferSlice from "@/modules/offer/slice/requestOfferSlice";
 import pricingSlice from "@/modules/pricing/slice/pricingSlice";
 import apartmentReducer from "@/modules/apartment/slice/apartmentSlice";
-import apartmentCategoryReducer from "@/modules/apartment/slice/apartmentCategorySlice";
+import billingReducer from "@/modules/billing/slice/billingSlice";
+import cashbookReducer from "@/modules/cashbook/slice/cashbookSlice";
+import contactsReducer from "@/modules/contacts/slice/contactsSlice";
+import contractsSlice from "@/modules/contracts/slice/contractsSlice";
+import employeesReducer from "@/modules/employees/slice/employeesSlice";
+import expensesSlice from "@/modules/expenses/slice/expensesSlice";
+import invoicesSlice from "@/modules/invoices/slice/invoicesSlice";
+import opsjobsSlice from "@/modules/operationsjobs/slice/opsjobsSlice";
+import opstemplatesSlice from "@/modules/opstemplates/slice/opstemplatesSlice";
+import pricelistSlice from "@/modules/pricelist/slice/pricelistSlice";
+import reportsSlice from "@/modules/reports/slice/reportsSlice";
+import schedulingSlice from "@/modules/scheduling/slice/schedulingSlice";
+import serviceCatalogSlice from "@/modules/servicecatalog/slice/serviceCatalogSlice";
+import timetrackingSlice from "@/modules/timetracking/slice/timeEntrySlice";
+import filesSlice from "@/modules/files/slice/filesSlice";
+import neighborhoodSlice from "@/modules/neighborhood/slice/neighborhoodSlice";
 
 
 // --- Combine reducers ---
@@ -115,7 +130,7 @@ const rootReducer = combineReducers({
   coupon: couponReducer,
   bikes: bikesReducer,
   bikesCategory: bikesCategoryReducer,
-  payment: paymentReducer,
+  payments: paymentsReducer,
   tenants: tenantsReducer,
   auth: authReducer,
   account: accountReducer,
@@ -142,7 +157,22 @@ const rootReducer = combineReducers({
   requestOffer: requestOfferSlice,
   pricing: pricingSlice,
   apartment: apartmentReducer,
-  apartmentCategory: apartmentCategoryReducer,
+  billing: billingReducer,
+  cashbook: cashbookReducer,
+  contacts: contactsReducer,
+  contracts: contractsSlice,
+  employees: employeesReducer,
+  expenses: expensesSlice,
+  invoices: invoicesSlice,
+  opsjobs: opsjobsSlice,
+  opstemplates: opstemplatesSlice,
+  pricelists: pricelistSlice,
+  reportsAdmin: reportsSlice,
+  scheduling: schedulingSlice,
+  servicecatalog: serviceCatalogSlice,
+  timetracking: timetrackingSlice,
+  files: filesSlice,
+  neighborhood: neighborhoodSlice,
 });
 
 // --- Store ---

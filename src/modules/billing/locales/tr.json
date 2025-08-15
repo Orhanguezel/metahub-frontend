@@ -1,0 +1,103 @@
+
+{
+  "admin": {
+    "title": "Faturalama Yönetimi",
+    "planCount": "{{count}} plan"
+  },
+  "sections": {
+    "plans": "Planlar",
+    "occurrences": "Oluşumlar"
+  },
+  "actions": {
+    "newPlan": "Yeni Plan",
+    "refresh": "Yenile",
+    "edit": "Düzenle",
+    "activate": "Aktifleştir",
+    "pause": "Duraklat",
+    "end": "Sonlandır",
+    "delete": "Sil",
+    "cancel": "İptal",
+    "update": "Güncelle",
+    "create": "Oluştur",
+    "apply": "Uygula",
+    "reset": "Sıfırla"
+  },
+  "list": {
+    "code": "Kod",
+    "status": "Durum",
+    "amount": "Tutar",
+    "period": "Periyot",
+    "dueRule": "Vade Kuralı",
+    "nextDue": "Sonraki Vade",
+    "actions": "İşlemler"
+  },
+  "status": {
+    "draft": "taslak",
+    "active": "aktif",
+    "paused": "duraklatıldı",
+    "ended": "sona erdi",
+    "pending": "beklemede",
+    "invoiced": "faturalandı",
+    "skipped": "atlandı",
+    "canceled": "iptal edildi"
+  },
+  "period": {
+    "weekly": "haftalık",
+    "monthly": "aylık",
+    "quarterly": "üç aylık",
+    "yearly": "yıllık"
+  },
+  "due": {
+    "dayOfMonth": "ayın günü",
+    "nthWeekday": "ayın n'inci hafta günü",
+    "day": "Gün",
+    "weekday": "hafta günü"
+  },
+  "form": {
+    "code": "Kod",
+    "codePlaceholder": "(boşsa otomatik)",
+    "mode": "Mod",
+    "contract": "Sözleşme (ObjectId)",
+    "contractLine": "Sözleşme Satırı (opsiyonel)",
+    "amount": "Tutar",
+    "currency": "Para Birimi",
+    "period": "Periyot",
+    "graceDays": "Gecikme Günleri",
+    "dueType": "Vade Tipi",
+    "day": "Gün",
+    "nth": "Sıra",
+    "weekday": "Hafta Günü (0=Paz..6=Cts)",
+    "startDate": "Başlangıç Tarihi",
+    "endDate": "Bitiş Tarihi"
+  },
+  "mode": {
+    "fixed": "sabit",
+    "perLine": "satır bazlı"
+  },
+  "occ": {
+    "filters": {
+      "title": "Oluşum Filtreleri",
+      "planId": "Plan No",
+      "status": "Durum",
+      "dueFrom": "Vadeden",
+      "dueTo": "Vadeye",
+      "invoice": "Fatura Id",
+      "seqFrom": "Sıradan",
+      "seqTo": "Sıraya",
+      "limit": "Limit"
+    },
+    "columns": {
+      "plan": "Plan",
+      "seq": "Sıra",
+      "window": "Dönem",
+      "due": "Vade",
+      "amount": "Tutar",
+      "status": "Durum",
+      "invoice": "Fatura"
+    }
+  },
+  "common": {
+    "empty": "Kayıt yok",
+    "plan": "plan"
+  }
+}

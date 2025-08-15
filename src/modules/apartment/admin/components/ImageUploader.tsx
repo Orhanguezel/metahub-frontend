@@ -1,0 +1,338 @@
+"use client";
+import styled from "styled-components";
+import { useMemo, useRef, useEffect, useState, useCallback } from "react";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import { translations } from "@/modules/servicecatalog";
+import type { IServiceCatalogImage } from "@/modules/servicecatalog/types";
+
+type UploadImage = Pick<IServiceCatalogImage, "url" | "thumbnail" | "webp" | "publicId">;
+
+type Props = {
+  existing: UploadImage[];
+  onExistingChange: (next: UploadImage[]) => void;
+
+  /** Silinecek mevcutların tutulduğu liste (opsiyonel ama önerilir) */
+  removedExisting?: UploadImage[];
+  onRemovedExistingChange?: (next: UploadImage[]) => void;
+
+  files: File[];
+  onFilesChange: (next: File[]) => void;
+
+  /** Maksimum toplam görsel (existing + files) */
+  maxFiles?: number;
+  /** input accept */
+  accept?: string;
+  /** tek dosya boyut limiti (MB) */
+  sizeLimitMB?: number;
+  /** devre dışı */
+  disabled?: boolean;
+  /** dropzone’a yapıştırma ile eklemeyi aç/kapat */
+  allowPaste?: boolean;
+
+  /** opsiyonel açıklama */
+  helpText?: string;
+};
+
+export default function ImageUploader({
+  existing,
+  onExistingChange,
+  removedExisting,
+  onRemovedExistingChange,
+  files,
+  onFilesChange,
+  maxFiles = 5,
+  accept = "image/*",
+  sizeLimitMB = 15,
+  disabled,
+  allowPaste = true,
+  helpText,
+}: Props) {
+  const { t } = useI18nNamespace("servicecatalog", translations);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropRef = useRef<HTMLDivElement>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const previews = useMemo(
+    () => files.map((f) => ({ key: `${f.name}-${f.size}-${f.lastModified}`, name: f.name, url: URL.createObjectURL(f) })),
+    [files]
+  );
+
+  // objectURL cleanup
+  useEffect(() => {
+    return () => previews.forEach((p) => URL.revokeObjectURL(p.url));
+  }, [previews]);
+
+  const totalCount = (existing?.length || 0) + (files?.length || 0);
+  const left = Math.max(0, (maxFiles || 0) - totalCount);
+  const pickLabel = t("uploader.add", "+ Add Images ({left} left)").replace("{left}", String(left));
+
+  const resetErrorSoon = () => {
+    window.setTimeout(() => setError(null), 2500);
+  };
+
+  const filterIncoming = useCallback(
+    (incoming: File[]) => {
+      const next: File[] = [];
+      const nameset = new Set(files.map((f) => `${f.name}-${f.size}`)); // dup guard
+      const maxBytes = sizeLimitMB * 1024 * 1024;
+
+      for (const f of incoming) {
+        if (left <= next.length) break;
+        const sig = `${f.name}-${f.size}`;
+        if (nameset.has(sig)) continue;
+        if (maxBytes > 0 && f.size > maxBytes) {
+          setError(t("uploader.tooLarge", "Some files exceed size limit"));
+          continue;
+        }
+        next.push(f);
+        nameset.add(sig);
+      }
+      if (!next.length && incoming.length) resetErrorSoon();
+      return next;
+    },
+    [files, left, sizeLimitMB, t]
+  );
+
+  const handlePick = (picked: File[]) => {
+    if (!picked.length) return;
+    const filtered = filterIncoming(picked).slice(0, left);
+    if (!filtered.length) return;
+    onFilesChange([...files, ...filtered]);
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (disabled) return;
+    setDragOver(false);
+    const picked = Array.from(e.dataTransfer.files || []);
+    handlePick(picked);
+  };
+
+  const onPaste = (e: React.ClipboardEvent) => {
+    if (disabled || !allowPaste) return;
+    const items = Array.from(e.clipboardData.items || []);
+    const imgs: File[] = [];
+    items.forEach((it) => {
+      const f = it.getAsFile?.();
+      if (f && f.type.startsWith("image/")) imgs.push(f);
+    });
+    if (imgs.length) handlePick(imgs);
+  };
+
+  const removeExisting = (img: UploadImage) => {
+    const next = existing.filter((x) => x.url !== img.url);
+    onExistingChange(next);
+    if (onRemovedExistingChange) {
+      onRemovedExistingChange([...(removedExisting || []), img]);
+    }
+  };
+
+  const removeFile = (idx: number) => {
+    onFilesChange(files.filter((_, i) => i !== idx));
+  };
+
+  const canAdd = left > 0 && !disabled;
+
+  return (
+    <Wrap onPaste={onPaste}>
+      <Drop
+        ref={dropRef}
+        $dragOver={dragOver}
+        role="button"
+        tabIndex={0}
+        aria-disabled={!canAdd}
+        onDragOver={(e) => {
+          if (disabled) return;
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={onDrop}
+        onClick={() => canAdd && inputRef.current?.click()}
+      >
+        <DropTitle>{pickLabel}</DropTitle>
+        <DropSub>
+          {t("uploader.hint", "Drag & drop, click to browse")}{allowPaste ? ` • ${t("uploader.paste","or paste")}` : ""}
+          {helpText ? ` • ${helpText}` : ""}
+        </DropSub>
+      </Drop>
+
+      {error && <ErrorText role="alert">{error}</ErrorText>}
+
+      <Grid>
+        {existing.map((img) => (
+          <Item key={img.url}>
+            <Thumb $bg={img.thumbnail || img.webp || img.url} role="img" aria-label={short(img.url)} />
+            <Row>
+              <span className="mono small" title={img.url}>{short(img.url)}</span>
+              <Danger
+                type="button"
+                onClick={() => removeExisting(img)}
+                aria-label={t("uploader.removeExisting", "Remove image")}
+              >
+                {t("uploader.remove", "Remove")}
+              </Danger>
+            </Row>
+          </Item>
+        ))}
+
+        {previews.map((p, i) => (
+          <Item key={p.key}>
+            <Thumb $bg={p.url} role="img" aria-label={p.name} />
+            <Row>
+              <span className="mono small" title={p.name}>{p.name}</span>
+              <Danger
+                type="button"
+                onClick={() => removeFile(i)}
+                aria-label={t("uploader.removeNew", "Remove new file")}
+              >
+                {t("uploader.remove", "Remove")}
+              </Danger>
+            </Row>
+          </Item>
+        ))}
+      </Grid>
+
+      <Actions>
+        <Btn
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={!canAdd}
+          aria-disabled={!canAdd}
+        >
+          {pickLabel}
+        </Btn>
+
+        <HiddenInput
+          ref={inputRef}
+          type="file"
+          accept={accept}
+          multiple
+          disabled={!canAdd}
+          onChange={(e) => {
+            const picked = Array.from(e.target.files || []);
+            handlePick(picked);
+            e.currentTarget.value = "";
+          }}
+        />
+      </Actions>
+
+      <SmallInfo>
+        {t("uploader.count","{used}/{max} used")
+          .replace("{used}", String(totalCount))
+          .replace("{max}", String(maxFiles))}
+        {sizeLimitMB ? ` • ${t("uploader.sizeLimit","Max {n}MB/file").replace("{n}", String(sizeLimitMB))}` : ""}
+      </SmallInfo>
+    </Wrap>
+  );
+}
+
+const short = (s: string) => s.split("/").pop() || s;
+
+/* styled */
+const Wrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacings.sm};
+`;
+
+const Drop = styled.div<{ $dragOver: boolean }>`
+  border: ${({ theme }) => theme.borders.thin} ${({ theme, $dragOver }) => ($dragOver ? theme.colors.borderHighlight : theme.colors.border)};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  padding: ${({ theme }) => theme.spacings.md};
+  text-align: center;
+  cursor: pointer;
+  transition: ${({ theme }) => theme.transition.normal};
+  &:focus-visible { outline: none; box-shadow: ${({ theme }) => theme.colors.shadowHighlight}; }
+  opacity: ${({ $dragOver }) => ($dragOver ? 0.95 : 1)};
+`;
+
+const DropTitle = styled.div`
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  color: ${({ theme }) => theme.colors.title};
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
+`;
+
+const DropSub = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const ErrorText = styled.div`
+  color: ${({ theme }) => theme.colors.danger};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+`;
+
+const Grid = styled.div`
+  display: grid;
+  gap: ${({ theme }) => theme.spacings.sm};
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+`;
+
+const Item = styled.div`
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.md};
+  overflow: hidden;
+  background: ${({ theme }) => theme.colors.cardBackground};
+`;
+
+const Thumb = styled.div<{ $bg: string }>`
+  width: 100%;
+  padding-top: 66%;
+  background-image: ${({ $bg }) => `url(${$bg})`};
+  background-size: cover;
+  background-position: center;
+`;
+
+const Row = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  gap: 8px;
+
+  .mono { font-family: ${({ theme }) => theme.fonts.mono}; }
+  .small { font-size: ${({ theme }) => theme.fontSizes.xsmall}; color: ${({ theme }) => theme.colors.textSecondary}; }
+`;
+
+const Actions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: ${({ theme }) => theme.spacings.xs};
+`;
+
+const BaseButton = styled.button`
+  padding: 8px 12px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  background: ${({ theme }) => theme.buttons.secondary.background};
+  color: ${({ theme }) => theme.buttons.secondary.text};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  cursor: pointer;
+  transition: ${({ theme }) => theme.transition.normal};
+  &:disabled,
+  &[aria-disabled="true"] {
+    opacity: ${({ theme }) => theme.opacity.disabled};
+    cursor: not-allowed;
+  }
+  &:hover { background: ${({ theme }) => theme.buttons.secondary.backgroundHover}; color: ${({ theme }) => theme.buttons.secondary.textHover}; }
+  &:focus-visible { outline: none; box-shadow: ${({ theme }) => theme.colors.shadowHighlight}; }
+`;
+
+const Btn = styled(BaseButton)``;
+
+const Danger = styled(BaseButton)`
+  background: ${({ theme }) => theme.colors.dangerBg};
+  color: ${({ theme }) => theme.colors.danger};
+  border-color: ${({ theme }) => theme.colors.danger};
+  &:hover { filter: brightness(0.98); }
+`;
+
+const HiddenInput = styled.input` display: none; `;
+
+const SmallInfo = styled.div`
+  text-align: right;
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;

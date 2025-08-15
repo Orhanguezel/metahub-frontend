@@ -1,0 +1,73 @@
+{
+  "title": "Księga kasowa — Admin",
+  "sections": {
+    "accounts": "Konta",
+    "entries": "Zapisy"
+  },
+  "labels": {
+    "accounts": "konta"
+  },
+  "list": {
+    "actions": "Akcje"
+  },
+  "actions": {
+    "newAccount": "Nowe konto",
+    "newEntry": "Nowy zapis",
+    "refresh": "Odśwież",
+    "apply": "Zastosuj",
+    "reset": "Wyczyść",
+    "create": "Utwórz",
+    "update": "Zaktualizuj",
+    "cancel": "Anuluj",
+    "edit": "Edytuj",
+    "delete": "Usuń"
+  },
+  "common": {
+    "yes": "Tak",
+    "no": "Nie",
+    "empty": "Brak danych"
+  },
+  "acc": {
+    "code": "Kod",
+    "name": "Nazwa",
+    "type": "Typ",
+    "currency": "Waluta",
+    "balance": "Saldo",
+    "active": "Aktywne",
+    "openingBalance": "Saldo początkowe",
+    "openingLocked": "Saldo początkowe ustawiane jest przy tworzeniu.",
+    "t": {
+      "cash": "Kasa",
+      "bank": "Bank",
+      "other": "Inne"
+    }
+  },
+  "entry": {
+    "account": "Konto",
+    "date": "Data",
+    "direction": "Kierunek",
+    "in": "Wpływ",
+    "out": "Wypływ",
+    "amount": "Kwota",
+    "description": "Opis",
+    "desc": "Opis",
+    "category": "Kategoria",
+    "tags": "Tagi",
+    "tagsHelp": "Oddzielone przecinkami",
+    "reconciled": "Uzgodnione?"
+  },
+  "filters": {
+    "_": "Filtry",
+    "startFrom": "Od",
+    "startTo": "Do"
+  },
+  "reco": {
+    "selected": "Wybrane",
+    "id": "ID uzgodnienia (opcjonalnie)",
+    "apply": "Uzgodnij",
+    "remove": "Cofnij uzgodnienie",
+    "yes": "Tak",
+    "no": "Nie",
+    "select": "Zaznacz"
+  }
+}

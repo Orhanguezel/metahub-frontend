@@ -1,0 +1,73 @@
+{
+  "title": "Kasa Defteri Yönetimi",
+  "sections": {
+    "accounts": "Hesaplar",
+    "entries": "Hareketler"
+  },
+  "labels": {
+    "accounts": "hesap"
+  },
+  "list": {
+    "actions": "İşlemler"
+  },
+  "actions": {
+    "newAccount": "Yeni Hesap",
+    "newEntry": "Yeni Hareket",
+    "refresh": "Yenile",
+    "apply": "Uygula",
+    "reset": "Sıfırla",
+    "create": "Oluştur",
+    "update": "Güncelle",
+    "cancel": "İptal",
+    "edit": "Düzenle",
+    "delete": "Sil"
+  },
+  "common": {
+    "yes": "Evet",
+    "no": "Hayır",
+    "empty": "Kayıt yok"
+  },
+  "acc": {
+    "code": "Kod",
+    "name": "Ad",
+    "type": "Tür",
+    "currency": "Para Birimi",
+    "balance": "Bakiye",
+    "active": "Aktif",
+    "openingBalance": "Açılış Bakiyesi",
+    "openingLocked": "Açılış bakiyesi oluşturulurken belirlenir.",
+    "t": {
+      "cash": "Kasa",
+      "bank": "Banka",
+      "other": "Diğer"
+    }
+  },
+  "entry": {
+    "account": "Hesap",
+    "date": "Tarih",
+    "direction": "Yön",
+    "in": "Giriş",
+    "out": "Çıkış",
+    "amount": "Tutar",
+    "description": "Açıklama",
+    "desc": "Açıklama",
+    "category": "Kategori",
+    "tags": "Etiketler",
+    "tagsHelp": "Virgülle ayırın",
+    "reconciled": "Mutabık mı?"
+  },
+  "filters": {
+    "_": "Filtreler",
+    "startFrom": "Başlangıç",
+    "startTo": "Bitiş"
+  },
+  "reco": {
+    "selected": "Seçilen",
+    "id": "Mutabakat No (ops.)",
+    "apply": "Mutabık Yap",
+    "remove": "Mutabakatı Kaldır",
+    "yes": "Evet",
+    "no": "Hayır",
+    "select": "Seç"
+  }
+}

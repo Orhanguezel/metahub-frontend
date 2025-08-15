@@ -1,0 +1,68 @@
+{
+  "title": "Çalışanlar",
+  "sections": {
+    "list": "Çalışanlar"
+  },
+  "form": "Çalışan Formu",
+  "legend": {
+    "basic": "Temel",
+    "contact": "İletişim",
+    "employment": "İstihdam",
+    "status": "Durum"
+  },
+  "labels": {
+    "code": "Kod",
+    "firstName": "Ad",
+    "lastName": "Soyad",
+    "displayName": "Görünen Ad",
+    "fullName": "Ad Soyad",
+    "phone": "Telefon",
+    "email": "E-posta",
+    "type": "Tür",
+    "position": "Pozisyon",
+    "startDate": "Başlangıç",
+    "endDate": "Bitiş",
+    "status": "Durum",
+    "preview": "Başlangıç (önizleme)"
+  },
+  "filters": {
+    "q": "Ara",
+    "status": "Durum",
+    "language": "Dil",
+    "skill": "Yetenek",
+    "tag": "Etiket"
+  },
+  "actions": {
+    "new": "Yeni",
+    "refresh": "Yenile",
+    "apply": "Uygula",
+    "reset": "Sıfırla",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "cancel": "İptal",
+    "update": "Güncelle",
+    "create": "Oluştur"
+  },
+  "status": {
+    "active": "Aktif",
+    "inactive": "Pasif",
+    "onleave": "İzinde",
+    "terminated": "Ayrıldı"
+  },
+  "employment": {
+    "type": {
+      "fulltime": "Tam zamanlı",
+      "parttime": "Yarı zamanlı",
+      "contractor": "Sözleşmeli",
+      "intern": "Stajyer"
+    }
+  },
+  "placeholders": {
+    "autoCode": "Boş bırakılırsa otomatik",
+    "optional": "opsiyonel"
+  },
+  "hints": {
+    "date": "YYYY-AA-GG",
+    "optional": "Opsiyonel"
+  }
+}

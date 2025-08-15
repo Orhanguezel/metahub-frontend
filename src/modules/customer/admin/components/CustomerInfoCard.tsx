@@ -5,13 +5,13 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { SupportedLocale } from "@/types/common";
 import translations from "../../locales";
 
+/* i18n yardımcı: string ya da {tr,en,...} destekler */
 function getTranslatedLabel(val: any, lang: SupportedLocale, fallback = ""): string {
   if (!val) return fallback;
   if (typeof val === "string") return val;
-  if (typeof val === "object" && typeof val[lang] === "string") return val[lang];
+  if (typeof val === "object" && typeof val[lang] === "string") return String(val[lang]);
   const first = Object.values(val)[0];
-  if (typeof first === "string") return first;
-  return fallback;
+  return typeof first === "string" ? first : fallback;
 }
 
 function isAddressObject(addr: string | Address): addr is Address {
@@ -24,7 +24,7 @@ export default function CustomerInfoCard({ customer }: { customer: ICustomer | n
   if (!customer) return null;
 
   const populatedAddresses = (customer.addresses ?? []).filter(isAddressObject);
-  const addressObj = populatedAddresses.find(a => a.isDefault) || populatedAddresses[0];
+  const addressObj = populatedAddresses.find(a => (a as any)?.isDefault) || populatedAddresses[0];
 
   const addressStr = addressObj
     ? [
@@ -39,105 +39,128 @@ export default function CustomerInfoCard({ customer }: { customer: ICustomer | n
       ].filter(Boolean).join(", ")
     : "-";
 
+  const title =
+    getTranslatedLabel(customer.companyName as any, lang, "") ||
+    getTranslatedLabel(customer.contactName as any, lang, t("companyName", "Company Name"));
+
+  const kindLabel =
+    (customer as any)?.kind === "organization"
+      ? t("kind.organization", "Organization")
+      : (customer as any)?.kind === "person"
+      ? t("kind.person", "Person")
+      : "-";
+
   return (
-    <Card>
-      <InfoBlock>
-        <CustomerName>
-          {getTranslatedLabel(customer.companyName, lang, t("companyName", "Company Name"))}
-        </CustomerName>
-        <Contact>
-          <strong>{t("contactName", "Contact")}:</strong>{" "}
-          {getTranslatedLabel(customer.contactName, lang, "-")}
-        </Contact>
-        <Contact>
-          <strong>{t("email", "E-Mail")}:</strong> {customer.email || "-"}
-        </Contact>
-        <Contact>
-          <strong>{t("phone", "Phone")}:</strong> {customer.phone || "-"}
-        </Contact>
-        <Contact>
-          <strong>{t("address", "Address")}:</strong> {addressStr}
-        </Contact>
+    <Card role="region" aria-label={t("card.title","Customer")}>
+      <Head>
+        <Title title={title}>{title}</Title>
+        <Meta>
+          <span>{t("contactName", "Contact")}: <b>{getTranslatedLabel(customer.contactName as any, lang, "-")}</b></span>
+          <Dot>•</Dot>
+          <span>{t("email", "E-Mail")}: <b>{customer.email || "-"}</b></span>
+          <Dot>•</Dot>
+          <span>{t("phone", "Phone")}: <b>{customer.phone || "-"}</b></span>
+        </Meta>
+      </Head>
+
+      <InfoGrid>
+        <Info>
+          <K>{t("kind", "Type")}</K>
+          <V>{kindLabel}</V>
+        </Info>
+        <Info>
+          <K>{t("address", "Address")}</K>
+          <V>{addressStr}</V>
+        </Info>
         {addressObj?.phone && (
-          <Contact>
-            <strong>{t("addressPhone", "Address Phone")}:</strong> {addressObj.phone}
-          </Contact>
+          <Info>
+            <K>{t("addressPhone", "Address Phone")}</K>
+            <V>{addressObj.phone}</V>
+          </Info>
         )}
-        <Contact>
-          <strong>{t("isActive", "Status")}:</strong>{" "}
-          <Status $active={customer.isActive}>
-            {customer.isActive
-              ? t("active", "Active")
-              : t("inactive", "Inactive")}
-          </Status>
-        </Contact>
+        <Info>
+          <K>{t("isActive", "Status")}</K>
+          <V>
+            <StatusPill $active={!!customer.isActive}>
+              {customer.isActive ? t("active", "Active") : t("inactive", "Inactive")}
+            </StatusPill>
+          </V>
+        </Info>
         {customer.notes && (
-          <Notes>
-            <strong>{t("notes", "Notes")}:</strong> {customer.notes}
-          </Notes>
+          <Info style={{ gridColumn: "1 / -1" }}>
+            <K>{t("notes", "Notes")}</K>
+            <V>{customer.notes}</V>
+          </Info>
         )}
-      </InfoBlock>
+      </InfoGrid>
     </Card>
   );
 }
 
-
-// --- Styled Components (değişmedi) ---
+/* ---- styled: apartment sayfaları ile tam uyum ---- */
 const Card = styled.section`
   background: ${({ theme }) => theme.colors.cardBackground};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  padding: ${({ theme }) => theme.spacings.lg};
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 440px;
-  margin: 0 auto;
-
-  ${({ theme }) => theme.media.small} {
-    max-width: 100%;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
+  border-radius: ${({ theme }) => theme.radii.lg};
+  padding: ${({ theme }) => theme.spacings.md};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderLight};
+  display: flex; flex-direction: column; gap: ${({ theme }) => theme.spacings.sm};
 `;
 
-const InfoBlock = styled.div`
-  flex: 1;
-  text-align: center;
-  margin-bottom: ${({ theme }) => theme.spacings.lg};
-
-  ${({ theme }) => theme.media.small} {
-    text-align: left;
-    margin-bottom: 0;
-    margin-right: ${({ theme }) => theme.spacings.xl};
-  }
+const Head = styled.div`
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: ${({ theme }) => theme.spacings.md};
+  border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderLight};
+  padding-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
-const CustomerName = styled.h3`
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  margin-bottom: ${({ theme }) => theme.spacings.sm};
+const Title = styled.h3`
+  margin: 0; font-size: ${({ theme }) => theme.fontSizes.medium};
+  color: ${({ theme }) => theme.colors.title};
 `;
 
-const Contact = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
+const Meta = styled.div`
   color: ${({ theme }) => theme.colors.textSecondary};
-  margin: ${({ theme }) => theme.spacings.xs} 0;
-  word-break: break-all;
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  display: flex; align-items: center; gap: ${({ theme }) => theme.spacings.xs};
+  flex-wrap: wrap;
 `;
 
-const Status = styled.span<{ $active?: boolean }>`
-  color: ${({ theme, $active }) =>
-    $active ? theme.colors.success : theme.colors.danger};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
+const Dot = styled.span`opacity: .6;`;
+
+const InfoGrid = styled.div`
+  display: grid; gap: ${({ theme }) => theme.spacings.sm};
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: ${({ theme }) => theme.spacings.sm};
+  ${({ theme }) => theme.media.tablet}{ grid-template-columns: repeat(2, 1fr); }
+  ${({ theme }) => theme.media.mobile}{ grid-template-columns: 1fr; }
 `;
 
-const Notes = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.info};
-  margin: ${({ theme }) => theme.spacings.sm} 0 0;
-  font-style: italic;
+const Info = styled.div`
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderLight};
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: ${({ theme }) => theme.spacings.sm};
+`;
+
+const K = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const V = styled.div`
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  margin-top: 2px;
+  word-break: break-word;
+`;
+
+const StatusPill = styled.span<{ $active: boolean }>`
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  background: ${({ theme, $active }) => ($active ? theme.colors.successBg : theme.colors.dangerBg)};
+  color: ${({ theme, $active }) => ($active ? theme.colors.success : theme.colors.danger)};
+  border: 1px solid ${({ theme, $active }) => ($active ? theme.colors.success : theme.colors.danger)};
 `;

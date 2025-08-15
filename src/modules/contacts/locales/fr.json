@@ -1,0 +1,74 @@
+
+{
+  "title": "Gestion des contacts",
+  "sections": { "contacts": "Contacts" },
+  "actions": {
+    "new": "Nouveau contact",
+    "refresh": "Actualiser",
+    "apply": "Appliquer",
+    "reset": "Réinitialiser",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "add": "Ajouter",
+    "remove": "Retirer",
+    "cancel": "Annuler",
+    "update": "Mettre à jour",
+    "create": "Créer"
+  },
+  "filters": {
+    "q": "Rechercher",
+    "kind": "Type",
+    "isActive": "Actif ?"
+  },
+  "kinds": {
+    "person": "Personne",
+    "organization": "Organisation"
+  },
+  "labels": {
+    "name": "Nom",
+    "slug": "Slug",
+    "primaryEmail": "E-mail principal",
+    "primaryPhone": "Téléphone principal",
+    "active": "Actif",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "legalName": "Raison sociale",
+    "tradeName": "Nom commercial",
+    "emails": "E-mails",
+    "phones": "Téléphones",
+    "addresses": "Adresses",
+    "label": "Libellé",
+    "email": "E-mail",
+    "primary": "Principal",
+    "phone": "Téléphone",
+    "street": "Rue",
+    "number": "N°",
+    "district": "Quartier",
+    "city": "Ville",
+    "state": "État / Région",
+    "zip": "Code postal",
+    "country": "Pays",
+    "billing": "Facturation",
+    "bankName": "Nom de la banque",
+    "taxNumber": "Numéro fiscal",
+    "currency": "Devise",
+    "defaultDueDayOfMonth": "Jour d’échéance",
+    "notes": "Notes"
+  },
+  "form": { "title": "Formulaire de contact" },
+  "legend": {
+    "identity": "Identité",
+    "other": "Autre"
+  },
+  "ph": {
+    "slugAuto": "auto si vide"
+  },
+  "help": {
+    "slug": "S’il est vide, il sera généré automatiquement."
+  },
+  "common": {
+    "yes": "Oui",
+    "no": "Non",
+    "empty": "Vide"
+  }
+}

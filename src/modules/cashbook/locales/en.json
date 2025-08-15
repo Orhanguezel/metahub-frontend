@@ -1,0 +1,73 @@
+{
+  "title": "Cashbook Admin",
+  "sections": {
+    "accounts": "Accounts",
+    "entries": "Entries"
+  },
+  "labels": {
+    "accounts": "accounts"
+  },
+  "list": {
+    "actions": "Actions"
+  },
+  "actions": {
+    "newAccount": "New Account",
+    "newEntry": "New Entry",
+    "refresh": "Refresh",
+    "apply": "Apply",
+    "reset": "Reset",
+    "create": "Create",
+    "update": "Update",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "common": {
+    "yes": "Yes",
+    "no": "No",
+    "empty": "No records"
+  },
+  "acc": {
+    "code": "Code",
+    "name": "Name",
+    "type": "Type",
+    "currency": "Currency",
+    "balance": "Balance",
+    "active": "Active",
+    "openingBalance": "Opening Balance",
+    "openingLocked": "Opening balance is set on create.",
+    "t": {
+      "cash": "Cash",
+      "bank": "Bank",
+      "other": "Other"
+    }
+  },
+  "entry": {
+    "account": "Account",
+    "date": "Date",
+    "direction": "Direction",
+    "in": "In",
+    "out": "Out",
+    "amount": "Amount",
+    "description": "Description",
+    "desc": "Description",
+    "category": "Category",
+    "tags": "Tags",
+    "tagsHelp": "Comma separated",
+    "reconciled": "Reconciled?"
+  },
+  "filters": {
+    "_": "Filters",
+    "startFrom": "Start from",
+    "startTo": "Start to"
+  },
+  "reco": {
+    "selected": "Selected",
+    "id": "Reconciliation Id (opt.)",
+    "apply": "Reconcile",
+    "remove": "Unreconcile",
+    "yes": "Yes",
+    "no": "No",
+    "select": "Select"
+  }
+}

@@ -1,0 +1,103 @@
+
+{
+  "admin": {
+    "title": "Administración de facturación",
+    "planCount": "{{count}} plan"
+  },
+  "sections": {
+    "plans": "Planes",
+    "occurrences": "Ocurrencias"
+  },
+  "actions": {
+    "newPlan": "Nuevo plan",
+    "refresh": "Actualizar",
+    "edit": "Editar",
+    "activate": "Activar",
+    "pause": "Pausar",
+    "end": "Finalizar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "update": "Actualizar",
+    "create": "Crear",
+    "apply": "Aplicar",
+    "reset": "Restablecer"
+  },
+  "list": {
+    "code": "Código",
+    "status": "Estado",
+    "amount": "Importe",
+    "period": "Período",
+    "dueRule": "Regla de vencimiento",
+    "nextDue": "Próximo vencimiento",
+    "actions": "Acciones"
+  },
+  "status": {
+    "draft": "Borrador",
+    "active": "Activo",
+    "paused": "Pausado",
+    "ended": "Finalizado",
+    "pending": "Pendiente",
+    "invoiced": "Facturado",
+    "skipped": "Omitido",
+    "canceled": "Cancelado"
+  },
+  "period": {
+    "weekly": "semanal",
+    "monthly": "mensual",
+    "quarterly": "trimestral",
+    "yearly": "anual"
+  },
+  "due": {
+    "dayOfMonth": "día del mes",
+    "nthWeekday": "n-ésimo día de la semana",
+    "day": "Día",
+    "weekday": "día de la semana"
+  },
+  "form": {
+    "code": "Código",
+    "codePlaceholder": "(auto si está vacío)",
+    "mode": "Modo",
+    "contract": "Contrato (ObjectId)",
+    "contractLine": "Línea de contrato (opcional)",
+    "amount": "Importe",
+    "currency": "Moneda",
+    "period": "Período",
+    "graceDays": "Días de gracia",
+    "dueType": "Tipo de vencimiento",
+    "day": "Día",
+    "nth": "Enésimo",
+    "weekday": "Día de la semana (0=Dom..6=Sáb)",
+    "startDate": "Fecha de inicio",
+    "endDate": "Fecha de fin"
+  },
+  "mode": {
+    "fixed": "fijo",
+    "perLine": "por línea"
+  },
+  "occ": {
+    "filters": {
+      "title": "Filtros de ocurrencias",
+      "planId": "ID del plan",
+      "status": "Estado",
+      "dueFrom": "Vence desde",
+      "dueTo": "Vence hasta",
+      "invoice": "ID de factura",
+      "seqFrom": "Sec. desde",
+      "seqTo": "Sec. hasta",
+      "limit": "Límite"
+    },
+    "columns": {
+      "plan": "Plan",
+      "seq": "Sec.",
+      "window": "Ventana",
+      "due": "Vencimiento",
+      "amount": "Importe",
+      "status": "Estado",
+      "invoice": "Factura"
+    }
+  },
+  "common": {
+    "empty": "Sin datos",
+    "plan": "plan"
+  }
+}

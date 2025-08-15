@@ -1,0 +1,50 @@
+{
+  "admin": { "title": "Zarządzanie dzielnicami", "count": "{{count}} dzielnic" },
+  "actions": {
+    "new": "+ Nowa dzielnica",
+    "refresh": "Odśwież",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "create": "Utwórz",
+    "update": "Zaktualizuj",
+    "cancel": "Anuluj",
+    "activate": "Aktywuj",
+    "deactivate": "Dezaktywuj",
+    "apply": "Zastosuj",
+    "reset": "Resetuj"
+  },
+  "common": { "empty": "Brak danych", "yes": "Tak", "no": "Nie" },
+  "form": {
+    "name": "Nazwa (wielojęzyczna)",
+    "slug": "Slug",
+    "city": "Miasto",
+    "district": "Dzielnica",
+    "zip": "Kod pocztowy",
+    "cityCode": "Kod miasta",
+    "districtCode": "Kod dzielnicy",
+    "lat": "Szerokość geogr.",
+    "lng": "Długość geogr.",
+    "aliases": "Aliasy (oddzielone przecinkami)",
+    "tags": "Tagi (oddzielone przecinkami)",
+    "sortOrder": "Kolejność sortowania",
+    "isActive": "Aktywny?"
+  },
+  "list": {
+    "name": "Nazwa",
+    "slug": "Slug",
+    "location": "Lokalizacja",
+    "codes": "Kody",
+    "tags": "Tagi",
+    "status": "Status",
+    "actions": "Akcje"
+  },
+  "status": { "active": "aktywny", "inactive": "nieaktywny" },
+  "filters": {
+    "title": "Filtry",
+    "q": "Szukaj",
+    "city": "Miasto",
+    "district": "Dzielnica",
+    "tag": "Tag",
+    "isActive": "Aktywny"
+  }
+}

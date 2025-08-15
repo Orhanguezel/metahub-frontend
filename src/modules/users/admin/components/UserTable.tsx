@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
-import { fetchUsers } from "@/modules/users/slice/userCrudSlice";
-import { UserTableRow } from "@/modules/users";
+import { UserTableRow } from "@/modules/users"; // artık kart render ediyor
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { adminUserTranslations } from "@/modules/users";
@@ -36,7 +35,6 @@ export default function UserTable({ filters }: Props) {
   // Debounced fetch
   useEffect(() => {
     const id = setTimeout(() => {
-      dispatch(fetchUsers(queryObj));
     }, 250);
     return () => clearTimeout(id);
   }, [dispatch, queryObj]);
@@ -48,10 +46,6 @@ export default function UserTable({ filters }: Props) {
     }
   }, [meta?.totalPages, page]);
 
-  // Row refresh callback (ör. işlemler sonrası)
-  const refreshNow = useCallback(() => {
-    dispatch(fetchUsers(queryObj));
-  }, [dispatch, queryObj]);
 
   // Safety: UI bozulmasın diye boolean normalize
   const normalizedUsers: User[] = (users || []).map((u: any) => ({
@@ -94,38 +88,18 @@ export default function UserTable({ filters }: Props) {
         </RightControls>
       </TopBar>
 
-      <ScrollX>
-        <Table role="table" aria-label={t("users.title", "Kullanıcılar")}>
-          <thead>
-            <tr>
-              <Th>{t("users.table.name", "Ad Soyad / E-posta")}</Th>
-              <Th>{t("users.table.role", "Rol")}</Th>
-              <Th>{t("users.table.active", "Durum")}</Th>
-              <Th>{t("users.table.actions", "İşlemler")}</Th>
-            </tr>
-          </thead>
+      {/* === Kart Grid === */}
+      <CardsWrap aria-label={t("users.title", "Kullanıcılar")}>
+        {loading && <Empty>{t("users.loading", "Yükleniyor…")}</Empty>}
+        {error && !loading && <Empty>{t("table.error", "Bir hata oluştu.")}</Empty>}
+        {!loading && !error && normalizedUsers.length === 0 && (
+          <Empty>{t("users.noResults", "Kullanıcı bulunamadı.")}</Empty>
+        )}
 
-          <tbody>
-            {loading ? (
-              <RowMessage>
-                <td colSpan={4}>{t("users.loading", "Yükleniyor…")}</td>
-              </RowMessage>
-            ) : error ? (
-              <RowMessage>
-                <td colSpan={4}>{t("table.error", "Bir hata oluştu.")}</td>
-              </RowMessage>
-            ) : normalizedUsers.length > 0 ? (
-              normalizedUsers.map((user) => (
-                <UserTableRow key={user._id} user={user} onRefresh={refreshNow} />
-              ))
-            ) : (
-              <RowMessage>
-                <td colSpan={4}>{t("users.noResults", "Kullanıcı bulunamadı.")}</td>
-              </RowMessage>
-            )}
-          </tbody>
-        </Table>
-      </ScrollX>
+        {normalizedUsers.map((user) => (
+          <UserTableRow key={user._id} user={user} />
+        ))}
+      </CardsWrap>
 
       <BottomBar>
         <Pager>
@@ -222,46 +196,26 @@ const Select = styled.select`
   }
 `;
 
-const ScrollX = styled.div`
-  width: 100%;
-  overflow-x: auto;
-`;
+const CardsWrap = styled.div`
+  display: grid;
+  gap: ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.md};
+  grid-template-columns: 1fr;
 
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 720px; /* mobilde taşma yerine kaydırma */
-
-  thead th {
-    background: ${({ theme }) => theme.colors.tableHeader};
-    color: ${({ theme }) => theme.colors.textAlt};
-    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-    padding: 14px 16px;
-    text-align: left;
-    font-size: 0.95rem;
-    border-bottom: 1px solid ${({ theme }) => theme.colors.borderBright};
+  /* daha geniş ekranlarda kolon sayısını artır */
+  @media (min-width: ${({ theme }) => theme.breakpoints.laptopS}) {
+    grid-template-columns: repeat(2, 1fr);
   }
-
-  tbody td {
-    padding: 14px 16px;
-    border-bottom: 1px solid ${({ theme }) => theme.colors.borderBright};
-    vertical-align: middle;
-    color: ${({ theme }) => theme.colors.text};
-    background: ${({ theme }) => theme.colors.cardBackground};
+  @media (min-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    grid-template-columns: repeat(3, 1fr);
   }
 `;
 
-const Th = styled.th`
-  text-align: left;
-`;
-
-const RowMessage = styled.tr`
-  td {
-    text-align: center;
-    padding: ${({ theme }) => theme.spacings.xl};
-    font-size: 1rem;
-    color: ${({ theme }) => theme.colors.textSecondary};
-  }
+const Empty = styled.div`
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: ${({ theme }) => theme.spacings.lg};
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const BottomBar = styled.div`

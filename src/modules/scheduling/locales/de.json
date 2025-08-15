@@ -1,0 +1,137 @@
+
+{
+  "title": "Planung",
+  "newPlan": "Neuer Plan",
+  "counts": { "plans": "Pläne" },
+  "sections": { "plans": "Pläne" },
+
+  "actions": {
+    "refresh": "Aktualisieren",
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen",
+    "view": "Anzeigen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "close": "Schließen",
+    "cancel": "Abbrechen",
+    "create": "Erstellen",
+    "update": "Aktualisieren"
+  },
+
+  "common": { "loading": "Wird geladen...", "yes": "Ja", "no": "Nein" },
+
+  "status": { "active": "Aktiv", "paused": "Pausiert", "archived": "Archiviert" },
+
+  "list": {
+    "filters": "Plan-Filter",
+    "qPh": "Suche (Code/Titel)",
+    "qLabel": "Suche",
+    "status": "Status",
+    "apartment": "Apartment-ID",
+    "service": "Service-ID",
+    "template": "Vorlagen-ID",
+    "contract": "Vertrags-ID",
+    "tag": "Schlagwort",
+    "from": "Von",
+    "to": "Bis",
+    "tableLabel": "Pläne",
+    "empty": "Keine Ergebnisse",
+    "confirmDelete": "Plan {{code}} löschen?",
+    "th": {
+      "code": "Code",
+      "title": "Titel",
+      "status": "Status",
+      "nextRun": "Nächster Lauf",
+      "start": "Start",
+      "pattern": "Rhythmus",
+      "actions": "Aktionen"
+    }
+  },
+
+  "form": {
+    "a11y": "Einen Plan erstellen oder aktualisieren.",
+    "code": "Code",
+    "codePh": "automatisch wenn leer",
+    "timezone": "Zeitzone",
+    "status": "Status",
+    "tags": "Tags (Komma)",
+    "tagsPh": "reinigung, wöchentlich, ...",
+    "titleI18n": "Titel (i18n JSON)",
+    "descI18n": "Beschreibung (i18n JSON)",
+    "anchor": "Anker",
+    "pattern": "Rhythmus",
+    "windowPolicy": "Zeitfenster & Richtlinie",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "exceptions": "Ausnahmen",
+    "required": "Erforderlich",
+    "apartmentRef": "Wohnungs-Ref",
+    "categoryRef": "Kategorie-Ref",
+    "serviceRef": "Service-Ref",
+    "templateRef": "Vorlagen-Ref",
+    "contractRef": "Vertrags-Ref"
+  },
+
+  "anchor": { "title": "Anker / Kontext" },
+
+  "blackouts": {
+    "titleSkipDates": "Auszulassende Daten (YYYY-MM-DD)",
+    "skipDate": "Auszulassendes Datum",
+    "add": "Hinzufügen",
+    "remove": "Entfernen",
+    "titleBlackouts": "Sperrzeiten",
+    "from": "Von",
+    "to": "Bis",
+    "reason": "Grund",
+    "reasonPh": "Grund"
+  },
+
+  "pattern": {
+    "title": "Wiederholungsmuster",
+    "type": "Typ",
+    "types": {
+      "weekly": "wöchentlich",
+      "dayOfMonth": "Monatstag",
+      "nthWeekday": "n. Wochentag im Monat",
+      "yearly": "jährlich"
+    },
+    "everyWeeks": "Alle (Wochen)",
+    "daysOfWeek": "Wochentage",
+    "everyMonths": "Alle (Monate)",
+    "day": "Tag",
+    "nth": "n.",
+    "weekday": "Wochentag",
+    "month": "Monat",
+    "summary": {
+      "weekly": "wöchentlich/{{every}} [{{days}}]",
+      "dayOfMonth": "Monatstag/{{every}} Tag={{day}}",
+      "nthWeekday": "n. Wochentag/{{every}} {{nth}}.{{weekday}}",
+      "yearly": "jährlich {{month}}/{{day}}"
+    }
+  },
+
+  "window": {
+    "title": "Zeitfenster",
+    "start": "Start",
+    "end": "Ende",
+    "duration": "Dauer (Min.)"
+  },
+
+  "policy": {
+    "title": "Erzeugungsrichtlinie",
+    "leadTimeDays": "Vorankündigung (Tage)",
+    "lockAhead": "Voraus zu sperrende Perioden",
+    "autoAssign": "Automatisch zuweisen",
+    "preferredEmployees": "Bevorzugte Mitarbeiter (IDs, Komma)",
+    "minCrew": "Min. Team",
+    "maxCrew": "Max. Team"
+  },
+
+  "detail": {
+    "title": "Plandetails",
+    "plan": "Plan",
+    "status": "Status",
+    "next": "Nächster",
+    "json": "Plan-JSON"
+  }
+}

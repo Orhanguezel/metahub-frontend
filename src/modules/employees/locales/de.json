@@ -1,0 +1,68 @@
+{
+  "title": "Mitarbeiter",
+  "sections": {
+    "list": "Mitarbeiter"
+  },
+  "form": "Mitarbeiterformular",
+  "legend": {
+    "basic": "Basis",
+    "contact": "Kontakt",
+    "employment": "Anstellung",
+    "status": "Status"
+  },
+  "labels": {
+    "code": "Code",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "displayName": "Anzeigename",
+    "fullName": "Vollständiger Name",
+    "phone": "Telefon",
+    "email": "E-Mail",
+    "type": "Art",
+    "position": "Position",
+    "startDate": "Beginn",
+    "endDate": "Ende",
+    "status": "Status",
+    "preview": "Beginn (Vorschau)"
+  },
+  "filters": {
+    "q": "Suche",
+    "status": "Status",
+    "language": "Sprache",
+    "skill": "Fähigkeit",
+    "tag": "Schlagwort"
+  },
+  "actions": {
+    "new": "Neu",
+    "refresh": "Aktualisieren",
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "cancel": "Abbrechen",
+    "update": "Aktualisieren",
+    "create": "Erstellen"
+  },
+  "status": {
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "onleave": "Beurlaubt",
+    "terminated": "Beendet"
+  },
+  "employment": {
+    "type": {
+      "fulltime": "Vollzeit",
+      "parttime": "Teilzeit",
+      "contractor": "Auftragnehmer",
+      "intern": "Praktikant"
+    }
+  },
+  "placeholders": {
+    "autoCode": "Automatisch, wenn leer",
+    "optional": "optional"
+  },
+  "hints": {
+    "date": "JJJJ-MM-TT",
+    "optional": "Optional"
+  }
+}

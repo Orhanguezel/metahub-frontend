@@ -1,6 +1,7 @@
+"use client";
 import React from "react";
 import styled from "styled-components";
-import type { INotification } from "@/modules/notification/types";
+import type { INotification } from "@/modules/notification/types"; // v2 type
 import type { SupportedLocale } from "@/types/common";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/notification/locales";
@@ -13,6 +14,33 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
+type UserRef =
+  | string
+  | { _id: string; name?: string; email?: string }
+  | null
+  | undefined;
+
+const isUserObj = (
+  u: UserRef
+): u is { _id: string; name?: string; email?: string } =>
+  typeof u === "object" && u !== null && "_id" in u;
+
+const getUserEmail = (u: UserRef) => (isUserObj(u) ? u.email || "-" : "-");
+
+const pickLocalized = (
+  obj: Partial<Record<SupportedLocale, string>> | undefined,
+  lang: SupportedLocale
+): string => {
+  if (!obj) return "-";
+  return (
+    obj[lang] ??
+    obj.en ??
+    (Object.values(obj).find(
+      (v): v is string => typeof v === "string" && v.length > 0
+    ) ?? "-")
+  );
+};
+
 export default function NotificationRow({
   notification,
   lang,
@@ -21,14 +49,26 @@ export default function NotificationRow({
 }: Props) {
   const { t } = useI18nNamespace("notification", translations);
 
+  // scope: user (name/_id/string) → roles → allTenant → fallback
+  const scope =
+    isUserObj(notification.user)
+      ? notification.user.name || notification.user._id
+      : typeof notification.user === "string"
+      ? notification.user
+      : notification.target?.roles?.length
+      ? `roles: ${notification.target.roles.join(", ")}`
+      : notification.target?.allTenant
+      ? "allTenant"
+      : "-";
+
   return (
     <tr>
-      <td>{notification.type}</td>
-      <td>{notification.user?.name || "-"}</td>
-      <td>{notification.user?.email || "-"}</td>
-      <td>{notification.title?.[lang] || "-"}</td>
-      <td>{notification.message?.[lang] || "-"}</td>
-      <td>{new Date(notification.createdAt).toLocaleString(lang)}</td>
+      <td>{t(`type_${notification.type}`, notification.type)}</td>
+      <td>{scope}</td>
+      <td>{getUserEmail(notification.user)}</td>
+      <td>{pickLocalized(notification.title, lang)}</td>
+      <td>{pickLocalized(notification.message, lang)}</td>
+      <td>{new Date(notification.createdAt as any).toLocaleString(lang)}</td>
       <td>
         <Status $read={notification.isRead}>
           {notification.isRead ? t("read", "Okundu") : t("unread", "Okunmadı")}
@@ -37,8 +77,8 @@ export default function NotificationRow({
       <td>
         <NotificationActions
           isRead={notification.isRead}
-          onMarkRead={() => onMarkRead(notification._id)}
-          onDelete={() => onDelete(notification._id)}
+          onMarkRead={() => onMarkRead(String(notification._id))}
+          onDelete={() => onDelete(String(notification._id))}
         />
       </td>
     </tr>

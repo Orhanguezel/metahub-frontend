@@ -1,0 +1,74 @@
+
+{
+  "title": "Gestión de contactos",
+  "sections": { "contacts": "Contactos" },
+  "actions": {
+    "new": "Nuevo contacto",
+    "refresh": "Actualizar",
+    "apply": "Aplicar",
+    "reset": "Restablecer",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "add": "Añadir",
+    "remove": "Quitar",
+    "cancel": "Cancelar",
+    "update": "Actualizar",
+    "create": "Crear"
+  },
+  "filters": {
+    "q": "Buscar",
+    "kind": "Tipo",
+    "isActive": "¿Activo?"
+  },
+  "kinds": {
+    "person": "Persona",
+    "organization": "Organización"
+  },
+  "labels": {
+    "name": "Nombre",
+    "slug": "Slug",
+    "primaryEmail": "Correo principal",
+    "primaryPhone": "Teléfono principal",
+    "active": "Activo",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "legalName": "Nombre legal",
+    "tradeName": "Nombre comercial",
+    "emails": "Correos",
+    "phones": "Teléfonos",
+    "addresses": "Direcciones",
+    "label": "Etiqueta",
+    "email": "Correo",
+    "primary": "Principal",
+    "phone": "Teléfono",
+    "street": "Calle",
+    "number": "N.º",
+    "district": "Barrio",
+    "city": "Ciudad",
+    "state": "Estado / Región",
+    "zip": "C. Postal",
+    "country": "País",
+    "billing": "Facturación",
+    "bankName": "Banco",
+    "taxNumber": "N.º fiscal",
+    "currency": "Moneda",
+    "defaultDueDayOfMonth": "Día de vencimiento",
+    "notes": "Notas"
+  },
+  "form": { "title": "Formulario de contacto" },
+  "legend": {
+    "identity": "Identidad",
+    "other": "Otros"
+  },
+  "ph": {
+    "slugAuto": "auto si está vacío"
+  },
+  "help": {
+    "slug": "Si está vacío, se generará automáticamente."
+  },
+  "common": {
+    "yes": "Sí",
+    "no": "No",
+    "empty": "Vacío"
+  }
+}

@@ -1,0 +1,74 @@
+
+{
+  "title": "Zarządzanie kontaktami",
+  "sections": { "contacts": "Kontakty" },
+  "actions": {
+    "new": "Nowy kontakt",
+    "refresh": "Odśwież",
+    "apply": "Zastosuj",
+    "reset": "Resetuj",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "add": "Dodaj",
+    "remove": "Usuń",
+    "cancel": "Anuluj",
+    "update": "Zaktualizuj",
+    "create": "Utwórz"
+  },
+  "filters": {
+    "q": "Szukaj",
+    "kind": "Rodzaj",
+    "isActive": "Aktywny?"
+  },
+  "kinds": {
+    "person": "Osoba",
+    "organization": "Organizacja"
+  },
+  "labels": {
+    "name": "Nazwa",
+    "slug": "Slug",
+    "primaryEmail": "Główny e-mail",
+    "primaryPhone": "Główny telefon",
+    "active": "Aktywny",
+    "firstName": "Imię",
+    "lastName": "Nazwisko",
+    "legalName": "Nazwa prawna",
+    "tradeName": "Nazwa handlowa",
+    "emails": "E-maile",
+    "phones": "Telefony",
+    "addresses": "Adresy",
+    "label": "Etykieta",
+    "email": "E-mail",
+    "primary": "Główny",
+    "phone": "Telefon",
+    "street": "Ulica",
+    "number": "Nr",
+    "district": "Dzielnica",
+    "city": "Miasto",
+    "state": "Województwo/Region",
+    "zip": "Kod pocztowy",
+    "country": "Kraj",
+    "billing": "Rozliczenia",
+    "bankName": "Nazwa banku",
+    "taxNumber": "Numer podatkowy",
+    "currency": "Waluta",
+    "defaultDueDayOfMonth": "Dzień płatności",
+    "notes": "Notatki"
+  },
+  "form": { "title": "Formularz kontaktu" },
+  "legend": {
+    "identity": "Tożsamość",
+    "other": "Inne"
+  },
+  "ph": {
+    "slugAuto": "auto, jeśli puste"
+  },
+  "help": {
+    "slug": "Jeśli puste, zostanie wygenerowane automatycznie."
+  },
+  "common": {
+    "yes": "Tak",
+    "no": "Nie",
+    "empty": "Pusto"
+  }
+}

@@ -1,0 +1,162 @@
+{
+  "title": "Reports",
+  "counts": {
+    "definitions": "Definitions",
+    "runs": "Runs"
+  },
+  "newDef": "New Definition",
+  "sections": {
+    "defs": "Definitions",
+    "runs": "Runs"
+  },
+  "jsonTitle": "Definition JSON",
+  "actions": {
+    "refresh": "Refresh",
+    "hide": "Hide",
+    "apply": "Apply",
+    "reset": "Reset",
+    "edit": "Edit",
+    "run": "Run",
+    "viewJson": "View JSON",
+    "delete": "Delete",
+    "close": "Close",
+    "cancel": "Cancel",
+    "view": "View",
+    "remove": "Remove",
+    "addRecipient": "Add Recipient"
+  },
+  "common": {
+    "loading": "Loading…",
+    "yes": "Yes",
+    "no": "No",
+    "select": "Select...",
+    "jsonInvalid": "Invalid JSON"
+  },
+  "form": {
+    "a11yDesc": "Create or update a report definition.",
+    "code": "Code",
+    "codePh": "auto if empty",
+    "name": "Name",
+    "kind": "Kind",
+    "description": "Description",
+    "active": "Active?",
+    "defaultFilters": "Default Filters (JSON)",
+    "view": "View (JSON)",
+    "exportFormats": "Export Formats",
+    "tags": "Tags (comma)",
+    "tagsPh": "finance, kpi, ...",
+    "schedule": "Schedule",
+    "cancel": "Cancel",
+    "update": "Update",
+    "create": "Create"
+  },
+  "list": {
+    "filters": "Definition filters",
+    "searchPh": "Search (code/name/desc)",
+    "search": "Search",
+    "kindAny": "Kind",
+    "activeAny": "Active?",
+    "tagPh": "Tag",
+    "tag": "Tag",
+    "tableLabel": "Report definitions",
+    "th": {
+      "code": "Code",
+      "name": "Name",
+      "kind": "Kind",
+      "status": "Status",
+      "updated": "Updated",
+      "actions": "Actions"
+    },
+    "empty": "No results",
+    "confirmDelete": "Delete definition {{code}}?"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "kinds": {
+    "ar_aging": "A/R Aging",
+    "ap_aging": "A/P Aging",
+    "revenue": "Revenue",
+    "expense": "Expense",
+    "cashflow": "Cash Flow",
+    "profitability": "Profitability",
+    "billing_forecast": "Billing Forecast",
+    "invoice_collections": "Invoice Collections",
+    "employee_utilization": "Employee Utilization",
+    "workload": "Workload",
+    "service_performance": "Service Performance"
+  },
+  "runs": {
+    "filters": "Run filters",
+    "qPh": "Search in code/error",
+    "qLabel": "Search",
+    "statusAny": "Status",
+    "definitionId": "DefinitionId",
+    "from": "From",
+    "to": "To",
+    "tableLabel": "Report runs",
+    "th": {
+      "code": "Code",
+      "kind": "Kind",
+      "status": "Status",
+      "started": "Started",
+      "duration": "Duration",
+      "rows": "Rows"
+    },
+    "empty": "No results",
+    "confirmDelete": "Delete run {{code}}?",
+    "status": {
+      "queued": "Queued",
+      "running": "Running",
+      "success": "Success",
+      "error": "Error",
+      "cancelled": "Cancelled"
+    }
+  },
+  "runDetail": {
+    "title": "Run",
+    "status": "Status",
+    "kind": "Kind",
+    "meta": "Meta",
+    "started": "Started",
+    "finished": "Finished",
+    "duration": "Duration",
+    "durationMs": "{{ms}} ms",
+    "rows": "Rows",
+    "bytes": "Bytes",
+    "files": "Files",
+    "filtersUsed": "Filters Used (JSON)",
+    "preview": "Preview Sample (first rows)"
+  },
+  "runTrigger": {
+    "desc": "Queue a report run from a definition or by selecting a kind.",
+    "definition": "Definition",
+    "kind": "Kind (no definition)",
+    "filters": "Filters Override (JSON)",
+    "queue": "Queue Run"
+  },
+  "schedule": {
+    "enabled": "Enable Schedule",
+    "frequency": "Frequency",
+    "timezone": "Timezone",
+    "timeOfDay": "Time of Day",
+    "dayOfWeek": "Day of Week",
+    "dayOfMonth": "Day of Month",
+    "cron": "CRON",
+    "recipients": "Recipients",
+    "recipient": {
+      "channel": "Channel",
+      "target": "Target",
+      "format": "Format"
+    },
+    "freq": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly",
+      "cron": "CRON"
+    }
+  }
+}

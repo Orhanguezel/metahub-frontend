@@ -14,3 +14,5 @@ export { default as AddToCartButton } from "./AddToCartButton";
 export { default as Button } from "./Button";
 export { SeeAllBtn } from "./SeeAllBtn";
 export { resolveProfileImage } from "./resolveProfileImage";
+export { default as JSONEditor } from "./JSONEditor";
+export { default as ImageUploader } from "./ImageUploader";

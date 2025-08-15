@@ -26,16 +26,17 @@ export interface IBlog {
   tags: string[];
   images: IBlogImage[];
   category:
-    | string
-    | {
-        _id: string;
-        name: TranslatedField;
-      };
+  | string
+  | {
+    _id: string;
+    name: TranslatedField;
+  };
   author: string;
   isPublished: boolean;
   isActive: boolean;
   publishedAt?: string;
   comments: string[];
+  order: number;
   createdAt: string;
   updatedAt: string;
 }

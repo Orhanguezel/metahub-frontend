@@ -217,11 +217,20 @@ import {
   clearApartmentMessages,
 } from "@/modules/apartment/slice/apartmentSlice";
 import {
-  fetchApartmentCategories,
-  clearApartmentCategoryMessages,
-} from "@/modules/apartment/slice/apartmentCategorySlice";
+  fetchNeighborhoods,
+clearNeighborhoodMessages
+} from "@/modules/neighborhood/slice/neighborhoodSlice";
 
-
+import { fetchAllEmployeesAdmin, clearEmployeeMessages} from "@/modules/employees/slice/employeesSlice";
+import { fetchCatalogs, clearSvcMsgs} from "@/modules/servicecatalog/slice/serviceCatalogSlice";
+import {fetchUsers,clearUserCrudMessages} from "@/modules/users/slice/userCrudSlice";
+import {fetchAccounts,fetchEntries, clearCashbookMessages,clearEntrySelection} from "@/modules/cashbook/slice/cashbookSlice";
+import {fetchPlans,clearSchedulingMsgs } from "@/modules/scheduling/slice/schedulingSlice";
+import {fetchAllOpsTemplatesAdmin,clearOpsTemplateMsgs} from "@/modules/opstemplates/slice/opstemplatesSlice";
+import {fetchPriceListsAdmin,clearPriceListMsgs} from "@/modules/pricelist/slice/pricelistSlice";
+import {fetchBillingPlans,fetchOccurrences,clearBillingMessages} from "@/modules/billing/slice/billingSlice";
+import {fetchAllContractsAdmin,clearContractMessages} from "@/modules/contracts/slice/contractsSlice";
+import { fetchAllOpsJobsAdmin, clearOpsJobsMessages } from "@/modules/operationsjobs/slice/opsjobsSlice";
 
 // -- Cleanup aksiyonları merkezi:
 const cleanupActions = [
@@ -273,7 +282,18 @@ const cleanupActions = [
   clearCustomerMessages,
   clearPricingMessages, 
   clearApartmentMessages,
-  clearApartmentCategoryMessages,
+  clearNeighborhoodMessages,
+  clearEmployeeMessages,
+  clearSvcMsgs, // Service catalog cleanup
+  clearUserCrudMessages, // User CRUD cleanup
+  clearCashbookMessages, // Cashbook cleanup
+  clearEntrySelection, // Clear entry selection on cleanup
+  clearSchedulingMsgs, // Scheduling cleanup
+  clearOpsTemplateMsgs, // Operation templates cleanup
+  clearPriceListMsgs, // Price list cleanup
+  clearBillingMessages, // Billing cleanup
+  clearContractMessages, // Contract cleanup
+  clearOpsJobsMessages, // Operations jobs cleanup
 ];
 
 // --- useLayoutInit ---
@@ -344,7 +364,19 @@ const offerList = useAppSelector((state) => state.offer);
 const customerList = useAppSelector((state) => state.customer);
 const pricingList = useAppSelector((state) => state.pricing);
 const apartmentList = useAppSelector((state) => state.apartment);
-const apartmentCategories = useAppSelector((state) => state.apartmentCategory);
+const neighborhood = useAppSelector((state) => state.neighborhood);
+const employeesAdmin = useAppSelector((state) => state.employees);
+const serviceCatalogList = useAppSelector((state) => state.servicecatalog);
+const userCrud = useAppSelector((state) => state.userCrud);
+const accounts = useAppSelector((state) => state.cashbook);
+const entries = useAppSelector((state) => state.cashbook.entries);
+const scheduling = useAppSelector((state) => state.scheduling);
+const opstemplates = useAppSelector((state) => state.opstemplates);
+const priceLists = useAppSelector((state) => state.pricelists);
+const billing = useAppSelector((state) => state.billing);
+const occurrences = useAppSelector((state) => state.billing.occurrences);
+const contracts = useAppSelector((state) => state.contracts);
+const opsJobs = useAppSelector((state) => state.opsjobs);
 
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
   useEffect(() => {
@@ -509,8 +541,35 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
     if (!apartmentList.apartmentAdmin.length && !apartmentList.loading)
       dispatch(fetchAllApartmentAdmin());
 
-    if (!apartmentCategories.categories.length && !apartmentCategories.loading)
-      dispatch(fetchApartmentCategories());
+    if (!neighborhood.items.length && !neighborhood.loading)
+      dispatch(fetchNeighborhoods());
+
+    if (!employeesAdmin.employeesAdmin.length && !employeesAdmin.loading)
+      dispatch(fetchAllEmployeesAdmin());
+
+    if (!serviceCatalogList.items.length && !serviceCatalogList.loading)
+      dispatch(fetchCatalogs());
+
+    if (!userCrud.users.length && !userCrud.loading)
+      dispatch(fetchUsers());
+    if (!accounts.accounts.length && !accounts.loading)
+      dispatch(fetchAccounts());
+    if (!entries.length && !accounts.loading)
+      dispatch(fetchEntries());
+    if (!scheduling.plans.length && !scheduling.loading)
+      dispatch(fetchPlans());
+    if (!opstemplates.items.length && !opstemplates.loading)
+      dispatch(fetchAllOpsTemplatesAdmin());
+    if (!priceLists.items.length && !priceLists.loading)
+      dispatch(fetchPriceListsAdmin());
+    if (!billing.plans.length && !billing.loading)
+      dispatch(fetchBillingPlans());
+    if (!occurrences.length && !billing.loading)
+      dispatch(fetchOccurrences());
+    if (!contracts.contractsAdmin.length && !contracts.loading)
+      dispatch(fetchAllContractsAdmin());
+    if (!opsJobs.items.length && !opsJobs.loading)
+      dispatch(fetchAllOpsJobsAdmin());
 
     // Cleanup actions
     cleanupActions.forEach((action) => dispatch(action()));
@@ -579,7 +638,17 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
   customerList,
   pricingList,
   apartmentList,
-  apartmentCategories,
+  neighborhood,
+  employeesAdmin,
+  serviceCatalogList,
+  userCrud,
+  accounts,
+  entries,
+  scheduling,
+  opstemplates,
+  priceLists,
+  billing,
+  opsJobs,
     // gerekirse analyticsTrends vs ekleyebilirsin
   };
 };

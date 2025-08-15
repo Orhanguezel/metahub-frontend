@@ -1,0 +1,149 @@
+{
+  "title": "Berichte",
+  "counts": { "definitions": "Definitionen", "runs": "Ausführungen" },
+  "newDef": "Neue Definition",
+  "sections": { "defs": "Definitionen", "runs": "Ausführungen" },
+  "jsonTitle": "Definition JSON",
+  "actions": {
+    "refresh": "Aktualisieren",
+    "hide": "Ausblenden",
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen",
+    "edit": "Bearbeiten",
+    "run": "Ausführen",
+    "viewJson": "JSON anzeigen",
+    "delete": "Löschen",
+    "close": "Schließen",
+    "cancel": "Abbrechen",
+    "view": "Anzeigen",
+    "remove": "Entfernen",
+    "addRecipient": "Empfänger hinzufügen"
+  },
+  "common": {
+    "loading": "Wird geladen…",
+    "yes": "Ja",
+    "no": "Nein",
+    "select": "Auswählen...",
+    "jsonInvalid": "Ungültiges JSON"
+  },
+  "form": {
+    "a11yDesc": "Eine Berichtsdefinition erstellen oder aktualisieren.",
+    "code": "Code",
+    "codePh": "automatisch wenn leer",
+    "name": "Name",
+    "kind": "Art",
+    "description": "Beschreibung",
+    "active": "Aktiv?",
+    "defaultFilters": "Standardfilter (JSON)",
+    "view": "Ansicht (JSON)",
+    "exportFormats": "Exportformate",
+    "tags": "Tags (Komma)",
+    "tagsPh": "finance, kpi, ...",
+    "schedule": "Zeitplan",
+    "cancel": "Abbrechen",
+    "update": "Aktualisieren",
+    "create": "Erstellen"
+  },
+  "list": {
+    "filters": "Definitionsfilter",
+    "searchPh": "Suche (Code/Name/Beschr.)",
+    "search": "Suchen",
+    "kindAny": "Art",
+    "activeAny": "Aktiv?",
+    "tagPh": "Tag",
+    "tag": "Tag",
+    "tableLabel": "Berichtsdefinitionen",
+    "th": {
+      "code": "Code",
+      "name": "Name",
+      "kind": "Art",
+      "status": "Status",
+      "updated": "Aktualisiert",
+      "actions": "Aktionen"
+    },
+    "empty": "Keine Ergebnisse",
+    "confirmDelete": "Definition {{code}} löschen?"
+  },
+  "status": { "active": "Aktiv", "inactive": "Inaktiv" },
+  "kinds": {
+    "ar_aging": "Debitorenfälligkeit",
+    "ap_aging": "Kreditorenfälligkeit",
+    "revenue": "Umsatz",
+    "expense": "Aufwand",
+    "cashflow": "Cashflow",
+    "profitability": "Rentabilität",
+    "billing_forecast": "Abrechnungsprognose",
+    "invoice_collections": "Forderungseinzug",
+    "employee_utilization": "Mitarbeiterauslastung",
+    "workload": "Arbeitslast",
+    "service_performance": "Serviceleistung"
+  },
+  "runs": {
+    "filters": "Ausführungsfilter",
+    "qPh": "In Code/Fehler suchen",
+    "qLabel": "Suchen",
+    "statusAny": "Status",
+    "definitionId": "Definitions-ID",
+    "from": "Von",
+    "to": "Bis",
+    "tableLabel": "Berichtsausführungen",
+    "th": {
+      "code": "Code",
+      "kind": "Art",
+      "status": "Status",
+      "started": "Gestartet",
+      "duration": "Dauer",
+      "rows": "Zeilen"
+    },
+    "empty": "Keine Ergebnisse",
+    "confirmDelete": "Ausführung {{code}} löschen?",
+    "status": {
+      "queued": "Wartend",
+      "running": "Läuft",
+      "success": "Erfolgreich",
+      "error": "Fehler",
+      "cancelled": "Abgebrochen"
+    }
+  },
+  "runDetail": {
+    "title": "Ausführung",
+    "status": "Status",
+    "kind": "Art",
+    "meta": "Meta",
+    "started": "Start",
+    "finished": "Ende",
+    "duration": "Dauer",
+    "durationMs": "{{ms}} ms",
+    "rows": "Zeilen",
+    "bytes": "Bytes",
+    "files": "Dateien",
+    "filtersUsed": "Verwendete Filter (JSON)",
+    "preview": "Vorschau (erste Zeilen)"
+  },
+  "runTrigger": {
+    "desc": "Eine Berichtsausführung aus einer Definition oder nach Art in die Warteschlange stellen.",
+    "definition": "Definition",
+    "kind": "Art (ohne Definition)",
+    "filters": "Filter-Override (JSON)",
+    "queue": "In Warteschlange"
+  },
+  "schedule": {
+    "enabled": "Zeitplan aktivieren",
+    "frequency": "Häufigkeit",
+    "timezone": "Zeitzone",
+    "timeOfDay": "Tageszeit",
+    "dayOfWeek": "Wochentag",
+    "dayOfMonth": "Tag des Monats",
+    "cron": "CRON",
+    "recipients": "Empfänger",
+    "recipient": { "channel": "Kanal", "target": "Ziel", "format": "Format" },
+    "freq": {
+      "daily": "Täglich",
+      "weekly": "Wöchentlich",
+      "monthly": "Monatlich",
+      "quarterly": "Vierteljährlich",
+      "yearly": "Jährlich",
+      "cron": "CRON"
+    }
+  }
+}

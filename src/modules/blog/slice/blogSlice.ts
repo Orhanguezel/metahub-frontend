@@ -3,8 +3,8 @@ import apiCall from "@/lib/apiCall";
 import type { IBlog } from "@/modules/blog";
 
 interface BlogState {
-  blog: IBlog[]; // Public (site) için
-  blogAdmin: IBlog[]; // Admin panel için
+  blog: IBlog[];
+  blogAdmin: IBlog[];
   selected: IBlog | null;
   status: "idle" | "loading" | "succeeded" | "failed";
   loading: boolean;
@@ -21,6 +21,8 @@ const initialState: BlogState = {
   error: null,
   successMessage: null,
 };
+
+const BASE = "/blog";
 
 const extractErrorMessage = (payload: unknown): string => {
   if (typeof payload === "string") return payload;
@@ -39,7 +41,8 @@ const extractErrorMessage = (payload: unknown): string => {
 export const fetchBlog = createAsyncThunk<IBlog[]>(
   "blog/fetchAll",
   async (_, thunkAPI) => {
-    const res = await apiCall("get", `/blog`, null, thunkAPI.rejectWithValue);
+    const res = await apiCall("get", `${BASE}`, null, thunkAPI.rejectWithValue);
+    // response: { success, message, data }
     return res.data;
   }
 );
@@ -49,7 +52,7 @@ export const fetchAllBlogAdmin = createAsyncThunk<IBlog[]>(
   async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/blog/admin`,
+      `${BASE}/admin`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -62,14 +65,12 @@ export const createBlog = createAsyncThunk(
   async (formData: FormData, thunkAPI) => {
     const res = await apiCall(
       "post",
-      "/blog/admin",
+      `${BASE}/admin`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
-    return res.data;
+    // return: { success, message, data }
+    return { ...res, data: res.data };
   }
 );
 
@@ -78,14 +79,11 @@ export const updateBlog = createAsyncThunk(
   async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) => {
     const res = await apiCall(
       "put",
-      `/blog/admin/${id}`,
+      `${BASE}/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
-    return res.data;
+    return { ...res, data: res.data };
   }
 );
 
@@ -94,10 +92,11 @@ export const deleteBlog = createAsyncThunk(
   async (id: string, thunkAPI) => {
     const res = await apiCall(
       "delete",
-      `/blog/admin/${id}`,
+      `${BASE}/admin/${id}`,
       null,
       thunkAPI.rejectWithValue
     );
+    // return: { success, message }
     return { id, message: res.message };
   }
 );
@@ -112,14 +111,11 @@ export const togglePublishBlog = createAsyncThunk(
     formData.append("isPublished", String(isPublished));
     const res = await apiCall(
       "put",
-      `/blog/admin/${id}`,
+      `${BASE}/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
-    return res.data;
+    return { ...res, data: res.data };
   }
 );
 
@@ -128,7 +124,7 @@ export const fetchBlogBySlug = createAsyncThunk(
   async (slug: string, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/blog/slug/${slug}`,
+      `${BASE}/slug/${slug}`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -188,8 +184,8 @@ const blogSlice = createSlice({
       .addCase(createBlog.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        state.blogAdmin.unshift(action.payload);
-        state.successMessage = "Blog successfully created.";
+        state.blogAdmin.unshift(action.payload.data);
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(createBlog.rejected, setError);
 
@@ -199,11 +195,11 @@ const blogSlice = createSlice({
       .addCase(updateBlog.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        const updated = action.payload;
+        const updated = action.payload.data;
         const i = state.blogAdmin.findIndex((a) => a._id === updated._id);
         if (i !== -1) state.blogAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = "Blog successfully updated.";
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(updateBlog.rejected, setError);
 
@@ -213,10 +209,8 @@ const blogSlice = createSlice({
       .addCase(deleteBlog.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        state.blogAdmin = state.blogAdmin.filter(
-          (a) => a._id !== action.payload.id
-        );
-        state.successMessage = action.payload.message;
+        state.blogAdmin = state.blogAdmin.filter((a) => a._id !== action.payload.id);
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(deleteBlog.rejected, setError);
 
@@ -226,11 +220,11 @@ const blogSlice = createSlice({
       .addCase(togglePublishBlog.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        const updated = action.payload;
+        const updated = action.payload.data;
         const i = state.blogAdmin.findIndex((a) => a._id === updated._id);
         if (i !== -1) state.blogAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = "Publish status updated.";
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(togglePublishBlog.rejected, setError);
 

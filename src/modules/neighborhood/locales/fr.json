@@ -1,0 +1,50 @@
+{
+  "admin": { "title": "Administration des quartiers", "count": "{{count}} quartiers" },
+  "actions": {
+    "new": "+ Nouveau quartier",
+    "refresh": "Actualiser",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "create": "Créer",
+    "update": "Mettre à jour",
+    "cancel": "Annuler",
+    "activate": "Activer",
+    "deactivate": "Désactiver",
+    "apply": "Appliquer",
+    "reset": "Réinitialiser"
+  },
+  "common": { "empty": "Aucun élément", "yes": "Oui", "no": "Non" },
+  "form": {
+    "name": "Nom (multilingue)",
+    "slug": "Slug",
+    "city": "Ville",
+    "district": "Arrondissement",
+    "zip": "Code postal",
+    "cityCode": "Code ville",
+    "districtCode": "Code arrondissement",
+    "lat": "Latitude",
+    "lng": "Longitude",
+    "aliases": "Alias (séparés par des virgules)",
+    "tags": "Étiquettes (séparées par des virgules)",
+    "sortOrder": "Ordre de tri",
+    "isActive": "Actif ?"
+  },
+  "list": {
+    "name": "Nom",
+    "slug": "Slug",
+    "location": "Emplacement",
+    "codes": "Codes",
+    "tags": "Étiquettes",
+    "status": "Statut",
+    "actions": "Actions"
+  },
+  "status": { "active": "actif", "inactive": "inactif" },
+  "filters": {
+    "title": "Filtres",
+    "q": "Rechercher",
+    "city": "Ville",
+    "district": "Arrondissement",
+    "tag": "Étiquette",
+    "isActive": "Actif"
+  }
+}

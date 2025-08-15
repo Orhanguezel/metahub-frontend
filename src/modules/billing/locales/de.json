@@ -1,0 +1,103 @@
+
+{
+  "admin": {
+    "title": "Abrechnungsverwaltung",
+    "planCount": "{{count}} Plan"
+  },
+  "sections": {
+    "plans": "Pläne",
+    "occurrences": "Vorgänge"
+  },
+  "actions": {
+    "newPlan": "Neuer Plan",
+    "refresh": "Aktualisieren",
+    "edit": "Bearbeiten",
+    "activate": "Aktivieren",
+    "pause": "Pausieren",
+    "end": "Beenden",
+    "delete": "Löschen",
+    "cancel": "Abbrechen",
+    "update": "Aktualisieren",
+    "create": "Erstellen",
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen"
+  },
+  "list": {
+    "code": "Code",
+    "status": "Status",
+    "amount": "Betrag",
+    "period": "Zeitraum",
+    "dueRule": "Fälligkeitsregel",
+    "nextDue": "Nächste Fälligkeit",
+    "actions": "Aktionen"
+  },
+  "status": {
+    "draft": "Entwurf",
+    "active": "Aktiv",
+    "paused": "Pausiert",
+    "ended": "Beendet",
+    "pending": "Ausstehend",
+    "invoiced": "Abgerechnet",
+    "skipped": "Übersprungen",
+    "canceled": "Storniert"
+  },
+  "period": {
+    "weekly": "wöchentlich",
+    "monthly": "monatlich",
+    "quarterly": "vierteljährlich",
+    "yearly": "jährlich"
+  },
+  "due": {
+    "dayOfMonth": "Tag des Monats",
+    "nthWeekday": "n-ter Wochentag",
+    "day": "Tag",
+    "weekday": "Wochentag"
+  },
+  "form": {
+    "code": "Code",
+    "codePlaceholder": "(leer = automatisch)",
+    "mode": "Modus",
+    "contract": "Vertrag (ObjectId)",
+    "contractLine": "Vertragsposition (optional)",
+    "amount": "Betrag",
+    "currency": "Währung",
+    "period": "Zeitraum",
+    "graceDays": "Kulanztage",
+    "dueType": "Fälligkeitstyp",
+    "day": "Tag",
+    "nth": "n-te",
+    "weekday": "Wochentag (0=So..6=Sa)",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum"
+  },
+  "mode": {
+    "fixed": "fest",
+    "perLine": "pro Zeile"
+  },
+  "occ": {
+    "filters": {
+      "title": "Vorgangsfilter",
+      "planId": "Plan-ID",
+      "status": "Status",
+      "dueFrom": "Fällig ab",
+      "dueTo": "Fällig bis",
+      "invoice": "Rechnungs-ID",
+      "seqFrom": "Seq von",
+      "seqTo": "Seq bis",
+      "limit": "Limit"
+    },
+    "columns": {
+      "plan": "Plan",
+      "seq": "Seq",
+      "window": "Zeitraum",
+      "due": "Fälligkeit",
+      "amount": "Betrag",
+      "status": "Status",
+      "invoice": "Rechnung"
+    }
+  },
+  "common": {
+    "empty": "Keine Daten",
+    "plan": "Plan"
+  }
+}

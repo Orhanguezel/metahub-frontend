@@ -1,0 +1,149 @@
+{
+  "title": "Informes",
+  "counts": { "definitions": "Definiciones", "runs": "Ejecuciones" },
+  "newDef": "Nueva definición",
+  "sections": { "defs": "Definiciones", "runs": "Ejecuciones" },
+  "jsonTitle": "JSON de la definición",
+  "actions": {
+    "refresh": "Actualizar",
+    "hide": "Ocultar",
+    "apply": "Aplicar",
+    "reset": "Restablecer",
+    "edit": "Editar",
+    "run": "Ejecutar",
+    "viewJson": "Ver JSON",
+    "delete": "Eliminar",
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "view": "Ver",
+    "remove": "Quitar",
+    "addRecipient": "Añadir destinatario"
+  },
+  "common": {
+    "loading": "Cargando…",
+    "yes": "Sí",
+    "no": "No",
+    "select": "Seleccionar...",
+    "jsonInvalid": "JSON inválido"
+  },
+  "form": {
+    "a11yDesc": "Crea o actualiza una definición de informe.",
+    "code": "Código",
+    "codePh": "automático si está vacío",
+    "name": "Nombre",
+    "kind": "Tipo",
+    "description": "Descripción",
+    "active": "¿Activo?",
+    "defaultFilters": "Filtros predeterminados (JSON)",
+    "view": "Vista (JSON)",
+    "exportFormats": "Formatos de exportación",
+    "tags": "Etiquetas (coma)",
+    "tagsPh": "finance, kpi, ...",
+    "schedule": "Programación",
+    "cancel": "Cancelar",
+    "update": "Actualizar",
+    "create": "Crear"
+  },
+  "list": {
+    "filters": "Filtros de definición",
+    "searchPh": "Buscar (código/nombre/desc)",
+    "search": "Buscar",
+    "kindAny": "Tipo",
+    "activeAny": "¿Activo?",
+    "tagPh": "Etiqueta",
+    "tag": "Etiqueta",
+    "tableLabel": "Definiciones de informes",
+    "th": {
+      "code": "Código",
+      "name": "Nombre",
+      "kind": "Tipo",
+      "status": "Estado",
+      "updated": "Actualizado",
+      "actions": "Acciones"
+    },
+    "empty": "Sin resultados",
+    "confirmDelete": "¿Eliminar la definición {{code}}?"
+  },
+  "status": { "active": "Activo", "inactive": "Inactivo" },
+  "kinds": {
+    "ar_aging": "Antigüedad de cuentas por cobrar",
+    "ap_aging": "Antigüedad de cuentas por pagar",
+    "revenue": "Ingresos",
+    "expense": "Gastos",
+    "cashflow": "Flujo de caja",
+    "profitability": "Rentabilidad",
+    "billing_forecast": "Pronóstico de facturación",
+    "invoice_collections": "Cobro de facturas",
+    "employee_utilization": "Utilización de empleados",
+    "workload": "Carga de trabajo",
+    "service_performance": "Rendimiento del servicio"
+  },
+  "runs": {
+    "filters": "Filtros de ejecución",
+    "qPh": "Buscar en código/error",
+    "qLabel": "Buscar",
+    "statusAny": "Estado",
+    "definitionId": "ID de definición",
+    "from": "Desde",
+    "to": "Hasta",
+    "tableLabel": "Ejecuciones de informes",
+    "th": {
+      "code": "Código",
+      "kind": "Tipo",
+      "status": "Estado",
+      "started": "Inicio",
+      "duration": "Duración",
+      "rows": "Filas"
+    },
+    "empty": "Sin resultados",
+    "confirmDelete": "¿Eliminar la ejecución {{code}}?",
+    "status": {
+      "queued": "En cola",
+      "running": "En ejecución",
+      "success": "Éxito",
+      "error": "Error",
+      "cancelled": "Cancelado"
+    }
+  },
+  "runDetail": {
+    "title": "Ejecución",
+    "status": "Estado",
+    "kind": "Tipo",
+    "meta": "Meta",
+    "started": "Inicio",
+    "finished": "Fin",
+    "duration": "Duración",
+    "durationMs": "{{ms}} ms",
+    "rows": "Filas",
+    "bytes": "Bytes",
+    "files": "Archivos",
+    "filtersUsed": "Filtros usados (JSON)",
+    "preview": "Vista previa (primeras filas)"
+  },
+  "runTrigger": {
+    "desc": "Poner en cola una ejecución desde una definición o seleccionando un tipo.",
+    "definition": "Definición",
+    "kind": "Tipo (sin definición)",
+    "filters": "Sobrescribir filtros (JSON)",
+    "queue": "Poner en cola"
+  },
+  "schedule": {
+    "enabled": "Activar programación",
+    "frequency": "Frecuencia",
+    "timezone": "Zona horaria",
+    "timeOfDay": "Hora del día",
+    "dayOfWeek": "Día de la semana",
+    "dayOfMonth": "Día del mes",
+    "cron": "CRON",
+    "recipients": "Destinatarios",
+    "recipient": { "channel": "Canal", "target": "Destino", "format": "Formato" },
+    "freq": {
+      "daily": "Diaria",
+      "weekly": "Semanal",
+      "monthly": "Mensual",
+      "quarterly": "Trimestral",
+      "yearly": "Anual",
+      "cron": "CRON"
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "title": "Kassenbuch Admin",
+  "sections": {
+    "accounts": "Konten",
+    "entries": "Buchungen"
+  },
+  "labels": {
+    "accounts": "Konten"
+  },
+  "list": {
+    "actions": "Aktionen"
+  },
+  "actions": {
+    "newAccount": "Neues Konto",
+    "newEntry": "Neue Buchung",
+    "refresh": "Aktualisieren",
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen",
+    "create": "Erstellen",
+    "update": "Aktualisieren",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen"
+  },
+  "common": {
+    "yes": "Ja",
+    "no": "Nein",
+    "empty": "Keine Einträge"
+  },
+  "acc": {
+    "code": "Code",
+    "name": "Name",
+    "type": "Typ",
+    "currency": "Währung",
+    "balance": "Kontostand",
+    "active": "Aktiv",
+    "openingBalance": "Anfangssaldo",
+    "openingLocked": "Anfangssaldo wird bei Erstellung festgelegt.",
+    "t": {
+      "cash": "Kasse",
+      "bank": "Bank",
+      "other": "Sonstiges"
+    }
+  },
+  "entry": {
+    "account": "Konto",
+    "date": "Datum",
+    "direction": "Richtung",
+    "in": "Eingang",
+    "out": "Ausgang",
+    "amount": "Betrag",
+    "description": "Beschreibung",
+    "desc": "Beschreibung",
+    "category": "Kategorie",
+    "tags": "Tags",
+    "tagsHelp": "Durch Komma getrennt",
+    "reconciled": "Abgeglichen?"
+  },
+  "filters": {
+    "_": "Filter",
+    "startFrom": "Von",
+    "startTo": "Bis"
+  },
+  "reco": {
+    "selected": "Ausgewählt",
+    "id": "Abgleich-ID (optional)",
+    "apply": "Abgleichen",
+    "remove": "Abgleich aufheben",
+    "yes": "Ja",
+    "no": "Nein",
+    "select": "Auswählen"
+  }
+}

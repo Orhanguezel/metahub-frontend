@@ -3,12 +3,11 @@ export { default as AdminPage } from "./admin/pages/AdminPage";
 export { default as Page } from "./public/pages/Page";
 
 // Admin Components
-export { default as Tabs } from "./admin/components/Tabs";
-export { default as List } from "./admin/components/List";
-export { default as FormModal } from "./admin/components/FormModal";
-export { default as CategoryListPage } from "./admin/components/CategoryListPage";
-export { default as CategoryForm } from "./admin/components/CategoryForm";
-export { default as MultiUploadModal } from "./admin/components/MultiUploadModal";
+
+export { default as ApartmentList } from "./admin/components/ApartmentList";
+export { default as ApartmentForm } from "./admin/components/ApartmentForm";
+export { default as ApartmentDetail } from "./admin/components/ApartmentDetail";
+export { default as ImageUploader } from "./admin/components/ImageUploader";
 
 // Public Components
 export { default as ApartmentSection } from "./public/components/Section";

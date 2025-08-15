@@ -1,0 +1,74 @@
+
+{
+  "title": "Kontaktverwaltung",
+  "sections": { "contacts": "Kontakte" },
+  "actions": {
+    "new": "Neuer Kontakt",
+    "refresh": "Aktualisieren",
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "add": "Hinzufügen",
+    "remove": "Entfernen",
+    "cancel": "Abbrechen",
+    "update": "Aktualisieren",
+    "create": "Erstellen"
+  },
+  "filters": {
+    "q": "Suche",
+    "kind": "Art",
+    "isActive": "Aktiv?"
+  },
+  "kinds": {
+    "person": "Person",
+    "organization": "Organisation"
+  },
+  "labels": {
+    "name": "Name",
+    "slug": "Slug",
+    "primaryEmail": "Primäre E-Mail",
+    "primaryPhone": "Primäre Telefonnummer",
+    "active": "Aktiv",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "legalName": "Rechtlicher Name",
+    "tradeName": "Handelsname",
+    "emails": "E-Mails",
+    "phones": "Telefone",
+    "addresses": "Adressen",
+    "label": "Label",
+    "email": "E-Mail",
+    "primary": "Primär",
+    "phone": "Telefon",
+    "street": "Straße",
+    "number": "Nr.",
+    "district": "Bezirk",
+    "city": "Stadt",
+    "state": "Bundesland",
+    "zip": "PLZ",
+    "country": "Land",
+    "billing": "Abrechnung",
+    "bankName": "Bankname",
+    "taxNumber": "Steuernummer",
+    "currency": "Währung",
+    "defaultDueDayOfMonth": "Fälligkeitstag",
+    "notes": "Notizen"
+  },
+  "form": { "title": "Kontaktformular" },
+  "legend": {
+    "identity": "Identität",
+    "other": "Sonstiges"
+  },
+  "ph": {
+    "slugAuto": "automatisch, wenn leer"
+  },
+  "help": {
+    "slug": "Wenn leer, wird es automatisch erzeugt."
+  },
+  "common": {
+    "yes": "Ja",
+    "no": "Nein",
+    "empty": "Leer"
+  }
+}

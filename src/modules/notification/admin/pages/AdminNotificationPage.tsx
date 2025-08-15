@@ -4,28 +4,31 @@ import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { toast } from "react-toastify";
 import {
-  fetchNotifications,
+  fetchAdminNotifications,
   deleteNotification,
   markNotificationAsRead,
-  markAllNotificationsAsRead,
+  adminMarkAllNotificationsAsRead,
   clearNotificationMessages,
-} from "@/modules/notification/slice/notificationSlice";
+} from "@/modules/notification/slice/notificationSlice"; // <- v2 slice actions
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/notification/locales";
-import {
-  NotificationTable
-} from "@/modules/notification";
+import { NotificationTable } from "@/modules/notification";
 import type { SupportedLocale } from "@/types/common";
-
 import { Loading, ErrorMessage, Empty } from "@/shared";
 
 export default function AdminNotificationPage() {
   const dispatch = useAppDispatch();
   const { i18n, t } = useI18nNamespace("notification", translations);
   const lang: SupportedLocale = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
-  const { notifications = [], loading, error, message } = useAppSelector((s) => s.notification);
 
-  useEffect(() => { dispatch(fetchNotifications()); }, [dispatch]);
+  // v2 slice state: items, loading, error, message
+  const { items = [], loading, error, message } = useAppSelector((s) => s.notification);
+
+  useEffect(() => {
+    // admin list endpoint with pagination defaults from slice (page/limit kept in store if you want)
+    dispatch(fetchAdminNotifications({ page: 1, limit: 20, sort: "-createdAt" }));
+  }, [dispatch]);
+
   useEffect(() => {
     if (message) toast.success(message);
     if (error) toast.error(error);
@@ -35,17 +38,19 @@ export default function AdminNotificationPage() {
   return (
     <Wrapper>
       <h1>{t("title", "Bildirim Yönetimi")}</h1>
+
       <ButtonRow>
-        <ActionButton onClick={() => dispatch(markAllNotificationsAsRead())}>
+        <ActionButton onClick={() => dispatch(adminMarkAllNotificationsAsRead())}>
           {t("markAllRead", "Tümünü Okundu Yap")}
         </ActionButton>
       </ButtonRow>
+
       {loading && <Loading />}
-      {error && <ErrorMessage  />}
-      {!loading && notifications.length === 0 && <Empty t={t} />}
-      {!loading && notifications.length > 0 && (
+      {error && <ErrorMessage />}
+      {!loading && items.length === 0 && <Empty t={t} />}
+      {!loading && items.length > 0 && (
         <NotificationTable
-          notifications={notifications}
+          notifications={items}                 // <- v2: items
           lang={lang}
           onMarkRead={(id) => dispatch(markNotificationAsRead(id))}
           onDelete={(id) => dispatch(deleteNotification(id))}

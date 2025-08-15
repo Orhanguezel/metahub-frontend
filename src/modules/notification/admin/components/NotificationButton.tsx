@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { Bell } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { useEffect } from "react";
-import { fetchNotifications } from "@/modules/notification/slice/notificationSlice";
+import { fetchUnreadCount } from "@/modules/notification/slice/notificationSlice"; // <- v2 thunk
 
 interface Props {
   ariaLabel?: string;
@@ -13,23 +13,19 @@ interface Props {
 
 export default function NotificationButton({ ariaLabel }: Props) {
   const profile = useAppSelector((state) => state.account.profile);
-  const notifications = useAppSelector((state) => state.notification?.notifications ?? []);
+  const unreadCount = useAppSelector((state) => state.notification.unreadCount ?? 0);
   const dispatch = useAppDispatch();
 
-  // Sadece admin/superadmin ise fetch çağrısı yap
+  // Only admins/superadmins should see & fetch
+  const isAdmin = !!profile && (profile.role === "admin" || profile.role === "superadmin");
+
   useEffect(() => {
-    if (profile && (profile.role === "admin" || profile.role === "superadmin")) {
-      dispatch(fetchNotifications());
+    if (isAdmin) {
+      dispatch(fetchUnreadCount()); // /notifications/unread-count
     }
-    // profile veya role değişirse yeniden çalışır
-  }, [profile, dispatch]);
+  }, [isAdmin, dispatch]);
 
-  // Guard: admin/superadmin harici kullanıcı asla render görmez ve fetch tetiklemez
-  if (!profile || !profile.role || (profile.role !== "admin" && profile.role !== "superadmin")) {
-    return null;
-  }
-
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  if (!isAdmin) return null;
 
   return (
     <IconWrapper

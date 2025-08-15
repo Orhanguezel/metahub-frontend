@@ -1,0 +1,103 @@
+
+{
+  "admin": {
+    "title": "Billing Admin",
+    "planCount": "{{count}} plan"
+  },
+  "sections": {
+    "plans": "Plans",
+    "occurrences": "Occurrences"
+  },
+  "actions": {
+    "newPlan": "New Plan",
+    "refresh": "Refresh",
+    "edit": "Edit",
+    "activate": "Activate",
+    "pause": "Pause",
+    "end": "End",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "update": "Update",
+    "create": "Create",
+    "apply": "Apply",
+    "reset": "Reset"
+  },
+  "list": {
+    "code": "Code",
+    "status": "Status",
+    "amount": "Amount",
+    "period": "Period",
+    "dueRule": "Due Rule",
+    "nextDue": "Next Due",
+    "actions": "Actions"
+  },
+  "status": {
+    "draft": "draft",
+    "active": "active",
+    "paused": "paused",
+    "ended": "ended",
+    "pending": "pending",
+    "invoiced": "invoiced",
+    "skipped": "skipped",
+    "canceled": "canceled"
+  },
+  "period": {
+    "weekly": "weekly",
+    "monthly": "monthly",
+    "quarterly": "quarterly",
+    "yearly": "yearly"
+  },
+  "due": {
+    "dayOfMonth": "dayOfMonth",
+    "nthWeekday": "nthWeekday",
+    "day": "Day",
+    "weekday": "weekday"
+  },
+  "form": {
+    "code": "Code",
+    "codePlaceholder": "(auto if empty)",
+    "mode": "Mode",
+    "contract": "Contract (ObjectId)",
+    "contractLine": "Contract Line (optional)",
+    "amount": "Amount",
+    "currency": "Currency",
+    "period": "Period",
+    "graceDays": "Grace Days",
+    "dueType": "Due Type",
+    "day": "Day",
+    "nth": "Nth",
+    "weekday": "Weekday (0=Sun..6=Sat)",
+    "startDate": "Start Date",
+    "endDate": "End Date"
+  },
+  "mode": {
+    "fixed": "fixed",
+    "perLine": "perLine"
+  },
+  "occ": {
+    "filters": {
+      "title": "Occurrence Filters",
+      "planId": "Plan Id",
+      "status": "Status",
+      "dueFrom": "Due from",
+      "dueTo": "Due to",
+      "invoice": "Invoice Id",
+      "seqFrom": "Seq from",
+      "seqTo": "Seq to",
+      "limit": "Limit"
+    },
+    "columns": {
+      "plan": "Plan",
+      "seq": "Seq",
+      "window": "Window",
+      "due": "Due",
+      "amount": "Amount",
+      "status": "Status",
+      "invoice": "Invoice"
+    }
+  },
+  "common": {
+    "empty": "Empty",
+    "plan": "plan"
+  }
+}

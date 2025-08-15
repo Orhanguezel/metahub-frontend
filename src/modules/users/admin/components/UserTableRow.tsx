@@ -19,10 +19,9 @@ export default function UserTableRow({ user, onRefresh }: Props) {
     "/defaults/profile.png";
 
   return (
-    <Row>
-      {/* Ad Soyad + Email (tek kolon) */}
-      <Td>
-        <UserInfo>
+    <Card role="article" aria-label={user.name || user.email}>
+      <Header>
+        <Left>
           <Avatar
             src={src}
             alt={t("users.avatarAlt", "{{name}} profil fotoğrafı", {
@@ -35,72 +34,71 @@ export default function UserTableRow({ user, onRefresh }: Props) {
             }}
           />
           <NameEmail>
-            <Name title={user.name}>{user.name}</Name>
-            <Email title={user.email}>{user.email}</Email>
+            <Name title={user.name || ""}>{user.name || "—"}</Name>
+            {user.email && <Email title={user.email}>{user.email}</Email>}
           </NameEmail>
-        </UserInfo>
-      </Td>
+        </Left>
 
-      {/* Rol */}
-      <Td>
-        <RoleBadge title={user.role}>{user.role}</RoleBadge>
-      </Td>
+        <HeaderBadges>
+          <RoleBadge title={user.role || ""}>{user.role || t("users.role.unknown", "Bilinmiyor")}</RoleBadge>
+          <StatusChip
+            $active={!!user.isActive}
+            aria-label={
+              user.isActive ? t("users.active", "Aktif") : t("users.inactive", "Pasif")
+            }
+          >
+            <Dot $active={!!user.isActive} />
+            {user.isActive ? t("users.active", "Aktif") : t("users.inactive", "Pasif")}
+          </StatusChip>
+        </HeaderBadges>
+      </Header>
 
-      {/* Durum */}
-      <Td>
-        <StatusChip $active={!!user.isActive} aria-label={user.isActive ? t("users.active", "Aktif") : t("users.inactive", "Pasif")}>
-          <Dot $active={!!user.isActive} />
-          {user.isActive ? t("users.active", "Aktif") : t("users.inactive", "Pasif")}
-        </StatusChip>
-      </Td>
-
-      {/* İşlemler */}
-      <TdActions>
+      <Actions>
         <UserActions
           userId={user._id}
           currentRole={user.role}
           onRefresh={onRefresh || (() => {})}
         />
-      </TdActions>
-    </Row>
+      </Actions>
+    </Card>
   );
 }
 
 /* ===================== styles ===================== */
 
-const Row = styled.tr`
-  transition: background ${({ theme }) => theme.transition.fast};
-  &:hover {
-    background: ${({ theme }) => theme.colors.hoverBackground};
+const Card = styled.article`
+  background: ${({ theme }) => theme.cards.background};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  padding: ${({ theme }) => theme.spacings.md};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacings.sm};
+`;
+
+const Header = styled.div`
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: ${({ theme }) => theme.spacings.sm};
+  align-items: center;
+
+  ${({ theme }) => theme.media.xsmall} {
+    grid-template-columns: 1fr;
+    gap: ${({ theme }) => theme.spacings.xs};
   }
 `;
 
-const Td = styled.td`
-  padding: 14px 16px;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.borderBright};
-  vertical-align: middle;
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const TdActions = styled(Td)`
-  text-align: right;
-  white-space: nowrap;
-
-  ${({ theme }) => theme.media.small} {
-    text-align: left;
-  }
-`;
-
-const UserInfo = styled.div`
+const Left = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 220px;
+  gap: ${({ theme }) => theme.spacings.sm};
+  min-width: 0; /* text overflow fix */
 `;
 
 const Avatar = styled.img`
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   border-radius: ${({ theme }) => theme.radii.circle};
   object-fit: cover;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
@@ -111,7 +109,7 @@ const Avatar = styled.img`
 const NameEmail = styled.div`
   display: flex;
   flex-direction: column;
-  min-width: 0; /* text-overflow için gerekli */
+  min-width: 0;
 `;
 
 const Name = styled.span`
@@ -131,6 +129,16 @@ const Email = styled.span`
   white-space: nowrap;
 `;
 
+const HeaderBadges = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacings.xs};
+
+  ${({ theme }) => theme.media.xsmall} {
+    justify-content: flex-start;
+  }
+`;
+
 const RoleBadge = styled.span`
   display: inline-block;
   padding: 6px 10px;
@@ -140,7 +148,6 @@ const RoleBadge = styled.span`
   border: 1px solid ${({ theme }) => theme.colors.borderHighlight};
   font-size: 0.85rem;
   font-weight: ${({ theme }) => theme.fontWeights.medium};
-  text-transform: none;
 `;
 
 const StatusChip = styled.span<{ $active: boolean }>`
@@ -166,4 +173,15 @@ const Dot = styled.i<{ $active: boolean }>`
   display: inline-block;
   background: ${({ $active, theme }) =>
     $active ? theme.colors.success : theme.colors.danger};
+`;
+
+const Actions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  padding-top: ${({ theme }) => theme.spacings.sm};
+  border-top: 1px dashed ${({ theme }) => theme.colors.borderBright};
+
+  ${({ theme }) => theme.media.small} {
+    justify-content: flex-start;
+  }
 `;

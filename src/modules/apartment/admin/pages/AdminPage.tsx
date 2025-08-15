@@ -1,299 +1,252 @@
 "use client";
-
-import { useState } from "react";
 import styled from "styled-components";
+import { useMemo, useState } from "react";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/store";
+import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import { translations } from "@/modules/apartment";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import type { SupportedLocale } from "@/types/common";
+import translations from "@/modules/apartment/locales";
+
+import ApartmentList, { type ApartmentAdminFilters } from "@/modules/apartment/admin/components/ApartmentList";
+import ApartmentForm from "@/modules/apartment/admin/components/ApartmentForm";
+import ApartmentDetail from "@/modules/apartment/admin/components/ApartmentDetail";
 
 import {
-  createApartment,
-  updateApartment,
-  deleteApartment,
-  togglePublishApartment,
+  clearApartmentMessages,
+  setSelectedApartment,
 } from "@/modules/apartment/slice/apartmentSlice";
-import {
-  createApartmentCategory,
-  updateApartmentCategory,
-} from "@/modules/apartment/slice/apartmentCategorySlice";
+import type { IApartment, TranslatedLabel } from "@/modules/apartment/types";
 
-import {
-  FormModal,
-  CategoryForm,
-  CategoryListPage,
-  List,
-  Tabs,
-  MultiUploadModal,
-} from "@/modules/apartment";
-
-import { Modal } from "@/shared";
-import type { IApartment } from "@/modules/apartment/types";
-import type { ApartmentCategory } from "@/modules/apartment/types";
-
-// Backend gereği: multi-upload sırasında zorunlu meta
-type MultiUploadMeta = {
-  address: {
-    city: string;
-    country: string;
-    street?: string;
-    number?: string;
-    district?: string;
-    state?: string;
-    zip?: string;
-    fullText?: string;
-  };
-  contact: {
-    name: string;
-    phone?: string;
-    email?: string;
-    role?: string;
-    customerRef?: string;
-    userRef?: string;
-  };
-  title?: Record<SupportedLocale, string>;
-  content?: Record<SupportedLocale, string>;
-  isPublished?: boolean;
+/* 🔧 Base filtre tipini yerel olarak genişletiyoruz */
+type ExtendedAdminFilters = ApartmentAdminFilters & {
+  customer?: string;   // manager (customer._id)
+  employee?: string;   // ops.employees
+  supervisor?: string; // ops.supervisor
+  service?: string;    // ops.services.service
+  cashDay?: number;    // ops.cashCollectionDay
 };
 
-type ApartmentTab = "list" | "create" | "multiUpload" | "categories";
+export default function ApartmentAdminPage() {
+  const { t } = useI18nNamespace("apartment", translations);
+  const dispatch = useDispatch<AppDispatch>();
 
-export default function AdminApartmentPage() {
-  const { i18n, t } = useI18nNamespace("apartment", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const {
+    apartmentAdmin,
+    loading: aptLoading,
+    error: aptError,
+    successMessage: aptSuccessMessage,
+    selected,
+  } = useAppSelector((s) => s.apartment);
 
-  const apartment = useAppSelector((s) => s.apartment.apartmentAdmin);
-  const loading = useAppSelector((s) => s.apartment.loading);
-  const status = useAppSelector((s) => s.apartment.status);
-  const error = useAppSelector((s) => s.apartment.error);
+  // Ek modüller parent’ta GEREK YOK — List & Form store’dan kendileri okuyor
+  const {
+    loading: empLoading,
+    error: empError,
+    successMessage: empSuccessMessage,
+  } = useAppSelector((s) => s.employees);
 
-  const [activeTab, setActiveTab] = useState<ApartmentTab>("list");
-  const [editingItem, setEditingItem] = useState<IApartment | null>(null);
+  const uiLoading = !!(aptLoading || empLoading);
+  const uiError = aptError || empError;
+  const uiSuccessMessage = aptSuccessMessage || empSuccessMessage;
 
-  const [editingCategory, setEditingCategory] = useState<ApartmentCategory | null>(null);
-  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [filters, setFilters] = useState<ExtendedAdminFilters>({});
 
-  const [multiUploadOpen, setMultiUploadOpen] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editItem, setEditItem] = useState<IApartment | undefined>(undefined);
 
-  const dispatch = useAppDispatch();
+  const dismissBanner = () => dispatch(clearApartmentMessages());
 
-  const handleSubmit = async (formData: FormData, id?: string) => {
-    if (id) {
-      await dispatch(updateApartment({ id, formData }));
-    } else {
-      await dispatch(createApartment(formData));
-    }
-    setEditingItem(null);
-    setActiveTab("list");
+  // 🔸 ApartmentList onFilterChange beklentisi: (next: ApartmentAdminFilters)
+  const handleFilterChange = (next: ApartmentAdminFilters) => {
+    setFilters(next as ExtendedAdminFilters);
   };
 
-  const handleMultiUpload = async (
-    images: File[],
-    category: string,
-    meta?: MultiUploadMeta
-  ) => {
-    if (!category) return alert(t("category_required", "Kategori seçmelisiniz!"));
-    if (!meta?.address?.city || !meta?.address?.country) {
-      return alert(t("address_required", "Adres (şehir + ülke) zorunludur."));
-    }
-    if (!meta?.contact?.name) {
-      return alert(t("contact_required", "Sorumlu kişi adı zorunludur."));
-    }
+  const openCreate = () => { setEditItem(undefined); setShowForm(true); };
+  const openEdit = (a: IApartment) => { setEditItem(a); setShowForm(true); };
+  const closeForm = () => setShowForm(false);
+  const onSaved = () => setShowForm(false);
+  const closeDetail = () => dispatch(setSelectedApartment(null));
 
-    const uploadPromises = images.map((file) => {
-      const fd = new FormData();
-      fd.append("images", file);
-      fd.append("category", category);
-      fd.append("address", JSON.stringify(meta.address));
-      fd.append("contact", JSON.stringify(meta.contact));
-      if (meta.title) fd.append("title", JSON.stringify(meta.title));
-      if (meta.content) fd.append("content", JSON.stringify(meta.content));
-      if (typeof meta.isPublished === "boolean") {
-        fd.append("isPublished", String(meta.isPublished));
+  /* ================= Client-side filter helpers ================= */
+  const getId = (v: any): string | undefined =>
+    typeof v === "string" ? v : v && typeof v === "object" ? String(v._id || "") : undefined;
+
+  const anyText = (obj?: TranslatedLabel) =>
+    obj ? Object.values(obj).filter(Boolean).join(" ").toLowerCase() : "";
+
+  const matchesQ = (apt: IApartment, q: string) => {
+    const needle = q.trim().toLowerCase();
+    if (!needle) return true;
+    if (apt.slug?.toLowerCase().includes(needle)) return true;
+    if (apt.address?.fullText?.toLowerCase().includes(needle)) return true;
+    if (anyText(apt.title).includes(needle)) return true;
+    if (anyText(apt.snapshots?.neighborhoodName).includes(needle)) return true;
+    return false;
+  };
+
+  const asText = (v: any): string => {
+    if (v == null) return "";
+    if (typeof v === "string") return v;
+    if (typeof v === "number" || typeof v === "boolean") return String(v);
+    if (typeof v === "object") {
+      const first = Object.values(v).find((x) => typeof x === "string") as string | undefined;
+      return first ?? JSON.stringify(v);
+    }
+    return String(v);
+  };
+
+  const visibleItems = useMemo(() => {
+    const list = apartmentAdmin || [];
+    if (!list.length) return list;
+
+    return list.filter((apt) => {
+      if (filters.q && !matchesQ(apt, filters.q)) return false;
+
+      if (typeof filters.isPublished === "boolean" && apt.isPublished !== filters.isPublished) return false;
+      if (typeof filters.isActive === "boolean" && apt.isActive !== filters.isActive) return false;
+
+      if (filters.neighborhood) {
+        const nId = getId(apt.place?.neighborhood);
+        if (nId !== filters.neighborhood) return false;
       }
-      return dispatch(createApartment(fd));
+
+      if (filters.customer) {
+        const cId = getId(apt.customer);
+        if (cId !== filters.customer) return false;
+      }
+
+      if (filters.employee) {
+        const empIds = (apt.ops?.employees || []).map(getId).filter(Boolean);
+        if (!empIds.includes(filters.employee)) return false;
+      }
+      if (filters.supervisor) {
+        const sId = getId(apt.ops?.supervisor);
+        if (sId !== filters.supervisor) return false;
+      }
+      if (filters.service) {
+        const svcIds = (apt.ops?.services || []).map((b: any) => getId(b.service)).filter(Boolean);
+        if (!svcIds.includes(filters.service)) return false;
+      }
+      if (typeof filters.cashDay === "number") {
+        if ((apt.ops?.cashCollectionDay || null) !== filters.cashDay) return false;
+      }
+
+      return true;
     });
-
-    await Promise.all(uploadPromises);
-    setMultiUploadOpen(false);
-    setActiveTab("list");
-  };
-
-  const handleDelete = async (id: string) => {
-    const confirmMsg = t(
-      "confirm.delete_apartment",
-      "Bu referansı silmek istediğinize emin misiniz?"
-    );
-    if (confirm(confirmMsg)) {
-      await dispatch(deleteApartment(id));
-    }
-  };
-
-  const handleTogglePublish = (id: string, isPublished: boolean) => {
-    dispatch(togglePublishApartment({ id, isPublished: !isPublished }));
-  };
-
-  const handleCategorySubmit = async (
-    data: {
-      name: Record<SupportedLocale, string>;
-      slug?: string;
-      city?: string;
-      district?: string;
-      zip?: string;
-      isActive?: boolean;
-    },
-    id?: string
-  ) => {
-    if (id) {
-      await dispatch(updateApartmentCategory({ id, data }));
-    } else {
-      await dispatch(createApartmentCategory(data));
-    }
-    setEditingCategory(null);
-    setCategoryModalOpen(false);
-  };
-
-  const handleTabChange = (tab: ApartmentTab) => {
-    if (tab === "multiUpload") {
-      setMultiUploadOpen(true);
-      return;
-    }
-    setActiveTab(tab);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apartmentAdmin, filters]);
 
   return (
-    <Wrapper>
-      {/* Yatay kaydırmalı tab sarmalayıcı (mobil uyum) */}
-      <TabsBar>
-        <Tabs
-          activeTab={activeTab}
-          onChange={handleTabChange}
-          loading={status === "loading"}
-        />
-      </TabsBar>
+    <PageWrap>
+      <PageHead>
+        <div>
+          <H1>{t("admin.title", "Apartments")}</H1>
+          <Subtle>{t("admin.subtitle", "Create, edit and manage apartments.")}</Subtle>
+        </div>
+        <Actions>
+          <Primary onClick={openCreate} disabled={uiLoading}>
+            {t("admin.new", "New Apartment")}
+          </Primary>
+        </Actions>
+      </PageHead>
 
-      <TabContent>
-        {activeTab === "list" && (
-          <>
-            <List
-              apartment={apartment}
-              lang={lang}
-              loading={loading}
-              error={error}
-              onEdit={(item) => {
-                setEditingItem(item);
-                setActiveTab("create");
-              }}
-              onDelete={handleDelete}
-              onTogglePublish={handleTogglePublish}
-            />
+      {(uiError || uiSuccessMessage) && (
+        <Banner $type={uiError ? "error" : "success"} role="status">
+          <span>{asText(uiError) || asText(uiSuccessMessage)}</span>
+          <CloseBtn onClick={dismissBanner} aria-label={t("common.close", "Close")}>×</CloseBtn>
+        </Banner>
+      )}
 
-            <MultiUploadModal
-              isOpen={multiUploadOpen}
-              onClose={() => setMultiUploadOpen(false)}
-              onUpload={handleMultiUpload}
-            />
-          </>
-        )}
+      {/* ✅ EK props YOK */}
+      <ApartmentList
+        items={visibleItems}
+        loading={uiLoading}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onEdit={openEdit}
+      />
 
-        {activeTab === "create" && (
-          <FormModal
-            isOpen
-            onClose={() => {
-              setEditingItem(null);
-              setActiveTab("list");
-            }}
-            editingItem={editingItem}
-            onSubmit={handleSubmit}
-            loading={status === "loading"}
-          />
-        )}
+      {showForm && (
+        <Modal role="dialog" aria-modal="true" aria-label={t("form.modalTitle", "Apartment Form")}>
+          <ModalCard>
+            <ModalHead>
+              <h3>{editItem ? t("form.editTitle", "Edit Apartment") : t("form.createTitle", "Create Apartment")}</h3>
+              <IconBtn onClick={closeForm} aria-label={t("common.close", "Close")}>×</IconBtn>
+            </ModalHead>
+            <ModalBody>
+              {/* ✅ EK props YOK */}
+              <ApartmentForm initial={editItem} onClose={closeForm} onSaved={onSaved} />
+            </ModalBody>
+          </ModalCard>
+          <Backdrop onClick={closeForm} />
+        </Modal>
+      )}
 
-        {activeTab === "categories" && (
-          <>
-            <CategoryListPage
-              onAdd={() => {
-                setEditingCategory(null);
-                setCategoryModalOpen(true);
-              }}
-              onEdit={(category) => {
-                setEditingCategory(category);
-                setCategoryModalOpen(true);
-              }}
-            />
-            <Modal isOpen={categoryModalOpen} onClose={() => setCategoryModalOpen(false)}>
-              <CategoryForm
-                isOpen={categoryModalOpen}
-                onClose={() => setCategoryModalOpen(false)}
-                editingItem={editingCategory}
-                onSubmit={handleCategorySubmit}
-                loading={status === "loading"}
-              />
-            </Modal>
-          </>
-        )}
-      </TabContent>
-    </Wrapper>
+      {selected && (
+        <Drawer aria-label={t("detail.title", "Apartment Details")} role="dialog" aria-modal="true">
+          <DrawerCard>
+            <DrawerHead>
+              <h3>{t("detail.title", "Apartment Details")}</h3>
+              <IconBtn onClick={closeDetail} aria-label={t("common.close", "Close")}>×</IconBtn>
+            </DrawerHead>
+            <DrawerBody>
+              <ApartmentDetail item={selected} onClose={closeDetail} />
+            </DrawerBody>
+          </DrawerCard>
+          <Backdrop onClick={closeDetail} />
+        </Drawer>
+      )}
+    </PageWrap>
   );
 }
 
-/* ---------------- Styles (classicTheme uyumlu) ---------------- */
-
-const Wrapper = styled.div`
-  max-width: ${({ theme }) => theme.layout.containerWidth};
-  margin: 0 auto;
-  padding: ${({ theme }) => theme.layout.sectionspacings} ${({ theme }) => theme.spacings.md};
-
-  ${({ theme }) => theme.media.small} {
-    padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.sm};
-  }
-
-  ${({ theme }) => theme.media.xsmall} {
-    padding: ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.xs};
-  }
+/* ================= styled ================= */
+const PageWrap = styled.div`display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.md};`;
+const PageHead = styled.header`
+  display:flex; align-items:flex-end; justify-content:space-between; gap:${({theme})=>theme.spacings.sm};
+  ${({theme})=>theme.media.mobile}{ align-items:stretch; flex-direction:column; }
 `;
-
-/* Tabs’ı yatay kaydırmalı, snap’li ve scrollbar gizli hale getiriyoruz */
-const TabsBar = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-
-  /* Tabs bileşeni içindeki başlık role="tablist" olarak render ediliyor */
-  & [role="tablist"] {
-    display: flex;
-    gap: ${({ theme }) => theme.spacings.sm};
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
-    padding: 0 ${({ theme }) => theme.spacings.xs};
-    scrollbar-width: none; /* Firefox */
-    mask-image: linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
-  }
-
-  & [role="tablist"]::-webkit-scrollbar {
-    display: none; /* WebKit */
-  }
-
-  /* Tek tek tab’lar genişlik dayatmasın; mobile’da scroll-snap ile güzel kayar */
-  & [role="tablist"] > * {
-    flex: 0 0 auto;
-    scroll-snap-align: start;
-  }
+const H1 = styled.h1`margin:0; font-size:${({theme})=>theme.fontSizes.large}; color:${({theme})=>theme.colors.title}; font-family:${({theme})=>theme.fonts.heading};`;
+const Subtle = styled.p`margin:.25rem 0 0; color:${({theme})=>theme.colors.textSecondary}; font-size:${({theme})=>theme.fontSizes.xsmall};`;
+const Actions = styled.div`display:flex; gap:${({theme})=>theme.spacings.sm};`;
+const Primary = styled.button`
+  padding:10px 16px; border-radius:${({theme})=>theme.radii.xl};
+  border:1px solid ${({theme})=>theme.buttons.primary.backgroundHover};
+  color:${({theme})=>theme.buttons.primary.text};
+  background:linear-gradient(180deg, ${({theme})=>theme.buttons.primary.background}, ${({theme})=>theme.buttons.primary.backgroundHover});
+  box-shadow:${({theme})=>theme.shadows.button};
+  cursor:pointer; transition:transform .08s ease, box-shadow .15s ease, opacity .15s ease;
+  &:hover:enabled{ transform:translateY(-1px); box-shadow:${({theme})=>theme.shadows.lg}; }
+  &:active:enabled{ transform:translateY(0); box-shadow:${({theme})=>theme.shadows.sm}; }
+  &:disabled{ opacity:${({theme})=>theme.opacity.disabled}; cursor:not-allowed; }
+  &:focus-visible{ outline:none; box-shadow:0 0 0 3px ${({theme})=>theme.colors.shadowHighlight}; }
 `;
-
-const TabContent = styled.div`
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
-  padding: ${({ theme }) => theme.spacings.lg};
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.form};
-
-  ${({ theme }) => theme.media.small} {
-    padding: ${({ theme }) => theme.spacings.md};
-    border-radius: ${({ theme }) => theme.radii.sm};
-  }
-
-  ${({ theme }) => theme.media.xsmall} {
-    padding: ${({ theme }) => theme.spacings.sm};
-    border-radius: ${({ theme }) => theme.radii.sm};
-  }
+const Banner = styled.div<{ $type: "success" | "error" }>`
+  display:flex; align-items:center; justify-content:space-between; gap:${({theme})=>theme.spacings.sm};
+  border:${({theme})=>theme.borders.thin} ${({theme,$type})=>$type==="success"? theme.colors.success : theme.colors.danger};
+  background:${({theme,$type})=>$type==="success"? theme.colors.successBg : theme.colors.dangerBg};
+  color:${({theme,$type})=>$type==="success"? theme.colors.textOnSuccess : theme.colors.textOnDanger};
+  border-radius:${({theme})=>theme.radii.lg}; padding:${({theme})=>theme.spacings.sm} ${({theme})=>theme.spacings.md};
 `;
+const CloseBtn = styled.button`border:none; background:transparent; color:inherit; font-size:20px; cursor:pointer; line-height:1;`;
+const Modal = styled.div`position:fixed; inset:0; z-index:${({theme})=>theme.zIndex.modal}; display:flex; align-items:center; justify-content:center;`;
+const Drawer = styled.div`position:fixed; inset:0; z-index:${({theme})=>theme.zIndex.modal}; display:flex; align-items:stretch; justify-content:flex-end;`;
+const ModalCard = styled.div`
+  position:relative; z-index:2; width:min(980px, 96vw); max-height:92vh; overflow:auto;
+  background:${({theme})=>theme.colors.cardBackground}; border-radius:${({theme})=>theme.radii.xl}; box-shadow:${({theme})=>theme.shadows.xl};
+`;
+const DrawerCard = styled(ModalCard)`width:min(720px, 96vw);`;
+const ModalHead = styled.div`
+  display:flex; align-items:center; justify-content:space-between; gap:${({theme})=>theme.spacings.sm};
+  padding:${({theme})=>theme.spacings.md};
+  border-bottom:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderLight};
+  h3{ margin:0; font-size:${({theme})=>theme.fontSizes.medium}; color:${({theme})=>theme.colors.title}; }
+`;
+const DrawerHead = styled(ModalHead)``;
+const ModalBody = styled.div`padding:${({theme})=>theme.spacings.md};`;
+const DrawerBody = styled(ModalBody)``;
+const IconBtn = styled.button`
+  border:none; background:transparent; cursor:pointer; font-size:22px; color:${({theme})=>theme.colors.textSecondary};
+  &:hover{ opacity:${({theme})=>theme.opacity.hover}; }
+`;
+const Backdrop = styled.div`position:absolute; inset:0; z-index:1; background:linear-gradient(${({theme})=>theme.colors.overlayStart}, ${({theme})=>theme.colors.overlayEnd});`;

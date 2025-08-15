@@ -1,0 +1,50 @@
+{
+  "admin": { "title": "Stadtteilverwaltung", "count": "{{count}} Stadtteile" },
+  "actions": {
+    "new": "+ Neuer Stadtteil",
+    "refresh": "Aktualisieren",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "create": "Erstellen",
+    "update": "Aktualisieren",
+    "cancel": "Abbrechen",
+    "activate": "Aktivieren",
+    "deactivate": "Deaktivieren",
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen"
+  },
+  "common": { "empty": "Keine Einträge", "yes": "Ja", "no": "Nein" },
+  "form": {
+    "name": "Name (mehrsprachig)",
+    "slug": "Slug",
+    "city": "Stadt",
+    "district": "Bezirk",
+    "zip": "PLZ",
+    "cityCode": "Stadtcode",
+    "districtCode": "Bezirkscode",
+    "lat": "Breitengrad",
+    "lng": "Längengrad",
+    "aliases": "Aliase (durch Komma getrennt)",
+    "tags": "Tags (durch Komma getrennt)",
+    "sortOrder": "Sortierreihenfolge",
+    "isActive": "Aktiv?"
+  },
+  "list": {
+    "name": "Name",
+    "slug": "Slug",
+    "location": "Ort",
+    "codes": "Codes",
+    "tags": "Tags",
+    "status": "Status",
+    "actions": "Aktionen"
+  },
+  "status": { "active": "aktiv", "inactive": "inaktiv" },
+  "filters": {
+    "title": "Filter",
+    "q": "Suche",
+    "city": "Stadt",
+    "district": "Bezirk",
+    "tag": "Tag",
+    "isActive": "Aktiv"
+  }
+}

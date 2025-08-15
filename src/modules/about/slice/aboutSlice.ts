@@ -22,6 +22,8 @@ const initialState: AboutState = {
   successMessage: null,
 };
 
+const BASE = "/about";
+
 const extractErrorMessage = (payload: unknown): string => {
   if (typeof payload === "string") return payload;
   if (
@@ -39,7 +41,7 @@ const extractErrorMessage = (payload: unknown): string => {
 export const fetchAbout = createAsyncThunk<IAbout[]>(
   "about/fetchAll",
   async (_, thunkAPI) => {
-    const res = await apiCall("get", `/about`, null, thunkAPI.rejectWithValue);
+    const res = await apiCall("get", `${BASE}`, null, thunkAPI.rejectWithValue);
     // response: { success, message, data }
     return res.data;
   }
@@ -50,7 +52,7 @@ export const fetchAllAboutAdmin = createAsyncThunk<IAbout[]>(
   async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/about/admin`,
+      `${BASE}/admin`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -63,7 +65,7 @@ export const createAbout = createAsyncThunk(
   async (formData: FormData, thunkAPI) => {
     const res = await apiCall(
       "post",
-      "/about/admin",
+      `${BASE}/admin`,
       formData,
       thunkAPI.rejectWithValue
     );
@@ -77,7 +79,7 @@ export const updateAbout = createAsyncThunk(
   async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) => {
     const res = await apiCall(
       "put",
-      `/about/admin/${id}`,
+      `${BASE}/admin/${id}`,
       formData,
       thunkAPI.rejectWithValue
     );
@@ -90,7 +92,7 @@ export const deleteAbout = createAsyncThunk(
   async (id: string, thunkAPI) => {
     const res = await apiCall(
       "delete",
-      `/about/admin/${id}`,
+      `${BASE}/admin/${id}`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -109,7 +111,7 @@ export const togglePublishAbout = createAsyncThunk(
     formData.append("isPublished", String(isPublished));
     const res = await apiCall(
       "put",
-      `/about/admin/${id}`,
+      `${BASE}/admin/${id}`,
       formData,
       thunkAPI.rejectWithValue
     );
@@ -122,7 +124,7 @@ export const fetchAboutBySlug = createAsyncThunk(
   async (slug: string, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/about/slug/${slug}`,
+      `${BASE}/slug/${slug}`,
       null,
       thunkAPI.rejectWithValue
     );

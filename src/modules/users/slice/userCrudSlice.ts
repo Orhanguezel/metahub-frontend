@@ -42,23 +42,11 @@ const initialState: UserState = {
 };
 
 /* ---------- Thunks ---------- */
-
-// Filtre/paginasyon istersen query geç; geçmezsen tümünü çek
-type FetchUsersQuery = Partial<{
-  q: string;
-  role: User["role"];
-  isActive: "true" | "false";
-  emailVerified: "true" | "false";
-  page: string | number;
-  limit: string | number;
-  sortBy: "createdAt" | "updatedAt" | "name" | "email" | "role";
-  sortDir: "asc" | "desc";
-}>;
-
-export const fetchUsers = createAsyncThunk<ListRes, FetchUsersQuery | undefined, ThunkConfig>(
+/** 🔁 PARAMETRESİZ: Parent globalde fetch edecekse bu thunk default listeyi çeker. */
+export const fetchUsers = createAsyncThunk<ListRes, void, ThunkConfig>(
   "userCrud/fetchUsers",
-  async (query = undefined, thunkAPI) => {
-    return await apiCall("get", "/users/users", query ?? null, thunkAPI.rejectWithValue);
+  async (_void, thunkAPI) => {
+    return await apiCall("get", "/users/users", null, thunkAPI.rejectWithValue);
   }
 );
 
@@ -109,6 +97,14 @@ const userCrudSlice = createSlice({
     },
     resetSelectedUser: (state) => {
       state.selectedUser = null;
+    },
+    /** 🧪 Opsiyonel: Parent global fetch yaptıysa doğrudan store’u doldurmak için */
+    hydrateUsers: (state, action: { payload: { users: User[]; meta?: UsersMeta; message?: string | null } }) => {
+      state.users = action.payload.users || [];
+      state.meta = action.payload.meta ?? null;
+      state.successMessage = action.payload.message ?? null;
+      state.loading = false;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -175,16 +171,14 @@ const userCrudSlice = createSlice({
         state.successMessage = action.payload.message ?? null;
 
         if (updated?._id) {
-          state.users = state.users.map((u) =>
-            u._id === updated._id ? ({ ...u, ...updated } as User) : u
-          );
+          state.users = state.users.map((u) => (u._id === updated._id ? ({ ...u, ...updated } as User) : u));
           if (state.selectedUser?._id === updated._id) {
             state.selectedUser = { ...(state.selectedUser as User), ...updated };
           }
         }
       })
 
-      /* TOGGLE STATUS (payload: userId + isActive) */
+      /* TOGGLE STATUS */
       .addCase(toggleUserStatus.fulfilled, (state, action) => {
         state.loading = false;
         const { userId, isActive } = action.payload;
@@ -241,5 +235,10 @@ const userCrudSlice = createSlice({
   },
 });
 
-export const { clearUserCrudMessages, resetSelectedUser } = userCrudSlice.actions;
+export const {
+  clearUserCrudMessages,
+  resetSelectedUser,
+  hydrateUsers, // ⬅️ parent fetch için opsiyonel
+} = userCrudSlice.actions;
+
 export default userCrudSlice.reducer;

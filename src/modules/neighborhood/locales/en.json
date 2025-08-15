@@ -1,0 +1,50 @@
+{
+  "admin": { "title": "Neighborhood Admin", "count": "{{count}} neighborhoods" },
+  "actions": {
+    "new": "+ New Neighborhood",
+    "refresh": "Refresh",
+    "edit": "Edit",
+    "delete": "Delete",
+    "create": "Create",
+    "update": "Update",
+    "cancel": "Cancel",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "apply": "Apply",
+    "reset": "Reset"
+  },
+  "common": { "empty": "Empty", "yes": "Yes", "no": "No" },
+  "form": {
+    "name": "Name (multilang)",
+    "slug": "Slug",
+    "city": "City",
+    "district": "District",
+    "zip": "ZIP",
+    "cityCode": "City Code",
+    "districtCode": "District Code",
+    "lat": "Latitude",
+    "lng": "Longitude",
+    "aliases": "Aliases (comma separated)",
+    "tags": "Tags (comma separated)",
+    "sortOrder": "Sort Order",
+    "isActive": "Is Active?"
+  },
+  "list": {
+    "name": "Name",
+    "slug": "Slug",
+    "location": "Location",
+    "codes": "Codes",
+    "tags": "Tags",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "status": { "active": "active", "inactive": "inactive" },
+  "filters": {
+    "title": "Filters",
+    "q": "Search",
+    "city": "City",
+    "district": "District",
+    "tag": "Tag",
+    "isActive": "Active"
+  }
+}

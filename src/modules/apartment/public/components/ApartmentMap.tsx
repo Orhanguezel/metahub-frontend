@@ -1,16 +1,19 @@
 // /src/modules/apartment/public/components/ApartmentMap.tsx
 "use client";
 
-import { useMemo, useEffect, useState, useCallback } from "react";
+import { useMemo, useEffect, useState, useCallback, useRef } from "react";
 import styled from "styled-components";
-import Map, {
-  Marker,
+import MapGL, {
   Popup,
   NavigationControl,
   FullscreenControl,
   ScaleControl,
-  type MarkerEvent,            // 👈 ekle
+  Source,
+  Layer,
+  type MapRef,
+  type MapLayerMouseEvent,
 } from "react-map-gl/maplibre";
+import type { Feature, FeatureCollection, Point, Geometry } from "geojson";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -20,174 +23,351 @@ import type { IApartment } from "@/modules/apartment/types";
 type Props = {
   height?: number | string;
   width?: number | string;
+  /** Unclustered (tekil) nokta rengi */
   markerColor?: string;
+  /** Harita stil URL’i (API key gerektirmeyen varsayılanla gelir) */
+  mapStyleUrl?: string;
+  /** Isı haritasını göster */
+  showHeatmap?: boolean;
+  /** Bir nokta seçildiğinde üst bileşene haber ver */
   onSelect?: (apt: IApartment) => void;
 };
 
-// Ücretsiz Carto stili (API key gerektirmez)
-const MAP_STYLE =
+// Ücretsiz (API key istemeyen) varsayılan stil
+const DEFAULT_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
 
+/* ---------- yardımcı ---------- */
+function firstNonEmpty(obj?: Record<string, string>) {
+  if (!obj) return "";
+  return (
+    obj.tr ||
+    obj.en ||
+    obj.de ||
+    obj.fr ||
+    obj.es ||
+    obj.pl ||
+    Object.values(obj)[0] ||
+    ""
+  );
+}
+
+/** Geometry → [lng, lat] güvenli daraltıcı */
+function pointCoords(g: Geometry | undefined): [number, number] | null {
+  if (!g || g.type !== "Point") return null;
+  const coords = (g as Point).coordinates;
+  if (
+    Array.isArray(coords) &&
+    coords.length === 2 &&
+    typeof coords[0] === "number" &&
+    typeof coords[1] === "number"
+  ) {
+    return [coords[0], coords[1]];
+  }
+  return null;
+}
+
+/* ---------- bileşen ---------- */
 export default function ApartmentMap({
   height = 520,
   width = "100%",
-  markerColor = "#1f7ae0",
+  markerColor = "#2E90FA",
+  mapStyleUrl = DEFAULT_STYLE,
+  showHeatmap = false,
   onSelect,
 }: Props) {
   const dispatch = useAppDispatch();
   const { apartment, status } = useAppSelector((s) => s.apartment);
-  const [popup, setPopup] = useState<IApartment | null>(null);
 
-  // Public listeyi garantiye almak için burada da fetch edelim
+  // public list yoksa çek
   useEffect(() => {
     if ((status === "idle" || status === "failed") && apartment.length === 0) {
       dispatch(fetchApartment({ isPublished: true }));
     }
   }, [status, apartment.length, dispatch]);
 
-  // Noktalar
-  const points = useMemo(
-    () =>
-      apartment
-        .map((a) => {
-          const coords = (a as any)?.location?.coordinates;
-          if (
-            Array.isArray(coords) &&
-            typeof coords[0] === "number" &&
-            typeof coords[1] === "number"
-          ) {
-            return { apt: a, lng: coords[0], lat: coords[1] };
-          }
-          return null;
-        })
-        .filter(Boolean) as { apt: IApartment; lng: number; lat: number }[],
-    [apartment]
-  );
+  // id -> apt hızlı erişim
+  const byId = useMemo(() => {
+    const m = new Map<string, IApartment>();
+    for (const a of apartment) m.set(String(a._id), a);
+    return m;
+  }, [apartment]);
 
-  // Tüm noktaları kadraja sığdır
-  const fitViewState = useMemo(() => {
-    if (!points.length) {
-      return { longitude: 10, latitude: 50, zoom: 4 } as const; // Avrupa fallback
-    }
-    const lons = points.map((p) => p.lng);
-    const lats = points.map((p) => p.lat);
+  // GeoJSON FeatureCollection (cluster & heatmap için)
+  type AptProps = { id: string; title: string };
+  type AptFeature = Feature<Point, AptProps>;
+  type AptFC = FeatureCollection<Point, AptProps>;
+
+  const data: AptFC = useMemo(() => {
+    const feats: AptFeature[] = apartment
+      .map((a) => {
+        const coords = a.location?.coordinates ?? [];
+        if (
+          Array.isArray(coords) &&
+          coords.length === 2 &&
+          typeof coords[0] === "number" &&
+          typeof coords[1] === "number"
+        ) {
+          return {
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: [coords[0] as number, coords[1] as number],
+            },
+            properties: { id: String(a._id), title: firstNonEmpty(a.title) },
+          } as AptFeature;
+        }
+        return null;
+      })
+      .filter(Boolean) as AptFeature[];
+    return { type: "FeatureCollection", features: feats };
+  }, [apartment]);
+
+  // kadraja sığdırma
+  const initialViewState = useMemo(() => {
+    if (!data.features.length) return { longitude: 29.05, latitude: 41.02, zoom: 9 };
+    const lons = data.features.map((f) => f.geometry.coordinates[0]);
+    const lats = data.features.map((f) => f.geometry.coordinates[1]);
     return {
       bounds: [
         [Math.min(...lons), Math.min(...lats)],
         [Math.max(...lons), Math.max(...lats)],
       ] as [[number, number], [number, number]],
       fitBoundsOptions: { padding: 48 },
-    } as const;
-  }, [points]);
+    };
+  }, [data]);
 
-  const handleMarkerClick = useCallback(
-    (apt: IApartment) => {
-      setPopup(apt);
-      onSelect?.(apt);
+  const mapRef = useRef<MapRef | null>(null);
+  const [popup, setPopup] = useState<{
+    lng: number;
+    lat: number;
+    apt: IApartment;
+  } | null>(null);
+
+  const handleMapClick = useCallback(
+    (e: MapLayerMouseEvent) => {
+      const f = e.features?.[0];
+      if (!f) return;
+
+      // cluster ise zoom'u büyüt
+      if (f.layer.id === "clusters" && (f.properties as any)?.cluster_id != null) {
+        const source = mapRef.current?.getSource("apts") as any;
+        source?.getClusterExpansionZoom(
+          (f.properties as any).cluster_id,
+          (err: unknown, zoom: number) => {
+            if (err) return;
+            const c = pointCoords(f.geometry);
+            if (!c) return;
+            mapRef.current?.easeTo({ center: c, zoom, duration: 500 });
+          }
+        );
+        return;
+      }
+
+      // unclustered nokta ise popup
+      if (f.layer.id === "unclustered") {
+        const id = String((f.properties as any)?.id || "");
+        const apt = byId.get(id);
+        if (!apt) return;
+        const c = pointCoords(f.geometry);
+        if (!c) return;
+        const [lng, lat] = c;
+        setPopup({ lng, lat, apt });
+        onSelect?.(apt);
+      }
     },
-    [onSelect]
+    [byId, onSelect]
   );
 
   return (
     <MapWrap style={{ height, width }}>
-      <Map
+      <MapGL
+        ref={mapRef}
+        mapStyle={mapStyleUrl}
+        initialViewState={initialViewState as any}
         reuseMaps
-        mapStyle={MAP_STYLE}
-        initialViewState={
-          "bounds" in fitViewState
-            ? (fitViewState as any)
-            : ({ ...fitViewState } as any)
-        }
         style={{ width: "100%", height: "100%" }}
+        interactiveLayerIds={["clusters", "unclustered"]}
+        onClick={handleMapClick}
       >
         <NavigationControl position="top-right" />
         <FullscreenControl position="top-right" />
         <ScaleControl maxWidth={120} unit="metric" />
 
-        {points.map(({ apt, lng, lat }) => (
-          <Marker
-  key={String(apt._id)}
-  longitude={lng}
-  latitude={lat}
-  anchor="bottom"
-  onClick={(e: MarkerEvent<MouseEvent>) => {   // 👈 tip düzeltildi
-    e.originalEvent?.stopPropagation();        // MapLibre -> DOM MouseEvent
-    handleMarkerClick(apt);
-  }}
->
-  <Dot aria-label="marker" $color={markerColor} />
-</Marker>
-        ))}
+        {/* CLUSTERLI KAYNAK: nokta/cluster gösterimi */}
+        <Source
+          id="apts"
+          type="geojson"
+          data={data as any}
+          cluster
+          clusterMaxZoom={14}
+          clusterRadius={52}
+        >
+          {/* cluster topları */}
+          <Layer
+            id="clusters"
+            type="circle"
+            filter={["has", "point_count"]}
+            paint={{
+              "circle-color": [
+                "step",
+                ["get", "point_count"],
+                "#9CC9FF",
+                10,
+                "#60A5FA",
+                25,
+                "#3B82F6",
+                50,
+                "#2563EB",
+              ],
+              "circle-radius": ["step", ["get", "point_count"], 18, 10, 24, 25, 30, 50, 38],
+              "circle-stroke-width": 2,
+              "circle-stroke-color": "#fff",
+            }}
+          />
+          {/* cluster sayısı */}
+          <Layer
+            id="cluster-count"
+            type="symbol"
+            filter={["has", "point_count"]}
+            layout={{
+              "text-field": ["get", "point_count_abbreviated"],
+              "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+              "text-size": 12,
+            }}
+            paint={{ "text-color": "#ffffff" }}
+          />
+          {/* tekil noktalar */}
+          <Layer
+            id="unclustered"
+            type="circle"
+            filter={["!", ["has", "point_count"]]}
+            paint={{
+              "circle-color": markerColor,
+              "circle-radius": 7,
+              "circle-stroke-width": 2,
+              "circle-stroke-color": "#ffffff",
+            }}
+          />
+        </Source>
 
-        {popup && (popup as any).location?.coordinates && (
+        {/* HEATMAP: clustersız ayrı bir kaynakla (isteğe bağlı) */}
+        {showHeatmap && (
+          <Source id="apts-heat" type="geojson" data={data as any}>
+            <Layer
+              id="heat"
+              type="heatmap"
+              maxzoom={15}
+              paint={{
+                // Nokta yoğunluğuna göre ağırlık
+                "heatmap-weight": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  0,
+                  0.6,
+                  15,
+                  1.0,
+                ],
+                // Yakınlaştırmaya göre yoğunluk
+                "heatmap-intensity": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  0,
+                  0.8,
+                  15,
+                  2.0,
+                ],
+                // Renk geçişleri
+                "heatmap-color": [
+                  "interpolate",
+                  ["linear"],
+                  ["heatmap-density"],
+                  0,
+                  "rgba(0,0,0,0)",
+                  0.2,
+                  "rgba(56,189,248,0.6)", // sky-400
+                  0.4,
+                  "rgba(59,130,246,0.7)", // blue-500
+                  0.6,
+                  "rgba(37,99,235,0.8)",  // blue-600
+                  0.8,
+                  "rgba(30,64,175,0.9)",  // indigo-800
+                ],
+                // Bulanıklık & yarıçap
+                "heatmap-radius": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  0,
+                  12,
+                  10,
+                  28,
+                  15,
+                  40,
+                ],
+                "heatmap-opacity": 0.85,
+              }}
+            />
+          </Source>
+        )}
+
+        {/* POPUP */}
+        {popup && (
           <Popup
-            longitude={(popup as any).location.coordinates[0]}
-            latitude={(popup as any).location.coordinates[1]}
+            longitude={popup.lng}
+            latitude={popup.lat}
             anchor="top"
-            onClose={() => setPopup(null)}
             closeButton
             closeOnClick={false}
             maxWidth="320px"
+            onClose={() => setPopup(null)}
           >
             <PopupBox>
-              <Title>{firstNonEmpty(popup.title)}</Title>
-              {popup.address && (
+              <Title>{firstNonEmpty(popup.apt.title)}</Title>
+              {popup.apt.address && (
                 <Addr>
-                  {popup.address.fullText ||
+                  {popup.apt.address.fullText ||
                     [
-                      [popup.address.street, popup.address.number]
+                      [popup.apt.address.street, popup.apt.address.number]
                         .filter(Boolean)
                         .join(" "),
-                      [popup.address.zip, popup.address.city]
+                      [popup.apt.address.zip, popup.apt.address.city]
                         .filter(Boolean)
                         .join(" "),
-                      popup.address.country,
+                      popup.apt.address.country,
                     ]
                       .filter(Boolean)
                       .join(", ")}
                 </Addr>
               )}
-              <a href={`/apartment/${popup.slug}`} className="link">
-                Detaya Git
-              </a>
+              {popup.apt.slug && (
+                <a className="link" href={`/apartment/${popup.apt.slug}`}>
+                  Detaya Git
+                </a>
+              )}
             </PopupBox>
           </Popup>
         )}
-      </Map>
+      </MapGL>
     </MapWrap>
   );
 }
 
-function firstNonEmpty(obj?: Record<string, string>) {
-  if (!obj) return "";
-  return obj.tr || obj.en || obj.de || Object.values(obj)[0] || "";
-}
-
-// --- styles ---
+/* ---- styles ---- */
 const MapWrap = styled.div`
   position: relative;
   border-radius: ${({ theme }) => theme.radii.lg};
   overflow: hidden;
-`;
-
-const Dot = styled.button<{ $color: string }>`
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: ${({ $color }) => $color};
-  border: 2px solid #ffffff;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
-  cursor: pointer;
-  transform: translateY(2px);
-  &:hover {
-    transform: translateY(0);
-  }
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.cardBackground};
 `;
 
 const PopupBox = styled.div`
   display: grid;
   gap: 0.35rem;
-
   .link {
     margin-top: 0.25rem;
     display: inline-block;
@@ -195,9 +375,7 @@ const PopupBox = styled.div`
     color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;
   }
-  .link:hover {
-    text-decoration: underline;
-  }
+  .link:hover { text-decoration: underline; }
 `;
 
 const Title = styled.div`

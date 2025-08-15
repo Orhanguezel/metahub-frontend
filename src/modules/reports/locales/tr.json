@@ -1,0 +1,162 @@
+{
+  "title": "Raporlar",
+  "counts": {
+    "definitions": "Tanımlar",
+    "runs": "Çalıştırmalar"
+  },
+  "newDef": "Yeni Tanım",
+  "sections": {
+    "defs": "Tanımlar",
+    "runs": "Çalıştırmalar"
+  },
+  "jsonTitle": "Tanım JSON",
+  "actions": {
+    "refresh": "Yenile",
+    "hide": "Gizle",
+    "apply": "Uygula",
+    "reset": "Sıfırla",
+    "edit": "Düzenle",
+    "run": "Çalıştır",
+    "viewJson": "JSON Gör",
+    "delete": "Sil",
+    "close": "Kapat",
+    "cancel": "İptal",
+    "view": "Görüntüle",
+    "remove": "Kaldır",
+    "addRecipient": "Alıcı Ekle"
+  },
+  "common": {
+    "loading": "Yükleniyor…",
+    "yes": "Evet",
+    "no": "Hayır",
+    "select": "Seçiniz...",
+    "jsonInvalid": "Geçersiz JSON"
+  },
+  "form": {
+    "a11yDesc": "Bir rapor tanımı oluşturun veya güncelleyin.",
+    "code": "Kod",
+    "codePh": "boşsa otomatik",
+    "name": "Ad",
+    "kind": "Tür",
+    "description": "Açıklama",
+    "active": "Aktif mi?",
+    "defaultFilters": "Varsayılan Filtreler (JSON)",
+    "view": "Görünüm (JSON)",
+    "exportFormats": "Dışa Aktarım Formatları",
+    "tags": "Etiketler (virgülle)",
+    "tagsPh": "finance, kpi, ...",
+    "schedule": "Zamanlama",
+    "cancel": "İptal",
+    "update": "Güncelle",
+    "create": "Oluştur"
+  },
+  "list": {
+    "filters": "Tanım filtreleri",
+    "searchPh": "Ara (kod/ad/açıklama)",
+    "search": "Ara",
+    "kindAny": "Tür",
+    "activeAny": "Aktif mi?",
+    "tagPh": "Etiket",
+    "tag": "Etiket",
+    "tableLabel": "Rapor tanımları",
+    "th": {
+      "code": "Kod",
+      "name": "Ad",
+      "kind": "Tür",
+      "status": "Durum",
+      "updated": "Güncellendi",
+      "actions": "İşlemler"
+    },
+    "empty": "Kayıt yok",
+    "confirmDelete": "{{code}} tanımını silmek istiyor musunuz?"
+  },
+  "status": {
+    "active": "Aktif",
+    "inactive": "Pasif"
+  },
+  "kinds": {
+    "ar_aging": "Alacak Yaşlandırma",
+    "ap_aging": "Borç Yaşlandırma",
+    "revenue": "Gelir",
+    "expense": "Gider",
+    "cashflow": "Nakit Akışı",
+    "profitability": "Kârlılık",
+    "billing_forecast": "Tahsilat Tahmini",
+    "invoice_collections": "Tahsilat Performansı",
+    "employee_utilization": "Personel Kullanım",
+    "workload": "İş Yükü",
+    "service_performance": "Servis Performansı"
+  },
+  "runs": {
+    "filters": "Çalıştırma filtreleri",
+    "qPh": "Kod/hata içinde ara",
+    "qLabel": "Ara",
+    "statusAny": "Durum",
+    "definitionId": "Tanım Id",
+    "from": "Başlangıç",
+    "to": "Bitiş",
+    "tableLabel": "Rapor çalıştırmaları",
+    "th": {
+      "code": "Kod",
+      "kind": "Tür",
+      "status": "Durum",
+      "started": "Başladı",
+      "duration": "Süre",
+      "rows": "Satır"
+    },
+    "empty": "Kayıt yok",
+    "confirmDelete": "{{code}} çalıştırmasını silmek istiyor musunuz?",
+    "status": {
+      "queued": "Kuyrukta",
+      "running": "Çalışıyor",
+      "success": "Başarılı",
+      "error": "Hata",
+      "cancelled": "İptal"
+    }
+  },
+  "runDetail": {
+    "title": "Çalıştırma",
+    "status": "Durum",
+    "kind": "Tür",
+    "meta": "Meta",
+    "started": "Başlangıç",
+    "finished": "Bitiş",
+    "duration": "Süre",
+    "durationMs": "{{ms}} ms",
+    "rows": "Satır",
+    "bytes": "Bayt",
+    "files": "Dosyalar",
+    "filtersUsed": "Kullanılan Filtreler (JSON)",
+    "preview": "Önizleme (ilk satırlar)"
+  },
+  "runTrigger": {
+    "desc": "Bir tanımdan veya tür seçerek rapor çalıştırması kuyruğa alın.",
+    "definition": "Tanım",
+    "kind": "Tür (tanım yoksa)",
+    "filters": "Filtre Geçersiz Kılma (JSON)",
+    "queue": "Kuyruğa Al"
+  },
+  "schedule": {
+    "enabled": "Zamanlamayı Etkinleştir",
+    "frequency": "Sıklık",
+    "timezone": "Zaman Dilimi",
+    "timeOfDay": "Günün Saati",
+    "dayOfWeek": "Haftanın Günü",
+    "dayOfMonth": "Ayın Günü",
+    "cron": "CRON",
+    "recipients": "Alıcılar",
+    "recipient": {
+      "channel": "Kanal",
+      "target": "Hedef",
+      "format": "Format"
+    },
+    "freq": {
+      "daily": "Günlük",
+      "weekly": "Haftalık",
+      "monthly": "Aylık",
+      "quarterly": "Üç Aylık",
+      "yearly": "Yıllık",
+      "cron": "CRON"
+    }
+  }
+}

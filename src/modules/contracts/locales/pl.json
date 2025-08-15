@@ -1,0 +1,88 @@
+{
+  "title": "Zarządzanie umowami",
+  "sections": { "contracts": "Umowy" },
+  "actions": {
+    "new": "Nowa umowa",
+    "refresh": "Odśwież",
+    "apply": "Zastosuj",
+    "reset": "Wyczyść",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "activate": "Aktywuj",
+    "suspend": "Zawieś",
+    "terminate": "Wypowiedz",
+    "cancel": "Anuluj",
+    "update": "Zaktualizuj",
+    "create": "Utwórz"
+  },
+  "common": { "yes": "Tak", "no": "Nie", "empty": "Brak danych" },
+  "filters": {
+    "_": "Filtry",
+    "q": "Szukaj",
+    "status": "Status",
+    "period": "Okres",
+    "isActive": "Aktywna?",
+    "apartment": "ID Mieszkania",
+    "customer": "ID Klienta",
+    "startFrom": "Początek od",
+    "startTo": "Początek do"
+  },
+  "labels": {
+    "code": "Kod",
+    "title": "Tytuł",
+    "description": "Opis",
+    "apartment": "Mieszkanie",
+    "customer": "Klient",
+    "amount": "Kwota",
+    "periodL": "Okres",
+    "dueRule": "Reguła terminu płatności",
+    "startDate": "Data rozpoczęcia",
+    "endDate": "Data zakończenia",
+    "status": "Status",
+    "active": "Aktywna",
+    "parties": "Strony",
+    "contact": "Kontakt (snapshot)",
+    "mode": "Tryb",
+    "currency": "Waluta",
+    "perLine": "Na pozycję",
+    "lines": "Pozycje",
+    "service": "ID Usługi",
+    "unitPrice": "Cena jednostkowa",
+    "included": "Wliczone w cenę umowy",
+    "schedule": "Harmonogram",
+    "every": "Co",
+    "manpower": "Zasoby",
+    "headcount": "Liczba osób",
+    "duration": "Czas trwania (min)",
+    "graceDays": "Dni karencji"
+  },
+  "statuses": {
+    "draft": "Szkic",
+    "active": "Aktywna",
+    "suspended": "Zawieszona",
+    "terminated": "Wypowiedziana",
+    "expired": "Wygasła"
+  },
+  "period": {
+    "weekly": "Tygodniowy",
+    "monthly": "Miesięczny",
+    "quarterly": "Kwartalny",
+    "yearly": "Roczny"
+  },
+  "dueRule": {
+    "dayOfMonth": "Dzień miesiąca",
+    "nthWeekday": "n-ty dzień tygodnia",
+    "day": "Dzień",
+    "nth": "n-ty",
+    "weekday": "Dzień tygodnia"
+  },
+  "weekdays": {
+    "0": "Niedziela",
+    "1": "Poniedziałek",
+    "2": "Wtorek",
+    "3": "Środa",
+    "4": "Czwartek",
+    "5": "Piątek",
+    "6": "Sobota"
+  }
+}

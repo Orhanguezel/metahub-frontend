@@ -1,0 +1,88 @@
+{
+  "title": "Sözleşmeler (Yönetim)",
+  "sections": { "contracts": "Sözleşmeler" },
+  "actions": {
+    "new": "Yeni Sözleşme",
+    "refresh": "Yenile",
+    "apply": "Uygula",
+    "reset": "Sıfırla",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "activate": "Aktifleştir",
+    "suspend": "Askıya Al",
+    "terminate": "Sonlandır",
+    "cancel": "İptal",
+    "update": "Güncelle",
+    "create": "Oluştur"
+  },
+  "common": { "yes": "Evet", "no": "Hayır", "empty": "Kayıt yok" },
+  "filters": {
+    "_": "Filtreler",
+    "q": "Ara",
+    "status": "Durum",
+    "period": "Periyot",
+    "isActive": "Aktif mi?",
+    "apartment": "Daire ID",
+    "customer": "Müşteri ID",
+    "startFrom": "Başlangıç (dan)",
+    "startTo": "Başlangıç (a)"
+  },
+  "labels": {
+    "code": "Kod",
+    "title": "Başlık",
+    "description": "Açıklama",
+    "apartment": "Daire",
+    "customer": "Müşteri",
+    "amount": "Tutar",
+    "periodL": "Periyot",
+    "dueRule": "Vade Kuralı",
+    "startDate": "Başlangıç Tarihi",
+    "endDate": "Bitiş Tarihi",
+    "status": "Durum",
+    "active": "Aktif",
+    "parties": "Taraflar",
+    "contact": "İletişim (Snapshot)",
+    "mode": "Mod",
+    "currency": "Para Birimi",
+    "perLine": "Satır bazlı",
+    "lines": "Satırlar",
+    "service": "Hizmet ID",
+    "unitPrice": "Birim Fiyat",
+    "included": "Sözleşme fiyatına dahil",
+    "schedule": "Plan",
+    "every": "Her",
+    "manpower": "İnsan gücü",
+    "headcount": "Kişi sayısı",
+    "duration": "Süre (dk)",
+    "graceDays": "Müsaade günleri"
+  },
+  "statuses": {
+    "draft": "Taslak",
+    "active": "Aktif",
+    "suspended": "Askıda",
+    "terminated": "Sonlandırıldı",
+    "expired": "Süresi Doldu"
+  },
+  "period": {
+    "weekly": "Haftalık",
+    "monthly": "Aylık",
+    "quarterly": "Üç Aylık",
+    "yearly": "Yıllık"
+  },
+  "dueRule": {
+    "dayOfMonth": "Ayın Günü",
+    "nthWeekday": "Ayın n'inci Haftagünü",
+    "day": "Gün",
+    "nth": "n'inci",
+    "weekday": "Haftanın Günü"
+  },
+  "weekdays": {
+    "0": "Pazar",
+    "1": "Pazartesi",
+    "2": "Salı",
+    "3": "Çarşamba",
+    "4": "Perşembe",
+    "5": "Cuma",
+    "6": "Cumartesi"
+  }
+}

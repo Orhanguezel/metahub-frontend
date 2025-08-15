@@ -1,0 +1,74 @@
+
+{
+  "title": "Kişiler (Yönetim)",
+  "sections": { "contacts": "Kişiler" },
+  "actions": {
+    "new": "Yeni Kişi",
+    "refresh": "Yenile",
+    "apply": "Uygula",
+    "reset": "Sıfırla",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "add": "Ekle",
+    "remove": "Kaldır",
+    "cancel": "İptal",
+    "update": "Güncelle",
+    "create": "Oluştur"
+  },
+  "filters": {
+    "q": "Ara",
+    "kind": "Tür",
+    "isActive": "Aktif mi?"
+  },
+  "kinds": {
+    "person": "Kişi",
+    "organization": "Kuruluş"
+  },
+  "labels": {
+    "name": "Ad / Unvan",
+    "slug": "Kısa Ad (slug)",
+    "primaryEmail": "Birincil E-posta",
+    "primaryPhone": "Birincil Telefon",
+    "active": "Aktif",
+    "firstName": "Ad",
+    "lastName": "Soyad",
+    "legalName": "Resmî Unvan",
+    "tradeName": "Ticari Unvan",
+    "emails": "E-postalar",
+    "phones": "Telefonlar",
+    "addresses": "Adresler",
+    "label": "Etiket",
+    "email": "E-posta",
+    "primary": "Birincil",
+    "phone": "Telefon",
+    "street": "Sokak/Cadde",
+    "number": "No",
+    "district": "Semt/İlçe",
+    "city": "Şehir",
+    "state": "Eyalet/İl",
+    "zip": "Posta Kodu",
+    "country": "Ülke",
+    "billing": "Faturalama",
+    "bankName": "Banka Adı",
+    "taxNumber": "Vergi No",
+    "currency": "Para Birimi",
+    "defaultDueDayOfMonth": "Vade Günü",
+    "notes": "Notlar"
+  },
+  "form": { "title": "Kişi Formu" },
+  "legend": {
+    "identity": "Kimlik",
+    "other": "Diğer"
+  },
+  "ph": {
+    "slugAuto": "boşsa otomatik"
+  },
+  "help": {
+    "slug": "Boş bırakırsanız otomatik üretilecektir."
+  },
+  "common": {
+    "yes": "Evet",
+    "no": "Hayır",
+    "empty": "Kayıt yok"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "title": "Gestión de contratos",
+  "sections": { "contracts": "Contratos" },
+  "actions": {
+    "new": "Nuevo contrato",
+    "refresh": "Actualizar",
+    "apply": "Aplicar",
+    "reset": "Restablecer",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "activate": "Activar",
+    "suspend": "Suspender",
+    "terminate": "Rescindir",
+    "cancel": "Cancelar",
+    "update": "Actualizar",
+    "create": "Crear"
+  },
+  "common": { "yes": "Sí", "no": "No", "empty": "Sin registros" },
+  "filters": {
+    "_": "Filtros",
+    "q": "Buscar",
+    "status": "Estado",
+    "period": "Periodo",
+    "isActive": "¿Activo?",
+    "apartment": "ID Apartamento",
+    "customer": "ID Cliente",
+    "startFrom": "Inicio desde",
+    "startTo": "Inicio hasta"
+  },
+  "labels": {
+    "code": "Código",
+    "title": "Título",
+    "description": "Descripción",
+    "apartment": "Apartamento",
+    "customer": "Cliente",
+    "amount": "Importe",
+    "periodL": "Periodo",
+    "dueRule": "Regla de vencimiento",
+    "startDate": "Fecha de inicio",
+    "endDate": "Fecha de fin",
+    "status": "Estado",
+    "active": "Activo",
+    "parties": "Partes",
+    "contact": "Contacto (instantánea)",
+    "mode": "Modo",
+    "currency": "Moneda",
+    "perLine": "Por línea",
+    "lines": "Líneas",
+    "service": "ID de servicio",
+    "unitPrice": "Precio unitario",
+    "included": "Incluido en el precio del contrato",
+    "schedule": "Programación",
+    "every": "Cada",
+    "manpower": "Personal",
+    "headcount": "Número de personas",
+    "duration": "Duración (min)",
+    "graceDays": "Días de gracia"
+  },
+  "statuses": {
+    "draft": "Borrador",
+    "active": "Activo",
+    "suspended": "Suspendido",
+    "terminated": "Rescindido",
+    "expired": "Expirado"
+  },
+  "period": {
+    "weekly": "Semanal",
+    "monthly": "Mensual",
+    "quarterly": "Trimestral",
+    "yearly": "Anual"
+  },
+  "dueRule": {
+    "dayOfMonth": "Día del mes",
+    "nthWeekday": "Enésimo día de la semana",
+    "day": "Día",
+    "nth": "Enésimo",
+    "weekday": "Día de la semana"
+  },
+  "weekdays": {
+    "0": "Domingo",
+    "1": "Lunes",
+    "2": "Martes",
+    "3": "Miércoles",
+    "4": "Jueves",
+    "5": "Viernes",
+    "6": "Sábado"
+  }
+}

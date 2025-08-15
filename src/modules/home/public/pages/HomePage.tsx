@@ -32,6 +32,8 @@ import CatalogRequestButton from "@/modules/catalog/public/components/CatalogReq
 import NewsletterButton from "@/modules/newsletter/public/components/NewsletterButton";
 import NewsletterSection from "@/modules/newsletter/public/components/NewsletterSection";
 import PricingSection from "@/modules/pricing/public/components/Section";
+import { ApartmentAltSection } from "@/modules/apartment";
+
 
 import HeroSlider from "@/modules/home/public/components/HeroSlider";
 import HeroSection from "@/modules/home/public/components/HeroSection";
@@ -77,6 +79,7 @@ const sectionComponents: Record<string, React.ComponentType<any> | undefined> = 
   portfolio: PortfolioSection,
   skills: SkillSection,
   pricing: PricingSection,
+  apartment: ApartmentAltSection,
 };
 
 const isDev = process.env.NODE_ENV === "development";

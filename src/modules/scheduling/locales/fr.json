@@ -1,0 +1,137 @@
+
+{
+  "title": "Planification",
+  "newPlan": "Nouveau plan",
+  "counts": { "plans": "Plans" },
+  "sections": { "plans": "Plans" },
+
+  "actions": {
+    "refresh": "Rafraîchir",
+    "apply": "Appliquer",
+    "reset": "Réinitialiser",
+    "view": "Voir",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "close": "Fermer",
+    "cancel": "Annuler",
+    "create": "Créer",
+    "update": "Mettre à jour"
+  },
+
+  "common": { "loading": "Chargement...", "yes": "Oui", "no": "Non" },
+
+  "status": { "active": "Actif", "paused": "En pause", "archived": "Archivé" },
+
+  "list": {
+    "filters": "Filtres des plans",
+    "qPh": "Rechercher (code/titre)",
+    "qLabel": "Rechercher",
+    "status": "Statut",
+    "apartment": "ID d'appartement",
+    "service": "ID du service",
+    "template": "ID du modèle",
+    "contract": "ID du contrat",
+    "tag": "Étiquette",
+    "from": "Du",
+    "to": "Au",
+    "tableLabel": "Plans",
+    "empty": "Aucun résultat",
+    "confirmDelete": "Supprimer le plan {{code}} ?",
+    "th": {
+      "code": "Code",
+      "title": "Titre",
+      "status": "Statut",
+      "nextRun": "Prochaine exécution",
+      "start": "Début",
+      "pattern": "Récurrence",
+      "actions": "Actions"
+    }
+  },
+
+  "form": {
+    "a11y": "Créer ou mettre à jour un plan.",
+    "code": "Code",
+    "codePh": "auto si vide",
+    "timezone": "Fuseau horaire",
+    "status": "Statut",
+    "tags": "Étiquettes (virgule)",
+    "tagsPh": "nettoyage, hebdomadaire, ...",
+    "titleI18n": "Titre (i18n JSON)",
+    "descI18n": "Description (i18n JSON)",
+    "anchor": "Contexte",
+    "pattern": "Récurrence",
+    "windowPolicy": "Plage horaire & Politique",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "exceptions": "Exceptions",
+    "required": "Obligatoire",
+    "apartmentRef": "Réf. appartement",
+    "categoryRef": "Réf. catégorie",
+    "serviceRef": "Réf. service",
+    "templateRef": "Réf. modèle",
+    "contractRef": "Réf. contrat"
+  },
+
+  "anchor": { "title": "Contexte / Ancre" },
+
+  "blackouts": {
+    "titleSkipDates": "Dates à ignorer (YYYY-MM-DD)",
+    "skipDate": "Date à ignorer",
+    "add": "Ajouter",
+    "remove": "Supprimer",
+    "titleBlackouts": "Périodes d'indisponibilité",
+    "from": "Du",
+    "to": "Au",
+    "reason": "Raison",
+    "reasonPh": "Raison"
+  },
+
+  "pattern": {
+    "title": "Modèle de récurrence",
+    "type": "Type",
+    "types": {
+      "weekly": "hebdomadaire",
+      "dayOfMonth": "jour du mois",
+      "nthWeekday": "nième jour de semaine",
+      "yearly": "annuel"
+    },
+    "everyWeeks": "Toutes les (semaines)",
+    "daysOfWeek": "Jours de la semaine",
+    "everyMonths": "Tous les (mois)",
+    "day": "Jour",
+    "nth": "Nième",
+    "weekday": "Jour de semaine",
+    "month": "Mois",
+    "summary": {
+      "weekly": "hebdomadaire/{{every}} [{{days}}]",
+      "dayOfMonth": "jour du mois/{{every}} jour={{day}}",
+      "nthWeekday": "nième jour/{{every}} {{nth}}.{{weekday}}",
+      "yearly": "annuel {{month}}/{{day}}"
+    }
+  },
+
+  "window": {
+    "title": "Plage horaire",
+    "start": "Début",
+    "end": "Fin",
+    "duration": "Durée (min)"
+  },
+
+  "policy": {
+    "title": "Politique de génération",
+    "leadTimeDays": "Délai d'anticipation (jours)",
+    "lockAhead": "Périodes verrouillées à l'avance",
+    "autoAssign": "Affectation automatique",
+    "preferredEmployees": "Employés favoris (IDs, virgule)",
+    "minCrew": "Équipe min.",
+    "maxCrew": "Équipe max."
+  },
+
+  "detail": {
+    "title": "Détails du plan",
+    "plan": "Plan",
+    "status": "Statut",
+    "next": "Prochaine",
+    "json": "Plan JSON"
+  }
+}

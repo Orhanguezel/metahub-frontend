@@ -1,0 +1,68 @@
+{
+  "title": "Employés",
+  "sections": {
+    "list": "Employés"
+  },
+  "form": "Formulaire Employé",
+  "legend": {
+    "basic": "De base",
+    "contact": "Contact",
+    "employment": "Emploi",
+    "status": "Statut"
+  },
+  "labels": {
+    "code": "Code",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "displayName": "Nom d’affichage",
+    "fullName": "Nom complet",
+    "phone": "Téléphone",
+    "email": "E-mail",
+    "type": "Type",
+    "position": "Poste",
+    "startDate": "Début",
+    "endDate": "Fin",
+    "status": "Statut",
+    "preview": "Début (aperçu)"
+  },
+  "filters": {
+    "q": "Rechercher",
+    "status": "Statut",
+    "language": "Langue",
+    "skill": "Compétence",
+    "tag": "Étiquette"
+  },
+  "actions": {
+    "new": "Nouveau",
+    "refresh": "Actualiser",
+    "apply": "Appliquer",
+    "reset": "Réinitialiser",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "update": "Mettre à jour",
+    "create": "Créer"
+  },
+  "status": {
+    "active": "Actif",
+    "inactive": "Inactif",
+    "onleave": "En congé",
+    "terminated": "Terminé"
+  },
+  "employment": {
+    "type": {
+      "fulltime": "Temps plein",
+      "parttime": "Temps partiel",
+      "contractor": "Prestataire",
+      "intern": "Stagiaire"
+    }
+  },
+  "placeholders": {
+    "autoCode": "Automatique si vide",
+    "optional": "facultatif"
+  },
+  "hints": {
+    "date": "AAAA-MM-JJ",
+    "optional": "Facultatif"
+  }
+}

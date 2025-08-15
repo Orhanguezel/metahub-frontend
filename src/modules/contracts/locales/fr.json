@@ -1,0 +1,88 @@
+{
+  "title": "Gestion des contrats",
+  "sections": { "contracts": "Contrats" },
+  "actions": {
+    "new": "Nouveau contrat",
+    "refresh": "Actualiser",
+    "apply": "Appliquer",
+    "reset": "Réinitialiser",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "activate": "Activer",
+    "suspend": "Suspendre",
+    "terminate": "Résilier",
+    "cancel": "Annuler",
+    "update": "Mettre à jour",
+    "create": "Créer"
+  },
+  "common": { "yes": "Oui", "no": "Non", "empty": "Aucune donnée" },
+  "filters": {
+    "_": "Filtres",
+    "q": "Rechercher",
+    "status": "Statut",
+    "period": "Période",
+    "isActive": "Actif ?",
+    "apartment": "ID Appartement",
+    "customer": "ID Client",
+    "startFrom": "Début à partir de",
+    "startTo": "Début jusqu’au"
+  },
+  "labels": {
+    "code": "Code",
+    "title": "Titre",
+    "description": "Description",
+    "apartment": "Appartement",
+    "customer": "Client",
+    "amount": "Montant",
+    "periodL": "Période",
+    "dueRule": "Règle d’échéance",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "status": "Statut",
+    "active": "Actif",
+    "parties": "Parties",
+    "contact": "Contact (instantané)",
+    "mode": "Mode",
+    "currency": "Devise",
+    "perLine": "Par ligne",
+    "lines": "Lignes",
+    "service": "ID Service",
+    "unitPrice": "Prix unitaire",
+    "included": "Inclus dans le prix du contrat",
+    "schedule": "Planning",
+    "every": "Tous les",
+    "manpower": "Effectif",
+    "headcount": "Nombre",
+    "duration": "Durée (min)",
+    "graceDays": "Jours de grâce"
+  },
+  "statuses": {
+    "draft": "Brouillon",
+    "active": "Actif",
+    "suspended": "Suspendu",
+    "terminated": "Résilié",
+    "expired": "Expiré"
+  },
+  "period": {
+    "weekly": "Hebdomadaire",
+    "monthly": "Mensuelle",
+    "quarterly": "Trimestrielle",
+    "yearly": "Annuelle"
+  },
+  "dueRule": {
+    "dayOfMonth": "Jour du mois",
+    "nthWeekday": "Nième jour de la semaine",
+    "day": "Jour",
+    "nth": "Nième",
+    "weekday": "Jour de la semaine"
+  },
+  "weekdays": {
+    "0": "Dimanche",
+    "1": "Lundi",
+    "2": "Mardi",
+    "3": "Mercredi",
+    "4": "Jeudi",
+    "5": "Vendredi",
+    "6": "Samedi"
+  }
+}

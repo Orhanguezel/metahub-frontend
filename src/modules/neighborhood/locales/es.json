@@ -1,0 +1,50 @@
+{
+  "admin": { "title": "Administración de barrios", "count": "{{count}} barrios" },
+  "actions": {
+    "new": "+ Nuevo barrio",
+    "refresh": "Actualizar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "cancel": "Cancelar",
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "apply": "Aplicar",
+    "reset": "Restablecer"
+  },
+  "common": { "empty": "Sin registros", "yes": "Sí", "no": "No" },
+  "form": {
+    "name": "Nombre (multilingüe)",
+    "slug": "Slug",
+    "city": "Ciudad",
+    "district": "Distrito",
+    "zip": "Código Postal",
+    "cityCode": "Código de ciudad",
+    "districtCode": "Código de distrito",
+    "lat": "Latitud",
+    "lng": "Longitud",
+    "aliases": "Alias (separados por comas)",
+    "tags": "Etiquetas (separadas por comas)",
+    "sortOrder": "Orden de clasificación",
+    "isActive": "¿Activo?"
+  },
+  "list": {
+    "name": "Nombre",
+    "slug": "Slug",
+    "location": "Ubicación",
+    "codes": "Códigos",
+    "tags": "Etiquetas",
+    "status": "Estado",
+    "actions": "Acciones"
+  },
+  "status": { "active": "activo", "inactive": "inactivo" },
+  "filters": {
+    "title": "Filtros",
+    "q": "Buscar",
+    "city": "Ciudad",
+    "district": "Distrito",
+    "tag": "Etiqueta",
+    "isActive": "Activo"
+  }
+}

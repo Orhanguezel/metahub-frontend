@@ -1,0 +1,68 @@
+{
+  "title": "Pracownicy",
+  "sections": {
+    "list": "Pracownicy"
+  },
+  "form": "Formularz pracownika",
+  "legend": {
+    "basic": "Podstawowe",
+    "contact": "Kontakt",
+    "employment": "Zatrudnienie",
+    "status": "Status"
+  },
+  "labels": {
+    "code": "Kod",
+    "firstName": "Imię",
+    "lastName": "Nazwisko",
+    "displayName": "Nazwa wyświetlana",
+    "fullName": "Imię i nazwisko",
+    "phone": "Telefon",
+    "email": "E-mail",
+    "type": "Typ",
+    "position": "Stanowisko",
+    "startDate": "Początek",
+    "endDate": "Koniec",
+    "status": "Status",
+    "preview": "Początek (podgląd)"
+  },
+  "filters": {
+    "q": "Szukaj",
+    "status": "Status",
+    "language": "Język",
+    "skill": "Umiejętność",
+    "tag": "Etykieta"
+  },
+  "actions": {
+    "new": "Nowy",
+    "refresh": "Odśwież",
+    "apply": "Zastosuj",
+    "reset": "Wyczyść",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "cancel": "Anuluj",
+    "update": "Zaktualizuj",
+    "create": "Utwórz"
+  },
+  "status": {
+    "active": "Aktywny",
+    "inactive": "Nieaktywny",
+    "onleave": "Na urlopie",
+    "terminated": "Zakończony"
+  },
+  "employment": {
+    "type": {
+      "fulltime": "Pełny etat",
+      "parttime": "Pół etatu",
+      "contractor": "Kontraktor",
+      "intern": "Stażysta"
+    }
+  },
+  "placeholders": {
+    "autoCode": "Automatycznie, jeśli puste",
+    "optional": "opcjonalne"
+  },
+  "hints": {
+    "date": "RRRR-MM-DD",
+    "optional": "Opcjonalne"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "title": "Livre de caisse — Admin",
+  "sections": {
+    "accounts": "Comptes",
+    "entries": "Écritures"
+  },
+  "labels": {
+    "accounts": "comptes"
+  },
+  "list": {
+    "actions": "Actions"
+  },
+  "actions": {
+    "newAccount": "Nouveau compte",
+    "newEntry": "Nouvelle écriture",
+    "refresh": "Actualiser",
+    "apply": "Appliquer",
+    "reset": "Réinitialiser",
+    "create": "Créer",
+    "update": "Mettre à jour",
+    "cancel": "Annuler",
+    "edit": "Modifier",
+    "delete": "Supprimer"
+  },
+  "common": {
+    "yes": "Oui",
+    "no": "Non",
+    "empty": "Aucun enregistrement"
+  },
+  "acc": {
+    "code": "Code",
+    "name": "Nom",
+    "type": "Type",
+    "currency": "Devise",
+    "balance": "Solde",
+    "active": "Actif",
+    "openingBalance": "Solde d'ouverture",
+    "openingLocked": "Le solde d'ouverture est défini lors de la création.",
+    "t": {
+      "cash": "Caisse",
+      "bank": "Banque",
+      "other": "Autre"
+    }
+  },
+  "entry": {
+    "account": "Compte",
+    "date": "Date",
+    "direction": "Sens",
+    "in": "Entrée",
+    "out": "Sortie",
+    "amount": "Montant",
+    "description": "Description",
+    "desc": "Description",
+    "category": "Catégorie",
+    "tags": "Tags",
+    "tagsHelp": "Séparés par des virgules",
+    "reconciled": "Rapproché ?"
+  },
+  "filters": {
+    "_": "Filtres",
+    "startFrom": "Du",
+    "startTo": "Au"
+  },
+  "reco": {
+    "selected": "Sélectionné(s)",
+    "id": "ID de rapprochement (facultatif)",
+    "apply": "Rapprocher",
+    "remove": "Annuler le rapprochement",
+    "yes": "Oui",
+    "no": "Non",
+    "select": "Sélectionner"
+  }
+}

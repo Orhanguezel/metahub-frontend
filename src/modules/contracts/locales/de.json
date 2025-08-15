@@ -1,0 +1,88 @@
+{
+  "title": "Vertragsverwaltung",
+  "sections": { "contracts": "Verträge" },
+  "actions": {
+    "new": "Neuer Vertrag",
+    "refresh": "Aktualisieren",
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "activate": "Aktivieren",
+    "suspend": "Aussetzen",
+    "terminate": "Kündigen",
+    "cancel": "Abbrechen",
+    "update": "Aktualisieren",
+    "create": "Erstellen"
+  },
+  "common": { "yes": "Ja", "no": "Nein", "empty": "Keine Einträge" },
+  "filters": {
+    "_": "Filter",
+    "q": "Suche",
+    "status": "Status",
+    "period": "Zeitraum",
+    "isActive": "Aktiv?",
+    "apartment": "Apartment-ID",
+    "customer": "Kunden-ID",
+    "startFrom": "Start ab",
+    "startTo": "Start bis"
+  },
+  "labels": {
+    "code": "Code",
+    "title": "Titel",
+    "description": "Beschreibung",
+    "apartment": "Apartment",
+    "customer": "Kunde",
+    "amount": "Betrag",
+    "periodL": "Zeitraum",
+    "dueRule": "Fälligkeitsregel",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "status": "Status",
+    "active": "Aktiv",
+    "parties": "Parteien",
+    "contact": "Kontakt (Snapshot)",
+    "mode": "Modus",
+    "currency": "Währung",
+    "perLine": "Pro Zeile",
+    "lines": "Positionen",
+    "service": "Service-ID",
+    "unitPrice": "Einzelpreis",
+    "included": "Im Vertragspreis enthalten",
+    "schedule": "Zeitplan",
+    "every": "Alle",
+    "manpower": "Personal",
+    "headcount": "Anzahl Personen",
+    "duration": "Dauer (Min.)",
+    "graceDays": "Kulanz-Tage"
+  },
+  "statuses": {
+    "draft": "Entwurf",
+    "active": "Aktiv",
+    "suspended": "Ausgesetzt",
+    "terminated": "Gekündigt",
+    "expired": "Abgelaufen"
+  },
+  "period": {
+    "weekly": "Wöchentlich",
+    "monthly": "Monatlich",
+    "quarterly": "Vierteljährlich",
+    "yearly": "Jährlich"
+  },
+  "dueRule": {
+    "dayOfMonth": "Tag des Monats",
+    "nthWeekday": "n-ter Wochentag",
+    "day": "Tag",
+    "nth": "n-te",
+    "weekday": "Wochentag"
+  },
+  "weekdays": {
+    "0": "Sonntag",
+    "1": "Montag",
+    "2": "Dienstag",
+    "3": "Mittwoch",
+    "4": "Donnerstag",
+    "5": "Freitag",
+    "6": "Samstag"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "title": "Libro de caja (Admin)",
+  "sections": {
+    "accounts": "Cuentas",
+    "entries": "Movimientos"
+  },
+  "labels": {
+    "accounts": "cuentas"
+  },
+  "list": {
+    "actions": "Acciones"
+  },
+  "actions": {
+    "newAccount": "Nueva cuenta",
+    "newEntry": "Nuevo movimiento",
+    "refresh": "Actualizar",
+    "apply": "Aplicar",
+    "reset": "Restablecer",
+    "create": "Crear",
+    "update": "Actualizar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar"
+  },
+  "common": {
+    "yes": "Sí",
+    "no": "No",
+    "empty": "Sin registros"
+  },
+  "acc": {
+    "code": "Código",
+    "name": "Nombre",
+    "type": "Tipo",
+    "currency": "Moneda",
+    "balance": "Saldo",
+    "active": "Activo",
+    "openingBalance": "Saldo inicial",
+    "openingLocked": "El saldo inicial se define al crear.",
+    "t": {
+      "cash": "Caja",
+      "bank": "Banco",
+      "other": "Otro"
+    }
+  },
+  "entry": {
+    "account": "Cuenta",
+    "date": "Fecha",
+    "direction": "Dirección",
+    "in": "Entrada",
+    "out": "Salida",
+    "amount": "Importe",
+    "description": "Descripción",
+    "desc": "Descripción",
+    "category": "Categoría",
+    "tags": "Etiquetas",
+    "tagsHelp": "Separadas por comas",
+    "reconciled": "¿Conciliado?"
+  },
+  "filters": {
+    "_": "Filtros",
+    "startFrom": "Desde",
+    "startTo": "Hasta"
+  },
+  "reco": {
+    "selected": "Seleccionados",
+    "id": "ID de conciliación (opcional)",
+    "apply": "Conciliar",
+    "remove": "Desconciliar",
+    "yes": "Sí",
+    "no": "No",
+    "select": "Seleccionar"
+  }
+}

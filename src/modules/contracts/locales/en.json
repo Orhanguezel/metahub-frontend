@@ -1,0 +1,88 @@
+{
+  "title": "Contracts Admin",
+  "sections": { "contracts": "Contracts" },
+  "actions": {
+    "new": "New Contract",
+    "refresh": "Refresh",
+    "apply": "Apply",
+    "reset": "Reset",
+    "edit": "Edit",
+    "delete": "Delete",
+    "activate": "Activate",
+    "suspend": "Suspend",
+    "terminate": "Terminate",
+    "cancel": "Cancel",
+    "update": "Update",
+    "create": "Create"
+    },
+  "common": { "yes": "Yes", "no": "No", "empty": "No records" },
+  "filters": {
+    "_": "Filters",
+    "q": "Search",
+    "status": "Status",
+    "period": "Period",
+    "isActive": "Active?",
+    "apartment": "Apartment Id",
+    "customer": "Customer Id",
+    "startFrom": "Start from",
+    "startTo": "Start to"
+  },
+  "labels": {
+    "code": "Code",
+    "title": "Title",
+    "description": "Description",
+    "apartment": "Apartment",
+    "customer": "Customer",
+    "amount": "Amount",
+    "periodL": "Period",
+    "dueRule": "Due Rule",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "status": "Status",
+    "active": "Active",
+    "parties": "Parties",
+    "contact": "Contact Snapshot",
+    "mode": "Mode",
+    "currency": "Currency",
+    "perLine": "Per line",
+    "lines": "Lines",
+    "service": "Service Id",
+    "unitPrice": "Unit Price",
+    "included": "Included in Contract Price",
+    "schedule": "Schedule",
+    "every": "Every",
+    "manpower": "Manpower",
+    "headcount": "Headcount",
+    "duration": "Duration (min)",
+    "graceDays": "Grace Days"
+  },
+  "statuses": {
+    "draft": "Draft",
+    "active": "Active",
+    "suspended": "Suspended",
+    "terminated": "Terminated",
+    "expired": "Expired"
+  },
+  "period": {
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "yearly": "Yearly"
+  },
+  "dueRule": {
+    "dayOfMonth": "Day of Month",
+    "nthWeekday": "Nth Weekday",
+    "day": "Day",
+    "nth": "Nth",
+    "weekday": "Weekday"
+  },
+  "weekdays": {
+    "0": "Sunday",
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday"
+  }
+}

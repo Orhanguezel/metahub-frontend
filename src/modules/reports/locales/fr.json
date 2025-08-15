@@ -1,0 +1,149 @@
+{
+  "title": "Rapports",
+  "counts": { "definitions": "Définitions", "runs": "Exécutions" },
+  "newDef": "Nouvelle définition",
+  "sections": { "defs": "Définitions", "runs": "Exécutions" },
+  "jsonTitle": "JSON de la définition",
+  "actions": {
+    "refresh": "Rafraîchir",
+    "hide": "Masquer",
+    "apply": "Appliquer",
+    "reset": "Réinitialiser",
+    "edit": "Éditer",
+    "run": "Exécuter",
+    "viewJson": "Voir JSON",
+    "delete": "Supprimer",
+    "close": "Fermer",
+    "cancel": "Annuler",
+    "view": "Voir",
+    "remove": "Retirer",
+    "addRecipient": "Ajouter un destinataire"
+  },
+  "common": {
+    "loading": "Chargement…",
+    "yes": "Oui",
+    "no": "Non",
+    "select": "Sélectionner...",
+    "jsonInvalid": "JSON invalide"
+  },
+  "form": {
+    "a11yDesc": "Créer ou mettre à jour une définition de rapport.",
+    "code": "Code",
+    "codePh": "auto si vide",
+    "name": "Nom",
+    "kind": "Type",
+    "description": "Description",
+    "active": "Actif ?",
+    "defaultFilters": "Filtres par défaut (JSON)",
+    "view": "Vue (JSON)",
+    "exportFormats": "Formats d'export",
+    "tags": "Tags (séparés par des virgules)",
+    "tagsPh": "finance, kpi, ...",
+    "schedule": "Planification",
+    "cancel": "Annuler",
+    "update": "Mettre à jour",
+    "create": "Créer"
+  },
+  "list": {
+    "filters": "Filtres de définition",
+    "searchPh": "Rechercher (code/nom/desc)",
+    "search": "Rechercher",
+    "kindAny": "Type",
+    "activeAny": "Actif ?",
+    "tagPh": "Tag",
+    "tag": "Tag",
+    "tableLabel": "Définitions de rapports",
+    "th": {
+      "code": "Code",
+      "name": "Nom",
+      "kind": "Type",
+      "status": "Statut",
+      "updated": "Mis à jour",
+      "actions": "Actions"
+    },
+    "empty": "Aucun résultat",
+    "confirmDelete": "Supprimer la définition {{code}} ?"
+  },
+  "status": { "active": "Actif", "inactive": "Inactif" },
+  "kinds": {
+    "ar_aging": "Ancienneté clients",
+    "ap_aging": "Ancienneté fournisseurs",
+    "revenue": "Revenu",
+    "expense": "Dépense",
+    "cashflow": "Flux de trésorerie",
+    "profitability": "Rentabilité",
+    "billing_forecast": "Prévision de facturation",
+    "invoice_collections": "Recouvrement de factures",
+    "employee_utilization": "Utilisation du personnel",
+    "workload": "Charge de travail",
+    "service_performance": "Performance du service"
+  },
+  "runs": {
+    "filters": "Filtres d'exécution",
+    "qPh": "Rechercher dans code/erreur",
+    "qLabel": "Rechercher",
+    "statusAny": "Statut",
+    "definitionId": "ID de définition",
+    "from": "De",
+    "to": "À",
+    "tableLabel": "Exécutions de rapports",
+    "th": {
+      "code": "Code",
+      "kind": "Type",
+      "status": "Statut",
+      "started": "Démarré",
+      "duration": "Durée",
+      "rows": "Lignes"
+    },
+    "empty": "Aucun résultat",
+    "confirmDelete": "Supprimer l'exécution {{code}} ?",
+    "status": {
+      "queued": "En file",
+      "running": "En cours",
+      "success": "Réussite",
+      "error": "Erreur",
+      "cancelled": "Annulé"
+    }
+  },
+  "runDetail": {
+    "title": "Exécution",
+    "status": "Statut",
+    "kind": "Type",
+    "meta": "Meta",
+    "started": "Début",
+    "finished": "Fin",
+    "duration": "Durée",
+    "durationMs": "{{ms}} ms",
+    "rows": "Lignes",
+    "bytes": "Octets",
+    "files": "Fichiers",
+    "filtersUsed": "Filtres utilisés (JSON)",
+    "preview": "Aperçu (premières lignes)"
+  },
+  "runTrigger": {
+    "desc": "Mettre en file une exécution depuis une définition ou par type.",
+    "definition": "Définition",
+    "kind": "Type (sans définition)",
+    "filters": "Surcharge des filtres (JSON)",
+    "queue": "Mettre en file"
+  },
+  "schedule": {
+    "enabled": "Activer la planification",
+    "frequency": "Fréquence",
+    "timezone": "Fuseau horaire",
+    "timeOfDay": "Heure de la journée",
+    "dayOfWeek": "Jour de la semaine",
+    "dayOfMonth": "Jour du mois",
+    "cron": "CRON",
+    "recipients": "Destinataires",
+    "recipient": { "channel": "Canal", "target": "Cible", "format": "Format" },
+    "freq": {
+      "daily": "Quotidienne",
+      "weekly": "Hebdomadaire",
+      "monthly": "Mensuelle",
+      "quarterly": "Trimestrielle",
+      "yearly": "Annuelle",
+      "cron": "CRON"
+    }
+  }
+}

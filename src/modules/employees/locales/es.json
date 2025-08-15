@@ -1,0 +1,68 @@
+{
+  "title": "Empleados",
+  "sections": {
+    "list": "Empleados"
+  },
+  "form": "Formulario de empleado",
+  "legend": {
+    "basic": "Básico",
+    "contact": "Contacto",
+    "employment": "Empleo",
+    "status": "Estado"
+  },
+  "labels": {
+    "code": "Código",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "displayName": "Nombre para mostrar",
+    "fullName": "Nombre completo",
+    "phone": "Teléfono",
+    "email": "Correo electrónico",
+    "type": "Tipo",
+    "position": "Puesto",
+    "startDate": "Inicio",
+    "endDate": "Fin",
+    "status": "Estado",
+    "preview": "Inicio (vista previa)"
+  },
+  "filters": {
+    "q": "Buscar",
+    "status": "Estado",
+    "language": "Idioma",
+    "skill": "Habilidad",
+    "tag": "Etiqueta"
+  },
+  "actions": {
+    "new": "Nuevo",
+    "refresh": "Actualizar",
+    "apply": "Aplicar",
+    "reset": "Restablecer",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "update": "Actualizar",
+    "create": "Crear"
+  },
+  "status": {
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "onleave": "En permiso",
+    "terminated": "Rescindido"
+  },
+  "employment": {
+    "type": {
+      "fulltime": "Tiempo completo",
+      "parttime": "Tiempo parcial",
+      "contractor": "Contratista",
+      "intern": "Practicante"
+    }
+  },
+  "placeholders": {
+    "autoCode": "Automático si está vacío",
+    "optional": "opcional"
+  },
+  "hints": {
+    "date": "AAAA-MM-DD",
+    "optional": "Opcional"
+  }
+}

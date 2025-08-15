@@ -1,8 +1,10 @@
+"use client";
 import styled from "styled-components";
-import type { INotification } from "../../types";
+import type { INotification } from "@/modules/notification/types"; // v2 type
 import type { SupportedLocale } from "@/types/common";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/notification/locales";
+import NotificationRow from "./NotificationRow";
 
 interface Props {
   notifications: INotification[];
@@ -11,6 +13,37 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
+type UserRef =
+  | string
+  | { _id: string; name?: string; email?: string }
+  | null
+  | undefined;
+
+const isUserObj = (
+  u: UserRef
+): u is { _id: string; name?: string; email?: string } =>
+  typeof u === "object" && u !== null && "_id" in u;
+
+const getUserEmail = (u: UserRef) =>
+  isUserObj(u) ? u.email || "-" : "-";
+
+const pickLocalized = (
+  obj: Partial<Record<SupportedLocale, string>> | undefined,
+  lang: SupportedLocale
+): string => {
+  if (!obj) return "-";
+  return (
+    obj[lang] ??
+    obj.en ??
+    (Object.values(obj).find(
+      (v): v is string => typeof v === "string" && v.length > 0
+    ) ?? "-")
+  );
+};
+
+const fmtDate = (d: string | Date, lang: SupportedLocale) =>
+  new Date(d).toLocaleString(lang);
+
 // --- Notification Table ---
 export function NotificationTable({
   notifications,
@@ -18,17 +51,16 @@ export function NotificationTable({
   onMarkRead,
   onDelete,
 }: Props) {
-  // Bildirimler için i18n hook (namespace notification)
   const { t } = useI18nNamespace("notification", translations);
 
   return (
     <TableWrapper>
-      {/* Masaüstü Tablo */}
+      {/* Desktop table */}
       <StyledTable>
         <thead>
           <tr>
             <th>{t("type", "Tip")}</th>
-            <th>{t("user", "Kullanıcı")}</th>
+            <th>{t("userOrScope", "Kullanıcı/Alan")}</th>
             <th>{t("email", "E-posta")}</th>
             <th>{t("title", "Başlık")}</th>
             <th>{t("message", "Mesaj")}</th>
@@ -39,120 +71,90 @@ export function NotificationTable({
         </thead>
         <tbody>
           {notifications.map((n) => (
-            <tr key={n._id}>
-              <td>{t(`type_${n.type}`, n.type)}</td>
-              <td>{n.user?.name || "-"}</td>
-              <td>{n.user?.email || "-"}</td>
-              <td>{n.title?.[lang] || "-"}</td>
-              <td>{n.message?.[lang] || "-"}</td>
-              <td>{new Date(n.createdAt).toLocaleString(lang)}</td>
-              <td>
-                <Status $read={n.isRead}>
-                  {n.isRead ? t("read", "Okundu") : t("unread", "Okunmadı")}
-                </Status>
-              </td>
-              <td>
-                {!n.isRead && (
-                  <ActionButton onClick={() => onMarkRead(n._id)}>
-                    {t("markRead", "Okundu Yap")}
-                  </ActionButton>
-                )}
-                <ActionButton danger={true} onClick={() => onDelete(n._id)}>
-                  {t("delete", "Sil")}
-                </ActionButton>
-              </td>
-            </tr>
+            <NotificationRow
+              key={String(n._id)}
+              notification={n}
+              lang={lang}
+              onMarkRead={onMarkRead}
+              onDelete={onDelete}
+            />
           ))}
         </tbody>
       </StyledTable>
 
-      {/* Mobil Card List */}
+      {/* Mobile cards */}
       <CardList>
-        {notifications.map((n) => (
-          <NotificationCard
-            key={n._id}
-            notification={n}
-            lang={lang}
-            t={(key, def) => t(key, { defaultValue: def })}
-            onMarkRead={onMarkRead}
-            onDelete={onDelete}
-          />
-        ))}
+        {notifications.map((n) => {
+          const scope = isUserObj(n.user)
+            ? n.user.name || n.user._id
+            : typeof n.user === "string"
+            ? n.user
+            : n.target?.roles?.length
+            ? `roles: ${n.target.roles.join(", ")}`
+            : n.target?.allTenant
+            ? "allTenant"
+            : "-";
+
+          return (
+            <Card key={String(n._id)}>
+              <Row>
+                <Field>{t("type", "Tip")}</Field>
+                <Value>{t(`type_${n.type}`, n.type)}</Value>
+              </Row>
+              <Row>
+                <Field>{t("userOrScope", "Kullanıcı/Alan")}</Field>
+                <Value>{scope}</Value>
+              </Row>
+              <Row>
+                <Field>{t("email", "E-posta")}</Field>
+                <Value>{getUserEmail(n.user)}</Value>
+              </Row>
+              <Row>
+                <Field>{t("title", "Başlık")}</Field>
+                <Value>{pickLocalized(n.title, lang)}</Value>
+              </Row>
+              <Row>
+                <Field>{t("message", "Mesaj")}</Field>
+                <Value>{pickLocalized(n.message, lang)}</Value>
+              </Row>
+              <Row>
+                <Field>{t("date", "Tarih")}</Field>
+                <Value>{fmtDate(n.createdAt as any, lang)}</Value>
+              </Row>
+              <Row>
+                <Field>{t("read", "Okundu")}</Field>
+                <Value>
+                  <Status $read={n.isRead}>
+                    {n.isRead ? t("read", "Okundu") : t("unread", "Okunmadı")}
+                  </Status>
+                </Value>
+              </Row>
+              <Row>
+                <Field>{t("actions", "Eylemler")}</Field>
+                <Value>
+                  {!n.isRead && (
+                    <ActionButton onClick={() => onMarkRead(String(n._id))}>
+                      {t("markRead", "Okundu Yap")}
+                    </ActionButton>
+                  )}
+                  <ActionButton danger onClick={() => onDelete(String(n._id))}>
+                    {t("delete", "Sil")}
+                  </ActionButton>
+                </Value>
+              </Row>
+            </Card>
+          );
+        })}
       </CardList>
     </TableWrapper>
   );
 }
 
-// --- Mobil Card ---
-function NotificationCard({
-  notification,
-  lang,
-  t,
-  onMarkRead,
-  onDelete,
-}: {
-  notification: INotification;
-  lang: SupportedLocale;
-  t: (key: string, defaultText?: string) => string;
-  onMarkRead: (id: string) => void;
-  onDelete: (id: string) => void;
-}) {
-  return (
-    <Card>
-      <Row>
-        <Field>{t("type", "Tip")}</Field>
-        <Value>{t(`type_${notification.type}`, notification.type)}</Value>
-      </Row>
-      <Row>
-        <Field>{t("user", "Kullanıcı")}</Field>
-        <Value>{notification.user?.name || "-"}</Value>
-      </Row>
-      <Row>
-        <Field>{t("email", "E-posta")}</Field>
-        <Value>{notification.user?.email || "-"}</Value>
-      </Row>
-      <Row>
-        <Field>{t("title", "Başlık")}</Field>
-        <Value>{notification.title?.[lang] || "-"}</Value>
-      </Row>
-      <Row>
-        <Field>{t("message", "Mesaj")}</Field>
-        <Value>{notification.message?.[lang] || "-"}</Value>
-      </Row>
-      <Row>
-        <Field>{t("date", "Tarih")}</Field>
-        <Value>{new Date(notification.createdAt).toLocaleString(lang)}</Value>
-      </Row>
-      <Row>
-        <Field>{t("read", "Okundu")}</Field>
-        <Value>
-          <Status $read={notification.isRead}>
-            {notification.isRead ? t("read", "Okundu") : t("unread", "Okunmadı")}
-          </Status>
-        </Value>
-      </Row>
-      <Row>
-        <Field>{t("actions", "Eylemler")}</Field>
-        <Value>
-          {!notification.isRead && (
-            <ActionButton onClick={() => onMarkRead(notification._id)}>
-              {t("markRead", "Okundu Yap")}
-            </ActionButton>
-          )}
-          <ActionButton danger onClick={() => onDelete(notification._id)}>
-            {t("delete", "Sil")}
-          </ActionButton>
-        </Value>
-      </Row>
-    </Card>
-  );
-}
-
-// --- Styled aynı kalabilir ---
-
+// --- Styles ---
 const TableWrapper = styled.div`
   width: 100%;
 `;
+
 const StyledTable = styled.table`
   width: 100%;
   background: ${({ theme }) => theme.colors.cardBackground};
@@ -160,21 +162,29 @@ const StyledTable = styled.table`
   border-radius: ${({ theme }) => theme.radii.lg};
   overflow: hidden;
   font-size: ${({ theme }) => theme.fontSizes.base};
-  th, td {
-    padding: ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.sm};
+
+  th,
+  td {
+    padding: ${({ theme }) => theme.spacings.md} ${({ theme }) =>
+        theme.spacings.sm};
     text-align: left;
     background: inherit;
     max-width: 240px;
     word-break: break-word;
     font-size: ${({ theme }) => theme.fontSizes.sm};
   }
+
   th {
     background-color: ${({ theme }) => theme.colors.tableHeader};
     color: ${({ theme }) => theme.colors.textSecondary};
     font-weight: ${({ theme }) => theme.fontWeights.bold};
     border-bottom: 2px solid ${({ theme }) => theme.colors.primary};
   }
-  tr:last-child td { border-bottom: none; }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
   ${({ theme }) => theme.media.mobile} {
     display: none;
   }
@@ -240,16 +250,16 @@ const Status = styled.span<{ $read?: boolean }>`
   text-align: center;
 `;
 
-// styled-components v5+ için (en güncel)
 const ActionButton = styled.button.withConfig({
-  shouldForwardProp: (prop) => prop !== "danger"
+  shouldForwardProp: (prop) => prop !== "danger",
 })<{ danger?: boolean }>`
   background: ${({ danger, theme }) =>
     danger ? theme.colors.dangerBg : theme.colors.buttonBackground};
   color: ${({ danger, theme }) =>
     danger ? theme.colors.danger : theme.colors.buttonText};
   border: ${({ theme }) => theme.borders.thin}
-    ${({ danger, theme }) => (danger ? theme.colors.danger : theme.colors.buttonBorder)};
+    ${({ danger, theme }) =>
+      danger ? theme.colors.danger : theme.colors.buttonBorder};
   padding: ${({ theme }) => theme.spacings.xs} ${({ theme }) => theme.spacings.sm};
   border-radius: ${({ theme }) => theme.radii.md};
   font-size: ${({ theme }) => theme.fontSizes.xsmall};
@@ -264,6 +274,5 @@ const ActionButton = styled.button.withConfig({
     color: #fff;
   }
 `;
-
 
 export default NotificationTable;

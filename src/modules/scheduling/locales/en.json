@@ -1,0 +1,137 @@
+
+{
+  "title": "Scheduling",
+  "newPlan": "New Plan",
+  "counts": { "plans": "Plans" },
+  "sections": { "plans": "Plans" },
+
+  "actions": {
+    "refresh": "Refresh",
+    "apply": "Apply",
+    "reset": "Reset",
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "close": "Close",
+    "cancel": "Cancel",
+    "create": "Create",
+    "update": "Update"
+  },
+
+  "common": { "loading": "Loading...", "yes": "Yes", "no": "No" },
+
+  "status": { "active": "Active", "paused": "Paused", "archived": "Archived" },
+
+  "list": {
+    "filters": "Plan filters",
+    "qPh": "Search (code/title)",
+    "qLabel": "Search",
+    "status": "Status",
+    "apartment": "ApartmentId",
+    "service": "ServiceId",
+    "template": "TemplateId",
+    "contract": "ContractId",
+    "tag": "Tag",
+    "from": "From",
+    "to": "To",
+    "tableLabel": "Plans",
+    "empty": "No results",
+    "confirmDelete": "Delete plan {{code}}?",
+    "th": {
+      "code": "Code",
+      "title": "Title",
+      "status": "Status",
+      "nextRun": "Next Run",
+      "start": "Start",
+      "pattern": "Pattern",
+      "actions": "Actions"
+    }
+  },
+
+  "form": {
+    "a11y": "Create or update a schedule plan.",
+    "code": "Code",
+    "codePh": "auto if empty",
+    "timezone": "Timezone",
+    "status": "Status",
+    "tags": "Tags (comma)",
+    "tagsPh": "cleaning, weekly, ...",
+    "titleI18n": "Title (i18n JSON)",
+    "descI18n": "Description (i18n JSON)",
+    "anchor": "Anchor",
+    "pattern": "Pattern",
+    "windowPolicy": "Time Window & Policy",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "exceptions": "Exceptions",
+    "required": "Required",
+    "apartmentRef": "Apartment Ref",
+    "categoryRef": "Category Ref",
+    "serviceRef": "Service Ref",
+    "templateRef": "Template Ref",
+    "contractRef": "Contract Ref"
+  },
+
+  "anchor": { "title": "Anchor / Context" },
+
+  "blackouts": {
+    "titleSkipDates": "Skip Dates (YYYY-MM-DD)",
+    "skipDate": "Skip Date",
+    "add": "Add",
+    "remove": "Remove",
+    "titleBlackouts": "Blackouts",
+    "from": "From",
+    "to": "To",
+    "reason": "Reason",
+    "reasonPh": "Reason"
+  },
+
+  "pattern": {
+    "title": "Recurrence Pattern",
+    "type": "Type",
+    "types": {
+      "weekly": "weekly",
+      "dayOfMonth": "dayOfMonth",
+      "nthWeekday": "nthWeekday",
+      "yearly": "yearly"
+    },
+    "everyWeeks": "Every (weeks)",
+    "daysOfWeek": "Days of Week",
+    "everyMonths": "Every (months)",
+    "day": "Day",
+    "nth": "Nth",
+    "weekday": "Weekday",
+    "month": "Month",
+    "summary": {
+      "weekly": "weekly/{{every}} [{{days}}]",
+      "dayOfMonth": "dayOfMonth/{{every}} day={{day}}",
+      "nthWeekday": "nthWeekday/{{every}} {{nth}}.{{weekday}}",
+      "yearly": "yearly {{month}}/{{day}}"
+    }
+  },
+
+  "window": {
+    "title": "Time Window",
+    "start": "Start",
+    "end": "End",
+    "duration": "Duration (min)"
+  },
+
+  "policy": {
+    "title": "Generation Policy",
+    "leadTimeDays": "Lead Time (days)",
+    "lockAhead": "Lock Ahead Periods",
+    "autoAssign": "Auto Assign",
+    "preferredEmployees": "Preferred Employees (IDs, comma)",
+    "minCrew": "Min Crew",
+    "maxCrew": "Max Crew"
+  },
+
+  "detail": {
+    "title": "Plan details",
+    "plan": "Plan",
+    "status": "Status",
+    "next": "Next",
+    "json": "Plan JSON"
+  }
+}

@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
@@ -8,19 +9,26 @@ interface Props {
   onMarkRead: () => void;
   onDelete: () => void;
 }
+
 export default function NotificationActions({ isRead, onMarkRead, onDelete }: Props) {
   const { t } = useI18nNamespace("notification", translations);
   return (
     <div>
       {!isRead && (
-        <ActionButton onClick={onMarkRead}>{t("markRead", "Okundu Yap")}</ActionButton>
+        <ActionButton onClick={onMarkRead}>
+          {t("markRead", "Okundu Yap")}
+        </ActionButton>
       )}
-      <ActionButton danger onClick={onDelete}>{t("delete", "Sil")}</ActionButton>
+      <ActionButton danger onClick={onDelete}>
+        {t("delete", "Sil")}
+      </ActionButton>
     </div>
   );
 }
 
-const ActionButton = styled.button<{ danger?: boolean }>`
+const ActionButton = styled.button.withConfig({
+  shouldForwardProp: (prop) => prop !== "danger",
+})<{ danger?: boolean }>`
   background: ${({ danger, theme }) =>
     danger ? theme.colors.dangerBg : theme.colors.buttonBackground};
   color: ${({ danger, theme }) =>

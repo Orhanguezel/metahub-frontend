@@ -1,0 +1,50 @@
+{
+  "admin": { "title": "Mahalle Yönetimi", "count": "{{count}} mahalle" },
+  "actions": {
+    "new": "+ Yeni Mahalle",
+    "refresh": "Yenile",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "create": "Oluştur",
+    "update": "Güncelle",
+    "cancel": "İptal",
+    "activate": "Aktifleştir",
+    "deactivate": "Pasifleştir",
+    "apply": "Uygula",
+    "reset": "Sıfırla"
+  },
+  "common": { "empty": "Kayıt yok", "yes": "Evet", "no": "Hayır" },
+  "form": {
+    "name": "Ad (çok dilli)",
+    "slug": "Slug",
+    "city": "Şehir",
+    "district": "İlçe",
+    "zip": "Posta Kodu",
+    "cityCode": "Şehir Kodu",
+    "districtCode": "İlçe Kodu",
+    "lat": "Enlem",
+    "lng": "Boylam",
+    "aliases": "Diğer Adlar (virgül ile)",
+    "tags": "Etiketler (virgül ile)",
+    "sortOrder": "Sıra",
+    "isActive": "Aktif mi?"
+  },
+  "list": {
+    "name": "Ad",
+    "slug": "Slug",
+    "location": "Konum",
+    "codes": "Kodlar",
+    "tags": "Etiketler",
+    "status": "Durum",
+    "actions": "İşlemler"
+  },
+  "status": { "active": "aktif", "inactive": "pasif" },
+  "filters": {
+    "title": "Filtreler",
+    "q": "Ara",
+    "city": "Şehir",
+    "district": "İlçe",
+    "tag": "Etiket",
+    "isActive": "Aktif"
+  }
+}

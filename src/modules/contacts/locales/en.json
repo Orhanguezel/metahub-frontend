@@ -1,0 +1,74 @@
+
+{
+  "title": "Contacts Admin",
+  "sections": { "contacts": "Contacts" },
+  "actions": {
+    "new": "New Contact",
+    "refresh": "Refresh",
+    "apply": "Apply",
+    "reset": "Reset",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "remove": "Remove",
+    "cancel": "Cancel",
+    "update": "Update",
+    "create": "Create"
+  },
+  "filters": {
+    "q": "Search",
+    "kind": "Kind",
+    "isActive": "Active?"
+  },
+  "kinds": {
+    "person": "Person",
+    "organization": "Organization"
+  },
+  "labels": {
+    "name": "Name",
+    "slug": "Slug",
+    "primaryEmail": "Primary E-mail",
+    "primaryPhone": "Primary Phone",
+    "active": "Active",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "legalName": "Legal Name",
+    "tradeName": "Trade Name",
+    "emails": "Emails",
+    "phones": "Phones",
+    "addresses": "Addresses",
+    "label": "Label",
+    "email": "Email",
+    "primary": "Primary",
+    "phone": "Phone",
+    "street": "Street",
+    "number": "No",
+    "district": "District",
+    "city": "City",
+    "state": "State / Region",
+    "zip": "ZIP",
+    "country": "Country",
+    "billing": "Billing",
+    "bankName": "Bank Name",
+    "taxNumber": "Tax Number",
+    "currency": "Currency",
+    "defaultDueDayOfMonth": "Due Day",
+    "notes": "Notes"
+  },
+  "form": { "title": "Contact Form" },
+  "legend": {
+    "identity": "Identity",
+    "other": "Other"
+  },
+  "ph": {
+    "slugAuto": "auto if empty"
+  },
+  "help": {
+    "slug": "If empty, it will be generated automatically."
+  },
+  "common": {
+    "yes": "Yes",
+    "no": "No",
+    "empty": "Empty"
+  }
+}

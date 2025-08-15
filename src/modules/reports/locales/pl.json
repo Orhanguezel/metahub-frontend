@@ -1,0 +1,149 @@
+{
+  "title": "Raporty",
+  "counts": { "definitions": "Definicje", "runs": "Uruchomienia" },
+  "newDef": "Nowa definicja",
+  "sections": { "defs": "Definicje", "runs": "Uruchomienia" },
+  "jsonTitle": "JSON definicji",
+  "actions": {
+    "refresh": "Odśwież",
+    "hide": "Ukryj",
+    "apply": "Zastosuj",
+    "reset": "Resetuj",
+    "edit": "Edytuj",
+    "run": "Uruchom",
+    "viewJson": "Pokaż JSON",
+    "delete": "Usuń",
+    "close": "Zamknij",
+    "cancel": "Anuluj",
+    "view": "Pokaż",
+    "remove": "Usuń",
+    "addRecipient": "Dodaj odbiorcę"
+  },
+  "common": {
+    "loading": "Wczytywanie…",
+    "yes": "Tak",
+    "no": "Nie",
+    "select": "Wybierz...",
+    "jsonInvalid": "Nieprawidłowy JSON"
+  },
+  "form": {
+    "a11yDesc": "Utwórz lub zaktualizuj definicję raportu.",
+    "code": "Kod",
+    "codePh": "automatycznie, jeśli puste",
+    "name": "Nazwa",
+    "kind": "Rodzaj",
+    "description": "Opis",
+    "active": "Aktywny?",
+    "defaultFilters": "Domyślne filtry (JSON)",
+    "view": "Widok (JSON)",
+    "exportFormats": "Formaty eksportu",
+    "tags": "Tagi (po przecinku)",
+    "tagsPh": "finance, kpi, ...",
+    "schedule": "Harmonogram",
+    "cancel": "Anuluj",
+    "update": "Aktualizuj",
+    "create": "Utwórz"
+  },
+  "list": {
+    "filters": "Filtry definicji",
+    "searchPh": "Szukaj (kod/nazwa/opis)",
+    "search": "Szukaj",
+    "kindAny": "Rodzaj",
+    "activeAny": "Aktywny?",
+    "tagPh": "Tag",
+    "tag": "Tag",
+    "tableLabel": "Definicje raportów",
+    "th": {
+      "code": "Kod",
+      "name": "Nazwa",
+      "kind": "Rodzaj",
+      "status": "Status",
+      "updated": "Zaktualizowano",
+      "actions": "Akcje"
+    },
+    "empty": "Brak wyników",
+    "confirmDelete": "Usunąć definicję {{code}}?"
+  },
+  "status": { "active": "Aktywny", "inactive": "Nieaktywny" },
+  "kinds": {
+    "ar_aging": "Przetermin. należności",
+    "ap_aging": "Przetermin. zobowiązań",
+    "revenue": "Przychody",
+    "expense": "Wydatki",
+    "cashflow": "Przepływy pieniężne",
+    "profitability": "Rentowność",
+    "billing_forecast": "Prognoza rozliczeń",
+    "invoice_collections": "Windykacja faktur",
+    "employee_utilization": "Wykorzystanie pracowników",
+    "workload": "Obciążenie pracą",
+    "service_performance": "Wydajność serwisu"
+  },
+  "runs": {
+    "filters": "Filtry uruchomień",
+    "qPh": "Szukaj w kodzie/błędach",
+    "qLabel": "Szukaj",
+    "statusAny": "Status",
+    "definitionId": "ID definicji",
+    "from": "Od",
+    "to": "Do",
+    "tableLabel": "Uruchomienia raportów",
+    "th": {
+      "code": "Kod",
+      "kind": "Rodzaj",
+      "status": "Status",
+      "started": "Start",
+      "duration": "Czas trwania",
+      "rows": "Wiersze"
+    },
+    "empty": "Brak wyników",
+    "confirmDelete": "Usunąć uruchomienie {{code}}?",
+    "status": {
+      "queued": "W kolejce",
+      "running": "W toku",
+      "success": "Sukces",
+      "error": "Błąd",
+      "cancelled": "Anulowano"
+    }
+  },
+  "runDetail": {
+    "title": "Uruchomienie",
+    "status": "Status",
+    "kind": "Rodzaj",
+    "meta": "Meta",
+    "started": "Start",
+    "finished": "Koniec",
+    "duration": "Czas trwania",
+    "durationMs": "{{ms}} ms",
+    "rows": "Wiersze",
+    "bytes": "Bajty",
+    "files": "Pliki",
+    "filtersUsed": "Użyte filtry (JSON)",
+    "preview": "Podgląd (pierwsze wiersze)"
+  },
+  "runTrigger": {
+    "desc": "Dodaj do kolejki uruchomienie z definicji lub według rodzaju.",
+    "definition": "Definicja",
+    "kind": "Rodzaj (bez definicji)",
+    "filters": "Nadpisanie filtrów (JSON)",
+    "queue": "Dodaj do kolejki"
+  },
+  "schedule": {
+    "enabled": "Włącz harmonogram",
+    "frequency": "Częstotliwość",
+    "timezone": "Strefa czasowa",
+    "timeOfDay": "Pora dnia",
+    "dayOfWeek": "Dzień tygodnia",
+    "dayOfMonth": "Dzień miesiąca",
+    "cron": "CRON",
+    "recipients": "Odbiorcy",
+    "recipient": { "channel": "Kanał", "target": "Cel", "format": "Format" },
+    "freq": {
+      "daily": "Codziennie",
+      "weekly": "Tygodniowo",
+      "monthly": "Miesięcznie",
+      "quarterly": "Kwartalnie",
+      "yearly": "Rocznie",
+      "cron": "CRON"
+    }
+  }
+}

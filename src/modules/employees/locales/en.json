@@ -1,0 +1,68 @@
+{
+  "title": "Employees",
+  "sections": {
+    "list": "Employees"
+  },
+  "form": "Employee Form",
+  "legend": {
+    "basic": "Basic",
+    "contact": "Contact",
+    "employment": "Employment",
+    "status": "Status"
+  },
+  "labels": {
+    "code": "Code",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "displayName": "Display Name",
+    "fullName": "Full Name",
+    "phone": "Phone",
+    "email": "Email",
+    "type": "Type",
+    "position": "Position",
+    "startDate": "Start",
+    "endDate": "End",
+    "status": "Status",
+    "preview": "Start (preview)"
+  },
+  "filters": {
+    "q": "Search",
+    "status": "Status",
+    "language": "Language",
+    "skill": "Skill",
+    "tag": "Tag"
+  },
+  "actions": {
+    "new": "New",
+    "refresh": "Refresh",
+    "apply": "Apply",
+    "reset": "Reset",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "update": "Update",
+    "create": "Create"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "onleave": "On Leave",
+    "terminated": "Terminated"
+  },
+  "employment": {
+    "type": {
+      "fulltime": "Full-time",
+      "parttime": "Part-time",
+      "contractor": "Contractor",
+      "intern": "Intern"
+    }
+  },
+  "placeholders": {
+    "autoCode": "auto if empty",
+    "optional": "optional"
+  },
+  "hints": {
+    "date": "YYYY-MM-DD",
+    "optional": "Optional"
+  }
+}

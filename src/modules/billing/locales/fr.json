@@ -1,0 +1,103 @@
+
+{
+  "admin": {
+    "title": "Administration de facturation",
+    "planCount": "{{count}} plan"
+  },
+  "sections": {
+    "plans": "Plans",
+    "occurrences": "Occurrences"
+  },
+  "actions": {
+    "newPlan": "Nouveau plan",
+    "refresh": "Rafraîchir",
+    "edit": "Modifier",
+    "activate": "Activer",
+    "pause": "Mettre en pause",
+    "end": "Terminer",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "update": "Mettre à jour",
+    "create": "Créer",
+    "apply": "Appliquer",
+    "reset": "Réinitialiser"
+  },
+  "list": {
+    "code": "Code",
+    "status": "Statut",
+    "amount": "Montant",
+    "period": "Période",
+    "dueRule": "Règle d'échéance",
+    "nextDue": "Prochaine échéance",
+    "actions": "Actions"
+  },
+  "status": {
+    "draft": "Brouillon",
+    "active": "Actif",
+    "paused": "En pause",
+    "ended": "Terminé",
+    "pending": "En attente",
+    "invoiced": "Facturé",
+    "skipped": "Ignoré",
+    "canceled": "Annulé"
+  },
+  "period": {
+    "weekly": "hebdomadaire",
+    "monthly": "mensuelle",
+    "quarterly": "trimestrielle",
+    "yearly": "annuelle"
+  },
+  "due": {
+    "dayOfMonth": "jour du mois",
+    "nthWeekday": "nième jour de semaine",
+    "day": "Jour",
+    "weekday": "jour de semaine"
+  },
+  "form": {
+    "code": "Code",
+    "codePlaceholder": "(auto si vide)",
+    "mode": "Mode",
+    "contract": "Contrat (ObjectId)",
+    "contractLine": "Ligne de contrat (optionnel)",
+    "amount": "Montant",
+    "currency": "Devise",
+    "period": "Période",
+    "graceDays": "Jours de grâce",
+    "dueType": "Type d'échéance",
+    "day": "Jour",
+    "nth": "Nième",
+    "weekday": "Jour de semaine (0=Dim..6=Sam)",
+    "startDate": "Date de début",
+    "endDate": "Date de fin"
+  },
+  "mode": {
+    "fixed": "fixe",
+    "perLine": "par ligne"
+  },
+  "occ": {
+    "filters": {
+      "title": "Filtres des occurrences",
+      "planId": "ID du plan",
+      "status": "Statut",
+      "dueFrom": "Échéance à partir du",
+      "dueTo": "Échéance jusqu'au",
+      "invoice": "ID de facture",
+      "seqFrom": "Séq. de",
+      "seqTo": "Séq. à",
+      "limit": "Limite"
+    },
+    "columns": {
+      "plan": "Plan",
+      "seq": "Séq.",
+      "window": "Fenêtre",
+      "due": "Échéance",
+      "amount": "Montant",
+      "status": "Statut",
+      "invoice": "Facture"
+    }
+  },
+  "common": {
+    "empty": "Aucune donnée",
+    "plan": "plan"
+  }
+}

@@ -1,0 +1,137 @@
+
+{
+  "title": "Planlama",
+  "newPlan": "Yeni Plan",
+  "counts": { "plans": "Planlar" },
+  "sections": { "plans": "Planlar" },
+
+  "actions": {
+    "refresh": "Yenile",
+    "apply": "Uygula",
+    "reset": "Sıfırla",
+    "view": "Görüntüle",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "close": "Kapat",
+    "cancel": "İptal",
+    "create": "Oluştur",
+    "update": "Güncelle"
+  },
+
+  "common": { "loading": "Yükleniyor...", "yes": "Evet", "no": "Hayır" },
+
+  "status": { "active": "Aktif", "paused": "Duraklatıldı", "archived": "Arşivlendi" },
+
+  "list": {
+    "filters": "Plan filtreleri",
+    "qPh": "Ara (kod/başlık)",
+    "qLabel": "Ara",
+    "status": "Durum",
+    "apartment": "ApartmanId",
+    "service": "ServisId",
+    "template": "ŞablonId",
+    "contract": "SözleşmeId",
+    "tag": "Etiket",
+    "from": "Başlangıç",
+    "to": "Bitiş",
+    "tableLabel": "Planlar",
+    "empty": "Sonuç yok",
+    "confirmDelete": "{{code}} kodlu plan silinsin mi?",
+    "th": {
+      "code": "Kod",
+      "title": "Başlık",
+      "status": "Durum",
+      "nextRun": "Sonraki Çalışma",
+      "start": "Başlangıç",
+      "pattern": "Tekrar",
+      "actions": "İşlemler"
+    }
+  },
+
+  "form": {
+    "a11y": "Bir plan oluşturun veya güncelleyin.",
+    "code": "Kod",
+    "codePh": "boşsa otomatik",
+    "timezone": "Zaman dilimi",
+    "status": "Durum",
+    "tags": "Etiketler (virgül)",
+    "tagsPh": "temizlik, haftalık, ...",
+    "titleI18n": "Başlık (i18n JSON)",
+    "descI18n": "Açıklama (i18n JSON)",
+    "anchor": "Bağlam",
+    "pattern": "Tekrar",
+    "windowPolicy": "Gün İçi Pencere & Politika",
+    "startDate": "Başlangıç Tarihi",
+    "endDate": "Bitiş Tarihi",
+    "exceptions": "İstisnalar",
+    "required": "Zorunlu",
+    "apartmentRef": "Apartman Ref",
+    "categoryRef": "Kategori Ref",
+    "serviceRef": "Servis Ref",
+    "templateRef": "Şablon Ref",
+    "contractRef": "Sözleşme Ref"
+  },
+
+  "anchor": { "title": "Bağlam / Anchor" },
+
+  "blackouts": {
+    "titleSkipDates": "Atlanacak Tarihler (YYYY-MM-DD)",
+    "skipDate": "Atlanacak Tarih",
+    "add": "Ekle",
+    "remove": "Kaldır",
+    "titleBlackouts": "Kapatma Günleri",
+    "from": "Başlangıç",
+    "to": "Bitiş",
+    "reason": "Neden",
+    "reasonPh": "Neden"
+  },
+
+  "pattern": {
+    "title": "Tekrar Deseni",
+    "type": "Tür",
+    "types": {
+      "weekly": "haftalık",
+      "dayOfMonth": "ayın günü",
+      "nthWeekday": "ayın n. haftagünü",
+      "yearly": "yıllık"
+    },
+    "everyWeeks": "Her (hafta)",
+    "daysOfWeek": "Haftanın Günleri",
+    "everyMonths": "Her (ay)",
+    "day": "Gün",
+    "nth": "n.",
+    "weekday": "Hafta Günü",
+    "month": "Ay",
+    "summary": {
+      "weekly": "haftalık/{{every}} [{{days}}]",
+      "dayOfMonth": "ayın günü/{{every}} gün={{day}}",
+      "nthWeekday": "ayın n. haftagünü/{{every}} {{nth}}.{{weekday}}",
+      "yearly": "yıllık {{month}}/{{day}}"
+    }
+  },
+
+  "window": {
+    "title": "Gün İçi Pencere",
+    "start": "Başlangıç",
+    "end": "Bitiş",
+    "duration": "Süre (dk)"
+  },
+
+  "policy": {
+    "title": "Üretim Politikası",
+    "leadTimeDays": "Önceden (gün)",
+    "lockAhead": "Önden kilitlenecek dönemler",
+    "autoAssign": "Otomatik atama",
+    "preferredEmployees": "Tercih edilen çalışanlar (ID, virgül)",
+    "minCrew": "Min Ekip",
+    "maxCrew": "Maks Ekip"
+  },
+
+  "detail": {
+    "title": "Plan detayları",
+    "plan": "Plan",
+    "status": "Durum",
+    "next": "Sonraki",
+    "json": "Plan JSON"
+  }
+}
