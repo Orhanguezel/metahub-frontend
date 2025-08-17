@@ -36,6 +36,7 @@ export interface ISkill {
   isActive: boolean;
   publishedAt?: string;
   comments: string[];
+  order: number;
   createdAt: string;
   updatedAt: string;
 }
