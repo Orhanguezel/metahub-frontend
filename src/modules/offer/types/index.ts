@@ -210,3 +210,14 @@ export type OfferAdminFilters = {
   customer?: string;
 };
 
+export interface RequestOfferPayload {
+  name: string;
+  email: string;
+  company?: string;
+  phone?: string;
+  message?: string;
+  productId?: string;
+  productType?: "product" | "ensotekprod" | "specialprod";
+}
+
+
