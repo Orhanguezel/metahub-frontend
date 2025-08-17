@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/massage";
-import type {IMassage } from "@/modules/massage/types";
+import type { IMassage, MassageCategory } from "@/modules/massage/types";
 import { JSONEditor, ImageUploader } from "@/shared";
 import type { UploadImage as UploaderImage } from "@/shared/ImageUploader";
 import type { ImageType } from "@/types/image";
@@ -17,6 +17,8 @@ interface Props {
   onClose: () => void;
   editingItem: IMassage | null;
   onSubmit: (formData: FormData, id?: string) => Promise<void>;
+  // name alanı çok dilli ve opsiyonel olabilir → MassageCategory'den alıp gevşetiyoruz
+  categories?: Array<Pick<MassageCategory, "_id" | "name" | "slug">>;
 }
 
 type TL = Partial<Record<SupportedLocale, string>>;
@@ -25,12 +27,23 @@ const toTL = (v: any, lang: SupportedLocale): TL =>
 const getTLStrict = (obj?: TL, l?: SupportedLocale) => (l ? (obj?.[l] ?? "") : "");
 const setTL = (obj: TL | undefined, l: SupportedLocale, val: string): TL => ({ ...(obj || {}), [l]: val });
 
-export default function FormModal({ isOpen, onClose, editingItem, onSubmit }: Props) {
+export default function FormModal({
+  isOpen,
+  onClose,
+  editingItem,
+  onSubmit,
+  categories: propCategories,
+}: Props) {
   const { i18n, t } = useI18nNamespace("massage", translations);
-  const uiLang = useMemo<SupportedLocale>(() => (i18n.language?.slice(0, 2) as SupportedLocale) || "tr", [i18n?.language]);
+  const uiLang = useMemo<SupportedLocale>(
+    () => (i18n.language?.slice(0, 2) as SupportedLocale) || "tr",
+    [i18n?.language]
+  );
 
-  // store-read only
-  const categories = useAppSelector((s) => s.massageCategory.categories);
+  // props verilmezse store’dan doldur (geri uyumluluk)
+  const categoriesFromStore = useAppSelector((s) => s.massageCategory.categories) as MassageCategory[];
+  const categories = propCategories ?? categoriesFromStore;
+
   const successMessage = useAppSelector((s) => s.massage.successMessage);
   const error = useAppSelector((s) => s.massage.error);
   const currentUser = useAppSelector((s) => s.account.profile);
@@ -118,7 +131,11 @@ export default function FormModal({ isOpen, onClose, editingItem, onSubmit }: Pr
 
   // kategori label’ları
   const catOpts = useMemo(
-    () => (categories || []).map((c) => ({ id: c._id, label: c.name?.[uiLang] || c.slug || c._id })),
+    () =>
+      (categories || []).map((c) => ({
+        id: c._id,
+        label: c.name?.[uiLang] || c.name?.en || c.slug || c._id,
+      })),
     [categories, uiLang]
   );
 
@@ -354,3 +371,6 @@ const ModeBtn = styled.button<{ $active?: boolean }>`
   background:${({$active,theme})=>$active?theme.colors.primaryLight:theme.colors.cardBackground};
   color:${({theme})=>theme.colors.text};cursor:pointer;
 `;
+
+
+

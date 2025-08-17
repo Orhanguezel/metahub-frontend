@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import translations from "@/modules/coupon/locales";
 import { SupportedLocale } from "@/types/common";
 import { motion } from "framer-motion";
 import { PiTicketFill } from "react-icons/pi";

@@ -47,6 +47,21 @@ export const fetchCoupon = createAsyncThunk<Coupon[]>(
   }
 );
 
+
+export const checkCouponByCode = createAsyncThunk<Coupon | null, string>(
+  "coupon/checkByCode",
+  async (code: string, thunkAPI) => {
+    const res = await apiCall(
+      "get",
+      `${BASE}/check/${code}`,
+      null,
+      thunkAPI.rejectWithValue
+    );
+    // response: { success, message, data }
+    return res.data || null;
+  }
+);
+
 export const fetchCouponsAdmin = createAsyncThunk<Coupon[]>(
   "coupon/fetchAllAdmin",
   async (_, thunkAPI) => {
@@ -167,6 +182,16 @@ const couponSlice = createSlice({
         state.coupons = action.payload;
       })
       .addCase(fetchCoupon.rejected, setError);
+
+    // ✅ Check by code
+    builder
+      .addCase(checkCouponByCode.pending, setLoading)
+      .addCase(checkCouponByCode.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = "succeeded";
+        state.selected = action.payload;
+      })
+      .addCase(checkCouponByCode.rejected, setError);
 
     // 🔐 Admin List
     builder

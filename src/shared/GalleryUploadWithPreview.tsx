@@ -2,16 +2,16 @@ import React, { useRef, useState } from "react";
 import styled from "styled-components";
 import { getImageSrc } from "@/shared/getImageSrc";
 import type { ImageType } from "@/types/image";
-import type { IGalleryItem } from "@/modules/gallery/types";
+import type { IGalleryImage } from "@/modules/gallery/types";
 import { useActiveTenant } from "@/hooks/useActiveTenant"; // <-- ekle
 
 interface Props {
   max?: number;
-  defaultImages?: IGalleryItem[]; // 🔥
+  defaultImages?: IGalleryImage[]; // 🔥
   onChange?: (
     files: File[],
     removedImages: string[],
-    currentImages: IGalleryItem[]
+    currentImages: IGalleryImage[]
   ) => void;
   folder?: ImageType;
 }
@@ -25,7 +25,7 @@ const GalleryUploadWithPreview: React.FC<Props> = ({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
-  const [existingImages, setExistingImages] = useState<IGalleryItem[]>(defaultImages);
+  const [existingImages, setExistingImages] = useState<IGalleryImage[]>(defaultImages);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
 
   // 🔥 Aktif tenant slug

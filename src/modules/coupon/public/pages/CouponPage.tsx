@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   checkCouponByCode,
   clearCouponMessages,
-  clearCurrentCoupon,
+  setSelectedCoupon,
 } from "@/modules/coupon/slice/couponSlice";
 import { Message } from "@/shared";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
@@ -18,34 +18,36 @@ const CouponPage: React.FC = () => {
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const dispatch = useAppDispatch();
 
-  // Coupon slice
-  const { current, loading, error, successMessage } = useAppSelector((s) => s.coupon);
+  // coupon slice (yeni mimari)
+  const { selected, loading, error, successMessage } = useAppSelector((s) => s.coupon);
 
   const [code, setCode] = useState("");
 
-  // Her sayfa açılışında kupon mesajlarını ve seçili kuponu temizle!
+  // Sayfa açılış/kapanışında mesajları ve seçili kuponu temizle
   useEffect(() => {
     dispatch(clearCouponMessages());
-    dispatch(clearCurrentCoupon());
+    dispatch(setSelectedCoupon(null));
     return () => {
       dispatch(clearCouponMessages());
-      dispatch(clearCurrentCoupon());
+      dispatch(setSelectedCoupon(null));
     };
   }, [dispatch]);
 
   // Form submit
   const handleCheck = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!code) return;
-    await dispatch(checkCouponByCode(code.trim()));
+    const trimmed = code.trim();
+    if (!trimmed) return;
+    await dispatch(checkCouponByCode(trimmed));
   };
 
-  // Coupon detail alanı: hem public slice hem admin slice'ta çalışır.
-  const isValidCoupon = !!current && !!current.code && current.isActive !== false;
+  // Kupon detayı: sadece geçerli ve aktif ise göster
+  const isValidCoupon = !!selected && !!selected.code && selected.isActive !== false;
 
   return (
     <Wrapper>
       <Title>{t("page.title", "Apply Coupon")}</Title>
+
       <Form onSubmit={handleCheck}>
         <Input
           type="text"
@@ -55,31 +57,35 @@ const CouponPage: React.FC = () => {
           autoFocus
           spellCheck={false}
         />
+
         <Button type="submit" disabled={loading || !code.trim()}>
           {loading ? t("form.checking", "Checking...") : t("form.check", "Check Coupon")}
         </Button>
+
         {error && <Message $error>{error}</Message>}
         {successMessage && <Message $success>{successMessage}</Message>}
       </Form>
 
-      {/* Kupon detayı sadece geçerli ve aktif ise göster */}
       {isValidCoupon && (
         <CouponDetail>
-          <h3>{current.title?.[lang] || current.title?.en || "-"}</h3>
+          <h3>{selected!.title?.[lang] || selected!.title?.en || "-"}</h3>
+
           <div>
-            {t("label.discount", "Discount")}: <strong>{current.discount}%</strong>
+            {t("label.discount", "Discount")}: <strong>{selected!.discount}%</strong>
           </div>
+
           <div>
             {t("label.expiresAt", "Expires at")}:{" "}
             <strong>
-              {current.expiresAt
-                ? new Date(current.expiresAt).toLocaleDateString(lang)
+              {selected!.expiresAt
+                ? new Date(selected!.expiresAt as any).toLocaleDateString(lang)
                 : t("form.noExpire", "-")}
             </strong>
           </div>
-          {current.description && (
+
+          {selected!.description && (
             <p style={{ marginTop: 8, color: "#666" }}>
-              {current.description?.[lang] || current.description?.en || "-"}
+              {selected!.description?.[lang] || selected!.description?.en || "-"}
             </p>
           )}
         </CouponDetail>
@@ -90,7 +96,7 @@ const CouponPage: React.FC = () => {
 
 export default CouponPage;
 
-// --- Styled Components (değişmedi) ---
+/* --- Styled Components --- */
 const Wrapper = styled.div`
   max-width: 420px;
   margin: 48px auto;
