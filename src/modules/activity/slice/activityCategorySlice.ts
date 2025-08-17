@@ -16,13 +16,15 @@ const initialState: CategoryState = {
   successMessage: null,
 };
 
+const BASE = "/activitycategory";
+
 // --- Fetch ---
 export const fetchActivityCategories = createAsyncThunk(
   "activityCategory/fetchAll",
   async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      "/activitycategory",
+      `${BASE}`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -42,7 +44,7 @@ export const createActivityCategory = createAsyncThunk(
   ) => {
     const res = await apiCall(
       "post",
-      "/activitycategory",
+      `${BASE}`,
       data,
       thunkAPI.rejectWithValue
     );
@@ -68,7 +70,7 @@ export const updateActivityCategory = createAsyncThunk(
   ) => {
     const res = await apiCall(
       "put",
-      `/activitycategory/${id}`,
+      `${BASE}/${id}`,
       data,
       thunkAPI.rejectWithValue
     );
@@ -82,7 +84,7 @@ export const deleteActivityCategory = createAsyncThunk(
   async (id: string, thunkAPI) => {
     const res = await apiCall(
       "delete",
-      `/activitycategory/${id}`,
+      `${BASE}/${id}`,
       null,
       thunkAPI.rejectWithValue
     );

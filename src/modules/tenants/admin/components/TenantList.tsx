@@ -1,8 +1,10 @@
+// TenantList.tsx
 "use client";
+
 import React from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/tenants";
+import { translations } from "@/modules/tenants";
 import { Skeleton } from "@/shared";
 import { ITenant } from "../../types";
 import Image from "next/image";
@@ -24,20 +26,19 @@ export default function TenantList({
   onEdit,
   onDelete,
 }: TenantListProps) {
-  const { t,i18n } = useI18nNamespace("tenant", translations);
+  const { t, i18n } = useI18nNamespace("tenant", translations);
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-const getLabel = (obj?: Partial<Record<SupportedLocale, string>>) =>
-  obj?.[lang] || obj?.en || "—";
-
+  const getLabel = (obj?: Partial<Record<SupportedLocale, string>>) =>
+    obj?.[lang] || obj?.en || "—";
 
   if (loading) {
     return (
-      <SkeletonWrapper>
+      <SkeletonWrap>
         {[...Array(3)].map((_, i) => (
           <Skeleton key={i} />
         ))}
-      </SkeletonWrapper>
+      </SkeletonWrap>
     );
   }
 
@@ -47,166 +48,116 @@ const getLabel = (obj?: Partial<Record<SupportedLocale, string>>) =>
     return <Empty>{t("admin.tenant.empty", "No tenant available.")}</Empty>;
 
   return (
-    <div>
+    <ListWrap>
       {tenants.map((item) => (
-        <TenantCard key={item._id ?? item.slug}>
-          <h2>{getLabel(item.name)}</h2>
-          <SmallLine>
-            <strong>{t("admin.tenant.domain", "Domain")}:</strong>{" "}
-            {item.domain?.main || "—"}
-          </SmallLine>
-          <SmallLine>
-            <strong>{t("admin.tenant.email", "Email")}:</strong>{" "}
-            {item.emailSettings?.senderEmail || "—"}
-          </SmallLine>
-          <SmallLine>
-            <strong>{t("admin.tenant.phone", "Phone")}:</strong>{" "}
-            {item.phone || "—"}
-          </SmallLine>
-          <SmallLine>
-            <strong>{t("admin.tenant.active", "Active")}:</strong>{" "}
-            <Status $active={!!item.isActive}>
+        <Card key={item._id ?? item.slug}>
+          <CardHead>
+            <div>
+              <Title>{getLabel(item.name)}</Title>
+              <Meta>
+                <strong>{t("admin.tenant.domain", "Domain")}:</strong> {item.domain?.main || "—"} •{" "}
+                <strong>{t("admin.tenant.email", "Email")}:</strong> {item.emailSettings?.senderEmail || "—"} •{" "}
+                <strong>{t("admin.tenant.phone", "Phone")}:</strong> {item.phone || "—"}
+              </Meta>
+            </div>
+            <Status $on={!!item.isActive}>
               {item.isActive ? t("yes", "Yes") : t("no", "No")}
             </Status>
-          </SmallLine>
-          <p>{getLabel(item.description)}</p>
+          </CardHead>
 
-          {/* Görseller */}
+          <Desc>{getLabel(item.description)}</Desc>
+
           {Array.isArray(item.images) && item.images.length > 0 ? (
             <ImageGrid>
               {item.images.map((img, i) => (
                 <Image
                   key={i}
                   src={img.url}
-                  alt={getLabel(item.name) + " image"}
+                  alt={`${getLabel(item.name)} image`}
                   width={120}
                   height={90}
-                  style={{
-                    objectFit: "cover",
-                    borderRadius: 4,
-                    border: "1px solid #eee",
-                  }}
+                  style={{ objectFit: "cover", borderRadius: 6, border: "1px solid #eee" }}
                 />
               ))}
             </ImageGrid>
           ) : (
-            <small>{t("admin.tenant.no_images", "No images")}</small>
+            <SmallMuted>{t("admin.tenant.no_images", "No images")}</SmallMuted>
           )}
 
-          {/* Sosyal Medya */}
-          <SmallLine>
+          <Meta>
             <strong>{t("admin.tenant.social", "Social")}:</strong>{" "}
             {Object.entries(item.social || {})
               .filter(([, v]) => v)
               .map(([k, v]) => (
-                <a
-                  key={k}
-                  href={v!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ marginRight: "0.7em" }}
-                >
-                  {k}
-                </a>
+                <a key={k} href={v!} target="_blank" rel="noopener noreferrer">{k}</a>
               ))}
-            {Object.values(item.social || {}).filter(Boolean).length === 0 &&
-              "—"}
-          </SmallLine>
+            {Object.values(item.social || {}).filter(Boolean).length === 0 && "—"}
+          </Meta>
 
           {(onEdit || onDelete) && (
-            <ButtonGroup>
-              {onEdit && (
-                <ActionButton onClick={() => onEdit(item)}>
-                  {t("admin.edit", "Edit")}
-                </ActionButton>
-              )}
+            <Actions>
+              {onEdit && <Secondary onClick={() => onEdit(item)}>{t("admin.edit", "Edit")}</Secondary>}
               {onDelete && (
-                <DeleteButton onClick={() => item._id && onDelete(item._id)}>
+                <Danger onClick={() => item._id && onDelete(item._id)}>
                   {t("admin.delete", "Delete")}
-                </DeleteButton>
+                </Danger>
               )}
-            </ButtonGroup>
+            </Actions>
           )}
-        </TenantCard>
+        </Card>
       ))}
-    </div>
+    </ListWrap>
   );
 }
 
-// --- Styled Components ---
+/* styled */
+const ListWrap = styled.div`display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.md};`;
+const SkeletonWrap = styled.div`display:flex; flex-direction:column; gap:1rem;`;
+const Card = styled.article`
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};
+  padding:${({theme})=>theme.spacings.md};
+`;
+const CardHead = styled.div`
+  display:flex; align-items:flex-start; justify-content:space-between; gap:${({theme})=>theme.spacings.sm};
+`;
+const Title = styled.h3`margin:0; font-size:${({theme})=>theme.fontSizes.md};`;
+const Meta = styled.p`
+  margin:.25rem 0 0; color:${({theme})=>theme.colors.textSecondary};
+  a{ margin-right:.7em; text-decoration:underline; }
+`;
+const Status = styled.span<{ $on:boolean }>`
+  padding:.2em .6em; border-radius:${({theme})=>theme.radii.pill};
+  background:${({$on,theme})=>$on?theme.colors.successBg:theme.colors.warningBackground};
+  color:${({$on,theme})=>$on?theme.colors.success:theme.colors.warning};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderHighlight};
+  font-size:${({theme})=>theme.fontSizes.xsmall};
+  min-width:60px; text-align:center;
+`;
+const Desc = styled.p`margin:.75rem 0; color:${({theme})=>theme.colors.text};`;
+const ImageGrid = styled.div`display:flex; flex-wrap:wrap; gap:${({theme})=>theme.spacings.sm}; margin-top:${({theme})=>theme.spacings.sm};`;
+const SmallMuted = styled.small`color:${({theme})=>theme.colors.textSecondary};`;
+const Actions = styled.div`display:flex; gap:${({theme})=>theme.spacings.xs}; margin-top:${({theme})=>theme.spacings.sm}; flex-wrap:wrap;`;
 
-const SkeletonWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+const Btn = styled.button`
+  padding:8px 12px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+  border:${({theme})=>theme.borders.thin} transparent; font-weight:${({theme})=>theme.fontWeights.medium};
 `;
 
-const TenantCard = styled.div`
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.md};
-  padding: 1rem;
-  margin-bottom: 1rem;
-  background: ${({ theme }) => theme.colors.cardBackground};
+const Secondary = styled(Btn)`
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
 `;
 
-const ImageGrid = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1rem;
-  img {
-    width: 120px;
-    height: 90px;
-    object-fit: cover;
-    border-radius: 4px;
-    border: 1px solid ${({ theme }) => theme.colors.borderLight};
-    background: ${({ theme }) => theme.colors.inputBackground};
-  }
+const Danger = styled(Btn)`
+  background:${({theme})=>theme.colors.dangerBg};
+  color:${({theme})=>theme.colors.danger};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.danger};
+  &:hover{ background:${({theme})=>theme.colors.dangerHover}; color:${({theme})=>theme.colors.textOnDanger}; }
 `;
 
-const SmallLine = styled.p`
-  margin: 0.2em 0 0.4em 0;
-  font-size: 0.98em;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const Status = styled.span<{ $active: boolean }>`
-  font-weight: 600;
-  color: ${({ $active, theme }) =>
-    $active ? theme.colors.success : theme.colors.danger};
-`;
-
-const Empty = styled.p`
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const ErrorText = styled.p`
-  color: ${({ theme }) => theme.colors.danger};
-  font-weight: bold;
-`;
-
-const ButtonGroup = styled.div`
-  margin-top: 1rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-`;
-
-const ActionButton = styled.button`
-  padding: 0.4rem 0.75rem;
-  background: ${({ theme }) => theme.colors.warning};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-`;
-
-const DeleteButton = styled.button`
-  padding: 0.4rem 0.75rem;
-  background: ${({ theme }) => theme.colors.danger};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-`;
+const Empty = styled.p`text-align:center; color:${({theme})=>theme.colors.textSecondary};`;
+const ErrorText = styled.p`color:${({theme})=>theme.colors.danger}; font-weight:bold;`;

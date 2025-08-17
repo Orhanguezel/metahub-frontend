@@ -22,6 +22,8 @@ const initialState: PortfolioState = {
   successMessage: null,
 };
 
+const BASE = "/portfolio";
+
 const extractErrorMessage = (payload: unknown): string => {
   if (typeof payload === "string") return payload;
   if (
@@ -39,7 +41,7 @@ const extractErrorMessage = (payload: unknown): string => {
 export const fetchPortfolio = createAsyncThunk<IPortfolio[]>(
   "portfolio/fetchAll",
   async (_, thunkAPI) => {
-    const res = await apiCall("get", `/portfolio`, null, thunkAPI.rejectWithValue);
+    const res = await apiCall("get", `${BASE}`, null, thunkAPI.rejectWithValue);
     // response: { success, message, data }
     return res.data;
   }
@@ -50,7 +52,7 @@ export const fetchAllPortfolioAdmin = createAsyncThunk<IPortfolio[]>(
   async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/portfolio/admin`,
+      `${BASE}/admin`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -63,7 +65,7 @@ export const createPortfolio = createAsyncThunk(
   async (formData: FormData, thunkAPI) => {
     const res = await apiCall(
       "post",
-      "/portfolio/admin",
+      `${BASE}/admin`,
       formData,
       thunkAPI.rejectWithValue
     );
@@ -77,7 +79,7 @@ export const updatePortfolio = createAsyncThunk(
   async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) => {
     const res = await apiCall(
       "put",
-      `/portfolio/admin/${id}`,
+      `${BASE}/admin/${id}`,
       formData,
       thunkAPI.rejectWithValue
     );
@@ -90,7 +92,7 @@ export const deletePortfolio = createAsyncThunk(
   async (id: string, thunkAPI) => {
     const res = await apiCall(
       "delete",
-      `/portfolio/admin/${id}`,
+      `${BASE}/admin/${id}`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -109,7 +111,7 @@ export const togglePublishPortfolio = createAsyncThunk(
     formData.append("isPublished", String(isPublished));
     const res = await apiCall(
       "put",
-      `/portfolio/admin/${id}`,
+      `${BASE}/admin/${id}`,
       formData,
       thunkAPI.rejectWithValue
     );
@@ -122,7 +124,7 @@ export const fetchPortfolioBySlug = createAsyncThunk(
   async (slug: string, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/portfolio/slug/${slug}`,
+      `${BASE}/slug/${slug}`,
       null,
       thunkAPI.rejectWithValue
     );

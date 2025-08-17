@@ -1,3 +1,4 @@
+// NotificationActions.tsx
 "use client";
 import React from "react";
 import styled from "styled-components";
@@ -13,38 +14,33 @@ interface Props {
 export default function NotificationActions({ isRead, onMarkRead, onDelete }: Props) {
   const { t } = useI18nNamespace("notification", translations);
   return (
-    <div>
-      {!isRead && (
-        <ActionButton onClick={onMarkRead}>
-          {t("markRead", "Okundu Yap")}
-        </ActionButton>
-      )}
-      <ActionButton danger onClick={onDelete}>
-        {t("delete", "Sil")}
-      </ActionButton>
-    </div>
+    <Row>
+      {!isRead && <Secondary onClick={onMarkRead}>{t("markRead", "Okundu Yap")}</Secondary>}
+      <Danger onClick={onDelete}>{t("delete", "Sil")}</Danger>
+    </Row>
   );
 }
 
-const ActionButton = styled.button.withConfig({
-  shouldForwardProp: (prop) => prop !== "danger",
-})<{ danger?: boolean }>`
-  background: ${({ danger, theme }) =>
-    danger ? theme.colors.dangerBg : theme.colors.buttonBackground};
-  color: ${({ danger, theme }) =>
-    danger ? theme.colors.danger : theme.colors.buttonText};
-  border: ${({ theme }) => theme.borders.thin}
-    ${({ danger, theme }) => (danger ? theme.colors.danger : theme.colors.buttonBorder)};
-  padding: ${({ theme }) => theme.spacings.xs} ${({ theme }) => theme.spacings.sm};
-  border-radius: ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.xsmall};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  cursor: pointer;
-  margin-right: ${({ theme }) => theme.spacings.xs};
-  transition: background 0.18s, color 0.18s;
-  &:hover {
-    background: ${({ danger, theme }) =>
-      danger ? theme.colors.danger : theme.colors.primaryHover};
-    color: #fff;
+/* styled — list/actions patern */
+const Row = styled.div`
+  display:flex;gap:${({theme})=>theme.spacings.xs};flex-wrap:wrap;justify-content:flex-end;
+`;
+
+const Secondary = styled.button`
+  padding:8px 10px;border-radius:${({theme})=>theme.radii.md};cursor:pointer;
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  font-size:${({theme})=>theme.fontSizes.xsmall};
+`;
+
+const Danger = styled(Secondary)`
+  background:${({theme})=>theme.colors.dangerBg};
+  color:${({theme})=>theme.colors.danger};
+  border-color:${({theme})=>theme.colors.danger};
+  &:hover{
+    background:${({theme})=>theme.colors.dangerHover};
+    color:${({theme})=>theme.colors.textOnDanger};
+    border-color:${({theme})=>theme.colors.dangerHover};
   }
 `;

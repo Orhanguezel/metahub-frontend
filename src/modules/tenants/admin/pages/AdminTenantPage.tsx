@@ -1,21 +1,21 @@
+// AdminTenantPage.tsx
 "use client";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-
 import {
   createTenant,
   updateTenant,
   deleteTenant,
   setSelectedTenant,
   clearSelectedTenant,
-  clearTenantMessages, // Ekledik!
-  fetchTenants,        // Lazy fetch için öneri
+  clearTenantMessages,
+  fetchTenants,
 } from "@/modules/tenants/slice/tenantSlice";
 import { ITenant } from "@/modules/tenants/types";
 import { TenantFormModal, TenantList, TenantTabs } from "@/modules/tenants";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/tenants";
+import { translations } from "@/modules/tenants";
 import type { SupportedLocale } from "@/types/common";
 
 type ActiveTab = "list" | "form";
@@ -29,29 +29,20 @@ export default function AdminTenantPage() {
     (state) => state.tenants
   );
   const [activeTab, setActiveTab] = useState<ActiveTab>("list");
+  const count = Array.isArray(tenants) ? tenants.length : 0;
 
-  // --- Merkezi fetch: ilk açılışta ve tenant değiştiğinde sadece bir kez fetchle
   useEffect(() => {
     if (!tenants.length) dispatch(fetchTenants());
-    // Unmount'ta mesajları sıfırla (geri dönünce eski error/success mesajı kalmaz)
     return () => {
       dispatch(clearTenantMessages());
     };
   }, [dispatch, tenants.length]);
 
-  // --- Toast ile mesaj göstermek için öneri
   useEffect(() => {
-    if (successMessage) {
-      // toast.success(successMessage); // toastify entegre ise açabilirsin
-      dispatch(clearTenantMessages());
-    }
-    if (error) {
-      // toast.error(error);
-      dispatch(clearTenantMessages());
-    }
+    if (successMessage) dispatch(clearTenantMessages());
+    if (error) dispatch(clearTenantMessages());
   }, [successMessage, error, dispatch]);
 
-  // Modal Submit
   const handleFormSubmit = async (formData: FormData, id?: string) => {
     if (id) {
       await dispatch(updateTenant({ id, formData })).unwrap();
@@ -62,21 +53,12 @@ export default function AdminTenantPage() {
     setActiveTab("list");
   };
 
-  // Tenant Sil
   const handleDelete = async (id: string) => {
-    if (
-      window.confirm(
-        t(
-          "admin.confirm.delete_tenant",
-          "Are you sure you want to delete this tenant?"
-        )
-      )
-    ) {
+    if (window.confirm(t("admin.confirm.delete_tenant", "Are you sure you want to delete this tenant?"))) {
       await dispatch(deleteTenant(id)).unwrap();
     }
   };
 
-  // Tenant Düzenle
   const handleEdit = (tenant: ITenant) => {
     dispatch(setSelectedTenant(tenant));
     setActiveTab("form");
@@ -93,81 +75,129 @@ export default function AdminTenantPage() {
   };
 
   return (
-    <Wrapper>
+    <PageWrap>
       <Header>
-        <Title>{t("admin.title", "Tenant Management")}</Title>
-        <AddButton onClick={handleCreate}>
-          {t("admin.create", "Add Tenant")}
-        </AddButton>
+        <TitleBlock>
+          <h1>{t("admin.title", "Tenant Management")}</h1>
+          <Subtitle>{t("admin.subtitle", "Create, organize and manage tenants")}</Subtitle>
+        </TitleBlock>
+        <Right>
+          <Counter aria-label="tenant-count">{count}</Counter>
+          <PrimaryBtn onClick={handleCreate}>+ {t("admin.create", "Add Tenant")}</PrimaryBtn>
+        </Right>
       </Header>
 
-      <TenantTabs activeTab={activeTab} onChange={setActiveTab} />
+      <TabsWrap>
+        <TenantTabs activeTab={activeTab} onChange={setActiveTab} />
+      </TabsWrap>
 
-      <TabContent>
-        {activeTab === "list" && (
-          <TenantList
-            tenants={tenants}
-            lang={lang}
-            loading={loading}
-            error={error}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        )}
+      <Section>
+        <SectionHead>
+          <h2>
+            {activeTab === "list" && t("admin.tabs.tenant", "Tenants")}
+            {activeTab === "form" && t("admin.tabs.create", "Add New")}
+          </h2>
+          {activeTab === "form" ? (
+            <SmallBtn onClick={() => setActiveTab("list")}>{t("backToList", "Back to list")}</SmallBtn>
+          ) : (
+            <SmallBtn disabled={loading}>{t("refresh", "Refresh")}</SmallBtn>
+          )}
+        </SectionHead>
 
-        {activeTab === "form" && (
-          <TenantFormModal
-            isOpen={true}
-            editingItem={selectedTenant}
-            onClose={handleModalClose}
-            onSubmit={handleFormSubmit}
-          />
-        )}
-      </TabContent>
-    </Wrapper>
+        <Card>
+          {activeTab === "list" && (
+            <TenantList
+              tenants={tenants}
+              lang={lang}
+              loading={loading}
+              error={error}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          )}
+
+          {activeTab === "form" && (
+            <TenantFormModal
+              isOpen
+              editingItem={selectedTenant}
+              onClose={handleModalClose}
+              onSubmit={handleFormSubmit}
+            />
+          )}
+        </Card>
+      </Section>
+    </PageWrap>
   );
 }
 
-// ------------- Styled Components aynı kalabilir -----------------
-const Wrapper = styled.div`
-  max-width: 1200px;
-  margin: auto;
-  padding: ${({ theme }) => theme.layout.sectionspacings || "2rem"}
-    ${({ theme }) => theme.spacings.md || "1.5rem"};
+/* ---- styled (admin pattern) ---- */
+const PageWrap = styled.div`
+  max-width: ${({ theme }) => theme.layout.containerWidth};
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacings.xl};
 `;
 
 const Header = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: ${({ theme }) => theme.spacings.lg || "2rem"};
-`;
-
-const Title = styled.h2`
-  font-size: ${({ theme }) => theme.fontSizes.lg || "1.5rem"};
-  color: ${({ theme }) => theme.colors.text || "#222"};
-`;
-
-const AddButton = styled.button`
-  background: ${({ theme }) => theme.buttons.primary.background};
-  color: ${({ theme }) => theme.buttons.primary.text};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.md};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: 600;
-  cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.fast};
-
-  &:hover {
-    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+  ${({ theme }) => theme.media.mobile} {
+    flex-direction: column; align-items: flex-start; gap: ${({ theme }) => theme.spacings.sm};
   }
 `;
 
-const TabContent = styled.div`
-  background: ${({ theme }) => theme.colors.cardBackground || "#fff"};
-  border: 1px solid ${({ theme }) => theme.colors.border || "#eee"};
-  padding: ${({ theme }) => theme.spacings.lg || "2rem"};
-  border-radius: ${({ theme }) => theme.radii.md || "12px"};
+const TitleBlock = styled.div`
+  display:flex; flex-direction:column; gap:4px;
+  h1 { margin: 0; }
+`;
+
+const Subtitle = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+`;
+
+const Right = styled.div`
+  display:flex; gap:${({ theme }) => theme.spacings.sm}; align-items:center;
+`;
+
+const Counter = styled.span`
+  padding: 6px 10px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+`;
+
+const TabsWrap = styled.div`
+  margin-bottom:${({ theme }) => theme.spacings.md};
+`;
+
+const Section = styled.section`
+  margin-top: ${({ theme }) => theme.spacings.sm};
+`;
+
+const SectionHead = styled.div`
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:${({ theme }) => theme.spacings.sm};
+`;
+
+const Card = styled.div`
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  padding: ${({ theme }) => theme.spacings.lg};
+`;
+
+const PrimaryBtn = styled.button`
+  background:${({ theme }) => theme.buttons.primary.background};
+  color:${({ theme }) => theme.buttons.primary.text};
+  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.buttons.primary.backgroundHover};
+  padding:8px 12px; border-radius:${({ theme }) => theme.radii.md}; cursor:pointer;
+  &:hover{ background:${({ theme }) => theme.buttons.primary.backgroundHover}; }
+`;
+
+const SmallBtn = styled.button`
+  background:${({ theme }) => theme.buttons.secondary.background};
+  color:${({ theme }) => theme.buttons.secondary.text};
+  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  padding:6px 10px; border-radius:${({ theme }) => theme.radii.md}; cursor:pointer;
 `;

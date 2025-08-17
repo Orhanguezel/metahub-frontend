@@ -6,55 +6,47 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/library/locales";
 import type { LibraryCategory } from "@/modules/library/types";
 import { LANG_LABELS, SupportedLocale } from "@/types/common";
-import { deleteLibraryCategory } from "@/modules/library/slice/libraryCategorySlice";
+import { deleteLibraryCategory, fetchLibraryCategories } from "@/modules/library/slice/libraryCategorySlice";
+import { useEffect } from "react";
 
-interface ProductCategoryListPageProps {
+interface Props {
   onAdd: () => void;
   onEdit: (category: LibraryCategory) => void;
 }
 
-export default function ProductCategoryListPage({
-  onAdd,
-  onEdit,
-}: ProductCategoryListPageProps) {
+export default function CategoryListPage({ onAdd, onEdit }: Props) {
   const dispatch = useAppDispatch();
   const { i18n, t } = useI18nNamespace("library", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  // Merkezi fetch ile gelen slice'ı okuyoruz
-   const categories = useAppSelector((state) => state.libraryCategory.categories);
-  const loading = useAppSelector((state) => state.library.loading);
-  const error = useAppSelector((state) => state.library.error);
-  
+  const categories = useAppSelector((s) => s.libraryCategory.categories);
+  const loading = useAppSelector((s) => s.libraryCategory.loading);
+  const error = useAppSelector((s) => s.libraryCategory.error);
 
-  // Silme işlemi
-  const handleDelete = (id: string) => {
-    const confirmMessage = t(
-      "admin.confirm.delete",
-      "Are you sure you want to delete this category?"
-    );
-    if (window.confirm(confirmMessage)) {
-      dispatch(deleteLibraryCategory(id));
+  useEffect(() => {
+    if (!categories || categories.length === 0) {
+      dispatch(fetchLibraryCategories());
     }
+  }, [dispatch, categories]); // intentionally once
+
+  const handleDelete = (id: string) => {
+    const msg = t("admin.confirm.delete", "Are you sure you want to delete this category?");
+    if (confirm(msg)) dispatch(deleteLibraryCategory(id));
   };
 
   return (
-    <Wrapper>
+    <Wrap>
       <Header>
-        <h2>{t("admin.categories.title", "Product Categories")}</h2>
-        <AddButton onClick={onAdd}>
-          {t("admin.categories.add", "Add Category")}
-        </AddButton>
+        <h2>{t("admin.categories.title", "Categories")}</h2>
+        <Primary onClick={onAdd}>{t("admin.categories.add", "Add Category")}</Primary>
       </Header>
 
       {loading ? (
-        <StatusMessage>{t("admin.loading", "Loading...")}</StatusMessage>
+        <Status>{t("admin.loading", "Loading...")}</Status>
       ) : error ? (
-        <ErrorMessage>❌ {error}</ErrorMessage>
+        <Error>❌ {error}</Error>
       ) : !categories || categories.length === 0 ? (
-        <StatusMessage>
-          {t("admin.categories.empty", "No categories found.")}
-        </StatusMessage>
+        <Status>{t("admin.categories.empty", "No categories found.")}</Status>
       ) : (
         <Table>
           <thead>
@@ -66,101 +58,66 @@ export default function ProductCategoryListPage({
             </tr>
           </thead>
           <tbody>
-            {categories.map((cat: LibraryCategory, i: number) => (
+            {categories.map((cat, i) => (
               <tr key={cat._id}>
                 <td>{i + 1}</td>
-                <td>{cat.name?.[lang] || "—"}</td>
+                <td>{cat.name?.[lang] || cat.name?.en || "—"}</td>
                 <td>{cat.slug}</td>
-                <td>
-                  <ActionButton onClick={() => onEdit(cat)}>
-                    {t("admin.edit", "Edit")}
-                  </ActionButton>
-                  <DeleteButton onClick={() => handleDelete(cat._id)}>
-                    {t("admin.delete", "Delete")}
-                  </DeleteButton>
+                <td className="actions">
+                  <Secondary onClick={() => onEdit(cat)}>{t("admin.edit", "Edit")}</Secondary>
+                  <Danger onClick={() => handleDelete(cat._id)}>{t("admin.delete", "Delete")}</Danger>
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
       )}
-    </Wrapper>
+    </Wrap>
   );
 }
 
-// --- Styled Components ---
-const Wrapper = styled.div`
-  margin-top: 1rem;
-`;
-
+/* styled */
+const Wrap = styled.div`margin-top:${({theme})=>theme.spacings.md};`;
 const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:${({theme})=>theme.spacings.md};
+  h2{ margin:0; font-size:${({theme})=>theme.fontSizes.lg}; }
 `;
-
-const AddButton = styled.button`
-  padding: 0.5rem 1rem;
-  background: ${({ theme }) => theme.colors.primary};
-  color: white;
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  cursor: pointer;
-  &:hover {
-    background: ${({ theme }) => theme.colors.primaryHover};
-  }
+const Primary = styled.button`
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  border:${({theme})=>theme.borders.thin} transparent;
+  padding:8px 12px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
 `;
-
 const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  th, td {
-    padding: 0.75rem;
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    text-align: left;
-    font-size: 0.95rem;
+  width:100%; border-collapse:collapse;
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  border-radius:${({theme})=>theme.radii.lg};
+  overflow:hidden; box-shadow:${({theme})=>theme.cards.shadow};
+
+  th, td{ padding:${({theme})=>theme.spacings.md}; text-align:left; }
+  thead th{
+    background:${({theme})=>theme.colors.tableHeader};
+    color:${({theme})=>theme.colors.textSecondary};
+    font-weight:${({theme})=>theme.fontWeights.semiBold};
+    white-space:nowrap;
   }
-  th {
-    background: ${({ theme }) => theme.colors.tableHeader};
-    color: ${({ theme }) => theme.colors.text};
-  }
+  tbody td{ border-top:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright}; }
+  td.actions{ white-space:nowrap; }
 `;
-
-const StatusMessage = styled.p`
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 0.95rem;
+const Secondary = styled.button`
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  padding:8px 10px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer; margin-right:8px;
+  &:hover{ background:${({theme})=>theme.buttons.secondary.backgroundHover}; }
 `;
-
-const ErrorMessage = styled.p`
-  text-align: center;
-  color: red;
-  font-size: 0.95rem;
+const Danger = styled(Secondary)`
+  background:${({theme})=>theme.colors.dangerBg};
+  color:${({theme})=>theme.colors.danger};
+  border-color:${({theme})=>theme.colors.danger};
+  &:hover{ background:${({theme})=>theme.colors.dangerHover}; color:${({theme})=>theme.colors.textOnDanger}; }
 `;
-
-const ActionButton = styled.button`
-  margin-right: 0.5rem;
-  padding: 0.4rem 0.8rem;
-  background: ${({ theme }) => theme.colors.warning};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  cursor: pointer;
-`;
-
-const DeleteButton = styled.button`
-  padding: 0.4rem 0.8rem;
-  background: ${({ theme }) => theme.colors.danger};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  cursor: pointer;
-`;
+const Status = styled.p`text-align:center; color:${({theme})=>theme.colors.textSecondary};`;
+const Error = styled.p`text-align:center; color:${({theme})=>theme.colors.danger}; font-weight:${({theme})=>theme.fontWeights.semiBold};`;

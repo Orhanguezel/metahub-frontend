@@ -1,10 +1,11 @@
+// src/modules/contact/slice/contactSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { IContactMessage } from "@/modules/contact/types";
 
 interface ContactState {
-  messages: IContactMessage[];          // Public (kullanıcıya gösterilen)
-  messagesAdmin: IContactMessage[];     // Admin paneli için tüm mesajlar
+  messages: IContactMessage[];
+  messagesAdmin: IContactMessage[];
   loading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -20,50 +21,65 @@ const initialState: ContactState = {
   deleteStatus: "idle",
 };
 
-// 1️⃣ Public: Send contact message (herkese açık)
+const pickData = (res: any) => res?.data?.data ?? res?.data;
+
+const BASE = "/contact";
+
+// 1) Public: Send contact message
 export const sendContactMessage = createAsyncThunk<
   IContactMessage,
-  Omit<IContactMessage, "_id" | "isRead" | "isArchived" | "createdAt" | "updatedAt" | "tenant">
->(
-  "contact/sendMessage",
-  async (payload, thunkAPI) => {
-    const res = await apiCall("post", "/contact", payload, thunkAPI.rejectWithValue);
-    return res.data;
+  Omit<IContactMessage, "_id" | "isRead" | "isArchived" | "createdAt" | "updatedAt" | "tenant">,
+  { rejectValue: string }
+>("contact/sendMessage", async (payload, { rejectWithValue }) => {
+  try {
+    const res = await apiCall("post", `${BASE}`, payload, rejectWithValue);
+    return pickData(res);
+  } catch (err: any) {
+    return rejectWithValue(err?.message || "Failed to send message.");
   }
-);
+});
 
-// 2️⃣ Admin: Tüm mesajları getir
-export const fetchAllContactMessages = createAsyncThunk<IContactMessage[]>(
-  "contact/fetchAll",
-  async (_, thunkAPI) => {
-    const res = await apiCall("get", "/contact", null, thunkAPI.rejectWithValue);
-    return res.data;
+// 2) Admin: fetch all messages
+export const fetchAllContactMessages = createAsyncThunk<
+  IContactMessage[],
+  void,
+  { rejectValue: string }
+>("contact/fetchAll", async (_, { rejectWithValue }) => {
+  try {
+    const res = await apiCall("get", `${BASE}`, null, rejectWithValue);
+    return pickData(res);
+  } catch (err: any) {
+    return rejectWithValue(err?.message || "Failed to fetch messages.");
   }
-);
+});
 
-// 3️⃣ Admin: Mesaj sil
+// 3) Admin: delete message
 export const deleteContactMessage = createAsyncThunk<
-  string,  // payload: silinen mesajın _id'si
-  string   // arg: id
->(
-  "contact/delete",
-  async (id, thunkAPI) => {
-    await apiCall("delete", `/contact/${id}`, null, thunkAPI.rejectWithValue);
+  string,
+  string,
+  { rejectValue: string }
+>("contact/delete", async (id, { rejectWithValue }) => {
+  try {
+    await apiCall("delete", `${BASE}/${id}`, null, rejectWithValue);
     return id;
+  } catch (err: any) {
+    return rejectWithValue(err?.message || "Failed to delete message.");
   }
-);
+});
 
-// 4️⃣ Admin: Okundu işaretle
+// 4) Admin: mark as read
 export const markContactMessageAsRead = createAsyncThunk<
   IContactMessage,
-  string
->(
-  "contact/markAsRead",
-  async (id, thunkAPI) => {
-    const res = await apiCall("patch", `/contact/${id}/read`, null, thunkAPI.rejectWithValue);
-    return res.data;
+  string,
+  { rejectValue: string }
+>("contact/markAsRead", async (id, { rejectWithValue }) => {
+  try {
+    const res = await apiCall("patch", `${BASE}/${id}/read`, null, rejectWithValue);
+    return pickData(res);
+  } catch (err: any) {
+    return rejectWithValue(err?.message || "Failed to mark as read.");
   }
-);
+});
 
 const contactSlice = createSlice({
   name: "contact",
@@ -77,10 +93,11 @@ const contactSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // 1️⃣ Public: Send
+      // send
       .addCase(sendContactMessage.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.successMessage = null;
       })
       .addCase(sendContactMessage.fulfilled, (state) => {
         state.loading = false;
@@ -88,44 +105,43 @@ const contactSlice = createSlice({
       })
       .addCase(sendContactMessage.rejected, (state, action) => {
         state.loading = false;
-        state.error = String(action.payload) || "Failed to send message.";
+        state.error = (action.payload as string) || "Failed to send message.";
       })
 
-      // 2️⃣ Admin: fetchAll (tüm mesajlar)
+      // fetch all
       .addCase(fetchAllContactMessages.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchAllContactMessages.fulfilled, (state, action) => {
+      .addCase(fetchAllContactMessages.fulfilled, (state, action: PayloadAction<IContactMessage[]>) => {
         state.loading = false;
         state.messagesAdmin = action.payload;
       })
       .addCase(fetchAllContactMessages.rejected, (state, action) => {
         state.loading = false;
-        state.error = String(action.payload) || "Failed to fetch messages.";
+        state.error = (action.payload as string) || "Failed to fetch messages.";
       })
 
-      // 3️⃣ Admin: delete
+      // delete
       .addCase(deleteContactMessage.pending, (state) => {
         state.deleteStatus = "loading";
         state.error = null;
+        state.successMessage = null;
       })
       .addCase(deleteContactMessage.fulfilled, (state, action: PayloadAction<string>) => {
         state.deleteStatus = "succeeded";
-        state.messagesAdmin = state.messagesAdmin.filter((msg) => msg._id !== action.payload);
-        state.messages = state.messages.filter((msg) => msg._id !== action.payload);
+        state.messagesAdmin = state.messagesAdmin.filter((m) => m._id !== action.payload);
+        state.messages = state.messages.filter((m) => m._id !== action.payload);
         state.successMessage = "Message deleted successfully.";
       })
       .addCase(deleteContactMessage.rejected, (state, action) => {
         state.deleteStatus = "failed";
-        state.error = String(action.payload) || "Failed to delete message.";
+        state.error = (action.payload as string) || "Failed to delete message.";
       })
 
-      // 4️⃣ Admin: Okundu yap
-      .addCase(markContactMessageAsRead.fulfilled, (state, action) => {
-        state.messagesAdmin = state.messagesAdmin.map((msg) =>
-          msg._id === action.payload._id ? action.payload : msg
-        );
+      // mark read
+      .addCase(markContactMessageAsRead.fulfilled, (state, action: PayloadAction<IContactMessage>) => {
+        state.messagesAdmin = state.messagesAdmin.map((m) => (m._id === action.payload._id ? action.payload : m));
       });
   },
 });

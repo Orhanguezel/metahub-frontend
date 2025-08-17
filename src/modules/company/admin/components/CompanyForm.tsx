@@ -1,4 +1,6 @@
+// src/modules/company/components/CompanyForm.tsx
 "use client";
+
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
@@ -11,7 +13,6 @@ import { SocialLinksForm } from "@/modules/company";
 import { useAppSelector } from "@/store/hooks";
 import type { Address } from "@/modules/users/types/address";
 
-// Helpers
 const getUrlArray = (images?: ICompanyImage[]): string[] =>
   Array.isArray(images) ? images.map((img) => img.url) : [];
 
@@ -23,23 +24,14 @@ const fillLabel = (obj?: TranslatedLabel) => {
 
 interface Props {
   initialValues: ICompany;
-  onSubmit: (
-    values: ICompany,
-    newLogos: File[],
-    removedLogos?: string[]
-  ) => void;
+  onSubmit: (values: ICompany, newLogos: File[], removedLogos?: string[]) => void;
   loading?: boolean;
 }
 
-export default function CompanyForm({
-  initialValues,
-  onSubmit,
-  loading,
-}: Props) {
+export default function CompanyForm({ initialValues, onSubmit, loading }: Props) {
   const { t } = useI18nNamespace("company", translations);
-  const company = useAppSelector((state) => state.company.companyAdmin);
+  const company = useAppSelector((s) => s.company.companyAdmin);
 
-  // --- STATE'ler ---
   const [companyName, setCompanyName] = useState(fillLabel(initialValues.companyName));
   const [companyDesc, setCompanyDesc] = useState(fillLabel(initialValues.companyDesc));
   const [email, setEmail] = useState(initialValues.email);
@@ -51,19 +43,17 @@ export default function CompanyForm({
   const [bankDetails, setBankDetails] = useState(initialValues.bankDetails);
   const [socialLinks, setSocialLinks] = useState(initialValues.socialLinks ?? {});
   const [managers, setManagers] = useState<string[]>(
-    Array.isArray(initialValues.managers) && initialValues.managers.length > 0
-      ? initialValues.managers
-      : [""]
+    Array.isArray(initialValues.managers) && initialValues.managers.length > 0 ? initialValues.managers : [""]
   );
+
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(getUrlArray(initialValues.images));
-  // --- Adresler state (sadece object olanlar tutulacak) ---
+
   const [addresses, setAddresses] = useState<Address[]>(
     (initialValues.addresses ?? []).filter((a): a is Address => typeof a === "object" && a !== null)
   );
 
-  // --- Sync initialValues ile state ---
   useEffect(() => {
     setCompanyName(fillLabel(initialValues.companyName));
     setCompanyDesc(fillLabel(initialValues.companyDesc));
@@ -75,19 +65,13 @@ export default function CompanyForm({
     setWebsite(initialValues.website || "");
     setBankDetails(initialValues.bankDetails);
     setSocialLinks(initialValues.socialLinks ?? {});
-    setManagers(
-      Array.isArray(initialValues.managers) && initialValues.managers.length > 0
-        ? initialValues.managers
-        : [""]
-    );
+    setManagers(Array.isArray(initialValues.managers) && initialValues.managers.length > 0 ? initialValues.managers : [""]);
     setExistingImages(getUrlArray(initialValues.images));
     setSelectedFiles([]);
     setRemovedImages([]);
     setAddresses(
       Array.isArray(initialValues.addresses)
-        ? initialValues.addresses.filter(
-            (a): a is Address => typeof a === "object" && a !== null
-          )
+        ? initialValues.addresses.filter((a): a is Address => typeof a === "object" && a !== null)
         : []
     );
   }, [
@@ -106,24 +90,27 @@ export default function CompanyForm({
     initialValues.addresses,
   ]);
 
-  // --- BANK DETAILS LOGIC ---
   const handleBankChange = (field: keyof typeof bankDetails, value: string) => {
-    setBankDetails(prev => ({ ...prev, [field]: value }));
+    setBankDetails((prev) => ({ ...prev, [field]: value }));
   };
 
-  // --- SOCIAL LINKS LOGIC ---
   const handleSocialLinksChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSocialLinks({ ...socialLinks, [e.target.name]: e.target.value });
   };
 
-  // --- MANAGERS LOGIC ---
   const handleManagerChange = (idx: number, value: string) => {
     setManagers(managers.map((m, i) => (i === idx ? value : m)));
   };
   const addManager = () => setManagers([...managers, ""]);
-  const removeManager = (idx: number) => setManagers(managers.length === 1 ? [""] : managers.filter((_, i) => i !== idx));
+  const removeManager = (idx: number) =>
+    setManagers(managers.length === 1 ? [""] : managers.filter((_, i) => i !== idx));
 
-  // --- SUBMIT HANDLER ---
+  const handleLogoChange = useCallback((files: File[], removed: string[], current: string[]) => {
+    setSelectedFiles(files);
+    setRemovedImages(removed);
+    setExistingImages(current);
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyName["tr"] || !email || !phone || !taxNumber || !bankDetails.bankName || !bankDetails.iban || !bankDetails.swiftCode) {
@@ -144,28 +131,18 @@ export default function CompanyForm({
         bankDetails,
         managers,
         socialLinks,
-        addresses: addresses.map(a => a._id!).filter(Boolean), // sadece object adreslerin _id'leri
+        // yalnızca object olan adreslerin _id'leri gönderilir
+        addresses: addresses.map((a) => a._id!).filter(Boolean),
       },
       selectedFiles,
       removedImages
     );
   };
 
-  // --- LOGO UPLOAD HANDLER ---
-  const handleLogoChange = useCallback(
-    (files: File[], removed: string[], current: string[]) => {
-      setSelectedFiles(files);
-      setRemovedImages(removed);
-      setExistingImages(current);
-    },
-    []
-  );
-
-  // --- Render ---
   return (
-    <FormStyled onSubmit={handleSubmit} autoComplete="off" noValidate>
-      <SectionTitle>{t("companyInfo", "Company Info")}</SectionTitle>
-      {/* Çoklu dil: Şirket adı */}
+    <Form onSubmit={handleSubmit} autoComplete="off" noValidate>
+      <BlockTitle>{t("companyInfo", "Company Info")}</BlockTitle>
+
       {SUPPORTED_LOCALES.map((lng) => (
         <div key={"companyName_" + lng}>
           <Label htmlFor={`companyName.${lng}`}>
@@ -173,16 +150,14 @@ export default function CompanyForm({
           </Label>
           <Input
             id={`companyName.${lng}`}
-            name={`companyName.${lng}`}
             value={companyName[lng] || ""}
-            onChange={e => setCompanyName({ ...companyName, [lng]: e.target.value })}
+            onChange={(e) => setCompanyName({ ...companyName, [lng]: e.target.value })}
             $hasError={!companyName[lng]}
             disabled={loading}
           />
         </div>
       ))}
 
-      {/* Çoklu dil: Kısa açıklama (opsiyonel) */}
       {SUPPORTED_LOCALES.map((lng) => (
         <div key={"companyDesc_" + lng}>
           <Label htmlFor={`companyDesc.${lng}`}>
@@ -190,162 +165,109 @@ export default function CompanyForm({
           </Label>
           <Input
             id={`companyDesc.${lng}`}
-            name={`companyDesc.${lng}`}
             value={companyDesc[lng] || ""}
-            onChange={e => setCompanyDesc({ ...companyDesc, [lng]: e.target.value })}
-            $hasError={false}
+            onChange={(e) => setCompanyDesc({ ...companyDesc, [lng]: e.target.value })}
             disabled={loading}
           />
         </div>
       ))}
 
       <Label htmlFor="email">{t("email", "E-Mail")}</Label>
-      <Input id="email" name="email" type="email" value={email} onChange={e => setEmail(e.target.value)} disabled={loading} />
+      <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} />
 
       <Label htmlFor="phone">{t("phone", "Phone")}</Label>
-      <Input id="phone" name="phone" value={phone} onChange={e => setPhone(e.target.value)} disabled={loading} />
+      <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={loading} />
 
       <Label htmlFor="taxNumber">{t("taxNumber", "Tax Number")}</Label>
-      <Input id="taxNumber" name="taxNumber" value={taxNumber} onChange={e => setTaxNumber(e.target.value)} disabled={loading} />
+      <Input id="taxNumber" value={taxNumber} onChange={(e) => setTaxNumber(e.target.value)} disabled={loading} />
 
       <Label htmlFor="handelsregisterNumber">{t("handelsregisterNumber", "Handelsregister Number")}</Label>
-      <Input id="handelsregisterNumber" name="handelsregisterNumber" value={handelsregisterNumber} onChange={e => setHandelsregisterNumber(e.target.value)} disabled={loading} />
+      <Input id="handelsregisterNumber" value={handelsregisterNumber} onChange={(e) => setHandelsregisterNumber(e.target.value)} disabled={loading} />
 
       <Label htmlFor="registerCourt">{t("registerCourt", "Register Court")}</Label>
-      <Input id="registerCourt" name="registerCourt" value={registerCourt} onChange={e => setRegisterCourt(e.target.value)} disabled={loading} />
+      <Input id="registerCourt" value={registerCourt} onChange={(e) => setRegisterCourt(e.target.value)} disabled={loading} />
 
       <Label htmlFor="website">{t("website", "Website")}</Label>
-      <Input id="website" name="website" value={website} onChange={e => setWebsite(e.target.value)} disabled={loading} />
+      <Input id="website" value={website} onChange={(e) => setWebsite(e.target.value)} disabled={loading} />
 
-      {/* --- Çoklu Adres Alanı --- */}
-      <SectionTitle>{t("addresses", "Addresses")}</SectionTitle>
-      <AddressForm
-        parentType="company"
-        parentId={company?._id}
-        addresses={addresses}
-        setAddresses={setAddresses}
-        renderAsForm={false}
-      />
+      <BlockTitle>{t("addresses", "Addresses")}</BlockTitle>
+      <AddressForm parentType="company" parentId={company?._id} addresses={addresses} setAddresses={setAddresses} renderAsForm={false} />
 
-      <SectionTitle>{t("bankDetails", "Bank Details")}</SectionTitle>
+      <BlockTitle>{t("bankDetails", "Bank Details")}</BlockTitle>
       <Label htmlFor="bankDetails.bankName">{t("bankName", "Bank Name")}</Label>
-      <Input id="bankDetails.bankName" name="bankDetails.bankName" value={bankDetails.bankName} onChange={e => handleBankChange("bankName", e.target.value)} disabled={loading} />
+      <Input id="bankDetails.bankName" value={bankDetails.bankName} onChange={(e) => handleBankChange("bankName", e.target.value)} disabled={loading} />
       <Label htmlFor="bankDetails.iban">{t("iban", "IBAN")}</Label>
-      <Input id="bankDetails.iban" name="bankDetails.iban" value={bankDetails.iban} onChange={e => handleBankChange("iban", e.target.value)} disabled={loading} />
+      <Input id="bankDetails.iban" value={bankDetails.iban} onChange={(e) => handleBankChange("iban", e.target.value)} disabled={loading} />
       <Label htmlFor="bankDetails.swiftCode">{t("swiftCode", "SWIFT Code")}</Label>
-      <Input id="bankDetails.swiftCode" name="bankDetails.swiftCode" value={bankDetails.swiftCode} onChange={e => handleBankChange("swiftCode", e.target.value)} disabled={loading} />
+      <Input id="bankDetails.swiftCode" value={bankDetails.swiftCode} onChange={(e) => handleBankChange("swiftCode", e.target.value)} disabled={loading} />
 
-      <SectionTitle>{t("managers", "Managers")}</SectionTitle>
-      <FieldArrayContainer>
-        {managers.map((manager, idx) => (
-          <div key={idx} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <Input
-              value={manager}
-              onChange={e => handleManagerChange(idx, e.target.value)}
-              disabled={loading}
-              placeholder={t("manager", "Manager")}
-            />
-            <Button type="button" onClick={() => removeManager(idx)} disabled={managers.length === 1}>
+      <BlockTitle>{t("managers", "Managers")}</BlockTitle>
+      <FieldArray>
+        {managers.map((m, idx) => (
+          <Row key={idx}>
+            <Input value={m} onChange={(e) => handleManagerChange(idx, e.target.value)} disabled={loading} placeholder={t("manager", "Manager")} />
+            <SmallBtn type="button" onClick={() => removeManager(idx)} disabled={managers.length === 1}>
               {t("remove", "Remove")}
-            </Button>
-          </div>
+            </SmallBtn>
+          </Row>
         ))}
-        <Button type="button" onClick={addManager}>
-          + {t("addManager", "Add Manager")}
-        </Button>
-      </FieldArrayContainer>
+        <SmallBtn type="button" onClick={addManager}>+ {t("addManager", "Add Manager")}</SmallBtn>
+      </FieldArray>
 
-      {/* --- Sosyal Medya --- */}
-      <SocialLinksForm
-        values={socialLinks}
-        onChange={handleSocialLinksChange}
-        loading={loading}
-        renderAsForm={false}
-      />
+      <BlockTitle>{t("socialMedia", "Social Media")}</BlockTitle>
+      <SocialLinksForm values={socialLinks as any} onChange={handleSocialLinksChange} loading={loading} renderAsForm={false} />
 
-      <SectionTitle>{t("logoUpload", "Upload Logo(s)")}</SectionTitle>
-      <ImageUploadWithPreview
-        max={5}
-        defaultImages={existingImages}
-        onChange={handleLogoChange}
-        folder="company"
-      />
+      <BlockTitle>{t("logoUpload", "Upload Logo(s)")}</BlockTitle>
+      <ImageUploadWithPreview max={5} defaultImages={existingImages} onChange={handleLogoChange} folder="company" />
 
-      <Button type="submit" aria-label={t("save", "Save Company")} disabled={loading}>
-        {t("save", "Save Company")}
-      </Button>
-    </FormStyled>
+      <Actions>
+        <Primary type="submit" aria-label={t("save", "Save Company")} disabled={loading}>
+          {t("save", "Save Company")}
+        </Primary>
+      </Actions>
+    </Form>
   );
 }
 
-// --- Styled Components ---
-const FormStyled = styled.form`
-  max-width: 800px;
-  margin: 0 auto;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  padding: ${({ theme }) => theme.spacings.lg};
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.sm};
+/* styled (pattern) */
+const Form = styled.form`
+  display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.sm};
 `;
-
-const SectionTitle = styled.h4`
-  margin-top: ${({ theme }) => theme.spacings.lg};
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  font-size: ${({ theme }) => theme.fontSizes.md};
+const BlockTitle = styled.h4`
+  margin:${({theme})=>theme.spacings.md} 0 ${({theme})=>theme.spacings.xs};
+  color:${({theme})=>theme.colors.primary};
+  font-weight:${({theme})=>theme.fontWeights.bold};
+  font-size:${({theme})=>theme.fontSizes.md};
 `;
-
-const Button = styled.button.attrs({ type: "submit" })`
-  margin-top: ${({ theme }) => theme.spacings.lg};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.lg};
-  background: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.buttonText};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.fast};
-  &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.primaryHover};
-  }
-  &:disabled {
-    opacity: ${({ theme }) => theme.opacity.disabled};
-    cursor: not-allowed;
-  }
-`;
-
-const Input = styled.input<{ $hasError?: boolean }>`
-  padding: ${({ theme }) => theme.spacings.sm};
-  margin-bottom: ${({ theme }) => theme.spacings.xs};
-  width: 100%;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  border: 1px solid
-    ${({ theme, $hasError }) =>
-      $hasError ? theme.colors.danger : theme.colors.border};
-  background: ${({ theme }) => theme.colors.inputBackground};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  transition: border ${({ theme }) => theme.transition.fast};
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
-    outline: none;
-  }
-`;
-
-const FieldArrayContainer = styled.div`
-  margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
 const Label = styled.label`
-  display: block;
-  margin-top: ${({ theme }) => theme.spacings.md};
-  margin-bottom: ${({ theme }) => theme.spacings.xs};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme }) => theme.colors.textPrimary};
+  display:block; margin-top:${({theme})=>theme.spacings.sm};
+  margin-bottom:${({theme})=>theme.spacings.xs};
+  color:${({theme})=>theme.colors.textSecondary};
+  font-weight:${({theme})=>theme.fontWeights.medium};
+`;
+const Input = styled.input<{ $hasError?: boolean }>`
+  padding:10px 12px; width:100%;
+  border:${({theme})=>theme.borders.thin} ${({theme,$hasError})=>$hasError? theme.colors.danger : theme.colors.inputBorder};
+  border-radius:${({theme})=>theme.radii.md};
+  background:${({theme})=>theme.inputs.background};
+  color:${({theme})=>theme.inputs.text};
+  font-size:${({theme})=>theme.fontSizes.sm};
+  &:focus{ outline:none; border-color:${({theme})=>theme.inputs.borderFocus}; box-shadow:${({theme})=>theme.colors.shadowHighlight}; }
+`;
+const FieldArray = styled.div`display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.xs};`;
+const Row = styled.div`display:flex; gap:${({theme})=>theme.spacings.xs}; align-items:center;`;
+const SmallBtn = styled.button`
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  padding:6px 10px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+  &:hover{ background:${({theme})=>theme.buttons.secondary.backgroundHover}; }
+`;
+const Actions = styled.div`display:flex; justify-content:flex-end; margin-top:${({theme})=>theme.spacings.md};`;
+const Primary = styled.button`
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  border:${({theme})=>theme.borders.thin} transparent;
+  padding:8px 14px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+  &:hover{ background:${({theme})=>theme.buttons.primary.backgroundHover}; }
 `;

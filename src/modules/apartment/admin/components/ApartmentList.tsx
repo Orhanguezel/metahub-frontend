@@ -344,7 +344,7 @@ export default function ApartmentList({
 }
 
 /* ============ styled (classicTheme) ============ */
-const Wrap = styled.div`display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.md};`;
+const Wrap = styled.div`display:flex;flex-direction:column;gap:${({theme})=>theme.spacings.md};`;
 
 const Toolbar = styled.div`
   display:flex; align-items:center; justify-content:space-between; gap:${({theme})=>theme.spacings.sm};

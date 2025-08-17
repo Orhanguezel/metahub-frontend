@@ -1,204 +1,237 @@
 "use client";
-
-import { useState } from "react";
 import styled from "styled-components";
+import { useState, useMemo } from "react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import { translations } from "@/modules/skill";
+import translations from "@/modules/skill/locales";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import type { SupportedLocale } from "@/types/common";
+import { SUPPORTED_LOCALES } from "@/types/common";
 
-import {
-  createSkill,
-  updateSkill,
-  deleteSkill,
-  togglePublishSkill,
-} from "@/modules/skill/slice/skillSlice";
-import {
-  createSkillCategory,
-  updateSkillCategory,
-} from "@/modules/skill/slice/skillCategorySlice";
+import { createSkill, updateSkill, deleteSkill, togglePublishSkill } from "@/modules/skill/slice/skillSlice";
+import { createSkillCategory, updateSkillCategory } from "@/modules/skill/slice/skillCategorySlice";
 
-import {
-  FormModal,
-  CategoryForm,
-  CategoryListPage,
-  List,
-  Tabs, // Güncellenmiş Tabs!
-  MultiUploadModal
-} from "@/modules/skill";
-
+import { SkillForm, CategoryForm, CategoryListPage, List } from "@/modules/skill";
 import { Modal } from "@/shared";
-import { ISkill } from "@/modules/skill/types";
-import { SkillCategory } from "@/modules/skill/types";
+import type { ISkill, SkillCategory } from "@/modules/skill/types";
 
-// --- Yeni: Tab tipi
-type SkillTab = "list" | "create" | "multiUpload" | "categories";
+/* --- helpers --- */
+const getUILang = (lng?: string): SupportedLocale => {
+  const two = (lng || "").slice(0, 2).toLowerCase();
+  return (SUPPORTED_LOCALES as ReadonlyArray<string>).includes(two) ? (two as SupportedLocale) : "tr";
+};
 
 export default function AdminSkillPage() {
   const { i18n, t } = useI18nNamespace("skill", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const lang = useMemo<SupportedLocale>(() => getUILang(i18n?.language), [i18n?.language]);
 
-  const skill = useAppSelector((state) => state.skill.skillAdmin);
+  // state (fetch parentte)
+  const skill = useAppSelector((state) =>
+    Array.isArray(state.skill.skillAdmin) ? state.skill.skillAdmin : []
+  );
   const loading = useAppSelector((state) => state.skill.loading);
   const error = useAppSelector((state) => state.skill.error);
+  const categories = useAppSelector((s) => (s as any).skillCategory?.categories ?? []) as SkillCategory[];
 
-  // Artık 4 tab var!
-  const [activeTab, setActiveTab] = useState<SkillTab>("list");
+  const [activeTab, setActiveTab] = useState<"list" | "create" | "categories">("list");
   const [editingItem, setEditingItem] = useState<ISkill | null>(null);
-  const [editingCategory, setEditingCategory] =
-    useState<SkillCategory | null>(null);
+  const [editingCategory, setEditingCategory] = useState<SkillCategory | null>(null);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-
-  // Çoklu yükleme için modal state
-  const [multiUploadOpen, setMultiUploadOpen] = useState(false);
 
   const dispatch = useAppDispatch();
 
-  // Tekli ekleme/güncelleme
+  /* --- actions --- */
   const handleSubmit = async (formData: FormData, id?: string) => {
-    if (id) {
-      await dispatch(updateSkill({ id, formData }));
-    } else {
-      await dispatch(createSkill(formData));
-    }
+    if (id) await (dispatch(updateSkill({ id, formData }) as any)).unwrap().catch(() => {});
+    else await (dispatch(createSkill(formData) as any)).unwrap().catch(() => {});
     setActiveTab("list");
   };
-
-  // Çoklu logo yükleme (her biri yeni referans/firma olarak eklenir)
-  const handleMultiUpload = async (images: File[], category: string) => {
-    if (!category) return alert(t("category_required", "Kategori seçmelisiniz!"));
-    const uploadPromises = images.map((file) => {
-      const fd = new FormData();
-      fd.append("images", file);
-      fd.append("category", category);
-      return dispatch(createSkill(fd));
-    });
-    await Promise.all(uploadPromises);
-    setMultiUploadOpen(false);
-    setActiveTab("list");
-  };
-
   const handleDelete = async (id: string) => {
-    const confirmMsg = t(
-      "confirm.delete_skill",
-      "Bu referansı silmek istediğinize emin misiniz?"
-    );
-    if (confirm(confirmMsg)) {
-      await dispatch(deleteSkill(id));
-    }
+    const confirmMsg = t("confirm.delete_skill", "Bu makaleyi silmek istediğinize emin misiniz?");
+    if (confirm(confirmMsg)) await (dispatch(deleteSkill(id) as any)).unwrap().catch(() => {});
   };
-
   const handleTogglePublish = (id: string, isPublished: boolean) => {
-    dispatch(togglePublishSkill({ id, isPublished: !isPublished }));
+    dispatch(togglePublishSkill({ id, isPublished: !isPublished }) as any);
   };
-
-  // Kategori işlemleri
   const handleCategorySubmit = async (
     data: { name: Record<SupportedLocale, string>; description?: Record<SupportedLocale, string> },
     id?: string
   ) => {
-    if (id) {
-      await dispatch(updateSkillCategory({ id, data }));
-    } else {
-      await dispatch(createSkillCategory(data));
-    }
+    if (id) await (dispatch(updateSkillCategory({ id, data }) as any)).unwrap().catch(() => {});
+    else await (dispatch(createSkillCategory(data) as any)).unwrap().catch(() => {});
     setEditingCategory(null);
     setCategoryModalOpen(false);
   };
 
-  // --- Tab değişimi: MultiUpload seçilince sadece modal açılır, tab yine 'list'te kalır
-  const handleTabChange = (tab: SkillTab) => {
-    if (tab === "multiUpload") {
-      setMultiUploadOpen(true);
-      return;
-    }
-    setActiveTab(tab);
-  };
+  const count = skill?.length ?? 0;
 
+  /* --- UI --- */
   return (
-    <Wrapper>
-      <Tabs
-        activeTab={activeTab}
-        onChange={handleTabChange}
-      />
+    <PageWrap>
+      {/* Header — opsjobs paternine uygun */}
+      <Header>
+        <TitleBlock>
+          <h1>{t("admin.title", "Skill Articles")}</h1>
+          <Subtitle>{t("admin.subtitle", "Create, organize and publish your Skill content")}</Subtitle>
+        </TitleBlock>
+        <Right>
+          <Counter aria-label="skill-count">{count}</Counter>
+          <PrimaryBtn
+            onClick={() => {
+              setEditingItem(null);
+              setActiveTab("create");
+            }}
+          >
+            + {t("create", "Create")}
+          </PrimaryBtn>
+        </Right>
+      </Header>
 
-      <TabContent>
-        {activeTab === "list" && (
-          <>
+      {/* Sekmeler */}
+      <Tabs>
+        <Tab $active={activeTab === "list"} onClick={() => setActiveTab("list")}>
+          {t("list", "List")}
+        </Tab>
+        <Tab $active={activeTab === "create"} onClick={() => setActiveTab("create")}>
+          {t("create", "Create")}
+        </Tab>
+        <Tab $active={activeTab === "categories"} onClick={() => setActiveTab("categories")}>
+          {t("categories", "Categories")}
+        </Tab>
+      </Tabs>
+
+      {/* Sekme içerikleri — SectionHead + Card patern */}
+      <Section>
+        <SectionHead>
+          <h2>
+            {activeTab === "list" && t("list", "List")}
+            {activeTab === "create" && t("create", "Create")}
+            {activeTab === "categories" && t("categories", "Categories")}
+          </h2>
+          {activeTab === "list" ? (
+            <SmallBtn disabled={loading}>{t("refresh", "Refresh")}</SmallBtn>
+          ) : activeTab === "create" ? (
+            <SmallBtn onClick={() => setActiveTab("list")}>{t("backToList", "Back to list")}</SmallBtn>
+          ) : (
+            <SmallBtn onClick={() => setCategoryModalOpen(true)}>+ {t("newCategory", "New Category")}</SmallBtn>
+          )}
+        </SectionHead>
+
+        <Card>
+          {activeTab === "list" && (
             <List
               skill={skill}
               lang={lang}
               loading={loading}
               error={error}
-              onEdit={(item) => {
+              onEdit={(item: ISkill) => {
                 setEditingItem(item);
                 setActiveTab("create");
               }}
               onDelete={handleDelete}
               onTogglePublish={handleTogglePublish}
+              categories={categories}
             />
-            {/* Çoklu upload modalı */}
-            <MultiUploadModal
-              isOpen={multiUploadOpen}
-              onClose={() => setMultiUploadOpen(false)}
-              onUpload={handleMultiUpload}
-            />
-          </>
-        )}
+          )}
 
-        {activeTab === "create" && (
-          <FormModal
-            isOpen
-            onClose={() => {
-              setEditingItem(null);
-              setActiveTab("list");
-            }}
-            editingItem={editingItem}
-            onSubmit={handleSubmit}
-          />
-        )}
-
-        {activeTab === "categories" && (
-          <>
-            <CategoryListPage
-              onAdd={() => {
+          {activeTab === "create" && (
+            <SkillForm
+              initial={editingItem}
+              categories={categories}
+              onAddCategory={() => {
                 setEditingCategory(null);
                 setCategoryModalOpen(true);
               }}
-              onEdit={(category) => {
-                setEditingCategory(category);
-                setCategoryModalOpen(true);
+              onCancel={() => {
+                setEditingItem(null);
+                setActiveTab("list");
               }}
+              onSubmit={handleSubmit}
             />
-            <Modal
-              isOpen={categoryModalOpen}
-              onClose={() => setCategoryModalOpen(false)}
-            >
-              <CategoryForm
-                isOpen={categoryModalOpen}
-                onClose={() => setCategoryModalOpen(false)}
-                editingItem={editingCategory}
-                onSubmit={handleCategorySubmit}
+          )}
+
+          {activeTab === "categories" && (
+            <>
+              <CategoryListPage
+                onAdd={() => {
+                  setEditingCategory(null);
+                  setCategoryModalOpen(true);
+                }}
+                onEdit={(category: SkillCategory) => {
+                  setEditingCategory(category);
+                  setCategoryModalOpen(true);
+                }}
               />
-            </Modal>
-          </>
-        )}
-      </TabContent>
-    </Wrapper>
+              <Modal isOpen={categoryModalOpen} onClose={() => setCategoryModalOpen(false)}>
+                <CategoryForm
+                  isOpen={categoryModalOpen}
+                  onClose={() => setCategoryModalOpen(false)}
+                  editingItem={editingCategory}
+                  onSubmit={handleCategorySubmit}
+                />
+              </Modal>
+            </>
+          )}
+        </Card>
+      </Section>
+    </PageWrap>
   );
 }
 
-// --- Styled Components ---
-const Wrapper = styled.div`
-  max-width: 1200px;
-  margin: auto;
-  padding: ${({ theme }) => theme.layout.sectionspacings}
-    ${({ theme }) => theme.spacings.md};
+/* ---- styled (opsjobs ile uyumlu) ---- */
+const PageWrap = styled.div`
+  max-width: ${({ theme }) => theme.layout.containerWidth};
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacings.xl};
 `;
-
-const TabContent = styled.div`
+const Header = styled.div`
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+  ${({ theme }) => theme.media.mobile} {
+    flex-direction: column; align-items: flex-start; gap: ${({ theme }) => theme.spacings.sm};
+  }
+`;
+const TitleBlock = styled.div`
+  display:flex; flex-direction:column; gap:4px;
+  h1{ margin:0; }
+`;
+const Subtitle = styled.p`
+  margin:0; color:${({theme})=>theme.colors.textSecondary};
+  font-size:${({theme})=>theme.fontSizes.sm};
+`;
+const Right = styled.div`display:flex; gap:${({ theme }) => theme.spacings.sm}; align-items:center;`;
+const Counter = styled.span`
+  padding: 6px 10px; border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+`;
+const Tabs = styled.div`display:flex; gap:${({ theme }) => theme.spacings.xs}; margin-bottom:${({ theme }) => theme.spacings.md};`;
+const Tab = styled.button<{ $active?: boolean }>`
+  padding:8px 12px; border-radius:${({ theme }) => theme.radii.pill};
+  background:${({ $active, theme }) => ($active ? theme.colors.primaryLight : theme.colors.cardBackground)};
+  color:${({ theme }) => theme.colors.text};
+  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  cursor:pointer;
+`;
+const Section = styled.section`margin-top: ${({ theme }) => theme.spacings.sm};`;
+const SectionHead = styled.div`
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:${({ theme }) => theme.spacings.sm};
+`;
+const Card = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
   padding: ${({ theme }) => theme.spacings.lg};
-  border-radius: ${({ theme }) => theme.radii.md};
+`;
+const PrimaryBtn = styled.button`
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.buttons.primary.backgroundHover};
+  padding:8px 12px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+`;
+const SmallBtn = styled.button`
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  padding:6px 10px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
 `;

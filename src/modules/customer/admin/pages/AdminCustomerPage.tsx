@@ -96,6 +96,7 @@ export default function AdminCustomerPage() {
         return false;
       return true;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customers, filters]);
 
   /* ---------- Actions ---------- */

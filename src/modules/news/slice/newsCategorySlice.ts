@@ -1,6 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { NewsCategory, TranslatedField } from "@/modules/news";
+import type {
+  NewsCategory,
+  TranslatedField,
+} from "@/modules/news";
 
 interface CategoryState {
   categories: NewsCategory[];
@@ -16,13 +19,15 @@ const initialState: CategoryState = {
   successMessage: null,
 };
 
+const BASE = "/newscategory";
+
 // --- Fetch ---
 export const fetchNewsCategories = createAsyncThunk(
   "newsCategory/fetchAll",
   async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      "/newscategory",
+      `${BASE}`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -42,7 +47,7 @@ export const createNewsCategory = createAsyncThunk(
   ) => {
     const res = await apiCall(
       "post",
-      "/newscategory",
+      `${BASE}`,
       data,
       thunkAPI.rejectWithValue
     );
@@ -68,7 +73,7 @@ export const updateNewsCategory = createAsyncThunk(
   ) => {
     const res = await apiCall(
       "put",
-      `/newscategory/${id}`,
+      `${BASE}/${id}`,
       data,
       thunkAPI.rejectWithValue
     );
@@ -82,7 +87,7 @@ export const deleteNewsCategory = createAsyncThunk(
   async (id: string, thunkAPI) => {
     const res = await apiCall(
       "delete",
-      `/newscategory/${id}`,
+      `${BASE}/${id}`,
       null,
       thunkAPI.rejectWithValue
     );

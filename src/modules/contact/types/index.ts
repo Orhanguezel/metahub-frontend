@@ -8,6 +8,6 @@ export interface IContactMessage {
   message: string;
   isRead: boolean;
   isArchived: boolean;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
 }

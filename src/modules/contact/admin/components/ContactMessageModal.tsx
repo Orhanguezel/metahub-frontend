@@ -1,12 +1,13 @@
+// src/modules/contact/components/ContactMessageModal.tsx
 "use client";
-import { useEffect } from "react";
-import styled from "styled-components";
+
+import { useEffect, useMemo } from "react";
+import styled, { keyframes } from "styled-components";
 import { useAppDispatch } from "@/store/hooks";
 import { markContactMessageAsRead } from "@/modules/contact/slice/contactSlice";
-import { IContactMessage } from "@/modules/contact/types";
+import type { IContactMessage } from "@/modules/contact/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
-import { keyframes } from "styled-components";
 
 interface Props {
   message: IContactMessage;
@@ -17,140 +18,97 @@ export default function ContactMessageModal({ message, onClose }: Props) {
   const { t } = useI18nNamespace("contact", translations);
   const dispatch = useAppDispatch();
 
+  const id = message?._id;
+  const isRead = message?.isRead;
+
   useEffect(() => {
-    if (message && !message.isRead) {
-      dispatch(markContactMessageAsRead(message._id));
-    }
-    // eslint-disable-next-line
-  }, [message?._id]);
+    if (id && !isRead) dispatch(markContactMessageAsRead(id));
+  }, [dispatch, id, isRead]);
+
+  const created = useMemo(() => new Date(message.createdAt).toLocaleString(), [message.createdAt]);
 
   return (
-    <ModalOverlay>
-      <ModalBox>
+    <Overlay role="dialog" aria-modal="true">
+      <Modal>
         <Header>
           <Subject>{message.subject}</Subject>
-          <CloseBtn onClick={onClose}>{t("admin.close", "Kapat")}</CloseBtn>
+          <Close onClick={onClose}>{t("admin.close", "Kapat")}</Close>
         </Header>
-        <InfoRow>
+
+        <Row>
           <b>{t("admin.from", "Gönderen")}:</b>
-          <span>
-            {message.name} ({message.email})
-          </span>
-        </InfoRow>
-        <InfoRow>
+          <span>{message.name} ({message.email})</span>
+        </Row>
+        <Row>
           <b>{t("admin.date", "Tarih")}:</b>
-          <span>{new Date(message.createdAt).toLocaleString()}</span>
-        </InfoRow>
-        <MsgBody>
+          <span>{created}</span>
+        </Row>
+
+        <Body>
           <b>{t("admin.message", "Mesaj")}:</b>
-          <MessageText>{message.message}</MessageText>
-        </MsgBody>
-      </ModalBox>
-    </ModalOverlay>
+          <Content>{message.message}</Content>
+        </Body>
+      </Modal>
+    </Overlay>
   );
 }
 
-// --- Styled Components ---
-const ModalOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: ${({ theme }) => theme.zIndex.modal};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(35, 64, 91, 0.38); // ensotek secondary + opaklık
-  backdrop-filter: blur(5px);
-`;
-
+/* styled — pattern tokens */
 const fadeIn = keyframes`
-  from { opacity: 0; transform: scale(0.96) translateY(24px);}
-  to   { opacity: 1; transform: scale(1) translateY(0);}
+  from { opacity:0; transform:scale(.96) translateY(16px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
 `;
+const Overlay = styled.div`
+  position:fixed; inset:0; z-index:${({theme})=>theme.zIndex.modal};
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(25, 38, 51, 0.35); backdrop-filter:blur(5px);
+`;
+const Modal = styled.div`
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
+  border-radius:${({theme})=>theme.radii.xl};
+  box-shadow:${({theme})=>theme.cards.shadow};
+  width:100%; max-width:480px; padding:${({theme})=>theme.spacings.xl};
+  animation:${fadeIn} .22s ease-out;
 
-const ModalBox = styled.div`
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: 0 12px 42px 0 rgba(35, 64, 91, 0.17), ${({ theme }) => theme.cards.shadow};
-  width: 100%;
-  max-width: 420px;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  padding: ${({ theme }) => theme.spacings.xl};
-  animation: ${fadeIn} 0.23s cubic-bezier(0.56,0.08,0.34,1.09);
-  border: 1.5px solid ${({ theme }) => theme.colors.borderBright};
-
-  ${({ theme }) => theme.media.small} {
-    padding: ${({ theme }) => theme.spacings.md};
-    max-width: 96vw;
+  ${({theme})=>theme.media.small}{
+    padding:${({theme})=>theme.spacings.md}; max-width:96vw;
   }
 `;
-
 const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: ${({ theme }) => theme.spacings.sm};
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  padding: ${({ theme }) => theme.spacings.sm} 0;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.borderBright};
+  display:flex; justify-content:space-between; align-items:flex-start;
+  gap:${({theme})=>theme.spacings.sm}; margin-bottom:${({theme})=>theme.spacings.md};
+  border-bottom:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
+  padding-bottom:${({theme})=>theme.spacings.sm};
 `;
-
 const Subject = styled.h2`
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.primary};
-  margin: 0;
-  flex: 1;
-  word-break: break-word;
+  margin:0; font-size:${({theme})=>theme.fontSizes.md};
+  color:${({theme})=>theme.colors.primary};
 `;
-
-const CloseBtn = styled.button`
-  background: none;
-  color: ${({ theme }) => theme.colors.danger};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  padding: 0.4em 1.2em;
-  cursor: pointer;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  margin-left: ${({ theme }) => theme.spacings.sm};
-  transition: background 0.15s, color 0.15s;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.dangerBg};
-    color: ${({ theme }) => theme.colors.dangerHover};
-  }
+const Close = styled.button`
+  background:none;
+  color:${({theme})=>theme.colors.danger};
+  border:none; border-radius:${({theme})=>theme.radii.pill};
+  padding:.4em 1.1em; cursor:pointer; font-size:${({theme})=>theme.fontSizes.sm};
+  font-weight:${({theme})=>theme.fontWeights.semiBold};
+  &:hover{ background:${({theme})=>theme.colors.dangerBg}; color:${({theme})=>theme.colors.textOnDanger}; }
 `;
-
-const InfoRow = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: ${({ theme }) => theme.spacings.xs};
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  b {
-    color: ${({ theme }) => theme.colors.textPrimary};
-    font-weight: ${({ theme }) => theme.fontWeights.medium};
-  }
+const Row = styled.p`
+  margin:${({theme})=>theme.spacings.xs} 0; display:flex; gap:6px; align-items:center;
+  color:${({theme})=>theme.colors.textSecondary}; font-size:${({theme})=>theme.fontSizes.sm};
+  b{ color:${({theme})=>theme.colors.textPrimary}; font-weight:${({theme})=>theme.fontWeights.medium}; }
 `;
-
-const MsgBody = styled.div`
-  background: ${({ theme }) => theme.colors.inputBackgroundSofter};
-  padding: ${({ theme }) => theme.spacings.md};
-  border-radius: ${({ theme }) => theme.radii.md};
-  margin-top: ${({ theme }) => theme.spacings.md};
-  color: ${({ theme }) => theme.colors.text};
-  box-shadow: 0 2px 14px rgba(40,117,194,0.05);
-  border-left: 4px solid ${({ theme }) => theme.colors.primary};
+const Body = styled.div`
+  background:${({theme})=>theme.colors.inputBackgroundLight};
+  padding:${({theme})=>theme.spacings.md};
+  border-radius:${({theme})=>theme.radii.md};
+  margin-top:${({theme})=>theme.spacings.md};
+  border-left:4px solid ${({theme})=>theme.colors.primary};
 `;
-
-const MessageText = styled.div`
-  margin-top: ${({ theme }) => theme.spacings.sm};
-  white-space: pre-line;
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  color: ${({ theme }) => theme.colors.text};
-  line-height: ${({ theme }) => theme.lineHeights.relaxed};
+const Content = styled.div`
+  margin-top:${({theme})=>theme.spacings.sm};
+  white-space:pre-line;
+  font-size:${({theme})=>theme.fontSizes.sm};
+  color:${({theme})=>theme.colors.text};
+  line-height:${({theme})=>theme.lineHeights.relaxed};
 `;

@@ -1,16 +1,18 @@
+// SparepartFormModal.tsx
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import type { ISparepart, SparepartCategory } from "@/modules/sparepart/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/sparepart";
-import ImageUploadWithPreview from "@/shared/ImageUploadWithPreview";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import { toast } from "react-toastify";
+import { JSONEditor, ImageUploader } from "@/shared";
 
-const LANGUAGES = SUPPORTED_LOCALES;
+type TL = Partial<Record<SupportedLocale, string>>;
+type UploadImage = { url: string; thumbnail?: string; webp?: string; publicId?: string };
 
 interface Props {
   isOpen: boolean;
@@ -19,36 +21,44 @@ interface Props {
   onSubmit: (formData: FormData, id?: string) => Promise<void>;
 }
 
-export default function SparepartFormModal({
-  isOpen,
-  onClose,
-  editingItem,
-  onSubmit,
-}: Props) {
+const setTL = (obj: TL | undefined, l: SupportedLocale, val: string): TL => ({ ...(obj || {}), [l]: val });
+const getTLStrict = (obj?: TL, l?: SupportedLocale) => (l ? (obj?.[l] ?? "") : "");
+const toTL = (v: any, lang: SupportedLocale): TL =>
+  v && typeof v === "object" && !Array.isArray(v) ? (v as TL) : v ? ({ [lang]: String(v) } as TL) : {};
+
+export default function SparepartFormModal({ isOpen, onClose, editingItem, onSubmit }: Props) {
   const { i18n, t } = useI18nNamespace("sparepart", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  const emptyLabel = SUPPORTED_LOCALES.reduce(
-    (acc, lng) => ({ ...acc, [lng]: "" }),
-    {} as Record<SupportedLocale, string>
+  const categories = useAppSelector((s) => s.sparepartCategory.categories);
+  const successMessage = useAppSelector((s) => s.sparepart.successMessage);
+  const error = useAppSelector((s) => s.sparepart.error);
+
+  // Mod toggle
+  const [editMode, setEditMode] = useState<"simple" | "json">("simple");
+
+  // Çok dilli alanlar
+  const emptyTL = useMemo(
+    () => SUPPORTED_LOCALES.reduce((a, l) => ({ ...a, [l]: "" }), {} as TL),
+    []
   );
+  const [name, setName] = useState<TL>({});
+  const [description, setDescription] = useState<TL>({});
+  const combinedJSONValue = useMemo(() => ({ name, description }), [name, description]);
+  const onCombinedJSONChange = (v: any) => {
+    setName(toTL(v?.name, lang));
+    setDescription(toTL(v?.description, lang));
+  };
 
-  const categories = useAppSelector((state) => state.sparepartCategory.categories);
-  const successMessage = useAppSelector((state) => state.sparepart.successMessage);
-  const error = useAppSelector((state) => state.sparepart.error);
-
-  // --- State: HER ZAMAN DEEP CLONE! ---
-  const [name, setName] = useState<Record<SupportedLocale, string>>({ ...emptyLabel });
-  const [description, setDescription] = useState<Record<SupportedLocale, string>>({ ...emptyLabel });
+  // sayısal / opsiyonel
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [brand, setBrand] = useState("");
   const [tags, setTags] = useState("");
   const [category, setCategory] = useState<string>("");
 
-  // Teknik ve opsiyonel state
   const [material, setMaterial] = useState("");
-  const [color, setColor] = useState(""); // "," ile ayır (string[] olarak gidecek)
+  const [color, setColor] = useState("");
   const [weightKg, setWeightKg] = useState("");
   const [size, setSize] = useState("");
   const [powerW, setPowerW] = useState("");
@@ -61,25 +71,33 @@ export default function SparepartFormModal({
   const [stockThreshold, setStockThreshold] = useState("");
   const [isActive, setIsActive] = useState(true);
 
-  // Görsel
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [removedImages, setRemovedImages] = useState<string[]>([]);
-  const [existingImages, setExistingImages] = useState<string[]>([]);
+  // Görseller (sıra + silinenler)
+  const originalExisting = useMemo<UploadImage[]>(
+    () =>
+      (editingItem?.images || []).map((img) => ({
+        url: img.url,
+        thumbnail: img.thumbnail,
+        webp: img.webp,
+        publicId: img.publicId,
+      })),
+    [editingItem?.images]
+  );
+  const [existingUploads, setExistingUploads] = useState<UploadImage[]>(originalExisting);
+  const [removedExisting, setRemovedExisting] = useState<UploadImage[]>([]);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
 
-  // Her zaman referansları sıfırla!
+  // fill/reset
   useEffect(() => {
+    if (!isOpen) return;
     if (editingItem) {
-      setName({ ...emptyLabel, ...editingItem.name });
-      setDescription({ ...emptyLabel, ...editingItem.description });
+      setName({ ...emptyTL, ...(editingItem.name as TL) });
+      setDescription({ ...emptyTL, ...(editingItem.description as TL) });
       setBrand(editingItem.brand || "");
       setTags(Array.isArray(editingItem.tags) ? editingItem.tags.join(", ") : "");
       setPrice(editingItem.price?.toString() ?? "");
       setStock(editingItem.stock?.toString() ?? "");
-      setCategory(
-        typeof editingItem.category === "string"
-          ? editingItem.category
-          : editingItem.category?._id || ""
-      );
+      setCategory(typeof editingItem.category === "string" ? editingItem.category : editingItem.category?._id || "");
+
       setMaterial(editingItem.material ?? "");
       setColor(Array.isArray(editingItem.color) ? editingItem.color.join(", ") : "");
       setWeightKg(editingItem.weightKg?.toString() ?? "");
@@ -93,17 +111,19 @@ export default function SparepartFormModal({
       setMotorPowerW(editingItem.motorPowerW?.toString() ?? "");
       setStockThreshold(editingItem.stockThreshold?.toString() ?? "");
       setIsActive(editingItem.isActive ?? true);
-      setExistingImages(editingItem.images?.map((img) => img.url) || []);
-      setSelectedFiles([]);
-      setRemovedImages([]);
+
+      setExistingUploads(originalExisting);
+      setRemovedExisting([]);
+      setNewFiles([]);
     } else {
-      setName({ ...emptyLabel });
-      setDescription({ ...emptyLabel });
+      setName({ ...emptyTL });
+      setDescription({ ...emptyTL });
       setBrand("");
       setTags("");
       setPrice("");
       setStock("");
       setCategory("");
+
       setMaterial("");
       setColor("");
       setWeightKg("");
@@ -117,12 +137,12 @@ export default function SparepartFormModal({
       setMotorPowerW("");
       setStockThreshold("");
       setIsActive(true);
-      setExistingImages([]);
-      setSelectedFiles([]);
-      setRemovedImages([]);
+
+      setExistingUploads([]);
+      setRemovedExisting([]);
+      setNewFiles([]);
     }
-    // eslint-disable-next-line
-  }, [editingItem, isOpen]);
+  }, [editingItem, isOpen, emptyTL, originalExisting]);
 
   useEffect(() => {
     if (successMessage) {
@@ -133,284 +153,296 @@ export default function SparepartFormModal({
     }
   }, [successMessage, error, onClose]);
 
-  const handleImagesChange = useCallback(
-    (files: File[], removed: string[], current: string[]) => {
-      setSelectedFiles(files);
-      setRemovedImages(removed);
-      setExistingImages(current);
-    },
-    []
-  );
-
-  // --- SUBMIT ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Çoklu dil auto-fill
-    const filledName = { ...name };
-    const firstNameValue = Object.values(name).find((v) => v.trim());
-    if (firstNameValue)
-      SUPPORTED_LOCALES.forEach((lng) => {
-        if (!filledName[lng]) filledName[lng] = firstNameValue;
-      });
+    const filledName = { ...emptyTL, ...name };
+    const firstName = Object.values(filledName).find((v) => (v || "").trim());
+    if (firstName) SUPPORTED_LOCALES.forEach((l) => (filledName[l] ||= firstName as string));
 
-    const filledDesc = { ...description };
-    const firstDescValue = Object.values(description).find((v) => v.trim());
-    if (firstDescValue)
-      SUPPORTED_LOCALES.forEach((lng) => {
-        if (!filledDesc[lng]) filledDesc[lng] = firstDescValue;
-      });
+    const filledDesc = { ...emptyTL, ...description };
+    const firstDesc = Object.values(filledDesc).find((v) => (v || "").trim());
+    if (firstDesc) SUPPORTED_LOCALES.forEach((l) => (filledDesc[l] ||= firstDesc as string));
 
-    const formData = new FormData();
-    formData.append("name", JSON.stringify(filledName));
-    formData.append("description", JSON.stringify(filledDesc));
-    formData.append("brand", brand.trim());
-    formData.append("price", price || "0");
-    formData.append("stock", stock || "0");
-    formData.append("category", category);
-    formData.append("isElectric", String(isElectric));
-    formData.append("isActive", String(isActive));
-    if (stockThreshold) formData.append("stockThreshold", stockThreshold);
+    const fd = new FormData();
+    fd.append("name", JSON.stringify(filledName));
+    fd.append("description", JSON.stringify(filledDesc));
+    fd.append("brand", brand.trim());
+    fd.append("price", price || "0");
+    fd.append("stock", stock || "0");
+    if (category) fd.append("category", category);
+    fd.append("isElectric", String(isElectric));
+    fd.append("isActive", String(isActive));
+    if (stockThreshold) fd.append("stockThreshold", stockThreshold);
 
-    formData.append(
+    fd.append(
       "tags",
-      JSON.stringify(
-        (typeof tags === "string" ? tags : "")
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter(Boolean)
-      )
+      JSON.stringify((tags || "").split(",").map((s) => s.trim()).filter(Boolean))
     );
-    formData.append(
+    fd.append(
       "color",
-      JSON.stringify(
-        (typeof color === "string" ? color : "")
-          .split(",")
-          .map((c) => c.trim())
-          .filter(Boolean)
-      )
+      JSON.stringify((color || "").split(",").map((s) => s.trim()).filter(Boolean))
     );
-    if (material) formData.append("material", material);
-    if (weightKg) formData.append("weightKg", weightKg);
-    if (size) formData.append("size", size);
-    if (powerW) formData.append("powerW", powerW);
-    if (voltageV) formData.append("voltageV", voltageV);
-    if (flowRateM3H) formData.append("flowRateM3H", flowRateM3H);
-    if (coolingCapacityKw) formData.append("coolingCapacityKw", coolingCapacityKw);
-    if (batteryRangeKm) formData.append("batteryRangeKm", batteryRangeKm);
-    if (motorPowerW) formData.append("motorPowerW", motorPowerW);
 
-    for (const file of selectedFiles) {
-      formData.append("images", file);
-    }
-    if (removedImages.length > 0) {
-      formData.append("removedImages", JSON.stringify(removedImages));
+    // teknik alanlar (boşlar dahil)
+    fd.append("material", material ?? "");
+    fd.append("weightKg", weightKg ?? "");
+    fd.append("size", size ?? "");
+    fd.append("powerW", powerW ?? "");
+    fd.append("voltageV", voltageV ?? "");
+    fd.append("flowRateM3H", flowRateM3H ?? "");
+    fd.append("coolingCapacityKw", coolingCapacityKw ?? "");
+    fd.append("batteryRangeKm", batteryRangeKm ?? "");
+    fd.append("motorPowerW", motorPowerW ?? "");
+
+    // yeni dosyalar
+    newFiles.forEach((file) => fd.append("images", file));
+
+    // kaldırılan mevcutlar
+    if (removedExisting.length) {
+      fd.append(
+        "removedImages",
+        JSON.stringify(removedExisting.map((x) => ({ publicId: x.publicId, url: x.url })))
+      );
     }
 
-    await onSubmit(formData, editingItem?._id);
+    // mevcutların yeni sırası
+    if (existingUploads.length) {
+      const orderSig = existingUploads.map((x) => x.publicId || x.url).filter(Boolean) as string[];
+      fd.append("existingImagesOrder", JSON.stringify(orderSig));
+    }
+
+    await onSubmit(fd, editingItem?._id);
   };
 
   if (!isOpen) return null;
 
   return (
-    <FormWrapper>
-      <h2>
-        {editingItem
-          ? t("admin.sparepart.edit", "Edit Sparepart")
-          : t("admin.sparepart.create", "Add New Sparepart")}
-      </h2>
-      <form onSubmit={handleSubmit}>
+     <Form onSubmit={handleSubmit}>
+      <h2>{editingItem ? t("admin.sparepart.edit", "Edit Sparepart") : t("admin.sparepart.create", "Add New Sparepart")}</h2>
 
-        {/* Çoklu dil alanları */}
-        {LANGUAGES.map((lng) => (
-          <div key={lng}>
-            <label htmlFor={`name-${lng}`}>
-              {t("admin.sparepart.name", "Sparepart Name")} ({lng.toUpperCase()})
-            </label>
-            <input
-              id={`name-${lng}`}
-              type="text"
-              value={name[lng] || ""}
-              onChange={(e) => setName(prev => ({ ...prev, [lng]: e.target.value }))}
-              required={lng === lang}
-              autoComplete="off"
-            />
+      <ModeRow role="radiogroup" aria-label={t("editMode", "Edit Mode")}>
+        <ModeBtn type="button" aria-pressed={editMode === "simple"} $active={editMode === "simple"} onClick={() => setEditMode("simple")}>
+          {t("simpleMode", "Basit")}
+        </ModeBtn>
+        <ModeBtn type="button" aria-pressed={editMode === "json"} $active={editMode === "json"} onClick={() => setEditMode("json")}>
+          {t("jsonMode", "JSON Editor")}
+        </ModeBtn>
+      </ModeRow>
 
-            <label htmlFor={`desc-${lng}`}>
-              {t("admin.sparepart.description", "Description")} ({lng.toUpperCase()})
-            </label>
-            <textarea
-              id={`desc-${lng}`}
-              value={description[lng] || ""}
-              onChange={(e) => setDescription(prev => ({ ...prev, [lng]: e.target.value }))}
-              required={lng === lang}
-              autoComplete="off"
-            />
-          </div>
-        ))}
-
-        <label htmlFor="brand">{t("admin.sparepart.brand", "Brand")}</label>
-        <input
-          id="brand"
-          type="text"
-          value={brand}
-          onChange={(e) => setBrand(e.target.value)}
-          required
-          autoComplete="off"
-        />
-
-        <label htmlFor="price">{t("admin.sparepart.price", "Price")}</label>
-        <input
-          id="price"
-          type="number"
-          min={0}
-          step={0.01}
-          value={price || ""}
-          onChange={(e) => setPrice(e.target.value)}
-          required
-        />
-
-        <label htmlFor="stock">{t("admin.sparepart.stock", "Stock")}</label>
-        <input
-          id="stock"
-          type="number"
-          min={0}
-          value={stock || ""}
-          onChange={(e) => setStock(e.target.value)}
-          required
-        />
-
-        <label htmlFor="tags">{t("admin.sparepart.tags", "Tags")}</label>
-        <input
-          id="tags"
-          type="text"
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
-          placeholder="kule, fan, motor"
-          autoComplete="off"
-        />
-
-        <label htmlFor="category">{t("admin.sparepart.category", "Category")}</label>
-        <select
-          id="category"
-          value={category || ""}
-          onChange={(e) => setCategory(e.target.value)}
-          required
-        >
-          <option value="" disabled>
-            {t("admin.sparepart.select_category", "Select category")}
-          </option>
-          {categories.map((cat: SparepartCategory) => (
-            <option key={cat._id} value={cat._id}>
-              {cat.name[lang]} ({cat.slug})
-            </option>
+      {editMode === "simple" ? (
+        <>
+          {SUPPORTED_LOCALES.map((lng) => (
+            <Row key={lng}>
+              <Col style={{ gridColumn: "span 2" }}>
+                <Label>{t("admin.sparepart.name", "Sparepart Name")} ({lng.toUpperCase()})</Label>
+                <Input value={getTLStrict(name, lng)} onChange={(e) => setName(setTL(name, lng, e.target.value))} />
+              </Col>
+              <Col style={{ gridColumn: "span 2" }}>
+                <Label>{t("admin.sparepart.description", "Description")} ({lng.toUpperCase()})</Label>
+                <TextArea rows={3} value={getTLStrict(description, lng)} onChange={(e) => setDescription(setTL(description, lng, e.target.value))} />
+              </Col>
+            </Row>
           ))}
-        </select>
+        </>
+      ) : (
+        <Row>
+          <Col style={{ gridColumn: "span 4" }}>
+            <JSONEditor
+              label={t("multiLangJSON", "Name + Description (JSON)")}
+              value={combinedJSONValue}
+              onChange={onCombinedJSONChange}
+              placeholder={JSON.stringify({ name: emptyTL, description: emptyTL }, null, 2)}
+            />
+          </Col>
+        </Row>
+      )}
 
-        {/* Görseller */}
-        <label>{t("admin.sparepart.image", "Images")}</label>
-        <ImageUploadWithPreview
-          max={5}
-          defaultImages={existingImages}
-          onChange={handleImagesChange}
-          folder="sparepart"
-        />
+      <Row>
+        <Col>
+          <Label>{t("admin.sparepart.brand", "Brand")}</Label>
+          <Input value={brand} onChange={(e) => setBrand(e.target.value)} />
+        </Col>
+        <Col>
+          <Label>{t("admin.sparepart.price", "Price")}</Label>
+          <Input type="number" min={0} step={0.01} value={price} onChange={(e) => setPrice(e.target.value)} />
+        </Col>
+        <Col>
+          <Label>{t("admin.sparepart.stock", "Stock")}</Label>
+          <Input type="number" min={0} value={stock} onChange={(e) => setStock(e.target.value)} />
+        </Col>
+        <Col>
+          <Label>{t("admin.sparepart.category", "Category")}</Label>
+          <Select value={category} onChange={(e) => setCategory(e.target.value)} required>
+            <option value="" disabled>{t("admin.sparepart.select_category", "Select category")}</option>
+            {categories.map((c: SparepartCategory) => (
+              <option key={c._id} value={c._id}>{c.name?.[lang] || c.slug}</option>
+            ))}
+          </Select>
+        </Col>
+      </Row>
 
-        {/* Zorunlu boolean alanlar */}
-        <label>
-          <input
-            type="checkbox"
-            checked={isElectric}
-            onChange={() => setIsElectric((prev) => !prev)}
-          />{" "}
-          {t("admin.sparepart.isElectric", "Electric?")}
-        </label>
+      <Row>
+        <Col style={{ gridColumn: "span 2" }}>
+          <Label>{t("admin.sparepart.tags", "Tags")}</Label>
+          <Input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="kule, fan, motor" />
+        </Col>
+        <Col>
+          <Label>{t("admin.sparepart.isElectric", "Electric?")}</Label>
+          <CheckRow>
+            <input type="checkbox" checked={isElectric} onChange={(e) => setIsElectric(e.target.checked)} />
+            <span>{isElectric ? t("yes", "Yes") : t("no", "No")}</span>
+          </CheckRow>
+        </Col>
+        <Col>
+          <Label>{t("admin.sparepart.isActive", "Active?")}</Label>
+          <CheckRow>
+            <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
+            <span>{isActive ? t("yes", "Yes") : t("no", "No")}</span>
+          </CheckRow>
+        </Col>
+      </Row>
 
-        <label>
-          <input
-            type="checkbox"
-            checked={isActive}
-            onChange={() => setIsActive((prev) => !prev)}
-          />{" "}
-          {t("admin.sparepart.isActive", "Active?")}
-        </label>
+      <BlockTitle>{t("admin.sparepart.image", "Images")}</BlockTitle>
+      <ImageUploader
+        existing={existingUploads}
+        onExistingChange={setExistingUploads}
+        removedExisting={removedExisting}
+        onRemovedExistingChange={setRemovedExisting}
+        files={newFiles}
+        onFilesChange={setNewFiles}
+        maxFiles={8}
+        accept="image/*"
+        sizeLimitMB={15}
+        helpText={t("uploader.help", "jpg/png/webp • keeps order")}
+      />
 
-        {/* Opsiyonel Teknik Özellikler */}
-        <fieldset style={{ marginTop: "1.3rem", border: "1px solid #eee", borderRadius: 6, padding: 12 }}>
-          <legend>{t("admin.sparepart.advanced", "Advanced (Optional)")}</legend>
+      <Fieldset>
+        <Legend>{t("admin.sparepart.advanced", "Advanced (Optional)")}</Legend>
 
-          <label htmlFor="material">{t("admin.sparepart.material", "Material")}</label>
-          <input id="material" type="text" value={material} onChange={(e) => setMaterial(e.target.value)} autoComplete="off" />
+        <GridTwo>
+          <div>
+            <Label>{t("admin.sparepart.material", "Material")}</Label>
+            <Input value={material} onChange={(e) => setMaterial(e.target.value)} />
+          </div>
+          <div>
+            <Label>{t("admin.sparepart.color", "Color (comma separated)")}</Label>
+            <Input value={color} onChange={(e) => setColor(e.target.value)} />
+          </div>
+        </GridTwo>
 
-          <label htmlFor="color">{t("admin.sparepart.color", "Color (comma separated)")}</label>
-          <input id="color" type="text" value={color} onChange={(e) => setColor(e.target.value)} autoComplete="off" />
+        <GridFour>
+          <div>
+            <Label>{t("admin.sparepart.weightKg", "Weight (kg)")}</Label>
+            <Input type="number" min={0} step={0.01} value={weightKg} onChange={(e) => setWeightKg(e.target.value)} />
+          </div>
+          <div>
+            <Label>{t("admin.sparepart.size", "Size/Dimensions")}</Label>
+            <Input value={size} onChange={(e) => setSize(e.target.value)} />
+          </div>
+          <div>
+            <Label>{t("admin.sparepart.powerW", "Power (W)")}</Label>
+            <Input type="number" min={0} value={powerW} onChange={(e) => setPowerW(e.target.value)} />
+          </div>
+          <div>
+            <Label>{t("admin.sparepart.voltageV", "Voltage (V)")}</Label>
+            <Input type="number" min={0} value={voltageV} onChange={(e) => setVoltageV(e.target.value)} />
+          </div>
+        </GridFour>
 
-          <label htmlFor="weightKg">{t("admin.sparepart.weightKg", "Weight (kg)")}</label>
-          <input id="weightKg" type="number" min={0} step={0.01} value={weightKg || ""} onChange={(e) => setWeightKg(e.target.value)} />
+        <GridFour>
+          <div>
+            <Label>{t("admin.sparepart.flowRateM3H", "Flow Rate (m³/h)")}</Label>
+            <Input type="number" min={0} value={flowRateM3H} onChange={(e) => setFlowRateM3H(e.target.value)} />
+          </div>
+          <div>
+            <Label>{t("admin.sparepart.coolingCapacityKw", "Cooling Capacity (kW)")}</Label>
+            <Input type="number" min={0} value={coolingCapacityKw} onChange={(e) => setCoolingCapacityKw(e.target.value)} />
+          </div>
+          <div>
+            <Label>{t("admin.sparepart.batteryRangeKm", "Battery Range (km)")}</Label>
+            <Input type="number" min={0} value={batteryRangeKm} onChange={(e) => setBatteryRangeKm(e.target.value)} />
+          </div>
+          <div>
+            <Label>{t("admin.sparepart.motorPowerW", "Motor Power (W)")}</Label>
+            <Input type="number" min={0} value={motorPowerW} onChange={(e) => setMotorPowerW(e.target.value)} />
+          </div>
+        </GridFour>
+      </Fieldset>
 
-          <label htmlFor="size">{t("admin.sparepart.size", "Size/Dimensions")}</label>
-          <input id="size" type="text" value={size} onChange={(e) => setSize(e.target.value)} autoComplete="off" />
-
-          <label htmlFor="powerW">{t("admin.sparepart.powerW", "Power (W)")}</label>
-          <input id="powerW" type="number" min={0} value={powerW || ""} onChange={(e) => setPowerW(e.target.value)} />
-
-          <label htmlFor="voltageV">{t("admin.sparepart.voltageV", "Voltage (V)")}</label>
-          <input id="voltageV" type="number" min={0} value={voltageV || ""} onChange={(e) => setVoltageV(e.target.value)} />
-
-          <label htmlFor="flowRateM3H">{t("admin.sparepart.flowRateM3H", "Flow Rate (m³/h)")}</label>
-          <input id="flowRateM3H" type="number" min={0} value={flowRateM3H || ""} onChange={(e) => setFlowRateM3H(e.target.value)} />
-
-          <label htmlFor="coolingCapacityKw">{t("admin.sparepart.coolingCapacityKw", "Cooling Capacity (kW)")}</label>
-          <input id="coolingCapacityKw" type="number" min={0} value={coolingCapacityKw || ""} onChange={(e) => setCoolingCapacityKw(e.target.value)} />
-
-          <label htmlFor="batteryRangeKm">{t("admin.sparepart.batteryRangeKm", "Battery Range (km)")}</label>
-          <input id="batteryRangeKm" type="number" min={0} value={batteryRangeKm || ""} onChange={(e) => setBatteryRangeKm(e.target.value)} />
-
-          <label htmlFor="motorPowerW">{t("admin.sparepart.motorPowerW", "Motor Power (W)")}</label>
-          <input id="motorPowerW" type="number" min={0} value={motorPowerW || ""} onChange={(e) => setMotorPowerW(e.target.value)} />
-
-          <label htmlFor="stockThreshold">{t("admin.sparepart.stockThreshold", "Stock Threshold")}</label>
-          <input id="stockThreshold" type="number" min={0} value={stockThreshold || ""} onChange={(e) => setStockThreshold(e.target.value)} />
-        </fieldset>
-
-        <ButtonGroup>
-          <button type="submit">
-            {editingItem
-              ? t("admin.update", "Update")
-              : t("admin.create", "Create")}
-          </button>
-          <button type="button" onClick={onClose}>
-            {t("admin.cancel", "Cancel")}
-          </button>
-        </ButtonGroup>
-      </form>
-    </FormWrapper>
+      <Actions>
+        <Secondary type="button" onClick={onClose}>{t("admin.cancel", "Cancel")}</Secondary>
+        <Primary type="submit">{editingItem ? t("admin.update", "Update") : t("admin.create", "Create")}</Primary>
+      </Actions>
+    </Form>
   );
 }
 
-// --- Styled Components ---
-const FormWrapper = styled.div`
-  max-width: 600px;
-  margin: auto;
-  padding: 1.5rem;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.md};
-  h2 { margin-bottom: 1rem; }
-  label { display: block; margin-top: 1rem; margin-bottom: 0.25rem; font-weight: 600; }
-  input, textarea, select {
-    width: 100%; padding: 0.5rem; border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: 4px; background-color: ${({ theme }) => theme.colors.inputBackground};
-    color: ${({ theme }) => theme.colors.text}; font-size: 0.95rem;
-  }
-  textarea { min-height: 100px; resize: vertical; }
+/* styled (ensotek patern) */
+const Form = styled.form`
+  display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.md};
+  max-width: 960px; margin: 0 auto;
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};
+  padding:${({theme})=>theme.spacings.lg};
 `;
-const ButtonGroup = styled.div`
-  margin-top: 1.5rem; display: flex; gap: 1rem;
-  button {
-    padding: 0.5rem 1rem; font-weight: 500; border: none; border-radius: 4px; cursor: pointer;
-    &:first-child { background: ${({ theme }) => theme.colors.primary}; color: #fff; }
-    &:last-child { background: ${({ theme }) => theme.colors.danger}; color: #fff; }
-    &:hover { opacity: 0.9; }
-  }
+const Row = styled.div`
+  display:grid; grid-template-columns:repeat(4,1fr); gap:${({theme})=>theme.spacings.md};
+  ${({theme})=>theme.media.tablet}{grid-template-columns:repeat(2,1fr);}
+  ${({theme})=>theme.media.mobile}{grid-template-columns:1fr;}
+`;
+const Col = styled.div`display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.xs}; min-width:0;`;
+const BlockTitle = styled.h3`font-size:${({theme})=>theme.fontSizes.md}; margin:${({theme})=>theme.spacings.sm} 0; color:${({theme})=>theme.colors.title};`;
+const Label = styled.label`font-size:${({theme})=>theme.fontSizes.xsmall}; color:${({theme})=>theme.colors.textSecondary};`;
+const Input = styled.input`
+  padding:10px 12px; border-radius:${({theme})=>theme.radii.md};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  background:${({theme})=>theme.inputs.background}; color:${({theme})=>theme.inputs.text};
+  min-width:0;
+`;
+const TextArea = styled.textarea`
+  padding:10px 12px; border-radius:${({theme})=>theme.radii.md};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  background:${({theme})=>theme.inputs.background}; color:${({theme})=>theme.inputs.text};
+  resize:vertical;
+`;
+const Select = styled.select`
+  flex:1 1 auto; padding:10px 12px; border-radius:${({theme})=>theme.radii.md};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  background:${({theme})=>theme.inputs.background}; color:${({theme})=>theme.inputs.text};
+`;
+const CheckRow = styled.label`display:flex; gap:${({theme})=>theme.spacings.xs}; align-items:center;`;
+const Actions = styled.div`display:flex; gap:${({theme})=>theme.spacings.sm}; justify-content:flex-end; margin-top:${({theme})=>theme.spacings.md};`;
+const BaseBtn = styled.button`
+  padding:8px 14px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+  border:${({theme})=>theme.borders.thin} transparent; font-weight:${({theme})=>theme.fontWeights.medium};
+`;
+const Primary = styled(BaseBtn)`
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  &:hover{ background:${({theme})=>theme.buttons.primary.backgroundHover}; }
+`;
+const Secondary = styled(BaseBtn)`
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+`;
+const Fieldset = styled.fieldset`
+  margin-top:${({theme})=>theme.spacings.md};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  border-radius:${({theme})=>theme.radii.md};
+  padding:${({theme})=>theme.spacings.md};
+`;
+const Legend = styled.legend`padding:0 ${({theme})=>theme.spacings.xs}; color:${({theme})=>theme.colors.textSecondary};`;
+const GridTwo = styled.div`display:grid; grid-template-columns:repeat(2,1fr); gap:${({theme})=>theme.spacings.md}; ${({theme})=>theme.media.mobile}{grid-template-columns:1fr;}`;
+const GridFour = styled(GridTwo)`grid-template-columns:repeat(4,1fr); ${({theme})=>theme.media.tablet}{grid-template-columns:repeat(2,1fr);} ${({theme})=>theme.media.mobile}{grid-template-columns:1fr;}`;
+const ModeRow = styled.div`display:flex; gap:${({theme})=>theme.spacings.xs}; align-items:center; margin-top:-6px;`;
+const ModeBtn = styled.button<{ $active?: boolean }>`
+  padding:8px 10px; border-radius:${({theme})=>theme.radii.pill};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  background:${({$active,theme})=>$active?theme.colors.primaryLight:theme.colors.cardBackground};
+  color:${({theme})=>theme.colors.text};
+  cursor:pointer;
 `;

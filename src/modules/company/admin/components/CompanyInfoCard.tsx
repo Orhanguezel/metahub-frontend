@@ -1,3 +1,4 @@
+// src/modules/company/components/CompanyInfoCard.tsx
 "use client";
 
 import styled from "styled-components";
@@ -5,19 +6,17 @@ import { useMemo } from "react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
 import type { ICompany } from "@/modules/company/types";
-import { SupportedLocale } from "@/types/common";
+import type { SupportedLocale } from "@/types/common";
 
-// Varsayılan logo yolu
 const DEFAULT_LOGO = "/default-company-logo.png";
 
-// Populated address type
 type PopulatedAddress = {
   _id?: string;
   street?: string;
   houseNumber?: string;
   city?: string;
   zipCode?: string;
-  postalCode?: string; // bazen farklı field gelebilir
+  postalCode?: string;
   phone?: string;
   email?: string;
   country?: string;
@@ -28,171 +27,96 @@ export default function CompanyInfoCard({ company }: { company: ICompany | null 
   const { i18n, t } = useI18nNamespace("company", translations);
   const lang = (i18n.language?.slice(0, 2) || "en") as SupportedLocale;
 
-  // --- Çoklu dil isim ve açıklama ---
   const companyName =
-    (typeof company?.companyName === "object" && company?.companyName[lang]) ||
-    (typeof company?.companyName === "string" && company?.companyName) ||
+    (company?.companyName as any)?.[lang] ||
+    (typeof (company as any)?.companyName === "string" && (company as any)?.companyName) ||
     t("companyName", "Company Name");
 
   const companyDesc =
-    (typeof company?.companyDesc === "object" && company?.companyDesc[lang]) ||
-    (typeof company?.companyDesc === "string" && company?.companyDesc) ||
+    (company?.companyDesc as any)?.[lang] ||
+    (typeof (company as any)?.companyDesc === "string" && (company as any)?.companyDesc) ||
     "";
 
-  // --- İlk adresi bul ve düzgün sırala ---
   const addressObj = useMemo(() => {
-    if (!company?.addresses || company.addresses.length === 0) return null;
-    // Populated ise (object ve street varsa)
-    return company.addresses.find(
-      (a: any) => typeof a === "object" && !!a && "street" in a
-    ) as PopulatedAddress | undefined;
+    if (!company?.addresses?.length) return null;
+    return company.addresses.find((a: any) => typeof a === "object" && a && "street" in a) as PopulatedAddress | undefined;
   }, [company?.addresses]);
 
-  // Adres stringini detaylı ve fallback'li oluştur
   const addressStr = useMemo(() => {
     if (!addressObj) return "-";
     const zip = addressObj.zipCode || addressObj.postalCode || "";
-    return [
-      addressObj.street,
-      addressObj.houseNumber,
-      addressObj.city,
-      zip,
-      addressObj.country,
-    ]
-      .filter(Boolean)
-      .join(", ");
+    return [addressObj.street, addressObj.houseNumber, addressObj.city, zip, addressObj.country].filter(Boolean).join(", ");
   }, [addressObj]);
 
-  // --- Görseller
-  const images =
-    Array.isArray(company?.images) && company.images.length > 0
-      ? company.images
-      : [];
+  const images = Array.isArray(company?.images) ? company!.images : [];
 
-  if (!company || !companyName) return null;
+  if (!company) return null;
 
   return (
     <Card>
-      <InfoBlock>
-        <CompanyName>{companyName}</CompanyName>
-        {companyDesc && <CompanyDesc>{companyDesc}</CompanyDesc>}
-        <Contact>{company.email || "-"}</Contact>
-        <Contact>{company.phone || "-"}</Contact>
-        <Contact>{addressStr}</Contact>
-        {addressObj?.email && <Contact>{addressObj.email}</Contact>}
-        {addressObj?.phone && <Contact>{addressObj.phone}</Contact>}
+      <Info>
+        <Name>{companyName}</Name>
+        {companyDesc && <Desc>{companyDesc}</Desc>}
+        <Line>{company.email || "-"}</Line>
+        <Line>{company.phone || "-"}</Line>
+        <Line>{addressStr}</Line>
+        {addressObj?.email && <Line>{addressObj.email}</Line>}
+        {addressObj?.phone && <Line>{addressObj.phone}</Line>}
         {company.website && (
-          <Contact>
-            <a
-              href={company.website}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "inherit", textDecoration: "underline" }}
-            >
+          <Line>
+            <a href={company.website} target="_blank" rel="noopener noreferrer">
               {company.website}
             </a>
-          </Contact>
+          </Line>
         )}
-      </InfoBlock>
+      </Info>
       <LogoRow>
         {images.length > 0 ? (
-          images.map((image, idx) => (
-            <Logo
-              key={(image.url || "") + idx}
-              src={image.thumbnail || image.url}
-              alt={t("companyLogoAlt", "Company Logo {{n}}", { n: idx + 1 })}
-              loading="lazy"
-            />
+          images.map((img, i) => (
+            <Logo key={(img.url || "") + i} src={img.thumbnail || img.url} alt={t("companyLogoAlt", "Company Logo {{n}}", { n: i + 1 })} loading="lazy" />
           ))
         ) : (
-          <Logo
-            src={DEFAULT_LOGO}
-            alt={t("defaultLogoAlt", "Default Logo")}
-            loading="lazy"
-          />
+          <Logo src={DEFAULT_LOGO} alt={t("defaultLogoAlt", "Default Logo")} loading="lazy" />
         )}
       </LogoRow>
     </Card>
   );
 }
 
-// --- Styled Components ---
 const Card = styled.section`
-  background: ${({ theme }) => theme.colors.cardBackground};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  padding: ${({ theme }) => theme.spacings.lg};
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 440px;
-  margin: 0 auto;
-
-  ${({ theme }) => theme.media.small} {
-    max-width: 100%;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};
+  padding:${({theme})=>theme.spacings.lg};
+  display:flex; flex-direction:column; align-items:center;
 `;
-
-const InfoBlock = styled.div`
-  flex: 1;
-  text-align: center;
-  margin-bottom: ${({ theme }) => theme.spacings.lg};
-
-  ${({ theme }) => theme.media.small} {
-    text-align: left;
-    margin-bottom: 0;
-    margin-right: ${({ theme }) => theme.spacings.xl};
-  }
+const Info = styled.div`
+  text-align:center; margin-bottom:${({theme})=>theme.spacings.md};
 `;
-
-const CompanyName = styled.h3`
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  margin-bottom: ${({ theme }) => theme.spacings.sm};
+const Name = styled.h3`
+  margin:0 0 ${({theme})=>theme.spacings.xs} 0;
+  font-size:${({theme})=>theme.fontSizes.lg};
+  color:${({theme})=>theme.colors.title};
 `;
-
-const CompanyDesc = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: ${({ theme }) => theme.spacings.sm};
+const Desc = styled.p`
+  margin:0 0 ${({theme})=>theme.spacings.xs} 0;
+  color:${({theme})=>theme.colors.textSecondary};
+  font-size:${({theme})=>theme.fontSizes.sm};
 `;
-
-const Contact = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin: ${({ theme }) => theme.spacings.xs} 0;
-  word-break: break-all;
+const Line = styled.p`
+  margin:${({theme})=>theme.spacings.xs} 0; color:${({theme})=>theme.colors.textSecondary};
+  word-break:break-all; font-size:${({theme})=>theme.fontSizes.sm};
+  a{ color:inherit; text-decoration:underline; }
 `;
-
 const LogoRow = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacings.sm};
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
+  display:flex; gap:${({theme})=>theme.spacings.sm}; flex-wrap:wrap; justify-content:center;
 `;
-
 const Logo = styled.img`
-  width: 120px;
-  height: 120px;
-  border-radius: ${({ theme }) => theme.radii.md};
-  object-fit: contain;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 12px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  transition: transform ${({ theme }) => theme.transition.normal},
-    box-shadow ${({ theme }) => theme.transition.normal},
-    background ${({ theme }) => theme.transition.normal};
-
-  &:hover {
-    transform: scale(1.06);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-  }
+  width:120px; height:120px; object-fit:contain; padding:12px;
+  border-radius:${({theme})=>theme.radii.md};
+  background:${({theme})=>theme.colors.backgroundAlt};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  transition:transform ${({theme})=>theme.transition.normal};
+  &:hover{ transform:scale(1.05); }
 `;

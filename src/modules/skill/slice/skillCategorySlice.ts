@@ -16,13 +16,15 @@ const initialState: CategoryState = {
   successMessage: null,
 };
 
+const BASE = "/skillcategory";
+
 // --- Fetch ---
 export const fetchSkillCategories = createAsyncThunk(
   "skillCategory/fetchAll",
   async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      "/skillcategory",
+      `${BASE}`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -42,7 +44,7 @@ export const createSkillCategory = createAsyncThunk(
   ) => {
     const res = await apiCall(
       "post",
-      "/skillcategory",
+      `${BASE}`,
       data,
       thunkAPI.rejectWithValue
     );
@@ -68,7 +70,7 @@ export const updateSkillCategory = createAsyncThunk(
   ) => {
     const res = await apiCall(
       "put",
-      `/skillcategory/${id}`,
+      `${BASE}/${id}`,
       data,
       thunkAPI.rejectWithValue
     );
@@ -82,7 +84,7 @@ export const deleteSkillCategory = createAsyncThunk(
   async (id: string, thunkAPI) => {
     const res = await apiCall(
       "delete",
-      `/skillcategory/${id}`,
+      `${BASE}/${id}`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -123,16 +125,10 @@ const skillCategorySlice = createSlice({
       .addCase(createSkillCategory.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = action.payload?.message;
-        const newCat = action.payload?.data;
-        if (
-          newCat &&
-          newCat._id &&
-          !state.categories.some((cat) => cat._id === newCat._id)
-        ) {
-          state.categories.unshift(newCat);
+        if (action.payload?.data?._id) {
+          state.categories.unshift(action.payload.data);
         }
       })
-
       .addCase(createSkillCategory.rejected, setError)
       // Update
       .addCase(updateSkillCategory.pending, startLoading)
@@ -161,6 +157,5 @@ const skillCategorySlice = createSlice({
   },
 });
 
-export const { clearSkillCategoryMessages } =
-  skillCategorySlice.actions;
+export const { clearSkillCategoryMessages } = skillCategorySlice.actions;
 export default skillCategorySlice.reducer;

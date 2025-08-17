@@ -201,13 +201,27 @@ export default function ApartmentAdminPage() {
 }
 
 /* ================= styled ================= */
-const PageWrap = styled.div`display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.md};`;
-const PageHead = styled.header`
-  display:flex; align-items:flex-end; justify-content:space-between; gap:${({theme})=>theme.spacings.sm};
-  ${({theme})=>theme.media.mobile}{ align-items:stretch; flex-direction:column; }
+const PageWrap = styled.div`
+  max-width: ${({ theme }) => theme.layout.containerWidth};
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacings.xl};
 `;
-const H1 = styled.h1`margin:0; font-size:${({theme})=>theme.fontSizes.large}; color:${({theme})=>theme.colors.title}; font-family:${({theme})=>theme.fonts.heading};`;
-const Subtle = styled.p`margin:.25rem 0 0; color:${({theme})=>theme.colors.textSecondary}; font-size:${({theme})=>theme.fontSizes.xsmall};`;
+
+const PageHead = styled.header`
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+  ${({ theme }) => theme.media.mobile} {
+    flex-direction: column; align-items: flex-start; gap: ${({ theme }) => theme.spacings.sm};
+  }
+`;
+const H1 = styled.h1` 
+display:flex; flex-direction:column; gap:4px;
+  h1{ margin:0; }
+`;
+const Subtle = styled.p` 
+margin:0; color:${({theme})=>theme.colors.textSecondary};
+  font-size:${({theme})=>theme.fontSizes.sm};
+`;
 const Actions = styled.div`display:flex; gap:${({theme})=>theme.spacings.sm};`;
 const Primary = styled.button`
   padding:10px 16px; border-radius:${({theme})=>theme.radii.xl};

@@ -1,26 +1,32 @@
 "use client";
-
 import styled from "styled-components";
-import { ISkill, SkillCategory } from "@/modules/skill";
-import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import { translations } from "@/modules/skill";
-import { Skeleton } from "@/shared";
-import { SupportedLocale } from "@/types/common";
 import Image from "next/image";
-import { useMemo, useState } from "react";
-import { useAppSelector } from "@/store/hooks";
+import { useMemo } from "react";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import translations from "@/modules/skill/locales";
+import type { ISkill, SkillCategory } from "@/modules/skill/types";
+import type { SupportedLocale } from "@/types/common";
+import { SUPPORTED_LOCALES, getMultiLang } from "@/types/common";
 
-interface Props {
-  skill: ISkill[] | undefined;
+type Props = {
+  skill: ISkill[];
   lang: SupportedLocale;
-  loading: boolean;
-  error: string | null;
-  onEdit?: (item: ISkill) => void;
-  onDelete?: (id: string) => void;
-  onTogglePublish?: (id: string, isPublished: boolean) => void;
-}
+  loading?: boolean;
+  error?: string | null;
+  onEdit: (item: ISkill) => void;
+  onDelete: (id: string) => void;
+  onTogglePublish: (id: string, isPublished: boolean) => void;
+  categories?: SkillCategory[];
+};
 
-export default function SkillList({
+const getUILang = (lng?: string): SupportedLocale => {
+  const two = (lng || "").slice(0, 2).toLowerCase();
+  return (SUPPORTED_LOCALES as ReadonlyArray<string>).includes(two)
+    ? (two as SupportedLocale)
+    : "tr";
+};
+
+export default function List({
   skill,
   lang,
   loading,
@@ -28,421 +34,280 @@ export default function SkillList({
   onEdit,
   onDelete,
   onTogglePublish,
+  categories,
 }: Props) {
-  const { t } = useI18nNamespace("skill", translations);
-  const categories: SkillCategory[] = useAppSelector(
-    (state) => state.skillCategory.categories
-  );
+  const { t, i18n } = useI18nNamespace("skill", translations);
+  const uiLang = useMemo<SupportedLocale>(() => getUILang(i18n?.language), [i18n?.language]);
 
-  const [activeTab, setActiveTab] = useState<string>("all");
-
-  // Çoklu seçim için state
-  const [selected, setSelected] = useState<string[]>([]);
-
-  // Çok dilli yardımcı
-  const getMultiLang = (obj?: Record<string, string>) => {
-    if (!obj) return "";
-    return obj[lang] || obj["en"] || Object.values(obj)[0] || "—";
-  };
-
-  // --- Kategorilere göre grupla ---
-  const safeSkill = useMemo(
-    () => (Array.isArray(skill) ? skill : []),
-    [skill]
-  );
-
-  // Group by categoryId
-  const grouped = useMemo(() => {
-    const result: Record<string, ISkill[]> = {};
-    for (const ref of safeSkill) {
-      const catId =
-        typeof ref.category === "string"
-          ? ref.category
-          : ref.category?._id || "none";
-      if (!result[catId]) result[catId] = [];
-      result[catId].push(ref);
-    }
-    return result;
-  }, [safeSkill]);
-
-  // Kategorisiz olanlar
-  const noCategory = grouped["none"] || [];
-  // Tüm kategoriler sırasıyla
-  const sortedCategories = categories.filter((cat) => grouped[cat._id]?.length);
-
-  // Tabs: Tümü, kategoriler ve “Kategorisiz”
-  const tabs: { key: string; label: string }[] = [
-    {
-      key: "all",
-      label: t("skill.all_categories", "All Categories"),
-    },
-    ...sortedCategories.map((cat) => ({
-      key: cat._id,
-      label: getMultiLang(cat.name),
-    })),
-    ...(noCategory.length
-      ? [
-          {
-            key: "none",
-            label: t("skill.no_category", "No Category"),
-          },
-        ]
-      : []),
-  ];
-
-  // Filtrelenmiş referanslar
-  const filteredRefs = useMemo(() => {
-    if (activeTab === "all") return safeSkill;
-    return grouped[activeTab] || [];
-  }, [activeTab, safeSkill, grouped]);
-
-  // --- Çoklu seçim fonksiyonları ---
-  const isAllSelected =
-    filteredRefs.length > 0 &&
-    filteredRefs.every((item) => selected.includes(item._id));
-
-  const handleSelect = (id: string) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+  // id -> kategori adı
+  const catLabelById = useMemo(() => {
+    const m = new Map<string, string>();
+    (categories || []).forEach((c) =>
+      m.set(c._id, getMultiLang(c.name as any, uiLang) || c.slug || c._id)
     );
+    return m;
+  }, [categories, uiLang]);
+
+  // { $date } / string / Date -> localized string
+  const d = (v?: unknown) => {
+    if (!v) return "-";
+    const raw =
+      typeof v === "string"
+        ? v
+        : (v as any)?.$date || (v as any)?.date || (v as any)?.value || String(v);
+    const dt = new Date(raw);
+    return isNaN(dt.getTime()) ? "-" : dt.toLocaleString();
+    };
+
+  // Tüm category olasılıklarını ele al
+  const getCategoryLabel = (a: ISkill): string => {
+    const c: any = a?.category;
+    if (!c) return "-";
+    if (typeof c === "string") return catLabelById.get(c) || "-";
+    // populate edilmiş obje: {_id, name}
+    if (c?.name) return getMultiLang(c.name as any, uiLang) || "-";
+    // extended json / partial obje: {$oid} | {_id}
+    const id = c?.$oid || c?._id || c?.id;
+    return id ? catLabelById.get(String(id)) || "-" : "-";
   };
 
-  const handleSelectAll = () => {
-    if (isAllSelected) {
-      // Hepsini kaldır
-      setSelected((prev) =>
-        prev.filter((id) => !filteredRefs.some((item) => item._id === id))
-      );
-    } else {
-      // Hepsini ekle
-      setSelected((prev) => [
-        ...prev,
-        ...filteredRefs
-          .map((item) => item._id)
-          .filter((id) => !prev.includes(id)),
-      ]);
-    }
+  const getThumb = (a: ISkill): string | undefined => {
+    const img = a?.images?.[0];
+    return img?.thumbnail || img?.webp || img?.url || undefined;
   };
-
-  const handleDeleteSelected = () => {
-    if (!onDelete || selected.length === 0) return;
-    if (
-      window.confirm(
-        t(
-          "skill.delete_selected_confirm",
-          "Are you sure you want to delete all selected skill?"
-        )
-      )
-    ) {
-      selected.forEach((id) => onDelete(id));
-      setSelected((prev) =>
-        prev.filter((id) => !filteredRefs.some((item) => item._id === id))
-      );
-    }
-  };
-
-  // --- Render ---
-  if (loading) {
-    return (
-      <SkeletonWrapper>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} />
-        ))}
-      </SkeletonWrapper>
-    );
-  }
-
-  if (error) return <ErrorText>❌ {error}</ErrorText>;
-  if (!safeSkill.length)
-    return <Empty>{t("skill.empty", "No skill available.")}</Empty>;
 
   return (
-    <div>
-      <TabsWrapper>
-        {tabs.map((tab) => (
-          <TabButton
-            key={tab.key}
-            $active={activeTab === tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            type="button"
-          >
-            {tab.label}
-          </TabButton>
-        ))}
-      </TabsWrapper>
+    <Wrap>
+      {error && <ErrorBox role="alert">{error}</ErrorBox>}
 
-      {/* Toplu Seçim & Silme Butonu */}
-      <BulkActions>
-        <label>
-          <input
-            type="checkbox"
-            checked={isAllSelected}
-            onChange={handleSelectAll}
-            disabled={filteredRefs.length === 0}
-          />
-          {t("skill.select_all", "Select All")}
-        </label>
-        {selected.length > 0 && (
-          <DeleteSelectedButton onClick={handleDeleteSelected}>
-            {t("skill.delete_selected", "Delete Selected")}
-            <span>({selected.length})</span>
-          </DeleteSelectedButton>
-        )}
-      </BulkActions>
+      {/* Desktop */}
+      <TableWrap aria-busy={!!loading}>
+        <Table>
+          <thead>
+            <tr>
+              <th style={{ width: 72 }}>{t("image", "Image")}</th>
+              <th>{t("titleField", "Title")}</th>
+              <th>{t("category", "Category")}</th>
+              <th>{t("status", "Status")}</th>
+              <th>{t("publishedAt", "Published At")}</th>
+              <th>{t("order", "Order")}</th>
+              <th aria-label={t("actions", "Actions")} />
+            </tr>
+          </thead>
+          <tbody>
+            {!loading && skill.length === 0 && (
+              <tr>
+                <td colSpan={7}>
+                  <Empty>∅</Empty>
+                </td>
+              </tr>
+            )}
+            {skill.map((a) => {
+              const title = getMultiLang(a.title as any, lang) || a.slug;
+              const catLabel = getCategoryLabel(a);
+              const src = getThumb(a);
+              return (
+                <tr key={a._id}>
+                  <td>
+                    <ThumbBox aria-hidden="true">
+                      {src ? (
+                        <Image
+                          src={src}
+                          alt={title}
+                          fill
+                          sizes="72px"
+                          style={{ objectFit: "cover" }}
+                        />
+                      ) : (
+                        <Placeholder>—</Placeholder>
+                      )}
+                    </ThumbBox>
+                  </td>
+                  <td title={title}>{title}</td>
+                  <td>{catLabel}</td>
+                  <td>
+                    <Badge $on={a.isPublished}>
+                      {a.isPublished ? t("published", "Published") : t("draft", "Draft")}
+                    </Badge>
+                  </td>
+                  <td>{d(a.publishedAt as any)}</td>
+                  <td className="mono">{a.order ?? 0}</td>
+                  <td className="actions">
+                    <Row>
+                      <Secondary onClick={() => onEdit(a)}>{t("edit", "Edit")}</Secondary>
+                      <Secondary onClick={() => onTogglePublish(a._id, a.isPublished)}>
+                        {a.isPublished ? t("unpublish", "Unpublish") : t("publish", "Publish")}
+                      </Secondary>
+                      <Danger onClick={() => onDelete(a._id)}>{t("delete", "Delete")}</Danger>
+                    </Row>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
+      </TableWrap>
 
-      <Grid>
-        {filteredRefs.map((item) => (
-          <Card key={item._id} $selected={selected.includes(item._id)}>
-            <CheckboxWrapper>
-              <input
-                type="checkbox"
-                checked={selected.includes(item._id)}
-                onChange={() => handleSelect(item._id)}
-              />
-            </CheckboxWrapper>
-            <LogoBox>
-              {item.images?.[0]?.url ? (
-                <Image
-                  src={item.images[0].url}
-                  alt={getMultiLang(item.title) || "Logo"}
-                  width={90}
-                  height={60}
-                  style={{ objectFit: "contain" }}
-                />
-              ) : (
-                <NoLogo>
-                  {t("skill.no_images", "No logo")}
-                </NoLogo>
-              )}
-            </LogoBox>
-            <CompanyName>
-              {getMultiLang(item.title) || <>&nbsp;</>}
-            </CompanyName>
-            <CardActions>
-              {onEdit && (
-                <ActionButton
-                  onClick={() => onEdit(item)}
-                  aria-label={t("edit", "Edit")}
-                >
-                  {t("edit", "Edit")}
-                </ActionButton>
-              )}
-              {onDelete && (
-                <DeleteButton
-                  onClick={() => onDelete(item._id)}
-                  aria-label={t("delete", "Delete")}
-                >
-                  {t("delete", "Delete")}
-                </DeleteButton>
-              )}
-              {onTogglePublish && (
-                <ToggleButton
-                  onClick={() =>
-                    onTogglePublish(item._id, item.isPublished)
-                  }
-                  aria-label={
-                    item.isPublished
-                      ? t("skill.unpublish", "Unpublish")
-                      : t("skill.publish", "Publish")
-                  }
-                >
-                  {item.isPublished
-                    ? t("skill.unpublish", "Unpublish")
-                    : t("skill.publish", "Publish")}
-                </ToggleButton>
-              )}
-            </CardActions>
-          </Card>
-        ))}
-      </Grid>
-      {filteredRefs.length === 0 && (
-        <Empty>
-          {t("skill.empty_in_category", "No skill in this category.")}
-        </Empty>
-      )}
-    </div>
+      {/* Mobile */}
+      <CardsWrap aria-busy={!!loading}>
+        {skill.length === 0 && !loading && <Empty>∅</Empty>}
+        {skill.map((a) => {
+          const title = getMultiLang(a.title as any, lang) || a.slug;
+          const catLabel = getCategoryLabel(a);
+          const src = getThumb(a);
+          return (
+            <Card key={a._id}>
+              <CardHeader>
+                <HeaderLeft>
+                  <HeaderTop>
+                    <ThumbBox aria-hidden="true">
+                      {src ? (
+                        <Image
+                          src={src}
+                          alt={title}
+                          fill
+                          sizes="72px"
+                          style={{ objectFit: "cover" }}
+                        />
+                      ) : (
+                        <Placeholder>—</Placeholder>
+                      )}
+                    </ThumbBox>
+                    <TitleBox>
+                      <NameTitle title={title}>{title}</NameTitle>
+                      <SmallText>{catLabel}</SmallText>
+                    </TitleBox>
+                  </HeaderTop>
+                </HeaderLeft>
+                <Status $on={a.isPublished}>
+                  {a.isPublished ? t("published", "Published") : t("draft", "Draft")}
+                </Status>
+              </CardHeader>
+
+              <CardBody>
+                <SmallText>
+                  {t("publishedAt", "Published At")}: {d(a.publishedAt as any)}
+                </SmallText>
+                <SmallText>
+                  {t("order", "Order")}: <b className="mono">{a.order ?? 0}</b>
+                </SmallText>
+              </CardBody>
+
+              <CardActions>
+                <Secondary onClick={() => onEdit(a)}>{t("edit", "Edit")}</Secondary>
+                <Secondary onClick={() => onTogglePublish(a._id, a.isPublished)}>
+                  {a.isPublished ? t("unpublish", "Unpublish") : t("publish", "Publish")}
+                </Secondary>
+                <Danger onClick={() => onDelete(a._id)}>{t("delete", "Delete")}</Danger>
+              </CardActions>
+            </Card>
+          );
+        })}
+      </CardsWrap>
+    </Wrap>
   );
 }
 
-// --- Styles ---
-const SkeletonWrapper = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.5rem;
+/* styled */
+const Wrap = styled.div`display:flex;flex-direction:column;gap:${({theme})=>theme.spacings.md};`;
+const ErrorBox = styled.div`padding:${({theme})=>theme.spacings.sm};border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.danger};color:${({theme})=>theme.colors.danger};border-radius:${({theme})=>theme.radii.md};`;
+const TableWrap = styled.div`
+  width:100%;overflow-x:auto;border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};background:${({theme})=>theme.colors.cardBackground};
+  ${({theme})=>theme.media.mobile}{display:none;}
 `;
-
-const TabsWrapper = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
+const Table = styled.table`
+  width:100%;border-collapse:collapse;
+  thead th{
+    background:${({theme})=>theme.colors.tableHeader};
+    color:${({theme})=>theme.colors.textSecondary};
+    font-weight:${({theme})=>theme.fontWeights.semiBold};
+    font-size:${({theme})=>theme.fontSizes.sm};
+    padding:${({theme})=>theme.spacings.md};text-align:left;white-space:nowrap;
+  }
+  td{
+    padding:${({theme})=>theme.spacings.md};
+    border-bottom:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
+    font-size:${({theme})=>theme.fontSizes.sm};vertical-align:middle;
+  }
+  td.mono{font-family:${({theme})=>theme.fonts.mono};}
+  td.actions{text-align:right;}
+  tbody tr:hover td{background:${({theme})=>theme.colors.hoverBackground};}
 `;
-
-const TabButton = styled.button<{ $active: boolean }>`
-  padding: 0.55rem 1.3rem;
-  border: none;
-  border-radius: 24px;
-  background: ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.background};
-  color: ${({ $active, theme }) =>
-    $active ? "#fff" : theme.colors.text};
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  box-shadow: ${({ $active, theme }) =>
-    $active ? `0 2px 12px 0 ${theme.colors.primary}33` : "none"};
-  outline: none;
-  border: 1px solid ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.border};
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-  &:hover,
-  &:focus-visible {
-    background: ${({ theme }) => theme.colors.primaryHover};
-    color: #fff;
+const ThumbBox = styled.div`
+  position:relative;width:64px;height:44px;border-radius:${({theme})=>theme.radii.sm};
+  overflow:hidden;background:${({theme})=>theme.colors.inputBackgroundLight};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
+  flex:0 0 auto;
+`;
+const Placeholder = styled.span`
+  display:flex;align-items:center;justify-content:center;width:100%;height:100%;
+  color:${({theme})=>theme.colors.textSecondary};
+`;
+const CardsWrap = styled.div`
+  display:none;
+  ${({theme})=>theme.media.mobile}{
+    display:grid;grid-template-columns:1fr;gap:${({theme})=>theme.spacings.md};
   }
 `;
-
-const BulkActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 0.75rem;
-  flex-wrap: wrap;
-  font-size: 0.97em;
-
-  label {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-  }
+const Card = styled.article`
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
+  border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};
+  overflow:hidden;
 `;
-
-const DeleteSelectedButton = styled.button`
-  padding: 0.45rem 1.1rem;
-  background: ${({ theme }) => theme.colors.danger};
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 1em;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.4em;
+const CardHeader = styled.header`
+  background:${({theme})=>theme.colors.primaryLight};
+  color:${({theme})=>theme.colors.title};
+  padding:${({theme})=>theme.spacings.sm} ${({theme})=>theme.spacings.md};
+  display:flex;align-items:center;justify-content:space-between;gap:${({theme})=>theme.spacings.sm};
+  border-bottom:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
 `;
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 1.1rem 1.5rem;
+const HeaderLeft = styled.div`display:flex;flex-direction:column;gap:2px;min-width:0;`;
+const HeaderTop = styled.div`display:flex;align-items:center;gap:${({theme})=>theme.spacings.sm};min-width:0;`;
+const TitleBox = styled.div`display:flex;flex-direction:column;min-width:0;`;
+const NameTitle = styled.span`
+  font-size:${({theme})=>theme.fontSizes.sm};color:${({theme})=>theme.colors.textSecondary};
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70vw;
 `;
-
-const Card = styled.div<{ $selected?: boolean }>`
-  border: 2px solid
-    ${({ $selected, theme }) =>
-      $selected ? theme.colors.primary : theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.lg || "12px"};
-  padding: 1rem 0.5rem 0.7rem 0.5rem;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  min-height: 150px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  box-shadow: ${({ $selected }) =>
-    $selected ? "0 0 0 2px #4b9efc33" : "none"};
-  transition: border 0.2s, box-shadow 0.2s;
+const SmallText = styled.span`font-size:${({theme})=>theme.fontSizes.xsmall};color:${({theme})=>theme.colors.textSecondary};`;
+const Status = styled.span<{ $on:boolean }>`
+  padding:.2em .6em;border-radius:${({theme})=>theme.radii.pill};
+  background:${({$on,theme})=>$on?theme.colors.successBg:theme.colors.inputBackgroundLight};
+  color:${({$on,theme})=>$on?theme.colors.success:theme.colors.textSecondary};
+  font-size:${({theme})=>theme.fontSizes.xsmall};
 `;
-
-const CheckboxWrapper = styled.div`
-  position: absolute;
-  top: 0.7rem;
-  left: 0.7rem;
-  z-index: 2;
-  input[type="checkbox"] {
-    width: 1.1em;
-    height: 1.1em;
-    accent-color: ${({ theme }) => theme.colors.primary};
-    cursor: pointer;
-  }
-`;
-
-const LogoBox = styled.div`
-  margin-bottom: 0.7rem;
-  background: #fff;
-  border-radius: 7px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 90px;
-  height: 60px;
-  overflow: hidden;
-`;
-
-const NoLogo = styled.span`
-  font-size: 0.9em;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 60px;
-`;
-
-const CompanyName = styled.div`
-  font-size: 1rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  text-align: center;
-  width: 100%;
-  word-break: break-word;
-`;
-
+const CardBody = styled.div`padding:${({theme})=>theme.spacings.md};display:flex;flex-direction:column;gap:6px;`;
 const CardActions = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  margin-top: auto;
+  display:flex;gap:${({theme})=>theme.spacings.xs};justify-content:flex-end;
+  padding:${({theme})=>theme.spacings.sm} ${({theme})=>theme.spacings.md} ${({theme})=>theme.spacings.md};
+  border-top:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
+`;
+const Row = styled.div`display:flex;gap:${({theme})=>theme.spacings.xs};flex-wrap:wrap;justify-content:flex-end;`;
+const Secondary = styled.button`
+  padding:8px 10px;border-radius:${({theme})=>theme.radii.md};cursor:pointer;
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+`;
+const Danger = styled(Secondary)`
+  background:${({theme})=>theme.colors.dangerBg};
+  color:${({theme})=>theme.colors.danger};
+  border-color:${({theme})=>theme.colors.danger};
+  &:hover{
+    background:${({theme})=>theme.colors.dangerHover};
+    color:${({theme})=>theme.colors.textOnDanger};
+    border-color:${({theme})=>theme.colors.dangerHover};
+  }
+`;
+const Badge = styled.span<{ $on:boolean }>`
+  display:inline-block;padding:.2em .6em;border-radius:${({theme})=>theme.radii.pill};
+  background:${({$on,theme})=>$on?theme.colors.successBg:theme.colors.inputBackgroundLight};
+  color:${({$on,theme})=>$on?theme.colors.success:theme.colors.textSecondary};
 `;
 
-const ActionButton = styled.button`
-  padding: 0.25rem 0.7rem;
-  background: ${({ theme }) => theme.colors.warning};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.96em;
-`;
-
-const DeleteButton = styled.button`
-  padding: 0.25rem 0.7rem;
-  background: ${({ theme }) => theme.colors.danger};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.96em;
-`;
-
-const ToggleButton = styled.button`
-  padding: 0.25rem 0.7rem;
-  background: ${({ theme }) => theme.colors.success};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.96em;
-`;
-
-const Empty = styled.p`
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin: 2rem 0;
-`;
-
-const ErrorText = styled.p`
-  color: ${({ theme }) => theme.colors.danger};
-  font-weight: bold;
-  margin: 2rem 0;
+const Empty = styled.div`
+  display:flex;align-items:center;justify-content:center;width:100%;height:100%;
+  color:${({theme})=>theme.colors.textSecondary};
 `;

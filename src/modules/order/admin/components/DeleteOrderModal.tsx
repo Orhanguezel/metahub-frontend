@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { deleteOrderAdmin } from "@/modules/order/slice/ordersSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/order";
+import { translations } from "@/modules/order";
 
 interface DeleteOrderModalProps {
   id: string;
@@ -25,31 +25,20 @@ const DeleteOrderModal: React.FC<DeleteOrderModalProps> = ({ id, onClose }) => {
 
   return (
     <Backdrop onClick={onClose}>
-      <Modal
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-      >
+      <Modal role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
         <Title>{t("admin.deleteTitle", "Delete Order")}</Title>
-        <Text>
-          {t(
-            "admin.deleteConfirm",
-            "Are you sure you want to delete this order?"
-          )}
-        </Text>
+        <Text>{t("admin.deleteConfirm", "Are you sure you want to delete this order?")}</Text>
         <ButtonRow>
-          <CancelBtn onClick={onClose} type="button">
+          <Secondary onClick={onClose} type="button">
             {t("cancel", "Cancel")}
-          </CancelBtn>
-          <DeleteBtn
+          </Secondary>
+          <Danger
             onClick={handleDelete}
             disabled={loading || submitted}
             type="button"
           >
-            {loading || submitted
-              ? t("deleting", "Deleting...")
-              : t("delete", "Delete")}
-          </DeleteBtn>
+            {loading || submitted ? t("deleting", "Deleting...") : t("delete", "Delete")}
+          </Danger>
         </ButtonRow>
       </Modal>
     </Backdrop>
@@ -58,84 +47,53 @@ const DeleteOrderModal: React.FC<DeleteOrderModalProps> = ({ id, onClose }) => {
 
 export default DeleteOrderModal;
 
-// --- Styled Components ---
+/* styled (modal patern) */
 const Backdrop = styled.div`
-  position: fixed;
-  z-index: 1001;
-  inset: 0;
+  position: fixed; inset: 0; z-index: 1001;
   background: rgba(24, 24, 38, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.18s;
+  display: flex; align-items: center; justify-content: center;
 `;
 
 const Modal = styled.div`
-  background: ${({ theme }) => theme.colors.background || "#fff"};
-  border-radius: 18px;
-  min-width: 320px;
-  max-width: 98vw;
-  width: 100%;
-  box-shadow: 0 8px 38px #1b1c2b22;
-  padding: 2.3rem 2rem 2rem 2rem;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  @media (max-width: 540px) {
-    padding: 1.6rem 0.7rem 1.2rem 0.7rem;
-    min-width: 0;
-  }
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  min-width: 320px; max-width: 96vw;
+  padding: ${({ theme }) => theme.spacings.lg};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
 `;
 
 const Title = styled.h3`
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.danger || "#c60f0f"};
-  letter-spacing: 0.01em;
-  margin-bottom: 1.1rem;
+  margin: 0 0 ${({ theme }) => theme.spacings.sm} 0;
+  color: ${({ theme }) => theme.colors.title};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 `;
 
-const Text = styled.div`
-  font-size: 1.09rem;
-  color: ${({ theme }) => theme.colors.text || "#333"};
-  margin-bottom: 2rem;
-  text-align: left;
+const Text = styled.p`
+  margin: 0 0 ${({ theme }) => theme.spacings.md} 0;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
-const ButtonRow = styled.div`
-  display: flex;
-  gap: 1em;
-  justify-content: flex-end;
-  margin-top: 0.5rem;
+const ButtonRow = styled.div`display:flex; gap:${({theme})=>theme.spacings.sm}; justify-content:flex-end;`;
+
+const BaseBtn = styled.button`
+  padding:8px 14px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+  border:${({theme})=>theme.borders.thin} transparent; font-weight:${({theme})=>theme.fontWeights.medium};
 `;
 
-const CancelBtn = styled.button`
-  background: ${({ theme }) => theme.colors.lightGrey || "#e3e3e3"};
-  color: ${({ theme }) => theme.colors.text || "#444"};
-  border: none;
-  padding: 0.59em 2em;
-  border-radius: 13px;
-  font-size: 1.03rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.14s;
-  &:hover,
-  &:focus {
-    background: ${({ theme }) => theme.colors.grey || "#dadada"};
+const Secondary = styled(BaseBtn)`
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+`;
+
+const Danger = styled(BaseBtn)`
+  background:${({ theme }) => theme.colors.dangerBg};
+  color:${({ theme }) => theme.colors.danger};
+  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.danger};
+  &:hover:enabled{
+    background:${({ theme }) => theme.colors.dangerHover};
+    color:${({ theme }) => theme.colors.textOnDanger};
   }
-`;
-
-const DeleteBtn = styled(CancelBtn)`
-  background: ${({ theme }) => theme.colors.danger || "#df3d3d"};
-  color: #fff;
-  font-weight: 600;
-  &:hover:enabled,
-  &:focus:enabled {
-    background: #b71c1c;
-  }
-  &:disabled {
-    opacity: 0.6;
-    cursor: wait;
-  }
+  &:disabled{ opacity:.6; cursor: wait; }
 `;

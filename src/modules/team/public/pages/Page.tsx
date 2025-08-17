@@ -10,93 +10,26 @@ import Link from "next/link";
 import Image from "next/image";
 import type { SupportedLocale } from "@/types/common";
 import type { ITeam } from "@/modules/team/types";
-import { useState, useMemo } from "react";
-
-// --- Arşiv çıkarma fonksiyonu (Yıl/Ay gruplama) ---
-const getArchives = (team: ITeam[]) => {
-  if (!Array.isArray(team)) return [];
-  const archiveSet = new Set<string>();
-  team.forEach((n) => {
-    const dt = n.publishedAt || n.createdAt;
-    if (dt) {
-      const d = new Date(dt);
-      const label = d.toLocaleString("tr-TR", {
-        year: "numeric",
-        month: "long",
-      });
-      archiveSet.add(label);
-    }
-  });
-  return Array.from(archiveSet);
-};
-
-// --- Kategori çıkarma fonksiyonu (normalize edilmiş) ---
-const getCategories = (team: ITeam[], lang: SupportedLocale) => {
-  if (!Array.isArray(team)) return [];
-  const cats: Record<string, { _id?: string; name: string }> = {};
-  team.forEach((n) => {
-    if (n.category) {
-      if (typeof n.category === "string") {
-        cats[n.category] = { name: n.category };
-      } else if (typeof n.category === "object" && n.category.name) {
-        cats[n.category._id || n.category.name[lang] || "-"] = {
-          _id: n.category._id,
-          name: n.category.name[lang] || n.category.name.en || "-",
-        };
-      }
-    }
-  });
-  return Object.entries(cats).map(([slug, { _id, name }]) => ({ slug, _id, name }));
-};
 
 export default function TeamPage() {
   const { i18n, t } = useI18nNamespace("team", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const { team, loading, error } = useAppSelector((state) => state.team);
-  const [search, setSearch] = useState("");
 
-  // Locales eklenmezse SSR hydration hatası çıkabilir, fix.
+  // SSR hydration için
   Object.entries(translations).forEach(([lng, resources]) => {
     if (!i18n.hasResourceBundle(lng, "team")) {
       i18n.addResourceBundle(lng, "team", resources, true, true);
     }
   });
 
-  // --- Filter/sort memoize ---
-  const filteredTeam = useMemo(() => {
-    if (!Array.isArray(team)) return [];
-    return team
-      .filter(
-        (n) =>
-          !search ||
-          (n.title?.[lang] ?? "")
-            .toLowerCase()
-            .includes(search.toLowerCase())
-      )
-      .sort(
-        (a, b) =>
-          new Date(b.publishedAt || b.createdAt).getTime() -
-          new Date(a.publishedAt || a.createdAt).getTime()
-      );
-  }, [team, search, lang]);
-
-  // Sidebar data memoize
-  const recentTeam = filteredTeam.slice(0, 4);
-  const archives = useMemo(() => getArchives(team || []), [team]);
-  const categories = useMemo(() => getCategories(team || [], lang), [team, lang]);
-
   // --- Loading ---
   if (loading) {
     return (
       <PageWrapper>
-        <MainGrid>
-          <LeftColumn>
-            {[...Array(2)].map((_, i) => <Skeleton key={i} />)}
-          </LeftColumn>
-          <RightColumn>
-            <Skeleton />
-          </RightColumn>
-        </MainGrid>
+        <ListGrid>
+          {[...Array(2)].map((_, i) => <Skeleton key={i} />)}
+        </ListGrid>
       </PageWrapper>
     );
   }
@@ -114,7 +47,7 @@ export default function TeamPage() {
   if (!Array.isArray(team) || team.length === 0) {
     return (
       <PageWrapper>
-        <NoTeam>{t("page.noTeam", "Hiç haber bulunamadı.")}</NoTeam>
+        <NoTeam>{t("page.noTeam", "Hiç proje bulunamadı.")}</NoTeam>
       </PageWrapper>
     );
   }
@@ -122,27 +55,26 @@ export default function TeamPage() {
   // --- Main ---
   return (
     <PageWrapper>
-      <MainGrid>
-        {/* Sol: Team Liste */}
-        <LeftColumn>
-          {filteredTeam.map((item: ITeam) => (
+      <ListGrid>
+        {[...team]
+          .sort(
+            (a, b) =>
+              new Date(b.publishedAt || b.createdAt).getTime() -
+              new Date(a.publishedAt || a.createdAt).getTime()
+          )
+          .map((item: ITeam) => (
             <TeamItem key={item._id} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
               {item.images?.[0]?.url && (
                 <MainImageWrap>
-                  <Image
-                    src={item.images[0].url}
-                    alt={item.title?.[lang] || "Team Image"}
-                    width={780}
-                    height={440}
-                    style={{
-                      width: "100%",
-                      height: "auto",
-                      objectFit: "cover",
-                      borderRadius: "16px",
-                      display: "block"
-                    }}
-                    loading="lazy"
-                  />
+                  <RatioBox>
+                    <StyledImage
+                      src={item.images[0].url}
+                      alt={item.title?.[lang] || "Team Image"}
+                      fill
+                      sizes="(max-width: 900px) 100vw, 780px"
+                      priority={false}
+                    />
+                  </RatioBox>
                 </MainImageWrap>
               )}
               <TeamTitle>
@@ -152,7 +84,7 @@ export default function TeamPage() {
               </TeamTitle>
               <TeamMeta>
                 <span>
-                  {new Date(item.publishedAt || item.createdAt).toLocaleDateString("tr-TR", {
+                  {new Date(item.publishedAt || item.createdAt).toLocaleDateString(lang === "en" ? "en-GB" : "tr-TR", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
@@ -177,139 +109,80 @@ export default function TeamPage() {
               </ReadMoreBtn>
             </TeamItem>
           ))}
-        </LeftColumn>
-
-        {/* Sağ: Sidebar */}
-        <RightColumn>
-          <SidebarBox>
-            <SidebarTitle>{t("search", "Arama")}</SidebarTitle>
-            <SearchForm
-              onSubmit={(e) => {
-                e.preventDefault();
-              }}
-            >
-              <input
-                type="text"
-                placeholder={t("search", "Arama")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </SearchForm>
-          </SidebarBox>
-
-          <SidebarBox>
-            <SidebarTitle>{t("recent", "Son Haberler")}</SidebarTitle>
-            <SidebarList>
-              {recentTeam.length ? (
-                recentTeam.map((n) => (
-                  <li key={n._id}>
-                    <Link href={`/team/${n.slug}`}>{n.title?.[lang]}</Link>
-                  </li>
-                ))
-              ) : (
-                <li>-</li>
-              )}
-            </SidebarList>
-          </SidebarBox>
-
-          <SidebarBox>
-            <SidebarTitle>{t("archives", "Arşivler")}</SidebarTitle>
-            <SidebarList>
-              {archives.length
-                ? archives.map((ar: string, i: number) => (
-                    <li key={ar + i}>{ar}</li>
-                  ))
-                : <li>-</li>}
-            </SidebarList>
-          </SidebarBox>
-
-          <SidebarBox>
-            <SidebarTitle>{t("categories", "Kategoriler")}</SidebarTitle>
-            <SidebarList>
-              {categories.length
-                ? categories.map((cat) => (
-                    <li key={cat.slug}>
-                      {cat.name}
-                    </li>
-                  ))
-                : <li>-</li>}
-            </SidebarList>
-          </SidebarBox>
-        </RightColumn>
-      </MainGrid>
+      </ListGrid>
     </PageWrapper>
   );
 }
 
 // --- Styled Components ---
+
 const PageWrapper = styled.div`
-  max-width: 1300px;
+  max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.md};
   background: ${({ theme }) => theme.colors.sectionBackground};
   min-height: 90vh;
 `;
 
-const MainGrid = styled.div`
-  display: grid;
-  grid-template-columns: 2.2fr 1fr;
-  gap: 2.5rem;
-  align-items: flex-start;
-
-  @media (max-width: 1050px) {
-    grid-template-columns: 1fr;
-    gap: 1.2rem;
-  }
-`;
-
-const LeftColumn = styled.div`
+const ListGrid = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: ${({ theme }) => theme.spacings.xxl};
 `;
 
 const TeamItem = styled(motion.article)`
-  background: ${({ theme }) => theme.colors.cardBackground || "#fff"};
-  border-radius: 20px;
-  border: 1.5px solid ${({ theme }) => theme.colors.borderLight || "#e5eaf3"};
-  box-shadow: 0 3px 15px 0 rgba(40,117,194,0.09);
-  padding: 2.1rem 2.3rem 1.5rem 2.3rem;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderLight};
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.xl};
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
+  gap: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 
-  @media (max-width: 650px) {
-    padding: 1.1rem 0.7rem 1.1rem 0.7rem;
+  ${({ theme }) => theme.media.mobile} {
+    padding: ${({ theme }) => theme.spacings.md};
   }
 `;
+
 const MainImageWrap = styled.div`
   width: 100%;
-  margin-bottom: 1.1rem;
-  border-radius: 16px;
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+  border-radius: ${({ theme }) => theme.radii.lg};
   overflow: hidden;
-  box-shadow: 0 8px 24px 0 rgba(40,117,194,0.11);
+  box-shadow: ${({ theme }) => theme.shadows.lg};
+`;
 
-  img {
-    width: 100% !important;
-    height: auto !important;  
-    object-fit: cover;
-    display: block;
-    border-radius: 16px;
-  }
+// --- Responsive aspect ratio box for image ---
+const RatioBox = styled.div`
+  position: relative;
+  width: 100%;
+  padding-top: 56.4%; /* 16:9 ratio. Adjust as needed */
+  overflow: hidden;
+`;
+
+const StyledImage = styled(Image)`
+  position: absolute !important;
+  top: 0; left: 0; width: 100% !important; height: 100% !important;
+  object-fit: cover;
+  border-radius: ${({ theme }) => theme.radii.lg};
+  display: block;
+  background: ${({ theme }) => theme.colors.skeletonBackground};
 `;
 
 const TeamTitle = styled.h2`
-  font-size: 1.42rem;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   margin-bottom: 0.23rem;
   line-height: 1.18;
+  font-family: ${({ theme }) => theme.fonts.heading};
 
   a {
     color: inherit;
     text-decoration: none;
-    transition: color 0.17s;
+    transition: color ${({ theme }) => theme.transition.fast};
     &:hover {
       color: ${({ theme }) => theme.colors.accent};
     }
@@ -317,122 +190,56 @@ const TeamTitle = styled.h2`
 `;
 
 const TeamMeta = styled.div`
-  font-size: 0.98rem;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
   display: flex;
-  gap: 1.25rem;
+  gap: ${({ theme }) => theme.spacings.lg};
   align-items: center;
   flex-wrap: wrap;
   margin-bottom: 0.25rem;
 `;
 
 const CategoryLabel = styled.span`
-  background: ${({ theme }) => theme.colors.primaryTransparent || "#e5f1fb"};
+  background: ${({ theme }) => theme.colors.primaryTransparent};
   color: ${({ theme }) => theme.colors.primary};
   font-size: 0.9em;
-  border-radius: 8px;
+  border-radius: ${({ theme }) => theme.radii.md};
   padding: 1px 8px;
   margin-left: 0.32em;
-  font-weight: 500;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
 `;
 
 const TeamSummary = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 1.08rem;
+  font-size: ${({ theme }) => theme.fontSizes.md};
   margin: 0.22em 0 1.22em 0;
-  line-height: 1.64;
+  line-height: ${({ theme }) => theme.lineHeights.relaxed};
 `;
 
 const ReadMoreBtn = styled(Link)`
   align-self: flex-start;
-  background: linear-gradient(90deg, #2875c2 60%, #0bb6d6 100%);
-  color: #fff;
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
   padding: 0.46em 1.35em;
-  border-radius: 22px;
-  font-size: 1.03rem;
-  font-weight: 600;
-  box-shadow: 0 3px 10px 0 rgba(40,117,194,0.06);
+  border-radius: ${({ theme }) => theme.radii.pill};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  box-shadow: ${({ theme }) => theme.shadows.button};
   text-decoration: none;
-  transition: background 0.2s, color 0.18s, transform 0.14s;
+  transition: background ${({ theme }) => theme.transition.normal}, color ${({ theme }) => theme.transition.fast}, transform ${({ theme }) => theme.transition.fast};
+
   &:hover, &:focus-visible {
-    background: linear-gradient(90deg, #0bb6d6 0%, #2875c2 90%);
-    color: #fff;
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+    color: ${({ theme }) => theme.buttons.primary.textHover};
     transform: translateY(-2px) scale(1.04);
-  }
-`;
-
-const RightColumn = styled.aside`
-  position: sticky;
-  top: 40px;
-  align-self: flex-start;
-  display: flex;
-  flex-direction: column;
-  gap: 2.2rem;
-
-  @media (max-width: 1050px) {
-    position: static;
-    gap: 1.2rem;
-  }
-`;
-
-const SidebarBox = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundAlt || "#f6fafd"};
-  border-radius: 15px;
-  box-shadow: 0 3px 10px 0 rgba(40,117,194,0.04);
-  padding: 1.2rem 1.3rem 1.4rem 1.3rem;
-  margin-bottom: 0.5rem;
-`;
-
-const SidebarTitle = styled.h3`
-  font-size: 1.13rem;
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: 700;
-  margin-bottom: 1.1rem;
-  border-bottom: 1.5px solid ${({ theme }) => theme.colors.primaryTransparent || "#e0eaf3"};
-  padding-bottom: 0.45rem;
-`;
-
-const SearchForm = styled.form`
-  display: flex;
-  align-items: center;
-  input {
-    flex: 1;
-    padding: 0.41em 1.1em;
-    border-radius: 8px;
-    border: 1.5px solid ${({ theme }) => theme.colors.borderLight || "#e5eaf3"};
-    font-size: 1.05em;
-    color: ${({ theme }) => theme.colors.text};
-    outline: none;
-    background: ${({ theme }) => theme.colors.background};
-    &:focus {
-      border-color: ${({ theme }) => theme.colors.primary};
-      background: #fff;
-    }
-  }
-`;
-
-const SidebarList = styled.ul`
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  li {
-    margin-bottom: 0.71em;
-    font-size: 1.01em;
-    a {
-      color: ${({ theme }) => theme.colors.text};
-      text-decoration: none;
-      transition: color 0.16s;
-      &:hover {
-        color: ${({ theme }) => theme.colors.primary};
-      }
-    }
   }
 `;
 
 const NoTeam = styled.div`
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 1.09rem;
-  padding: 2.1rem 0 3rem 0;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  padding: ${({ theme }) => theme.spacings.xl} 0 ${({ theme }) => theme.spacings.xxl} 0;
   opacity: 0.86;
   text-align: center;
 `;
+

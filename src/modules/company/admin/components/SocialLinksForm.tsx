@@ -1,157 +1,107 @@
+// src/modules/company/components/SocialLinksForm.tsx
 "use client";
 
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
 import styled from "styled-components";
-
-export interface SocialLinks {
-  facebook?: string;
-  instagram?: string;
-  twitter?: string;
-  linkedin?: string;
-  youtube?: string;
-}
+import type { ISocialLink } from "@/modules/company/types";
 
 interface Props {
-  values: SocialLinks;
+  values: ISocialLink;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   loading?: boolean;
-  // Eğer kendi başına form olarak kullanılacaksa:
   onSubmit?: (e: React.FormEvent) => void;
-  renderAsForm?: boolean; // Varsayılan true, parent formda ise false gönder!
+  renderAsForm?: boolean;
 }
 
-const SOCIAL_KEYS: (keyof SocialLinks)[] = [
-  "facebook",
-  "instagram",
-  "twitter",
-  "linkedin",
-  "youtube",
-];
+const SOCIAL_KEYS: (keyof ISocialLink)[] = ["facebook", "instagram", "twitter", "linkedin", "youtube"];
 
-const SocialLinksForm: React.FC<Props> = ({
-  values,
-  onChange,
-  loading,
-  onSubmit,
-  renderAsForm = true,
-}) => {
+const SocialLinksForm: React.FC<Props> = ({ values, onChange, loading, onSubmit, renderAsForm = true }) => {
   const { t } = useI18nNamespace("company", translations);
 
-  // Label ve placeholder'lar i18n ile alınır
-  const getLabel = (key: keyof SocialLinks) =>
-    t(`socialLabels.${key}`, key.charAt(0).toUpperCase() + key.slice(1));
-  const getPlaceholder = (key: keyof SocialLinks) =>
-    t(`socialPlaceholders.${key}`, `https://${key}.com/yourcompany`);
+  const getLabel = (k: keyof ISocialLink) => t(`socialLabels.${k}`, k.charAt(0).toUpperCase() + k.slice(1));
+  const getPlaceholder = (k: keyof ISocialLink) => t(`socialPlaceholders.${k}`, `https://${k}.com/yourcompany`);
 
-  // İçeriği tek bir değişkene koy, tekrar kullan:
   const content = (
     <>
       <SectionTitle>{t("socialMedia", "Sosyal Medya Hesapları")}</SectionTitle>
       <InputsGrid>
-        {SOCIAL_KEYS.map((key) => (
-          <InputBlock key={key}>
-            <Label htmlFor={key}>{getLabel(key)}</Label>
+        {SOCIAL_KEYS.map((k) => (
+          <InputBlock key={k}>
+            <Label htmlFor={k}>{getLabel(k)}</Label>
             <Input
-  id={key}
-  name={key}
-  type="url"
-  value={values?.[key] || ""}
-  onChange={onChange}
-  placeholder={getPlaceholder(key)}
-  autoComplete="off"
-  disabled={!!loading}
-/>
+              id={k}
+              name={k}
+              type="url"
+              value={values?.[k] || ""}
+              onChange={onChange}
+              placeholder={getPlaceholder(k)}
+              autoComplete="off"
+              disabled={!!loading}
+            />
           </InputBlock>
         ))}
       </InputsGrid>
-      {/* Sadece kendi başına form ise submit butonunu göster */}
       {renderAsForm && (
-        <Button type="submit" disabled={!!loading}>
+        <Primary type="submit" disabled={!!loading}>
           {loading ? t("saving", "Kaydediliyor...") : t("save", "Kaydet")}
-        </Button>
+        </Primary>
       )}
     </>
   );
 
-  // Eğer parent bir form varsa (örneğin CompanyForm içindeyse) renderAsForm=false gönder!
-  if (renderAsForm) {
-    return (
-      <Form onSubmit={onSubmit} autoComplete="off" noValidate>
-        {content}
-      </Form>
-    );
-  } else {
-    // Sadece bir grid / input seti döner, parent form submiti yönetir
-    return content;
-  }
+  return renderAsForm ? (
+    <Form onSubmit={onSubmit} autoComplete="off" noValidate>{content}</Form>
+  ) : (
+    content
+  );
 };
 
 export default SocialLinksForm;
 
-// Styled Components...
+/* styled (pattern) */
 const Form = styled.form`
-  margin-top: 24px;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  padding: ${({ theme }) => theme.spacings.lg};
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.xs};
+  margin-top:${({theme})=>theme.spacings.md};
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};
+  padding:${({theme})=>theme.spacings.lg};
 `;
 const SectionTitle = styled.h4`
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  margin-bottom:${({theme})=>theme.spacings.md};
+  color:${({theme})=>theme.colors.textPrimary};
+  font-size:${({theme})=>theme.fontSizes.md};
+  font-weight:${({theme})=>theme.fontWeights.bold};
 `;
 const InputsGrid = styled.div`
-  display: grid;
-  gap: ${({ theme }) => theme.spacings.md};
-  grid-template-columns: 1fr;
-  ${({ theme }) => theme.media.small} {
-    grid-template-columns: 1fr 1fr;
-  }
+  display:grid; gap:${({theme})=>theme.spacings.md}; grid-template-columns:1fr;
+  ${({theme})=>theme.media.small}{ grid-template-columns:1fr 1fr; }
 `;
-const InputBlock = styled.div` width: 100%; `;
+const InputBlock = styled.div`width:100%;`;
 const Label = styled.label`
-  display: block;
-  font-weight: 600;
-  margin-bottom: ${({ theme }) => theme.spacings.xs};
-  color: ${({ theme }) => theme.colors.textSecondary};
+  display:block; font-weight:${({theme})=>theme.fontWeights.semiBold};
+  margin-bottom:${({theme})=>theme.spacings.xs};
+  color:${({theme})=>theme.colors.textSecondary};
 `;
 const Input = styled.input`
-  padding: ${({ theme }) => theme.spacings.sm};
-  width: 100%;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  background: ${({ theme }) => theme.colors.inputBackground};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  margin-bottom: ${({ theme }) => theme.spacings.sm};
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
-    outline: none;
-    background: ${({ theme }) => theme.colors.backgroundAlt};
-  }
-  &:disabled {
-    background: ${({ theme }) => theme.colors.disabled};
-    color: ${({ theme }) => theme.colors.textSecondary};
-    cursor: not-allowed;
-    opacity: 0.8;
-  }
+  padding:10px 12px; width:100%;
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  border-radius:${({theme})=>theme.radii.md};
+  background:${({theme})=>theme.inputs.background};
+  color:${({theme})=>theme.inputs.text};
+  font-size:${({theme})=>theme.fontSizes.sm};
+  margin-bottom:${({theme})=>theme.spacings.sm};
+  &:focus{ outline:none; border-color:${({theme})=>theme.inputs.borderFocus}; box-shadow:${({theme})=>theme.colors.shadowHighlight}; }
+  &:disabled{ background:${({theme})=>theme.colors.disabled}; color:${({theme})=>theme.colors.textSecondary}; cursor:not-allowed; opacity:0.8; }
 `;
-const Button = styled.button`
-  margin-top: ${({ theme }) => theme.spacings.md};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.lg};
-  background: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.buttonText};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-weight: 600;
-  cursor: pointer;
-  min-width: 140px;
-  transition: background 0.2s;
-  &:hover:not(:disabled) { background: ${({ theme }) => theme.colors.primaryHover}; }
-  &:disabled { opacity: 0.7; cursor: not-allowed; }
+const Primary = styled.button`
+  margin-top:${({theme})=>theme.spacings.md};
+  padding:8px 14px; min-width:140px;
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  border:${({theme})=>theme.borders.thin} transparent;
+  border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+  &:hover:not(:disabled){ background:${({theme})=>theme.buttons.primary.backgroundHover}; }
+  &:disabled{ opacity:${({theme})=>theme.opacity.disabled}; cursor:not-allowed; }
 `;

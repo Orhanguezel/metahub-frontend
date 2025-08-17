@@ -1,11 +1,9 @@
 import type { SupportedLocale } from "@/types/common";
 
-// Çok dilli alanlar için merkezi tanım
-export type TranslatedField = {
-  [lang in SupportedLocale]?: string;
-};
+// Çok dilli alan
+export type TranslatedField = { [lang in SupportedLocale]?: string };
 
-// Görsel nesne tipi
+// Görsel
 export interface ILibraryImage {
   url: string;
   thumbnail: string;
@@ -14,17 +12,17 @@ export interface ILibraryImage {
   _id?: string;
 }
 
-// Genel dosya tipi (PDF, DOCX, XLSX vs.)
+// Dosya (PDF, DOCX…)
 export interface ILibraryFile {
   url: string;
   name: string;
   size?: number;
-  type?: string; // PDF için: "application/pdf" (gelecekte DOCX/XLSX vs. de olabilir)
+  type?: string; // örn: "application/pdf"
   publicId?: string;
   _id?: string;
 }
 
-// Ana makale (library) tipi
+// Ana içerik
 export interface ILibrary {
   _id: string;
   title: TranslatedField;
@@ -52,7 +50,7 @@ export interface ILibrary {
   updatedAt: string;
 }
 
-// Kategori modeli
+// Kategori
 export interface LibraryCategory {
   _id: string;
   name: TranslatedField;

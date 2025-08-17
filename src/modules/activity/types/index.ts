@@ -26,16 +26,17 @@ export interface IActivity {
   tags: string[];
   images: IActivityImage[];
   category:
-    | string
-    | {
-        _id: string;
-        name: TranslatedField;
-      };
+  | string
+  | {
+    _id: string;
+    name: TranslatedField;
+  };
   author: string;
   isPublished: boolean;
   isActive: boolean;
   publishedAt?: string;
   comments: string[];
+  order: number;
   createdAt: string;
   updatedAt: string;
 }

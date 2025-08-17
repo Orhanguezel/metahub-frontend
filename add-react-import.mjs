@@ -1,7 +1,6 @@
 #!/usr/bin/env bun
 
 import fs from "fs";
-import path from "path";
 import { glob } from "glob"; // ✅ DÜZELTME
 
 const files = await glob("src/app/**/*.tsx"); // ✅ await ile kullan

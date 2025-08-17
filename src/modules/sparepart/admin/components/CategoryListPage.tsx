@@ -1,18 +1,14 @@
+// SparepartCategoryListPage.tsx
 "use client";
 
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/sparepart";
+import { translations } from "@/modules/sparepart";
 import { useAppDispatch } from "@/store/hooks";
-import {
-  deleteSparepartCategory,
-} from "@/modules/sparepart/slice/sparepartCategorySlice";
+import { deleteSparepartCategory } from "@/modules/sparepart/slice/sparepartCategorySlice";
 import type { SparepartCategory } from "@/modules/sparepart/types";
-import {
-  LANG_LABELS,
-  SupportedLocale,
-} from "@/types/common";
+import { LANG_LABELS, SupportedLocale } from "@/types/common";
 import Image from "next/image";
 
 interface Props {
@@ -20,34 +16,22 @@ interface Props {
   onEdit: (category: SparepartCategory) => void;
 }
 
-export default function SparepartCategoryListPage({
-  onAdd,
-  onEdit,
-}: Props) {
+export default function SparepartCategoryListPage({ onAdd, onEdit }: Props) {
   const { i18n, t } = useI18nNamespace("sparepart", translations);
-    const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const dispatch = useAppDispatch();
-  const { categories, loading, error } = useAppSelector(
-    (state) => state.sparepartCategory
-  );
+  const { categories, loading, error } = useAppSelector((state) => state.sparepartCategory);
 
   const handleDelete = (id: string) => {
-    const confirmMessage = t(
-      "admin.confirm.delete",
-      "Are you sure you want to delete this category?"
-    );
-    if (window.confirm(confirmMessage)) {
-      dispatch(deleteSparepartCategory(id));
-    }
+    const confirmMessage = t("admin.confirm.delete", "Are you sure you want to delete this category?");
+    if (window.confirm(confirmMessage)) dispatch(deleteSparepartCategory(id));
   };
 
   return (
     <Wrapper>
       <Header>
         <h2>{t("admin.categories.title", "Product Categories")}</h2>
-        <AddButton onClick={onAdd}>
-          {t("admin.categories.add", "Add Category")}
-        </AddButton>
+        <AddButton onClick={onAdd}>{t("admin.categories.add", "Add Category")}</AddButton>
       </Header>
 
       {loading ? (
@@ -55,9 +39,7 @@ export default function SparepartCategoryListPage({
       ) : error ? (
         <ErrorMessage>❌ {error}</ErrorMessage>
       ) : categories.length === 0 ? (
-        <StatusMessage>
-          {t("admin.categories.empty", "No categories found.")}
-        </StatusMessage>
+        <StatusMessage>{t("admin.categories.empty", "No categories found.")}</StatusMessage>
       ) : (
         <Table>
           <thead>
@@ -97,12 +79,8 @@ export default function SparepartCategoryListPage({
                     )}
                   </td>
                   <td>
-                    <ActionButton onClick={() => onEdit(cat)}>
-                      {t("admin.edit", "Edit")}
-                    </ActionButton>
-                    <DeleteButton onClick={() => handleDelete(cat._id)}>
-                      {t("admin.delete", "Delete")}
-                    </DeleteButton>
+                    <ActionButton onClick={() => onEdit(cat)}>{t("admin.edit", "Edit")}</ActionButton>
+                    <DeleteButton onClick={() => handleDelete(cat._id)}>{t("admin.delete", "Delete")}</DeleteButton>
                   </td>
                 </tr>
               );
@@ -114,85 +92,36 @@ export default function SparepartCategoryListPage({
   );
 }
 
-// Styled Components aşağıda değişmedi
-
-const Wrapper = styled.div`
-  margin-top: 1rem;
-`;
-
+/* styled */
+const Wrapper = styled.div`margin-top: 1rem;`;
 const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-
-  h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;
+  h2{margin:0;font-size:1.25rem;font-weight:600;}
 `;
-
 const AddButton = styled.button`
-  padding: 0.5rem 1rem;
+  padding: .5rem 1rem;
   background: ${({ theme }) => theme.colors.primary};
-  color: white;
-  border: none;
+  color: white; border: none;
   border-radius: ${({ theme }) => theme.radii.sm};
   cursor: pointer;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.primaryHover};
-  }
+  &:hover { background: ${({ theme }) => theme.colors.primaryHover}; }
 `;
-
 const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-
-  th,
-  td {
-    padding: 0.75rem;
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    text-align: left;
-    font-size: 0.95rem;
+  width:100%; border-collapse:collapse;
+  th, td {
+    padding:.75rem; border:1px solid ${({ theme }) => theme.colors.border};
+    text-align:left; font-size:.95rem;
   }
-
-  th {
-    background: ${({ theme }) => theme.colors.tableHeader};
-    color: ${({ theme }) => theme.colors.text};
-  }
+  th { background:${({ theme }) => theme.colors.tableHeader}; color:${({ theme }) => theme.colors.text}; }
 `;
-
-const StatusMessage = styled.p`
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 0.95rem;
-`;
-
-const ErrorMessage = styled.p`
-  text-align: center;
-  color: red;
-  font-size: 0.95rem;
-`;
-
+const StatusMessage = styled.p`text-align:center;color:${({ theme }) => theme.colors.textSecondary};font-size:.95rem;`;
+const ErrorMessage = styled.p`text-align:center;color:red;font-size:.95rem;`;
 const ActionButton = styled.button`
-  margin-right: 0.5rem;
-  padding: 0.4rem 0.8rem;
-  background: ${({ theme }) => theme.colors.warning};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  cursor: pointer;
+  margin-right:.5rem; padding:.4rem .8rem;
+  background:${({ theme }) => theme.colors.warning};
+  color:white; border:none; border-radius:4px; font-size:.85rem; cursor:pointer;
 `;
-
 const DeleteButton = styled.button`
-  padding: 0.4rem 0.8rem;
-  background: ${({ theme }) => theme.colors.danger};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  cursor: pointer;
+  padding:.4rem .8rem; background:${({ theme }) => theme.colors.danger};
+  color:white; border:none; border-radius:4px; font-size:.85rem; cursor:pointer;
 `;

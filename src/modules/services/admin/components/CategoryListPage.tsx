@@ -3,164 +3,129 @@
 import styled from "styled-components";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/services";
+import { translations } from "@/modules/services";
 import type { ServicesCategory } from "@/modules/services/types";
-import { LANG_LABELS, SupportedLocale } from "@/types/common";
+import { type SupportedLocale } from "@/types/common";
 import { deleteServicesCategory } from "@/modules/services/slice/servicesCategorySlice";
 
-interface ProductCategoryListPageProps {
+interface ServicesCategoryListPageProps {
   onAdd: () => void;
   onEdit: (category: ServicesCategory) => void;
 }
 
-export default function ProductCategoryListPage({
+export default function ServicesCategoryListPage({
   onAdd,
   onEdit,
-}: ProductCategoryListPageProps) {
+}: ServicesCategoryListPageProps) {
   const dispatch = useAppDispatch();
   const { i18n, t } = useI18nNamespace("services", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  // Merkezi fetch ile gelen slice'ı okuyoruz
-   const categories = useAppSelector((state) => state.servicesCategory.categories);
-  const loading = useAppSelector((state) => state.services.loading);
-  const error = useAppSelector((state) => state.services.error);
-  
+  const categories = useAppSelector((s) => s.servicesCategory.categories);
+  const loading = useAppSelector((s) => s.servicesCategory.loading);
+  const error = useAppSelector((s) => s.servicesCategory.error);
 
-  // Silme işlemi
   const handleDelete = (id: string) => {
-    const confirmMessage = t(
-      "admin.confirm.delete",
-      "Are you sure you want to delete this category?"
-    );
-    if (window.confirm(confirmMessage)) {
-      dispatch(deleteServicesCategory(id));
-    }
+    const confirmMessage = t("admin.confirm.delete", "Are you sure you want to delete this category?");
+    if (window.confirm(confirmMessage)) dispatch(deleteServicesCategory(id));
   };
 
   return (
-    <Wrapper>
+    <Wrap>
       <Header>
-        <h2>{t("admin.categories.title", "Product Categories")}</h2>
-        <AddButton onClick={onAdd}>
-          {t("admin.categories.add", "Add Category")}
-        </AddButton>
+        <h2>{t("admin.categories.title", "Service Categories")}</h2>
+        <AddBtn onClick={onAdd}>+ {t("admin.categories.add", "Add Category")}</AddBtn>
       </Header>
 
-      {loading ? (
-        <StatusMessage>{t("admin.loading", "Loading...")}</StatusMessage>
-      ) : error ? (
-        <ErrorMessage>❌ {error}</ErrorMessage>
-      ) : !categories || categories.length === 0 ? (
-        <StatusMessage>
-          {t("admin.categories.empty", "No categories found.")}
-        </StatusMessage>
-      ) : (
-        <Table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>{t(`admin.language.${lang}`, LANG_LABELS[lang])}</th>
-              <th>{t("admin.slug", "Slug")}</th>
-              <th>{t("admin.actions", "Actions")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((cat: ServicesCategory, i: number) => (
-              <tr key={cat._id}>
-                <td>{i + 1}</td>
-                <td>{cat.name?.[lang] || "—"}</td>
-                <td>{cat.slug}</td>
-                <td>
-                  <ActionButton onClick={() => onEdit(cat)}>
-                    {t("admin.edit", "Edit")}
-                  </ActionButton>
-                  <DeleteButton onClick={() => handleDelete(cat._id)}>
-                    {t("admin.delete", "Delete")}
-                  </DeleteButton>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+      {loading && <Info>{t("admin.loading", "Loading...")}</Info>}
+      {error && !loading && <Error>❌ {error}</Error>}
+      {!loading && !error && (!categories || categories.length === 0) && (
+        <Info>{t("admin.categories.empty", "No categories found.")}</Info>
       )}
-    </Wrapper>
+
+      {!loading && !error && categories && categories.length > 0 && (
+        <TableWrap>
+          <Table>
+            <thead>
+              <tr>
+                <th style={{ width: 56 }}>#</th>
+                <th>{t("admin.categories.name", "Name")} ({lang.toUpperCase()})</th>
+                <th>{t("admin.slug", "Slug")}</th>
+                <th aria-label={t("admin.actions", "Actions")} />
+              </tr>
+            </thead>
+            <tbody>
+              {categories.map((cat: ServicesCategory, i: number) => (
+                <tr key={cat._id}>
+                  <td>{i + 1}</td>
+                  <td title={cat.name?.[lang] || ""}>{cat.name?.[lang] || "—"}</td>
+                  <td>{cat.slug}</td>
+                  <td className="actions">
+                    <Row>
+                      <Secondary onClick={() => onEdit(cat)}>{t("admin.edit", "Edit")}</Secondary>
+                      <Danger onClick={() => handleDelete(cat._id)}>{t("admin.delete", "Delete")}</Danger>
+                    </Row>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </TableWrap>
+      )}
+    </Wrap>
   );
 }
 
-// --- Styled Components ---
-const Wrapper = styled.div`
-  margin-top: 1rem;
-`;
-
+/* styled — about category list patern */
+const Wrap = styled.div`display:flex;flex-direction:column;gap:${({theme})=>theme.spacings.md};`;
 const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
+  display:flex;align-items:center;justify-content:space-between;
+  h2{ margin:0; font-size:${({theme})=>theme.fontSizes.lg}; }
 `;
-
-const AddButton = styled.button`
-  padding: 0.5rem 1rem;
-  background: ${({ theme }) => theme.colors.primary};
-  color: white;
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  cursor: pointer;
-  &:hover {
-    background: ${({ theme }) => theme.colors.primaryHover};
-  }
+const AddBtn = styled.button`
+  padding:8px 12px;border-radius:${({theme})=>theme.radii.md};cursor:pointer;
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.buttons.primary.backgroundHover};
 `;
+const Info = styled.p`text-align:center;color:${({theme})=>theme.colors.textSecondary};`;
+const Error = styled.p`text-align:center;color:${({theme})=>theme.colors.danger};`;
 
+const TableWrap = styled.div`
+  width:100%;overflow-x:auto;border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};background:${({theme})=>theme.colors.cardBackground};
+`;
 const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  th, td {
-    padding: 0.75rem;
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    text-align: left;
-    font-size: 0.95rem;
+  width:100%;border-collapse:collapse;
+  thead th{
+    background:${({theme})=>theme.colors.tableHeader};
+    color:${({theme})=>theme.colors.textSecondary};
+    font-weight:${({theme})=>theme.fontWeights.semiBold};
+    font-size:${({theme})=>theme.fontSizes.sm};
+    padding:${({theme})=>theme.spacings.md};text-align:left;white-space:nowrap;
   }
-  th {
-    background: ${({ theme }) => theme.colors.tableHeader};
-    color: ${({ theme }) => theme.colors.text};
+  td{
+    padding:${({theme})=>theme.spacings.md};
+    border-bottom:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
+    font-size:${({theme})=>theme.fontSizes.sm};vertical-align:middle;
   }
+  td.actions{text-align:right;}
+  tbody tr:hover td{background:${({theme})=>theme.colors.hoverBackground};}
 `;
-
-const StatusMessage = styled.p`
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 0.95rem;
+const Row = styled.div`display:flex;gap:${({theme})=>theme.spacings.xs};justify-content:flex-end;`;
+const Secondary = styled.button`
+  padding:8px 10px;border-radius:${({theme})=>theme.radii.md};cursor:pointer;
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
 `;
-
-const ErrorMessage = styled.p`
-  text-align: center;
-  color: red;
-  font-size: 0.95rem;
-`;
-
-const ActionButton = styled.button`
-  margin-right: 0.5rem;
-  padding: 0.4rem 0.8rem;
-  background: ${({ theme }) => theme.colors.warning};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  cursor: pointer;
-`;
-
-const DeleteButton = styled.button`
-  padding: 0.4rem 0.8rem;
-  background: ${({ theme }) => theme.colors.danger};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  cursor: pointer;
+const Danger = styled(Secondary)`
+  background:${({theme})=>theme.colors.dangerBg};
+  color:${({theme})=>theme.colors.danger};
+  border-color:${({theme})=>theme.colors.danger};
+  &:hover{
+    background:${({theme})=>theme.colors.dangerHover};
+    color:${({theme})=>theme.colors.textOnDanger};
+    border-color:${({theme})=>theme.colors.dangerHover};
+  }
 `;

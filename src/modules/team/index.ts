@@ -3,9 +3,8 @@ export { default as AdminPage } from "./admin/pages/AdminPage";
 export { default as Page } from "./public/pages/Page";
 
 // Admin Components
-export { default as Tabs } from "./admin/components/Tabs";
-export { default as List } from "./admin/components/List";
-export { default as FormModal } from "./admin/components/FormModal";
+export { default as TeamList } from "./admin/components/TeamList";
+export { default as TeamForm } from "./admin/components/TeamForm";
 
 
 // Public Components

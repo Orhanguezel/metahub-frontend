@@ -5,11 +5,12 @@ export { default as OfferPage } from "./public/pages/OfferPage";
 
 // Admin Components
 
-export { default as OfferTable } from "./admin/components/OfferTable";
-export { default as OfferToolbar } from "./admin/components/OfferToolbar";
-export { default as OfferDetailModal } from "./admin/components/OfferDetailModal";
-export { default as OfferDeleteConfirmModal } from "./admin/components/OfferDeleteConfirmModal";
-export { default as OfferStatusDropdown } from "./admin/components/OfferStatusDropdown";
+export { default as OfferForm } from "./admin/components/OfferForm";
+export { default as ItemsSection } from "./admin/components/ItemsSection";
+export { default as CostsSection } from "./admin/components/CostsSection";
+export { default as TotalsSection } from "./admin/components/TotalsSection";
+export { default as OfferList } from "./admin/components/OfferList";
+export { default as OfferDetail } from "./admin/components/OfferDetail";
 
 
 

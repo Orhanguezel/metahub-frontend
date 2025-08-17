@@ -1,4 +1,4 @@
-// src/types/company.ts (Frontend)
+// src/modules/company/types/index.ts
 import type { SupportedLocale } from "@/types/common";
 import type { Address } from "@/modules/users/types/address";
 
@@ -21,17 +21,17 @@ export interface ISocialLink {
 
 export interface ICompany {
   _id?: string;
-  companyName: TranslatedLabel;                  // Çoklu dil
-  companyDesc?: TranslatedLabel;                 // Çoklu dil
+  companyName: TranslatedLabel;
+  companyDesc?: TranslatedLabel;
   tenant: string;
-  language: string;                              // "en" | "de" | "tr" | ...
+  language: SupportedLocale;               // dil kodu
   taxNumber: string;
   handelsregisterNumber?: string;
   registerCourt?: string;
   website?: string;
   email: string;
   phone: string;
-  addresses?: Array<string | Address>;                    // Address _id referans array
+  addresses?: Array<string | Address>;
   bankDetails: {
     bankName: string;
     iban: string;
@@ -40,6 +40,6 @@ export interface ICompany {
   managers?: string[];
   images?: ICompanyImage[];
   socialLinks?: ISocialLink;
-  createdAt: string | Date;
-  updatedAt: string | Date;
+  createdAt: string;                       // ISO
+  updatedAt: string;                       // ISO
 }

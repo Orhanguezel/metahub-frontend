@@ -198,7 +198,7 @@ import {
 
 
 import {
-  fetchAdminOffers,
+  fetchOffersAdmin,
   clearOfferMessages,
 } from "@/modules/offer/slice/offerSlice";
 
@@ -530,7 +530,7 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
       dispatch(fetchAllSubscribers());
 
     if (!offerList.adminOffers.length && !offerList.loading)
-      dispatch(fetchAdminOffers());
+      dispatch(fetchOffersAdmin());
 
     if (!customerList.customerAdmin.length && !customerList.loading)
       dispatch(fetchCustomersAdmin());

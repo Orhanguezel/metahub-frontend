@@ -1,8 +1,8 @@
+// src/modules/company/slice/companySlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import { ICompany } from "../types";
+import type { ICompany } from "@/modules/company/types";
 
-// --- State ---
 interface CompanyFullState {
   company: ICompany | null;
   companyAdmin: ICompany | null;
@@ -14,6 +14,7 @@ interface CompanyFullState {
   error: string | null;
   successMessage: string | null;
 }
+
 const initialState: CompanyFullState = {
   company: null,
   companyAdmin: null,
@@ -26,132 +27,113 @@ const initialState: CompanyFullState = {
   successMessage: null,
 };
 
-// --- FormData Helper ---
-const appendFormData = (
-  formData: FormData,
-  data: Record<string, any>,
-  parentKey?: string
-) => {
-  Object.entries(data).forEach(([key, value]) => {
-    const fieldName = parentKey ? `${parentKey}[${key}]` : key;
-    if (Array.isArray(value)) {
-      value.forEach((item, idx) => {
-        if (item instanceof File) {
-          formData.append(fieldName, item);
-        } else if (typeof item === "object" && item !== null) {
-          appendFormData(formData, item, `${fieldName}[${idx}]`);
-        } else {
-          formData.append(`${fieldName}[${idx}]`, String(item));
-        }
+const BASE = "/company";
+
+// -- form-data helper (nested obj/array/file destekler)
+const appendFormData = (fd: FormData, data: Record<string, any>, parent?: string) => {
+  Object.entries(data ?? {}).forEach(([key, value]) => {
+    const name = parent ? `${parent}[${key}]` : key;
+    if (value === undefined || value === null) return;
+
+    if (value instanceof File) {
+      fd.append(name, value);
+    } else if (Array.isArray(value)) {
+      value.forEach((v, i) => {
+        if (v instanceof File) fd.append(name, v);
+        else if (typeof v === "object" && v !== null) appendFormData(fd, v, `${name}[${i}]`);
+        else fd.append(`${name}[${i}]`, String(v));
       });
-    } else if (value instanceof File) {
-      formData.append(fieldName, value);
-    } else if (typeof value === "object" && value !== null) {
-      appendFormData(formData, value, fieldName);
-    } else if (value !== undefined && value !== null) {
-      formData.append(fieldName, String(value));
+    } else if (typeof value === "object") {
+      appendFormData(fd, value, name);
+    } else {
+      fd.append(name, String(value));
     }
   });
 };
 
-// 🌍 GET: Public & Admin Company
-export const fetchCompanyInfo = createAsyncThunk<
-  ICompany,
-  void,
-  { rejectValue: string }
->("company/fetchCompanyInfo", async (_, { rejectWithValue }) => {
-  try {
-    const result = await apiCall("get", "/company", null, rejectWithValue);
-    // result.data = { success, message, data }
-    return result.data; // <--- SADECE ICompany döner!
-  } catch (error: any) {
-    return rejectWithValue(error?.message || "No company data found.");
+// 🌍 GET: Public & Admin Company (aynı endpoint)
+export const fetchCompanyInfo = createAsyncThunk<ICompany, void, { rejectValue: string }>(
+  "company/fetchCompanyInfo",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await apiCall("get", `${BASE}`, null, rejectWithValue);
+      // API bazı projelerde {data:{...}} döndürebildiği için ikisini de karşıla:
+      const data = res?.data?.data ?? res?.data;
+      return data as ICompany;
+    } catch (err: any) {
+      return rejectWithValue(err?.message || "No company data found.");
+    }
   }
-});
+);
 
-// 🛠 Admin: Fetch Company
-export const fetchCompanyAdmin = createAsyncThunk<
-  ICompany,
-  void,
-  { rejectValue: string }
->("company/fetchCompanyAdmin", async (_, { rejectWithValue }) => {
-  try {
-    const result = await apiCall("get", "/company", null, rejectWithValue);
-    return result.data;
-  } catch (error: any) {
-    return rejectWithValue(error?.message || "No admin company data found.");
+export const fetchCompanyAdmin = createAsyncThunk<ICompany, void, { rejectValue: string }>(
+  "company/fetchCompanyAdmin",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await apiCall("get", `${BASE}`, null, rejectWithValue);
+      const data = res?.data?.data ?? res?.data;
+      return data as ICompany;
+    } catch (err: any) {
+      return rejectWithValue(err?.message || "No admin company data found.");
+    }
   }
-});
+);
 
-// 🛠️ CREATE: Company
-export const createCompanyAdmin = createAsyncThunk<
-  ICompany,
-  Record<string, any>,
-  { rejectValue: string }
->("company/createCompanyAdmin", async (newCompany, { rejectWithValue }) => {
-  try {
-    const formData = new FormData();
-    appendFormData(formData, newCompany);
-    const result = await apiCall("post", "/company", formData, rejectWithValue);
-    return result.data;
-  } catch (error: any) {
-    return rejectWithValue(error?.message || "Failed to create company.");
+export const createCompanyAdmin = createAsyncThunk<ICompany, Record<string, any>, { rejectValue: string }>(
+  "company/createCompanyAdmin",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const fd = new FormData();
+      appendFormData(fd, payload);
+      const res = await apiCall("post", `${BASE}`, fd, rejectWithValue);
+      const data = res?.data?.data ?? res?.data;
+      return data as ICompany;
+    } catch (err: any) {
+      return rejectWithValue(err?.message || "Failed to create company.");
+    }
   }
-});
+);
 
-// 🛠️ UPDATE: Company
 export const updateCompanyAdmin = createAsyncThunk<
   ICompany,
   { _id: string } & Record<string, any>,
   { rejectValue: string }
->("company/updateCompanyAdmin", async (updatedData, { rejectWithValue }) => {
-  try {
-    const { _id, images, removedImages, ...rest } = updatedData;
-    const formData = new FormData();
+>(
+  "company/updateCompanyAdmin",
+  async ({ _id, images, removedImages, ...rest }, { rejectWithValue }) => {
+    try {
+      const fd = new FormData();
+      appendFormData(fd, rest);
 
-    // Diğer tüm alanlar
-    appendFormData(formData, rest);
+      if (Array.isArray(images)) {
+        images.forEach((f: File) => f instanceof File && fd.append("images", f));
+      }
+      if (removedImages?.length) {
+        fd.append("removedImages", JSON.stringify(removedImages));
+      }
 
-    // Yeni eklenen dosyalar (images)
-    if (Array.isArray(images)) {
-      images.forEach((file: File) => {
-        if (file instanceof File) formData.append("images", file);
-      });
+      const res = await apiCall("put", `${BASE}/${_id}`, fd, rejectWithValue);
+      const data = res?.data?.data ?? res?.data;
+      return data as ICompany;
+    } catch (err: any) {
+      return rejectWithValue(err?.message || "Failed to update company.");
     }
-
-    // Silinecek görseller (removedImages)
-    if (removedImages && removedImages.length > 0) {
-      formData.append("removedImages", JSON.stringify(removedImages));
-    }
-
-    const result = await apiCall(
-      "put",
-      `/company/${_id}`,
-      formData,
-      rejectWithValue
-    );
-    return result.data;
-  } catch (error: any) {
-    return rejectWithValue(error?.message || "Failed to update company.");
-  }
-});
-
-
-// 🗑️ DELETE: Company
-export const deleteCompanyAdmin = createAsyncThunk(
-  "company/delete",
-  async (id: string, thunkAPI) => {
-    const res = await apiCall(
-      "delete",
-      `/company/${id}`,
-      null,
-      thunkAPI.rejectWithValue
-    );
-    return { id, message: res.message };
   }
 );
 
-// --- SLICE ---
+export const deleteCompanyAdmin = createAsyncThunk<
+  { id: string; message?: string },
+  string,
+  { rejectValue: string }
+>("company/delete", async (id, { rejectWithValue }) => {
+  try {
+    const res = await apiCall("delete", `${BASE}/${id}`, null, rejectWithValue);
+    return { id, message: res?.data?.message ?? res?.message };
+  } catch (err: any) {
+    return rejectWithValue(err?.message || "Failed to delete company.");
+  }
+});
+
 const companySlice = createSlice({
   name: "company",
   initialState,
@@ -175,97 +157,41 @@ const companySlice = createSlice({
       state.successMessage = null;
     },
   },
-  extraReducers: (builder) => {
-    // 🌍 Fetch
-    builder
-      .addCase(fetchCompanyInfo.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-        state.successMessage = null;
-      })
-      .addCase(fetchCompanyInfo.fulfilled, (state, action: PayloadAction<ICompany>) => {
-        state.status = "succeeded";
-        state.company = action.payload;
-        state.companyAdmin = action.payload;
-      })
-      .addCase(fetchCompanyInfo.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = (action.payload as string) || "Failed to fetch company data.";
-      });
+  extraReducers: (b) => {
+    // fetch public
+    b.addCase(fetchCompanyInfo.pending, (s) => { s.status = "loading"; s.error = null; s.successMessage = null; });
+    b.addCase(fetchCompanyInfo.fulfilled, (s, a: PayloadAction<ICompany>) => {
+      s.status = "succeeded"; s.company = a.payload; s.companyAdmin = a.payload;
+    });
+    b.addCase(fetchCompanyInfo.rejected, (s, a) => { s.status = "failed"; s.error = (a.payload as string) || "Failed to fetch company data."; });
 
-    // 🛠 Admin - fetch
-    builder
-      .addCase(fetchCompanyAdmin.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchCompanyAdmin.fulfilled, (state, action: PayloadAction<ICompany>) => {
-        state.loading = false;
-        state.companyAdmin = action.payload;
-      })
-      .addCase(fetchCompanyAdmin.rejected, (state, action) => {
-        state.loading = false;
-        state.error = (action.payload as string) || "Failed to fetch admin company data.";
-      });
+    // fetch admin
+    b.addCase(fetchCompanyAdmin.pending, (s) => { s.loading = true; s.error = null; });
+    b.addCase(fetchCompanyAdmin.fulfilled, (s, a: PayloadAction<ICompany>) => { s.loading = false; s.companyAdmin = a.payload; });
+    b.addCase(fetchCompanyAdmin.rejected, (s, a) => { s.loading = false; s.error = (a.payload as string) || "Failed to fetch admin company data."; });
 
-    // 🛠️ Create
-    builder
-      .addCase(createCompanyAdmin.pending, (state) => {
-        state.createStatus = "loading";
-        state.error = null;
-        state.successMessage = null;
-      })
-      .addCase(createCompanyAdmin.fulfilled, (state, action: PayloadAction<ICompany>) => {
-        state.createStatus = "succeeded";
-        state.companyAdmin = action.payload;
-        state.successMessage = "Company created successfully.";
-      })
-      .addCase(createCompanyAdmin.rejected, (state, action) => {
-        state.createStatus = "failed";
-        state.error = (action.payload as string) || "Failed to create company.";
-      });
+    // create
+    b.addCase(createCompanyAdmin.pending, (s) => { s.createStatus = "loading"; s.error = null; s.successMessage = null; });
+    b.addCase(createCompanyAdmin.fulfilled, (s, a: PayloadAction<ICompany>) => {
+      s.createStatus = "succeeded"; s.companyAdmin = a.payload; s.successMessage = "Company created successfully.";
+    });
+    b.addCase(createCompanyAdmin.rejected, (s, a) => { s.createStatus = "failed"; s.error = (a.payload as string) || "Failed to create company."; });
 
-    // 🛠️ Update
-    builder
-      .addCase(updateCompanyAdmin.pending, (state) => {
-        state.updateStatus = "loading";
-        state.error = null;
-        state.successMessage = null;
-      })
-      .addCase(updateCompanyAdmin.fulfilled, (state, action: PayloadAction<ICompany>) => {
-        state.updateStatus = "succeeded";
-        state.companyAdmin = action.payload;
-        state.successMessage = "Company updated successfully.";
-      })
-      .addCase(updateCompanyAdmin.rejected, (state, action) => {
-        state.updateStatus = "failed";
-        state.error = (action.payload as string) || "Failed to update company.";
-      });
+    // update
+    b.addCase(updateCompanyAdmin.pending, (s) => { s.updateStatus = "loading"; s.error = null; s.successMessage = null; });
+    b.addCase(updateCompanyAdmin.fulfilled, (s, a: PayloadAction<ICompany>) => {
+      s.updateStatus = "succeeded"; s.companyAdmin = a.payload; s.successMessage = "Company updated successfully.";
+    });
+    b.addCase(updateCompanyAdmin.rejected, (s, a) => { s.updateStatus = "failed"; s.error = (a.payload as string) || "Failed to update company."; });
 
-    // 🗑️ Delete
-    builder
-      .addCase(deleteCompanyAdmin.pending, (state) => {
-        state.deleteStatus = "loading";
-        state.error = null;
-        state.successMessage = null;
-      })
-      .addCase(deleteCompanyAdmin.fulfilled, (state, action: PayloadAction<{ message: string }>) => {
-        state.deleteStatus = "succeeded";
-        state.companyAdmin = null;
-        state.company = null;
-        state.successMessage = action.payload.message || "Company deleted successfully.";
-      })
-      .addCase(deleteCompanyAdmin.rejected, (state, action) => {
-        state.deleteStatus = "failed";
-        state.error = (action.payload as string) || "Failed to delete company.";
-      });
+    // delete
+    b.addCase(deleteCompanyAdmin.pending, (s) => { s.deleteStatus = "loading"; s.error = null; s.successMessage = null; });
+    b.addCase(deleteCompanyAdmin.fulfilled, (s, a: PayloadAction<{ id: string; message?: string }>) => {
+      s.deleteStatus = "succeeded"; s.company = null; s.companyAdmin = null; s.successMessage = a.payload.message || "Company deleted successfully.";
+    });
+    b.addCase(deleteCompanyAdmin.rejected, (s, a) => { s.deleteStatus = "failed"; s.error = (a.payload as string) || "Failed to delete company."; });
   },
 });
 
-export const {
-  resetMessages,
-  clearCompany,
-  clearCompanyMessages,
-} = companySlice.actions;
-
+export const { resetMessages, clearCompany, clearCompanyMessages } = companySlice.actions;
 export default companySlice.reducer;

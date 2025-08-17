@@ -3,8 +3,8 @@ import apiCall from "@/lib/apiCall";
 import type { INews } from "@/modules/news";
 
 interface NewsState {
-  news: INews[]; // Public (site) için
-  newsAdmin: INews[]; // Admin panel için
+  news: INews[];
+  newsAdmin: INews[];
   selected: INews | null;
   status: "idle" | "loading" | "succeeded" | "failed";
   loading: boolean;
@@ -21,6 +21,8 @@ const initialState: NewsState = {
   error: null,
   successMessage: null,
 };
+
+const BASE = "/news";
 
 const extractErrorMessage = (payload: unknown): string => {
   if (typeof payload === "string") return payload;
@@ -39,7 +41,8 @@ const extractErrorMessage = (payload: unknown): string => {
 export const fetchNews = createAsyncThunk<INews[]>(
   "news/fetchAll",
   async (_, thunkAPI) => {
-    const res = await apiCall("get", `/news`, null, thunkAPI.rejectWithValue);
+    const res = await apiCall("get", `${BASE}`, null, thunkAPI.rejectWithValue);
+    // response: { success, message, data }
     return res.data;
   }
 );
@@ -49,7 +52,7 @@ export const fetchAllNewsAdmin = createAsyncThunk<INews[]>(
   async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/news/admin`,
+      `${BASE}/admin`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -62,14 +65,12 @@ export const createNews = createAsyncThunk(
   async (formData: FormData, thunkAPI) => {
     const res = await apiCall(
       "post",
-      "/news/admin",
+      `${BASE}/admin`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
-    return res.data;
+    // return: { success, message, data }
+    return { ...res, data: res.data };
   }
 );
 
@@ -78,14 +79,11 @@ export const updateNews = createAsyncThunk(
   async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) => {
     const res = await apiCall(
       "put",
-      `/news/admin/${id}`,
+      `${BASE}/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
-    return res.data;
+    return { ...res, data: res.data };
   }
 );
 
@@ -94,10 +92,11 @@ export const deleteNews = createAsyncThunk(
   async (id: string, thunkAPI) => {
     const res = await apiCall(
       "delete",
-      `/news/admin/${id}`,
+      `${BASE}/admin/${id}`,
       null,
       thunkAPI.rejectWithValue
     );
+    // return: { success, message }
     return { id, message: res.message };
   }
 );
@@ -112,14 +111,11 @@ export const togglePublishNews = createAsyncThunk(
     formData.append("isPublished", String(isPublished));
     const res = await apiCall(
       "put",
-      `/news/admin/${id}`,
+      `${BASE}/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
-    return res.data;
+    return { ...res, data: res.data };
   }
 );
 
@@ -128,7 +124,7 @@ export const fetchNewsBySlug = createAsyncThunk(
   async (slug: string, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/news/slug/${slug}`,
+      `${BASE}/slug/${slug}`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -188,8 +184,8 @@ const newsSlice = createSlice({
       .addCase(createNews.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        state.newsAdmin.unshift(action.payload);
-        state.successMessage = "News successfully created.";
+        state.newsAdmin.unshift(action.payload.data);
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(createNews.rejected, setError);
 
@@ -199,11 +195,11 @@ const newsSlice = createSlice({
       .addCase(updateNews.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        const updated = action.payload;
+        const updated = action.payload.data;
         const i = state.newsAdmin.findIndex((a) => a._id === updated._id);
         if (i !== -1) state.newsAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = "News successfully updated.";
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(updateNews.rejected, setError);
 
@@ -213,10 +209,8 @@ const newsSlice = createSlice({
       .addCase(deleteNews.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        state.newsAdmin = state.newsAdmin.filter(
-          (a) => a._id !== action.payload.id
-        );
-        state.successMessage = action.payload.message;
+        state.newsAdmin = state.newsAdmin.filter((a) => a._id !== action.payload.id);
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(deleteNews.rejected, setError);
 
@@ -226,11 +220,11 @@ const newsSlice = createSlice({
       .addCase(togglePublishNews.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        const updated = action.payload;
+        const updated = action.payload.data;
         const i = state.newsAdmin.findIndex((a) => a._id === updated._id);
         if (i !== -1) state.newsAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = "Publish status updated.";
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(togglePublishNews.rejected, setError);
 

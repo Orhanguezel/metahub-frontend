@@ -7,7 +7,7 @@ export { default as TestimonialSectionAlt } from "./public/components/Testimonia
 export { default as TestimonialSectionGzl } from "./public/components/TestimonialSectionGzl";
 
 // Admin Components
-export { default as CommentDetailsModal } from "./admin/components/CommentDetailsModal";
+export { default as DetailsModal } from "./admin/components/DetailsModal";
 export { default as CommentForm } from "./admin/components/CommentForm";
 export { default as CommentList } from "./admin/components/CommentList";
 

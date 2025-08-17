@@ -22,6 +22,8 @@ const initialState: TeamState = {
   successMessage: null,
 };
 
+const BASE = "/team";
+
 const extractErrorMessage = (payload: unknown): string => {
   if (typeof payload === "string") return payload;
   if (
@@ -39,7 +41,7 @@ const extractErrorMessage = (payload: unknown): string => {
 export const fetchTeam = createAsyncThunk<ITeam[]>(
   "team/fetchAll",
   async (_, thunkAPI) => {
-    const res = await apiCall("get", `/team`, null, thunkAPI.rejectWithValue);
+    const res = await apiCall("get", `${BASE}`, null, thunkAPI.rejectWithValue);
     // response: { success, message, data }
     return res.data;
   }
@@ -50,7 +52,7 @@ export const fetchAllTeamAdmin = createAsyncThunk<ITeam[]>(
   async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/team/admin`,
+      `${BASE}/admin`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -63,7 +65,7 @@ export const createTeam = createAsyncThunk(
   async (formData: FormData, thunkAPI) => {
     const res = await apiCall(
       "post",
-      "/team/admin",
+      `${BASE}/admin`,
       formData,
       thunkAPI.rejectWithValue
     );
@@ -77,7 +79,7 @@ export const updateTeam = createAsyncThunk(
   async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) => {
     const res = await apiCall(
       "put",
-      `/team/admin/${id}`,
+      `${BASE}/admin/${id}`,
       formData,
       thunkAPI.rejectWithValue
     );
@@ -90,7 +92,7 @@ export const deleteTeam = createAsyncThunk(
   async (id: string, thunkAPI) => {
     const res = await apiCall(
       "delete",
-      `/team/admin/${id}`,
+      `${BASE}/admin/${id}`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -109,7 +111,7 @@ export const togglePublishTeam = createAsyncThunk(
     formData.append("isPublished", String(isPublished));
     const res = await apiCall(
       "put",
-      `/team/admin/${id}`,
+      `${BASE}/admin/${id}`,
       formData,
       thunkAPI.rejectWithValue
     );
@@ -122,7 +124,7 @@ export const fetchTeamBySlug = createAsyncThunk(
   async (slug: string, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/team/slug/${slug}`,
+      `${BASE}/slug/${slug}`,
       null,
       thunkAPI.rejectWithValue
     );

@@ -1,151 +1,229 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import styled from "styled-components";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchAllCatalogRequests,
   deleteCatalogRequest,
   markCatalogRequestAsRead,
   clearCatalogState,
 } from "@/modules/catalog/slice/catalogSlice";
-import { ICatalogRequest } from "@/modules/catalog/types";
-import styled from "styled-components";
+import type { ICatalogRequest } from "@/modules/catalog/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import translations from "@/modules/catalog/locales";
 import { toast } from "react-toastify";
+
+/* --- helpers --- */
+const fmtDateTime = (v?: string) => {
+  if (!v) return "-";
+  const d = new Date(v);
+  return isNaN(d.valueOf()) ? "-" : d.toLocaleString();
+};
 
 export default function AdminCatalogRequestsPage() {
   const { t } = useI18nNamespace("catalogRequest", translations);
   const dispatch = useAppDispatch();
 
-  const {
-    messagesAdmin,
-    loading,
-    error,
-    successMessage,
-    deleteStatus,
-  } = useAppSelector((state) => state.catalog);
+  const { messagesAdmin, loading, error, successMessage, deleteStatus } = useAppSelector(
+    (s) => s.catalog
+  );
 
   const [selected, setSelected] = useState<ICatalogRequest | null>(null);
   const [search, setSearch] = useState("");
 
-  // Talepler ilk açıldığında yüklenir
+  // İlk yükleme
   useEffect(() => {
     dispatch(fetchAllCatalogRequests());
-    // eslint-disable-next-line
-  }, []);
+  }, [dispatch]);
 
-  // Bildirimler (toast)
+  // Toast geri bildirimleri
   useEffect(() => {
     if (successMessage) toast.success(successMessage);
     if (error) toast.error(error);
     if (successMessage || error) dispatch(clearCatalogState());
   }, [successMessage, error, dispatch]);
 
-  // Silme butonu
-  const handleDelete = async (id: string) => {
-    if (confirm(t("admin.confirmDelete", "Bu talebi silmek istiyor musunuz?"))) {
-      await dispatch(deleteCatalogRequest(id));
-      if (selected?._id === id) setSelected(null);
-    }
-  };
+  const onRefresh = useCallback(() => {
+    dispatch(fetchAllCatalogRequests());
+  }, [dispatch]);
 
-  // Okundu işaretle
-  const handleMarkAsRead = async (id: string) => {
-    await dispatch(markCatalogRequestAsRead(id));
-  };
-
-  // Arama filtresi
-  const filtered = messagesAdmin.filter((msg) =>
-    [msg.name, msg.email, msg.company, msg.subject, msg.message]
-      .join(" ")
-      .toLowerCase()
-      .includes(search.toLowerCase())
+  const handleDelete = useCallback(
+    async (id: string) => {
+      if (confirm(t("admin.confirmDelete", "Bu talebi silmek istiyor musunuz?"))) {
+        await dispatch(deleteCatalogRequest(id));
+        setSelected((curr) => (curr?._id === id ? null : curr));
+      }
+    },
+    [dispatch, t]
   );
 
-  return (
-    <Container>
-      <PageTitle>{t("admin.catalogTitle", "Katalog Talepleri")}</PageTitle>
+  const handleMarkAsRead = useCallback(
+    async (id: string) => {
+      await dispatch(markCatalogRequestAsRead(id));
+    },
+    [dispatch]
+  );
 
-      <FlexBar>
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return (messagesAdmin || []).filter((msg) =>
+      [msg.name, msg.email, msg.company, msg.subject, msg.message]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(q)
+    );
+  }, [messagesAdmin, search]);
+
+  return (
+    <PageWrap>
+      {/* Header */}
+      <Header>
+        <TitleBlock>
+          <h1>{t("admin.catalogTitle", "Katalog Talepleri")}</h1>
+          <Subtitle>{t("admin.subtitle", "Kullanıcı katalog isteklerini yönetin")}</Subtitle>
+        </TitleBlock>
+        <Right>
+          <Counter aria-label="request-count">{messagesAdmin.length}</Counter>
+          <PrimaryBtn onClick={onRefresh} disabled={loading}>
+            {t("admin.refresh", "Yenile")}
+          </PrimaryBtn>
+        </Right>
+      </Header>
+
+      {/* Search bar */}
+      <Toolbar>
         <SearchInput
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder={t("admin.search", "Arama...")}
+          aria-label={t("admin.search", "Arama...")}
         />
-        <RefreshBtn
-          type="button"
-          onClick={() => dispatch(fetchAllCatalogRequests())}
-          disabled={loading}
-        >
-          {t("admin.refresh", "Yenile")}
-        </RefreshBtn>
-      </FlexBar>
+      </Toolbar>
 
-      <Table>
-        <thead>
-          <tr>
-            <th>{t("admin.name", "Ad")}</th>
-            <th>{t("admin.email", "E-posta")}</th>
-            <th>{t("admin.subject", "Konu")}</th>
-            <th>{t("admin.date", "Tarih")}</th>
-            <th>{t("admin.status", "Durum")}</th>
-            <th>{t("admin.actions", "İşlemler")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.length === 0 ? (
+      {/* Desktop Table */}
+      <TableWrap aria-busy={!!loading}>
+        <Table>
+          <thead>
             <tr>
-              <td colSpan={6} style={{ textAlign: "center", opacity: 0.6 }}>
-                {loading ? t("admin.loading", "Yükleniyor...") : t("admin.noResults", "Talep yok.")}
-              </td>
+              <th>{t("admin.name", "Ad")}</th>
+              <th>{t("admin.email", "E-posta")}</th>
+              <th>{t("admin.subject", "Konu")}</th>
+              <th>{t("admin.date", "Tarih")}</th>
+              <th>{t("admin.status", "Durum")}</th>
+              <th aria-label={t("admin.actions", "İşlemler")} />
             </tr>
-          ) : (
-            filtered.map((msg) => (
-              <tr key={msg._id}>
-                <td>{msg.name}</td>
-                <td>{msg.email}</td>
-                <td>
-                  <a
-                    href="#"
-                    onClick={e => {
-                      e.preventDefault();
-                      setSelected(msg);
-                    }}
-                    style={{ color: "#1976d2", textDecoration: "underline" }}
-                  >
-                    {msg.subject}
-                  </a>
-                </td>
-                <td>{msg.createdAt ? new Date(msg.createdAt).toLocaleString() : "-"}</td>
-                <td>
-                  {msg.isRead ? (
-                    <StatusOkundu>{t("admin.read", "Okundu")}</StatusOkundu>
-                  ) : (
-                    <StatusOkunmadi>{t("admin.unread", "Okunmadı")}</StatusOkunmadi>
-                  )}
-                </td>
-                <td>
-                  {!msg.isRead && (
-                    <ActionBtn onClick={() => handleMarkAsRead(msg._id!)}>{t("admin.markRead", "Okundu Yap")}</ActionBtn>
-                  )}
-                  <ActionBtn
-                    $danger
-                    onClick={() => handleDelete(msg._id!)}
-                    disabled={deleteStatus === "loading"}
-                  >
-                    {t("admin.delete", "Sil")}
-                  </ActionBtn>
+          </thead>
+          <tbody>
+            {!loading && filtered.length === 0 ? (
+              <tr>
+                <td colSpan={6}>
+                  <Empty>∅</Empty>
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </Table>
+            ) : (
+              filtered.map((msg) => (
+                <tr key={msg._id}>
+                  <td>{msg.name}</td>
+                  <td>{msg.email}</td>
+                  <td>
+                    <SubjectLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setSelected(msg);
+                      }}
+                    >
+                      {msg.subject}
+                    </SubjectLink>
+                  </td>
+                  <td>{fmtDateTime(msg.createdAt)}</td>
+                  <td>
+                    {msg.isRead ? (
+                      <Badge $on>{t("admin.read", "Okundu")}</Badge>
+                    ) : (
+                      <Badge>{t("admin.unread", "Okunmadı")}</Badge>
+                    )}
+                  </td>
+                  <td className="actions">
+                    <Row>
+                      {!msg.isRead && (
+                        <Secondary onClick={() => handleMarkAsRead(msg._id!)}>
+                          {t("admin.markRead", "Okundu Yap")}
+                        </Secondary>
+                      )}
+                      <Danger
+                        onClick={() => handleDelete(msg._id!)}
+                        disabled={deleteStatus === "loading"}
+                      >
+                        {t("admin.delete", "Sil")}
+                      </Danger>
+                    </Row>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </Table>
+      </TableWrap>
 
+      {/* Mobile Cards */}
+      <CardsWrap aria-busy={!!loading}>
+        {filtered.length === 0 && !loading && <Empty>∅</Empty>}
+        {filtered.map((msg) => (
+          <Card key={msg._id}>
+            <CardHeader>
+              <HeaderLeft>
+                <NameTitle title={msg.name}>{msg.name}</NameTitle>
+                <SmallText>{msg.email}</SmallText>
+              </HeaderLeft>
+              <Status $on={msg.isRead}>
+                {msg.isRead ? t("admin.read", "Okundu") : t("admin.unread", "Okunmadı")}
+              </Status>
+            </CardHeader>
+
+            <CardBody>
+              <SmallText>
+                <b>{t("admin.subject", "Konu")}:</b> {msg.subject}
+              </SmallText>
+              <SmallText>
+                <b>{t("admin.date", "Tarih")}:</b> {fmtDateTime(msg.createdAt)}
+              </SmallText>
+              {msg.company && (
+                <SmallText>
+                  <b>{t("admin.company", "Firma")}:</b> {msg.company}
+                </SmallText>
+              )}
+              {msg.phone && (
+                <SmallText>
+                  <b>{t("admin.phone", "Telefon")}:</b> {msg.phone}
+                </SmallText>
+              )}
+            </CardBody>
+
+            <CardActions>
+              {!msg.isRead && (
+                <Secondary onClick={() => handleMarkAsRead(msg._id!)}>
+                  {t("admin.markRead", "Okundu Yap")}
+                </Secondary>
+              )}
+              <Danger
+                onClick={() => handleDelete(msg._id!)}
+                disabled={deleteStatus === "loading"}
+              >
+                {t("admin.delete", "Sil")}
+              </Danger>
+              <Primary onClick={() => setSelected(msg)}>{t("admin.view", "Görüntüle")}</Primary>
+            </CardActions>
+          </Card>
+        ))}
+      </CardsWrap>
+
+      {/* Modal */}
       {selected && (
         <ModalOverlay onClick={() => setSelected(null)}>
-          <ModalContent onClick={e => e.stopPropagation()}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
             <CloseX onClick={() => setSelected(null)}>×</CloseX>
             <h2 style={{ marginTop: 0 }}>{selected.subject}</h2>
             <p>
@@ -165,135 +243,199 @@ export default function AdminCatalogRequestsPage() {
             <p>
               <b>{t("admin.message", "Mesaj")}:</b>
               <br />
-              {selected.message}
+              {selected.message || "-"}
             </p>
             {selected.sentCatalog?.url && (
               <p>
                 <b>{t("admin.catalogFile", "Katalog Dosyası")}:</b>{" "}
                 <a href={selected.sentCatalog.url} target="_blank" rel="noopener noreferrer">
-                  {selected.sentCatalog.fileName}
+                  {selected.sentCatalog.fileName || selected.sentCatalog.url}
                 </a>
               </p>
             )}
           </ModalContent>
         </ModalOverlay>
       )}
-    </Container>
+    </PageWrap>
   );
 }
 
-// --- STYLED COMPONENTS ---
-const Container = styled.div`
-  max-width: 1040px;
+/* ---------------- styled (classicTheme) ---------------- */
+
+const PageWrap = styled.div`
+  max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
-  padding: 3.2rem 1.7rem 2rem 1.7rem;
-  background: ${({ theme }) => theme.colors.sectionBackground};
-  min-height: 100vh;
-`;
-const PageTitle = styled.h1`
-  font-size: 2.2rem;
-  margin-bottom: 2.2rem;
-  color: ${({ theme }) => theme.colors.primary};
-  text-align: center;
-`;
-const FlexBar = styled.div`
-  display: flex;
-  gap: 1.4rem;
-  margin-bottom: 1.3rem;
-  justify-content: flex-end;
-`;
-const SearchInput = styled.input`
-  font-size: 1.09em;
-  padding: 0.65em 1.2em;
-  border: 1.4px solid #dadada;
-  border-radius: 8px;
-  min-width: 260px;
-`;
-const RefreshBtn = styled.button`
-  padding: 0.65em 1.8em;
-  font-size: 1.08em;
-  background: ${({ theme }) => theme.colors.primary};
-  color: #fff;
-  border: none;
-  border-radius: 7px;
-  font-weight: 500;
-  cursor: pointer;
-  &:hover { background: ${({ theme }) => theme.colors.primaryHover}; }
-`;
-const Table = styled.table`
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 8px;
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 24px 0 #0a317333;
-  font-size: 1.05em;
-  th, td { padding: 0.7em 1.1em; }
-  th { text-align: left; color: #555; background: #f5f7fb; }
-  tr { background: #fff; }
-`;
-const StatusOkunmadi = styled.span`
-  background: #ffd966;
-  color: #6c4c00;
-  border-radius: 10px;
-  padding: 0.24em 1em;
-  font-weight: 600;
-  font-size: 1em;
-`;
-const StatusOkundu = styled.span`
-  background: #b7f8cc;
-  color: #15623a;
-  border-radius: 10px;
-  padding: 0.24em 1em;
-  font-weight: 600;
-  font-size: 1em;
-`;
-const ActionBtn = styled.button<{ $danger?: boolean }>`
-  background: ${({ $danger, theme }) => $danger ? theme.colors.danger : theme.colors.primary};
-  color: #fff;
-  border: none;
-  border-radius: 7px;
-  padding: 0.42em 1.18em;
-  font-size: 0.99em;
-  margin-right: 0.8em;
-  font-weight: 500;
-  cursor: pointer;
-  &:hover {
-    background: ${({ $danger, theme }) => $danger ? "#e95252" : theme.colors.primaryHover};
-  }
+  padding: ${({ theme }) => theme.spacings.xl};
 `;
 
+const Header = styled.div`
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:${({ theme }) => theme.spacings.lg};
+  ${({ theme }) => theme.media.mobile} {
+    flex-direction:column; align-items:flex-start; gap:${({ theme }) => theme.spacings.sm};
+  }
+`;
+const TitleBlock = styled.div`display:flex; flex-direction:column; gap:4px; h1{ margin:0; }`;
+const Subtitle = styled.p`
+  margin:0; color:${({ theme }) => theme.colors.textSecondary};
+  font-size:${({ theme }) => theme.fontSizes.sm};
+`;
+const Right = styled.div`display:flex; gap:${({ theme }) => theme.spacings.sm}; align-items:center;`;
+const Counter = styled.span`
+  padding:6px 10px; border-radius:${({ theme }) => theme.radii.pill};
+  background:${({ theme }) => theme.colors.backgroundAlt};
+  font-weight:${({ theme }) => theme.fontWeights.medium};
+`;
+
+const Toolbar = styled.div`
+  display:flex; gap:${({ theme }) => theme.spacings.sm}; justify-content:flex-end;
+  margin-bottom:${({ theme }) => theme.spacings.sm};
+`;
+
+const SearchInput = styled.input`
+  font-size:${({ theme }) => theme.fontSizes.sm};
+  padding:10px 12px;
+  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.inputBorder};
+  border-radius:${({ theme }) => theme.radii.md};
+  min-width:260px;
+  background:${({ theme }) => theme.inputs.background};
+  color:${({ theme }) => theme.inputs.text};
+  &::placeholder{ color:${({ theme }) => theme.inputs.placeholder}; }
+`;
+
+const PrimaryBtn = styled.button`
+  background:${({ theme }) => theme.buttons.primary.background};
+  color:${({ theme }) => theme.buttons.primary.text};
+  border:${({ theme }) => theme.borders.thin} transparent;
+  padding:8px 12px; border-radius:${({ theme }) => theme.radii.md}; cursor:pointer;
+  transition:opacity ${({ theme }) => theme.transition.normal};
+  &:hover{ opacity:${({ theme }) => theme.opacity.hover}; background:${({ theme }) => theme.buttons.primary.backgroundHover}; }
+  &:disabled{ opacity:${({ theme }) => theme.opacity.disabled}; cursor:not-allowed; }
+`;
+
+const TableWrap = styled.div`
+  width:100%; overflow-x:auto; border-radius:${({ theme }) => theme.radii.lg};
+  box-shadow:${({ theme }) => theme.cards.shadow};
+  background:${({ theme }) => theme.colors.cardBackground};
+  ${({ theme }) => theme.media.mobile}{ display:none; }
+`;
+const Table = styled.table`
+  width:100%; border-collapse:collapse;
+  thead th{
+    background:${({ theme }) => theme.colors.tableHeader};
+    color:${({ theme }) => theme.colors.textSecondary};
+    font-weight:${({ theme }) => theme.fontWeights.semiBold};
+    font-size:${({ theme }) => theme.fontSizes.sm};
+    padding:${({ theme }) => theme.spacings.md}; text-align:left; white-space:nowrap;
+  }
+  td{
+    padding:${({ theme }) => theme.spacings.md};
+    border-bottom:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
+    font-size:${({ theme }) => theme.fontSizes.sm}; vertical-align:middle;
+  }
+  td.actions{ text-align:right; }
+  tbody tr:hover td{ background:${({ theme }) => theme.colors.hoverBackground}; }
+`;
+const SubjectLink = styled.a`
+  color:${({ theme }) => theme.colors.link};
+  &:hover{ color:${({ theme }) => theme.colors.linkHover}; text-decoration:underline; }
+`;
+
+const CardsWrap = styled.div`
+  display:none;
+  ${({ theme }) => theme.media.mobile} {
+    display:grid; grid-template-columns:1fr; gap:${({ theme }) => theme.spacings.md};
+  }
+`;
+const Card = styled.article`
+  background:${({ theme }) => theme.colors.cardBackground};
+  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
+  border-radius:${({ theme }) => theme.radii.lg};
+  box-shadow:${({ theme }) => theme.cards.shadow};
+  overflow:hidden;
+`;
+const CardHeader = styled.header`
+  background:${({ theme }) => theme.colors.primaryLight};
+  color:${({ theme }) => theme.colors.title};
+  padding:${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
+  display:flex; align-items:center; justify-content:space-between; gap:${({ theme }) => theme.spacings.sm};
+  border-bottom:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
+`;
+const HeaderLeft = styled.div`display:flex; flex-direction:column; gap:2px; min-width:0;`;
+const NameTitle = styled.span`
+  font-size:${({ theme }) => theme.fontSizes.sm};
+  color:${({ theme }) => theme.colors.textSecondary};
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:70vw;
+`;
+const SmallText = styled.span`font-size:${({ theme }) => theme.fontSizes.xsmall}; color:${({ theme }) => theme.colors.textSecondary};`;
+const Status = styled.span<{ $on:boolean }>`
+  padding:.2em .6em; border-radius:${({ theme }) => theme.radii.pill};
+  background:${({ $on, theme }) => ($on ? theme.colors.successBg : theme.colors.inputBackgroundLight)};
+  color:${({ $on, theme }) => ($on ? theme.colors.success : theme.colors.textSecondary)};
+  font-size:${({ theme }) => theme.fontSizes.xsmall};
+`;
+const CardBody = styled.div`padding:${({ theme }) => theme.spacings.md}; display:flex; flex-direction:column; gap:6px;`;
+const CardActions = styled.div`
+  display:flex; gap:${({ theme }) => theme.spacings.xs}; justify-content:flex-end;
+  padding:${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.md};
+  border-top:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
+`;
+
+const Row = styled.div`display:flex; gap:${({ theme }) => theme.spacings.xs}; flex-wrap:wrap; justify-content:flex-end;`;
+
+const BaseBtn = styled.button`
+  padding:8px 10px; border-radius:${({ theme }) => theme.radii.md};
+  border:${({ theme }) => theme.borders.thin} transparent; cursor:pointer;
+  font-weight:${({ theme }) => theme.fontWeights.medium};
+  box-shadow:${({ theme }) => theme.shadows.button};
+  transition:opacity ${({ theme }) => theme.transition.normal};
+  &:hover:not(:disabled){ opacity:${({ theme }) => theme.opacity.hover}; }
+  &:disabled{ opacity:${({ theme }) => theme.opacity.disabled}; cursor:not-allowed; }
+`;
+const Secondary = styled(BaseBtn)`
+  background:${({ theme }) => theme.buttons.secondary.background};
+  color:${({ theme }) => theme.buttons.secondary.text};
+  &:hover:not(:disabled){
+    background:${({ theme }) => theme.buttons.secondary.backgroundHover};
+    color:${({ theme }) => theme.buttons.secondary.textHover};
+  }
+`;
+const Primary = styled(BaseBtn)`
+  background:${({ theme }) => theme.buttons.primary.background};
+  color:${({ theme }) => theme.buttons.primary.text};
+  &:hover:not(:disabled){ background:${({ theme }) => theme.buttons.primary.backgroundHover}; }
+`;
+const Danger = styled(BaseBtn)`
+  background:${({ theme }) => theme.buttons.danger.background};
+  color:${({ theme }) => theme.buttons.danger.text};
+  &:hover:not(:disabled){ background:${({ theme }) => theme.buttons.danger.backgroundHover}; }
+`;
+const Badge = styled.span<{ $on?: boolean }>`
+  display:inline-block; padding:.2em .6em; border-radius:${({ theme }) => theme.radii.pill};
+  background:${({ $on, theme }) => ($on ? theme.colors.successBg : theme.colors.warningBackground)};
+  color:${({ $on, theme }) => ($on ? theme.colors.success : theme.colors.textOnWarning)};
+  font-size:${({ theme }) => theme.fontSizes.xsmall};
+`;
+
+const Empty = styled.div`
+  display:flex; align-items:center; justify-content:center; width:100%; height:100%;
+  color:${({ theme }) => theme.colors.textSecondary};
+`;
+
+/* Modal */
 const ModalOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background: rgba(25, 38, 51, 0.35);
-  z-index: 1400;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  position:fixed; inset:0; background:${({ theme }) => theme.colors.overlayBackground};
+  z-index:${({ theme }) => theme.zIndex.modal}; display:flex; justify-content:center; align-items:flex-start;
 `;
 const ModalContent = styled.div`
-  width: 420px;
-  background: #fff;
-  border-radius: 16px;
-  margin: 4.4rem 0 0 0;
-  padding: 2.1rem 2.2rem 2.5rem 2.2rem;
-  box-shadow: 0 10px 32px #2227;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-height: 320px;
-  font-size: 1.09em;
+  width:520px; background:${({ theme }) => theme.colors.cardBackground};
+  border-radius:${({ theme }) => theme.radii.xl}; margin:${({ theme }) => theme.spacings.xl} 0 0 0;
+  padding:${({ theme }) => theme.spacings.lg}; box-shadow:${({ theme }) => theme.shadows.lg};
+  position:relative; display:flex; flex-direction:column; min-height:320px; font-size:${({ theme }) => theme.fontSizes.md};
+  ${({ theme }) => theme.media.mobile}{ width:90vw; }
 `;
 const CloseX = styled.button`
-  position: absolute;
-  top: 12px; right: 18px;
-  font-size: 2.1em;
-  background: none;
-  border: none;
-  color: #444;
-  opacity: 0.63;
-  cursor: pointer;
-  &:hover { opacity: 1; }
+  position:absolute; top:12px; right:18px; font-size:${({ theme }) => theme.fontSizes.large};
+  background:none; border:none; color:${({ theme }) => theme.colors.textSecondary};
+  cursor:pointer; &:hover{ color:${({ theme }) => theme.colors.darkGrey}; }
 `;

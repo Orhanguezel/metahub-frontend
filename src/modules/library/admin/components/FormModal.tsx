@@ -1,12 +1,28 @@
-import React, { useState, useEffect, useCallback } from "react";
+"use client";
+
 import styled from "styled-components";
-import { useAppSelector } from "@/store/hooks";
+import { useState, useEffect, useMemo } from "react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/library/locales";
-import { LibraryCategory, ILibrary } from "@/modules/library/types";
-import { ImageUploadWithPreview } from "@/shared";
+import { useAppSelector } from "@/store/hooks";
+import { JSONEditor, ImageUploader } from "@/shared";
+import type { LibraryCategory, ILibrary } from "@/modules/library/types";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import { toast } from "react-toastify";
+
+/* === helpers for TL + UI lang (same pattern) === */
+type TL = Partial<Record<SupportedLocale, string>>;
+type UploadImage = { url: string; thumbnail?: string; webp?: string; publicId?: string };
+const getUILang = (lng?: string): SupportedLocale => {
+  const two = (lng || "").slice(0, 2).toLowerCase();
+  return (SUPPORTED_LOCALES as ReadonlyArray<string>).includes(two)
+    ? (two as SupportedLocale)
+    : ("tr" as SupportedLocale);
+};
+const setTL = (obj: TL | undefined, l: SupportedLocale, val: string): TL => ({ ...(obj || {}), [l]: val });
+const getTLStrict = (obj?: TL, l?: SupportedLocale) => (l ? (obj?.[l] ?? "") : "");
+const toTL = (v: any, lang: SupportedLocale): TL =>
+  v && typeof v === "object" && !Array.isArray(v) ? (v as TL) : v ? ({ [lang]: String(v) } as TL) : {};
 
 interface Props {
   isOpen: boolean;
@@ -15,80 +31,101 @@ interface Props {
   onSubmit: (formData: FormData, id?: string) => Promise<void>;
 }
 
-export default function FormModal({
-  isOpen,
-  onClose,
-  editingItem,
-  onSubmit,
-}: Props) {
+export default function FormModal({ isOpen, onClose, editingItem, onSubmit }: Props) {
   const { i18n, t } = useI18nNamespace("library", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const lang = useMemo<SupportedLocale>(() => getUILang(i18n?.language), [i18n?.language]);
 
-  const categories = useAppSelector((state) => state.libraryCategory.categories);
-  const successMessage = useAppSelector((state) => state.library.successMessage);
-  const error = useAppSelector((state) => state.library.error);
-  const currentUser = useAppSelector((state) => state.account.profile);
+  const categories = useAppSelector((s) => s.libraryCategory.categories);
+  const successMessage = useAppSelector((s) => s.library.successMessage);
+  const error = useAppSelector((s) => s.library.error);
+  const currentUser = useAppSelector((s) => s.account.profile);
 
-  // State'ler
-  const [titles, setTitles] = useState<Record<SupportedLocale, string>>(() =>
-    SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
-  );
-  const [summaries, setSummaries] = useState<Record<SupportedLocale, string>>(() =>
-    SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
-  );
-  const [contents, setContents] = useState<Record<SupportedLocale, string>>(() =>
-    SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
+  const emptyTL = useMemo(
+    () => SUPPORTED_LOCALES.reduce((a, l) => ({ ...a, [l]: "" }), {} as Record<SupportedLocale, string>),
+    []
   );
 
+  // --- Edit mode (simple/json) ---
+  const [editMode, setEditMode] = useState<"simple" | "json">("simple");
+
+  // --- STATE (multilang) ---
+  const [titles, setTitles] = useState<TL>(emptyTL);
+  const [summaries, setSummaries] = useState<TL>(emptyTL);
+  const [contents, setContents] = useState<TL>(emptyTL);
+
+  // --- misc fields ---
   const [author, setAuthor] = useState("");
   const [tags, setTags] = useState("");
   const [category, setCategory] = useState("");
-  const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  const [removedImages, setRemovedImages] = useState<string[]>([]);
-  const [existingImages, setExistingImages] = useState<string[]>([]);
-  const [selectedPdf, setSelectedPdf] = useState<File | null>(null);
-  const [removedFiles, setRemovedFiles] = useState<string[]>([]); // EKLENDİ
 
-  // Formu editlerken doldur
+  // --- images (ImageUploader pattern) ---
+  const originalExisting = useMemo(
+    () => (editingItem?.images || []).map((img) => ({ url: img.url, thumbnail: img.thumbnail, webp: img.webp, publicId: img.publicId })) as UploadImage[],
+    [editingItem?.images]
+  );
+  const [existingUploads, setExistingUploads] = useState<UploadImage[]>(originalExisting);
+  const [removedExisting, setRemovedExisting] = useState<UploadImage[]>([]);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+
+  // map (url/publicId) -> _id for removeImageIds[]
+  const idBySig = useMemo(() => {
+    const m = new Map<string, string>();
+    (editingItem?.images || []).forEach((img) => {
+      if (!img._id) return;
+      if (img.publicId) m.set(`pid:${img.publicId}`, img._id);
+      if (img.url) m.set(`url:${img.url}`, img._id);
+    });
+    return m;
+  }, [editingItem?.images]);
+
+  // --- PDF ---
+  const existingPdf = useMemo(
+    () => (editingItem?.files && editingItem.files.length > 0 ? editingItem.files[0] : null),
+    [editingItem?.files]
+  );
+  const [selectedPdf, setSelectedPdf] = useState<File | null>(null);
+  const [removedFiles, setRemovedFiles] = useState<string[]>([]); // existing pdf urls to remove
+
+  // --- fill form ---
   useEffect(() => {
+    if (!isOpen) return;
     if (editingItem) {
-      setTitles(SUPPORTED_LOCALES.reduce((acc, lng) => {
-        acc[lng] = editingItem.title?.[lng] || "";
-        return acc;
-      }, {} as Record<SupportedLocale, string>));
-      setSummaries(SUPPORTED_LOCALES.reduce((acc, lng) => {
-        acc[lng] = editingItem.summary?.[lng] || "";
-        return acc;
-      }, {} as Record<SupportedLocale, string>));
-      setContents(SUPPORTED_LOCALES.reduce((acc, lng) => {
-        acc[lng] = editingItem.content?.[lng] || "";
-        return acc;
-      }, {} as Record<SupportedLocale, string>));
+      const toTLAll = (obj: any) =>
+        SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: obj?.[l] || "" }), {} as TL);
+
+      setTitles(toTLAll(editingItem.title));
+      setSummaries(toTLAll(editingItem.summary));
+      setContents(toTLAll(editingItem.content));
+
       setAuthor(editingItem.author || currentUser?.name || "");
       setTags(editingItem.tags?.join(", ") || "");
-      setCategory(
-        typeof editingItem.category === "string"
-          ? editingItem.category
-          : editingItem.category?._id || ""
-      );
-      setExistingImages(editingItem.images?.map((img) => img.url) || []);
-      setRemovedImages([]);
+      setCategory(typeof editingItem.category === "string" ? editingItem.category : editingItem.category?._id || "");
+
+      setExistingUploads(originalExisting);
+      setRemovedExisting([]);
+      setNewFiles([]);
+
       setSelectedPdf(null);
-      setRemovedFiles([]); // EKLENDİ
+      setRemovedFiles([]);
     } else {
-      setTitles(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
-      setSummaries(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
-      setContents(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
+      setTitles(emptyTL);
+      setSummaries(emptyTL);
+      setContents(emptyTL);
+
       setAuthor(currentUser?.name || "");
       setTags("");
       setCategory("");
-      setExistingImages([]);
-      setRemovedImages([]);
-      setSelectedPdf(null);
-      setRemovedFiles([]); // EKLENDİ
-    }
-  }, [editingItem, isOpen, currentUser]);
 
+      setExistingUploads([]);
+      setRemovedExisting([]);
+      setNewFiles([]);
+
+      setSelectedPdf(null);
+      setRemovedFiles([]);
+    }
+  }, [editingItem, isOpen, currentUser, emptyTL, originalExisting]);
+
+  // --- toasts + close on success ---
   useEffect(() => {
     if (successMessage) {
       toast.success(successMessage);
@@ -98,307 +135,361 @@ export default function FormModal({
     }
   }, [successMessage, error, onClose]);
 
-  // Görsel değişim handler
-  const handleImagesChange = useCallback(
-    (files: File[], removed: string[], current: string[]) => {
-      setSelectedImages(files);
-      setRemovedImages(removed);
-      setExistingImages(current);
-    },
-    []
-  );
-
-  // PDF dosyası seçimi
-  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.type !== "application/pdf") {
-        toast.error("Yalnızca PDF dosyası seçebilirsiniz.");
-        e.target.value = "";
-        return;
-      }
-      setSelectedPdf(file);
-      setRemovedFiles([]); // yeni dosya seçildiyse eskisini kaldırmayı unutma!
-    }
+  // --- JSON editor combined value ---
+  const combinedJSONValue = useMemo(() => ({ title: titles, summary: summaries, content: contents }), [titles, summaries, contents]);
+  const onCombinedJSONChange = (v: any) => {
+    setTitles(toTL(v?.title, lang));
+    setSummaries(toTL(v?.summary, lang));
+    setContents(toTL(v?.content, lang));
   };
 
-  // Mevcut PDF sil (X ile)
-  const handleRemovePdf = () => {
+  // --- handlers ---
+  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (f.type !== "application/pdf") {
+      toast.error(t("admin.library.only_pdf", "Yalnızca PDF dosyası seçebilirsiniz."));
+      e.currentTarget.value = "";
+      return;
+    }
+    setSelectedPdf(f);
+    setRemovedFiles([]); // new pdf picked → clear removal
+  };
+  const handleRemoveExistingPdf = () => {
     if (existingPdf) setRemovedFiles([existingPdf.url]);
     setSelectedPdf(null);
   };
-
   const handleRemoveSelectedPdf = () => setSelectedPdf(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData();
+    const fd = new FormData();
 
-    formData.append("title", JSON.stringify(titles));
-    formData.append("summary", JSON.stringify(summaries));
-    formData.append("content", JSON.stringify(contents));
-    formData.append("author", author.trim());
-    formData.append(
-      "tags",
-      JSON.stringify(
-        tags
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean)
-      )
-    );
-    formData.append("category", category);
-    formData.append("isPublished", "true");
+    fd.append("title", JSON.stringify(titles || {}));
+    fd.append("summary", JSON.stringify(summaries || {}));
+    fd.append("content", JSON.stringify(contents || {}));
+    fd.append("author", (author || "").trim());
+    if (category) fd.append("category", category);
 
-    for (const file of selectedImages) {
-      formData.append("images", file);
-    }
-    if (removedImages.length > 0) {
-      formData.append("removedImages", JSON.stringify(removedImages));
-    }
-    // --- EK: PDF dosya ekle ve sil ---
-    if (selectedPdf) {
-      formData.append("files", selectedPdf);
-    }
-    if (removedFiles.length > 0) {
-      formData.append("removedFiles", JSON.stringify(removedFiles));
+    // tags as array
+    (tags || "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .forEach((tg) => fd.append("tags[]", tg));
+
+    // images: new + removed + existing order
+    newFiles.forEach((f) => fd.append("images", f));
+
+    // removeImageIds[] (if backend supports ordering by ids) + removedImages (pid/url signature)
+    const removeIds: string[] = [];
+    removedExisting.forEach((img) => {
+      const id = (img.publicId && idBySig.get(`pid:${img.publicId}`)) || (img.url && idBySig.get(`url:${img.url}`));
+      if (id) removeIds.push(id);
+    });
+    removeIds.forEach((id) => fd.append("removeImageIds[]", id));
+
+    if (removedExisting.length) {
+      fd.append("removedImages", JSON.stringify(removedExisting.map((x) => ({ publicId: x.publicId, url: x.url }))));
     }
 
-    await onSubmit(formData, editingItem?._id);
+    if (existingUploads.length) {
+      const orderSig = existingUploads.map((x) => x.publicId || x.url).filter(Boolean) as string[];
+      fd.append("existingImagesOrder", JSON.stringify(orderSig));
+    }
+
+    // pdf
+    if (selectedPdf) fd.append("files", selectedPdf);
+    if (removedFiles.length) fd.append("removedFiles", JSON.stringify(removedFiles));
+
+    // create defaults to published true (kept from previous behavior)
+    if (!editingItem) fd.append("isPublished", "true");
+
+    await onSubmit(fd, editingItem?._id);
   };
 
   if (!isOpen) return null;
 
-  // Mevcut pdf gösterimi (varsa)
-  const existingPdf =
-    editingItem?.files && editingItem.files.length > 0
-      ? editingItem.files[0]
-      : null;
-
   return (
-    <FormWrapper>
-      <h2>
-        {editingItem
-          ? t("admin.library.edit", "Edit Library")
-          : t("admin.library.create", "Create New Library")}
-      </h2>
-      <form onSubmit={handleSubmit}>
-        {SUPPORTED_LOCALES.map((lng) => (
-          <div key={lng}>
-            <label htmlFor={`title-${lng}`}>
-              {t("admin.library.title", "Title")} ({lng.toUpperCase()})
-            </label>
-            <input
-              id={`title-${lng}`}
-              value={titles[lng]}
-              onChange={(e) => setTitles({ ...titles, [lng]: e.target.value })}
-            />
+    <Form onSubmit={handleSubmit}>
+      {/* Top row */}
+      <Row>
+        <Col>
+          <Label htmlFor="category">{t("admin.library.category", "Category")}</Label>
+          <FlexRow>
+            <Select id="category" value={category} onChange={(e) => setCategory(e.target.value)} required>
+              <option value="" disabled>
+                {t("admin.library.select_category", "Select a category")}
+              </option>
+              {categories.map((c: LibraryCategory) => (
+                <option key={c._id} value={c._id}>
+                  {c.name?.[lang] || c.name?.en || Object.values(c.name || {})[0] || c.slug}
+                </option>
+              ))}
+            </Select>
+          </FlexRow>
+        </Col>
 
-            <label htmlFor={`summary-${lng}`}>
-              {t("admin.library.summary", "Summary")} ({lng.toUpperCase()})
-            </label>
-            <textarea
-              id={`summary-${lng}`}
-              value={summaries[lng]}
-              onChange={(e) =>
-                setSummaries({ ...summaries, [lng]: e.target.value })
-              }
-            />
+        <Col>
+          <Label htmlFor="author">{t("admin.library.author", "Author")}</Label>
+          <Input id="author" value={author} onChange={(e) => setAuthor(e.target.value)} />
+        </Col>
 
-            <label htmlFor={`content-${lng}`}>
-              {t("admin.library.content", "Content")} ({lng.toUpperCase()})
-            </label>
-            <textarea
-              id={`content-${lng}`}
-              value={contents[lng]}
-              onChange={(e) =>
-                setContents({ ...contents, [lng]: e.target.value })
-              }
-            />
-          </div>
-        ))}
+        <Col style={{ gridColumn: "span 2" }}>
+          <Label htmlFor="tags">{t("admin.library.tags", "Tags (comma separated)")}</Label>
+          <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="tag1, tag2, tag3" />
+        </Col>
+      </Row>
 
-        <label htmlFor="author">{t("admin.library.author", "Author")}</label>
-        <input
-          id="author"
-          type="text"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-          required
-        />
-
-        <label htmlFor="tags">{t("admin.library.tags", "Tags")}</label>
-        <input
-          id="tags"
-          type="text"
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
-          placeholder="tag1, tag2, tag3"
-        />
-
-        <label>{t("admin.library.image", "Images")}</label>
-        <ImageUploadWithPreview
-          max={5}
-          defaultImages={existingImages}
-          onChange={handleImagesChange}
-          folder="library"
-        />
-
-        {/* PDF dosya input */}
-        <label htmlFor="pdf-file">{t("admin.library.pdf", "PDF File")}</label>
-        <input
-          id="pdf-file"
-          type="file"
-          accept="application/pdf"
-          onChange={handlePdfChange}
-        />
-        {/* Eski PDF varsa ve silinmediyse */}
-        {existingPdf && !selectedPdf && removedFiles.length === 0 && (
-          <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
-            <a href={existingPdf.url} target="_blank" rel="noopener noreferrer">
-              {existingPdf.name || "PDF"}
-            </a>
-            <button
-              type="button"
-              onClick={handleRemovePdf}
-              aria-label={t("admin.remove", "Remove PDF")}
-              style={{
-                marginLeft: 4,
-                background: "none",
-                border: "none",
-                color: "#dc3545",
-                cursor: "pointer",
-                fontSize: 20,
-                lineHeight: 1,
-                fontWeight: 700,
-              }}
-              title={t("admin.remove", "Remove PDF")}
-            >
-              ×
-            </button>
-          </div>
-        )}
-        {/* Yeni PDF seçildiyse */}
-        {selectedPdf && (
-          <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
-            {selectedPdf.name}
-            <button
-              type="button"
-              onClick={handleRemoveSelectedPdf}
-              aria-label={t("admin.remove", "Remove PDF")}
-              style={{
-                marginLeft: 4,
-                background: "none",
-                border: "none",
-                color: "#dc3545",
-                cursor: "pointer",
-                fontSize: 20,
-                lineHeight: 1,
-                fontWeight: 700,
-              }}
-              title={t("admin.remove", "Remove PDF")}
-            >
-              ×
-            </button>
-          </div>
-        )}
-
-        <label htmlFor="category">
-          {t("admin.library.category", "Category")}
-        </label>
-        <select
-          id="category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          required
+      {/* Mode switch */}
+      <ModeRow role="radiogroup" aria-label={t("editMode", "Edit Mode")}>
+        <ModeBtn
+          type="button"
+          aria-pressed={editMode === "simple"}
+          $active={editMode === "simple"}
+          onClick={() => setEditMode("simple")}
         >
-          <option value="" disabled>
-            {t("admin.library.select_category", "Select a category")}
-          </option>
-          {categories.map((cat: LibraryCategory) => (
-            <option key={cat._id} value={cat._id}>
-              {cat.name?.[lang] || cat.name?.en || Object.values(cat.name || {})[0] || cat.slug}
-            </option>
-          ))}
-        </select>
+          {t("simpleMode", "Basit")}
+        </ModeBtn>
+        <ModeBtn
+          type="button"
+          aria-pressed={editMode === "json"}
+          $active={editMode === "json"}
+          onClick={() => setEditMode("json")}
+        >
+          {t("jsonMode", "JSON Editor")}
+        </ModeBtn>
+      </ModeRow>
 
-        <ButtonGroup>
-          <button type="submit">
-            {editingItem
-              ? t("admin.update", "Update")
-              : t("admin.create", "Create")}
-          </button>
-          <button type="button" onClick={onClose}>
-            {t("admin.cancel", "Cancel")}
-          </button>
-        </ButtonGroup>
-      </form>
-    </FormWrapper>
+      {editMode === "simple" ? (
+        <>
+          <Row>
+            <Col style={{ gridColumn: "span 2" }}>
+              <Label>{t("admin.library.title", "Title")} ({lang.toUpperCase()})</Label>
+              <Input value={getTLStrict(titles, lang)} onChange={(e) => setTitles(setTL(titles, lang, e.target.value))} />
+            </Col>
+            <Col style={{ gridColumn: "span 2" }}>
+              <Label>{t("admin.library.summary", "Summary")} ({lang.toUpperCase()})</Label>
+              <TextArea rows={2} value={getTLStrict(summaries, lang)} onChange={(e) => setSummaries(setTL(summaries, lang, e.target.value))} />
+            </Col>
+          </Row>
+          <Row>
+            <Col style={{ gridColumn: "span 4" }}>
+              <Label>{t("admin.library.content", "Content")} ({lang.toUpperCase()})</Label>
+              <TextArea rows={8} value={getTLStrict(contents, lang)} onChange={(e) => setContents(setTL(contents, lang, e.target.value))} />
+            </Col>
+          </Row>
+        </>
+      ) : (
+        <Row>
+          <Col style={{ gridColumn: "span 4" }}>
+            <JSONEditor
+              label={t("multiLangJSON", "Title + Summary + Content (JSON)")}
+              value={combinedJSONValue}
+              onChange={onCombinedJSONChange}
+              placeholder={JSON.stringify(
+                {
+                  title: SUPPORTED_LOCALES.reduce((a, l) => ({ ...a, [l]: "" }), {} as Record<SupportedLocale, string>),
+                  summary: SUPPORTED_LOCALES.reduce((a, l) => ({ ...a, [l]: "" }), {} as Record<SupportedLocale, string>),
+                  content: SUPPORTED_LOCALES.reduce((a, l) => ({ ...a, [l]: "" }), {} as Record<SupportedLocale, string>),
+                },
+                null,
+                2
+              )}
+            />
+          </Col>
+        </Row>
+      )}
+
+      {/* Images (new uploader) */}
+      <BlockTitle>{t("admin.library.image", "Images")}</BlockTitle>
+      <ImageUploader
+        existing={existingUploads}
+        onExistingChange={setExistingUploads}
+        removedExisting={removedExisting}
+        onRemovedExistingChange={setRemovedExisting}
+        files={newFiles}
+        onFilesChange={setNewFiles}
+        maxFiles={8}
+        accept="image/*"
+        sizeLimitMB={15}
+        helpText={t("uploader.help", "jpg/png/webp • keeps order")}
+      />
+
+      {/* PDF */}
+      <BlockTitle>{t("admin.library.pdf", "PDF File")}</BlockTitle>
+      <Input type="file" accept="application/pdf" onChange={handlePdfChange} />
+      {existingPdf && !selectedPdf && removedFiles.length === 0 && (
+        <InlineFile>
+          <a href={existingPdf.url} target="_blank" rel="noopener noreferrer">
+            {existingPdf.name || "PDF"}
+          </a>
+          <IconBtn
+            type="button"
+            onClick={handleRemoveExistingPdf}
+            title={t("admin.remove", "Remove PDF")}
+            aria-label={t("admin.remove", "Remove PDF")}
+          >
+            ×
+          </IconBtn>
+        </InlineFile>
+      )}
+      {selectedPdf && (
+        <InlineFile>
+          <span>{selectedPdf.name}</span>
+          <IconBtn
+            type="button"
+            onClick={handleRemoveSelectedPdf}
+            title={t("admin.remove", "Remove PDF")}
+            aria-label={t("admin.remove", "Remove PDF")}
+          >
+            ×
+          </IconBtn>
+        </InlineFile>
+      )}
+
+      <Actions>
+        <Secondary type="button" onClick={onClose}>
+          {t("admin.cancel", "Cancel")}
+        </Secondary>
+        <Primary type="submit">
+          {editingItem ? t("admin.update", "Update") : t("admin.create", "Create")}
+        </Primary>
+      </Actions>
+    </Form>
   );
 }
 
-// --- Styled Components ---
-const FormWrapper = styled.div`
-  max-width: 600px;
-  margin: auto;
-  padding: 1.5rem;
-  background: ${({ theme }) => theme.colors.cardBackground || "#fff"};
-  border: 1px solid ${({ theme }) => theme.colors.border || "#ccc"};
-  border-radius: ${({ theme }) => theme.radii.md || "6px"};
-
-  h2 {
-    margin-bottom: 1rem;
-  }
-
-  label {
-    display: block;
-    margin-top: 1rem;
-    margin-bottom: 0.25rem;
-    font-weight: 600;
-  }
-
-  input,
-  textarea,
-  select {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid ${({ theme }) => theme.colors.border || "#ccc"};
-    border-radius: 4px;
-    background-color: ${({ theme }) => theme.colors.inputBackground || "#fff"};
-    color: ${({ theme }) => theme.colors.text || "#000"};
-    font-size: 0.95rem;
-  }
-
-  textarea {
-    min-height: 100px;
-    resize: vertical;
-  }
+/* ---- styled (Activity/About pattern) ---- */
+const Form = styled.form`
+  display:flex;
+  flex-direction:column;
+  gap:${({theme})=>theme.spacings.md};
+  max-width: 960px;
+  margin: 0 auto;
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};
+  padding:${({theme})=>theme.spacings.lg};
 `;
 
-const ButtonGroup = styled.div`
-  margin-top: 1.5rem;
-  display: flex;
-  gap: 1rem;
+const Row = styled.div`
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:${({theme})=>theme.spacings.md};
+  ${({theme})=>theme.media.tablet}{grid-template-columns:repeat(2,1fr);}
+  ${({theme})=>theme.media.mobile}{grid-template-columns:1fr;}
+`;
 
-  button {
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+const Col = styled.div`
+  display:flex;
+  flex-direction:column;
+  gap:${({theme})=>theme.spacings.xs};
+  min-width:0;
+`;
 
-    &:first-child {
-      background: ${({ theme }) => theme.colors.primary || "#007bff"};
-      color: #fff;
-    }
+const BlockTitle = styled.h3`
+  font-size:${({theme})=>theme.fontSizes.md};
+  margin:${({theme})=>theme.spacings.sm} 0;
+  color:${({theme})=>theme.colors.title};
+`;
 
-    &:last-child {
-      background: ${({ theme }) => theme.colors.danger || "#dc3545"};
-      color: #fff;
-    }
+const Label = styled.label`
+  font-size:${({theme})=>theme.fontSizes.xsmall};
+  color:${({theme})=>theme.colors.textSecondary};
+`;
 
-    &:hover {
-      opacity: 0.9;
-    }
-  }
+const Input = styled.input`
+  padding:10px 12px;
+  border-radius:${({theme})=>theme.radii.md};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  background:${({theme})=>theme.inputs.background};
+  color:${({theme})=>theme.inputs.text};
+  min-width:0;
+`;
+
+const TextArea = styled.textarea`
+  padding:10px 12px;
+  border-radius:${({theme})=>theme.radii.md};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  background:${({theme})=>theme.inputs.background};
+  color:${({theme})=>theme.inputs.text};
+  resize:vertical;
+`;
+
+const Select = styled.select`
+  flex:1 1 auto;
+  padding:10px 12px;
+  border-radius:${({theme})=>theme.radii.md};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  background:${({theme})=>theme.inputs.background};
+  color:${({theme})=>theme.inputs.text};
+`;
+
+const FlexRow = styled.div`
+  display:flex;
+  gap:${({theme})=>theme.spacings.xs};
+  align-items:center;
+`;
+
+const InlineFile = styled.div`
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:6px;
+  a{ color:${({theme})=>theme.colors.link}; text-decoration:underline; }
+`;
+
+const IconBtn = styled.button`
+  background:none;
+  border:none;
+  color:${({theme})=>theme.colors.danger};
+  cursor:pointer;
+  font-size:22px;
+  line-height:1;
+  font-weight:700;
+`;
+
+const Actions = styled.div`
+  display:flex;
+  gap:${({theme})=>theme.spacings.sm};
+  justify-content:flex-end;
+  margin-top:${({theme})=>theme.spacings.md};
+`;
+
+const BaseBtn = styled.button`
+  padding:8px 14px;
+  border-radius:${({theme})=>theme.radii.md};
+  cursor:pointer;
+  border:${({theme})=>theme.borders.thin} transparent;
+  font-weight:${({theme})=>theme.fontWeights.medium};
+`;
+
+const Primary = styled(BaseBtn)`
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  &:hover{ background:${({theme})=>theme.buttons.primary.backgroundHover}; }
+`;
+
+const Secondary = styled(BaseBtn)`
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+`;
+
+const ModeRow = styled.div`
+  display:flex;
+  gap:${({theme})=>theme.spacings.xs};
+  align-items:center;
+  margin-top:-6px;
+`;
+
+const ModeBtn = styled.button<{ $active?: boolean }>`
+  padding:8px 10px;
+  border-radius:${({theme})=>theme.radii.pill};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  background:${({$active,theme})=>$active?theme.colors.primaryLight:theme.colors.cardBackground};
+  color:${({theme})=>theme.colors.text};
+  cursor:pointer;
 `;

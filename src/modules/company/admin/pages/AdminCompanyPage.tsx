@@ -1,21 +1,17 @@
+// src/modules/company/pages/AdminCompanyPage.tsx
 "use client";
 
 import { useEffect, useMemo } from "react";
+import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  createCompanyAdmin,
-  updateCompanyAdmin,
-  clearCompanyMessages,
-} from "@/modules/company/slice/companySlice";
+import { createCompanyAdmin, updateCompanyAdmin, clearCompanyMessages } from "@/modules/company/slice/companySlice";
 import { toast } from "react-toastify";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
 import { CompanyForm, CompanyInfoCard } from "@/modules/company";
-import styled from "styled-components";
 import type { ICompany, TranslatedLabel } from "@/modules/company/types";
 import { SUPPORTED_LOCALES } from "@/types/common";
 
-// Çoklu dil alanı boşluk doldurucu
 const fillLabel = (obj: any): TranslatedLabel => {
   const filled: TranslatedLabel = {} as any;
   for (const lng of SUPPORTED_LOCALES) filled[lng] = obj?.[lng] ?? "";
@@ -26,20 +22,17 @@ export default function AdminCompanyPage() {
   const { t } = useI18nNamespace("company", translations);
   const dispatch = useAppDispatch();
 
-  // --- Merkezi company admin slice ---
-  const company = useAppSelector((state) => state.company.companyAdmin);
-  const loading = useAppSelector((state) => state.company.loading);
-  const successMessage = useAppSelector((state) => state.company.successMessage);
-  const error = useAppSelector((state) => state.company.error);
+  const company = useAppSelector((s) => s.company.companyAdmin);
+  const loading = useAppSelector((s) => s.company.loading);
+  const successMessage = useAppSelector((s) => s.company.successMessage);
+  const error = useAppSelector((s) => s.company.error);
 
-  // --- Toast feedback ---
   useEffect(() => {
     if (successMessage) toast.success(successMessage);
     if (error) toast.error(error);
     if (successMessage || error) dispatch(clearCompanyMessages());
   }, [successMessage, error, dispatch]);
 
-  // --- Form başlangıç değerleri (memoized, yeni modele göre) ---
   const initialValues: ICompany = useMemo(() => ({
     companyName: fillLabel(company?.companyName),
     companyDesc: fillLabel(company?.companyDesc),
@@ -66,99 +59,58 @@ export default function AdminCompanyPage() {
     },
     images: company?.images ?? [],
     addresses: company?.addresses ?? [],
-    createdAt: company?.createdAt ?? new Date(),
-    updatedAt: company?.updatedAt ?? new Date(),
+    createdAt: (company?.createdAt as any) ?? new Date().toISOString(),
+    updatedAt: (company?.updatedAt as any) ?? new Date().toISOString(),
   }), [company]);
 
-  // --- Form submit handler ---
-  const handleSubmit = (
-    values: ICompany,
-    newImages: File[],
-    removedImages?: string[]
-  ) => {
-    const payload: any = {
-      ...values,
-      images: newImages,
-      removedImages: removedImages ?? [],
-    };
-    if (company && company._id) {
-      dispatch(updateCompanyAdmin({ ...payload, _id: company._id }));
-    } else {
-      dispatch(createCompanyAdmin(payload));
-    }
+  const handleSubmit = (values: ICompany, newImages: File[], removedImages?: string[]) => {
+    const payload: any = { ...values, images: newImages, removedImages: removedImages ?? [] };
+    if (company && company._id) dispatch(updateCompanyAdmin({ ...payload, _id: company._id }));
+    else dispatch(createCompanyAdmin(payload));
   };
 
   return (
-    <Container>
-      <InnerWrapper>
-        <Title>{t("title", "Company Information")}</Title>
-        <CardGrid>
-          <CompanyInfoCard company={company} />
-          <CompanyForm
-            initialValues={initialValues}
-            onSubmit={handleSubmit}
-            loading={loading}
-          />
-        </CardGrid>
-      </InnerWrapper>
-    </Container>
+    <PageWrap>
+      <Header>
+        <TitleBlock>
+          <h1>{t("title", "Company Information")}</h1>
+          <Subtitle>{t("subtitle", "Manage and update your company details")}</Subtitle>
+        </TitleBlock>
+      </Header>
+
+      <Grid>
+        <Card><CompanyInfoCard company={company} /></Card>
+        <Card>
+          <CompanyForm initialValues={initialValues} onSubmit={handleSubmit} loading={loading} />
+        </Card>
+      </Grid>
+    </PageWrap>
   );
 }
 
-// --- Styled Components ---
-
-const Container = styled.div`
-  background: ${({ theme }) => theme.colors.sectionBackground};
-  min-height: 100vh;
-  width: 100%;
-  display: flex;
-  justify-content: center;
+/* styled to match activity/portfolio pattern */
+const PageWrap = styled.div`
+  max-width:${({theme})=>theme.layout.containerWidth};
+  margin:0 auto;
+  padding:${({theme})=>theme.spacings.xl};
 `;
-
-const InnerWrapper = styled.div`
-  width: 100%;
-  max-width: ${({ theme }) => theme.layout.containerWidth};
-  padding: ${({ theme }) => theme.spacings.xl};
-  margin: 0 auto;
-
-  ${({ theme }) => theme.media.small} {
-    padding: ${({ theme }) => theme.spacings.sm};
-  }
+const Header = styled.div`
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:${({theme})=>theme.spacings.lg};
 `;
-
-const Title = styled.h2`
-  margin-bottom: ${({ theme }) => theme.spacings.xl};
-  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  text-align: center;
-  letter-spacing: 0.02em;
-
-  ${({ theme }) => theme.media.small} {
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-    margin-bottom: ${({ theme }) => theme.spacings.lg};
-  }
+const TitleBlock = styled.div`display:flex; flex-direction:column; gap:4px; h1{margin:0;}`;
+const Subtitle = styled.p`
+  margin:0; color:${({theme})=>theme.colors.textSecondary};
+  font-size:${({theme})=>theme.fontSizes.sm};
 `;
-
-const CardGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: ${({ theme }) => theme.spacings.xl};
-  align-items: flex-start;
-
-  ${({ theme }) => theme.media.small} {
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacings.md};
-  }
-
-  & > * {
-    background: ${({ theme }) => theme.colors.cardBackground};
-    box-shadow: ${({ theme }) => theme.cards.shadow};
-    border-radius: ${({ theme }) => theme.radii.lg};
-    padding: ${({ theme }) => theme.spacings.lg};
-    ${({ theme }) => theme.media.small} {
-      padding: ${({ theme }) => theme.spacings.sm};
-    }
-  }
+const Grid = styled.div`
+  display:grid; grid-template-columns:1fr 1fr; gap:${({theme})=>theme.spacings.xl};
+  ${({theme})=>theme.media.small}{ grid-template-columns:1fr; gap:${({theme})=>theme.spacings.md}; }
 `;
-
+const Card = styled.section`
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};
+  padding:${({theme})=>theme.spacings.lg};
+`;

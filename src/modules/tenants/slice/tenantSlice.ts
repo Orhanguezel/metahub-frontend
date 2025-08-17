@@ -3,25 +3,20 @@ import apiCall from "@/lib/apiCall";
 import { ITenant, TenantsListResponse, MessageResponse } from "../types";
 
 const initialTenantSlug = (() => {
-  if (
-    typeof window !== "undefined" &&
-    window.location.hostname === "localhost"
-  ) {
+  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
     return (
       process.env.NEXT_PUBLIC_APP_ENV ||
       process.env.NEXT_PUBLIC_TENANT_NAME ||
       process.env.TENANT_NAME
     );
   }
-  // prod için uygun bir tespit fonksiyonu çağırabilirsin.
-  // örn: detectTenantFromHost() fonksiyonu gibi
   return undefined;
 })();
 
 // --- State Type ---
 interface TenantState {
-  tenants: ITenant[]; // Public
-  tenantsAdmin: ITenant[]; // Admin
+  tenants: ITenant[];        // Public
+  tenantsAdmin: ITenant[];   // Admin
   loading: boolean;
   loadingAdmin: boolean;
   error: string | null;
@@ -39,17 +34,12 @@ const initialState: TenantState = {
   error: null,
   successMessage: null,
   selectedTenantId: null,
-  selectedTenant: initialTenantSlug
-    ? ({ slug: initialTenantSlug } as ITenant)
-    : null,
+  selectedTenant: initialTenantSlug ? ({ slug: initialTenantSlug } as ITenant) : null,
 };
 
 // --- LOCAL/DEV tenant slug override (prod'da asla kullanılmaz) ---
 const getLocalTenantSlug = (): string | undefined => {
-  if (
-    typeof window !== "undefined" &&
-    window.location.hostname === "localhost"
-  ) {
+  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
     return (
       process.env.NEXT_PUBLIC_APP_ENV ||
       process.env.NEXT_PUBLIC_TENANT_NAME ||
@@ -73,6 +63,13 @@ const setLocalTenantIfAvailable = (state: TenantState) => {
   }
 };
 
+// --- Admin çağrıları için platform/bypass opsiyonları ---
+// NOT: apiCall tipin 4 parametre alıyorsa TS uyarısını aşmak için (apiCall as any) kullandık.
+const PLATFORM_OPTS = {
+  noTenantHeader: true,                 // apiCall bu opsiyonu okuyorsa tenant header'ını basmaz
+  headers: { "x-platform": "1" },       // backend'te varsa platform-whitelist için sinyal
+};
+
 // --- Async Thunks ---
 export const fetchTenants = createAsyncThunk<
   TenantsListResponse,
@@ -82,7 +79,7 @@ export const fetchTenants = createAsyncThunk<
   try {
     return await apiCall("get", "/tenants", null, rejectWithValue);
   } catch (err: any) {
-    return rejectWithValue({ message: err.message ?? "Fetch failed!" });
+    return rejectWithValue({ message: err?.message ?? "Fetch failed!" });
   }
 });
 
@@ -92,9 +89,15 @@ export const fetchTenantsAdmin = createAsyncThunk<
   { rejectValue: { message: string } }
 >("tenants/fetchAllAdmin", async (_, { rejectWithValue }) => {
   try {
-    return await apiCall("get", "/tenants/admin", null, rejectWithValue);
+    return await (apiCall as any)(
+      "get",
+      "/tenants/admin",
+      null,
+      rejectWithValue,
+      PLATFORM_OPTS
+    );
   } catch (err: any) {
-    return rejectWithValue({ message: err.message ?? "Admin fetch failed!" });
+    return rejectWithValue({ message: err?.message ?? "Admin fetch failed!" });
   }
 });
 
@@ -104,9 +107,15 @@ export const createTenant = createAsyncThunk<
   { rejectValue: { message: string } }
 >("tenants/create", async (formData, { rejectWithValue }) => {
   try {
-    return await apiCall("post", "/tenants/admin", formData, rejectWithValue);
+    return await (apiCall as any)(
+      "post",
+      "/tenants/admin",
+      formData,
+      rejectWithValue,
+      PLATFORM_OPTS
+    );
   } catch (err: any) {
-    return rejectWithValue({ message: err.message ?? "Create failed!" });
+    return rejectWithValue({ message: err?.message ?? "Create failed!" });
   }
 });
 
@@ -116,14 +125,15 @@ export const updateTenant = createAsyncThunk<
   { rejectValue: { message: string } }
 >("tenants/update", async ({ id, formData }, { rejectWithValue }) => {
   try {
-    return await apiCall(
+    return await (apiCall as any)(
       "put",
       `/tenants/admin/${id}`,
       formData,
-      rejectWithValue
+      rejectWithValue,
+      PLATFORM_OPTS
     );
   } catch (err: any) {
-    return rejectWithValue({ message: err.message ?? "Update failed!" });
+    return rejectWithValue({ message: err?.message ?? "Update failed!" });
   }
 });
 
@@ -133,14 +143,15 @@ export const deleteTenant = createAsyncThunk<
   { rejectValue: { message: string } }
 >("tenants/delete", async (id, { rejectWithValue }) => {
   try {
-    return await apiCall(
+    return await (apiCall as any)(
       "delete",
       `/tenants/admin/${id}`,
       null,
-      rejectWithValue
+      rejectWithValue,
+      PLATFORM_OPTS
     );
   } catch (err: any) {
-    return rejectWithValue({ message: err.message ?? "Delete failed!" });
+    return rejectWithValue({ message: err?.message ?? "Delete failed!" });
   }
 });
 
@@ -179,24 +190,20 @@ const tenantSlice = createSlice({
         state.error = null;
         state.successMessage = null;
       })
-      // fetchTenants.fulfilled reducer’ı
       .addCase(fetchTenants.fulfilled, (state, action) => {
         state.loading = false;
         state.tenants = action.payload.data || [];
         state.successMessage = action.payload.message || null;
         if (!state.selectedTenant) {
-          const slug = getLocalTenantSlug(); // veya detectTenantFromHost()
+          const slug = getLocalTenantSlug();
           if (slug) {
             const found = state.tenants.find(
               (t) => t.slug === slug || t._id === slug
             );
-            if (found) {
-              state.selectedTenant = found;
-            }
+            if (found) state.selectedTenant = found;
           }
         }
       })
-
       .addCase(fetchTenants.rejected, (state, action) => {
         state.loading = false;
         const payload = action.payload as { message?: string } | undefined;

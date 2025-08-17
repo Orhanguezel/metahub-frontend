@@ -1,8 +1,9 @@
+// TenantTabs.tsx
 "use client";
 
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/tenants";
+import { translations } from "@/modules/tenants";
 
 export type ActiveTab = "list" | "form";
 
@@ -20,48 +21,32 @@ export default function TenantTabs({ activeTab, onChange }: TenantTabsProps) {
   const { t } = useI18nNamespace("tenant", translations);
 
   return (
-    <Nav>
+    <Tabs>
       {tabs.map((tab) => (
-        <TabButton
+        <Tab
           key={tab.key}
           $active={activeTab === tab.key}
           aria-current={activeTab === tab.key ? "page" : undefined}
-          tabIndex={activeTab === tab.key ? 0 : -1}
           onClick={() => onChange(tab.key)}
           type="button"
         >
           {t(tab.label, tab.fallback)}
-        </TabButton>
+        </Tab>
       ))}
-    </Nav>
+    </Tabs>
   );
 }
 
-const Nav = styled.nav`
-  display: flex;
-  gap: ${({ theme }) => theme.spacings.sm};
-  margin-bottom: ${({ theme }) => theme.spacings.lg};
+/* styled — pill tabs pattern */
+const Tabs = styled.div`
+  display:flex; gap:${({ theme }) => theme.spacings.xs};
 `;
 
-const TabButton = styled.button<{ $active: boolean }>`
-  padding: 0.75rem 1.5rem;
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  background: ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.background};
-  color: ${({ $active, theme }) => ($active ? "#fff" : theme.colors.text)};
+const Tab = styled.button<{ $active?: boolean }>`
+  padding: 8px 12px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ $active, theme }) => ($active ? theme.colors.primaryLight : theme.colors.cardBackground)};
+  color: ${({ theme }) => theme.colors.text};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   cursor: pointer;
-  transition: background 0.22s, color 0.22s;
-
-  &:hover {
-    background: ${({ $active, theme }) =>
-      $active ? theme.colors.primary : theme.colors.primaryHover};
-    color: #fff;
-  }
-
-  &:focus {
-    outline: 2px solid ${({ theme }) => theme.colors.primary};
-    z-index: 2;
-  }
 `;

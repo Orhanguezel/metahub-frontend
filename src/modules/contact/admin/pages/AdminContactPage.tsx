@@ -1,26 +1,38 @@
+// src/modules/contact/pages/AdminContactMessagesPage.tsx
 "use client";
-import { useEffect, useState } from "react";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { deleteContactMessage, clearContactMessages } from "@/modules/contact/slice/contactSlice";
-import { ContactMessageList, ContactMessageModal } from "@/modules/contact";
-import { IContactMessage } from "@/modules/contact/types";
+
+import { useEffect, useState, useCallback } from "react";
 import styled from "styled-components";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import {
+  deleteContactMessage,
+  clearContactMessages,
+  fetchAllContactMessages,
+} from "@/modules/contact/slice/contactSlice";
+import { ContactMessageList, ContactMessageModal } from "@/modules/contact";
+import type { IContactMessage } from "@/modules/contact/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import translations from "@/modules/contact/locales";
 import { toast } from "react-toastify";
 
 export default function AdminContactMessagesPage() {
   const { t } = useI18nNamespace("contact", translations);
   const dispatch = useAppDispatch();
 
-  const messagesAdmin = useAppSelector((state) => state.contact.messagesAdmin);
-  const loading = useAppSelector((state) => state.contact.loading);
-  const error = useAppSelector((state) => state.contact.error);
-  const successMessage = useAppSelector((state) => state.contact.successMessage);
+  const messagesAdmin = useAppSelector((s) => s.contact.messagesAdmin);
+  const loading = useAppSelector((s) => s.contact.loading);
+  const error = useAppSelector((s) => s.contact.error);
+  const successMessage = useAppSelector((s) => s.contact.successMessage);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
+  // fetch on mount
+  useEffect(() => {
+    dispatch(fetchAllContactMessages());
+  }, [dispatch]);
+
+  // toasts
   useEffect(() => {
     if (successMessage) toast.success(successMessage);
     if (error) toast.error(error);
@@ -28,108 +40,76 @@ export default function AdminContactMessagesPage() {
   }, [successMessage, error, dispatch]);
 
   useEffect(() => {
-    return () => { dispatch(clearContactMessages()); };
+    return () => {
+      dispatch(clearContactMessages());
+    };
   }, [dispatch]);
 
-  const handleDelete = async (id: string) => {
-    const confirmMsg = t(
-      "admin.confirmDelete",
-      "Bu mesajı silmek istediğinize emin misiniz?"
-    );
-    if (confirm(confirmMsg)) {
-      await dispatch(deleteContactMessage(id));
-      if (selectedId === id) setSelectedId(null);
-    }
-  };
+  const handleDelete = useCallback(
+    async (id: string) => {
+      if (confirm(t("admin.confirmDelete", "Bu mesajı silmek istediğinize emin misiniz?"))) {
+        await dispatch(deleteContactMessage(id));
+        if (selectedId === id) setSelectedId(null);
+      }
+    },
+    [dispatch, selectedId, t]
+  );
 
-  const selectedMsg: IContactMessage | undefined = messagesAdmin.find(msg => msg._id === selectedId);
+  const handleReload = useCallback(() => {
+    dispatch(fetchAllContactMessages());
+  }, [dispatch]);
+
+  const selectedMsg: IContactMessage | undefined = messagesAdmin.find((m) => m._id === selectedId);
 
   return (
-    <AdminContainer>
-      <Title>{t("admin.title", "İletişim Mesajları")}</Title>
-      {loading && <InfoMsg>{t("admin.loading", "Yükleniyor...")}</InfoMsg>}
-      {error && <ErrorMsg>{error}</ErrorMsg>}
-      {successMessage && <SuccessMsg>{successMessage}</SuccessMsg>}
-      <ListWrapper>
+    <PageWrap>
+      <Header>
+        <TitleBlock>
+          <h1>{t("admin.title", "İletişim Mesajları")}</h1>
+          <Subtitle>{t("admin.subtitle", "Gelen tüm mesajları görüntüleyin ve yönetin")}</Subtitle>
+        </TitleBlock>
+      </Header>
+
+      <Card>
         <ContactMessageList
           messages={messagesAdmin}
           onSelect={setSelectedId}
           onDelete={handleDelete}
+          onReload={handleReload}
           selectedId={selectedId}
           search={search}
           setSearch={setSearch}
+          loading={loading}
         />
-      </ListWrapper>
-      {selectedMsg && (
-        <ContactMessageModal
-          message={selectedMsg}
-          onClose={() => setSelectedId(null)}
-        />
-      )}
-    </AdminContainer>
+      </Card>
+
+      {selectedMsg && <ContactMessageModal message={selectedMsg} onClose={() => setSelectedId(null)} />}
+    </PageWrap>
   );
 }
 
-// --- STYLED COMPONENTS ---
-
-const AdminContainer = styled.div`
-  max-width: 900px;
-  margin: 0 auto;
-  padding: ${({ theme }) => theme.spacings.xl};
-  background: ${({ theme }) => theme.colors.sectionBackground};
-  min-height: 100vh;
-  font-family: ${({ theme }) => theme.fonts.main};
-
-  ${({ theme }) => theme.media.small} {
-    max-width: 100%;
-    padding: ${({ theme }) => theme.spacings.sm};
-  }
+/* styled — activity/portfolio pattern */
+const PageWrap = styled.div`
+  max-width:${({theme})=>theme.layout.containerWidth};
+  margin:0 auto;
+  padding:${({theme})=>theme.spacings.xl};
 `;
-
-const Title = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin-bottom: ${({ theme }) => theme.spacings.xl};
-  text-align: center;
-
-  ${({ theme }) => theme.media.small} {
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-    margin-bottom: ${({ theme }) => theme.spacings.lg};
-  }
+const Header = styled.div`
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:${({theme})=>theme.spacings.lg};
 `;
-
-const InfoMsg = styled.div`
-  color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  text-align: center;
+const TitleBlock = styled.div`
+  display:flex; flex-direction:column; gap:4px;
+  h1{ margin:0; color:${({theme})=>theme.colors.primary}; }
 `;
-
-const ErrorMsg = styled.div`
-  color: ${({ theme }) => theme.colors.danger};
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  text-align: center;
+const Subtitle = styled.p`
+  margin:0; color:${({theme})=>theme.colors.textSecondary};
+  font-size:${({theme})=>theme.fontSizes.sm};
 `;
-
-const SuccessMsg = styled.div`
-  color: ${({ theme }) => theme.colors.success};
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  text-align: center;
-`;
-
-const ListWrapper = styled.div`
-  margin-top: ${({ theme }) => theme.spacings.md};
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.cards.shadow};
-  padding: ${({ theme }) => theme.spacings.lg};
-
-  ${({ theme }) => theme.media.small} {
-    padding: ${({ theme }) => theme.spacings.sm};
-    box-shadow: none;
-    border-radius: ${({ theme }) => theme.radii.md};
-  }
+const Card = styled.section`
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};
+  padding:${({theme})=>theme.spacings.lg};
 `;

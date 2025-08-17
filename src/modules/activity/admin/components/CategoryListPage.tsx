@@ -1,166 +1,140 @@
 "use client";
-
 import styled from "styled-components";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { useMemo } from "react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import {translations} from "@/modules/activity";
-import type { ActivityCategory } from "@/modules/activity/types";
-import { LANG_LABELS, SupportedLocale } from "@/types/common";
+import translations from "@/modules/activity/locales";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { deleteActivityCategory } from "@/modules/activity/slice/activityCategorySlice";
+import type { SupportedLocale } from "@/types/common";
+import { SUPPORTED_LOCALES, getMultiLang } from "@/types/common";
+import type { ActivityCategory } from "@/modules/activity/types";
 
-interface ProductCategoryListPageProps {
+type Props = {
   onAdd: () => void;
   onEdit: (category: ActivityCategory) => void;
-}
+};
 
-export default function ProductCategoryListPage({
-  onAdd,
-  onEdit,
-}: ProductCategoryListPageProps) {
+const getUILang = (lng?: string): SupportedLocale => {
+  const two = (lng || "").slice(0,2).toLowerCase();
+  return (SUPPORTED_LOCALES as ReadonlyArray<string>).includes(two) ? (two as SupportedLocale) : "tr";
+};
+
+export default function CategoryListPage({ onAdd, onEdit }: Props) {
+  const { t, i18n } = useI18nNamespace("activity", translations);
+  const lang = useMemo<SupportedLocale>(()=>getUILang(i18n?.language), [i18n?.language]);
   const dispatch = useAppDispatch();
-  const { i18n, t } = useI18nNamespace("activity", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  // Merkezi fetch ile gelen slice'ı okuyoruz
-   const categories = useAppSelector((state) => state.activityCategory.categories);
-  const loading = useAppSelector((state) => state.activity.loading);
-  const error = useAppSelector((state) => state.activity.error);
-  
+  const { categories = [], loading, error } = useAppSelector((s)=> (s as any).activityCategory || {});
 
-  // Silme işlemi
-  const handleDelete = (id: string) => {
-    const confirmMessage = t(
-      "admin.confirm.delete",
-      "Are you sure you want to delete this category?"
-    );
-    if (window.confirm(confirmMessage)) {
-      dispatch(deleteActivityCategory(id));
-    }
+  const remove = async (id: string) => {
+    if (!confirm(t("confirm.delete_category","Kategoriyi silmek istiyor musunuz?"))) return;
+    await dispatch(deleteActivityCategory(id) as any).unwrap().catch(()=>{});
   };
 
   return (
-    <Wrapper>
+    <Wrap>
       <Header>
-        <h2>{t("admin.categories.title", "Product Categories")}</h2>
-        <AddButton onClick={onAdd}>
-          {t("admin.categories.add", "Add Category")}
-        </AddButton>
+        <h2>{t("categories","Categories")}</h2>
+        <Primary onClick={onAdd}>+ {t("newCategory","New Category")}</Primary>
       </Header>
 
-      {loading ? (
-        <StatusMessage>{t("admin.loading", "Loading...")}</StatusMessage>
-      ) : error ? (
-        <ErrorMessage>❌ {error}</ErrorMessage>
-      ) : !categories || categories.length === 0 ? (
-        <StatusMessage>
-          {t("admin.categories.empty", "No categories found.")}
-        </StatusMessage>
-      ) : (
+      {error && <ErrorBox role="alert">{String(error)}</ErrorBox>}
+
+      <TableWrap aria-busy={!!loading}>
         <Table>
           <thead>
             <tr>
-              <th>#</th>
-              <th>{t(`admin.language.${lang}`, LANG_LABELS[lang])}</th>
-              <th>{t("admin.slug", "Slug")}</th>
-              <th>{t("admin.actions", "Actions")}</th>
+              <th>{t("name","Name")}</th>
+              <th>{t("slug","Slug")}</th>
+              <th>{t("isActive","Active?")}</th>
+              <th aria-label={t("actions","Actions")}/>
             </tr>
           </thead>
           <tbody>
-            {categories.map((cat: ActivityCategory, i: number) => (
-              <tr key={cat._id}>
-                <td>{i + 1}</td>
-                <td>{cat.name?.[lang] || "—"}</td>
-                <td>{cat.slug}</td>
-                <td>
-                  <ActionButton onClick={() => onEdit(cat)}>
-                    {t("admin.edit", "Edit")}
-                  </ActionButton>
-                  <DeleteButton onClick={() => handleDelete(cat._id)}>
-                    {t("admin.delete", "Delete")}
-                  </DeleteButton>
-                </td>
-              </tr>
-            ))}
+            {categories.length===0 && !loading && (
+              <tr><td colSpan={4}><Empty>∅</Empty></td></tr>
+            )}
+            {categories.map((c: ActivityCategory)=>{
+              const name = getMultiLang(c.name as any, lang) || c.slug;
+              return (
+                <tr key={c._id}>
+                  <td title={name}>{name}</td>
+                  <td className="mono">{c.slug}</td>
+                  <td><Badge $on={c.isActive}>{c.isActive? t("yes","Yes") : t("no","No")}</Badge></td>
+                  <td className="actions">
+                    <Row>
+                      <Secondary onClick={()=>onEdit(c)}>{t("edit","Edit")}</Secondary>
+                      <Danger onClick={()=>remove(c._id)}>{t("delete","Delete")}</Danger>
+                    </Row>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </Table>
-      )}
-    </Wrapper>
+      </TableWrap>
+    </Wrap>
   );
 }
 
-// --- Styled Components ---
-const Wrapper = styled.div`
-  margin-top: 1rem;
+/* styled */
+const Wrap = styled.div`display:flex;flex-direction:column;gap:${({theme})=>theme.spacings.md};`;
+const Header = styled.div`display:flex;align-items:center;justify-content:space-between;`;
+const ErrorBox = styled.div`padding:${({theme})=>theme.spacings.sm};border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.danger};color:${({theme})=>theme.colors.danger};border-radius:${({theme})=>theme.radii.md};`;
+const TableWrap = styled.div`
+  width:100%;overflow-x:auto;border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};background:${({theme})=>theme.colors.cardBackground};
 `;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
-`;
-
-const AddButton = styled.button`
-  padding: 0.5rem 1rem;
-  background: ${({ theme }) => theme.colors.primary};
-  color: white;
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  cursor: pointer;
-  &:hover {
-    background: ${({ theme }) => theme.colors.primaryHover};
-  }
-`;
-
 const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  th, td {
-    padding: 0.75rem;
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    text-align: left;
-    font-size: 0.95rem;
+  width:100%;border-collapse:collapse;
+  thead th{
+    background:${({theme})=>theme.colors.tableHeader};
+    color:${({theme})=>theme.colors.textSecondary};
+    font-weight:${({theme})=>theme.fontWeights.semiBold};
+    font-size:${({theme})=>theme.fontSizes.sm};
+    padding:${({theme})=>theme.spacings.md};text-align:left;white-space:nowrap;
   }
-  th {
-    background: ${({ theme }) => theme.colors.tableHeader};
-    color: ${({ theme }) => theme.colors.text};
+  td{
+    padding:${({theme})=>theme.spacings.md};
+    border-bottom:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
+    font-size:${({theme})=>theme.fontSizes.sm};vertical-align:middle;
+  }
+  td.mono{font-family:${({theme})=>theme.fonts.mono};}
+  td.actions{text-align:right;}
+  tbody tr:hover td{background:${({theme})=>theme.colors.hoverBackground};}
+`;
+const Row = styled.div`display:flex;gap:${({theme})=>theme.spacings.xs};justify-content:flex-end;`;
+const Primary = styled.button`
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.buttons.primary.backgroundHover};
+  padding:8px 12px;border-radius:${({theme})=>theme.radii.md};cursor:pointer;
+`;
+const Secondary = styled.button`
+  padding:8px 10px;border-radius:${({theme})=>theme.radii.md};cursor:pointer;
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+`;
+const Danger = styled(Secondary)`
+  background:${({theme})=>theme.colors.dangerBg};
+  color:${({theme})=>theme.colors.danger};
+  border-color:${({theme})=>theme.colors.danger};
+  &:hover{
+    background:${({theme})=>theme.colors.dangerHover};
+    color:${({theme})=>theme.colors.textOnDanger};
+    border-color:${({theme})=>theme.colors.dangerHover};
   }
 `;
-
-const StatusMessage = styled.p`
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 0.95rem;
+const Badge = styled.span<{ $on:boolean }>`
+  display:inline-block;padding:.2em .6em;border-radius:${({theme})=>theme.radii.pill};
+  background:${({$on,theme})=>$on?theme.colors.successBg:theme.colors.inputBackgroundLight};
+  color:${({$on,theme})=>$on?theme.colors.success:theme.colors.textSecondary};
 `;
 
-const ErrorMessage = styled.p`
-  text-align: center;
-  color: red;
-  font-size: 0.95rem;
-`;
-
-const ActionButton = styled.button`
-  margin-right: 0.5rem;
-  padding: 0.4rem 0.8rem;
-  background: ${({ theme }) => theme.colors.warning};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  cursor: pointer;
-`;
-
-const DeleteButton = styled.button`
-  padding: 0.4rem 0.8rem;
-  background: ${({ theme }) => theme.colors.danger};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  cursor: pointer;
+const Empty = styled.div`
+  text-align:center;color:${({theme})=>theme.colors.textSecondary};
+  font-size:${({theme})=>theme.fontSizes.sm};padding:${({theme})=>theme.spacings.md};
+  font-style:italic;
+  ${({theme})=>theme.media.mobile}{font-size:${({theme})=>theme.fontSizes.xsmall};}
 `;

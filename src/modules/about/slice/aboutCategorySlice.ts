@@ -19,13 +19,15 @@ const initialState: CategoryState = {
   successMessage: null,
 };
 
+const BASE = "/aboutcategory";
+
 // --- Fetch ---
 export const fetchAboutCategories = createAsyncThunk(
   "aboutCategory/fetchAll",
   async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      "/aboutcategory",
+      `${BASE}`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -45,7 +47,7 @@ export const createAboutCategory = createAsyncThunk(
   ) => {
     const res = await apiCall(
       "post",
-      "/aboutcategory",
+      `${BASE}`,
       data,
       thunkAPI.rejectWithValue
     );
@@ -71,7 +73,7 @@ export const updateAboutCategory = createAsyncThunk(
   ) => {
     const res = await apiCall(
       "put",
-      `/aboutcategory/${id}`,
+      `${BASE}/${id}`,
       data,
       thunkAPI.rejectWithValue
     );
@@ -85,7 +87,7 @@ export const deleteAboutCategory = createAsyncThunk(
   async (id: string, thunkAPI) => {
     const res = await apiCall(
       "delete",
-      `/aboutcategory/${id}`,
+      `${BASE}/${id}`,
       null,
       thunkAPI.rejectWithValue
     );

@@ -2,13 +2,11 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { ISkill } from "@/modules/skill";
 
-type StatusType = "idle" | "loading" | "succeeded" | "failed";
-
 interface SkillState {
   skill: ISkill[];
   skillAdmin: ISkill[];
   selected: ISkill | null;
-  status: StatusType;           // <-- EKLENDİ
+  status: "idle" | "loading" | "succeeded" | "failed";
   loading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -23,6 +21,8 @@ const initialState: SkillState = {
   error: null,
   successMessage: null,
 };
+
+const BASE = "/skill";
 
 const extractErrorMessage = (payload: unknown): string => {
   if (typeof payload === "string") return payload;
@@ -41,12 +41,8 @@ const extractErrorMessage = (payload: unknown): string => {
 export const fetchSkill = createAsyncThunk<ISkill[]>(
   "skill/fetchAll",
   async (_, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      `/skill`,
-      null,
-      thunkAPI.rejectWithValue
-    );
+    const res = await apiCall("get", `${BASE}`, null, thunkAPI.rejectWithValue);
+    // response: { success, message, data }
     return res.data;
   }
 );
@@ -56,7 +52,7 @@ export const fetchAllSkillAdmin = createAsyncThunk<ISkill[]>(
   async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/skill/admin`,
+      `${BASE}/admin`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -69,14 +65,12 @@ export const createSkill = createAsyncThunk(
   async (formData: FormData, thunkAPI) => {
     const res = await apiCall(
       "post",
-      "/skill/admin",
+      `${BASE}/admin`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
-    return res.data;
+    // return: { success, message, data }
+    return { ...res, data: res.data };
   }
 );
 
@@ -85,14 +79,11 @@ export const updateSkill = createAsyncThunk(
   async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) => {
     const res = await apiCall(
       "put",
-      `/skill/admin/${id}`,
+      `${BASE}/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
-    return res.data;
+    return { ...res, data: res.data };
   }
 );
 
@@ -101,10 +92,11 @@ export const deleteSkill = createAsyncThunk(
   async (id: string, thunkAPI) => {
     const res = await apiCall(
       "delete",
-      `/skill/admin/${id}`,
+      `${BASE}/admin/${id}`,
       null,
       thunkAPI.rejectWithValue
     );
+    // return: { success, message }
     return { id, message: res.message };
   }
 );
@@ -119,14 +111,11 @@ export const togglePublishSkill = createAsyncThunk(
     formData.append("isPublished", String(isPublished));
     const res = await apiCall(
       "put",
-      `/skill/admin/${id}`,
+      `${BASE}/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
-    return res.data;
+    return { ...res, data: res.data };
   }
 );
 
@@ -135,7 +124,7 @@ export const fetchSkillBySlug = createAsyncThunk(
   async (slug: string, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/skill/slug/${slug}`,
+      `${BASE}/slug/${slug}`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -144,110 +133,104 @@ export const fetchSkillBySlug = createAsyncThunk(
 );
 
 // --- Slice ---
-
 const skillSlice = createSlice({
   name: "skill",
   initialState,
   reducers: {
-    clearSkillMessages(state) {
+    clearSkillMessages: (state) => {
       state.error = null;
       state.successMessage = null;
-      state.status = "idle";
     },
-    setSelectedSkill(state, action: PayloadAction<ISkill | null>) {
+    setSelectedSkill: (state, action: PayloadAction<ISkill | null>) => {
       state.selected = action.payload;
     },
   },
   extraReducers: (builder) => {
-    const startLoading = (state: SkillState) => {
+    const setLoading = (state: SkillState) => {
       state.loading = true;
-      state.status = "loading";    // <-- EKLENDİ
+      state.status = "loading";
       state.error = null;
-      state.successMessage = null;
     };
 
     const setError = (state: SkillState, action: PayloadAction<any>) => {
       state.loading = false;
-      state.status = "failed";     // <-- EKLENDİ
+      state.status = "failed";
       state.error = extractErrorMessage(action.payload);
-      state.successMessage = null;
     };
 
+    // 🌐 Public
     builder
-      // Public List
-      .addCase(fetchSkill.pending, startLoading)
+      .addCase(fetchSkill.pending, setLoading)
       .addCase(fetchSkill.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
         state.skill = action.payload;
       })
-      .addCase(fetchSkill.rejected, setError)
+      .addCase(fetchSkill.rejected, setError);
 
-      // Admin List
-      .addCase(fetchAllSkillAdmin.pending, startLoading)
+    // 🔐 Admin List
+    builder
+      .addCase(fetchAllSkillAdmin.pending, setLoading)
       .addCase(fetchAllSkillAdmin.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
         state.skillAdmin = action.payload;
       })
-      .addCase(fetchAllSkillAdmin.rejected, setError)
+      .addCase(fetchAllSkillAdmin.rejected, setError);
 
-      // Create
-      .addCase(createSkill.pending, startLoading)
+    // ➕ Create
+    builder
+      .addCase(createSkill.pending, setLoading)
       .addCase(createSkill.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        if (action.payload?.data) {
-          state.skillAdmin.unshift(action.payload.data);
-          state.successMessage = action.payload?.message || null;
-        }
+        state.skillAdmin.unshift(action.payload.data);
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
-      .addCase(createSkill.rejected, setError)
+      .addCase(createSkill.rejected, setError);
 
-      // Update
-      .addCase(updateSkill.pending, startLoading)
+    // 📝 Update
+    builder
+      .addCase(updateSkill.pending, setLoading)
       .addCase(updateSkill.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        const updated = action.payload?.data || action.payload;
-        const index = state.skillAdmin.findIndex(
-          (a) => a._id === updated._id
-        );
-        if (index !== -1) state.skillAdmin[index] = updated;
+        const updated = action.payload.data;
+        const i = state.skillAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.skillAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message || null;
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
-      .addCase(updateSkill.rejected, setError)
+      .addCase(updateSkill.rejected, setError);
 
-      // Delete
-      .addCase(deleteSkill.pending, startLoading)
+    // 🗑️ Delete
+    builder
+      .addCase(deleteSkill.pending, setLoading)
       .addCase(deleteSkill.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        state.skillAdmin = state.skillAdmin.filter(
-          (a) => a._id !== action.payload.id
-        );
-        state.successMessage = action.payload?.message || null;
+        state.skillAdmin = state.skillAdmin.filter((a) => a._id !== action.payload.id);
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
-      .addCase(deleteSkill.rejected, setError)
+      .addCase(deleteSkill.rejected, setError);
 
-      // Toggle Publish
-      .addCase(togglePublishSkill.pending, startLoading)
+    // 🌍 Toggle Publish
+    builder
+      .addCase(togglePublishSkill.pending, setLoading)
       .addCase(togglePublishSkill.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        const updated = action.payload?.data || action.payload;
-        const index = state.skillAdmin.findIndex(
-          (a) => a._id === updated._id
-        );
-        if (index !== -1) state.skillAdmin[index] = updated;
+        const updated = action.payload.data;
+        const i = state.skillAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.skillAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message || null;
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
-      .addCase(togglePublishSkill.rejected, setError)
+      .addCase(togglePublishSkill.rejected, setError);
 
-      // Single Fetch (slug)
-      .addCase(fetchSkillBySlug.pending, startLoading)
+    // 🔎 Single (Slug)
+    builder
+      .addCase(fetchSkillBySlug.pending, setLoading)
       .addCase(fetchSkillBySlug.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
@@ -257,6 +240,5 @@ const skillSlice = createSlice({
   },
 });
 
-export const { clearSkillMessages, setSelectedSkill } =
-  skillSlice.actions;
+export const { clearSkillMessages, setSelectedSkill } = skillSlice.actions;
 export default skillSlice.reducer;

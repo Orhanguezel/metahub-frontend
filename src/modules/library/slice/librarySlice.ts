@@ -2,16 +2,16 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { ILibrary } from "@/modules/library";
 
+// --- State ---
 interface LibraryState {
-  library: ILibrary[]; // Public (site) için
-  libraryAdmin: ILibrary[]; // Admin panel için
+  library: ILibrary[];
+  libraryAdmin: ILibrary[];
   selected: ILibrary | null;
   status: "idle" | "loading" | "succeeded" | "failed";
   loading: boolean;
   error: string | null;
   successMessage: string | null;
 }
-
 const initialState: LibraryState = {
   library: [],
   libraryAdmin: [],
@@ -22,118 +22,104 @@ const initialState: LibraryState = {
   successMessage: null,
 };
 
-const extractErrorMessage = (payload: unknown): string => {
-  if (typeof payload === "string") return payload;
-  if (
-    typeof payload === "object" &&
-    payload !== null &&
-    "message" in payload &&
-    typeof (payload as any).message === "string"
-  )
-    return (payload as any).message;
-  return "An error occurred.";
-};
+// helpers
+const pickData = (res: any) => res?.data?.data ?? res?.data ?? res;
+const pickMessage = (res: any) => res?.data?.message ?? res?.message ?? null;
+const extractErrorMessage = (payload: unknown): string =>
+  typeof payload === "string"
+    ? payload
+    : (payload as any)?.message || "An error occurred.";
 
-// --- Async Thunks ---
+    const BASE = "/library"
 
-export const fetchLibrary = createAsyncThunk<ILibrary[]>(
+// --- Thunks ---
+export const fetchLibrary = createAsyncThunk<ILibrary[], void, { rejectValue: string }>(
   "library/fetchAll",
-  async (_, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      `/library`,
-      null,
-      thunkAPI.rejectWithValue
-    );
-    return res.data;
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await apiCall("get", `${BASE}`, null, rejectWithValue);
+      return pickData(res);
+    } catch (e: any) {
+      return rejectWithValue(e?.message || "Failed to fetch library.");
+    }
   }
 );
 
-export const fetchAllLibraryAdmin = createAsyncThunk<ILibrary[]>(
+export const fetchAllLibraryAdmin = createAsyncThunk<ILibrary[], void, { rejectValue: string }>(
   "library/fetchAllAdmin",
-  async (_, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      `/library/admin`,
-      null,
-      thunkAPI.rejectWithValue
-    );
-    return res.data;
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await apiCall("get", `${BASE}/admin`, null, rejectWithValue);
+      return pickData(res);
+    } catch (e: any) {
+      return rejectWithValue(e?.message || "Failed to fetch admin library.");
+    }
   }
 );
 
-export const createLibrary = createAsyncThunk(
+export const createLibrary = createAsyncThunk<any, FormData, { rejectValue: string }>(
   "library/create",
-  async (formData: FormData, thunkAPI) => {
-    const res = await apiCall(
-      "post",
-      "/library/admin",
-      formData,
-      thunkAPI.rejectWithValue,
-    );
-    return res.data;
+  async (formData, { rejectWithValue }) => {
+    try {
+      const res = await apiCall("post", `${BASE}/admin`, formData, rejectWithValue);
+      return res;
+    } catch (e: any) {
+      return rejectWithValue(e?.message || "Failed to create library item.");
+    }
   }
 );
 
-export const updateLibrary = createAsyncThunk(
+export const updateLibrary = createAsyncThunk<any, { id: string; formData: FormData }, { rejectValue: string }>(
   "library/update",
-  async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) => {
-    const res = await apiCall(
-      "put",
-      `/library/admin/${id}`,
-      formData,
-      thunkAPI.rejectWithValue
-    );
-    return res.data;
+  async ({ id, formData }, { rejectWithValue }) => {
+    try {
+      const res = await apiCall("put", `${BASE}/admin/${id}`, formData, rejectWithValue);
+      return res;
+    } catch (e: any) {
+      return rejectWithValue(e?.message || "Failed to update library item.");
+    }
   }
 );
 
-export const deleteLibrary = createAsyncThunk(
+export const deleteLibrary = createAsyncThunk<{ id: string; message?: string }, string, { rejectValue: string }>(
   "library/delete",
-  async (id: string, thunkAPI) => {
-    const res = await apiCall(
-      "delete",
-      `/library/admin/${id}`,
-      null,
-      thunkAPI.rejectWithValue
-    );
-    return { id, message: res.message };
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await apiCall("delete", `${BASE}/admin/${id}`, null, rejectWithValue);
+      return { id, message: pickMessage(res) || "Deleted successfully." };
+    } catch (e: any) {
+      return rejectWithValue(e?.message || "Failed to delete library item.");
+    }
   }
 );
 
-export const togglePublishLibrary = createAsyncThunk(
+export const togglePublishLibrary = createAsyncThunk<any, { id: string; isPublished: boolean }, { rejectValue: string }>(
   "library/togglePublish",
-  async (
-    { id, isPublished }: { id: string; isPublished: boolean },
-    thunkAPI
-  ) => {
-    const formData = new FormData();
-    formData.append("isPublished", String(isPublished));
-    const res = await apiCall(
-      "put",
-      `/library/admin/${id}`,
-      formData,
-      thunkAPI.rejectWithValue
-    );
-    return res.data;
+  async ({ id, isPublished }, { rejectWithValue }) => {
+    try {
+      const fd = new FormData();
+      fd.append("isPublished", String(isPublished));
+      const res = await apiCall("put", `${BASE}/admin/${id}`, fd, rejectWithValue);
+      return res;
+    } catch (e: any) {
+      return rejectWithValue(e?.message || "Failed to toggle publish.");
+    }
   }
 );
 
-export const fetchLibraryBySlug = createAsyncThunk(
+export const fetchLibraryBySlug = createAsyncThunk<ILibrary, string, { rejectValue: string }>(
   "library/fetchBySlug",
-  async (slug: string, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      `/library/slug/${slug}`,
-      null,
-      thunkAPI.rejectWithValue
-    );
-    return res.data;
+  async (slug, { rejectWithValue }) => {
+    try {
+      const res = await apiCall("get", `${BASE}/slug/${slug}`, null, rejectWithValue);
+      return pickData(res);
+    } catch (e: any) {
+      return rejectWithValue(e?.message || "Failed to fetch item.");
+    }
   }
 );
 
 // --- Slice ---
-
 const librarySlice = createSlice({
   name: "library",
   initialState,
@@ -147,99 +133,103 @@ const librarySlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    const startLoading = (state: LibraryState) => {
-      state.loading = true;
-      state.error = null;
+    const start = (s: LibraryState) => {
+      s.loading = true;
+      s.status = "loading";
+      s.error = null;
+      s.successMessage = null;
+    };
+    const fail = (s: LibraryState, a: PayloadAction<any>) => {
+      s.loading = false;
+      s.status = "failed";
+      s.error = extractErrorMessage(a.payload);
     };
 
-    const setError = (state: LibraryState, action: PayloadAction<any>) => {
-      state.loading = false;
-      state.error = extractErrorMessage(action.payload);
-    };
-
-    // --- Public List ---
+    // public list
     builder
-      .addCase(fetchLibrary.pending, startLoading)
-      .addCase(fetchLibrary.fulfilled, (state, action) => {
-        state.loading = false;
-        state.library = action.payload;
+      .addCase(fetchLibrary.pending, start)
+      .addCase(fetchLibrary.fulfilled, (s, a) => {
+        s.loading = false;
+        s.status = "succeeded";
+        s.library = a.payload;
       })
-      .addCase(fetchLibrary.rejected, setError);
+      .addCase(fetchLibrary.rejected, fail);
 
-    // --- Admin List ---
+    // admin list
     builder
-      .addCase(fetchAllLibraryAdmin.pending, startLoading)
-      .addCase(fetchAllLibraryAdmin.fulfilled, (state, action) => {
-        state.loading = false;
-        state.libraryAdmin = action.payload;
+      .addCase(fetchAllLibraryAdmin.pending, start)
+      .addCase(fetchAllLibraryAdmin.fulfilled, (s, a) => {
+        s.loading = false;
+        s.status = "succeeded";
+        s.libraryAdmin = a.payload;
       })
-      .addCase(fetchAllLibraryAdmin.rejected, setError);
+      .addCase(fetchAllLibraryAdmin.rejected, fail);
 
-    // --- Admin Create ---
+    // create
     builder
-      .addCase(createLibrary.pending, startLoading)
-      .addCase(createLibrary.fulfilled, (state, action) => {
-        state.loading = false;
-        state.successMessage = action.payload?.message;
-        if (action.payload?.data) {
-          state.libraryAdmin.unshift(action.payload.data);
-        }
+      .addCase(createLibrary.pending, start)
+      .addCase(createLibrary.fulfilled, (s, a) => {
+        s.loading = false;
+        s.status = "succeeded";
+        const item = pickData(a.payload);
+        const msg = pickMessage(a.payload);
+        if (item?._id) s.libraryAdmin.unshift(item);
+        s.successMessage = msg || "Created.";
       })
-      .addCase(createLibrary.rejected, setError);
+      .addCase(createLibrary.rejected, fail);
 
-    // --- Admin Update ---
+    // update
     builder
-      .addCase(updateLibrary.pending, startLoading)
-      .addCase(updateLibrary.fulfilled, (state, action) => {
-        state.loading = false;
-        const updated = action.payload?.data || action.payload;
-        const index = state.libraryAdmin.findIndex(
-          (a) => a._id === updated._id
-        );
-        if (index !== -1) state.libraryAdmin[index] = updated;
-        if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+      .addCase(updateLibrary.pending, start)
+      .addCase(updateLibrary.fulfilled, (s, a) => {
+        s.loading = false;
+        s.status = "succeeded";
+        const updated = pickData(a.payload);
+        const msg = pickMessage(a.payload);
+        const i = s.libraryAdmin.findIndex((x) => x._id === updated?._id);
+        if (i !== -1) s.libraryAdmin[i] = updated;
+        if (s.selected?._id === updated?._id) s.selected = updated;
+        s.successMessage = msg || "Updated.";
       })
-      .addCase(updateLibrary.rejected, setError);
+      .addCase(updateLibrary.rejected, fail);
 
-    // --- Admin Delete ---
+    // delete
     builder
-      .addCase(deleteLibrary.pending, startLoading)
-      .addCase(deleteLibrary.fulfilled, (state, action) => {
-        state.loading = false;
-        state.libraryAdmin = state.libraryAdmin.filter(
-          (a) => a._id !== action.payload.id
-        );
-        state.successMessage = action.payload?.message;
+      .addCase(deleteLibrary.pending, start)
+      .addCase(deleteLibrary.fulfilled, (s, a) => {
+        s.loading = false;
+        s.status = "succeeded";
+        s.libraryAdmin = s.libraryAdmin.filter((x) => x._id !== a.payload.id);
+        s.successMessage = a.payload.message || "Deleted.";
       })
-      .addCase(deleteLibrary.rejected, setError);
+      .addCase(deleteLibrary.rejected, fail);
 
-    // --- Admin Toggle Publish ---
+    // toggle publish
     builder
-      .addCase(togglePublishLibrary.pending, startLoading)
-      .addCase(togglePublishLibrary.fulfilled, (state, action) => {
-        state.loading = false;
-        const updated = action.payload?.data || action.payload;
-        const index = state.libraryAdmin.findIndex(
-          (a) => a._id === updated._id
-        );
-        if (index !== -1) state.libraryAdmin[index] = updated;
-        if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = action.payload?.message;
+      .addCase(togglePublishLibrary.pending, start)
+      .addCase(togglePublishLibrary.fulfilled, (s, a) => {
+        s.loading = false;
+        s.status = "succeeded";
+        const updated = pickData(a.payload);
+        const msg = pickMessage(a.payload);
+        const i = s.libraryAdmin.findIndex((x) => x._id === updated?._id);
+        if (i !== -1) s.libraryAdmin[i] = updated;
+        if (s.selected?._id === updated?._id) s.selected = updated;
+        s.successMessage = msg || "Status updated.";
       })
-      .addCase(togglePublishLibrary.rejected, setError);
+      .addCase(togglePublishLibrary.rejected, fail);
 
-    // --- Single Fetch (slug) ---
+    // single by slug
     builder
-      .addCase(fetchLibraryBySlug.pending, startLoading)
-      .addCase(fetchLibraryBySlug.fulfilled, (state, action) => {
-        state.loading = false;
-        state.selected = action.payload;
+      .addCase(fetchLibraryBySlug.pending, start)
+      .addCase(fetchLibraryBySlug.fulfilled, (s, a) => {
+        s.loading = false;
+        s.status = "succeeded";
+        s.selected = a.payload;
       })
-      .addCase(fetchLibraryBySlug.rejected, setError);
+      .addCase(fetchLibraryBySlug.rejected, fail);
   },
 });
 
-export const { clearLibraryMessages, setSelectedLibrary } =
-  librarySlice.actions;
+export const { clearLibraryMessages, setSelectedLibrary } = librarySlice.actions;
 export default librarySlice.reducer;

@@ -1,12 +1,12 @@
 "use client";
 
 import styled from "styled-components";
-import { ILibrary } from "@/modules/library";
+import Image from "next/image";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/library/locales";
+import type { ILibrary } from "@/modules/library/types";
+import type { SupportedLocale } from "@/types/common";
 import { Skeleton } from "@/shared";
-import { SupportedLocale } from "@/types/common";
-import Image from "next/image";
 
 interface Props {
   library: ILibrary[] | undefined;
@@ -17,228 +17,158 @@ interface Props {
   onTogglePublish?: (id: string, isPublished: boolean) => void;
 }
 
-export default function LibraryList({
-  library,
-  loading,
-  error,
-  onEdit,
-  onDelete,
-  onTogglePublish,
-}: Props) {
+export default function LibraryList({ library, loading, error, onEdit, onDelete, onTogglePublish }: Props) {
   const { i18n, t } = useI18nNamespace("library", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   if (loading) {
     return (
-      <SkeletonWrapper>
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} />
-        ))}
-      </SkeletonWrapper>
+      <SkeletonWrap>
+        {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} />)}
+      </SkeletonWrap>
     );
   }
-
   if (error) return <ErrorText>❌ {error}</ErrorText>;
   if (!Array.isArray(library)) return null;
-  if (library.length === 0)
-    return <Empty>{t("library.empty", "No library available.")}</Empty>;
-
+  if (library.length === 0) return <Empty>{t("library.empty", "No library available.")}</Empty>;
 
   return (
-    <div>
-      {library.map((item) => (
-        <LibraryCard key={item._id}>
-          <h2>{item.title?.[lang] || Object.values(item.title || {})[0] || "—"}</h2>
-          <p>{item.summary?.[lang] || Object.values(item.summary || {})[0] || "—"}</p>
+    <ListWrap>
+      {library.map((item) => {
+        const title = item.title?.[lang] || Object.values(item.title || {})[0] || "—";
+        const summary = item.summary?.[lang] || Object.values(item.summary || {})[0] || "—";
+        return (
+          <Card key={item._id}>
+            <Head>
+              <div>
+                <Title>{title}</Title>
+                <Subtitle>{summary}</Subtitle>
+              </div>
+              <Badge $on={item.isPublished}>
+                {item.isPublished ? t("yes", "Yes") : t("no", "No")}
+              </Badge>
+            </Head>
 
-          {/* IMAGES */}
-         {Array.isArray(item.images) && item.images.length > 0 ? (
-  <ImageGrid>
-    {item.images.map((img, i) => (
-      <Image
-        key={i}
-        src={img.url}
-        alt={item.title?.[lang] || Object.values(item.title || {})[0] || `library-${i}`}
-        loading="lazy"
-        width={150}
-        height={100}
-      />
-    ))}
-  </ImageGrid>
-) : (
-  <small>{t("library.no_images", "No images")}</small>
-)}
+            {/* images */}
+            {Array.isArray(item.images) && item.images.length > 0 ? (
+              <ImageGrid>
+                {item.images.map((img, i) => (
+                  <Image
+                    key={img._id ?? `${item._id}-${i}`}
+                    src={img.url}
+                    alt={title || `library-${i}`}
+                    loading="lazy"
+                    width={150}
+                    height={100}
+                    sizes="150px"
+                    style={{ borderRadius: 6, objectFit: "cover" }}
+                  />
+                ))}
+              </ImageGrid>
+            ) : (
+              <NoImage>{t("library.no_images", "No images")}</NoImage>
+            )}
 
+            {/* files (PDF) */}
+            {item.files && item.files.length > 0 && (
+              <Files>
+                <strong>{t("library.files", "Files")}:</strong>
+                <ul>
+                  {item.files.map((f, idx) =>
+                    f.type === "application/pdf" ? (
+                      <li key={f._id ?? idx}>
+                        <a href={f.url} target="_blank" rel="noopener noreferrer" download={f.name}>
+                          {f.name || t("library.pdf_file", "PDF File")}
+                        </a>
+                      </li>
+                    ) : null
+                  )}
+                </ul>
+              </Files>
+            )}
 
-          {/* PDF ve diğer dosyalar */}
-          {item.files && item.files.length > 0 && (
-            <FileSection>
-              <strong>{t("library.files", "Files")}:</strong>
-              <ul>
-                {item.files.map((file, idx) =>
-                  file.type === "application/pdf" ? (
-                    <li key={file.url || idx}>
-                      <a
-                        href={file.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        download={file.name}
-                      >
-                        {file.name || t("library.pdf_file", "PDF File")}
-                      </a>
-                    </li>
-                  ) : null
+            <Meta>
+              <span><b>{t("library.author", "Author")}:</b> {item.author || t("unknown", "Unknown")}</span>
+              <span><b>{t("library.tags", "Tags")}:</b> {item.tags?.length ? item.tags.join(", ") : t("none", "None")}</span>
+            </Meta>
+
+            {(onEdit || onDelete || onTogglePublish) && (
+              <Actions>
+                {onEdit && <Secondary onClick={() => onEdit(item)}>{t("edit", "Edit")}</Secondary>}
+                {onDelete && <Danger onClick={() => onDelete(item._id)}>{t("delete", "Delete")}</Danger>}
+                {onTogglePublish && (
+                  <Success onClick={() => onTogglePublish(item._id, item.isPublished)}>
+                    {item.isPublished ? t("library.unpublish", "Unpublish") : t("library.publish", "Publish")}
+                  </Success>
                 )}
-              </ul>
-            </FileSection>
-          )}
-
-          <InfoLine>
-            <strong>{t("library.author", "Author")}:</strong>{" "}
-            {item.author || t("unknown", "Unknown")}
-          </InfoLine>
-          <InfoLine>
-            <strong>{t("library.tags", "Tags")}:</strong>{" "}
-            {item.tags?.length ? item.tags.join(", ") : t("none", "None")}
-          </InfoLine>
-          <InfoLine>
-            <strong>{t("library.publish_status", "Published")}:</strong>{" "}
-            {item.isPublished ? t("yes", "Yes") : t("no", "No")}
-          </InfoLine>
-
-          {(onEdit || onDelete || onTogglePublish) && (
-            <ButtonGroup>
-              {onEdit && (
-                <ActionButton
-                  onClick={() => onEdit(item)}
-                  aria-label={t("edit", "Edit")}
-                >
-                  {t("edit", "Edit")}
-                </ActionButton>
-              )}
-              {onDelete && (
-                <DeleteButton
-                  onClick={() => onDelete(item._id)}
-                  aria-label={t("delete", "Delete")}
-                >
-                  {t("delete", "Delete")}
-                </DeleteButton>
-              )}
-              {onTogglePublish && (
-                <ToggleButton
-                  onClick={() => onTogglePublish(item._id, item.isPublished)}
-                  aria-label={
-                    item.isPublished
-                      ? t("library.unpublish", "Unpublish")
-                      : t("library.publish", "Publish")
-                  }
-                >
-                  {item.isPublished
-                    ? t("library.unpublish", "Unpublish")
-                    : t("library.publish", "Publish")}
-                </ToggleButton>
-              )}
-            </ButtonGroup>
-          )}
-        </LibraryCard>
-      ))}
-    </div>
+              </Actions>
+            )}
+          </Card>
+        );
+      })}
+    </ListWrap>
   );
 }
 
-// --- Styles ---
-const SkeletonWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+/* styled */
+const SkeletonWrap = styled.div`display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.md};`;
+const ListWrap = styled.div`display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.md};`;
+const Card = styled.article`
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};
+  padding:${({theme})=>theme.spacings.lg};
 `;
-
-const LibraryCard = styled.div`
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.md};
-  padding: 1rem;
-  margin-bottom: 1rem;
-  background: ${({ theme }) => theme.colors.cardBackground};
+const Head = styled.header`
+  display:flex; align-items:flex-start; justify-content:space-between;
+  gap:${({theme})=>theme.spacings.md}; margin-bottom:${({theme})=>theme.spacings.sm};
 `;
-
-const ImageGrid = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1rem;
-
-  img {
-    width: 150px;
-    border-radius: 4px;
-    object-fit: cover;
-  }
+const Title = styled.h2`
+  margin:0 0 ${({theme})=>theme.spacings.xs} 0;
+  color:${({theme})=>theme.colors.title}; font-size:${({theme})=>theme.fontSizes.lg};
 `;
-
-// Yeni eklenen dosya alanı
-const FileSection = styled.div`
-  margin-top: 1rem;
-  font-size: 0.96rem;
-  ul {
-    margin: 0.25rem 0 0 0.5rem;
-    padding: 0;
-    list-style: disc;
-  }
-  a {
-    color: ${({ theme }) => theme.colors.primary || "#007bff"};
-    text-decoration: underline;
-    font-weight: 500;
-    &:hover {
-      text-decoration: underline;
-      opacity: 0.85;
-    }
-  }
+const Subtitle = styled.p`margin:0; color:${({theme})=>theme.colors.textSecondary}; font-size:${({theme})=>theme.fontSizes.sm};`;
+const Badge = styled.span<{ $on:boolean }>`
+  align-self:flex-start; padding:6px 10px; border-radius:${({theme})=>theme.radii.pill};
+  font-size:${({theme})=>theme.fontSizes.xs}; font-weight:${({theme})=>theme.fontWeights.semiBold};
+  color:${({theme,$on})=>$on? theme.colors.textOnSuccess : theme.colors.textOnDanger};
+  background:${({theme,$on})=>$on? theme.colors.successBg : theme.colors.dangerBg};
+  border:${({theme})=>theme.borders.thin} ${({theme,$on})=>$on? theme.colors.success : theme.colors.danger};
 `;
-
-const InfoLine = styled.p`
-  margin-top: 0.5rem;
-  color: ${({ theme }) => theme.colors.text};
+const ImageGrid = styled.div`display:flex; flex-wrap:wrap; gap:${({theme})=>theme.spacings.sm}; margin-top:${({theme})=>theme.spacings.sm};`;
+const NoImage = styled.small`display:inline-block; margin-top:${({theme})=>theme.spacings.xs}; color:${({theme})=>theme.colors.textSecondary};`;
+const Files = styled.div`
+  margin-top:${({theme})=>theme.spacings.sm}; font-size:0.96rem;
+  ul{ margin:.25rem 0 0 .9rem; padding:0; list-style:disc; }
+  a{ color:${({theme})=>theme.colors.link}; text-decoration:underline; font-weight:500; }
 `;
-
-const Empty = styled.p`
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
+const Meta = styled.div`
+  display:grid; grid-template-columns:1fr; gap:6px;
+  margin-top:${({theme})=>theme.spacings.sm}; color:${({theme})=>theme.colors.text};
 `;
-
-const ErrorText = styled.p`
-  color: ${({ theme }) => theme.colors.danger};
-  font-weight: bold;
+const Actions = styled.div`
+  margin-top:${({theme})=>theme.spacings.md}; display:flex; flex-wrap:wrap; gap:${({theme})=>theme.spacings.xs};
+  justify-content:flex-end;
 `;
-
-const ButtonGroup = styled.div`
-  margin-top: 1rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+const Secondary = styled.button`
+  padding:8px 12px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  &:hover{ background:${({theme})=>theme.buttons.secondary.backgroundHover}; }
 `;
-
-const ActionButton = styled.button`
-  padding: 0.4rem 0.75rem;
-  background: ${({ theme }) => theme.colors.warning};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+const Danger = styled(Secondary)`
+  background:${({theme})=>theme.colors.dangerBg};
+  color:${({theme})=>theme.colors.danger};
+  border-color:${({theme})=>theme.colors.danger};
+  &:hover{ background:${({theme})=>theme.colors.dangerHover}; color:${({theme})=>theme.colors.textOnDanger}; }
 `;
-
-const DeleteButton = styled.button`
-  padding: 0.4rem 0.75rem;
-  background: ${({ theme }) => theme.colors.danger};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+const Success = styled(Secondary)`
+  background:${({theme})=>theme.colors.successBg};
+  color:${({theme})=>theme.colors.success};
+  border-color:${({theme})=>theme.colors.success};
+  &:hover{ background:${({theme})=>theme.colors.success}; color:${({theme})=>theme.colors.textOnSuccess}; }
 `;
-
-const ToggleButton = styled.button`
-  padding: 0.4rem 0.75rem;
-  background: ${({ theme }) => theme.colors.success};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-`;
+const Empty = styled.p`text-align:center; color:${({theme})=>theme.colors.textSecondary};`;
+const ErrorText = styled.p`color:${({theme})=>theme.colors.danger}; font-weight:${({theme})=>theme.fontWeights.semiBold};`;

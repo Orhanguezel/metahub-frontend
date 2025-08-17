@@ -9,7 +9,6 @@ interface CategoryState {
   error: string | null;
   successMessage: string | null;
 }
-
 const initialState: CategoryState = {
   categories: [],
   status: "idle",
@@ -18,77 +17,61 @@ const initialState: CategoryState = {
   successMessage: null,
 };
 
-// --- Fetch ---
-export const fetchLibraryCategories = createAsyncThunk(
+const pickData = (res: any) => res?.data?.data ?? res?.data ?? res;
+const pickMessage = (res: any) => res?.data?.message ?? res?.message ?? null;
+
+const BASE = "/librarycategory";
+
+// Fetch
+export const fetchLibraryCategories = createAsyncThunk<any, void, { rejectValue: string }>(
   "libraryCategory/fetchAll",
-  async (_, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      "/librarycategory",
-      null,
-      thunkAPI.rejectWithValue
-    );
-    return res.data;
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await apiCall("get", `${BASE}`, null, rejectWithValue);
+      return pickData(res);
+    } catch (e: any) {
+      return rejectWithValue(e?.message || "Failed to fetch categories.");
+    }
   }
 );
 
-// --- Create ---
-export const createLibraryCategory = createAsyncThunk(
+// Create
+export const createLibraryCategory = createAsyncThunk<any, { name: TranslatedField; description?: TranslatedField }, { rejectValue: string }>(
   "libraryCategory/create",
-  async (
-    data: {
-      name: TranslatedField;
-      description?: TranslatedField;
-    },
-    thunkAPI
-  ) => {
-    const res = await apiCall(
-      "post",
-      "/librarycategory",
-      data,
-      thunkAPI.rejectWithValue
-    );
-    return res.data;
+  async (data, { rejectWithValue }) => {
+    try {
+      const res = await apiCall("post", `${BASE}`, data, rejectWithValue);
+      return res;
+    } catch (e: any) {
+      return rejectWithValue(e?.message || "Failed to create category.");
+    }
   }
 );
 
-// --- Update ---
-export const updateLibraryCategory = createAsyncThunk(
-  "libraryCategory/update",
-  async (
-    {
-      id,
-      data,
-    }: {
-      id: string;
-      data: {
-        name: TranslatedField;
-        description?: TranslatedField;
-      };
-    },
-    thunkAPI
-  ) => {
-    const res = await apiCall(
-      "put",
-      `/librarycategory/${id}`,
-      data,
-      thunkAPI.rejectWithValue
-    );
-    return res.data;
+// Update
+export const updateLibraryCategory = createAsyncThunk<
+  any,
+  { id: string; data: { name: TranslatedField; description?: TranslatedField } },
+  { rejectValue: string }
+>("libraryCategory/update", async ({ id, data }, { rejectWithValue }) => {
+  try {
+    const res = await apiCall("put", `${BASE}/${id}`, data, rejectWithValue);
+    return res;
+  } catch (e: any) {
+    return rejectWithValue(e?.message || "Failed to update category.");
   }
-);
+});
 
-// --- Delete ---
-export const deleteLibraryCategory = createAsyncThunk(
+// Delete
+export const deleteLibraryCategory = createAsyncThunk<{ id: string; message?: string }, string, { rejectValue: string }>(
   "libraryCategory/delete",
-  async (id: string, thunkAPI) => {
-    const res = await apiCall(
-      "delete",
-      `/librarycategory/${id}`,
-      null,
-      thunkAPI.rejectWithValue
-    );
-    return { id, message: res.message };
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await apiCall("delete", `${BASE}/${id}`, null, rejectWithValue);
+      return { id, message: pickMessage(res) || "Deleted." };
+    } catch (e: any) {
+      return rejectWithValue(e?.message || "Failed to delete category.");
+    }
   }
 );
 
@@ -96,72 +79,66 @@ const libraryCategorySlice = createSlice({
   name: "libraryCategory",
   initialState,
   reducers: {
-    clearLibraryCategoryMessages: (state) => {
+    clearLibraryCategoryMessages(state) {
       state.error = null;
       state.successMessage = null;
       state.status = "idle";
     },
   },
   extraReducers: (builder) => {
-    // Universal pattern: Hem status hem loading birlikte kontrol!
-    const startLoading = (state: CategoryState) => {
-      state.loading = true;
-      state.status = "loading";
-      state.error = null;
+    const start = (s: CategoryState) => {
+      s.loading = true;
+      s.status = "loading";
+      s.error = null;
+      s.successMessage = null;
     };
-
-    const setError = (state: CategoryState, action: PayloadAction<any>) => {
-      state.loading = false;
-      state.status = "failed";
-      state.error = action.payload?.message || "Unknown error";
+    const fail = (s: CategoryState, a: PayloadAction<any>) => {
+      s.loading = false;
+      s.status = "failed";
+      s.error = (a.payload as any) || "Unknown error";
     };
 
     builder
-      // Fetch
-      .addCase(fetchLibraryCategories.pending, startLoading)
-      .addCase(fetchLibraryCategories.fulfilled, (state, action) => {
-        state.loading = false;
-        state.status = "succeeded";
-        state.categories = action.payload;
+      // fetch
+      .addCase(fetchLibraryCategories.pending, start)
+      .addCase(fetchLibraryCategories.fulfilled, (s, a) => {
+        s.loading = false;
+        s.status = "succeeded";
+        s.categories = a.payload;
       })
-      .addCase(fetchLibraryCategories.rejected, setError)
-      // Create
-      .addCase(createLibraryCategory.pending, startLoading)
-      .addCase(createLibraryCategory.fulfilled, (state, action) => {
-        state.loading = false;
-        state.status = "succeeded";
-        state.successMessage = action.payload?.message;
-        if (action.payload?.data?._id) {
-          state.categories.unshift(action.payload.data);
-        }
+      .addCase(fetchLibraryCategories.rejected, fail)
+      // create
+      .addCase(createLibraryCategory.pending, start)
+      .addCase(createLibraryCategory.fulfilled, (s, a) => {
+        s.loading = false;
+        s.status = "succeeded";
+        const item = pickData(a.payload);
+        const msg = pickMessage(a.payload);
+        if (item?._id) s.categories.unshift(item);
+        s.successMessage = msg || "Category created.";
       })
-      .addCase(createLibraryCategory.rejected, setError)
-      // Update
-      .addCase(updateLibraryCategory.pending, startLoading)
-      .addCase(updateLibraryCategory.fulfilled, (state, action) => {
-        state.loading = false;
-        state.status = "succeeded";
-        state.successMessage = action.payload?.message;
-        const updated = action.payload?.data || action.payload;
-        const index = state.categories.findIndex(
-          (cat) => cat._id === updated._id
-        );
-        if (index !== -1) {
-          state.categories[index] = updated;
-        }
+      .addCase(createLibraryCategory.rejected, fail)
+      // update
+      .addCase(updateLibraryCategory.pending, start)
+      .addCase(updateLibraryCategory.fulfilled, (s, a) => {
+        s.loading = false;
+        s.status = "succeeded";
+        const updated = pickData(a.payload);
+        const msg = pickMessage(a.payload);
+        const i = s.categories.findIndex((c) => c._id === updated?._id);
+        if (i !== -1) s.categories[i] = updated;
+        s.successMessage = msg || "Category updated.";
       })
-      .addCase(updateLibraryCategory.rejected, setError)
-      // Delete
-      .addCase(deleteLibraryCategory.pending, startLoading)
-      .addCase(deleteLibraryCategory.fulfilled, (state, action) => {
-        state.loading = false;
-        state.status = "succeeded";
-        state.successMessage = action.payload?.message;
-        state.categories = state.categories.filter(
-          (cat) => cat._id !== action.payload.id
-        );
+      .addCase(updateLibraryCategory.rejected, fail)
+      // delete
+      .addCase(deleteLibraryCategory.pending, start)
+      .addCase(deleteLibraryCategory.fulfilled, (s, a) => {
+        s.loading = false;
+        s.status = "succeeded";
+        s.categories = s.categories.filter((c) => c._id !== a.payload.id);
+        s.successMessage = a.payload.message || "Category deleted.";
       })
-      .addCase(deleteLibraryCategory.rejected, setError);
+      .addCase(deleteLibraryCategory.rejected, fail);
   },
 });
 

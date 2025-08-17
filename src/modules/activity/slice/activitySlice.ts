@@ -3,8 +3,8 @@ import apiCall from "@/lib/apiCall";
 import type { IActivity } from "@/modules/activity";
 
 interface ActivityState {
-  activity: IActivity[]; // Public (site) için
-  activityAdmin: IActivity[]; // Admin panel için
+  activity: IActivity[];
+  activityAdmin: IActivity[];
   selected: IActivity | null;
   status: "idle" | "loading" | "succeeded" | "failed";
   loading: boolean;
@@ -21,6 +21,8 @@ const initialState: ActivityState = {
   error: null,
   successMessage: null,
 };
+
+const BASE = "/activity";
 
 const extractErrorMessage = (payload: unknown): string => {
   if (typeof payload === "string") return payload;
@@ -39,12 +41,8 @@ const extractErrorMessage = (payload: unknown): string => {
 export const fetchActivity = createAsyncThunk<IActivity[]>(
   "activity/fetchAll",
   async (_, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      `/activity`,
-      null,
-      thunkAPI.rejectWithValue
-    );
+    const res = await apiCall("get", `${BASE}`, null, thunkAPI.rejectWithValue);
+    // response: { success, message, data }
     return res.data;
   }
 );
@@ -54,7 +52,7 @@ export const fetchAllActivityAdmin = createAsyncThunk<IActivity[]>(
   async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/activity/admin`,
+      `${BASE}/admin`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -67,14 +65,12 @@ export const createActivity = createAsyncThunk(
   async (formData: FormData, thunkAPI) => {
     const res = await apiCall(
       "post",
-      "/activity/admin",
+      `${BASE}/admin`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
-    return res.data;
+    // return: { success, message, data }
+    return { ...res, data: res.data };
   }
 );
 
@@ -83,14 +79,11 @@ export const updateActivity = createAsyncThunk(
   async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) => {
     const res = await apiCall(
       "put",
-      `/activity/admin/${id}`,
+      `${BASE}/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
-    return res.data;
+    return { ...res, data: res.data };
   }
 );
 
@@ -99,10 +92,11 @@ export const deleteActivity = createAsyncThunk(
   async (id: string, thunkAPI) => {
     const res = await apiCall(
       "delete",
-      `/activity/admin/${id}`,
+      `${BASE}/admin/${id}`,
       null,
       thunkAPI.rejectWithValue
     );
+    // return: { success, message }
     return { id, message: res.message };
   }
 );
@@ -117,14 +111,11 @@ export const togglePublishActivity = createAsyncThunk(
     formData.append("isPublished", String(isPublished));
     const res = await apiCall(
       "put",
-      `/activity/admin/${id}`,
+      `${BASE}/admin/${id}`,
       formData,
-      thunkAPI.rejectWithValue,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      thunkAPI.rejectWithValue
     );
-    return res.data;
+    return { ...res, data: res.data };
   }
 );
 
@@ -133,13 +124,14 @@ export const fetchActivityBySlug = createAsyncThunk(
   async (slug: string, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/activity/slug/${slug}`,
+      `${BASE}/slug/${slug}`,
       null,
       thunkAPI.rejectWithValue
     );
     return res.data;
   }
 );
+
 // --- Slice ---
 const activitySlice = createSlice({
   name: "activity",
@@ -192,8 +184,8 @@ const activitySlice = createSlice({
       .addCase(createActivity.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        state.activityAdmin.unshift(action.payload);
-        state.successMessage = "Activity successfully created.";
+        state.activityAdmin.unshift(action.payload.data);
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(createActivity.rejected, setError);
 
@@ -203,11 +195,11 @@ const activitySlice = createSlice({
       .addCase(updateActivity.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        const updated = action.payload;
+        const updated = action.payload.data;
         const i = state.activityAdmin.findIndex((a) => a._id === updated._id);
         if (i !== -1) state.activityAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = "Activity successfully updated.";
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(updateActivity.rejected, setError);
 
@@ -217,10 +209,8 @@ const activitySlice = createSlice({
       .addCase(deleteActivity.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        state.activityAdmin = state.activityAdmin.filter(
-          (a) => a._id !== action.payload.id
-        );
-        state.successMessage = action.payload.message;
+        state.activityAdmin = state.activityAdmin.filter((a) => a._id !== action.payload.id);
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(deleteActivity.rejected, setError);
 
@@ -230,11 +220,11 @@ const activitySlice = createSlice({
       .addCase(togglePublishActivity.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        const updated = action.payload;
+        const updated = action.payload.data;
         const i = state.activityAdmin.findIndex((a) => a._id === updated._id);
         if (i !== -1) state.activityAdmin[i] = updated;
         if (state.selected?._id === updated._id) state.selected = updated;
-        state.successMessage = "Publish status updated.";
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
       .addCase(togglePublishActivity.rejected, setError);
 
@@ -250,6 +240,5 @@ const activitySlice = createSlice({
   },
 });
 
-export const { clearActivityMessages, setSelectedActivity } =
-  activitySlice.actions;
+export const { clearActivityMessages, setSelectedActivity } = activitySlice.actions;
 export default activitySlice.reducer;

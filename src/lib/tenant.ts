@@ -1,7 +1,7 @@
 // src/lib/tenant.ts
 
 // 1️⃣ Tenant mapping tablon
-const DOMAIN_TENANT_MAP: Record<string, string> = {
+export const DOMAIN_TENANT_MAP: Record<string, string> = {
   "koenigsmassage.com": "anastasia",
   "www.koenigsmassage.com": "anastasia",
   "metahub.guezelwebdesign.com": "gzl",

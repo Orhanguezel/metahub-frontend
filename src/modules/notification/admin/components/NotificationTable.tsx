@@ -1,6 +1,7 @@
+// NotificationTable.tsx
 "use client";
 import styled from "styled-components";
-import type { INotification } from "@/modules/notification/types"; // v2 type
+import type { INotification } from "@/modules/notification/types";
 import type { SupportedLocale } from "@/types/common";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/notification/locales";
@@ -13,77 +14,57 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
-type UserRef =
-  | string
-  | { _id: string; name?: string; email?: string }
-  | null
-  | undefined;
-
-const isUserObj = (
-  u: UserRef
-): u is { _id: string; name?: string; email?: string } =>
+type UserRef = string | { _id: string; name?: string; email?: string } | null | undefined;
+const isUserObj = (u: UserRef): u is { _id: string; name?: string; email?: string } =>
   typeof u === "object" && u !== null && "_id" in u;
-
-const getUserEmail = (u: UserRef) =>
-  isUserObj(u) ? u.email || "-" : "-";
+const getUserEmail = (u: UserRef) => (isUserObj(u) ? u.email || "-" : "-");
 
 const pickLocalized = (
   obj: Partial<Record<SupportedLocale, string>> | undefined,
   lang: SupportedLocale
 ): string => {
   if (!obj) return "-";
-  return (
-    obj[lang] ??
-    obj.en ??
-    (Object.values(obj).find(
-      (v): v is string => typeof v === "string" && v.length > 0
-    ) ?? "-")
-  );
+  return obj[lang] ?? obj.en ?? (Object.values(obj).find((v): v is string => !!v) ?? "-");
 };
 
-const fmtDate = (d: string | Date, lang: SupportedLocale) =>
-  new Date(d).toLocaleString(lang);
+const fmtDate = (d: string | Date, lang: SupportedLocale) => new Date(d).toLocaleString(lang);
 
-// --- Notification Table ---
-export function NotificationTable({
-  notifications,
-  lang,
-  onMarkRead,
-  onDelete,
-}: Props) {
+export default function NotificationTable({ notifications, lang, onMarkRead, onDelete }: Props) {
   const { t } = useI18nNamespace("notification", translations);
 
   return (
-    <TableWrapper>
-      {/* Desktop table */}
-      <StyledTable>
-        <thead>
-          <tr>
-            <th>{t("type", "Tip")}</th>
-            <th>{t("userOrScope", "Kullanıcı/Alan")}</th>
-            <th>{t("email", "E-posta")}</th>
-            <th>{t("title", "Başlık")}</th>
-            <th>{t("message", "Mesaj")}</th>
-            <th>{t("date", "Tarih")}</th>
-            <th>{t("read", "Okundu")}</th>
-            <th>{t("actions", "Eylemler")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {notifications.map((n) => (
-            <NotificationRow
-              key={String(n._id)}
-              notification={n}
-              lang={lang}
-              onMarkRead={onMarkRead}
-              onDelete={onDelete}
-            />
-          ))}
-        </tbody>
-      </StyledTable>
+    <Wrap>
+      {/* Desktop Table */}
+      <TableWrap>
+        <Table>
+          <thead>
+            <tr>
+              <th>{t("type", "Tip")}</th>
+              <th>{t("userOrScope", "Kullanıcı/Alan")}</th>
+              <th>{t("email", "E-posta")}</th>
+              <th>{t("title", "Başlık")}</th>
+              <th>{t("message", "Mesaj")}</th>
+              <th>{t("date", "Tarih")}</th>
+              <th>{t("read", "Okundu")}</th>
+              <th aria-label={t("actions", "Eylemler")} />
+            </tr>
+          </thead>
+          <tbody>
+            {notifications.map((n) => (
+              <NotificationRow
+                key={String(n._id)}
+                notification={n}
+                lang={lang}
+                onMarkRead={onMarkRead}
+                onDelete={onDelete}
+              />
+            ))}
+          </tbody>
+        </Table>
+      </TableWrap>
 
-      {/* Mobile cards */}
-      <CardList>
+      {/* Mobile Cards */}
+      <CardsWrap>
         {notifications.map((n) => {
           const scope = isUserObj(n.user)
             ? n.user.name || n.user._id
@@ -95,184 +76,125 @@ export function NotificationTable({
             ? "allTenant"
             : "-";
 
-          return (
-            <Card key={String(n._id)}>
-              <Row>
-                <Field>{t("type", "Tip")}</Field>
-                <Value>{t(`type_${n.type}`, n.type)}</Value>
-              </Row>
-              <Row>
-                <Field>{t("userOrScope", "Kullanıcı/Alan")}</Field>
-                <Value>{scope}</Value>
-              </Row>
-              <Row>
-                <Field>{t("email", "E-posta")}</Field>
-                <Value>{getUserEmail(n.user)}</Value>
-              </Row>
-              <Row>
-                <Field>{t("title", "Başlık")}</Field>
-                <Value>{pickLocalized(n.title, lang)}</Value>
-              </Row>
-              <Row>
-                <Field>{t("message", "Mesaj")}</Field>
-                <Value>{pickLocalized(n.message, lang)}</Value>
-              </Row>
-              <Row>
-                <Field>{t("date", "Tarih")}</Field>
-                <Value>{fmtDate(n.createdAt as any, lang)}</Value>
-              </Row>
-              <Row>
-                <Field>{t("read", "Okundu")}</Field>
-                <Value>
-                  <Status $read={n.isRead}>
-                    {n.isRead ? t("read", "Okundu") : t("unread", "Okunmadı")}
-                  </Status>
-                </Value>
-              </Row>
-              <Row>
-                <Field>{t("actions", "Eylemler")}</Field>
-                <Value>
-                  {!n.isRead && (
-                    <ActionButton onClick={() => onMarkRead(String(n._id))}>
-                      {t("markRead", "Okundu Yap")}
-                    </ActionButton>
-                  )}
-                  <ActionButton danger onClick={() => onDelete(String(n._id))}>
-                    {t("delete", "Sil")}
-                  </ActionButton>
-                </Value>
-              </Row>
-            </Card>
-          );
-        })}
-      </CardList>
-    </TableWrapper>
+        return (
+          <Card key={String(n._id)}>
+            <CardHeader>
+              <HeaderLeft>
+                <TitleBox>
+                  <NameTitle>{t(`type_${n.type}`, n.type)}</NameTitle>
+                  <SmallText>{scope}</SmallText>
+                </TitleBox>
+              </HeaderLeft>
+              <Status $on={n.isRead}>
+                {n.isRead ? t("read", "Okundu") : t("unread", "Okunmadı")}
+              </Status>
+            </CardHeader>
+
+            <CardBody>
+              <SmallText><b>{t("email","E-posta")}:</b> {getUserEmail(n.user)}</SmallText>
+              <SmallText><b>{t("title","Başlık")}:</b> {pickLocalized(n.title, lang)}</SmallText>
+              <SmallText><b>{t("message","Mesaj")}:</b> {pickLocalized(n.message, lang)}</SmallText>
+              <SmallText><b>{t("date","Tarih")}:</b> {fmtDate(n.createdAt as any, lang)}</SmallText>
+            </CardBody>
+
+            <CardActions>
+              {!n.isRead && <Secondary onClick={() => onMarkRead(String(n._id))}>{t("markRead","Okundu Yap")}</Secondary>}
+              <Danger onClick={() => onDelete(String(n._id))}>{t("delete","Sil")}</Danger>
+            </CardActions>
+          </Card>
+        )})}
+      </CardsWrap>
+    </Wrap>
   );
 }
 
-// --- Styles ---
-const TableWrapper = styled.div`
-  width: 100%;
+/* styled — about/list paternine uyumlu */
+const Wrap = styled.div`width:100%;`;
+
+const TableWrap = styled.div`
+  width:100%;overflow-x:auto;border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};background:${({theme})=>theme.colors.cardBackground};
+  ${({theme})=>theme.media.mobile}{display:none;}
 `;
 
-const StyledTable = styled.table`
-  width: 100%;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  box-shadow: ${({ theme }) => theme.cards.shadow};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  overflow: hidden;
-  font-size: ${({ theme }) => theme.fontSizes.base};
-
-  th,
-  td {
-    padding: ${({ theme }) => theme.spacings.md} ${({ theme }) =>
-        theme.spacings.sm};
-    text-align: left;
-    background: inherit;
-    max-width: 240px;
-    word-break: break-word;
-    font-size: ${({ theme }) => theme.fontSizes.sm};
+const Table = styled.table`
+  width:100%;border-collapse:collapse;
+  thead th{
+    background:${({theme})=>theme.colors.tableHeader};
+    color:${({theme})=>theme.colors.textSecondary};
+    font-weight:${({theme})=>theme.fontWeights.semiBold};
+    font-size:${({theme})=>theme.fontSizes.sm};
+    padding:${({theme})=>theme.spacings.md};text-align:left;white-space:nowrap;
   }
-
-  th {
-    background-color: ${({ theme }) => theme.colors.tableHeader};
-    color: ${({ theme }) => theme.colors.textSecondary};
-    font-weight: ${({ theme }) => theme.fontWeights.bold};
-    border-bottom: 2px solid ${({ theme }) => theme.colors.primary};
+  td{
+    padding:${({theme})=>theme.spacings.md};
+    border-bottom:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
+    font-size:${({theme})=>theme.fontSizes.sm}; vertical-align:top;
+    max-width:360px; word-break:break-word;
   }
+  tbody tr:hover td{background:${({theme})=>theme.colors.hoverBackground};}
+`;
 
-  tr:last-child td {
-    border-bottom: none;
-  }
-
-  ${({ theme }) => theme.media.mobile} {
-    display: none;
+const CardsWrap = styled.div`
+  display:none;
+  ${({theme})=>theme.media.mobile}{
+    display:grid;grid-template-columns:1fr;gap:${({theme})=>theme.spacings.md};
   }
 `;
 
-const CardList = styled.div`
-  display: none;
-  ${({ theme }) => theme.media.mobile} {
-    display: flex;
-    flex-direction: column;
-    gap: ${({ theme }) => theme.spacings.lg};
-    margin-top: ${({ theme }) => theme.spacings.md};
+const Card = styled.article`
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
+  border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};
+  overflow:hidden;
+`;
+
+const CardHeader = styled.header`
+  background:${({theme})=>theme.colors.primaryLight};
+  color:${({theme})=>theme.colors.title};
+  padding:${({theme})=>theme.spacings.sm} ${({theme})=>theme.spacings.md};
+  display:flex;align-items:center;justify-content:space-between;gap:${({theme})=>theme.spacings.sm};
+  border-bottom:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
+`;
+const HeaderLeft = styled.div`display:flex;flex-direction:column;gap:2px;min-width:0;`;
+const TitleBox = styled.div`display:flex;flex-direction:column;min-width:0;`;
+const NameTitle = styled.span`
+  font-size:${({theme})=>theme.fontSizes.sm};color:${({theme})=>theme.colors.textSecondary};
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70vw;
+`;
+const SmallText = styled.span`font-size:${({theme})=>theme.fontSizes.xsmall};color:${({theme})=>theme.colors.textSecondary};`;
+
+const Status = styled.span<{ $on:boolean }>`
+  padding:.2em .6em;border-radius:${({theme})=>theme.radii.pill};
+  background:${({$on,theme})=>$on?theme.colors.successBg:theme.colors.inputBackgroundLight};
+  color:${({$on,theme})=>$on?theme.colors.success:theme.colors.textSecondary};
+  font-size:${({theme})=>theme.fontSizes.xsmall};
+`;
+
+const CardBody = styled.div`padding:${({theme})=>theme.spacings.md};display:flex;flex-direction:column;gap:6px;`;
+
+const CardActions = styled.div`
+  display:flex;gap:${({theme})=>theme.spacings.xs};justify-content:flex-end;
+  padding:${({theme})=>theme.spacings.sm} ${({theme})=>theme.spacings.md} ${({theme})=>theme.spacings.md};
+  border-top:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
+`;
+
+const Secondary = styled.button`
+  padding:8px 10px;border-radius:${({theme})=>theme.radii.md};cursor:pointer;
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  font-size:${({theme})=>theme.fontSizes.xsmall};
+`;
+
+const Danger = styled(Secondary)`
+  background:${({theme})=>theme.colors.dangerBg};
+  color:${({theme})=>theme.colors.danger};
+  border-color:${({theme})=>theme.colors.danger};
+  &:hover{
+    background:${({theme})=>theme.colors.dangerHover};
+    color:${({theme})=>theme.colors.textOnDanger};
+    border-color:${({theme})=>theme.colors.dangerHover};
   }
 `;
-
-const Card = styled.div`
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.cards.shadow};
-  padding: ${({ theme }) => theme.spacings.md};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacings.xs};
-`;
-
-const Row = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: ${({ theme }) => theme.spacings.xs};
-`;
-
-const Field = styled.span`
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  min-width: 100px;
-  flex: 1 1 40%;
-  font-size: ${({ theme }) => theme.fontSizes.xsmall};
-`;
-
-const Value = styled.span`
-  color: ${({ theme }) => theme.colors.text};
-  word-break: break-word;
-  text-align: right;
-  max-width: 55%;
-  flex: 1 1 60%;
-  font-size: ${({ theme }) => theme.fontSizes.xsmall};
-`;
-
-const Status = styled.span<{ $read?: boolean }>`
-  display: inline-block;
-  padding: 0.3em 1em;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  font-size: ${({ theme }) => theme.fontSizes.xsmall};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  background: ${({ $read, theme }) =>
-    $read ? theme.colors.successBg : theme.colors.warningBackground};
-  color: ${({ $read, theme }) =>
-    $read ? theme.colors.success : theme.colors.warning};
-  border: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.borderHighlight};
-  min-width: 70px;
-  text-align: center;
-`;
-
-const ActionButton = styled.button.withConfig({
-  shouldForwardProp: (prop) => prop !== "danger",
-})<{ danger?: boolean }>`
-  background: ${({ danger, theme }) =>
-    danger ? theme.colors.dangerBg : theme.colors.buttonBackground};
-  color: ${({ danger, theme }) =>
-    danger ? theme.colors.danger : theme.colors.buttonText};
-  border: ${({ theme }) => theme.borders.thin}
-    ${({ danger, theme }) =>
-      danger ? theme.colors.danger : theme.colors.buttonBorder};
-  padding: ${({ theme }) => theme.spacings.xs} ${({ theme }) => theme.spacings.sm};
-  border-radius: ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.xsmall};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  cursor: pointer;
-  margin-right: ${({ theme }) => theme.spacings.xs};
-  margin-bottom: 3px;
-  transition: background 0.18s, color 0.18s;
-  &:hover {
-    background: ${({ danger, theme }) =>
-      danger ? theme.colors.danger : theme.colors.primaryHover};
-    color: #fff;
-  }
-`;
-
-export default NotificationTable;
