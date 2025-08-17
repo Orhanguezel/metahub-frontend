@@ -1,104 +1,107 @@
+// src/modules/gallery/slice/gallerySlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import {
-  IGallery,
-  IGalleryCategory,
-  IGalleryStats,
-} from "@/modules/gallery/types";
+import type { IGallery } from "../types";
 
-// --- STATE ---
 interface GalleryState {
-  publicImages: IGallery[];      // Public, yayınlanan ve aktif
-  adminImages: IGallery[];       // Admin, tüm kayıtlar
-  categories: IGalleryCategory[];
-  stats: IGalleryStats | null;
-  loading: boolean;
+  gallery: IGallery[];       // public
+  galleryAdmin: IGallery[];  // admin
+  selected: IGallery | null;
   status: "idle" | "loading" | "succeeded" | "failed";
+  loading: boolean;
   error: string | null;
   successMessage: string | null;
 }
 
 const initialState: GalleryState = {
-  publicImages: [],
-  adminImages: [],
-  stats: null,
-  categories: [],
-  loading: false,
+  gallery: [],
+  galleryAdmin: [],
+  selected: null,
   status: "idle",
+  loading: false,
   error: null,
   successMessage: null,
 };
 
-// --- ASYNC THUNKS ---
+const BASE = "/gallery";
 
-// Admin: Tüm galerileri getir
-export const fetchGallery = createAsyncThunk(
-  "gallery/fetchGallery",
-  async (_, thunkAPI) =>
-    await apiCall("get", "/gallery", null, thunkAPI.rejectWithValue)
+const extractErrorMessage = (payload: unknown): string => {
+  if (typeof payload === "string") return payload;
+  if (payload && typeof payload === "object" && "message" in (payload as any)) {
+    const m = (payload as any).message;
+    if (typeof m === "string") return m;
+  }
+  return "An error occurred.";
+};
+
+/* ====================== THUNKS ====================== */
+
+// 🌐 Public: published list
+export const fetchGallery = createAsyncThunk<IGallery[]>(
+  "gallery/fetchPublished",
+  async (_, thunkAPI) => {
+    const res = await apiCall("get", `${BASE}/published`, null, thunkAPI.rejectWithValue);
+    // backend -> direkt dizi
+    return res as IGallery[];
+  }
 );
 
-// Public: Yalnızca yayınlanan ve aktif galerileri getir
-export const fetchPublishedGalleryItems = createAsyncThunk(
-  "gallery/fetchPublishedGalleryItems",
-  async (_, thunkAPI) =>
-    await apiCall("get", "/gallery/published", null, thunkAPI.rejectWithValue)
+// 🔐 Admin: all items
+export const fetchAllGalleryAdmin = createAsyncThunk<IGallery[]>(
+  "gallery/fetchAllAdmin",
+  async (_, thunkAPI) => {
+    const res = await apiCall("get", `${BASE}`, null, thunkAPI.rejectWithValue);
+    return res as IGallery[];
+  }
 );
 
-// Diğer işlemler değişmiyor...
-export const searchGalleryItems = createAsyncThunk(
-  "gallery/searchGalleryItems",
-  async (params: any, thunkAPI) =>
-    await apiCall("get", `/gallery/search`, params, thunkAPI.rejectWithValue)
+// ➕ Create (FormData)
+export const createGallery = createAsyncThunk<IGallery, FormData>(
+  "gallery/create",
+  async (formData, thunkAPI) => {
+    const res = await apiCall("post", `${BASE}/upload`, formData, thunkAPI.rejectWithValue);
+    return res as IGallery;
+  }
 );
 
-export const uploadGalleryItem = createAsyncThunk(
-  "gallery/uploadGalleryItem",
-  async (formData: FormData, thunkAPI) =>
-    await apiCall(
-      "post",
-      "/gallery/upload",
-      formData,
-      thunkAPI.rejectWithValue,
-      {
-        "Content-Type": "multipart/form-data",
-      }
-    )
+// 📝 Update (FormData)
+export const updateGallery = createAsyncThunk<IGallery, { id: string; formData: FormData }>(
+  "gallery/update",
+  async ({ id, formData }, thunkAPI) => {
+    const res = await apiCall("put", `${BASE}/${id}`, formData, thunkAPI.rejectWithValue);
+    return res as IGallery;
+  }
 );
 
-export const updateGalleryItem = createAsyncThunk(
-  "gallery/updateGalleryItem",
-  async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) =>
-    await apiCall("put", `/gallery/${id}`, formData, thunkAPI.rejectWithValue, {
-      "Content-Type": "multipart/form-data",
-    })
+// 🗑️ Delete
+export const deleteGallery = createAsyncThunk<string, string>(
+  "gallery/delete",
+  async (id, thunkAPI) => {
+    await apiCall("delete", `${BASE}/${id}`, null, thunkAPI.rejectWithValue);
+    return id;
+  }
 );
 
-// ... diğer admin işlemleri aynen devam eder ...
-
-export const getGalleryStats = createAsyncThunk(
-  "gallery/getGalleryStats",
-  async (_, thunkAPI) =>
-    await apiCall("get", `/gallery/stats`, null, thunkAPI.rejectWithValue)
+// 🌍 Toggle publish
+export const togglePublishGallery = createAsyncThunk<IGallery, { id: string }>(
+  "gallery/togglePublish",
+  async ({ id }, thunkAPI) => {
+    const res = await apiCall("patch", `${BASE}/${id}/toggle`, null, thunkAPI.rejectWithValue);
+    return res as IGallery;
+  }
 );
 
-export const fetchPublishedGalleryCategories = createAsyncThunk<
-  IGalleryCategory[],
-  void,
-  { rejectValue: string }
->(
-  "gallery/fetchPublishedGalleryCategories",
-  async (_, thunkAPI) =>
-    await apiCall("get", "/gallery/categories", null, thunkAPI.rejectWithValue)
+// 🔎 Get by id (public/admin)
+export const fetchGalleryById = createAsyncThunk<IGallery, string>(
+  "gallery/fetchById",
+  async (id, thunkAPI) => {
+    const res = await apiCall("get", `${BASE}/${id}`, null, thunkAPI.rejectWithValue);
+    return res as IGallery;
+  }
 );
 
-export const deleteGalleryItem = createAsyncThunk(
-  "gallery/deleteGalleryItem",
-  async (id: string, thunkAPI) =>
-    await apiCall("delete", `/gallery/${id}`, null, thunkAPI.rejectWithValue)
-);
+/* ====================== SLICE ====================== */
 
-// --- SLICE ---
 const gallerySlice = createSlice({
   name: "gallery",
   initialState,
@@ -107,100 +110,106 @@ const gallerySlice = createSlice({
       state.error = null;
       state.successMessage = null;
     },
+    setSelectedGallery: (state, action: PayloadAction<IGallery | null>) => {
+      state.selected = action.payload;
+    },
   },
   extraReducers: (builder) => {
-    const loadingReducer = (state: GalleryState) => {
+    const setLoading = (state: GalleryState) => {
       state.loading = true;
+      state.status = "loading";
       state.error = null;
+      state.successMessage = null;
     };
-    const errorReducer = (state: GalleryState, action: PayloadAction<any>) => {
+    const setError = (state: GalleryState, action: PayloadAction<any>) => {
       state.loading = false;
-      state.error =
-        action.payload?.message ||
-        action.payload ||
-        "An unexpected error occurred.";
+      state.status = "failed";
+      state.error = extractErrorMessage(action.payload);
     };
 
-    // --- PUBLIC GALLERY ---
+    // 🌐 Public list
     builder
-      .addCase(fetchPublishedGalleryItems.pending, loadingReducer)
-      .addCase(fetchPublishedGalleryItems.fulfilled, (state, action) => {
-        state.loading = false;
-        state.publicImages = action.payload?.data || [];
-      })
-      .addCase(fetchPublishedGalleryItems.rejected, errorReducer);
-
-    // --- ADMIN GALLERY ---
-    builder
-      .addCase(fetchGallery.pending, loadingReducer)
+      .addCase(fetchGallery.pending, setLoading)
       .addCase(fetchGallery.fulfilled, (state, action) => {
         state.loading = false;
-        state.adminImages = action.payload?.data || [];
+        state.status = "succeeded";
+        state.gallery = action.payload;
       })
-      .addCase(fetchGallery.rejected, errorReducer);
+      .addCase(fetchGallery.rejected, setError);
 
-    // ... Diğer işlemler aşağıda aynı şekilde devam eder ...
+    // 🔐 Admin list
     builder
-      .addCase(uploadGalleryItem.pending, loadingReducer)
-      .addCase(uploadGalleryItem.fulfilled, (state, action) => {
+      .addCase(fetchAllGalleryAdmin.pending, setLoading)
+      .addCase(fetchAllGalleryAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "upload.success";
-        state.adminImages.unshift(action.payload.data);
+        state.status = "succeeded";
+        state.galleryAdmin = action.payload;
       })
-      .addCase(uploadGalleryItem.rejected, errorReducer);
+      .addCase(fetchAllGalleryAdmin.rejected, setError);
 
+    // ➕ Create
     builder
-      .addCase(updateGalleryItem.pending, loadingReducer)
-      .addCase(updateGalleryItem.fulfilled, (state, action) => {
+      .addCase(createGallery.pending, setLoading)
+      .addCase(createGallery.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "update.success";
-        const updated = action.payload.data;
-        const index = state.adminImages.findIndex(
-          (item) => item._id === updated._id
-        );
-        if (index !== -1) {
-          state.adminImages[index] = updated;
-        }
+        state.status = "succeeded";
+        state.galleryAdmin.unshift(action.payload);
+        state.successMessage = "Gallery item created.";
       })
-      .addCase(updateGalleryItem.rejected, errorReducer)
-      .addCase(deleteGalleryItem.pending, loadingReducer)
-      .addCase(deleteGalleryItem.fulfilled, (state, action) => {
-        state.loading = false;
-        state.successMessage = "delete.success";
-        const deletedId = action.meta.arg; // Thunk argümanı olarak gelen ID
-        state.adminImages = state.adminImages.filter(
-          (item) => item._id !== deletedId
-        );
-      })
-      .addCase(deleteGalleryItem.rejected, errorReducer);
+      .addCase(createGallery.rejected, setError);
 
-    // --- DİĞER ---
+    // 📝 Update
     builder
-      .addCase(searchGalleryItems.pending, loadingReducer)
-      .addCase(searchGalleryItems.fulfilled, (state, action) => {
+      .addCase(updateGallery.pending, setLoading)
+      .addCase(updateGallery.fulfilled, (state, action) => {
         state.loading = false;
-        // Sonucu adminImages'a veya yeni bir alana yazabilirsin. Örneğin:
-        state.adminImages = action.payload.data;
+        state.status = "succeeded";
+        const updated = action.payload;
+        const i = state.galleryAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.galleryAdmin[i] = updated;
+        if (state.selected?._id === updated._id) state.selected = updated;
+        state.successMessage = "Gallery item updated.";
       })
-      .addCase(searchGalleryItems.rejected, errorReducer);
+      .addCase(updateGallery.rejected, setError);
 
+    // 🗑️ Delete
     builder
-      .addCase(getGalleryStats.pending, loadingReducer)
-      .addCase(getGalleryStats.fulfilled, (state, action) => {
+      .addCase(deleteGallery.pending, setLoading)
+      .addCase(deleteGallery.fulfilled, (state, action) => {
         state.loading = false;
-        state.stats = action.payload.data || {};
+        state.status = "succeeded";
+        const deletedId = action.payload;
+        state.galleryAdmin = state.galleryAdmin.filter((a) => a._id !== deletedId);
+        if (state.selected?._id === deletedId) state.selected = null;
+        state.successMessage = "Gallery item deleted.";
       })
-      .addCase(getGalleryStats.rejected, errorReducer);
+      .addCase(deleteGallery.rejected, setError);
 
+    // 🌍 Toggle publish
     builder
-      .addCase(fetchPublishedGalleryCategories.pending, loadingReducer)
-      .addCase(fetchPublishedGalleryCategories.fulfilled, (state, action) => {
+      .addCase(togglePublishGallery.pending, setLoading)
+      .addCase(togglePublishGallery.fulfilled, (state, action) => {
         state.loading = false;
-        state.categories = action.payload || [];
+        state.status = "succeeded";
+        const updated = action.payload;
+        const i = state.galleryAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.galleryAdmin[i] = updated;
+        if (state.selected?._id === updated._id) state.selected = updated;
+        state.successMessage = updated.isPublished ? "Published." : "Unpublished.";
       })
-      .addCase(fetchPublishedGalleryCategories.rejected, errorReducer);
+      .addCase(togglePublishGallery.rejected, setError);
+
+    // 🔎 Get by id
+    builder
+      .addCase(fetchGalleryById.pending, setLoading)
+      .addCase(fetchGalleryById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = "succeeded";
+        state.selected = action.payload;
+      })
+      .addCase(fetchGalleryById.rejected, setError);
   },
 });
 
-export const { clearGalleryMessages } = gallerySlice.actions;
+export const { clearGalleryMessages, setSelectedGallery } = gallerySlice.actions;
 export default gallerySlice.reducer;

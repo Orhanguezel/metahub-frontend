@@ -4,93 +4,114 @@ import Link from "next/link";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/home";
-import { SupportedLocale } from "@/types/common";
+import type { SupportedLocale } from "@/types/common";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useAppSelector } from "@/store/hooks";
-import type { IGallery, IGalleryCategory } from "@/modules/gallery/types";
-import Modal from "./Modal"; // Kendi Modal bileşenin olacak
+import type { IGallery, IGalleryImage, GalleryCategory } from "@/modules/gallery/types";
+import Modal from "./Modal";
 
 const HERO_CATEGORY_SLUG = "carousel";
+
+type Slide = {
+  id: string;
+  image: Pick<IGalleryImage, "url" | "thumbnail" | "webp"> | null;
+  title: IGallery["title"];
+  summary: IGallery["summary"];
+  order: number;
+  categoryId: string;
+};
 
 const HeroSection = () => {
   const { i18n, t } = useI18nNamespace("home", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  const { publicImages } = useAppSelector((state) => state.gallery);
-  const galleryCategories = useAppSelector((state) => state.galleryCategory.categories);
+  // ✅ yeni slice alanları
+  const { gallery } = useAppSelector((state) => state.gallery);
+  const galleryCategories = useAppSelector(
+    (state) => state.galleryCategory.categories
+  ) as GalleryCategory[];
 
+  // hedef kategori id (slug: "carousel")
   const selectedCategoryId = useMemo(() => {
-    const cat = galleryCategories.find((c: IGalleryCategory) => c.slug === HERO_CATEGORY_SLUG);
+    const cat = galleryCategories.find((c) => c.slug === HERO_CATEGORY_SLUG);
     return cat?._id || "";
   }, [galleryCategories]);
 
-  const flatItems = useMemo(() => {
-    if (!selectedCategoryId || !Array.isArray(publicImages)) return [];
-    const filteredGalleries = publicImages.filter((item: IGallery) =>
-      typeof item.category === "string"
-        ? item.category === selectedCategoryId
-        : item.category?._id === selectedCategoryId
+  // galeri -> slide dönüştürme
+  const slides = useMemo<Slide[]>(() => {
+    if (!selectedCategoryId || !Array.isArray(gallery)) return [];
+    const filtered = gallery.filter((g: IGallery) =>
+      typeof g.category === "string"
+        ? g.category === selectedCategoryId
+        : g.category?._id === selectedCategoryId
     );
-    const allImages: any[] = [];
-    filteredGalleries.forEach((gallery) => {
-      (gallery.images || []).forEach((img) => {
-        allImages.push({
-          ...img,
-          _galleryId: gallery._id,
-        });
-      });
-    });
-    allImages.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    return allImages;
-  }, [publicImages, selectedCategoryId]);
+
+    return filtered
+      .map((g) => {
+        const primary = g.images?.[0];
+        return {
+          id: g._id,
+          image: primary ? { url: primary.url, thumbnail: primary.thumbnail, webp: primary.webp } : null,
+          title: g.title,
+          summary: g.summary,
+          order: Number.isFinite(g.order) ? g.order : 0,
+          categoryId: typeof g.category === "string" ? g.category : g.category?._id || "",
+        };
+      })
+      .sort((a, b) => a.order - b.order);
+  }, [gallery, selectedCategoryId]);
 
   const [current, setCurrent] = useState(0);
   const [isModalOpen, setModalOpen] = useState(false);
 
-  const enableSlider = flatItems.length > 1;
-  const currentHero = flatItems[current];
+  const enableSlider = slides.length > 1;
+  const currentHero = slides[current];
 
   const backgroundImage =
-    currentHero?.webp || currentHero?.url || currentHero?.thumbnail || "/placeholder.jpg";
+    currentHero?.image?.webp ||
+    currentHero?.image?.url ||
+    currentHero?.image?.thumbnail ||
+    "/placeholder.jpg";
 
   const title =
-    currentHero?.name?.[lang]?.trim() ||
+    currentHero?.title?.[lang]?.trim() ||
+    currentHero?.title?.en?.trim() ||
     t("hero1.heroTitle", "Königs Masaj");
 
   const description =
-    currentHero?.description?.[lang]?.trim() ||
+    currentHero?.summary?.[lang]?.trim() ||
+    currentHero?.summary?.en?.trim() ||
     t("hero1.heroSubtitle", "Doğallığın dokunuşuyla sağlığınızı şımartın");
 
-  // Slide/Language değişince sıfırla
+  // Slide/Language değişince reset
   useEffect(() => {
     setCurrent(0);
-  }, [lang, flatItems.length]);
+  }, [lang, slides.length]);
 
   // Otomatik kaydırıcı
   useEffect(() => {
     if (!enableSlider) return;
     const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % flatItems.length);
+      setCurrent((prev) => (prev + 1) % slides.length);
     }, 7000);
     return () => clearInterval(timer);
-  }, [enableSlider, flatItems.length]);
+  }, [enableSlider, slides.length]);
 
-  // --- MODAL Navigation ---
+  // --- MODAL ---
   const handleModalOpen = () => setModalOpen(true);
   const handleModalClose = () => setModalOpen(false);
 
-  // Klavye navigation
+  // Klavye navigation (modal açıkken)
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!isModalOpen) return;
       if (e.key === "Escape") handleModalClose();
-      if (e.key === "ArrowRight") setCurrent((prev) => (prev + 1) % flatItems.length);
-      if (e.key === "ArrowLeft")
-        setCurrent((prev) => (prev - 1 + flatItems.length) % flatItems.length);
+      if (e.key === "ArrowRight") setCurrent((prev) => (prev + 1) % slides.length);
+      if (e.key === "ArrowLeft") setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
     },
-    [isModalOpen, flatItems.length]
+    [isModalOpen, slides.length]
   );
 
   useEffect(() => {
@@ -98,6 +119,20 @@ const HeroSection = () => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isModalOpen, handleKeyDown]);
+
+  if (!slides.length) {
+    return (
+      <Hero>
+        <SliderContent>
+          <HeroCard>
+            <h1>
+              <GradientTitle>{t("noItemsFound", "No hero found.")}</GradientTitle>
+            </h1>
+          </HeroCard>
+        </SliderContent>
+      </Hero>
+    );
+  }
 
   return (
     <Hero>
@@ -127,7 +162,9 @@ const HeroSection = () => {
           </motion.div>
         </BackgroundImageWrapper>
       </AnimatePresence>
+
       <Overlay />
+
       <SliderContent>
         <HeroCard
           as={motion.div}
@@ -144,6 +181,7 @@ const HeroSection = () => {
           >
             <GradientTitle>{title}</GradientTitle>
           </motion.h1>
+
           <motion.p
             key={description}
             initial={{ opacity: 0, y: 16 }}
@@ -152,14 +190,16 @@ const HeroSection = () => {
           >
             <HeroDesc>{description}</HeroDesc>
           </motion.p>
+
           <Link href="/booking">
             <CTAButton as="span">
               {t("hero.bookAppointment", "Randevu Al")}
             </CTAButton>
           </Link>
         </HeroCard>
+
         <Dots>
-          {flatItems.map((_, idx) => (
+          {slides.map((_, idx) => (
             <Dot
               key={idx}
               $active={idx === current}
@@ -172,33 +212,37 @@ const HeroSection = () => {
       </SliderContent>
 
       {/* MODAL */}
-  <Modal
-    isOpen={isModalOpen}
-    onClose={handleModalClose}
-    onNext={enableSlider ? () => setCurrent((prev) => (prev + 1) % flatItems.length) : undefined}
-    onPrev={enableSlider ? () => setCurrent((prev) => (prev - 1 + flatItems.length) % flatItems.length) : undefined}
-  >
-    <ModalContent>
-      <ModalImage
-        src={backgroundImage}
-        alt={title}
-        fill
-        priority
-        style={{ objectFit: "contain", background: "#fff" }}
-      />
-      <ModalCaption>
-        <h3>{title}</h3>
-        <p>{description}</p>
-      </ModalCaption>
-    </ModalContent>
-  </Modal>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onNext={
+          enableSlider ? () => setCurrent((prev) => (prev + 1) % slides.length) : undefined
+        }
+        onPrev={
+          enableSlider ? () => setCurrent((prev) => (prev - 1 + slides.length) % slides.length) : undefined
+        }
+      >
+        <ModalContent>
+          <ModalImage
+            src={backgroundImage}
+            alt={title}
+            fill
+            priority
+            style={{ objectFit: "contain", background: "#fff" }}
+          />
+          <ModalCaption>
+            <h3>{title}</h3>
+            <p>{description}</p>
+          </ModalCaption>
+        </ModalContent>
+      </Modal>
     </Hero>
   );
 };
 
 export default HeroSection;
 
-// ----------- STYLED COMPONENTS --------------
+/* ---------------- STYLED COMPONENTS ---------------- */
 
 const Hero = styled.section`
   position: relative;
@@ -222,7 +266,6 @@ const Hero = styled.section`
     padding-bottom: ${({ theme }) => theme.spacings.md};
   }
 `;
-
 
 const BackgroundImageWrapper = styled.div`
   position: absolute;
@@ -257,23 +300,14 @@ const Overlay = styled.div`
 
 const SliderContent = styled.div`
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  left: 0; right: 0; bottom: 0;
   z-index: 2;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: flex; flex-direction: column; align-items: center;
   color: ${({ theme }) => theme.colors.whiteColor};
   padding-bottom: ${({ theme }) => theme.spacings.xxl};
-
-  @media (max-width: 900px) {
-    padding-bottom: ${({ theme }) => theme.spacings.lg};
-  }
-  @media (max-width: 600px) {
-    padding-bottom: ${({ theme }) => theme.spacings.md};
-  }
+  @media (max-width: 900px) { padding-bottom: ${({ theme }) => theme.spacings.lg}; }
+  @media (max-width: 600px) { padding-bottom: ${({ theme }) => theme.spacings.md}; }
 `;
 
 const HeroCard = styled.div`
@@ -281,48 +315,34 @@ const HeroCard = styled.div`
   border-radius: ${({ theme }) => theme.radii.xl};
   padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.xxl};
   box-shadow: 0 8px 40px 0 rgba(229,84,156,0.10), ${({ theme }) => theme.shadows.lg};
-  max-width: 620px;
-  width: 100%;
+  max-width: 620px; width: 100%;
   margin-bottom: ${({ theme }) => theme.spacings.lg};
-  text-align: center;
-  color: ${({ theme }) => theme.colors.whiteColor};
+  text-align: center; color: ${({ theme }) => theme.colors.whiteColor};
   backdrop-filter: blur(8px) saturate(110%) brightness(1.04);
   border: 2.5px solid ${({ theme }) => theme.colors.primaryLight};
 
-  h1 {
-    font-family: ${({ theme }) => theme.fonts.heading};
-    font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-    font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-    margin: 0 0 ${({ theme }) => theme.spacings.sm} 0;
-    letter-spacing: 0.01em;
-    line-height: 1.13;
-    word-break: break-word;
-    overflow-wrap: anywhere;
-    hyphens: auto;
+  h1{
+    font-family:${({ theme }) => theme.fonts.heading};
+    font-size:${({ theme }) => theme.fontSizes["2xl"]};
+    font-weight:${({ theme }) => theme.fontWeights.extraBold};
+    margin:0 0 ${({ theme }) => theme.spacings.sm} 0;
+    letter-spacing:0.01em; line-height:1.13;
+    word-break:break-word; overflow-wrap:anywhere; hyphens:auto;
   }
-
-  p {
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-    color: ${({ theme }) => theme.colors.textLight};
-    margin: 0 0 ${({ theme }) => theme.spacings.lg} 0;
-    font-family: ${({ theme }) => theme.fonts.body};
-    line-height: 1.5;
-    text-shadow: 0 2px 12px rgba(229,84,156,0.08);
-    word-break: break-word;
-    overflow-wrap: anywhere;
-    hyphens: auto;
+  p{
+    font-size:${({ theme }) => theme.fontSizes.lg};
+    color:${({ theme }) => theme.colors.textLight};
+    margin:0 0 ${({ theme }) => theme.spacings.lg} 0;
+    font-family:${({ theme }) => theme.fonts.body};
+    line-height:1.5;
+    text-shadow:0 2px 12px rgba(229,84,156,0.08);
+    word-break:break-word; overflow-wrap:anywhere; hyphens:auto;
   }
-
-  @media (max-width: 900px) {
-    padding: ${({ theme }) => theme.spacings.md};
-    max-width: 98vw;
-    h1 {
-      font-size: ${({ theme }) => theme.fontSizes.xl};
-    }
-    p {
-      font-size: ${({ theme }) => theme.fontSizes.md};
-      padding: 0 5vw;
-    }
+  @media (max-width: 900px){
+    padding:${({ theme }) => theme.spacings.md};
+    max-width:98vw;
+    h1{ font-size:${({ theme }) => theme.fontSizes.xl}; }
+    p{ font-size:${({ theme }) => theme.fontSizes.md}; padding:0 5vw; }
   }
 `;
 
@@ -338,19 +358,14 @@ const HeroDesc = styled.span`
   color: ${({ theme }) => theme.colors.whiteColor};
   font-weight: 500;
   text-shadow: 0 2px 14px #fbeaf0cc, 0 2px 16px #e5549c13;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-  hyphens: auto;
+  word-break: break-word; overflow-wrap: anywhere; hyphens: auto;
   display: block;
   font-size: ${({ theme }) => theme.fontSizes.lg};
   @media (max-width: 900px) {
     font-size: ${({ theme }) => theme.fontSizes.md};
-    padding: 0 5vw;
-    max-width: 96vw;
-    margin: 0 auto;
+    padding: 0 5vw; max-width: 96vw; margin: 0 auto;
   }
 `;
-
 
 const CTAButton = styled.button`
   padding: ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.xl};
@@ -425,51 +440,32 @@ const Dot = styled.button<{ $active: boolean }>`
   }
 `;
 
-// --- MODAL Styles ---
+/* Modal styles */
 const ModalContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 880px;
-  width: 92vw;
-  margin: 0 auto;
-  padding: 2.2rem;
-  background: #fff;
-  border-radius: ${({ theme }) => theme.radii.xl};
+  display: flex; flex-direction: column; align-items: center;
+  max-width: 880px; width: 92vw; margin: 0 auto; padding: 2.2rem;
+  background: #fff; border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.xl};
 `;
 
 const ModalImage = styled(Image)`
-  width: 100%;
-  height: 480px;
-  object-fit: contain;
-  border-radius: ${({ theme }) => theme.radii.lg};
-  background: #fff;
+  width: 100%; height: 480px; object-fit: contain;
+  border-radius: ${({ theme }) => theme.radii.lg}; background: #fff;
   @media (max-width: 600px) {
-    height: 200px;
-    min-height: 120px;
-    object-fit: contain;
+    height: 200px; min-height: 120px; object-fit: contain;
   }
 `;
 
 const ModalCaption = styled.div`
-  margin-top: 1.3em;
-  text-align: center;
-  h3 {
-    font-size: 1.38em;
-    color: ${({ theme }) => theme.colors.primary};
+  margin-top: 1.3em; text-align: center;
+  h3{
+    font-size: 1.38em; color: ${({ theme }) => theme.colors.primary};
     font-weight: ${({ theme }) => theme.fontWeights.bold};
-    margin-bottom: 0.2em;
-    word-break: break-word;
-    overflow-wrap: anywhere;
+    margin-bottom: 0.2em; word-break: break-word; overflow-wrap: anywhere;
   }
-  p {
+  p{
     color: ${({ theme }) => theme.colors.textSecondary};
-    font-size: 1.07em;
-    font-weight: 400;
-    margin: 0 auto;
-    max-width: 420px;
-    word-break: break-word;
-    overflow-wrap: anywhere;
+    font-size: 1.07em; font-weight: 400; margin: 0 auto; max-width: 420px;
+    word-break: break-word; overflow-wrap: anywhere;
   }
 `;

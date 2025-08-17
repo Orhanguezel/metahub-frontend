@@ -1,121 +1,115 @@
-import React, { useState, useCallback } from "react";
-import { useAppDispatch } from "@/store/hooks";
-import { uploadGalleryItem } from "@/modules/gallery/slice/gallerySlice";
+// src/modules/gallery/components/GalleryMultiForm.tsx
+"use client";
+
+import React, { useState, useMemo } from "react";
 import styled, { css } from "styled-components";
+import { useAppDispatch } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import { translations } from "@/modules/gallery";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import { toast } from "react-toastify";
-import { GalleryUploadWithPreview } from "@/shared";
-import type { IGalleryCategory,IGalleryItem } from "@/modules/gallery/types";
+import ImageUploader, { type UploadImage } from "@/shared/ImageUploader";
+import { createGallery } from "@/modules/gallery/slice/gallerySlice";
+import type { GalleryCategory } from "@/modules/gallery/types";
 
 interface GalleryMultiFormProps {
-  categories: IGalleryCategory[];
+  categories: GalleryCategory[];
   onUpdate?: () => void;
 }
 
-const initialName = SUPPORTED_LOCALES.reduce(
+const emptyTL = SUPPORTED_LOCALES.reduce(
   (acc, lng) => ({ ...acc, [lng]: "" }),
   {} as Record<SupportedLocale, string>
 );
 
-const initialDescription = SUPPORTED_LOCALES.reduce(
-  (acc, lng) => ({ ...acc, [lng]: "" }),
-  {} as Record<SupportedLocale, string>
-);
-
-const GalleryMultiForm: React.FC<GalleryMultiFormProps> = ({
-  categories,
-  onUpdate,
-}) => {
+const GalleryMultiForm: React.FC<GalleryMultiFormProps> = ({ categories, onUpdate }) => {
   const dispatch = useAppDispatch();
   const { i18n, t } = useI18nNamespace("gallery", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  // Form state
+  // Form state (Yeni model)
   const [category, setCategory] = useState("");
   const [type, setType] = useState<"image" | "video">("image");
-  const [name, setName] = useState(initialName);
-  const [description, setDescription] = useState(initialDescription);
-  const [order, setOrder] = useState("1");
-  const [isLoading, setIsLoading] = useState(false);
-  const [existingImages, setExistingImages] = useState<IGalleryItem[]>([]);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [title, setTitle] = useState<Record<SupportedLocale, string>>(emptyTL);
+  const [summary, setSummary] = useState<Record<SupportedLocale, string>>(emptyTL);
+  const [content, setContent] = useState<Record<SupportedLocale, string>>(emptyTL);
+  const [order, setOrder] = useState("0");
+  const [tags, setTags] = useState<string>("");
 
-  const selectedCategory = categories.find((cat) => cat._id === category);
-  const isSingleImageCategory =
-    selectedCategory && (selectedCategory.slug === "hero" || selectedCategory.slug === "cover");
+  // Uploader state
+  const [existing, setExisting] = useState<UploadImage[]>([]);
+  const [removedExisting, setRemovedExisting] = useState<UploadImage[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
 
-  // Çoklu dosya seçimini handle eden method
-  const handleImagesChange = useCallback(
-  (files: File[], _removed: string[], current: IGalleryItem[]) => {
-    setSelectedFiles(files);
-    setExistingImages(current);
-  },
-  []
-);
+  const selectedCategory = useMemo(
+    () => categories.find((c) => c._id === category),
+    [categories, category]
+  );
+  const isSingleImageCategory = selectedCategory
+    ? ["hero", "cover"].includes(selectedCategory.slug)
+    : false;
 
-  // Submit logic
+  const requiredOk = category && type && (title[lang] || "").trim();
+
+  const normalizeTL = (obj: Record<SupportedLocale, string>) => {
+    const copy = { ...obj };
+    const first = Object.values(copy).find((v) => (v || "").trim()) || "";
+    SUPPORTED_LOCALES.forEach((l) => {
+      if (!copy[l]) copy[l] = first;
+    });
+    return copy;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!category || !type || !name[lang]?.trim() || selectedFiles.length === 0) {
-      toast.error(t("errors.requiredFields") || "Please fill required fields and select at least one image.");
+    if (!requiredOk || files.length === 0) {
+      toast.error(
+        t("errors.requiredFields", "Please fill required fields and add at least one image.")
+      );
       return;
     }
 
-    // Tüm dilleri otomatik doldur
-    const filledName = { ...name };
-    SUPPORTED_LOCALES.forEach((l) => {
-      if (!filledName[l]) filledName[l] = name[lang];
-    });
+    const fd = new FormData();
+    fd.append("category", category);
+    fd.append("type", type);
+    fd.append("order", order);
 
-    const filledDescription = { ...description };
-    SUPPORTED_LOCALES.forEach((l) => {
-      if (!filledDescription[l]) filledDescription[l] = description[lang] || "";
-    });
+    fd.append("title", JSON.stringify(normalizeTL(title)));
+    fd.append("summary", JSON.stringify(normalizeTL(summary)));
+    fd.append("content", JSON.stringify(normalizeTL(content)));
 
-    const data = new FormData();
-data.append("category", category);
-data.append("type", type);
-data.append("order", order);
-data.append("name", JSON.stringify(filledName));
-data.append("description", JSON.stringify(filledDescription));
-selectedFiles.forEach((file) => data.append("images", file));
-if (existingImages.length) {
-  data.append("existingImages", JSON.stringify(existingImages));
-}
+    // tags backend’de flexible: CSV veya array kabul ediyor
+    if (tags.trim()) fd.append("tags", tags);
+
+    files.forEach((file) => fd.append("images", file));
 
     try {
-      setIsLoading(true);
-      await dispatch(uploadGalleryItem(data)).unwrap();
-      toast.success(t("upload.success"));
+      await dispatch(createGallery(fd)).unwrap();
+      toast.success(t("upload.success", "Uploaded successfully."));
+      // reset
       setCategory("");
       setType("image");
-      setName(initialName);
-      setDescription(initialDescription);
-      setOrder("1");
-      setSelectedFiles([]);
-      setExistingImages([]);
+      setTitle(emptyTL);
+      setSummary(emptyTL);
+      setContent(emptyTL);
+      setOrder("0");
+      setTags("");
+      setFiles([]);
+      setExisting([]);
+      setRemovedExisting([]);
       onUpdate?.();
-    } catch (err) {
-      toast.error((err as any)?.message || t("upload.error"));
-    } finally {
-      setIsLoading(false);
+    } catch (err: any) {
+      toast.error(err?.message || t("upload.error", "Upload failed."));
     }
   };
 
   return (
     <Form onSubmit={handleSubmit} autoComplete="off">
-      <Title>{t("form.title")}</Title>
-      <label htmlFor="category">{t("form.category")}</label>
-      <Select
-        id="category"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        required
-      >
-        <option value="">{t("form.selectCategory")}</option>
+      <Title>{t("form.title", "New Gallery Item")}</Title>
+
+      <label htmlFor="category">{t("form.category", "Category")}</label>
+      <Select id="category" value={category} onChange={(e) => setCategory(e.target.value)} required>
+        <option value="">{t("form.selectCategory", "Select a category")}</option>
         {categories.map((cat) => (
           <option key={cat._id} value={cat._id}>
             {cat.name?.[lang] || cat.slug}
@@ -123,7 +117,7 @@ if (existingImages.length) {
         ))}
       </Select>
 
-      <label htmlFor="type">{t("form.type")}</label>
+      <label htmlFor="type">{t("form.type", "Type")}</label>
       <Select
         id="type"
         value={type}
@@ -136,63 +130,84 @@ if (existingImages.length) {
 
       {SUPPORTED_LOCALES.map((lng) => (
         <div key={lng}>
-          <label>
-            {t("form.name", "Name")} ({lng.toUpperCase()})
+          <label htmlFor={`title-${lng}`}>
+            {t("form.title_field", "Title")} ({lng.toUpperCase()})
           </label>
           <StyledInput
+            id={`title-${lng}`}
             type="text"
-            value={name[lng]}
-            onChange={(e) => setName({ ...name, [lng]: e.target.value })}
+            value={title[lng]}
+            onChange={(e) => setTitle({ ...title, [lng]: e.target.value })}
             required={lng === lang}
           />
-          <label>
-            {t("form.description", "Description")} ({lng.toUpperCase()})
+
+          <label htmlFor={`summary-${lng}`}>
+            {t("form.summary", "Summary")} ({lng.toUpperCase()})
           </label>
           <TextArea
-            value={description[lng]}
-            onChange={(e) =>
-              setDescription({ ...description, [lng]: e.target.value })
-            }
+            id={`summary-${lng}`}
+            value={summary[lng]}
+            onChange={(e) => setSummary({ ...summary, [lng]: e.target.value })}
+          />
+
+          <label htmlFor={`content-${lng}`}>
+            {t("form.content", "Content")} ({lng.toUpperCase()})
+          </label>
+          <TextArea
+            id={`content-${lng}`}
+            value={content[lng]}
+            onChange={(e) => setContent({ ...content, [lng]: e.target.value })}
           />
         </div>
       ))}
 
-      <label htmlFor="order">{t("form.order")}</label>
+      <label htmlFor="order">{t("form.order", "Order")}</label>
       <StyledInput
         id="order"
         type="number"
         value={order}
         onChange={(e) => setOrder(e.target.value)}
-        min={1}
       />
 
-      <GalleryUploadWithPreview
-  max={isSingleImageCategory ? 1 : 10}
-  folder="gallery"
-  defaultImages={existingImages}
-  onChange={handleImagesChange}
-/>
+      <label htmlFor="tags">{t("form.tags", "Tags (comma separated)")}</label>
+      <StyledInput
+        id="tags"
+        type="text"
+        placeholder="art, summer, beach"
+        value={tags}
+        onChange={(e) => setTags(e.target.value)}
+      />
 
-      <SubmitButton type="submit" disabled={isLoading}>
-        {isLoading ? t("form.loading") : t("form.submit")}
-      </SubmitButton>
+      <label>{t("form.image", "Images")}</label>
+      <ImageUploader
+        existing={existing}
+        onExistingChange={setExisting}
+        removedExisting={removedExisting}
+        onRemovedExistingChange={setRemovedExisting}
+        files={files}
+        onFilesChange={setFiles}
+        maxFiles={isSingleImageCategory ? 1 : 10}
+        accept="image/*"
+        sizeLimitMB={15}
+        helpText={t("uploader.help", "PNG/JPG/WebP")}
+      />
+
+      <SubmitButton type="submit">{t("form.submit", "Submit")}</SubmitButton>
     </Form>
   );
 };
 
 export default GalleryMultiForm;
 
-// --- Styled Components aşağıda değişmeden bırakabilirsin. ---
+/* === styles (aynı dil) === */
 const inputStyles = css`
   background: ${({ theme }) => theme.colors.inputBackground};
   color: ${({ theme }) => theme.colors.text};
   font-family: ${({ theme }) => theme.fonts.body};
   font-size: ${({ theme }) => theme.fontSizes.md};
-  border: ${({ theme }) => theme.borders.thin}
-    ${({ theme }) => theme.colors.border};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.md};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
   transition: border ${({ theme }) => theme.transition.normal},
     background ${({ theme }) => theme.transition.normal};
 
@@ -202,8 +217,7 @@ const inputStyles = css`
     font-size: ${({ theme }) => theme.fontSizes.sm};
   }
   &:focus {
-    border: ${({ theme }) => theme.borders.thick}
-      ${({ theme }) => theme.colors.inputBorderFocus};
+    border: ${({ theme }) => theme.borders.thick} ${({ theme }) => theme.colors.inputBorderFocus};
     outline: none;
     background: ${({ theme }) => theme.colors.inputBackgroundLight};
   }
@@ -214,13 +228,8 @@ const Form = styled.form`
   box-shadow: ${({ theme }) => theme.shadows.lg};
   border-radius: ${({ theme }) => theme.radii.xl};
   padding: ${({ theme }) => theme.spacings.xl};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacings.lg};
-  max-width: 540px;
-  margin: 0 auto;
-  transition: box-shadow ${({ theme }) => theme.transition.normal},
-    background ${({ theme }) => theme.transition.normal};
+  display: flex; flex-direction: column; gap: ${({ theme }) => theme.spacings.lg};
+  max-width: 640px; margin: 0 auto;
 
   @media ${({ theme }) => theme.media.mobile} {
     padding: ${({ theme }) => theme.spacings.md};
@@ -257,8 +266,7 @@ const Select = styled.select`
 
 const TextArea = styled.textarea`
   ${inputStyles}
-  resize: vertical;
-  min-height: 80px;
+  resize: vertical; min-height: 80px;
 `;
 
 const SubmitButton = styled.button`
@@ -268,19 +276,14 @@ const SubmitButton = styled.button`
   font-family: ${({ theme }) => theme.fonts.body};
   font-size: ${({ theme }) => theme.fontSizes.lg};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.xl};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.pill};
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.xl};
+  border: none; border-radius: ${({ theme }) => theme.radii.pill};
   box-shadow: ${({ theme }) => theme.shadows.button};
-  cursor: pointer;
-  margin-top: ${({ theme }) => theme.spacings.lg};
+  cursor: pointer; margin-top: ${({ theme }) => theme.spacings.lg};
   transition: background ${({ theme }) => theme.transition.normal},
-    color ${({ theme }) => theme.transition.normal},
-    box-shadow ${({ theme }) => theme.transition.normal};
+    color ${({ theme }) => theme.transition.normal}, box-shadow ${({ theme }) => theme.transition.normal};
 
-  &:hover,
-  &:focus {
+  &:hover, &:focus {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
     color: ${({ theme }) => theme.buttons.primary.textHover};
     box-shadow: ${({ theme }) => theme.shadows.lg};
@@ -289,10 +292,7 @@ const SubmitButton = styled.button`
   &:disabled {
     background: ${({ theme }) => theme.colors.disabled};
     color: ${({ theme }) => theme.colors.textMuted};
-    cursor: not-allowed;
-    opacity: ${({ theme }) => theme.opacity.disabled};
+    cursor: not-allowed; opacity: ${({ theme }) => theme.opacity.disabled};
     box-shadow: none;
   }
 `;
-
-export { Form, Title, StyledInput, Select, TextArea, SubmitButton };

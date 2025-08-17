@@ -1,3 +1,6 @@
+// UserTableRow.tsx
+"use client";
+
 import styled from "styled-components";
 import { User } from "@/modules/users/types/user";
 import { getImageSrc } from "@/shared/getImageSrc";
@@ -40,7 +43,9 @@ export default function UserTableRow({ user, onRefresh }: Props) {
         </Left>
 
         <HeaderBadges>
-          <RoleBadge title={user.role || ""}>{user.role || t("users.role.unknown", "Bilinmiyor")}</RoleBadge>
+          <RoleBadge title={user.role || ""}>
+            {user.role || t("users.role.unknown", "Bilinmiyor")}
+          </RoleBadge>
           <StatusChip
             $active={!!user.isActive}
             aria-label={
@@ -93,7 +98,7 @@ const Left = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacings.sm};
-  min-width: 0; /* text overflow fix */
+  min-width: 0;
 `;
 
 const Avatar = styled.img`

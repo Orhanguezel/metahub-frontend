@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import styled from "styled-components";
 import type { INewsletter } from "@/modules/newsletter/types";
@@ -9,7 +11,6 @@ interface Props {
   onSend: (subject: string, html: string) => void;
   loading: boolean;
   t: (key: string, defaultValue?: string, vars?: Record<string, any>) => string;
-  
 }
 
 export default function SingleSendModal({
@@ -23,59 +24,69 @@ export default function SingleSendModal({
   const [subject, setSubject] = useState("");
   const [html, setHtml] = useState("");
 
+  const titleId = "single-send-modal-title";
+
   return (
     <Overlay onClick={onClose}>
-      <Box onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+      <Box
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+      >
         <CloseBtn onClick={onClose} aria-label={t("admin.close", "Kapat")}>×</CloseBtn>
-        <Title>
-          {t("admin.singleSendTitle", "{{email}} için E-Posta Gönder", { email: subscriber.email })}
+
+        <Title id={titleId}>
+          {t("admin.singleSendTitle", "{{email}} için E-Posta Gönder", {
+            email: subscriber.email,
+          })}
         </Title>
+
         <Form
-          onSubmit={e => {
+          onSubmit={(e) => {
             e.preventDefault();
             onSend(subject, html);
           }}
         >
-          <label>
-            {t("admin.subject", "Konu")}:
-            <Input
-              type="text"
-              value={subject}
-              onChange={e => setSubject(e.target.value)}
-              required
-              placeholder={t("admin.subjectPlaceholder", "E-posta konusu")}
-            />
-          </label>
-          <label>
-            {t("admin.htmlContent", "İçerik (HTML destekli)")}:
-            <Textarea
-              value={html}
-              onChange={e => setHtml(e.target.value)}
-              required
-              rows={7}
-              placeholder={t("admin.htmlPlaceholder", "E-posta içeriği (HTML destekli)...")}
-            />
-          </label>
-          <ButtonRow>
-            <Button
+          <Label htmlFor="single-subject">{t("admin.subject", "Konu")}</Label>
+          <Input
+            id="single-subject"
+            type="text"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            required
+            placeholder={t("admin.subjectPlaceholder", "E-posta konusu")}
+          />
+
+          <Label htmlFor="single-html">{t("admin.htmlContent", "İçerik (HTML destekli)")}</Label>
+          <Textarea
+            id="single-html"
+            value={html}
+            onChange={(e) => setHtml(e.target.value)}
+            required
+            rows={7}
+            placeholder={t("admin.htmlPlaceholder", "E-posta içeriği (HTML destekli)...")}
+          />
+
+          <Actions>
+            <Secondary
               type="button"
               onClick={() => onPreview(subject, html)}
-              disabled={!subject || !html}
-              style={{ background: "#64748b" }}
+              disabled={!subject || !html || loading}
             >
               {t("admin.preview", "Önizle")}
-            </Button>
-            <Button type="submit" disabled={loading}>
+            </Secondary>
+            <Primary type="submit" disabled={loading}>
               {loading ? t("admin.sending", "Gönderiliyor...") : t("admin.send", "Gönder")}
-            </Button>
-          </ButtonRow>
+            </Primary>
+          </Actions>
         </Form>
       </Box>
     </Overlay>
   );
 }
 
-// --- THEME + I18N STYLES ---
+/* ---- styled (admin pattern) ---- */
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
@@ -85,83 +96,99 @@ const Overlay = styled.div`
   align-items: center;
   justify-content: center;
 `;
+
 const Box = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  padding: 2em 2.5em 1.6em 2.5em;
-  border-radius: 14px;
-  min-width: 420px;
+  padding: ${({ theme }) => theme.spacings.lg};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  min-width: 520px;
   max-width: 96vw;
+  width: 680px;
   position: relative;
-  box-shadow: 0 7px 40px #0002;
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+
   ${({ theme }) => theme.media.small} {
     min-width: 94vw;
-    padding: 1em 0.7em 1em 1.1em;
+    width: 94vw;
+    padding: ${({ theme }) => theme.spacings.md};
   }
 `;
+
 const CloseBtn = styled.button`
   position: absolute;
-  top: 14px;
-  right: 20px;
-  font-size: 2em;
-  background: none;
+  top: 10px;
+  right: 14px;
+  font-size: 1.6rem;
+  background: transparent;
   border: none;
-  color: #888;
-  opacity: 0.75;
+  color: ${({ theme }) => theme.colors.textSecondary};
   cursor: pointer;
-  &:hover { opacity: 1; }
+  &:hover { opacity: ${({ theme }) => theme.opacity.hover}; }
 `;
+
 const Title = styled.h3`
-  margin-top: 0;
-  margin-bottom: 18px;
-  color: ${({ theme }) => theme.colors.primary};
-  font-size: 1.18em;
-  font-weight: 700;
+  margin: 0 0 ${({ theme }) => theme.spacings.md} 0;
+  color: ${({ theme }) => theme.colors.title};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 `;
+
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: ${({ theme }) => theme.spacings.sm};
 `;
+
+const Label = styled.label`
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
 const Input = styled.input`
-  width: 100%;
-  padding: 0.65em 1em;
-  border-radius: 7px;
-  border: 1.3px solid #ddd;
-  margin-top: 5px;
-  margin-bottom: 4px;
-  font-size: 1em;
-  background: ${({ theme }) => theme.colors.inputBackground};
+  padding: 10px 12px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.inputBorder};
+  background: ${({ theme }) => theme.inputs.background};
+  color: ${({ theme }) => theme.inputs.text};
 `;
+
 const Textarea = styled.textarea`
-  width: 100%;
-  padding: 0.7em 1em;
-  border-radius: 7px;
-  border: 1.3px solid #ddd;
-  font-size: 1em;
-  background: ${({ theme }) => theme.colors.inputBackground};
-  font-family: inherit;
-  margin-top: 5px;
+  padding: 10px 12px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.inputBorder};
+  background: ${({ theme }) => theme.inputs.background};
+  color: ${({ theme }) => theme.inputs.text};
+  min-height: 120px;
+  resize: vertical;
 `;
-const ButtonRow = styled.div`
+
+const Actions = styled.div`
   display: flex;
-  gap: 0.7em;
+  gap: ${({ theme }) => theme.spacings.xs};
   justify-content: flex-end;
-  margin-top: 0.7em;
+  margin-top: ${({ theme }) => theme.spacings.sm};
 `;
-const Button = styled.button`
-  background: #0b933c;
-  color: #fff;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  padding: 0.72em 1.5em;
-  font-size: 1.06em;
-  box-shadow: 0 3px 16px #008e1c18;
+
+const BaseBtn = styled.button`
+  padding: 8px 14px;
+  border-radius: ${({ theme }) => theme.radii.md};
   cursor: pointer;
-  transition: background 0.15s;
-  &:hover:enabled { background: #178f52; }
-  &:disabled {
-    opacity: 0.66;
-    cursor: not-allowed;
-  }
+  border: ${({ theme }) => theme.borders.thin} transparent;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  transition: ${({ theme }) => theme.transition.normal};
+  &:disabled { opacity: ${({ theme }) => theme.opacity.disabled}; cursor: not-allowed; }
+`;
+
+const Primary = styled(BaseBtn)`
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
+  &:hover:not(:disabled) { background: ${({ theme }) => theme.buttons.primary.backgroundHover}; }
+`;
+
+const Secondary = styled(BaseBtn)`
+  background: ${({ theme }) => theme.buttons.secondary.background};
+  color: ${({ theme }) => theme.buttons.secondary.text};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  &:hover:not(:disabled) { filter: brightness(0.98); }
 `;

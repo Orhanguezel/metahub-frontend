@@ -26,6 +26,8 @@ const initialState: NewsletterState = {
   singleStatus: "idle",            // EKLENDİ
 };
 
+const BASE = "/newsletter";
+
 // 1️⃣ Public: Abone ol
 export const subscribeNewsletter = createAsyncThunk<
   INewsletter,
@@ -33,7 +35,7 @@ export const subscribeNewsletter = createAsyncThunk<
 >(
   "newsletter/subscribe",
   async (payload, thunkAPI) => {
-    const res = await apiCall("post", "/newsletter", payload, thunkAPI.rejectWithValue);
+    const res = await apiCall("post", `${BASE}`, payload, thunkAPI.rejectWithValue);
     return res.data;
   }
 );
@@ -45,7 +47,7 @@ export const unsubscribeNewsletter = createAsyncThunk<
 >(
   "newsletter/unsubscribe",
   async (payload, thunkAPI) => {
-    const res = await apiCall("post", "/newsletter/unsubscribe", payload, thunkAPI.rejectWithValue);
+    const res = await apiCall("post", `${BASE}/unsubscribe`, payload, thunkAPI.rejectWithValue);
     return res.data;
   }
 );
@@ -54,7 +56,7 @@ export const unsubscribeNewsletter = createAsyncThunk<
 export const fetchAllSubscribers = createAsyncThunk<INewsletter[]>(
   "newsletter/fetchAll",
   async (_, thunkAPI) => {
-    const res = await apiCall("get", "/newsletter", null, thunkAPI.rejectWithValue);
+    const res = await apiCall("get", `${BASE}`, null, thunkAPI.rejectWithValue);
     return res.data;
   }
 );
@@ -66,7 +68,7 @@ export const deleteSubscriber = createAsyncThunk<
 >(
   "newsletter/delete",
   async (id, thunkAPI) => {
-    await apiCall("delete", `/newsletter/${id}`, null, thunkAPI.rejectWithValue);
+    await apiCall("delete", `${BASE}/${id}`, null, thunkAPI.rejectWithValue);
     return id;
   }
 );
@@ -78,7 +80,7 @@ export const verifySubscriber = createAsyncThunk<
 >(
   "newsletter/verify",
   async (id, thunkAPI) => {
-    const res = await apiCall("patch", `/newsletter/${id}/verify`, null, thunkAPI.rejectWithValue);
+    const res = await apiCall("patch", `${BASE}/${id}/verify`, null, thunkAPI.rejectWithValue);
     return res.data;
   }
 );
@@ -90,7 +92,7 @@ export const sendBulkNewsletter = createAsyncThunk<
 >(
   "newsletter/sendBulk",
   async (payload, thunkAPI) => {
-    const res = await apiCall("post", "/newsletter/send-bulk", payload, thunkAPI.rejectWithValue);
+    const res = await apiCall("post", `${BASE}/send-bulk`, payload, thunkAPI.rejectWithValue);
     // { sent, total, ... }
     return res.data;
   }
@@ -103,7 +105,7 @@ export const sendSingleNewsletter = createAsyncThunk<
 >(
   "newsletter/sendSingle",
   async (payload, thunkAPI) => {
-    await apiCall("post", `/newsletter/${payload.id}/send`, {
+    await apiCall("post", `${BASE}/${payload.id}/send`, {
       subject: payload.subject,
       html: payload.html
     }, thunkAPI.rejectWithValue);

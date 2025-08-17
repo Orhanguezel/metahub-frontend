@@ -5,8 +5,8 @@ import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/pricing/locales";
-import { IPricing } from "@/modules/pricing/types";
-import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
+import type { IPricing } from "@/modules/pricing/types";
+import { SUPPORTED_LOCALES, type SupportedLocale } from "@/types/common";
 import { toast } from "react-toastify";
 
 interface Props {
@@ -16,81 +16,56 @@ interface Props {
   onSubmit: (payload: Partial<IPricing>, id?: string) => Promise<void>;
 }
 
-export default function FormModal({
-  isOpen,
-  onClose,
-  initialData,
-  onSubmit,
-}: Props) {
+export default function FormModal({ isOpen, onClose, initialData, onSubmit }: Props) {
   const { t } = useI18nNamespace("pricing", translations);
 
-  const successMessage = useAppSelector((state) => state.pricing.successMessage);
-  const error = useAppSelector((state) => state.pricing.error);
+  const successMessage = useAppSelector((s) => s.pricing.successMessage);
+  const error = useAppSelector((s) => s.pricing.error);
 
-  // --- Çoklu Dil Title & Description & Features
+  // Çok dilli alanlar
   const [titles, setTitles] = useState<Record<SupportedLocale, string>>(
-    SUPPORTED_LOCALES.reduce((acc, lng) => {
-      acc[lng] = "";
-      return acc;
-    }, {} as Record<SupportedLocale, string>)
+    () => SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
   );
   const [descriptions, setDescriptions] = useState<Record<SupportedLocale, string>>(
-    SUPPORTED_LOCALES.reduce((acc, lng) => {
-      acc[lng] = "";
-      return acc;
-    }, {} as Record<SupportedLocale, string>)
+    () => SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>)
   );
-  // 🌟 Features çoklu dil array
   const [features, setFeatures] = useState<Record<SupportedLocale, string[]>>(
-    SUPPORTED_LOCALES.reduce((acc, lng) => {
-      acc[lng] = [];
-      return acc;
-    }, {} as Record<SupportedLocale, string[]>)
+    () => SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: [] }), {} as Record<SupportedLocale, string[]>)
   );
 
+  // Diğer alanlar
   const [category, setCategory] = useState<string>("");
   const [price, setPrice] = useState<string>("");
   const [currency, setCurrency] = useState<"USD" | "EUR" | "TRY">("EUR");
   const [period, setPeriod] = useState<"monthly" | "yearly" | "once">("monthly");
-  const [isPopular, setIsPopular] = useState(false);
+  const [isPopular, setIsPopular] = useState<boolean>(false);
   const [order, setOrder] = useState<number>(0);
-  const [isActive, setIsActive] = useState(true);
-  const [isPublished, setIsPublished] = useState(false);
+  const [isActive, setIsActive] = useState<boolean>(true);
+  const [isPublished, setIsPublished] = useState<boolean>(false);
 
-  // --- EDIT Fill
+  // Edit doldurma
   useEffect(() => {
+    if (!isOpen) return;
     if (initialData) {
-      setTitles(
-        SUPPORTED_LOCALES.reduce((acc, lng) => {
-          acc[lng] = initialData.title?.[lng] || "";
-          return acc;
-        }, {} as Record<SupportedLocale, string>)
-      );
+      setTitles(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: initialData.title?.[lng] || "" }), {} as any));
       setDescriptions(
-        SUPPORTED_LOCALES.reduce((acc, lng) => {
-          acc[lng] = initialData.description?.[lng] || "";
-          return acc;
-        }, {} as Record<SupportedLocale, string>)
+        SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: initialData.description?.[lng] || "" }), {} as any)
       );
       setFeatures(
-        SUPPORTED_LOCALES.reduce((acc, lng) => {
-          acc[lng] = initialData.features?.[lng] || [];
-          return acc;
-        }, {} as Record<SupportedLocale, string[]>)
+        SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: initialData.features?.[lng] || [] }), {} as any)
       );
       setCategory(initialData.category || "");
-      setPrice(initialData.price?.toString() ?? "");
+      setPrice(initialData.price != null ? String(initialData.price) : "");
       setCurrency(initialData.currency);
       setPeriod(initialData.period);
-      setIsPopular(!!initialData.isPopular);
+      setIsPopular(Boolean(initialData.isPopular));
       setOrder(initialData.order || 0);
-      setIsActive(initialData.isActive);
-      setIsPublished(initialData.isPublished);
+      setIsActive(Boolean(initialData.isActive));
+      setIsPublished(Boolean(initialData.isPublished));
     } else {
-      // Sıfırla
-      setTitles(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
-      setDescriptions(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as Record<SupportedLocale, string>));
-      setFeatures(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: [] }), {} as Record<SupportedLocale, string[]>));
+      setTitles(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as any));
+      setDescriptions(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: "" }), {} as any));
+      setFeatures(SUPPORTED_LOCALES.reduce((acc, lng) => ({ ...acc, [lng]: [] }), {} as any));
       setCategory("");
       setPrice("");
       setCurrency("EUR");
@@ -102,7 +77,7 @@ export default function FormModal({
     }
   }, [initialData, isOpen]);
 
-  // --- TOAST Mesajları
+  // Toast
   useEffect(() => {
     if (successMessage) {
       toast.success(successMessage);
@@ -112,29 +87,15 @@ export default function FormModal({
     }
   }, [successMessage, error, onClose]);
 
-  // 🌟 Features input handler
+  // Özellikler (features) handler’ları
   const handleFeatureChange = (lng: SupportedLocale, idx: number, value: string) => {
-    setFeatures((prev) => ({
-      ...prev,
-      [lng]: prev[lng].map((f, i) => (i === idx ? value : f)),
-    }));
+    setFeatures((prev) => ({ ...prev, [lng]: prev[lng].map((f, i) => (i === idx ? value : f)) }));
   };
+  const handleAddFeature = (lng: SupportedLocale) => setFeatures((prev) => ({ ...prev, [lng]: [...prev[lng], ""] }));
+  const handleRemoveFeature = (lng: SupportedLocale, idx: number) =>
+    setFeatures((prev) => ({ ...prev, [lng]: prev[lng].filter((_, i) => i !== idx) }));
 
-  const handleAddFeature = (lng: SupportedLocale) => {
-    setFeatures((prev) => ({
-      ...prev,
-      [lng]: [...prev[lng], ""],
-    }));
-  };
-
-  const handleRemoveFeature = (lng: SupportedLocale, idx: number) => {
-    setFeatures((prev) => ({
-      ...prev,
-      [lng]: prev[lng].filter((_, i) => i !== idx),
-    }));
-  };
-
-  // --- SUBMIT ---
+  // Submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload: Partial<IPricing> = {
@@ -142,7 +103,7 @@ export default function FormModal({
       description: descriptions,
       features,
       category: category.trim() || undefined,
-      price: Number(price),
+      price: price.trim() !== "" ? Number(price) : undefined,
       currency,
       period,
       isPopular,
@@ -156,261 +117,203 @@ export default function FormModal({
   if (!isOpen) return null;
 
   return (
-    <FormWrapper>
-      <h2>
-        {initialData
-          ? t("admin.pricing.edit", "Edit Pricing")
-          : t("admin.pricing.create", "Create New Pricing")}
-      </h2>
-      <form onSubmit={handleSubmit}>
-        {SUPPORTED_LOCALES.map((lng) => (
-          <div key={lng}>
-            <label htmlFor={`title-${lng}`}>
+    <Form onSubmit={handleSubmit}>
+      <h2>{initialData ? t("admin.pricing.edit", "Edit Pricing") : t("admin.pricing.create", "Create New Pricing")}</h2>
+
+      {/* Üst satır — temel alanlar */}
+      <Row>
+        <Col>
+          <Label>{t("admin.pricing.category", "Category")}</Label>
+          <Input
+            id="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            placeholder={t("admin.pricing.category_placeholder", "Type a category (optional)")}
+          />
+        </Col>
+        <Col>
+          <Label>{t("admin.pricing.price", "Price")}</Label>
+          <Input
+            id="price"
+            type="number"
+            min={0}
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            required
+          />
+        </Col>
+        <Col>
+          <Label>{t("admin.pricing.currency", "Currency")}</Label>
+          <Select id="currency" value={currency} onChange={(e) => setCurrency(e.target.value as any)}>
+            <option value="EUR">EUR (€)</option>
+            <option value="USD">USD ($)</option>
+            <option value="TRY">TRY (₺)</option>
+          </Select>
+        </Col>
+        <Col>
+          <Label>{t("admin.pricing.period", "Period")}</Label>
+          <Select id="period" value={period} onChange={(e) => setPeriod(e.target.value as any)}>
+            <option value="monthly">{t("admin.pricing.monthly", "Monthly")}</option>
+            <option value="yearly">{t("admin.pricing.yearly", "Yearly")}</option>
+            <option value="once">{t("admin.pricing.once", "One-Time")}</option>
+          </Select>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col>
+          <Label>{t("admin.pricing.order", "Order")}</Label>
+          <Input id="order" type="number" value={order} onChange={(e) => setOrder(Number(e.target.value) || 0)} />
+        </Col>
+        <Col>
+          <Label>{t("admin.pricing.isPopular", "Popular")}</Label>
+          <CheckRow>
+            <input type="checkbox" checked={isPopular} onChange={(e) => setIsPopular(e.target.checked)} />
+            <span>{isPopular ? t("yes", "Yes") : t("no", "No")}</span>
+          </CheckRow>
+        </Col>
+        <Col>
+          <Label>{t("admin.pricing.isActive", "Active")}</Label>
+          <CheckRow>
+            <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
+            <span>{isActive ? t("yes", "Yes") : t("no", "No")}</span>
+          </CheckRow>
+        </Col>
+        <Col>
+          <Label>{t("admin.pricing.isPublished", "Published")}</Label>
+          <CheckRow>
+            <input type="checkbox" checked={isPublished} onChange={(e) => setIsPublished(e.target.checked)} />
+            <span>{isPublished ? t("yes", "Yes") : t("no", "No")}</span>
+          </CheckRow>
+        </Col>
+      </Row>
+
+      {/* Çok dilli alanlar */}
+      {SUPPORTED_LOCALES.map((lng) => (
+        <Row key={lng}>
+          <Col style={{ gridColumn: "span 2" }}>
+            <Label>
               {t("admin.pricing.title", "Title")} ({lng.toUpperCase()})
-            </label>
-            <input
+            </Label>
+            <Input
               id={`title-${lng}`}
               value={titles[lng]}
               onChange={(e) => setTitles({ ...titles, [lng]: e.target.value })}
-              placeholder={t("admin.pricing.title_placeholder", `Title in ${lng.toUpperCase()}`)}
-              required={lng === "tr"} // En az bir dil zorunlu.
+              required={lng === "tr"}
             />
-            <label htmlFor={`desc-${lng}`}>
+          </Col>
+          <Col style={{ gridColumn: "span 2" }}>
+            <Label>
               {t("admin.pricing.description", "Description")} ({lng.toUpperCase()})
-            </label>
-            <textarea
+            </Label>
+            <TextArea
               id={`desc-${lng}`}
+              rows={2}
               value={descriptions[lng]}
-              onChange={(e) =>
-                setDescriptions({ ...descriptions, [lng]: e.target.value })
-              }
-              placeholder={t("admin.pricing.description_placeholder", `Description in ${lng.toUpperCase()}`)}
+              onChange={(e) => setDescriptions({ ...descriptions, [lng]: e.target.value })}
             />
-
-            {/* --- Çoklu Özellikler Alanı --- */}
-            <label>
+          </Col>
+          <Col style={{ gridColumn: "span 4" }}>
+            <Label>
               {t("admin.pricing.features", "Features")} ({lng.toUpperCase()})
-            </label>
-            <FeatureList>
+            </Label>
+            <Features>
               {features[lng].map((feature, idx) => (
-                <FeatureRow key={idx}>
-                  <input
-                    type="text"
+                <FeatureRow key={`${lng}-${idx}`}>
+                  <Input
                     value={feature}
                     onChange={(e) => handleFeatureChange(lng, idx, e.target.value)}
                     placeholder={t("admin.pricing.feature_placeholder", `Feature in ${lng.toUpperCase()}`)}
                   />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveFeature(lng, idx)}
-                    title={t("admin.pricing.remove_feature", "Remove")}
-                  >
-                    &times;
-                  </button>
+                  <Danger type="button" onClick={() => handleRemoveFeature(lng, idx)}>&times;</Danger>
                 </FeatureRow>
               ))}
-              <AddFeatureButton
-                type="button"
-                onClick={() => handleAddFeature(lng)}
-              >
-                {t("admin.pricing.add_feature", "Add Feature")}
-              </AddFeatureButton>
-            </FeatureList>
-          </div>
-        ))}
+              <Small type="button" onClick={() => handleAddFeature(lng)}>
+                + {t("admin.pricing.add_feature", "Add Feature")}
+              </Small>
+            </Features>
+          </Col>
+        </Row>
+      ))}
 
-        {/* --- Kalan alanlar --- */}
-        <label htmlFor="category">{t("admin.pricing.category", "Category")}</label>
-        <input
-          id="category"
-          type="text"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          placeholder={t("admin.pricing.category_placeholder", "Type a category (optional)")}
-        />
-
-        <label htmlFor="price">{t("admin.pricing.price", "Price")}</label>
-        <input
-          id="price"
-          type="number"
-          min="0"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          required
-        />
-
-        <label htmlFor="currency">{t("admin.pricing.currency", "Currency")}</label>
-        <select
-          id="currency"
-          value={currency}
-          onChange={(e) => setCurrency(e.target.value as any)}
-          required
-        >
-          <option value="EUR">EUR (€)</option>
-          <option value="USD">USD ($)</option>
-          <option value="TRY">TRY (₺)</option>
-        </select>
-
-        <label htmlFor="period">{t("admin.pricing.period", "Period")}</label>
-        <select
-          id="period"
-          value={period}
-          onChange={(e) => setPeriod(e.target.value as any)}
-          required
-        >
-          <option value="monthly">{t("admin.pricing.monthly", "Monthly")}</option>
-          <option value="yearly">{t("admin.pricing.yearly", "Yearly")}</option>
-          <option value="once">{t("admin.pricing.once", "One-Time")}</option>
-        </select>
-
-        <div style={{ display: "flex", gap: 16, margin: "10px 0" }}>
-          <label>
-            <input
-              type="checkbox"
-              checked={isPopular}
-              onChange={(e) => setIsPopular(e.target.checked)}
-            />
-            {t("admin.pricing.isPopular", "Popular")}
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={isActive}
-              onChange={(e) => setIsActive(e.target.checked)}
-            />
-            {t("admin.pricing.isActive", "Active")}
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={isPublished}
-              onChange={(e) => setIsPublished(e.target.checked)}
-            />
-            {t("admin.pricing.isPublished", "Published")}
-          </label>
-        </div>
-
-        <label htmlFor="order">{t("admin.pricing.order", "Order")}</label>
-        <input
-          id="order"
-          type="number"
-          value={order}
-          onChange={(e) => setOrder(Number(e.target.value))}
-        />
-
-        <ButtonGroup>
-          <button type="submit">
-            {initialData
-              ? t("admin.update", "Update")
-              : t("admin.create", "Create")}
-          </button>
-          <button type="button" onClick={onClose}>
-            {t("admin.cancel", "Cancel")}
-          </button>
-        </ButtonGroup>
-      </form>
-    </FormWrapper>
+      <Actions>
+        <Secondary type="button" onClick={onClose}>{t("admin.cancel", "Cancel")}</Secondary>
+        <Primary type="submit">{initialData ? t("admin.update", "Update") : t("admin.create", "Create")}</Primary>
+      </Actions>
+    </Form>
   );
 }
 
-// --- Styled Components ---
-const FormWrapper = styled.div`
-  max-width: 600px;
-  margin: auto;
-  padding: 1.5rem;
-  background: ${({ theme }) => theme.colors.cardBackground || "#fff"};
-  border: 1px solid ${({ theme }) => theme.colors.border || "#ccc"};
-  border-radius: ${({ theme }) => theme.radii.md || "6px"};
-
-  h2 {
-    margin-bottom: 1rem;
-  }
-
-  label {
-    display: block;
-    margin-top: 1rem;
-    margin-bottom: 0.25rem;
-    font-weight: 600;
-  }
-
-  input,
-  textarea,
-  select {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid ${({ theme }) => theme.colors.border || "#ccc"};
-    border-radius: 4px;
-    background-color: ${({ theme }) => theme.colors.inputBackground || "#fff"};
-    color: ${({ theme }) => theme.colors.text || "#000"};
-    font-size: 0.95rem;
-  }
-
-  textarea {
-    min-height: 100px;
-    resize: vertical;
-  }
+/* ---- styled (About/Services form paternine uyumlu) ---- */
+const Form = styled.form`
+  display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.md};
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};
+  padding:${({theme})=>theme.spacings.lg};
 `;
 
-const ButtonGroup = styled.div`
-  margin-top: 1.5rem;
-  display: flex;
-  gap: 1rem;
+const Row = styled.div`
+  display:grid; grid-template-columns:repeat(4,1fr); gap:${({theme})=>theme.spacings.md};
+  ${({theme})=>theme.media.tablet}{ grid-template-columns:repeat(2,1fr); }
+  ${({theme})=>theme.media.mobile}{ grid-template-columns:1fr; }
+`;
+const Col = styled.div`display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.xs}; min-width:0;`;
 
-  button {
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-
-    &:first-child {
-      background: ${({ theme }) => theme.colors.primary || "#007bff"};
-      color: #fff;
-    }
-
-    &:last-child {
-      background: ${({ theme }) => theme.colors.danger || "#dc3545"};
-      color: #fff;
-    }
-
-    &:hover {
-      opacity: 0.9;
-    }
-  }
+const Label = styled.label`
+  font-size:${({theme})=>theme.fontSizes.xsmall};
+  color:${({theme})=>theme.colors.textSecondary};
 `;
 
-// Features için:
-const FeatureList = styled.div`
-  margin-bottom: 0.5rem;
+const Input = styled.input`
+  padding:10px 12px; border-radius:${({theme})=>theme.radii.md};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  background:${({theme})=>theme.inputs.background}; color:${({theme})=>theme.inputs.text};
+  min-width:0;
 `;
-const FeatureRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-  input {
-    flex: 1;
-  }
-  button {
-    background: ${({ theme }) => theme.colors.danger || "#dc3545"};
-    color: #fff;
-    border: none;
-    border-radius: 3px;
-    width: 2rem;
-    font-size: 1.2rem;
-    cursor: pointer;
-    height: 2rem;
-    padding: 0;
-  }
+const TextArea = styled.textarea`
+  padding:10px 12px; border-radius:${({theme})=>theme.radii.md};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  background:${({theme})=>theme.inputs.background}; color:${({theme})=>theme.inputs.text};
+  resize:vertical;
 `;
-const AddFeatureButton = styled.button`
-  margin-top: 4px;
-  background: ${({ theme }) => theme.colors.success || "#28a745"};
-  color: #fff;
-  border: none;
-  border-radius: 3px;
-  font-size: 0.95rem;
-  padding: 0.25rem 0.7rem;
-  cursor: pointer;
+const Select = styled.select`
+  padding:10px 12px; border-radius:${({theme})=>theme.radii.md};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  background:${({theme})=>theme.inputs.background}; color:${({theme})=>theme.inputs.text};
 `;
 
+const CheckRow = styled.label`display:flex; gap:${({theme})=>theme.spacings.xs}; align-items:center;`;
+
+const Features = styled.div`display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.xs};`;
+const FeatureRow = styled.div`display:flex; gap:${({theme})=>theme.spacings.xs}; align-items:center;`;
+
+const Small = styled.button`
+  align-self:flex-start;
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  padding:6px 10px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+`;
+
+const Actions = styled.div`display:flex; gap:${({theme})=>theme.spacings.sm}; justify-content:flex-end;`;
+const Primary = styled.button`
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.buttons.primary.backgroundHover};
+  padding:8px 14px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+`;
+const Secondary = styled.button`
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  padding:8px 14px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+`;
+const Danger = styled.button`
+  padding:6px 10px; border-radius:${({theme})=>theme.radii.md};
+  background:${({theme})=>theme.colors.dangerBg};
+  color:${({theme})=>theme.colors.danger};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.danger};
+  cursor:pointer;
+`;

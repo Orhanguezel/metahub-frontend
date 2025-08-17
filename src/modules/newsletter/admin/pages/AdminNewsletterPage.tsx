@@ -1,5 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useEffect, useState, useMemo } from "react";
+import styled from "styled-components";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import {
   fetchAllSubscribers,
@@ -10,12 +12,11 @@ import {
   sendSingleNewsletter,
 } from "@/modules/newsletter/slice/newsletterSlice";
 import type { INewsletter } from "@/modules/newsletter/types";
-import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
 import { toast } from "react-toastify";
 
-// Alt componentleri import et
+// Alt componentler
 import {
   SubscriberList,
   SubscriberModal,
@@ -25,7 +26,7 @@ import {
 } from "@/modules/newsletter";
 
 export default function AdminNewsletterPage() {
-  // 1️⃣ Tüm komponentlerde kullanılacak type-safe t fonksiyonu
+  // type-safe t
   const { t: tBase } = useI18nNamespace("newsletter", translations);
   const t = (key: string, defaultValue?: string, vars?: Record<string, any>) =>
     tBase(key, { ...vars, defaultValue });
@@ -33,13 +34,13 @@ export default function AdminNewsletterPage() {
   const dispatch = useAppDispatch();
 
   // Redux state
-  const subscribers = useAppSelector((state) => state.newsletter.subscribersAdmin);
-  const loading = useAppSelector((state) => state.newsletter.loading);
-  const error = useAppSelector((state) => state.newsletter.error);
-  const successMessage = useAppSelector((state) => state.newsletter.successMessage);
-  const bulkStatus = useAppSelector((state) => state.newsletter.bulkStatus);
-  const bulkResult = useAppSelector((state) => state.newsletter.bulkResult);
-  const singleStatus = useAppSelector((state) => state.newsletter.singleStatus);
+  const subscribers = useAppSelector((s) => s.newsletter.subscribersAdmin);
+  const loading = useAppSelector((s) => s.newsletter.loading);
+  const error = useAppSelector((s) => s.newsletter.error);
+  const successMessage = useAppSelector((s) => s.newsletter.successMessage);
+  const bulkStatus = useAppSelector((s) => s.newsletter.bulkStatus);
+  const bulkResult = useAppSelector((s) => s.newsletter.bulkResult);
+  const singleStatus = useAppSelector((s) => s.newsletter.singleStatus);
 
   // UI state
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -48,12 +49,12 @@ export default function AdminNewsletterPage() {
   const [singleModal, setSingleModal] = useState<INewsletter | null>(null);
   const [previewModal, setPreviewModal] = useState<{ subject: string; html: string } | null>(null);
 
-  // Abone verilerini çek
+  // ilk fetch
   useEffect(() => {
     dispatch(fetchAllSubscribers());
   }, [dispatch]);
 
-  // Hata & başarı bildirimleri
+  // toastlar
   useEffect(() => {
     if (successMessage) toast.success(successMessage);
     if (error) toast.error(error);
@@ -61,12 +62,10 @@ export default function AdminNewsletterPage() {
   }, [successMessage, error, dispatch]);
 
   useEffect(() => {
-    return () => {
-      dispatch(clearNewsletterState());
-    };
+    return () => { dispatch(clearNewsletterState()); };
   }, [dispatch]);
 
-  // Aboneyi sil
+  // handlers
   const handleDelete = async (id: string) => {
     const confirmMsg = t("admin.confirmDelete", "Bu aboneyi silmek istediğinize emin misiniz?");
     if (window.confirm(confirmMsg)) {
@@ -75,61 +74,89 @@ export default function AdminNewsletterPage() {
     }
   };
 
-  // Aboneyi manuel onayla
   const handleVerify = async (id: string) => {
     await dispatch(verifySubscriber(id));
     toast.success(t("admin.verified", "Abone onaylandı!"));
   };
 
-  // Tekil gönderim modalı aç
   const handleSingleSend = (sub: INewsletter) => setSingleModal(sub);
 
-  // E-posta ile filtrele
-  const filtered = subscribers.filter((sub) =>
-    sub.email.toLowerCase().includes(search.toLowerCase())
+  const filtered = useMemo(
+    () => subscribers.filter((s) => s.email.toLowerCase().includes(search.toLowerCase())),
+    [subscribers, search]
   );
 
-  // Seçili abone (modal için)
-  const selectedSubscriber: INewsletter | undefined = subscribers.find(
-    (sub) => sub._id === selectedId
+  const selectedSubscriber = useMemo(
+    () => subscribers.find((s) => s._id === selectedId),
+    [subscribers, selectedId]
   );
+
+  const count = subscribers?.length ?? 0;
 
   return (
-    <AdminContainer>
-      <Title>{t("admin.title", "E-Bülten Aboneleri")}</Title>
-      <ActionsRow>
-        <Input
-          placeholder={t("admin.search", "E-posta ile ara...")}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          aria-label={t("admin.search", "E-posta ile ara...")}
-        />
-        <BulkButton onClick={() => setBulkModal(true)}>
-          {t("admin.bulkSend", "Toplu Gönderim")}
-        </BulkButton>
-      </ActionsRow>
-      {loading && <InfoMsg>{t("admin.loading", "Yükleniyor...")}</InfoMsg>}
-      {error && <ErrorMsg>{error}</ErrorMsg>}
-      {successMessage && <SuccessMsg>{successMessage}</SuccessMsg>}
-      {bulkStatus === "succeeded" && bulkResult && (
-        <SuccessMsg>
-          {t("admin.bulkSent", "{{sent}} aboneye gönderildi.", {
-            sent: bulkResult.sent,
-            total: bulkResult.total,
-          })}
-        </SuccessMsg>
-      )}
-      <ListWrapper>
-        <SubscriberList
-          subscribers={filtered}
-          onSelect={setSelectedId}
-          onDelete={handleDelete}
-          onVerify={handleVerify}
-          onSingleSend={handleSingleSend}
-          selectedId={selectedId}
-          t={t}
-        />
-      </ListWrapper>
+    <PageWrap>
+      {/* Header — ortak patern */}
+      <Header>
+        <TitleBlock>
+          <h1>{t("admin.title", "E-Bülten Aboneleri")}</h1>
+          <Subtitle>{t("admin.subtitle", "Aboneleri görüntüleyin, doğrulayın ve toplu/tekil bülten gönderin")}</Subtitle>
+        </TitleBlock>
+        <Right>
+          <Counter aria-label="subscriber-count">{count}</Counter>
+          <PrimaryBtn onClick={() => setBulkModal(true)}>
+            + {t("admin.bulkSend", "Toplu Gönderim")}
+          </PrimaryBtn>
+        </Right>
+      </Header>
+
+      <Section>
+        <SectionHead>
+          <h2>{t("list", "List")}</h2>
+          <SmallBtn onClick={() => dispatch(fetchAllSubscribers())} disabled={loading}>
+            {t("refresh", "Refresh")}
+          </SmallBtn>
+        </SectionHead>
+
+        <Card>
+          {/* Arama kutusu */}
+          <Controls>
+            <Input
+              placeholder={t("admin.search", "E-posta ile ara...")}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              aria-label={t("admin.search", "E-posta ile ara...")}
+            />
+          </Controls>
+
+          {/* Mesajlar */}
+          {loading && <InfoMsg>{t("admin.loading", "Yükleniyor...")}</InfoMsg>}
+          {error && <ErrorMsg role="alert">❌ {error}</ErrorMsg>}
+          {successMessage && <SuccessMsg>{successMessage}</SuccessMsg>}
+          {bulkStatus === "succeeded" && bulkResult && (
+            <SuccessMsg>
+              {t("admin.bulkSent", "{{sent}} aboneye gönderildi.", {
+                sent: bulkResult.sent,
+                total: bulkResult.total,
+              })}
+            </SuccessMsg>
+          )}
+
+          {/* Liste */}
+          <ListWrap>
+            <SubscriberList
+              subscribers={filtered}
+              onSelect={setSelectedId}
+              onDelete={handleDelete}
+              onVerify={handleVerify}
+              onSingleSend={handleSingleSend}
+              selectedId={selectedId}
+              t={t}
+            />
+          </ListWrap>
+        </Card>
+      </Section>
+
+      {/* Modallar */}
       {selectedSubscriber && (
         <SubscriberModal
           subscriber={selectedSubscriber}
@@ -137,19 +164,21 @@ export default function AdminNewsletterPage() {
           t={t}
         />
       )}
+
       {singleModal && (
-  <SingleSendModal
-    subscriber={singleModal}
-    onClose={() => setSingleModal(null)}
-    onPreview={(subject, html) => setPreviewModal({ subject, html })}
-    onSend={async (subject, html) => {
-      await dispatch(sendSingleNewsletter({ id: singleModal._id, subject, html }));
-      setSingleModal(null);
-    }}
-    loading={singleStatus === "loading"}
-    t={t}
-  />
-)}
+        <SingleSendModal
+          subscriber={singleModal}
+          onClose={() => setSingleModal(null)}
+          onPreview={(subject, html) => setPreviewModal({ subject, html })}
+          onSend={async (subject, html) => {
+            await dispatch(sendSingleNewsletter({ id: singleModal._id, subject, html }));
+            setSingleModal(null);
+          }}
+          loading={singleStatus === "loading"}
+          t={t}
+        />
+      )}
+
       {bulkModal && (
         <BulkSendModal
           onClose={() => setBulkModal(false)}
@@ -162,6 +191,7 @@ export default function AdminNewsletterPage() {
           t={t}
         />
       )}
+
       {previewModal && (
         <PreviewModal
           subject={previewModal.subject}
@@ -170,91 +200,101 @@ export default function AdminNewsletterPage() {
           t={t}
         />
       )}
-    </AdminContainer>
+    </PageWrap>
   );
 }
 
-// --- STYLED COMPONENTS ---
-
-const AdminContainer = styled.div`
-  max-width: 900px;
+/* ---- styled: Admin (About/Services/Portfolio/Pricing) paternine uyumlu ---- */
+const PageWrap = styled.div`
+  max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacings.xl};
-  background: ${({ theme }) => theme.colors.sectionBackground};
-  min-height: 100vh;
-  font-family: ${({ theme }) => theme.fonts.main};
-  ${({ theme }) => theme.media.small} {
-    max-width: 100%;
-    padding: ${({ theme }) => theme.spacings.sm};
+`;
+
+const Header = styled.div`
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:${({ theme }) => theme.spacings.lg};
+  ${({ theme }) => theme.media.mobile}{
+    flex-direction:column; align-items:flex-start; gap:${({ theme }) => theme.spacings.sm};
   }
 `;
-const Title = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin-bottom: ${({ theme }) => theme.spacings.xl};
-  text-align: center;
-  ${({ theme }) => theme.media.small} {
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-    margin-bottom: ${({ theme }) => theme.spacings.lg};
-  }
+
+const TitleBlock = styled.div`display:flex; flex-direction:column; gap:4px; h1{margin:0;}`;
+const Subtitle = styled.p`margin:0; color:${({theme})=>theme.colors.textSecondary}; font-size:${({theme})=>theme.fontSizes.sm};`;
+const Right = styled.div`display:flex; gap:${({ theme }) => theme.spacings.sm}; align-items:center;`;
+
+const Counter = styled.span`
+  padding:6px 10px; border-radius:${({ theme }) => theme.radii.pill};
+  background:${({ theme }) => theme.colors.backgroundAlt};
+  font-weight:${({ theme }) => theme.fontWeights.medium};
 `;
-const InfoMsg = styled.div`
-  color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  text-align: center;
+
+const Section = styled.section`margin-top:${({ theme }) => theme.spacings.sm};`;
+
+const SectionHead = styled.div`
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:${({ theme }) => theme.spacings.sm};
 `;
-const ErrorMsg = styled.div`
-  color: ${({ theme }) => theme.colors.danger};
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  text-align: center;
+
+const Card = styled.div`
+  background:${({ theme }) => theme.colors.cardBackground};
+  border-radius:${({ theme }) => theme.radii.lg};
+  box-shadow:${({ theme }) => theme.cards.shadow};
+  padding:${({ theme }) => theme.spacings.lg};
 `;
-const SuccessMsg = styled.div`
-  color: ${({ theme }) => theme.colors.success};
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  text-align: center;
+
+const Controls = styled.div`
+  display:flex; gap:${({ theme }) => theme.spacings.sm};
+  margin-bottom:${({ theme }) => theme.spacings.md};
 `;
-const ListWrapper = styled.div`
-  margin-top: ${({ theme }) => theme.spacings.md};
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.cards.shadow};
-  padding: ${({ theme }) => theme.spacings.lg};
-  ${({ theme }) => theme.media.small} {
-    padding: ${({ theme }) => theme.spacings.sm};
-    box-shadow: none;
-    border-radius: ${({ theme }) => theme.radii.md};
-  }
-`;
-const ActionsRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1em;
-  margin-bottom: 1.4em;
-  > * { flex: 1; }
-  > button { flex: none; }
-`;
+
 const Input = styled.input`
-  width: 100%;
-  padding: 0.7em 1em;
-  border-radius: 6px;
-  border: 1.3px solid #dedede;
-  font-size: 1em;
-  background: #fff;
+  flex:1 1 auto;
+  padding:10px 12px; border-radius:${({theme})=>theme.radii.md};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  background:${({theme})=>theme.inputs.background}; color:${({theme})=>theme.inputs.text};
 `;
-const BulkButton = styled.button`
-  background: #0b933c;
-  color: #fff;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  padding: 0.8em 1.5em;
-  font-size: 1.09em;
-  box-shadow: 0 3px 16px #008e1c21;
-  cursor: pointer;
-  transition: background 0.15s;
-  &:hover { background: #178f52; }
+
+const PrimaryBtn = styled.button`
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  border:${({theme})=>theme.borders.thin} transparent;
+  padding:8px 12px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+  transition: opacity ${({ theme }) => theme.transition.normal};
+  &:hover{ opacity:${({ theme }) => theme.opacity.hover}; background:${({theme})=>theme.buttons.primary.backgroundHover}; }
+`;
+
+const SmallBtn = styled.button`
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  padding:6px 10px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+`;
+
+const InfoMsg = styled.div`
+  color:${({ theme }) => theme.colors.primary};
+  margin-bottom:${({ theme }) => theme.spacings.sm};
+  font-size:${({ theme }) => theme.fontSizes.sm};
+  text-align:left;
+`;
+
+const ErrorMsg = styled.div`
+  color:${({ theme }) => theme.colors.danger};
+  margin-bottom:${({ theme }) => theme.spacings.sm};
+  font-size:${({ theme }) => theme.fontSizes.sm};
+  text-align:left;
+`;
+
+const SuccessMsg = styled.div`
+  color:${({ theme }) => theme.colors.success};
+  margin-bottom:${({ theme }) => theme.spacings.sm};
+  font-size:${({ theme }) => theme.fontSizes.sm};
+  text-align:left;
+`;
+
+const ListWrap = styled.div`
+  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-radius:${({ theme }) => theme.radii.lg};
+  padding:${({ theme }) => theme.spacings.md};
+  background:${({ theme }) => theme.colors.backgroundAlt};
 `;

@@ -6,11 +6,7 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/faq/locales";
 import { toast } from "react-toastify";
 import { useAppSelector } from "@/store/hooks";
-import {
-  SUPPORTED_LOCALES,
-  SupportedLocale,
-  LANG_LABELS,
-} from "@/types/common";
+import { SUPPORTED_LOCALES, SupportedLocale, LANG_LABELS } from "@/types/common";
 import type { IFaq } from "@/modules/faq/types";
 
 interface Props {
@@ -42,7 +38,7 @@ export default function FAQFormSection({ editingItem, onSubmit }: Props) {
       setAnswer(emptyField);
       setCategory("");
     }
-    //eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingItem]);
 
   useEffect(() => {
@@ -58,139 +54,118 @@ export default function FAQFormSection({ editingItem, onSubmit }: Props) {
 
     if (!hasAtLeastOneLang(question) || !hasAtLeastOneLang(answer)) {
       toast.error(
-        t(
-          "adminFaq.form.required",
-          "Please fill in at least one language for question and answer."
-        )
+        t("adminFaq.form.required", "Please fill in at least one language for question and answer.")
       );
       return;
     }
 
     const now = new Date();
-    const newFAQ: IFaq = {
+    const payload: IFaq = {
       _id: editingItem?._id,
       question,
       answer,
       category,
-      isPublished: true,
-      isActive: true,
+      isPublished: editingItem?.isPublished ?? true,
+      isActive: editingItem?.isActive ?? true,
       createdAt: editingItem?.createdAt || now,
       updatedAt: now,
     };
 
-    onSubmit(newFAQ);
+    onSubmit(payload);
   };
 
   return (
-    <FormWrapper onSubmit={handleSubmit}>
-      <h2>
-        {editingItem
-          ? t("adminFaq.form.titleEdit", "Edit FAQ")
-          : t("adminFaq.form.titleCreate", "Create FAQ")}
-      </h2>
+    <Form onSubmit={handleSubmit}>
+      <h2>{editingItem ? t("adminFaq.form.titleEdit", "Edit FAQ") : t("adminFaq.form.titleCreate", "Create FAQ")}</h2>
 
       {SUPPORTED_LOCALES.map((lng) => (
-        <div key={lng}>
+        <LangBlock key={lng}>
           <LangHeader>{LANG_LABELS[lng]}</LangHeader>
 
-          <label>
-            {t("adminFaq.form.question", "Question")}
-            <input
-              type="text"
-              value={question[lng]}
-              onChange={(e) =>
-                setQuestion({ ...question, [lng]: e.target.value })
-              }
-            />
-          </label>
+          <Label htmlFor={`q-${lng}`}>{t("adminFaq.form.question", "Question")}</Label>
+          <Input
+            id={`q-${lng}`}
+            type="text"
+            value={question[lng]}
+            onChange={(e) => setQuestion({ ...question, [lng]: e.target.value })}
+          />
 
-          <label>
-            {t("adminFaq.form.answer", "Answer")}
-            <textarea
-              rows={3}
-              value={answer[lng]}
-              onChange={(e) =>
-                setAnswer({ ...answer, [lng]: e.target.value })
-              }
-            />
-          </label>
-        </div>
+          <Label htmlFor={`a-${lng}`}>{t("adminFaq.form.answer", "Answer")}</Label>
+          <TextArea
+            id={`a-${lng}`}
+            rows={3}
+            value={answer[lng]}
+            onChange={(e) => setAnswer({ ...answer, [lng]: e.target.value })}
+          />
+        </LangBlock>
       ))}
 
-      <label>
-        {t("adminFaq.form.category", "Category")}
-        <input
-          type="text"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        />
-      </label>
+      <Label htmlFor="faq-category">{t("adminFaq.form.category", "Category")}</Label>
+      <Input
+        id="faq-category"
+        type="text"
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+      />
 
-      <ButtonGroup>
-        <button type="submit">
+      <Actions>
+        <Primary type="submit">
           {editingItem ? t("common.update", "Update") : t("common.create", "Create")}
-        </button>
-      </ButtonGroup>
-    </FormWrapper>
+        </Primary>
+      </Actions>
+    </Form>
   );
 }
 
-// 💅 STYLES
-const FormWrapper = styled.form`
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.sm};
+/* ---- styled (admin form pattern) ---- */
+const Form = styled.form`
+  max-width: 900px;
+  margin: 0 auto;
+  display:flex;flex-direction:column;gap:${({theme})=>theme.spacings.md};
+`;
 
-  h2 {
-    margin-bottom: 1rem;
-  }
-
-  label {
-    display: block;
-    margin: 1rem 0 0.5rem;
-    font-weight: 600;
-
-    input,
-    textarea {
-      width: 100%;
-      padding: 0.6rem;
-      margin-top: 0.25rem;
-      border-radius: 6px;
-      background: ${({ theme }) => theme.colors.inputBackground};
-      border: 1px solid ${({ theme }) => theme.colors.border};
-      color: ${({ theme }) => theme.colors.text};
-    }
-  }
-
-  textarea {
-    resize: vertical;
-  }
+const LangBlock = styled.div`
+  padding:${({theme})=>theme.spacings.md};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  border-radius:${({theme})=>theme.radii.md};
+  background:${({theme})=>theme.colors.cardBackground};
 `;
 
 const LangHeader = styled.h4`
-  margin-top: 1.5rem;
+  margin: 0 0 ${({ theme }) => theme.spacings.xs};
   color: ${({ theme }) => theme.colors.primary};
+  font-size:${({theme})=>theme.fontSizes.sm};
 `;
 
-const ButtonGroup = styled.div`
-  margin-top: 2rem;
-  display: flex;
-  gap: 1rem;
+const Label = styled.label`
+  font-size:${({theme})=>theme.fontSizes.xsmall};
+  color:${({theme})=>theme.colors.textSecondary};
+  display:block; margin:${({theme})=>theme.spacings.xs} 0;
+`;
 
-  button {
-    padding: 0.6rem 1.2rem;
-    font-weight: 600;
-    background: ${({ theme }) => theme.colors.success};
-    color: white;
-    border: none;
-    border-radius: ${({ theme }) => theme.radii.sm};
-    cursor: pointer;
+const Input = styled.input`
+  width:100%;
+  padding:10px 12px;border-radius:${({theme})=>theme.radii.md};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  background:${({theme})=>theme.inputs.background};color:${({theme})=>theme.inputs.text};
+`;
 
-    &:hover {
-      opacity: 0.9;
-    }
-  }
+const TextArea = styled.textarea`
+  width:100%;
+  padding:10px 12px;border-radius:${({theme})=>theme.radii.md};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  background:${({theme})=>theme.inputs.background};color:${({theme})=>theme.inputs.text};
+  resize:vertical;
+`;
+
+const Actions = styled.div`
+  display:flex;justify-content:flex-end;gap:${({theme})=>theme.spacings.xs};
+`;
+
+const Primary = styled.button`
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  border:${({theme})=>theme.borders.thin} transparent;
+  padding:8px 14px;border-radius:${({theme})=>theme.radii.md};cursor:pointer;
+  &:hover{ background:${({theme})=>theme.buttons.primary.backgroundHover}; }
 `;

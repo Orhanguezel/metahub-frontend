@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { IGalleryCategory } from "../types";
+import type { GalleryCategory } from "../types";
 
 interface CategoryState {
-  categories: IGalleryCategory[];         // Public (veya global)
-  adminCategories: IGalleryCategory[];    // Admin paneli için ayrı
-  selected: IGalleryCategory | null;
+  categories: GalleryCategory[];         // Public (veya global)
+  adminCategories: GalleryCategory[];    // Admin paneli için ayrı
+  selected: GalleryCategory | null;
   loading: boolean;
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;

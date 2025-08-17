@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -20,7 +20,7 @@ export default function AdminFaqPage() {
   const dispatch = useAppDispatch();
   const { t } = useI18nNamespace("faq", translations);
 
-  const faqs = useAppSelector((state) => state.faq.faqsAdmin);
+  const faqs = useAppSelector((state) => state.faq.faqsAdmin || []);
   const loading = useAppSelector((state) => state.faq.loading);
   const error = useAppSelector((state) => state.faq.error);
   const successMessage = useAppSelector((state) => state.faq.successMessage);
@@ -58,26 +58,106 @@ export default function AdminFaqPage() {
   };
 
   const handleTogglePublish = async (id: string, isPublished: boolean) => {
-    await dispatch(togglePublishFAQ({ id, isPublished }));
+    await dispatch(togglePublishFAQ({ id, isPublished: !isPublished }));
   };
 
+  const count = useMemo(() => faqs?.length ?? 0, [faqs]);
+
   return (
-    <Container>
+    <PageWrap>
+      <Header>
+        <TitleBlock>
+          <h1>{t("admin.title", "FAQ Manager")}</h1>
+          <Subtitle>{t("admin.subtitle", "Create, organize and publish your FAQs")}</Subtitle>
+        </TitleBlock>
+        <Right>
+          <Counter aria-label="faq-count">{count}</Counter>
+          <PrimaryBtn
+            onClick={() => {
+              setEditingItem(null);
+              setActiveTab("create");
+            }}
+          >
+            + {t("create", "Create")}
+          </PrimaryBtn>
+        </Right>
+      </Header>
+
       <Tabs activeTab={activeTab} onChange={setActiveTab} />
 
-      {activeTab === "create" && (
-        <FAQFormSection onSubmit={handleSubmit} editingItem={editingItem} />
-      )}
+      <Section>
+        <SectionHead>
+          <h2>
+            {activeTab === "list" ? t("list", "List") : t("create", "Create")}
+          </h2>
+          {activeTab === "list" ? (
+            <SmallBtn disabled>{t("managedByParent", "Managed by parent fetch")}</SmallBtn>
+          ) : (
+            <SmallBtn onClick={() => setActiveTab("list")}>{t("backToList", "Back to list")}</SmallBtn>
+          )}
+        </SectionHead>
 
-      {activeTab === "list" && (
-        <FAQList faqs={faqs} loading={loading} onEdit={handleEdit} onDelete={handleDelete} onTogglePublish={handleTogglePublish} />
-      )}
-    </Container>
+        <Card>
+          {activeTab === "create" ? (
+            <FAQFormSection onSubmit={handleSubmit} editingItem={editingItem} />
+          ) : (
+            <FAQList
+              faqs={faqs}
+              loading={loading}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onTogglePublish={handleTogglePublish}
+            />
+          )}
+        </Card>
+      </Section>
+    </PageWrap>
   );
 }
 
-const Container = styled.div`
-  max-width: 1200px;
-  margin: auto;
-  padding: ${({ theme }) => theme.layout.sectionspacings} ${({ theme }) => theme.spacings.md};
+/* ---- styled (admin pattern) ---- */
+const PageWrap = styled.div`
+  max-width: ${({ theme }) => theme.layout.containerWidth};
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacings.xl};
+`;
+const Header = styled.div`
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+  ${({ theme }) => theme.media.mobile} {
+    flex-direction: column; align-items: flex-start; gap: ${({ theme }) => theme.spacings.sm};
+  }
+`;
+const TitleBlock = styled.div`display:flex; flex-direction:column; gap:4px; h1{margin:0;}`;
+const Subtitle = styled.p`margin:0; color:${({theme})=>theme.colors.textSecondary}; font-size:${({theme})=>theme.fontSizes.sm};`;
+const Right = styled.div`display:flex; gap:${({ theme }) => theme.spacings.sm}; align-items:center;`;
+const Counter = styled.span`
+  padding: 6px 10px; border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+`;
+const Section = styled.section`margin-top: ${({ theme }) => theme.spacings.sm};`;
+const SectionHead = styled.div`
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:${({ theme }) => theme.spacings.sm};
+`;
+const Card = styled.div`
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  padding: ${({ theme }) => theme.spacings.lg};
+`;
+const PrimaryBtn = styled.button`
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  border:${({theme})=>theme.borders.thin} transparent;
+  padding:8px 12px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+  transition: opacity ${({ theme }) => theme.transition.normal};
+  &:hover { opacity: ${({ theme }) => theme.opacity.hover}; background:${({theme})=>theme.buttons.primary.backgroundHover}; }
+`;
+const SmallBtn = styled.button`
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  padding:6px 10px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
 `;

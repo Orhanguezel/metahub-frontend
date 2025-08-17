@@ -7,71 +7,87 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/home";
-import { SupportedLocale } from "@/types/common";
+import type { SupportedLocale } from "@/types/common";
 import SkeletonBox from "@/shared/Skeleton";
-import type { IGallery } from "@/modules/gallery/types";
+import type { IGallery, IGalleryImage, GalleryCategory } from "@/modules/gallery/types";
 import useModal from "@/hooks/useModal";
 
 const SLIDER_CATEGORY_SLUG = "carousel";
 const BLUR_PLACEHOLDER =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAIklEQVQoU2NkQAP/Gf4zBgYGBqAEEzQwMDCQ8CkEAAAj3A7lRZefwAAAABJRU5ErkJggg=="; // 10x10px blur base64
 
-type GalleryItem = IGallery["images"][0] & {
-  _galleryId?: string;
-  category?: any;
+type Slide = {
+  id: string;
+  image: Pick<IGalleryImage, "url" | "thumbnail" | "webp"> | null;
+  title: IGallery["title"];
+  summary: IGallery["summary"];
+  order: number;
+  categoryId: string;
 };
 
 const HeroRobotic = () => {
   const { i18n, t } = useI18nNamespace("home", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const lang = (i18n.language?.slice(0, 2) || "en") as SupportedLocale;
 
-  const { publicImages, loading } = useAppSelector((state) => state.gallery);
+  const { gallery, loading } = useAppSelector((state) => state.gallery);
   const { categories } = useAppSelector((state) => state.galleryCategory);
 
-  const targetCategory = useMemo(
+  // hedef kategori (slug: "carousel")
+  const targetCategory = useMemo<GalleryCategory | undefined>(
     () => categories?.find((cat) => cat.slug === SLIDER_CATEGORY_SLUG),
     [categories]
   );
 
-  const flatItems = useMemo<GalleryItem[]>(() => {
-    if (!Array.isArray(publicImages) || !targetCategory) return [];
-    const filtered = publicImages.filter((gallery) =>
-      typeof gallery.category === "string"
-        ? gallery.category === targetCategory._id
-        : gallery.category?._id === targetCategory._id
+  // yeni modele göre slide listesi
+  const slides = useMemo<Slide[]>(() => {
+    if (!Array.isArray(gallery) || !targetCategory) return [];
+    const filtered = gallery.filter((g) =>
+      typeof g.category === "string"
+        ? g.category === targetCategory._id
+        : g.category?._id === targetCategory._id
     );
-    const allImages: GalleryItem[] = [];
-    filtered.forEach((gallery) => {
-      (gallery.images || []).forEach((img) => {
-        allImages.push({
-          ...img,
-          _galleryId: gallery._id,
-          category: gallery.category,
-        });
-      });
-    });
-    allImages.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    return allImages;
-  }, [publicImages, targetCategory]);
 
-  const modal = useModal(flatItems);
+    const mapped: Slide[] = filtered
+      .map((g) => {
+        const primary: IGalleryImage | undefined = g.images?.[0];
+        return {
+          id: g._id,
+          image: primary
+            ? { url: primary.url, thumbnail: primary.thumbnail, webp: primary.webp }
+            : null,
+          title: g.title,
+          summary: g.summary,
+          order: Number.isFinite(g.order) ? g.order : 0,
+          categoryId: typeof g.category === "string" ? g.category : g.category?._id || "",
+        };
+      })
+      // görseli olmayanları en sona atabilir ya da elemek isterseniz filter(Boolean) yapın
+      .sort((a, b) => a.order - b.order);
+
+    return mapped;
+  }, [gallery, targetCategory]);
+
+  const modal = useModal(slides);
 
   useEffect(() => {
-    if (flatItems.length === 0) return;
+    if (slides.length === 0) return;
     const timer = setInterval(() => modal.next(), 6200);
     return () => clearInterval(timer);
-  }, [flatItems, modal]);
+  }, [slides, modal]);
 
-  const handleSwipe = useCallback((e: React.TouchEvent) => {
-    const startX = e.changedTouches[0].clientX;
-    const handler = (endEvent: TouchEvent) => {
-      const endX = endEvent.changedTouches[0].clientX;
-      if (startX - endX > 50) modal.next();
-      if (endX - startX > 50) modal.prev();
-      window.removeEventListener("touchend", handler);
-    };
-    window.addEventListener("touchend", handler);
-  }, [modal]);
+  const handleSwipe = useCallback(
+    (e: React.TouchEvent) => {
+      const startX = e.changedTouches[0].clientX;
+      const handler = (endEvent: TouchEvent) => {
+        const endX = endEvent.changedTouches[0].clientX;
+        if (startX - endX > 50) modal.next();
+        if (endX - startX > 50) modal.prev();
+        window.removeEventListener("touchend", handler);
+      };
+      window.addEventListener("touchend", handler);
+    },
+    [modal]
+  );
 
   if (loading) {
     return (
@@ -82,7 +98,8 @@ const HeroRobotic = () => {
       </HeroWrapper>
     );
   }
-  if (!flatItems.length) {
+
+  if (!slides.length) {
     return (
       <HeroWrapper>
         <CenterContent>
@@ -92,14 +109,18 @@ const HeroRobotic = () => {
     );
   }
 
-  const heroItem = flatItems[modal.currentIndex];
+  const current = slides[modal.currentIndex];
+  const imageSrc =
+    current.image?.webp || current.image?.url || current.image?.thumbnail || "/img/robot_reading.png";
+
   const title =
-    heroItem?.name?.[lang] ||
-    heroItem?.name?.["en"] ||
+    current.title?.[lang] ||
+    current.title?.en ||
     t("hero.title", "Empowering The Future With AI & Robotics");
+
   const description =
-    heroItem?.description?.[lang] ||
-    heroItem?.description?.["en"] ||
+    current.summary?.[lang] ||
+    current.summary?.en ||
     t("hero.desc", "Cutting-edge solutions for the new digital age.");
 
   const ctaLabel = t("hero.cta", "Explore Now");
@@ -108,10 +129,10 @@ const HeroRobotic = () => {
   return (
     <HeroWrapper onTouchStart={handleSwipe}>
       <AnimatePresence mode="wait">
-        {flatItems.map((item, idx) =>
+        {slides.map((s, idx) =>
           idx === modal.currentIndex ? (
             <BgImage
-              key={idx}
+              key={s.id}
               as={motion.div}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -119,13 +140,8 @@ const HeroRobotic = () => {
               transition={{ duration: 1.2, ease: "easeInOut" }}
             >
               <Image
-                src={
-                  item.webp ||
-                  item.url ||
-                  item.thumbnail ||
-                  "/img/robot_reading.png"
-                }
-                alt="Background"
+                src={imageSrc}
+                alt={title}
                 fill
                 priority={idx === 0}
                 loading={idx === 0 ? "eager" : "lazy"}
@@ -136,7 +152,7 @@ const HeroRobotic = () => {
                   objectFit: "cover",
                   filter: "blur(1.5px) brightness(0.7) saturate(1.1)",
                   zIndex: 0,
-                  pointerEvents: "none"
+                  pointerEvents: "none",
                 }}
               />
               <GradientOverlay />
@@ -144,6 +160,7 @@ const HeroRobotic = () => {
           ) : null
         )}
       </AnimatePresence>
+
       <CenterContent>
         <Content>
           <Title>{title}</Title>
@@ -153,10 +170,11 @@ const HeroRobotic = () => {
           </Actions>
         </Content>
       </CenterContent>
+
       <Nav>
-        {flatItems.map((_, idx) => (
+        {slides.map((_, idx) => (
           <Dot
-            key={idx}
+            key={slides[idx].id}
             $active={idx === modal.currentIndex}
             onClick={() => modal.open(idx)}
             aria-label={`Go to slide ${idx + 1}`}
@@ -170,7 +188,7 @@ const HeroRobotic = () => {
 
 export default HeroRobotic;
 
-// --- Styled Components ---
+/* ---------- styled ---------- */
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -248,17 +266,16 @@ const Description = styled.p`
   max-width: 98%;
   line-height: 1.55;
   word-break: break-word;
-  overflow-wrap: anywhere;   // Özellikle mobilde uzun kelimeler için
-  text-align: center;        // Ekstra: ortala
+  overflow-wrap: anywhere;
+  text-align: center;
   @media (max-width: 600px) {
     font-size: 1.05rem;
     margin-bottom: 24px;
-    max-width: 92vw;        // Mobilde kesinlikle taşmaz
+    max-width: 92vw;
     padding-left: 6vw;
     padding-right: 6vw;
   }
 `;
-
 
 const Actions = styled.div`
   display: flex;

@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect} from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/gallery";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
-import {GalleryUploadWithPreview} from "@/shared";
+import ImageUploader, { type UploadImage } from "@/shared/ImageUploader";
 import { toast } from "react-toastify";
-import type { IGalleryCategory, IGallery, IGalleryItem } from "@/modules/gallery/types";
+import type { GalleryCategory, IGallery } from "@/modules/gallery/types";
 import { completeLocales } from "@/utils/completeLocales";
 
 interface Props {
@@ -15,11 +15,14 @@ interface Props {
   onClose: () => void;
   editingItem: IGallery | null;
   onSubmit: (formData: FormData, id?: string) => Promise<void>;
-  categories: IGalleryCategory[];
+  categories: GalleryCategory[];
 }
 
 const initialByLocale = () =>
-  SUPPORTED_LOCALES.reduce((acc, l) => ({ ...acc, [l]: "" }), {} as Record<SupportedLocale, string>);
+  SUPPORTED_LOCALES.reduce(
+    (acc, l) => ({ ...acc, [l]: "" }),
+    {} as Record<SupportedLocale, string>
+  );
 
 export default function GalleryEditForm({
   isOpen,
@@ -29,79 +32,90 @@ export default function GalleryEditForm({
   categories,
 }: Props) {
   const { i18n, t } = useI18nNamespace("gallery", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const lang = (i18n.language?.slice(0, 2) || "en") as SupportedLocale;
 
-  // --- STATE ---
-  const [names, setNames] = useState<Record<SupportedLocale, string>>(initialByLocale());
-  const [descriptions, setDescriptions] = useState<Record<SupportedLocale, string>>(initialByLocale());
+  // ---- Çok dilli alanlar ----
+  const [title, setTitle] = useState<Record<SupportedLocale, string>>(initialByLocale());
+  const [summary, setSummary] = useState<Record<SupportedLocale, string>>(initialByLocale());
+  const [content, setContent] = useState<Record<SupportedLocale, string>>(initialByLocale());
+
+  // ---- Diğer alanlar ----
   const [category, setCategory] = useState("");
   const [type, setType] = useState<"image" | "video">("image");
-  const [order, setOrder] = useState("1");
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [removedImages, setRemovedImages] = useState<string[]>([]);
-  const [existingImages, setExistingImages] = useState<IGalleryItem[]>([]);
+  const [order, setOrder] = useState("0");
 
-  // --- Editte mevcut değerleri yükle ---
+  // ---- Görsel yönetimi (ImageUploader) ----
+  const [existing, setExisting] = useState<UploadImage[]>([]);
+  const [removedExisting, setRemovedExisting] = useState<UploadImage[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
+
+  // Edit modunda değerleri yükle
   useEffect(() => {
     if (editingItem) {
-      // Sadece ilk resmin başlık/açıklama/order kullanılır!
-      setNames(completeLocales(editingItem.images?.[0]?.name));
-      setDescriptions(completeLocales(editingItem.images?.[0]?.description));
-      setCategory(typeof editingItem.category === "string"
-        ? editingItem.category
-        : editingItem.category?._id || ""
+      setTitle(completeLocales(editingItem.title));
+      setSummary(completeLocales(editingItem.summary));
+      setContent(completeLocales(editingItem.content));
+
+      setCategory(
+        typeof editingItem.category === "string"
+          ? editingItem.category
+          : editingItem.category?._id || ""
       );
       setType(editingItem.type || "image");
-      setOrder(editingItem.images?.[0]?.order?.toString() || "1");
-      setExistingImages(editingItem.images || []);
-      setSelectedFiles([]);
-      setRemovedImages([]);
+      setOrder(String(editingItem.order ?? 0));
+
+      setExisting((editingItem.images || []).map((img) => ({
+        url: img.url,
+        thumbnail: img.thumbnail,
+        webp: img.webp,
+        publicId: img.publicId,
+      })));
+      setRemovedExisting([]);
+      setFiles([]);
     } else {
-      setNames(initialByLocale());
-      setDescriptions(initialByLocale());
+      setTitle(initialByLocale());
+      setSummary(initialByLocale());
+      setContent(initialByLocale());
       setCategory("");
       setType("image");
-      setOrder("1");
-      setExistingImages([]);
-      setSelectedFiles([]);
-      setRemovedImages([]);
+      setOrder("0");
+      setExisting([]);
+      setRemovedExisting([]);
+      setFiles([]);
     }
   }, [editingItem, isOpen]);
 
-  // --- Görsel yükleme handler ---
-  const handleImagesChange = useCallback(
-    (files: File[], removed: string[], current: IGalleryItem[]) => {
-      setSelectedFiles(files);
-      setRemovedImages(removed);
-      setExistingImages(current);
-    },
-    []
-  );
-
-  // --- SUBMIT ---
+  // SUBMIT
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!category || !type || !names[lang]?.trim()) {
-      toast.error(t("errors.requiredFields") || "Please fill required fields.");
+
+    // basit doğrulama
+    if (!category || !type || !String((title?.[lang] || "").trim())) {
+      toast.error(t("errors.requiredFields", "Please fill required fields."));
       return;
     }
 
-    const filledNames = completeLocales(names);
-    const filledDescriptions = completeLocales(descriptions);
+    const filledTitle = completeLocales(title);
+    const filledSummary = completeLocales(summary);
+    const filledContent = completeLocales(content);
 
     const formData = new FormData();
-    formData.append("name", JSON.stringify(filledNames));
-    formData.append("description", JSON.stringify(filledDescriptions));
+    formData.append("title", JSON.stringify(filledTitle));
+    formData.append("summary", JSON.stringify(filledSummary));
+    formData.append("content", JSON.stringify(filledContent));
     formData.append("category", category);
     formData.append("type", type);
     formData.append("order", order);
 
-    selectedFiles.forEach((file) => formData.append("images", file));
-    if (removedImages.length > 0) {
-      formData.append("removedImages", JSON.stringify(removedImages));
-    }
-    if (existingImages.length > 0) {
-      formData.append("existingImages", JSON.stringify(existingImages.map(img => img.url)));
+    files.forEach((file) => formData.append("images", file));
+
+    if (removedExisting.length > 0) {
+      formData.append(
+        "removedImages",
+        JSON.stringify(
+          removedExisting.map((x) => ({ url: x.url, publicId: x.publicId }))
+        )
+      );
     }
 
     await onSubmit(formData, editingItem?._id);
@@ -116,28 +130,41 @@ export default function GalleryEditForm({
           ? t("form.edit", "Edit Gallery Item")
           : t("form.create", "Create Gallery Item")}
       </h2>
+
       <form onSubmit={handleSubmit}>
+        {/* Çok dilli alanlar */}
         {SUPPORTED_LOCALES.map((lng) => (
-          <div key={lng}>
-            <label htmlFor={`name-${lng}`}>
+          <LocaleBlock key={lng}>
+            <label htmlFor={`title-${lng}`}>
               {t("form.title", "Title")} ({lng.toUpperCase()})
             </label>
             <input
-              id={`name-${lng}`}
-              value={names[lng]}
-              onChange={(e) => setNames({ ...names, [lng]: e.target.value })}
+              id={`title-${lng}`}
+              value={title[lng] || ""}
+              onChange={(e) => setTitle({ ...title, [lng]: e.target.value })}
             />
-            <label htmlFor={`desc-${lng}`}>
-              {t("form.description", "Description")} ({lng.toUpperCase()})
+
+            <label htmlFor={`summary-${lng}`}>
+              {t("form.summary", "Summary")} ({lng.toUpperCase()})
+            </label>
+            <input
+              id={`summary-${lng}`}
+              value={summary[lng] || ""}
+              onChange={(e) => setSummary({ ...summary, [lng]: e.target.value })}
+            />
+
+            <label htmlFor={`content-${lng}`}>
+              {t("form.content", "Content")} ({lng.toUpperCase()})
             </label>
             <textarea
-              id={`desc-${lng}`}
-              value={descriptions[lng]}
-              onChange={(e) => setDescriptions({ ...descriptions, [lng]: e.target.value })}
+              id={`content-${lng}`}
+              value={content[lng] || ""}
+              onChange={(e) => setContent({ ...content, [lng]: e.target.value })}
             />
-          </div>
+          </LocaleBlock>
         ))}
 
+        {/* Kategori */}
         <label htmlFor="category">{t("form.category", "Category")}</label>
         <select
           id="category"
@@ -150,11 +177,15 @@ export default function GalleryEditForm({
           </option>
           {categories.map((cat) => (
             <option key={cat._id} value={cat._id}>
-              {cat.name?.[lang] || cat.name?.en || Object.values(cat.name || {})[0] || cat.slug}
+              {cat.name?.[lang] ||
+                cat.name?.en ||
+                Object.values(cat.name || {})[0] ||
+                (cat as any).slug}
             </option>
           ))}
         </select>
 
+        {/* Tip */}
         <label htmlFor="type">{t("form.type", "Type")}</label>
         <select
           id="type"
@@ -166,21 +197,29 @@ export default function GalleryEditForm({
           <option value="video">{t("form.type_video", "Video")}</option>
         </select>
 
+        {/* Sıra */}
         <label htmlFor="order">{t("form.order", "Order")}</label>
         <input
           id="order"
           type="number"
           value={order}
           onChange={(e) => setOrder(e.target.value)}
-          min={1}
+          min={0}
         />
 
+        {/* Görseller */}
         <label>{t("form.image", "Images")}</label>
-        <GalleryUploadWithPreview
-          max={5}
-          defaultImages={existingImages}
-          onChange={handleImagesChange}
-          folder="gallery"
+        <ImageUploader
+          existing={existing}
+          onExistingChange={setExisting}
+          removedExisting={removedExisting}
+          onRemovedExistingChange={setRemovedExisting}
+          files={files}
+          onFilesChange={setFiles}
+          maxFiles={10}
+          accept="image/*"
+          sizeLimitMB={15}
+          helpText={t("uploader.help", "PNG/JPG/WebP, up to 10 images")}
         />
 
         <ButtonGroup>
@@ -196,17 +235,18 @@ export default function GalleryEditForm({
   );
 }
 
-// --- Styled Components ---
+/* ---- styled ---- */
 const FormWrapper = styled.div`
-  max-width: 600px;
+  max-width: 760px;
   margin: auto;
   padding: 1.5rem;
-  background: ${({ theme }) => theme.colors.cardBackground || "#fff"};
-  border: 1px solid ${({ theme }) => theme.colors.border || "#ccc"};
-  border-radius: ${({ theme }) => theme.radii.md || "6px"};
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.md};
 
   h2 {
     margin-bottom: 1rem;
+    color: ${({ theme }) => theme.colors.title};
   }
 
   label {
@@ -214,50 +254,66 @@ const FormWrapper = styled.div`
     margin-top: 1rem;
     margin-bottom: 0.25rem;
     font-weight: 600;
+    color: ${({ theme }) => theme.colors.text};
   }
 
   input,
   textarea,
   select {
     width: 100%;
-    padding: 0.5rem;
-    border: 1px solid ${({ theme }) => theme.colors.border || "#ccc"};
-    border-radius: 4px;
-    background-color: ${({ theme }) => theme.colors.inputBackground || "#fff"};
-    color: ${({ theme }) => theme.colors.text || "#000"};
+    padding: 0.6rem 0.75rem;
+    border: 1px solid ${({ theme }) => theme.colors.inputBorder};
+    border-radius: 8px;
+    background-color: ${({ theme }) => theme.colors.inputBackground};
+    color: ${({ theme }) => theme.colors.text};
     font-size: 0.95rem;
+    outline: none;
+    transition: border-color .15s ease;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryTransparent};
   }
 
   textarea {
-    min-height: 100px;
+    min-height: 110px;
     resize: vertical;
   }
+`;
+
+const LocaleBlock = styled.div`
+  & + & { margin-top: 0.75rem; }
 `;
 
 const ButtonGroup = styled.div`
   margin-top: 1.5rem;
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
+  justify-content: flex-end;
 
   button {
-    padding: 0.5rem 1rem;
-    font-weight: 500;
+    padding: 0.6rem 1rem;
+    font-weight: 600;
     border: none;
-    border-radius: 4px;
+    border-radius: ${({ theme }) => theme.radii.md};
     cursor: pointer;
-
-    &:first-child {
-      background: ${({ theme }) => theme.colors.primary || "#007bff"};
-      color: #fff;
-    }
-
-    &:last-child {
-      background: ${({ theme }) => theme.colors.danger || "#dc3545"};
-      color: #fff;
-    }
-
-    &:hover {
-      opacity: 0.9;
-    }
+    transition: opacity .15s ease;
   }
+
+  button[type="submit"] {
+    background: ${({ theme }) => theme.buttons.primary.background};
+    color: ${({ theme }) => theme.buttons.primary.text};
+  }
+
+  button[type="submit"]:hover { opacity: .9; }
+
+  button[type="button"] {
+    background: ${({ theme }) => theme.buttons.danger.background};
+    color: ${({ theme }) => theme.buttons.danger.text};
+  }
+
+  button[type="button"]:hover { opacity: .9; }
 `;

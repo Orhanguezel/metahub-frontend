@@ -33,7 +33,10 @@ export default function AdminContactsPage() {
   return (
     <PageWrap>
       <Header>
-        <h1>{t("title", "Contacts Admin")}</h1>
+        <TitleBlock>
+          <h1>{t("title", "Contacts Admin")}</h1>
+          <Subtitle>{t("subtitle", "Manage your contacts efficiently")}</Subtitle>
+        </TitleBlock>
         <Right>
           <Counter aria-label={t("aria.totalCount","Total count")}>{count}</Counter>
           <PrimaryBtn
@@ -82,10 +85,24 @@ const PageWrap = styled.div`
   ${({ theme }) => theme.media.mobile}{padding:${({ theme }) => theme.spacings.lg};}
 `;
 const Header = styled.div`
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:${({ theme }) => theme.spacings.lg};
-  ${({ theme }) => theme.media.mobile}{flex-direction:column;align-items:flex-start;gap:${({ theme }) => theme.spacings.sm};}
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+
+  ${({ theme }) => theme.media.mobile} {
+    flex-direction: column; align-items: flex-start; gap: ${({ theme }) => theme.spacings.sm};
+  }
 `;
+
+const TitleBlock = styled.div`
+  display:flex; flex-direction:column; gap:4px;
+  h1{ margin:0; font-size:${({ theme }) => theme.fontSizes["2xl"]}; }
+`;
+
+const Subtitle = styled.p`
+  margin:0; color:${({theme})=>theme.colors.textSecondary};
+  font-size:${({theme})=>theme.fontSizes.sm};
+`;
+
 const Right = styled.div`display:flex;gap:${({ theme }) => theme.spacings.sm};align-items:center;`;
 const Counter = styled.span`
   padding:6px 10px;border-radius:${({ theme }) => theme.radii.pill};

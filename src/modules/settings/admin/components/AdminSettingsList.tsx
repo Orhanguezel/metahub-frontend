@@ -1,19 +1,16 @@
 "use client";
+
 import React, { useMemo, ChangeEvent } from "react";
 import styled from "styled-components";
+import Image from "next/image";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
 import { useAppDispatch } from "@/store/hooks";
-import {
-  deleteSettings,
-  upsertSettings,
-} from "@/modules/settings/slice/settingsSlice";
+import { deleteSettings, upsertSettings } from "@/modules/settings/slice/settingsSlice";
 import { toast } from "react-toastify";
 import type { ISetting } from "@/modules/settings/types";
 import { SUPPORTED_LOCALES } from "@/i18n";
-import Image from "next/image";
 
-// --- Props tipi
 interface AdminSettingsListProps {
   settings: ISetting[];
   onEdit: (setting: ISetting) => void;
@@ -22,384 +19,261 @@ interface AdminSettingsListProps {
 
 const LOGO_KEYS = ["navbar_images", "footer_images", "logo_images", "images"];
 
-const AdminSettingsList: React.FC<AdminSettingsListProps> = ({
-  settings,
-  onEdit,
-}) => {
+const AdminSettingsList: React.FC<AdminSettingsListProps> = ({ settings, onEdit }) => {
   const dispatch = useAppDispatch();
   const { t } = useI18nNamespace("settings", translations);
 
-  // Temaları bul
   const availableThemes = useMemo<string[]>(() => {
-    const themeSetting = settings.find((s) => s.key === "available_themes");
-    if (Array.isArray(themeSetting?.value))
-      return themeSetting.value as string[];
-    if (typeof themeSetting?.value === "string")
-      return themeSetting.value.split(",").map((v) => v.trim());
+    const s = settings.find((x) => x.key === "available_themes");
+    if (Array.isArray(s?.value)) return s.value as string[];
+    if (typeof s?.value === "string") return s.value.split(",").map((v) => v.trim()).filter(Boolean);
     return [];
   }, [settings]);
 
-  // Silme işlemi
   const handleDelete = async (key: string) => {
-    if (window.confirm(t("confirmDelete", "Are you sure?"))) {
-      try {
-        await dispatch(deleteSettings(key)).unwrap();
-        toast.success(t("settingDeleted", "Setting deleted"));
-      } catch (error: any) {
-        toast.error(error?.message || t("deleteError", "Delete failed"));
-      }
+    if (!window.confirm(t("confirmDelete", "Are you sure?"))) return;
+    try {
+      await dispatch(deleteSettings(key)).unwrap();
+      toast.success(t("settingDeleted", "Setting deleted"));
+    } catch (err: any) {
+      toast.error(err?.message || t("deleteError", "Delete failed"));
     }
   };
 
-  // Tema değiştir
   const handleThemeChange = async (e: ChangeEvent<HTMLSelectElement>) => {
     const newTheme = e.target.value;
     try {
-      await dispatch(
-        upsertSettings({ key: "site_template", value: newTheme, isActive: true })
-      ).unwrap();
+      await dispatch(upsertSettings({ key: "site_template", value: newTheme, isActive: true })).unwrap();
       toast.success(t("themeChanged", "Theme changed"));
-    } catch (error: any) {
-      toast.error(error?.message || t("updateError", "Update failed"));
+    } catch (err: any) {
+      toast.error(err?.message || t("updateError", "Update failed"));
     }
   };
 
-  // Görsel key mi
-  const isImageKey = (key: string) => LOGO_KEYS.includes(key);
+  const isImageKey = (k: string) => LOGO_KEYS.includes(k);
 
-  // Çoklu image array render
   const renderImages = (images: any[] = []) => (
     <LogoGroup>
       {images.map((img, idx) =>
         img?.url ? (
           <LogoPreview key={img.url + idx}>
-            <Image
-              src={img.url}
-              alt={img.publicId || `image-${idx}`}
-              width={80}
-              height={40}
-              style={{ height: "auto" }}
-            />
-            {img.publicId && (
-              <span style={{ opacity: 0.7, fontSize: "10px" }}>{img.publicId}</span>
-            )}
+            <Image src={img.url} alt={img.publicId || `image-${idx}`} width={80} height={40} style={{ height: "auto" }} />
+            {img.publicId && <span>{img.publicId}</span>}
           </LogoPreview>
         ) : null
       )}
     </LogoGroup>
   );
 
-  // Çoklu dil label gösterimi
   const renderTranslatedLabel = (label: Record<string, string | undefined>) => (
-    <div>
+    <LangWrap>
       {SUPPORTED_LOCALES.map(
         (lng) =>
           label[lng] && (
-            <span key={lng} style={{ marginRight: 8 }}>
+            <span key={lng}>
               <b>{lng}:</b> {label[lng]}
             </span>
           )
       )}
-    </div>
+    </LangWrap>
   );
 
-  // Main value render logic
   const renderValue = (setting: ISetting) => {
     const val = setting.value;
 
-    // Tema dropdown
     if (setting.key === "site_template" && typeof val === "string") {
       return (
         <Select value={val} onChange={handleThemeChange}>
-          {availableThemes.map((theme) => (
-            <option key={theme} value={theme}>
-              {theme}
-            </option>
+          {availableThemes.map((th) => (
+            <option key={th} value={th}>{th}</option>
           ))}
         </Select>
       );
     }
 
-    // Images array (çoklu görsel)
     if (isImageKey(setting.key) && Array.isArray(setting.images) && setting.images.length > 0) {
       return renderImages(setting.images);
     }
 
-    // TranslatedLabel
-    if (
-      val &&
-      typeof val === "object" &&
-      SUPPORTED_LOCALES.some((lng) => lng in val)
-    ) {
+    if (val && typeof val === "object" && SUPPORTED_LOCALES.some((lng) => lng in val)) {
       return renderTranslatedLabel(val as Record<string, string>);
     }
 
-    // Labeled link record
     if (
       val &&
       typeof val === "object" &&
-      Object.values(val).some(
-        (v: any) => v && typeof v === "object" && "label" in v && "url" in v
-      )
+      Object.values(val).some((v: any) => v && typeof v === "object" && "label" in v && "url" in v)
     ) {
-      // Record<string, ILabeledLink>
+      // Record<string, {label: Translated; url: string}>
       return (
         <NestedList>
           {Object.entries(val).map(([k, v]: any) =>
             v && typeof v === "object" && "label" in v && "url" in v ? (
-              <NestedItem key={k}>
+              <li key={k}>
                 <b>{k}:</b> {renderTranslatedLabel(v.label)} → <span>{v.url}</span>
-              </NestedItem>
+              </li>
             ) : null
           )}
         </NestedList>
       );
     }
 
-    // Custom object (ör: {title, slogan})
-    if (
-      val &&
-      typeof val === "object" &&
-      ("title" in val || "slogan" in val)
-    ) {
+    if (val && typeof val === "object" && ("title" in val || "slogan" in val)) {
       return (
         <div>
           {"title" in val && (
             <>
-              <b>{t("title", "Title")}:</b> {renderTranslatedLabel(val.title)}
+              <b>{t("title", "Title")}:</b> {renderTranslatedLabel((val as any).title)}
               <br />
             </>
           )}
           {"slogan" in val && (
             <>
-              <b>{t("slogan", "Slogan")}:</b> {renderTranslatedLabel(val.slogan)}
+              <b>{t("slogan", "Slogan")}:</b> {renderTranslatedLabel((val as any).slogan)}
             </>
           )}
         </div>
       );
     }
 
-    // Düz string
     if (typeof val === "string") return <SingleValue>{val}</SingleValue>;
-
-    // Array (string[])
     if (Array.isArray(val)) return <SingleValue>{val.join(", ")}</SingleValue>;
-
-    // Diğer nesne/dictionary
     if (val && typeof val === "object") {
       return (
         <NestedList>
-          {Object.entries(val).map(([key, fieldVal]) => (
-            <NestedItem key={key}>
-              <strong>{key}:</strong>{" "}
-              {typeof fieldVal === "object"
-                ? JSON.stringify(fieldVal)
-                : String(fieldVal)}
-            </NestedItem>
+          {Object.entries(val).map(([k, v]) => (
+            <li key={k}>
+              <strong>{k}:</strong> {typeof v === "object" ? JSON.stringify(v) : String(v)}
+            </li>
           ))}
         </NestedList>
       );
     }
-
     return <SingleValue>-</SingleValue>;
   };
 
   if (!settings.length) {
-    return <EmptyMessage>{t("noSettings", "No settings found.")}</EmptyMessage>;
+    return <Empty>{t("noSettings", "No settings found.")}</Empty>;
   }
 
   return (
-    <TableWrapper>
+    <TableWrap>
       <Table>
         <thead>
           <tr>
-            <TableHeader>{t("key", "Key")}</TableHeader>
-            <TableHeader>{t("value", "Value")}</TableHeader>
-            <TableHeader>{t("actions", "Actions")}</TableHeader>
+            <th style={{ width: 240 }}>{t("key", "Key")}</th>
+            <th>{t("value", "Value")}</th>
+            <th style={{ width: 220 }}>{t("actions", "Actions")}</th>
           </tr>
         </thead>
         <tbody>
-          {settings.map((setting) => (
-            <tr key={(setting as any)._id || setting.key}>
-              <TableCell>{setting.key}</TableCell>
-              <TableCell>{renderValue(setting)}</TableCell>
-              <TableCell>
-                <ActionButton type="button" onClick={() => onEdit(setting)}>
-                  {t("edit", "Edit")}
-                </ActionButton>
-                <ActionButtonDelete
-                  type="button"
-                  onClick={() => handleDelete(setting.key)}
-                >
-                  {t("delete", "Delete")}
-                </ActionButtonDelete>
-              </TableCell>
+          {settings.map((s) => (
+            <tr key={(s as any)._id || s.key}>
+              <td className="mono">{s.key}</td>
+              <td>{renderValue(s)}</td>
+              <td className="actions">
+                <Row>
+                  <Secondary type="button" onClick={() => onEdit(s)}>{t("edit", "Edit")}</Secondary>
+                  <Danger type="button" onClick={() => handleDelete(s.key)}>{t("delete", "Delete")}</Danger>
+                </Row>
+              </td>
             </tr>
           ))}
         </tbody>
       </Table>
-    </TableWrapper>
+    </TableWrap>
   );
 };
 
 export default AdminSettingsList;
 
-// --- Styled Components ---
-const TableWrapper = styled.div`
+/* =============== styles — services list patern =============== */
+
+const TableWrap = styled.div`
   width: 100%;
   overflow-x: auto;
-  padding-bottom: ${({ theme }) => theme.spacings.sm};
-  border-radius: ${({ theme }) => theme.radii.md};
-
-  ${({ theme }) => theme.media.small} {
-    padding-bottom: ${({ theme }) => theme.spacings.xs};
-  }
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  background: ${({ theme }) => theme.colors.cardBackground};
 `;
 
 const Table = styled.table`
   width: 100%;
-  min-width: 600px;
   border-collapse: collapse;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  overflow: hidden;
 
-  ${({ theme }) => theme.media.medium} {
-    min-width: 480px;
-    font-size: ${({ theme }) => theme.fontSizes.xs};
+  thead th{
+    background: ${({ theme }) => theme.colors.tableHeader};
+    color: ${({ theme }) => theme.colors.textSecondary};
+    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    padding: ${({ theme }) => theme.spacings.md};
+    text-align: left;
+    white-space: nowrap;
   }
-  ${({ theme }) => theme.media.small} {
-    min-width: 360px;
-    font-size: ${({ theme }) => theme.fontSizes.xsmall};
-    border-radius: ${({ theme }) => theme.radii.sm};
+
+  td{
+    padding: ${({ theme }) => theme.spacings.md};
+    border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    vertical-align: top;
+  }
+
+  td.actions { text-align: right; }
+  td.mono { font-family: ${({ theme }) => theme.fonts.mono}; }
+  tbody tr:hover td { background: ${({ theme }) => theme.colors.hoverBackground}; }
+`;
+
+const Row = styled.div`
+  display: inline-flex;
+  gap: ${({ theme }) => theme.spacings.xs};
+  flex-wrap: wrap;
+  justify-content: flex-end;
+`;
+
+const Secondary = styled.button`
+  padding: 8px 10px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  cursor: pointer;
+  background: ${({ theme }) => theme.buttons.secondary.background};
+  color: ${({ theme }) => theme.buttons.secondary.text};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+`;
+
+const Danger = styled(Secondary)`
+  background: ${({ theme }) => theme.colors.dangerBg};
+  color: ${({ theme }) => theme.colors.danger};
+  border-color: ${({ theme }) => theme.colors.danger};
+  &:hover{
+    background: ${({ theme }) => theme.colors.dangerHover};
+    color: ${({ theme }) => theme.colors.textOnDanger};
+    border-color: ${({ theme }) => theme.colors.dangerHover};
   }
 `;
 
-const TableHeader = styled.th`
-  background: ${({ theme }) => theme.colors.sectionBackground};
+const Select = styled.select`
+  padding: 0.45rem 0.65rem;
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
+  background: ${({ theme }) => theme.colors.inputBackground};
   color: ${({ theme }) => theme.colors.text};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  padding: ${({ theme }) => theme.spacings.md};
-  text-align: left;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  white-space: nowrap;
-
-  ${({ theme }) => theme.media.small} {
-    padding: ${({ theme }) => theme.spacings.sm};
-    font-size: ${({ theme }) => theme.fontSizes.xsmall};
-  }
-`;
-
-const TableCell = styled.td`
-  padding: ${({ theme }) => theme.spacings.md};
-  border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  vertical-align: top;
-  word-break: break-word;
-
-  ${({ theme }) => theme.media.small} {
-    padding: ${({ theme }) => theme.spacings.sm};
-    font-size: ${({ theme }) => theme.fontSizes.xsmall};
-  }
+  min-width: 110px;
 `;
 
 const SingleValue = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
-
-  ${({ theme }) => theme.media.small} {
-    font-size: ${({ theme }) => theme.fontSizes.xsmall};
-  }
-`;
-
-const Select = styled.select`
-  padding: 0.3rem 0.7rem;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
-  background: ${({ theme }) => theme.colors.inputBackground};
-  color: ${({ theme }) => theme.colors.text};
-  min-width: 90px;
-
-  ${({ theme }) => theme.media.small} {
-    font-size: ${({ theme }) => theme.fontSizes.xsmall};
-    padding: 0.2rem 0.5rem;
-    min-width: 72px;
-  }
-`;
-
-const ActionButton = styled.button`
-  margin-right: ${({ theme }) => theme.spacings.xs};
-  padding: 0.32rem 0.72rem;
-  background: ${({ theme }) => theme.buttons.secondary.background};
-  color: ${({ theme }) => theme.buttons.secondary.text};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  cursor: pointer;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  transition: background ${({ theme }) => theme.transition.fast};
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-
-  &:hover {
-    background: ${({ theme }) => theme.buttons.secondary.backgroundHover};
-  }
-  ${({ theme }) => theme.media.small} {
-    font-size: ${({ theme }) => theme.fontSizes.xsmall};
-    padding: 0.24rem 0.4rem;
-    margin-right: ${({ theme }) => theme.spacings.xs};
-  }
-`;
-
-const ActionButtonDelete = styled(ActionButton)`
-  background: ${({ theme }) => theme.buttons.danger.background};
-  color: ${({ theme }) => theme.buttons.danger.text};
-  &:hover {
-    background: ${({ theme }) => theme.buttons.danger.backgroundHover};
-  }
-`;
-
-const EmptyMessage = styled.div`
-  text-align: center;
-  color: ${({ theme }) => theme.colors.warning};
-  padding: ${({ theme }) => theme.spacings.xl};
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  background: ${({ theme }) => theme.colors.inputBackgroundLight};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-  margin: ${({ theme }) => theme.spacings.md} 0;
-
-  ${({ theme }) => theme.media.medium} {
-    font-size: ${({ theme }) => theme.fontSizes.md};
-    padding: ${({ theme }) => theme.spacings.lg};
-    border-radius: ${({ theme }) => theme.radii.md};
-  }
-  ${({ theme }) => theme.media.small} {
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-    padding: ${({ theme }) => theme.spacings.md};
-    border-radius: ${({ theme }) => theme.radii.sm};
-    margin: ${({ theme }) => theme.spacings.sm} 0;
-  }
 `;
 
 const NestedList = styled.ul`
   list-style: disc;
   padding-left: ${({ theme }) => theme.spacings.md};
-  margin: ${({ theme }) => theme.spacings.xs} 0;
-  ${({ theme }) => theme.media.small} {
-    padding-left: ${({ theme }) => theme.spacings.sm};
-  }
+  margin: 0;
 `;
 
-const NestedItem = styled.li`
-  font-size: ${({ theme }) => theme.fontSizes.xs};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: 4px;
-  ${({ theme }) => theme.media.small} {
-    font-size: ${({ theme }) => theme.fontSizes.xsmall};
-  }
+const LangWrap = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.xs};
+  flex-wrap: wrap;
 `;
 
 const LogoGroup = styled.div`
@@ -407,10 +281,6 @@ const LogoGroup = styled.div`
   gap: ${({ theme }) => theme.spacings.sm};
   flex-wrap: wrap;
   align-items: center;
-
-  ${({ theme }) => theme.media.small} {
-    gap: ${({ theme }) => theme.spacings.xs};
-  }
 `;
 
 const LogoPreview = styled.div`
@@ -418,28 +288,15 @@ const LogoPreview = styled.div`
   flex-direction: column;
   align-items: center;
 
-  img {
-    max-width: 80px;
-    height: auto;
-    border-radius: ${({ theme }) => theme.radii.sm};
-    box-shadow: ${({ theme }) => theme.shadows.sm};
-    margin-top: ${({ theme }) => theme.spacings.xs};
-    object-fit: contain;
-    background: ${({ theme }) => theme.colors.inputBackgroundLight};
-  }
-
   span {
     font-size: ${({ theme }) => theme.fontSizes.xs};
     margin-top: ${({ theme }) => theme.spacings.xs};
     color: ${({ theme }) => theme.colors.textMuted};
     opacity: 0.8;
   }
-  ${({ theme }) => theme.media.small} {
-    img {
-      max-width: 56px;
-    }
-    span {
-      font-size: ${({ theme }) => theme.fontSizes.xsmall};
-    }
-  }
+`;
+
+const Empty = styled.p`
+  text-align: center;
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;

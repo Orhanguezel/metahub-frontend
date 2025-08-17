@@ -5,7 +5,13 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { SectionTable, SectionEditModal, SectionFilterBar, SectionBulkActions, SectionSnackbar } from "@/modules/section";
+import {
+  SectionTable,
+  SectionEditModal,
+  SectionFilterBar,
+  SectionBulkActions,
+  SectionSnackbar,
+} from "@/modules/section";
 import {
   clearSectionSettingMessages,
   updateSectionSetting,
@@ -14,7 +20,7 @@ import {
 } from "@/modules/section/slices/sectionSettingSlice";
 import {
   clearSectionMetaMessages,
-  deleteSectionMeta, // DİKKAT: import sectionMetaSlice'tan olmalı!
+  deleteSectionMeta,
 } from "@/modules/section/slices/sectionMetaSlice";
 import type { ISectionMeta, ISectionSetting } from "@/modules/section/types";
 import type { SupportedLocale } from "@/types/common";
@@ -38,7 +44,7 @@ export default function AdminSectionPage() {
   } = useAppSelector((s) => s.sectionSetting);
   const dispatch = useAppDispatch();
 
-  // Local State
+  // Local UI state
   const [search, setSearch] = useState("");
   const [enabledFilter, setEnabledFilter] = useState<"all" | "enabled" | "disabled">("all");
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
@@ -47,31 +53,50 @@ export default function AdminSectionPage() {
     message: "", type: "success", open: false,
   });
 
-  // Filtered & Searched
-  const filteredMetas = useMemo(() => metasAdmin.filter((meta: ISectionMeta) => {
-    const label = meta.label?.[lang] || meta.sectionKey;
-    const matchesSearch = label.toLowerCase().includes(search.toLowerCase());
-    const setting = settingsAdmin.find((s: ISectionSetting) => s.sectionKey === meta.sectionKey);
-    const enabledVal = setting?.enabled ?? meta.defaultEnabled;
-    const matchesEnabled =
-      enabledFilter === "all"
-        ? true
-        : enabledFilter === "enabled"
-        ? enabledVal
-        : !enabledVal;
-    return matchesSearch && matchesEnabled;
-  }), [metasAdmin, settingsAdmin, search, enabledFilter, lang]);
+  // Derived data
+  const filteredMetas = useMemo(
+    () =>
+      metasAdmin.filter((meta: ISectionMeta) => {
+        const label = meta.label?.[lang] || meta.sectionKey;
+        const matchesSearch = label.toLowerCase().includes(search.toLowerCase());
+        const setting = settingsAdmin.find((s: ISectionSetting) => s.sectionKey === meta.sectionKey);
+        const enabledVal = setting?.enabled ?? meta.defaultEnabled;
+        const matchesEnabled =
+          enabledFilter === "all" ? true : enabledFilter === "enabled" ? enabledVal : !enabledVal;
+        return matchesSearch && matchesEnabled;
+      }),
+    [metasAdmin, settingsAdmin, search, enabledFilter, lang]
+  );
 
+  const totalCount = metasAdmin.length;
+  const filteredCount = filteredMetas.length;
+  const selectedCount = selectedKeys.length;
+
+  // Toasts & slice message clearing
   useEffect(() => {
     if (settingSuccess) toast.success(settingSuccess);
-    if (errorMetas) toast.error(errorMetas);
-    if (loadingMetas) toast.info(t("loading", "Loading..."));
-    if (loadingSettings) toast.info(t("loading", "Loading..."));
-    if (errorSettings) toast.error(errorSettings);
     if (metaSuccess) toast.success(metaSuccess);
+    if (errorMetas) toast.error(errorMetas);
+    if (errorSettings) toast.error(errorSettings);
+
+    if (loadingMetas || loadingSettings) {
+      // kısa bilgi — spam'i önlemek için tek info
+      toast.dismiss();
+      toast.info(t("loading", "Loading..."), { autoClose: 700 });
+    }
+
     if (settingSuccess || errorSettings) dispatch(clearSectionSettingMessages());
-    if (errorMetas) dispatch(clearSectionMetaMessages());
-  }, [settingSuccess, metaSuccess, loadingSettings, errorSettings, errorMetas, loadingMetas, dispatch, t]);
+    if (errorMetas || metaSuccess) dispatch(clearSectionMetaMessages());
+  }, [
+    settingSuccess,
+    metaSuccess,
+    loadingSettings,
+    errorSettings,
+    errorMetas,
+    loadingMetas,
+    dispatch,
+    t,
+  ]);
 
   // Select Row
   const handleSelect = useCallback((sectionKey: string) => {
@@ -80,7 +105,7 @@ export default function AdminSectionPage() {
     );
   }, []);
 
-  // Edit Modal aç/kapat
+  // Edit Modal
   const handleEdit = useCallback((meta: ISectionMeta, setting?: ISectionSetting) => {
     setEditTarget({ meta, setting });
   }, []);
@@ -91,11 +116,12 @@ export default function AdminSectionPage() {
       if (!editTarget) return;
       const sectionKey = editTarget.meta.sectionKey;
       const payload: Partial<ISectionSetting> = { ...data, sectionKey };
-      Object.keys(payload).forEach(k => (payload as any)[k] === undefined && delete (payload as any)[k]);
+      Object.keys(payload).forEach((k) => (payload as any)[k] === undefined && delete (payload as any)[k]);
+
       try {
         if (editTarget.setting) {
           await dispatch(updateSectionSetting({ sectionKey, data: payload })).unwrap();
-          setSnackbar({ message: t("success.saved"), type: "success", open: true });
+          setSnackbar({ message: t("success.saved", "Saved!"), type: "success", open: true });
         } else {
           await dispatch(createSectionSetting(payload)).unwrap();
           setSnackbar({ message: t("success.created", "Created!"), type: "success", open: true });
@@ -108,71 +134,84 @@ export default function AdminSectionPage() {
     [dispatch, editTarget, t]
   );
 
-  // --- Bulk Delete
-  const handleBulkDelete = useCallback(async (selected: string[]) => {
-    const toDelete = selected
-      .map((sectionKey) => {
-        const setting = settingsAdmin.find((s) => s.sectionKey === sectionKey);
-        return { sectionKey, setting };
-      })
-      .filter(item => !!item.sectionKey);
+  // Bulk Delete
+  const handleBulkDelete = useCallback(
+    async (selected: string[]) => {
+      const toDelete = selected
+        .map((sectionKey) => {
+          const setting = settingsAdmin.find((s) => s.sectionKey === sectionKey);
+          return { sectionKey, setting };
+        })
+        .filter((item) => !!item.sectionKey);
 
-    if (toDelete.length === 0) {
-      setSnackbar({ message: t("error.noSelectedToDelete", "No selected settings to delete!"), type: "error", open: true });
-      return;
-    }
-    try {
-      for (const { sectionKey, setting } of toDelete) {
-        if (setting) {
-          await dispatch(deleteSectionSetting({ sectionKey: sectionKey })).unwrap();
-        }
-        await dispatch(deleteSectionMeta(sectionKey)).unwrap();
+      if (toDelete.length === 0) {
+        setSnackbar({
+          message: t("error.noSelectedToDelete", "No selected settings to delete!"),
+          type: "error",
+          open: true,
+        });
+        return;
       }
-      setSnackbar({ message: t("success.bulkDeleted", "Selected deleted!"), type: "success", open: true });
-      setSelectedKeys([]);
-    } catch (err: any) {
-      setSnackbar({ message: err?.message || t("error", "Error!"), type: "error", open: true });
-    }
-  }, [dispatch, settingsAdmin, t]);
+      try {
+        for (const { sectionKey, setting } of toDelete) {
+          if (setting) {
+            await dispatch(deleteSectionSetting({ sectionKey })).unwrap();
+          }
+          await dispatch(deleteSectionMeta(sectionKey)).unwrap();
+        }
+        setSnackbar({ message: t("success.bulkDeleted", "Selected deleted!"), type: "success", open: true });
+        setSelectedKeys([]);
+      } catch (err: any) {
+        setSnackbar({ message: err?.message || t("error", "Error!"), type: "error", open: true });
+      }
+    },
+    [dispatch, settingsAdmin, t]
+  );
 
-  // --- Bulk Enable
-  const handleBulkEnable = useCallback(async (selected: string[]) => {
-    try {
-      for (const sectionKey of selected) {
-        const setting = settingsAdmin.find((s) => s.sectionKey === sectionKey);
-        if (setting) {
-          await dispatch(updateSectionSetting({ sectionKey: sectionKey, data: { enabled: true } })).unwrap();
-        } else {
-          const meta = metasAdmin.find((m) => m.sectionKey === sectionKey);
-          if (meta) {
-            await dispatch(createSectionSetting({ sectionKey: sectionKey, enabled: true })).unwrap();
+  // Bulk Enable
+  const handleBulkEnable = useCallback(
+    async (selected: string[]) => {
+      try {
+        for (const sectionKey of selected) {
+          const setting = settingsAdmin.find((s) => s.sectionKey === sectionKey);
+          if (setting) {
+            await dispatch(updateSectionSetting({ sectionKey, data: { enabled: true } })).unwrap();
+          } else {
+            const meta = metasAdmin.find((m) => m.sectionKey === sectionKey);
+            if (meta) {
+              await dispatch(createSectionSetting({ sectionKey, enabled: true })).unwrap();
+            }
           }
         }
+        setSnackbar({ message: t("success.bulkEnabled", "Selected enabled!"), type: "success", open: true });
+        setSelectedKeys([]);
+      } catch (err: any) {
+        setSnackbar({ message: err?.message || t("error", "Error!"), type: "error", open: true });
       }
-      setSnackbar({ message: t("success.bulkEnabled", "Selected enabled!"), type: "success", open: true });
-      setSelectedKeys([]);
-    } catch (err: any) {
-      setSnackbar({ message: err?.message || t("error", "Error!"), type: "error", open: true });
-    }
-  }, [dispatch, metasAdmin, settingsAdmin, t]);
+    },
+    [dispatch, metasAdmin, settingsAdmin, t]
+  );
 
-  // --- Bulk Disable
-  const handleBulkDisable = useCallback(async (selected: string[]) => {
-    try {
-      for (const sectionKey of selected) {
-        const setting = settingsAdmin.find((s) => s.sectionKey === sectionKey);
-        if (setting) {
-          await dispatch(updateSectionSetting({ sectionKey: sectionKey, data: { enabled: false } })).unwrap();
+  // Bulk Disable
+  const handleBulkDisable = useCallback(
+    async (selected: string[]) => {
+      try {
+        for (const sectionKey of selected) {
+          const setting = settingsAdmin.find((s) => s.sectionKey === sectionKey);
+          if (setting) {
+            await dispatch(updateSectionSetting({ sectionKey, data: { enabled: false } })).unwrap();
+          }
         }
+        setSnackbar({ message: t("success.bulkDisabled", "Selected disabled!"), type: "success", open: true });
+        setSelectedKeys([]);
+      } catch (err: any) {
+        setSnackbar({ message: err?.message || t("error", "Error!"), type: "error", open: true });
       }
-      setSnackbar({ message: t("success.bulkDisabled", "Selected disabled!"), type: "success", open: true });
-      setSelectedKeys([]);
-    } catch (err: any) {
-      setSnackbar({ message: err?.message || t("error", "Error!"), type: "error", open: true });
-    }
-  }, [dispatch, settingsAdmin, t]);
+    },
+    [dispatch, settingsAdmin, t]
+  );
 
-  // Tekli silme (satırdaki X butonu)
+  // Tekli sil
   const handleDeleteSection = useCallback(
     async (meta: ISectionMeta, setting?: ISectionSetting) => {
       try {
@@ -189,28 +228,49 @@ export default function AdminSectionPage() {
   );
 
   return (
-    <Wrapper>
-      <Title>{t("section.title", "Section Management")}</Title>
-      <SectionFilterBar
-        search={search}
-        setSearch={setSearch}
-        enabledFilter={enabledFilter}
-        setEnabledFilter={setEnabledFilter}
-      />
+    <PageWrap>
+      <Header>
+        <TitleBlock>
+          <h1>{t("section.title", "Section Management")}</h1>
+          <Subtitle>
+            {t("section.subtitle", "Create, organize and control visibility of your sections")}
+          </Subtitle>
+        </TitleBlock>
+        <Right>
+          <Counter title={t("total", "Total")}>
+            {filteredCount}/{totalCount}
+          </Counter>
+          {selectedCount > 0 && <Counter title={t("selected", "Selected")}>{selectedCount}</Counter>}
+        </Right>
+      </Header>
+
+      <Card>
+        <SectionFilterBar
+          search={search}
+          setSearch={setSearch}
+          enabledFilter={enabledFilter}
+          setEnabledFilter={setEnabledFilter}
+        />
+      </Card>
+
       <SectionBulkActions
         selected={selectedKeys}
         onDelete={handleBulkDelete}
         onEnable={handleBulkEnable}
         onDisable={handleBulkDisable}
       />
-      <SectionTable
-        metasAdmin={filteredMetas}
-        settings={settingsAdmin}
-        onEdit={handleEdit}
-        onDelete={handleDeleteSection}
-        onSelect={handleSelect}
-        selectedKeys={selectedKeys}
-      />
+
+      <Card>
+        <SectionTable
+          metasAdmin={filteredMetas}
+          settings={settingsAdmin}
+          onEdit={handleEdit}
+          onDelete={handleDeleteSection}
+          onSelect={handleSelect}
+          selectedKeys={selectedKeys}
+        />
+      </Card>
+
       <SectionEditModal
         open={!!editTarget}
         onClose={() => setEditTarget(null)}
@@ -218,44 +278,49 @@ export default function AdminSectionPage() {
         setting={editTarget?.setting}
         onSave={handleSaveEdit}
       />
+
       <SectionSnackbar
         message={snackbar.message}
         type={snackbar.type}
         open={snackbar.open}
         onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
       />
-    </Wrapper>
+    </PageWrap>
   );
 }
 
-const Wrapper = styled.div`
+/* ---- styled (global admin patern) ---- */
+const PageWrap = styled.div`
   max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacings.xl};
+
+  ${({ theme }) => theme.media.small} {
+    padding: ${({ theme }) => theme.spacings.md};
+  }
+`;
+const Header = styled.div`
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+  ${({ theme }) => theme.media.mobile} {
+    flex-direction: column; align-items: flex-start; gap: ${({ theme }) => theme.spacings.sm};
+  }
+`;
+const TitleBlock = styled.div`display:flex; flex-direction:column; gap:4px; h1{ margin:0; }`;
+const Subtitle = styled.p`
+  margin:0; color:${({theme})=>theme.colors.textSecondary};
+  font-size:${({theme})=>theme.fontSizes.sm};
+`;
+const Right = styled.div`display:flex; gap:${({ theme }) => theme.spacings.sm}; align-items:center;`;
+const Counter = styled.span`
+  padding: 6px 10px; border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+`;
+const Card = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.md};
-  min-height: 80vh;
-  transition: box-shadow 0.23s;
-
-  ${({ theme }) => theme.media.small} {
-    padding: ${({ theme }) => theme.spacings.sm};
-    min-width: 0;
-    box-shadow: ${({ theme }) => theme.shadows.sm};
-    border-radius: ${({ theme }) => theme.radii.md};
-  }
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  padding: ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
 `;
-
-const Title = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin-bottom: ${({ theme }) => theme.spacings.xl};
-  color: ${({ theme }) => theme.colors.primary};
-  text-align: center;
-
-  ${({ theme }) => theme.media.small} {
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-    margin-bottom: ${({ theme }) => theme.spacings.lg};
-  }
-`;
-

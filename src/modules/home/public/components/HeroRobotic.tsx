@@ -7,73 +7,83 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/home";
-import { SupportedLocale } from "@/types/common";
+import type { SupportedLocale } from "@/types/common";
 import SkeletonBox from "@/shared/Skeleton";
-import type { IGallery } from "@/modules/gallery/types";
+import type { IGallery, IGalleryImage, GalleryCategory } from "@/modules/gallery/types";
 import useModal from "@/hooks/useModal";
 
 const SLIDER_CATEGORY_SLUG = "carousel";
 
-type GalleryItem = IGallery["images"][0] & {
-  _galleryId?: string;
-  category?: any;
+type Slide = {
+  id: string;
+  image: Pick<IGalleryImage, "url" | "thumbnail" | "webp"> | null;
+  title: IGallery["title"];
+  summary: IGallery["summary"];
+  order: number;
+  categoryId: string;
 };
 
 const HeroRobotic = () => {
   const { i18n, t } = useI18nNamespace("home", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const lang = (i18n.language?.slice(0, 2) || "en") as SupportedLocale;
 
-  const { publicImages, loading } = useAppSelector((state) => state.gallery);
+  // ✅ yeni slice alanları
+  const { gallery, loading } = useAppSelector((state) => state.gallery);
   const { categories } = useAppSelector((state) => state.galleryCategory);
 
-  // İlgili kategoriyi bul
-  const targetCategory = useMemo(
+  // hedef kategori (slug: "carousel")
+  const targetCategory = useMemo<GalleryCategory | undefined>(
     () => categories?.find((cat) => cat.slug === SLIDER_CATEGORY_SLUG),
     [categories]
   );
 
-  // İlgili kategorideki TUM görselleri flat array olarak al
-  const flatItems = useMemo<GalleryItem[]>(() => {
-    if (!Array.isArray(publicImages) || !targetCategory) return [];
-    const filtered = publicImages.filter((gallery) =>
-      typeof gallery.category === "string"
-        ? gallery.category === targetCategory._id
-        : gallery.category?._id === targetCategory._id
+  // yeni modele göre slide listesi
+  const slides = useMemo<Slide[]>(() => {
+    if (!Array.isArray(gallery) || !targetCategory) return [];
+    const filtered = gallery.filter((g) =>
+      typeof g.category === "string"
+        ? g.category === targetCategory._id
+        : g.category?._id === targetCategory._id
     );
-    const allImages: GalleryItem[] = [];
-    filtered.forEach((gallery) => {
-      (gallery.images || []).forEach((img) => {
-        allImages.push({
-          ...img,
-          _galleryId: gallery._id,
-          category: gallery.category,
-        });
-      });
-    });
-    allImages.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    return allImages;
-  }, [publicImages, targetCategory]);
 
-  const modal = useModal(flatItems);
+    return filtered
+      .map((g) => {
+        const primary = g.images?.[0];
+        return {
+          id: g._id,
+          image: primary ? { url: primary.url, thumbnail: primary.thumbnail, webp: primary.webp } : null,
+          title: g.title,
+          summary: g.summary,
+          order: Number.isFinite(g.order) ? g.order : 0,
+          categoryId: typeof g.category === "string" ? g.category : g.category?._id || "",
+        } as Slide;
+      })
+      .sort((a, b) => a.order - b.order);
+  }, [gallery, targetCategory]);
+
+  const modal = useModal(slides);
 
   // Oto slider
   useEffect(() => {
-    if (flatItems.length === 0) return;
+    if (slides.length === 0) return;
     const timer = setInterval(() => modal.next(), 5800);
     return () => clearInterval(timer);
-  }, [flatItems, modal]);
+  }, [slides, modal]);
 
   // Swipe support (mobil)
-  const handleSwipe = useCallback((e: React.TouchEvent) => {
-    const startX = e.changedTouches[0].clientX;
-    const handler = (endEvent: TouchEvent) => {
-      const endX = endEvent.changedTouches[0].clientX;
-      if (startX - endX > 50) modal.next();
-      if (endX - startX > 50) modal.prev();
-      window.removeEventListener("touchend", handler);
-    };
-    window.addEventListener("touchend", handler);
-  }, [modal]);
+  const handleSwipe = useCallback(
+    (e: React.TouchEvent) => {
+      const startX = e.changedTouches[0].clientX;
+      const handler = (endEvent: TouchEvent) => {
+        const endX = endEvent.changedTouches[0].clientX;
+        if (startX - endX > 50) modal.next();
+        if (endX - startX > 50) modal.prev();
+        window.removeEventListener("touchend", handler);
+      };
+      window.addEventListener("touchend", handler);
+    },
+    [modal]
+  );
 
   // Loading ve boş durum
   if (loading) {
@@ -85,7 +95,7 @@ const HeroRobotic = () => {
       </HeroSectionWrapper>
     );
   }
-  if (!flatItems.length) {
+  if (!slides.length) {
     return (
       <HeroSectionWrapper>
         <Content>{t("noItemsFound", "No hero found.")}</Content>
@@ -94,19 +104,19 @@ const HeroRobotic = () => {
   }
 
   // Aktif slide
-  const heroItem = flatItems[modal.currentIndex];
+  const current = slides[modal.currentIndex];
   const title =
-    heroItem?.name?.[lang] ||
-    heroItem?.name?.["en"] ||
+    current.title?.[lang] ||
+    current.title?.en ||
     t("hero.title", "Empowering The Future With AI & Robotics");
   const description =
-    heroItem?.description?.[lang] ||
-    heroItem?.description?.["en"] ||
+    current.summary?.[lang] ||
+    current.summary?.en ||
     t("hero.desc", "Cutting-edge solutions for the new digital age.");
   const imageSrc =
-    heroItem?.webp ||
-    heroItem?.url ||
-    heroItem?.thumbnail ||
+    current.image?.webp ||
+    current.image?.url ||
+    current.image?.thumbnail ||
     "/img/robot_reading.png";
 
   // CTA
@@ -116,8 +126,8 @@ const HeroRobotic = () => {
   return (
     <HeroSectionWrapper onTouchStart={handleSwipe}>
       <AnimatePresence mode="wait">
-        <Slide
-          key={modal.currentIndex}
+        <SlideWrap
+          key={current.id}
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -50 }}
@@ -133,19 +143,20 @@ const HeroRobotic = () => {
           <HeroImageWrapper>
             <Image
               src={imageSrc}
-              alt={heroItem?.name?.[lang] || "Hero Image"}
+              alt={title}
               width={480}
               height={480}
               style={{ objectFit: "contain", width: "100%", height: "auto" }}
               priority
             />
           </HeroImageWrapper>
-        </Slide>
+        </SlideWrap>
       </AnimatePresence>
+
       <Nav>
-        {flatItems.map((_, idx) => (
+        {slides.map((s, idx) => (
           <Dot
-            key={idx}
+            key={s.id}
             $active={idx === modal.currentIndex}
             onClick={() => modal.open(idx)}
             aria-label={`Go to slide ${idx + 1}`}
@@ -159,7 +170,7 @@ const HeroRobotic = () => {
 
 export default HeroRobotic;
 
-// --- Styled Components ---
+/* ---------- Styled Components ---------- */
 const HeroSectionWrapper = styled.section`
   width: 100%;
   background: radial-gradient(
@@ -175,7 +186,7 @@ const HeroSectionWrapper = styled.section`
   align-items: center;
 `;
 
-const Slide = styled(motion.div)`
+const SlideWrap = styled(motion.div)`
   width: 100%;
   max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;

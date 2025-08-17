@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
 import { useAppSelector } from "@/store/hooks";
@@ -10,27 +11,24 @@ import {
   ThemeManager,
 } from "@/modules/settings";
 import Modal from "@/shared/Modal";
-import styled from "styled-components";
 import { SUPPORTED_LOCALES } from "@/i18n";
 import type { ISetting } from "@/modules/settings/types";
 
-
 export default function AdminSettingsPage() {
   const { t } = useI18nNamespace("settings", translations);
-  // --- Sadece admin slice!
-  const settings = useAppSelector((state) => state.settings.settingsAdmin);
-  const loading = useAppSelector((state) => state.settings.loading);
-  const error = useAppSelector((state) => state.settings.error);
+
+  // --- sadece admin slice ---
+  const settings = useAppSelector((s) => s.settings.settingsAdmin);
+  const loading  = useAppSelector((s) => s.settings.loading);
+  const error    = useAppSelector((s) => s.settings.error);
 
   const [selectedSetting, setSelectedSetting] = useState<ISetting | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen]         = useState(false);
 
-  // THEMES (Backend ile birebir)
+  // THEMES (backend ile birebir)
   const availableThemesSetting = settings.find((s) => s.key === "available_themes");
-  const availableThemes = useMemo(() => {
-    if (Array.isArray(availableThemesSetting?.value)) {
-      return availableThemesSetting.value as string[];
-    }
+  const availableThemes = useMemo<string[]>(() => {
+    if (Array.isArray(availableThemesSetting?.value)) return availableThemesSetting?.value as string[];
     if (typeof availableThemesSetting?.value === "string") {
       return availableThemesSetting.value
         .split(",")
@@ -48,52 +46,74 @@ export default function AdminSettingsPage() {
       ? siteTemplateSetting.value[0]
       : "";
 
-  // MODAL HANDLERS
+  const count = settings?.length ?? 0;
+
+  // MODAL
   const handleCreate = () => {
     setSelectedSetting(null);
     setIsModalOpen(true);
   };
-
   const handleEdit = (setting: ISetting) => {
     setSelectedSetting(setting);
     setIsModalOpen(true);
   };
-
   const handleCloseModal = () => {
     setSelectedSetting(null);
     setIsModalOpen(false);
-    // Ekstra fetch gerekmiyor, redux store otomatik güncellenir.
   };
 
   return (
-    <Wrapper>
-      <TopBar>
-        <Title>{t("title", "Settings")}</Title>
-        <AddButton onClick={handleCreate}>
-          ➕ {t("addSetting", "Add Setting")}
-        </AddButton>
-      </TopBar>
+    <PageWrap>
+      <Header>
+        <TitleBlock>
+          <h1>{t("title", "Settings")}</h1>
+          <Subtitle>
+            {t("subtitle", "Manage site-wide configuration, themes and flags.")}
+          </Subtitle>
+        </TitleBlock>
 
-      {/* TEMA YÖNETİCİ */}
-      <ThemeManager
-        availableThemes={availableThemes}
-        selectedTheme={selectedTheme}
-        onThemesChange={() => {}} // Fetch'e gerek yok, prop olarak güncelleniyor.
-      />
+        <Right>
+          <Counter aria-label="settings-count">{count}</Counter>
+          <PrimaryBtn onClick={handleCreate}>+ {t("addSetting", "Add Setting")}</PrimaryBtn>
+        </Right>
+      </Header>
 
-      {loading && <EmptyMessage>{t("loading", "Loading...")}</EmptyMessage>}
-      {error && <EmptyMessage style={{ color: "red" }}>{error}</EmptyMessage>}
+      {/* === Theme Manager === */}
+      <Section>
+        <SectionHead>
+          <h2>{t("themeManager.title", "Themes")}</h2>
+        </SectionHead>
+        <Card>
+          <ThemeManager
+            availableThemes={availableThemes}
+            selectedTheme={selectedTheme}
+            onThemesChange={() => {}} // store güncellemeleri zaten tetikleniyor
+          />
+        </Card>
+      </Section>
 
-      {!Array.isArray(settings) || settings.length === 0 ? (
-        <EmptyMessage>{t("noSettings", "No settings found.")}</EmptyMessage>
-      ) : (
-        <AdminSettingsList
-          settings={settings}
-          onEdit={handleEdit}
-          supportedLocales={SUPPORTED_LOCALES}
-        />
-      )}
+      {/* === Settings List === */}
+      <Section>
+        <SectionHead>
+          <h2>{t("list.title", "All Settings")}</h2>
+        </SectionHead>
+        <Card>
+          {loading && <EmptyBox>{t("loading", "Loading...")}</EmptyBox>}
+          {error && !loading && <EmptyBox $danger>{error}</EmptyBox>}
 
+          {!loading && !error && (!Array.isArray(settings) || settings.length === 0) ? (
+            <EmptyBox>{t("noSettings", "No settings found.")}</EmptyBox>
+          ) : (
+            <AdminSettingsList
+              settings={settings}
+              onEdit={handleEdit}
+              supportedLocales={SUPPORTED_LOCALES}
+            />
+          )}
+        </Card>
+      </Section>
+
+      {/* === Modal (Create / Edit) === */}
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
         <AdminSettingsForm
           editingSetting={selectedSetting}
@@ -101,117 +121,116 @@ export default function AdminSettingsPage() {
           onSave={handleCloseModal}
         />
       </Modal>
-    </Wrapper>
+    </PageWrap>
   );
 }
 
-const Wrapper = styled.div`
-  padding: ${({ theme }) => theme.spacings.xl};
+/* ===================== styles (aynı patern) ===================== */
+
+const PageWrap = styled.div`
   max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacings.xl};
-  background: ${({ theme }) => theme.colors.sectionBackground};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.md};
+  padding: ${({ theme }) => theme.spacings.xl};
+`;
 
-  ${({ theme }) => theme.media.medium} {
-    padding: ${({ theme }) => theme.spacings.lg};
-    gap: ${({ theme }) => theme.spacings.lg};
-    border-radius: ${({ theme }) => theme.radii.md};
-  }
-  ${({ theme }) => theme.media.small} {
-    padding: ${({ theme }) => theme.spacings.md};
-    gap: ${({ theme }) => theme.spacings.md};
-    border-radius: ${({ theme }) => theme.radii.sm};
-  }
-  ${({ theme }) => theme.media.xsmall} {
-    padding: ${({ theme }) => theme.spacings.sm};
+const Header = styled.header`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+
+  ${({ theme }) => theme.media.mobile} {
+    flex-direction: column;
+    align-items: flex-start;
     gap: ${({ theme }) => theme.spacings.sm};
   }
 `;
 
-const TopBar = styled.div`
+const TitleBlock = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 4px;
+
+  h1 {
+    margin: 0;
+    color: ${({ theme }) => theme.colors.title};
+    font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+    font-family: ${({ theme }) => theme.fonts.heading};
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
+
+    ${({ theme }) => theme.media.medium} {
+      font-size: ${({ theme }) => theme.fontSizes.xl};
+    }
+    ${({ theme }) => theme.media.small} {
+      font-size: ${({ theme }) => theme.fontSizes.lg};
+    }
+  }
+`;
+
+const Subtitle = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+`;
+
+const Right = styled.div`
+  display: flex;
   gap: ${({ theme }) => theme.spacings.sm};
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-
-  ${({ theme }) => theme.media.small} {
-    flex-direction: column;
-    align-items: stretch;
-    gap: ${({ theme }) => theme.spacings.xs};
-    margin-bottom: ${({ theme }) => theme.spacings.sm};
-  }
+  align-items: center;
 `;
 
-const Title = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.title};
-  font-family: ${({ theme }) => theme.fonts.heading};
-  margin-bottom: 0;
-
-  ${({ theme }) => theme.media.medium} {
-    font-size: ${({ theme }) => theme.fontSizes.xl};
-  }
-  ${({ theme }) => theme.media.small} {
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-  }
+const Counter = styled.span`
+  padding: 6px 10px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
 `;
 
-const AddButton = styled.button`
-  padding: ${({ theme }) => `${theme.spacings.sm} ${theme.spacings.xl}`};
+const PrimaryBtn = styled.button`
   background: ${({ theme }) => theme.buttons.primary.background};
   color: ${({ theme }) => theme.buttons.primary.text};
-  border: none;
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.buttons.primary.backgroundHover};
+  padding: 8px 12px;
   border-radius: ${({ theme }) => theme.radii.md};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   cursor: pointer;
-  box-shadow: ${({ theme }) => theme.shadows.button};
-  transition: background ${({ theme }) => theme.transition.fast}, box-shadow ${({ theme }) => theme.transition.normal};
+  transition: filter 0.15s ease;
 
-  &:hover,
-  &:focus {
-    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-    outline: none;
-  }
-  &:active {
-    opacity: ${({ theme }) => theme.opacity.hover};
-  }
+  &:hover { filter: brightness(0.98); }
+`;
 
-  ${({ theme }) => theme.media.small} {
-    width: 100%;
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-    padding: ${({ theme }) => `${theme.spacings.sm} ${theme.spacings.md}`};
-    margin-top: ${({ theme }) => theme.spacings.xs};
+const Section = styled.section`
+  margin-top: ${({ theme }) => theme.spacings.md};
+`;
+
+const SectionHead = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
+
+  h2 {
+    margin: 0;
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+    color: ${({ theme }) => theme.colors.title};
+    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   }
 `;
 
-const EmptyMessage = styled.p`
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  background: ${({ theme }) => theme.colors.inputBackgroundLight};
-  padding: ${({ theme }) => theme.spacings.xl};
+const Card = styled.div`
+  background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.lg};
-  margin: ${({ theme }) => theme.spacings.lg} auto;
-  box-shadow: ${({ theme }) => theme.shadows.sm};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  padding: ${({ theme }) => theme.spacings.lg};
+`;
 
-  ${({ theme }) => theme.media.medium} {
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-    padding: ${({ theme }) => theme.spacings.md};
-    border-radius: ${({ theme }) => theme.radii.md};
-  }
-  ${({ theme }) => theme.media.small} {
-    font-size: ${({ theme }) => theme.fontSizes.xsmall};
-    padding: ${({ theme }) => theme.spacings.sm};
-    border-radius: ${({ theme }) => theme.radii.sm};
-    margin: ${({ theme }) => theme.spacings.sm} auto;
-  }
+const EmptyBox = styled.p<{ $danger?: boolean }>`
+  text-align: center;
+  padding: ${({ theme }) => theme.spacings.lg};
+  border-radius: ${({ theme }) => theme.radii.md};
+  margin: 0;
+  color: ${({ $danger, theme }) => ($danger ? theme.colors.danger : theme.colors.textSecondary)};
+  background: ${({ theme }) => theme.colors.inputBackgroundLight};
+  border: ${({ $danger, theme }) =>
+    $danger ? `${theme.borders.thin} ${theme.colors.danger}` : `${theme.borders.thin} ${theme.colors.borderBright}`};
 `;

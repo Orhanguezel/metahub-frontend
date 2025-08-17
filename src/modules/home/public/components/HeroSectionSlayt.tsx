@@ -10,59 +10,69 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/home";
 import { SupportedLocale } from "@/types/common";
 import SkeletonBox from "@/shared/Skeleton";
-import type { IGallery } from "@/modules/gallery/types";
+import type { IGallery, IGalleryImage, GalleryCategory } from "@/modules/gallery/types";
 import Modal from "./Modal";
 
 const SLIDER_CATEGORY_SLUG = "carousel";
 
-type GalleryItem = IGallery["images"][0] & {
-  _galleryId?: string;
-  category?: any;
+type Slide = {
+  id: string;
+  image: Pick<IGalleryImage, "url" | "thumbnail" | "webp"> | null;
+  title: IGallery["title"];
+  summary: IGallery["summary"];
+  order: number;
+  categoryId: string;
 };
 
 const HeroSectionSlayt = () => {
   const { i18n, t } = useI18nNamespace("home", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  const { publicImages } = useAppSelector((state) => state.gallery);
-  const { categories } = useAppSelector((state) => state.galleryCategory);
+  const { gallery, loading } = useAppSelector((state) => state.gallery);
+  const { categories } = useAppSelector((state) => state.galleryCategory) as {
+    categories: GalleryCategory[];
+  };
 
+  // hedef kategori
   const targetCategory = useMemo(
     () => categories?.find((cat) => cat.slug === SLIDER_CATEGORY_SLUG),
     [categories]
   );
 
-  const flatItems = useMemo<GalleryItem[]>(() => {
-    if (!Array.isArray(publicImages) || !targetCategory) return [];
-    const filtered = publicImages.filter((gallery) =>
-      typeof gallery.category === "string"
-        ? gallery.category === targetCategory._id
-        : gallery.category?._id === targetCategory._id
+  // galeri -> slide
+  const slides = useMemo<Slide[]>(() => {
+    if (!Array.isArray(gallery) || !targetCategory) return [];
+    const filtered = gallery.filter((g) =>
+      typeof g.category === "string"
+        ? g.category === targetCategory._id
+        : g.category?._id === targetCategory._id
     );
-    const allImages: GalleryItem[] = [];
-    filtered.forEach((gallery) => {
-      (gallery.images || []).forEach((img) => {
-        allImages.push({
-          ...img,
-          _galleryId: gallery._id,
-          category: gallery.category,
-        });
-      });
-    });
-    allImages.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    return allImages;
-  }, [publicImages, targetCategory]);
 
-  const modal = useModal(flatItems);
+    return filtered
+      .map((g) => {
+        const first = g.images?.[0];
+        return {
+          id: g._id,
+          image: first ? { url: first.url, thumbnail: first.thumbnail, webp: first.webp } : null,
+          title: g.title,
+          summary: g.summary,
+          order: Number.isFinite(g.order) ? g.order : 0,
+          categoryId: typeof g.category === "string" ? g.category : g.category?._id || "",
+        };
+      })
+      .sort((a, b) => a.order - b.order);
+  }, [gallery, targetCategory]);
 
-  // Oto slider
+  const modal = useModal(slides);
+
+  // oto slider
   useEffect(() => {
-    if (flatItems.length === 0) return;
+    if (slides.length === 0) return;
     const timer = setInterval(() => modal.next(), 5000);
     return () => clearInterval(timer);
-  }, [flatItems, modal]);
+  }, [slides, modal]);
 
-  // Klavye kontrolü (modalda)
+  // klavye kontrolü (modalda)
   useEffect(() => {
     if (!modal.isOpen) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -74,18 +84,21 @@ const HeroSectionSlayt = () => {
     return () => window.removeEventListener("keydown", handleKey);
   }, [modal]);
 
-  const handleSwipe = useCallback((e: React.TouchEvent) => {
-    const startX = e.changedTouches[0].clientX;
-    const handler = (endEvent: TouchEvent) => {
-      const endX = endEvent.changedTouches[0].clientX;
-      if (startX - endX > 50) modal.next();
-      if (endX - startX > 50) modal.prev();
-      window.removeEventListener("touchend", handler);
-    };
-    window.addEventListener("touchend", handler);
-  }, [modal]);
+  const handleSwipe = useCallback(
+    (e: React.TouchEvent) => {
+      const startX = e.changedTouches[0].clientX;
+      const handler = (endEvent: TouchEvent) => {
+        const endX = endEvent.changedTouches[0].clientX;
+        if (startX - endX > 50) modal.next();
+        if (endX - startX > 50) modal.prev();
+        window.removeEventListener("touchend", handler);
+      };
+      window.addEventListener("touchend", handler);
+    },
+    [modal]
+  );
 
-  if (!publicImages || !categories) {
+  if (loading) {
     return (
       <HeroWrapper>
         <SkeletonBox style={{ height: "60px", marginBottom: "24px" }} />
@@ -94,27 +107,29 @@ const HeroSectionSlayt = () => {
     );
   }
 
-  if (flatItems.length === 0) {
+  if (slides.length === 0) {
     return <HeroWrapper>{t("noItemsFound", "No slider items found.")}</HeroWrapper>;
   }
 
-  const heroItem = flatItems[modal.currentIndex];
+  const hero = slides[modal.currentIndex];
   const title =
-    heroItem?.name?.[lang]?.trim() ||
+    hero?.title?.[lang]?.trim() ||
+    hero?.title?.en?.trim() ||
     t("hero1.heroTitle", "Königs Masaj");
 
   const description =
-    heroItem?.description?.[lang]?.trim() ||
+    hero?.summary?.[lang]?.trim() ||
+    hero?.summary?.en?.trim() ||
     t("hero1.heroSubtitle", "Doğallığın dokunuşuyla sağlığınızı şımartın");
 
   const imageSrc =
-    heroItem?.webp || heroItem?.url || heroItem?.thumbnail || "/placeholder.jpg";
+    hero?.image?.webp || hero?.image?.url || hero?.image?.thumbnail || "/placeholder.jpg";
 
   return (
     <>
       <HeroWrapper onTouchStart={handleSwipe}>
         <AnimatePresence mode="wait">
-          <Slide
+          <SlideBox
             key={modal.currentIndex}
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -123,12 +138,7 @@ const HeroSectionSlayt = () => {
             onClick={() => modal.open(modal.currentIndex)}
           >
             <Background>
-              <StyledImage
-                src={imageSrc}
-                alt={title || "Slider image"}
-                fill
-                priority
-              />
+              <StyledImage src={imageSrc} alt={title || "Slider image"} fill priority />
               <Overlay />
             </Background>
             <Content>
@@ -137,10 +147,11 @@ const HeroSectionSlayt = () => {
                 <Subtitle>{description}</Subtitle>
               </HeroGlass>
             </Content>
-          </Slide>
+          </SlideBox>
         </AnimatePresence>
+
         <Nav>
-          {flatItems.map((_, idx) => (
+          {slides.map((_, idx) => (
             <Dot
               key={idx}
               $active={idx === modal.currentIndex}
@@ -152,12 +163,7 @@ const HeroSectionSlayt = () => {
         </Nav>
       </HeroWrapper>
 
-      <Modal
-        isOpen={modal.isOpen}
-        onClose={modal.close}
-        onNext={modal.next}
-        onPrev={modal.prev}
-      >
+      <Modal isOpen={modal.isOpen} onClose={modal.close} onNext={modal.next} onPrev={modal.prev}>
         <ModalContent>
           <ModalImageWrap>
             <Image
@@ -171,7 +177,7 @@ const HeroSectionSlayt = () => {
                 objectFit: "contain",
                 maxHeight: "70vh",
                 width: "auto",
-                boxShadow: "0 8px 36px #e5549c33, 0 1.5px 10px #fbeaf0bb"
+                boxShadow: "0 8px 36px #e5549c33, 0 1.5px 10px #fbeaf0bb",
               }}
             />
           </ModalImageWrap>
@@ -187,7 +193,7 @@ const HeroSectionSlayt = () => {
 
 export default HeroSectionSlayt;
 
-// ------------- STYLED COMPONENTS ---------------
+/* ---------------- STYLED COMPONENTS ---------------- */
 
 const HeroWrapper = styled.section`
   width: 100%;
@@ -206,7 +212,7 @@ const HeroWrapper = styled.section`
   }
 `;
 
-const Slide = styled(motion.div)`
+const SlideBox = styled(motion.div)`
   position: relative;
   width: 100%;
   height: 340px;
@@ -252,7 +258,7 @@ const StyledImage = styled(Image)`
   object-fit: cover;
   object-position: center;
   display: block;
-  filter: brightness(0.70);
+  filter: brightness(0.7);
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.lg};
   transition: filter 0.18s;
@@ -263,9 +269,9 @@ const Overlay = styled.div`
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(255,240,246,0.08) 0%,
-    rgba(229,84,156,0.16) 65%,
-    rgba(82,64,75,0.18) 100%
+    rgba(255, 240, 246, 0.08) 0%,
+    rgba(229, 84, 156, 0.16) 65%,
+    rgba(82, 64, 75, 0.18) 100%
   );
   z-index: 2;
 `;
@@ -282,7 +288,7 @@ const Content = styled.div`
 `;
 
 const HeroGlass = styled.div`
-  background: rgba(255,255,255,0.17);
+  background: rgba(255, 255, 255, 0.17);
   border: 2px solid ${({ theme }) => theme.colors.primaryLight};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: 0 6px 38px #e5549c17, 0 1.5px 10px #fbeaf0bb;
@@ -295,7 +301,8 @@ const HeroGlass = styled.div`
     padding: 1.2rem 0.8rem;
     max-width: 98vw;
   }
-  h2, h1 {
+  h2,
+  h1 {
     word-break: break-word;
     overflow-wrap: anywhere;
     hyphens: auto;
@@ -306,7 +313,6 @@ const HeroGlass = styled.div`
     hyphens: auto;
   }
 `;
-
 
 const Nav = styled.div`
   position: absolute;
@@ -352,9 +358,8 @@ const ModalImageWrap = styled.div`
   }
 `;
 
-
 const ModalGlass = styled.div`
-  background: rgba(255,255,255,0.17);
+  background: rgba(255, 255, 255, 0.17);
   border: 2px solid ${({ theme }) => theme.colors.primaryLight};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: 0 8px 32px #e5549c25, 0 2px 14px #fbeaf0aa;
@@ -368,7 +373,8 @@ const ModalGlass = styled.div`
     padding: 1.1rem 0.6rem;
     max-width: 98vw;
   }
-  h2, h1 {
+  h2,
+  h1 {
     word-break: break-word;
     overflow-wrap: anywhere;
     hyphens: auto;
@@ -379,7 +385,6 @@ const ModalGlass = styled.div`
     hyphens: auto;
   }
 `;
-
 
 const Title = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
@@ -403,7 +408,7 @@ const Subtitle = styled.p`
   margin: 0 0 ${({ theme }) => theme.spacings.lg} 0;
   font-family: ${({ theme }) => theme.fonts.body};
   line-height: 1.5;
-  text-shadow: 0 2px 12px rgba(229,84,156,0.08);
+  text-shadow: 0 2px 12px rgba(229, 84, 156, 0.08);
   word-break: break-word;
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -414,5 +419,3 @@ const Subtitle = styled.p`
     max-width: 99vw;
   }
 `;
-
-

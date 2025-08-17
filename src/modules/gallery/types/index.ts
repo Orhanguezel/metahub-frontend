@@ -1,54 +1,55 @@
-// types/index.ts
-import type { TranslatedLabel } from "@/types/common";
+// src/types/gallery.ts
+import type { SupportedLocale } from "@/types/common";
 
-export interface CategoryImage {
+// Çok dilli alanlar
+export type TranslatedField = {
+  [lang in SupportedLocale]?: string;
+};
+
+// Görsel tipi
+export interface IGalleryImage {
   url: string;
   thumbnail: string;
   webp?: string;
   publicId?: string;
-  altText?: Partial<TranslatedLabel>;
+  _id?: string; // backend _id:true -> JSON'da gelir
 }
 
-export interface IGalleryCategory {
+// Ana model
+export interface IGallery {
   _id: string;
-  name: Partial<TranslatedLabel>;
-  description?: Partial<TranslatedLabel>;
+  type: "image" | "video";
+  title: TranslatedField;
   slug: string;
-  images?: CategoryImage[];
+  summary: TranslatedField;
+  content: TranslatedField;
+  tenant: string;
+  tags: string[];
+  images: IGalleryImage[];
+  category:
+    | string
+    | {
+        _id: string;
+        name: TranslatedField;
+        slug?: string; // admin listte populate sırasında seçilebilir
+      };
+  author: string;
+  isPublished: boolean;
   isActive: boolean;
+  publishedAt?: string;
+  comments: string[];
+  order: number;
   createdAt: string;
   updatedAt: string;
 }
 
-
-export interface IGalleryItem {
-  url: string;
-  thumbnail?: string;
-  webp?: string;
-  name: Partial<TranslatedLabel>;
-  description?: Partial<TranslatedLabel>;
-  order?: number;
-}
-
-export interface IGallery {
+// Kategori modeli
+export interface GalleryCategory {
   _id: string;
-  category: string | IGalleryCategory;
-  type: "image" | "video";
-  images: IGalleryItem[];
-  isPublished?: boolean;
-  tenant: string;
-  isActive?: boolean;
-  priority?: number;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface IGalleryStats {
-  total: number;
-  published: number;
-  archived: number;
-  active: number;
-  inactive: number;
-  images: number;
-  videos: number;
+  name: TranslatedField;
+  slug: string;
+  description?: TranslatedField;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }

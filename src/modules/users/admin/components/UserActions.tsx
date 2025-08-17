@@ -1,18 +1,18 @@
+// UserActions.tsx
 "use client";
 
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/store";
-import {
-  deleteUser,
-  toggleUserStatus,
-  updateUserRole,
-} from "@/modules/users/slice/userCrudSlice";
 import { toast } from "react-toastify";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { adminUserTranslations } from "@/modules/users";
 import type { User } from "@/modules/users/types/user";
+import { useAppDispatch } from "@/store/hooks";
+import {
+  deleteUser,
+  toggleUserStatus,
+  updateUserRole,
+} from "@/modules/users/slice/userCrudSlice";
 
 interface Props {
   userId: string;
@@ -21,21 +21,17 @@ interface Props {
 }
 
 export default function UserActions({ userId, currentRole, onRefresh }: Props) {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const { t } = useI18nNamespace("adminUser", adminUserTranslations);
   const [busy, setBusy] = useState<"role" | "status" | "delete" | null>(null);
 
   const handleRoleChange = async () => {
     try {
       setBusy("role");
-      // basit toggle: admin/superadmin -> user, diğerleri -> admin
       const nextRole: User["role"] =
         currentRole === "admin" || currentRole === "superadmin" ? "user" : "admin";
 
-      const res = await dispatch(
-        updateUserRole({ id: userId, role: nextRole })
-      ).unwrap();
-
+      const res = await dispatch(updateUserRole({ id: userId, role: nextRole })).unwrap();
       toast.success(res?.message || t("users.actions.roleUpdated", "Rol güncellendi"));
       onRefresh();
     } catch (err: any) {
@@ -48,10 +44,7 @@ export default function UserActions({ userId, currentRole, onRefresh }: Props) {
   const handleStatusToggle = async () => {
     try {
       setBusy("status");
-      const res = await dispatch(
-        toggleUserStatus({ id: userId }) // isActive opsiyonel, backend toggle ediyor
-      ).unwrap();
-
+      const res = await dispatch(toggleUserStatus({ id: userId })).unwrap();
       toast.success(res?.message || t("users.actions.statusUpdated", "Durum güncellendi"));
       onRefresh();
     } catch (err: any) {
@@ -80,37 +73,22 @@ export default function UserActions({ userId, currentRole, onRefresh }: Props) {
   };
 
   return (
-    <ActionsWrap role="group" aria-label={t("users.actions.group", "Kullanıcı işlemleri")}>
-      <Btn
-        onClick={handleRoleChange}
-        disabled={busy !== null}
-        aria-label={
-          currentRole === "admin" || currentRole === "superadmin"
-            ? t("users.actions.demote", "Yetki düşür")
-            : t("users.actions.promote", "Yükselt")
-        }
-        $variant="secondary"
-      >
+    <ActionsWrap
+      role="group"
+      aria-label={t("users.actions.group", "Kullanıcı işlemleri")}
+      aria-busy={busy !== null}
+    >
+      <Btn onClick={handleRoleChange} disabled={busy !== null} $variant="secondary">
         {currentRole === "admin" || currentRole === "superadmin"
           ? t("users.actions.demote", "Yetki düşür")
           : t("users.actions.promote", "Yükselt")}
       </Btn>
 
-      <Btn
-        onClick={handleStatusToggle}
-        disabled={busy !== null}
-        aria-label={t("users.actions.toggleStatus", "Durumu değiştir")}
-        $variant="warning"
-      >
+      <Btn onClick={handleStatusToggle} disabled={busy !== null} $variant="warning">
         {t("users.actions.toggleStatus", "Durumu değiştir")}
       </Btn>
 
-      <Btn
-        onClick={handleDelete}
-        disabled={busy !== null}
-        aria-label={t("users.actions.delete", "Sil")}
-        $variant="danger"
-      >
+      <Btn onClick={handleDelete} disabled={busy !== null} $variant="danger">
         {t("users.actions.delete", "Sil")}
       </Btn>
     </ActionsWrap>

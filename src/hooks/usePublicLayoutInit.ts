@@ -8,7 +8,7 @@ import { fetchSettings } from "@/modules/settings/slice/settingsSlice";
 import { fetchCompanyInfo } from "@/modules/company/slice/companySlice";
 import { fetchServices } from "@/modules/services/slice/servicesSlice";
 import { fetchMassage } from "@/modules/massage/slice/massageSlice";
-import { fetchPublishedGalleryItems } from "@/modules/gallery/slice/gallerySlice";
+import { fetchGallery } from "@/modules/gallery/slice/gallerySlice";
 import { fetchGalleryCategories } from "@/modules/gallery/slice/galleryCategorySlice";
 import { fetchAbout } from "@/modules/about/slice/aboutSlice";
 import { fetchNews } from "@/modules/news/slice/newsSlice";
@@ -19,7 +19,7 @@ import { fetchReferences } from "@/modules/references/slice/referencesSlice";
 import { fetchBikes } from "@/modules/bikes/slice/bikesSlice";
 import { fetchEnsotekprod } from "@/modules/ensotekprod/slice/ensotekprodSlice";
 import { fetchSparepart } from "@/modules/sparepart/slice/sparepartSlice";
-import { fetchCoupons } from "@/modules/coupon/slice/couponSlice";
+import { fetchCoupon } from "@/modules/coupon/slice/couponSlice";
 import {
   fetchAllChatSessions,
   fetchActiveChatSessions,
@@ -128,10 +128,10 @@ useEffect(() => {
       dispatch(fetchSparepart());
     }
     if ((!couponSlice.coupons || couponSlice.coupons.length === 0) && couponSlice.status === "idle") {
-      dispatch(fetchCoupons());
+      dispatch(fetchCoupon());
     }
-    if ((gallery.publicImages.length === 0) && gallery.status === "idle") {
-      dispatch(fetchPublishedGalleryItems());
+    if ((gallery.gallery.length === 0) && gallery.status === "idle") {
+      dispatch(fetchGallery());
     }
     if ((!galleryCategory.categories || galleryCategory.categories.length === 0) && galleryCategory.status === "idle") {
       dispatch(fetchGalleryCategories());
@@ -198,7 +198,7 @@ useEffect(() => {
     massageStatus: massageSlice.status,
     massageError: massageSlice.error,
     gallery: {
-      publicImages: gallery.publicImages,
+      publicImages: gallery.gallery,
       status: gallery.status,
     },
     galleryCategories: galleryCategory.categories,

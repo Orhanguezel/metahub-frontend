@@ -1,10 +1,11 @@
+"use client";
+
 import styled from "styled-components";
-import { IFaq } from "@/modules/faq/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/faq/locales";
 import { Skeleton } from "@/shared";
 import { SUPPORTED_LOCALES, type SupportedLocale } from "@/types/common";
-import { MdCheckCircle, MdRadioButtonUnchecked } from "react-icons/md";
+import type { IFaq } from "@/modules/faq/types";
 
 interface Props {
   faqs: IFaq[];
@@ -26,11 +27,11 @@ export default function FAQList({ faqs, loading, onEdit, onDelete, onTogglePubli
 
   if (loading) {
     return (
-      <SkeletonWrapper>
+      <SkeletonWrap>
         {Array.from({ length: 3 }).map((_, i) => (
           <Skeleton key={i} />
         ))}
-      </SkeletonWrapper>
+      </SkeletonWrap>
     );
   }
 
@@ -39,168 +40,199 @@ export default function FAQList({ faqs, loading, onEdit, onDelete, onTogglePubli
   }
 
   return (
-    <ListContainer>
-      {faqs.map((item) => {
-        const question = item.question[lang]?.trim();
-        const answer = item.answer[lang]?.trim();
+    <Wrap>
+      {/* Desktop table */}
+      <TableWrap>
+        <Table>
+          <thead>
+            <tr>
+              <th>{t("adminFaq.question", "Question")}</th>
+              <th>{t("adminFaq.answer", "Answer")}</th>
+              <th>{t("adminFaq.published", "Published")}</th>
+              <th aria-label={t("admin.actions", "Actions")} />
+            </tr>
+          </thead>
+          <tbody>
+            {faqs.map((item) => {
+              const q = item.question?.[lang]?.trim() || "—";
+              const a = item.answer?.[lang]?.trim() || "—";
+              return (
+                <tr key={item._id}>
+                  <td style={{maxWidth:420}}><Ellipsize title={q}>{q}</Ellipsize></td>
+                  <td style={{maxWidth:520}}><Ellipsize title={a}>{a}</Ellipsize></td>
+                  <td>
+                    <Badge $on={!!item.isPublished}>
+                      {item.isPublished ? t("common.yes", "Yes") : t("common.no", "No")}
+                    </Badge>
+                  </td>
+                  <td className="actions">
+                    <Row>
+                      {onTogglePublish && item._id && (
+                        <Secondary onClick={() => onTogglePublish(item._id!, !!item.isPublished)}>
+                          {item.isPublished ? t("adminFaq.unpublish", "Unpublish") : t("adminFaq.publish", "Publish")}
+                        </Secondary>
+                      )}
+                      {onEdit && <Secondary onClick={() => onEdit(item)}>{t("common.edit", "Edit")}</Secondary>}
+                      {onDelete && item._id && (
+                        <Danger
+                          onClick={() => {
+                            const msg = t("confirm.delete", "Are you sure you want to delete this FAQ?");
+                            if (confirm(msg)) onDelete(item._id!);
+                          }}
+                        >
+                          {t("common.delete", "Delete")}
+                        </Danger>
+                      )}
+                    </Row>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
+      </TableWrap>
 
-        return (
-          <FaqCard key={item._id}>
-            <Label>{t("adminFaq.question", "Question")}:</Label>
-            <Question>{question || "—"}</Question>
+      {/* Mobile cards */}
+      <CardsWrap>
+        {faqs.map((item) => {
+          const q = item.question?.[lang]?.trim() || "—";
+          const a = item.answer?.[lang]?.trim() || "—";
+          return (
+            <Card key={item._id}>
+              <CardBody>
+                <Label>{t("adminFaq.question", "Question")}:</Label>
+                <TitleText>{q}</TitleText>
 
-            <Label>{t("adminFaq.answer", "Answer")}:</Label>
-            <Answer>{answer || "—"}</Answer>
+                <Label>{t("adminFaq.answer", "Answer")}:</Label>
+                <BodyText>{a}</BodyText>
 
-            <StatusLine>
-              <strong>{t("adminFaq.published", "Published")}:</strong>{" "}
-              {onTogglePublish ? (
-                <PublishButton
-                  $active={!!item.isPublished}
-                  title={
-                     item.isPublished
-                      ? t("adminFaq.unpublish", "Unpublish")
-                      : t("adminFaq.publish", "Publish")
-                  }
-                  onClick={() =>
-  item._id && onTogglePublish(item._id, !item.isPublished)
-}
-                >
-                  {item.isPublished ? (
-                    <>
-                      <MdCheckCircle size={20} />
-                      {t("common.yes", "Yes")}
-                    </>
-                  ) : (
-                    <>
-                      <MdRadioButtonUnchecked size={20} />
-                      {t("common.no", "No")}
-                    </>
-                  )}
-                </PublishButton>
-              ) : (
-                <span>{item.isPublished ? t("common.yes", "Yes") : t("common.no", "No")}</span>
-              )}
-            </StatusLine>
+                <Status>
+                  {t("adminFaq.published", "Published")}{" "}
+                  <Badge $on={!!item.isPublished}>
+                    {item.isPublished ? t("common.yes", "Yes") : t("common.no", "No")}
+                  </Badge>
+                </Status>
+              </CardBody>
 
-            {(onEdit || onDelete) && (
-              <ButtonGroup>
-                {onEdit && (
-                  <ActionButton onClick={() => onEdit(item)}>
-                    {t("common.edit", "Edit")}
-                  </ActionButton>
+              <CardActions>
+                {onTogglePublish && item._id && (
+                  <Secondary onClick={() => onTogglePublish(item._id!, !!item.isPublished)}>
+                    {item.isPublished ? t("adminFaq.unpublish", "Unpublish") : t("adminFaq.publish", "Publish")}
+                  </Secondary>
                 )}
-                {onDelete && (
-                  <DeleteButton
+                {onEdit && <Secondary onClick={() => onEdit(item)}>{t("common.edit", "Edit")}</Secondary>}
+                {onDelete && item._id && (
+                  <Danger
                     onClick={() => {
-                      const confirmMsg = t(
-                        "confirm.delete",
-                        "Are you sure you want to delete this FAQ?"
-                      );
-                      if (item._id && confirm(confirmMsg)) {
-                        onDelete(item._id);
-                      }
+                      const msg = t("confirm.delete", "Are you sure you want to delete this FAQ?");
+                      if (confirm(msg)) onDelete(item._id!);
                     }}
                   >
                     {t("common.delete", "Delete")}
-                  </DeleteButton>
+                  </Danger>
                 )}
-              </ButtonGroup>
-            )}
-          </FaqCard>
-        );
-      })}
-    </ListContainer>
+              </CardActions>
+            </Card>
+          );
+        })}
+      </CardsWrap>
+    </Wrap>
   );
 }
 
-// --- Styles ---
-const SkeletonWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+/* ---- styled (list/table pattern) ---- */
+const SkeletonWrap = styled.div`display:flex;flex-direction:column;gap:${({theme})=>theme.spacings.sm};`;
+const Wrap = styled.div`display:flex;flex-direction:column;gap:${({theme})=>theme.spacings.md};`;
+
+const TableWrap = styled.div`
+  width:100%;overflow-x:auto;border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};background:${({theme})=>theme.colors.cardBackground};
+  ${({theme})=>theme.media.mobile}{display:none;}
 `;
 
-const ListContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+const Table = styled.table`
+  width:100%;border-collapse:collapse;
+  thead th{
+    background:${({theme})=>theme.colors.tableHeader};
+    color:${({theme})=>theme.colors.textSecondary};
+    font-weight:${({theme})=>theme.fontWeights.semiBold};
+    font-size:${({theme})=>theme.fontSizes.sm};
+    padding:${({theme})=>theme.spacings.md};text-align:left;white-space:nowrap;
+  }
+  td{
+    padding:${({theme})=>theme.spacings.md};
+    border-bottom:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
+    font-size:${({theme})=>theme.fontSizes.sm};vertical-align:top;
+  }
+  td.actions{text-align:right;}
+  tbody tr:hover td{ background:${({theme})=>theme.colors.hoverBackground}; }
 `;
 
-const FaqCard = styled.div`
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.md};
-  padding: 1.5rem 1rem 1.25rem 1rem;
-  position: relative;
+const Ellipsize = styled.div`
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 `;
 
-const Label = styled.div`
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.primary};
-`;
-
-const Question = styled.div`
-  font-size: 1.1rem;
-  margin-bottom: 0.3rem;
-`;
-
-const Answer = styled.div`
-  font-size: 1rem;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: 0.8rem;
-`;
-
-const StatusLine = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0.5rem 0 0.2rem 0;
-  font-size: 0.96rem;
-`;
-
-const PublishButton = styled.button<{ $active: boolean }>`
-  background: ${({ $active, theme }) =>
-    $active ? theme.colors.success : theme.colors.border};
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 3px 12px 3px 7px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35em;
-  font-size: 1em;
-  transition: background 0.15s;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.warning};
+const CardsWrap = styled.div`
+  display:none;
+  ${({theme})=>theme.media.mobile}{
+    display:grid;grid-template-columns:1fr;gap:${({theme})=>theme.spacings.md};
   }
 `;
 
-const ButtonGroup = styled.div`
-  margin-top: 1rem;
-  display: flex;
-  gap: 0.5rem;
+const Card = styled.article`
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
+  border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};
+  overflow:hidden;
 `;
 
-const ActionButton = styled.button`
-  padding: 0.4rem 0.75rem;
-  background: ${({ theme }) => theme.colors.warning};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+const CardBody = styled.div`padding:${({theme})=>theme.spacings.md};display:flex;flex-direction:column;gap:6px;`;
+const Label = styled.span`font-size:${({theme})=>theme.fontSizes.xsmall};color:${({theme})=>theme.colors.textSecondary};`;
+const TitleText = styled.div`font-weight:${({theme})=>theme.fontWeights.medium};`;
+const BodyText = styled.div`color:${({theme})=>theme.colors.text}; opacity:.9;`;
+
+const Status = styled.div`
+  margin-top:${({theme})=>theme.spacings.xs};
+  font-size:${({theme})=>theme.fontSizes.xsmall};
+  color:${({theme})=>theme.colors.textSecondary};
 `;
 
-const DeleteButton = styled.button`
-  padding: 0.4rem 0.75rem;
-  background: ${({ theme }) => theme.colors.danger};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+const CardActions = styled.div`
+  display:flex;gap:${({theme})=>theme.spacings.xs};justify-content:flex-end;
+  padding:${({theme})=>theme.spacings.sm} ${({theme})=>theme.spacings.md} ${({theme})=>theme.spacings.md};
+  border-top:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.borderBright};
+`;
+
+const Row = styled.div`display:flex;gap:${({theme})=>theme.spacings.xs};flex-wrap:wrap;justify-content:flex-end;`;
+
+const BaseBtn = styled.button`
+  padding:8px 10px;border-radius:${({theme})=>theme.radii.md};cursor:pointer;
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  font-size:${({theme})=>theme.fontSizes.xsmall};
+`;
+
+const Secondary = styled(BaseBtn)`
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+`;
+
+const Danger = styled(BaseBtn)`
+  background:${({theme})=>theme.colors.dangerBg};
+  color:${({theme})=>theme.colors.danger};
+  border-color:${({theme})=>theme.colors.danger};
+  &:hover{
+    background:${({theme})=>theme.colors.dangerHover};
+    color:${({theme})=>theme.colors.textOnDanger};
+    border-color:${({theme})=>theme.colors.dangerHover};
+  }
+`;
+
+const Badge = styled.span<{ $on:boolean }>`
+  display:inline-block;padding:.2em .6em;border-radius:${({theme})=>theme.radii.pill};
+  background:${({$on,theme})=>$on?theme.colors.successBg:theme.colors.inputBackgroundLight};
+  color:${({$on,theme})=>$on?theme.colors.success:theme.colors.textSecondary};
+  font-size:${({theme})=>theme.fontSizes.xsmall};
 `;
 
 const Empty = styled.p`

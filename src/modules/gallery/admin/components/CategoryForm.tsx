@@ -1,18 +1,19 @@
+// src/modules/gallery/components/GalleryCategoryFormModal.tsx
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect} from "react";
 import styled from "styled-components";
-import type { IGalleryCategory } from "@/modules/gallery/types";
+import type { GalleryCategory } from "@/modules/gallery/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/gallery";
-import ImageUploadWithPreview from "@/shared/ImageUploadWithPreview";
+import ImageUploader, { type UploadImage } from "@/shared/ImageUploader";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import { toast } from "react-toastify";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  editingItem: IGalleryCategory | null;
+  editingItem: GalleryCategory | null;
   onSubmit: (formData: FormData, id?: string) => Promise<void>;
 }
 
@@ -29,92 +30,87 @@ export default function GalleryCategoryFormModal({
 }: Props) {
   const { t } = useI18nNamespace("gallery", translations);
 
-  // --- State
+  // --- Çok dilli alanlar
   const [name, setName] = useState<Record<SupportedLocale, string>>(EMPTY_LABEL);
   const [description, setDescription] = useState<Record<SupportedLocale, string>>(EMPTY_LABEL);
 
-  // --- Gallery gibi tam pattern ---
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [existingImages, setExistingImages] = useState<string[]>([]);
-  const [removedImages, setRemovedImages] = useState<string[]>([]);
+  // --- Görsel yönetimi (ImageUploader ile aynı pattern)
+  const [existing, setExisting] = useState<UploadImage[]>([]);
+  const [removedExisting, setRemovedExisting] = useState<UploadImage[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
 
   // --- Edit Mode Fill ---
   useEffect(() => {
     if (editingItem) {
-      setName({ ...EMPTY_LABEL, ...editingItem.name });
-      setDescription({ ...EMPTY_LABEL, ...editingItem.description });
-      setExistingImages(editingItem.images?.map((img) => img.url) || []);
-      setSelectedFiles([]);
-      setRemovedImages([]);
+      setName({ ...EMPTY_LABEL, ...(editingItem.name || {}) });
+      setDescription({ ...EMPTY_LABEL, ...(editingItem.description || {}) });
+
+      // Tip tarafında images yok; backend dönüyor olabilir → güvenli map
+      const imgs: UploadImage[] = Array.isArray((editingItem as any).images)
+        ? (editingItem as any).images.map((img: any) => ({
+            url: img?.url,
+            thumbnail: img?.thumbnail,
+            webp: img?.webp,
+            publicId: img?.publicId,
+          }))
+        : [];
+      setExisting(imgs);
+      setRemovedExisting([]);
+      setFiles([]);
     } else {
       setName(EMPTY_LABEL);
       setDescription(EMPTY_LABEL);
-      setExistingImages([]);
-      setSelectedFiles([]);
-      setRemovedImages([]);
+      setExisting([]);
+      setRemovedExisting([]);
+      setFiles([]);
     }
   }, [editingItem, isOpen]);
-
-  // --- ImageUpload Pattern ---
-  const handleImagesChange = useCallback(
-    (files: File[], removed: string[], current: string[]) => {
-      setSelectedFiles(files);
-      setRemovedImages(removed);
-      setExistingImages(current); // preview
-    },
-    []
-  );
 
   // --- Submit ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Doldurulan dilleri gallery gibi otomatik doldur
+    // Boşları ilk dolu değerle tamamla (gallery ile aynı yaklaşım)
     const filledName = { ...name };
-    const firstNameValue = Object.values(name).find((v) => v.trim());
-    if (firstNameValue) {
+    const firstName = Object.values(filledName).find((v) => (v || "").trim());
+    if (firstName) {
       SUPPORTED_LOCALES.forEach((lng) => {
-        if (!filledName[lng]) filledName[lng] = firstNameValue;
+        if (!filledName[lng]) filledName[lng] = firstName;
       });
     }
     const filledDesc = { ...description };
-    const firstDescValue = Object.values(description).find((v) => v.trim());
-    if (firstDescValue) {
+    const firstDesc = Object.values(filledDesc).find((v) => (v || "").trim());
+    if (firstDesc) {
       SUPPORTED_LOCALES.forEach((lng) => {
-        if (!filledDesc[lng]) filledDesc[lng] = firstDescValue;
+        if (!filledDesc[lng]) filledDesc[lng] = firstDesc;
       });
     }
 
-    // En az bir isim (tüm dillerde doldurulmuş olacak)
-    if (!Object.values(filledName).some((v) => v.trim())) {
+    if (!Object.values(filledName).some((v) => (v || "").trim())) {
       toast.error(t("admin.gallerycategory.name_required", "Category name is required."));
       return;
     }
 
-    // --- Gallery pattern: dosya eklemesiz submit kabul edilsin mi? Zorunlu yapmak istersen şunu aç:
-    // if (selectedFiles.length === 0 && existingImages.length === 0) {
-    //   toast.error(t("admin.gallerycategory.images_required", "At least one image required."));
-    //   return;
-    // }
-
-    // --- FormData ---
     const formData = new FormData();
     formData.append("name", JSON.stringify(filledName));
     formData.append("description", JSON.stringify(filledDesc));
-    selectedFiles.forEach((file) => {
-      formData.append("images", file); // **ÇOK ÖNEMLİ:** field adı "images" olmalı!
-    });
-    if (removedImages.length > 0) {
-      formData.append("removedImages", JSON.stringify(removedImages));
+
+    files.forEach((file) => formData.append("images", file)); // field adı: images
+
+    if (removedExisting.length > 0) {
+      formData.append(
+        "removedImages",
+        JSON.stringify(
+          removedExisting.map((x) => ({ url: x.url, publicId: x.publicId }))
+        )
+      );
     }
 
     try {
       await onSubmit(formData, editingItem?._id);
       onClose();
     } catch {
-      toast.error(
-        t("admin.gallerycategory.submit_error", "Error submitting category.")
-      );
+      toast.error(t("admin.gallerycategory.submit_error", "Error submitting category."));
     }
   };
 
@@ -127,6 +123,7 @@ export default function GalleryCategoryFormModal({
           ? t("admin.gallerycategory.edit", "Edit Gallery Category")
           : t("admin.gallerycategory.create", "Add New Gallery Category")}
       </h2>
+
       <form onSubmit={handleSubmit} autoComplete="off">
         {SUPPORTED_LOCALES.map((lng) => (
           <div key={lng}>
@@ -136,37 +133,40 @@ export default function GalleryCategoryFormModal({
             <input
               id={`name-${lng}`}
               type="text"
-              value={name[lng]}
+              value={name[lng] || ""}
               onChange={(e) => setName({ ...name, [lng]: e.target.value })}
               autoComplete="off"
             />
+
             <label htmlFor={`desc-${lng}`}>
               {t("admin.gallerycategory.description", "Description")} ({lng.toUpperCase()})
             </label>
             <textarea
               id={`desc-${lng}`}
-              value={description[lng]}
-              onChange={(e) =>
-                setDescription({ ...description, [lng]: e.target.value })
-              }
+              value={description[lng] || ""}
+              onChange={(e) => setDescription({ ...description, [lng]: e.target.value })}
               autoComplete="off"
             />
           </div>
         ))}
 
         <label>{t("admin.gallerycategory.image", "Images")}</label>
-        <ImageUploadWithPreview
-          max={5}
-          folder="galleryCategory"
-          defaultImages={existingImages}
-          onChange={handleImagesChange}
+        <ImageUploader
+          existing={existing}
+          onExistingChange={setExisting}
+          removedExisting={removedExisting}
+          onRemovedExistingChange={setRemovedExisting}
+          files={files}
+          onFilesChange={setFiles}
+          maxFiles={5}
+          accept="image/*"
+          sizeLimitMB={15}
+          helpText={t("uploader.help", "PNG/JPG/WebP, up to 5 images")}
         />
 
         <ButtonGroup>
           <button type="submit">
-            {editingItem
-              ? t("admin.update", "Update")
-              : t("admin.create", "Create")}
+            {editingItem ? t("admin.update", "Update") : t("admin.create", "Create")}
           </button>
           <button type="button" onClick={onClose}>
             {t("admin.cancel", "Cancel")}
@@ -177,7 +177,7 @@ export default function GalleryCategoryFormModal({
   );
 }
 
-// --- Styles (gallery ile uyumlu) ---
+/* ---- Styles (gallery ile uyumlu) ---- */
 const FormWrapper = styled.div`
   max-width: 600px;
   width: 100%;
@@ -188,30 +188,46 @@ const FormWrapper = styled.div`
   border-radius: ${({ theme }) => theme.radii.md};
   max-height: 80vh;
   overflow-y: auto;
+
   @media (max-width: 600px) {
     padding: 1rem;
     max-width: 95vw;
   }
+
   h2 {
     margin-bottom: 1rem;
+    color: ${({ theme }) => theme.colors.title};
   }
+
   label {
     display: block;
     margin-top: 1rem;
     margin-bottom: 0.25rem;
     font-weight: 600;
+    color: ${({ theme }) => theme.colors.text};
   }
+
   input,
   textarea,
   select {
     width: 100%;
-    padding: 0.5rem;
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: 4px;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid ${({ theme }) => theme.colors.inputBorder || theme.colors.border};
+    border-radius: 8px;
     background-color: ${({ theme }) => theme.colors.inputBackground};
     color: ${({ theme }) => theme.colors.text};
     font-size: 0.95rem;
+    outline: none;
+    transition: border-color .15s ease;
   }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryTransparent};
+  }
+
   textarea {
     min-height: 100px;
     resize: vertical;
@@ -222,22 +238,25 @@ const ButtonGroup = styled.div`
   margin-top: 1.5rem;
   display: flex;
   gap: 1rem;
+
   button {
-    padding: 0.5rem 1rem;
-    font-weight: 500;
+    padding: 0.6rem 1rem;
+    font-weight: 600;
     border: none;
-    border-radius: 4px;
+    border-radius: ${({ theme }) => theme.radii.md};
     cursor: pointer;
-    &:first-child {
-      background: ${({ theme }) => theme.colors.primary};
-      color: #fff;
-    }
-    &:last-child {
-      background: ${({ theme }) => theme.colors.danger};
-      color: #fff;
-    }
-    &:hover {
-      opacity: 0.9;
-    }
+    transition: opacity .15s ease;
   }
+
+  button:first-child {
+    background: ${({ theme }) => theme.colors.primary};
+    color: #fff;
+  }
+
+  button:last-child {
+    background: ${({ theme }) => theme.colors.danger};
+    color: #fff;
+  }
+
+  button:hover { opacity: .9; }
 `;

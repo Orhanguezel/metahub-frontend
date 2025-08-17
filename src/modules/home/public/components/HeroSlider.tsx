@@ -12,60 +12,69 @@ import SkeletonBox from "@/shared/Skeleton";
 import Image from "next/image";
 import useModal from "@/hooks/useModal";
 import Link from "next/link";
-import type { IGallery, IGalleryCategory } from "@/modules/gallery/types";
+import type { IGallery, IGalleryImage, GalleryCategory } from "@/modules/gallery/types";
 
 const SLIDER_CATEGORY_SLUG = "carousel";
 
+type Slide = {
+  id: string;
+  title: IGallery["title"];
+  summary: IGallery["summary"];
+  slug?: string;
+  image: Pick<IGalleryImage, "url" | "thumbnail" | "webp"> | null;
+  order: number;
+};
+
 const HeroSlider = () => {
-  const { publicImages, loading } = useAppSelector((state) => state.gallery);
-  const { categories } = useAppSelector((state) => state.galleryCategory);
+  const { gallery, loading } = useAppSelector((state) => state.gallery);
+  const { categories } = useAppSelector((state) => state.galleryCategory) as {
+    categories: GalleryCategory[];
+  };
+
   const { i18n, t } = useI18nNamespace("home", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   // --- Kategori ID seçimi ---
   const selectedCategoryId = useMemo(() => {
     if (!SLIDER_CATEGORY_SLUG || !Array.isArray(categories)) return "";
-    const cat = categories.find((c: IGalleryCategory) => c.slug === SLIDER_CATEGORY_SLUG);
+    const cat = categories.find((c) => c.slug === SLIDER_CATEGORY_SLUG);
     return cat?._id || "";
   }, [categories]);
 
-  // --- Görselleri düzleştir ---
-  const flatItems = useMemo(() => {
-    if (!selectedCategoryId || !Array.isArray(publicImages)) return [];
-    const filteredGalleries = publicImages.filter((gallery: IGallery) =>
-      typeof gallery.category === "string"
-        ? gallery.category === selectedCategoryId
-        : gallery.category?._id === selectedCategoryId
-    );
-    const allImages: any[] = [];
-    filteredGalleries.forEach((gallery) => {
-      (gallery.images || []).forEach((img) => {
-        allImages.push({
-          ...img,
-          order: typeof img.order === "string" ? Number(img.order) : img.order ?? 0,
-          _galleryId: gallery._id,
-          category: gallery.category,
-          type: gallery.type,
-          tenant: gallery.tenant,
-        });
-      });
-    });
-    // Sırala: Küçükten büyüğe (order)
-    allImages.sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
-    return allImages;
-  }, [publicImages, selectedCategoryId]);
+  // --- Galerileri slide'a dönüştür ---
+  const slides = useMemo<Slide[]>(() => {
+    if (!selectedCategoryId || !Array.isArray(gallery)) return [];
+    return gallery
+      .filter((g: IGallery) =>
+        typeof g.category === "string"
+          ? g.category === selectedCategoryId
+          : g.category?._id === selectedCategoryId
+      )
+      .map((g) => {
+        const first = g.images?.[0];
+        return {
+          id: g._id,
+          title: g.title,
+          summary: g.summary,
+          slug: g.slug,
+          image: first ? { url: first.url, thumbnail: first.thumbnail, webp: first.webp } : null,
+          order: Number.isFinite(g.order) ? g.order : 0,
+        };
+      })
+      .sort((a, b) => a.order - b.order);
+  }, [gallery, selectedCategoryId]);
 
   // --- Modal Hook ---
-  const { isOpen, open, close, next, prev, currentIndex, currentItem, setIndex } = useModal(flatItems);
+  const { isOpen, open, close, next, prev, currentIndex, currentItem, setIndex } = useModal(slides);
 
   // --- Otomatik Slider ---
   useEffect(() => {
-    if (flatItems.length === 0 || isOpen) return;
+    if (slides.length === 0 || isOpen) return;
     const timer = setInterval(() => {
-      setIndex((current) => (current + 1) % flatItems.length);
+      setIndex((current) => (current + 1) % slides.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, [flatItems.length, setIndex, isOpen]);
+  }, [slides.length, setIndex, isOpen]);
 
   // --- Modal açıkken klavye ile sağ/sol/Esc ---
   useEffect(() => {
@@ -89,42 +98,50 @@ const HeroSlider = () => {
     );
   }
 
-  if (flatItems.length === 0) {
+  if (slides.length === 0) {
     return <HeroWrapper>{t("noItemsFound", "No products found.")}</HeroWrapper>;
   }
 
-  // --- Aktif görsel bilgisi ---
-  const currentHero = flatItems[currentIndex];
-  const title = currentHero?.name?.[lang] || currentHero?.name?.["en"] || "No title";
-  const description = currentHero?.description?.[lang] || currentHero?.description?.["en"] || "No description";
+  // --- Aktif slide bilgisi ---
+  const currentSlide = slides[currentIndex];
+
+  const title =
+    currentSlide?.title?.[lang] ||
+    currentSlide?.title?.en ||
+    t("hero1.heroTitle", "Königs Masaj");
+
+  const description =
+    currentSlide?.summary?.[lang] ||
+    currentSlide?.summary?.en ||
+    t("hero1.heroSubtitle", "Doğallığın dokunuşuyla sağlığınızı şımartın");
+
   let imageSrc =
-    currentHero?.webp ||
-    currentHero?.url ||
-    currentHero?.thumbnail ||
+    currentSlide?.image?.webp ||
+    currentSlide?.image?.url ||
+    currentSlide?.image?.thumbnail ||
     "/placeholder.jpg";
+
   if (typeof imageSrc === "string" && imageSrc.startsWith("https://res.cloudinary.com/")) {
     imageSrc = `${imageSrc}?w=900&h=600&c_fill&q_auto,f_auto`;
   }
 
-  const detailLink = currentHero?.productId
-    ? `/ensotekprod/${currentHero.productId}`
-    : `/ensotekprod`;
+  const detailLink = currentSlide?.slug ? `/gallery/${currentSlide.slug}` : `/gallery`;
 
   return (
     <>
       <HeroWrapper>
         <ImageCol>
           <MainImage
-  src={imageSrc}
-  alt={title}
-  fill
-  priority
-  sizes="60vw"
-  quality={90}
-  style={{ objectFit: "cover" }}
-/>
+            src={imageSrc}
+            alt={title}
+            fill
+            priority
+            sizes="60vw"
+            quality={90}
+            style={{ objectFit: "cover" }}
+          />
           <DotRow>
-            {flatItems.map((_, index) => (
+            {slides.map((_, index) => (
               <Dot
                 key={index}
                 $active={index === currentIndex}
@@ -135,34 +152,31 @@ const HeroSlider = () => {
             ))}
           </DotRow>
         </ImageCol>
+
         <ContentCol>
           <HeroTitle as="h1">{title}</HeroTitle>
           <HeroDesc>{description}</HeroDesc>
+
           <SliderControls>
-  <ControlButton onClick={prev} aria-label="Previous">
-    <FaArrowLeft />
-  </ControlButton>
-  <ControlButton onClick={next} aria-label="Next">
-    <FaArrowRight />
-  </ControlButton>
-  <ControlButton onClick={() => open(currentIndex)} aria-label="Expand">
-    <FaExpand />
-  </ControlButton>
-  <StyledLink href={detailLink}>
-  {t("hero.products", "Ürünler")}
-</StyledLink>
-</SliderControls>
+            <ControlButton onClick={prev} aria-label="Previous">
+              <FaArrowLeft />
+            </ControlButton>
+            <ControlButton onClick={next} aria-label="Next">
+              <FaArrowRight />
+            </ControlButton>
+            <ControlButton onClick={() => open(currentIndex)} aria-label="Expand">
+              <FaExpand />
+            </ControlButton>
 
-
+            <StyledLink href={detailLink}>
+              {t("hero.products", "Ürünler")}
+            </StyledLink>
+          </SliderControls>
         </ContentCol>
       </HeroWrapper>
+
       {/* Modal */}
-      <Modal
-        isOpen={isOpen}
-        onClose={close}
-        onNext={next}
-        onPrev={prev}
-      >
+      <Modal isOpen={isOpen} onClose={close} onNext={next} onPrev={prev}>
         <ModalContent>
           <Image
             src={imageSrc}
@@ -174,13 +188,13 @@ const HeroSlider = () => {
               width: "100%",
               maxHeight: "80vh",
               borderRadius: "18px",
-              background: "#fff"
+              background: "#fff",
             }}
           />
-          <ModalTitle>{currentItem?.name?.[lang]}</ModalTitle>
-          <ModalDesc>{currentItem?.description?.[lang]}</ModalDesc>
+          <ModalTitle>{currentItem?.title?.[lang] || currentItem?.title?.en}</ModalTitle>
+          <ModalDesc>{currentItem?.summary?.[lang] || currentItem?.summary?.en}</ModalDesc>
           <DotRow style={{ marginTop: "10px" }}>
-            {flatItems.map((_, index) => (
+            {slides.map((_, index) => (
               <Dot key={index} $active={index === currentIndex} />
             ))}
           </DotRow>
@@ -192,7 +206,8 @@ const HeroSlider = () => {
 
 export default HeroSlider;
 
-// --- Styled Components ---
+/* ---------------- Styled ---------------- */
+
 const HeroWrapper = styled.section`
   display: flex;
   align-items: stretch;
@@ -212,7 +227,6 @@ const HeroWrapper = styled.section`
     min-height: 260px;
   }
 `;
-
 
 const ImageCol = styled.div`
   flex: 1.3;
@@ -239,7 +253,8 @@ const ImageCol = styled.div`
 
 const MainImage = styled(Image)`
   position: absolute !important;
-  left: 0; top: 0;
+  left: 0;
+  top: 0;
   width: 100% !important;
   height: 100% !important;
   object-fit: cover;
@@ -269,8 +284,8 @@ const Dot = styled.button<{ $active: boolean }>`
   border-radius: ${({ theme }) => theme.radii.circle};
   background: ${({ $active, theme }) =>
     $active ? theme.colors.accent : theme.colors.skeleton};
-  border: 2.5px solid ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.borderLight};
+  border: 2.5px solid
+    ${({ $active, theme }) => ($active ? theme.colors.primary : theme.colors.borderLight)};
   transition: background 0.21s, border 0.22s;
   box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.md : "none")};
   cursor: pointer;
@@ -296,7 +311,6 @@ const ContentCol = styled.div`
   }
 `;
 
-
 const HeroTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
   color: ${({ theme }) => theme.colors.title};
@@ -304,7 +318,7 @@ const HeroTitle = styled.h1`
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
   letter-spacing: 0.01em;
   margin-bottom: 2px;
-  text-shadow: 0 3px 16px rgba(40,117,194,0.22);
+  text-shadow: 0 3px 16px rgba(40, 117, 194, 0.22);
 `;
 
 const HeroDesc = styled.p`
@@ -313,7 +327,7 @@ const HeroDesc = styled.p`
   font-family: ${({ theme }) => theme.fonts.body};
   font-weight: ${({ theme }) => theme.fontWeights.regular};
   line-height: 1.6;
-  text-shadow: 0 2px 10px rgba(30,80,160,0.09);
+  text-shadow: 0 2px 10px rgba(30, 80, 160, 0.09);
   margin-bottom: 18px;
   max-width: 94%;
   word-break: break-word;
@@ -328,7 +342,6 @@ const HeroDesc = styled.p`
     padding-right: 7vw;
   }
 `;
-
 
 const SliderControls = styled.div`
   display: flex;
@@ -405,7 +418,6 @@ const ModalContent = styled.div`
   overflow-wrap: anywhere;
 `;
 
-
 const ModalTitle = styled.h2`
   color: ${({ theme }) => theme.colors.white};
   font-size: ${({ theme }) => theme.fontSizes.xl};
@@ -416,5 +428,5 @@ const ModalDesc = styled.p`
   color: ${({ theme }) => theme.colors.white};
   font-size: ${({ theme }) => theme.fontSizes.lg};
   margin-top: 8px;
-  text-shadow: 0 2px 10px rgba(30,80,160,0.08);
+  text-shadow: 0 2px 10px rgba(30, 80, 160, 0.08);
 `;

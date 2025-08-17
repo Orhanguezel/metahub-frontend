@@ -1,32 +1,43 @@
+"use client";
+
 import styled from "styled-components";
 import type { INewsletter } from "@/modules/newsletter/types";
 
 interface Props {
   subscriber: INewsletter;
   onClose: () => void;
-  t: (key: string, defaultValue?: string, vars?: Record<string, any>) => string
-
+  t: (key: string, defaultValue?: string, vars?: Record<string, any>) => string;
 }
 
 export default function SubscriberModal({ subscriber, onClose, t }: Props) {
+  const titleId = "subscriber-modal-title";
+
   return (
     <Overlay onClick={onClose}>
-      <Box onClick={e => e.stopPropagation()}>
+      <Box
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+      >
         <CloseBtn onClick={onClose} aria-label={t("admin.close", "Kapat")}>×</CloseBtn>
-        <Title>{t("admin.details", "Abone Detayları")}</Title>
+
+        <Title id={titleId}>{t("admin.details", "Abone Detayları")}</Title>
+
         <Info>
           <b>{t("admin.email", "E-posta")}:</b> {subscriber.email}
         </Info>
         <Info>
           <b>{t("admin.status", "Durum")}:</b>{" "}
-          {subscriber.verified
-            ? <span style={{ color: "#0b933c", fontWeight: 600 }}>{t("admin.verified", "Onaylı")}</span>
-            : <span style={{ color: "#fa9416", fontWeight: 600 }}>{t("admin.unverified", "Onaysız")}</span>
-          }
+          {subscriber.verified ? (
+            <State $ok>{t("admin.verified", "Onaylı")}</State>
+          ) : (
+            <State>{t("admin.unverified", "Onaysız")}</State>
+          )}
         </Info>
         <Info>
           <b>{t("admin.subscribedAt", "Abone Tarihi")}:</b>{" "}
-          {subscriber.subscribeDate && new Date(subscriber.subscribeDate).toLocaleString()}
+          {subscriber.subscribeDate ? new Date(subscriber.subscribeDate).toLocaleString() : "-"}
         </Info>
         {subscriber.unsubscribeDate && (
           <Info>
@@ -39,7 +50,7 @@ export default function SubscriberModal({ subscriber, onClose, t }: Props) {
   );
 }
 
-// --- THEME SUPPORTED STYLES ---
+/* ---- styled (admin pattern) ---- */
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
@@ -49,40 +60,49 @@ const Overlay = styled.div`
   align-items: center;
   justify-content: center;
 `;
+
 const Box = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: 13px;
-  padding: 2.2em 2.4em 1.5em 2.4em;
-  min-width: 340px;
+  border-radius: ${({ theme }) => theme.radii.lg};
+  padding: ${({ theme }) => theme.spacings.lg};
+  min-width: 360px;
   max-width: 96vw;
   position: relative;
-  box-shadow: 0 6px 32px #2223;
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+
   ${({ theme }) => theme.media.small} {
-    padding: 1.2em 0.8em 1.3em 1.2em;
+    padding: ${({ theme }) => theme.spacings.md};
     min-width: 90vw;
   }
 `;
+
 const CloseBtn = styled.button`
   position: absolute;
-  top: 12px;
-  right: 16px;
-  font-size: 2em;
-  background: none;
+  top: 10px;
+  right: 14px;
+  font-size: 1.6rem;
+  background: transparent;
   border: none;
-  color: #888;
-  opacity: 0.7;
+  color: ${({ theme }) => theme.colors.textSecondary};
   cursor: pointer;
-  &:hover { opacity: 1; }
-`;
-const Title = styled.h3`
-  margin: 0 0 16px 0;
-  font-size: 1.32em;
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: 700;
-`;
-const Info = styled.div`
-  margin-bottom: 11px;
-  font-size: 1em;
-  b { font-weight: 500; }
+  &:hover { opacity: ${({ theme }) => theme.opacity.hover}; }
 `;
 
+const Title = styled.h3`
+  margin: 0 0 ${({ theme }) => theme.spacings.md} 0;
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  color: ${({ theme }) => theme.colors.title};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+`;
+
+const Info = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  b { font-weight: ${({ theme }) => theme.fontWeights.medium}; }
+`;
+
+const State = styled.span<{ $ok?: boolean }>`
+  color: ${({ $ok, theme }) => ($ok ? theme.colors.success : theme.colors.warning)};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+`;

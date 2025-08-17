@@ -1,14 +1,13 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { Coupon } from "../types";
+import type { Coupon } from "@/modules/coupon";
 
-// State tipi
 interface CouponState {
-  coupons: Coupon[];         // Public (kullanıcıya açık)
-  couponsAdmin: Coupon[];    // Admin (panelde tüm kuponlar)
-  current: Coupon | null;
-  loading: boolean;
+  coupons: Coupon[];
+  couponsAdmin: Coupon[];
+  selected: Coupon | null;
   status: "idle" | "loading" | "succeeded" | "failed";
+  loading: boolean;
   error: string | null;
   successMessage: string | null;
 }
@@ -16,69 +15,124 @@ interface CouponState {
 const initialState: CouponState = {
   coupons: [],
   couponsAdmin: [],
-  current: null,
-  loading: false,
+  selected: null,
   status: "idle",
+  loading: false,
   error: null,
   successMessage: null,
 };
 
-// --- PUBLIC --- //
-// 📥 Tüm geçerli kuponları getir (public)
-export const fetchCoupons = createAsyncThunk(
-  "coupon/fetchCoupons",
+const BASE = "/coupon";
+
+const extractErrorMessage = (payload: unknown): string => {
+  if (typeof payload === "string") return payload;
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    "message" in payload &&
+    typeof (payload as any).message === "string"
+  )
+    return (payload as any).message;
+  return "An error occurred.";
+};
+
+// --- Async Thunks ---
+
+export const fetchCoupon = createAsyncThunk<Coupon[]>(
+  "coupon/fetchAll",
   async (_, thunkAPI) => {
-    const res = await apiCall("get", "/coupon", null, thunkAPI.rejectWithValue);
-    return res.data; // Coupon[]
+    const res = await apiCall("get", `${BASE}`, null, thunkAPI.rejectWithValue);
+    // response: { success, message, data }
+    return res.data;
   }
 );
 
-// 🔎 Kupon kodu kontrol et (public/checkout)
-export const checkCouponByCode = createAsyncThunk(
-  "coupon/checkCouponByCode",
-  async (code: string, thunkAPI) => {
-    const res = await apiCall("get", `/coupon/check/${code}`, null, thunkAPI.rejectWithValue);
-    return res.data; // Coupon
-  }
-);
-
-// --- ADMIN --- //
-// 🛠️ Tüm kuponları getir (admin)
-export const fetchCouponsAdmin = createAsyncThunk(
-  "coupon/fetchCouponsAdmin",
+export const fetchCouponsAdmin = createAsyncThunk<Coupon[]>(
+  "coupon/fetchAllAdmin",
   async (_, thunkAPI) => {
-    const res = await apiCall("get", "/coupon/admin", null, thunkAPI.rejectWithValue);
-    return res.data; // Coupon[]
+    const res = await apiCall(
+      "get",
+      `${BASE}/admin`,
+      null,
+      thunkAPI.rejectWithValue
+    );
+    return res.data;
   }
 );
 
-// ➕ Yeni kupon oluştur (admin)
-export const createCouponAdmin = createAsyncThunk(
-  "coupon/createCouponAdmin",
-  async (data: Omit<Coupon, "_id" | "createdAt" | "updatedAt">, thunkAPI) => {
-    const res = await apiCall("post", "/coupon/admin", data, thunkAPI.rejectWithValue);
-    return res.data; // Coupon
+export const createCoupon = createAsyncThunk(
+  "coupon/create",
+  async (formData: FormData, thunkAPI) => {
+    const res = await apiCall(
+      "post",
+      `${BASE}/admin`,
+      formData,
+      thunkAPI.rejectWithValue
+    );
+    // return: { success, message, data }
+    return { ...res, data: res.data };
   }
 );
 
-// ✏️ Kupon güncelle (admin)
-export const updateCouponAdmin = createAsyncThunk(
-  "coupon/updateCouponAdmin",
-  async ({ id, data }: { id: string; data: Partial<Coupon> }, thunkAPI) => {
-    const res = await apiCall("put", `/coupon/admin/${id}`, data, thunkAPI.rejectWithValue);
-    return res.data; // Coupon
+export const updateCoupon = createAsyncThunk(
+  "coupon/update",
+  async ({ id, formData }: { id: string; formData: FormData }, thunkAPI) => {
+    const res = await apiCall(
+      "put",
+      `${BASE}/admin/${id}`,
+      formData,
+      thunkAPI.rejectWithValue
+    );
+    return { ...res, data: res.data };
   }
 );
 
-// 🗑 Kupon sil (admin)
-export const deleteCouponAdmin = createAsyncThunk(
-  "coupon/deleteCouponAdmin",
+export const deleteCoupon = createAsyncThunk(
+  "coupon/delete",
   async (id: string, thunkAPI) => {
-    await apiCall("delete", `/coupon/admin/${id}`, null, thunkAPI.rejectWithValue);
-    return id; // sadece ID
+    const res = await apiCall(
+      "delete",
+      `${BASE}/admin/${id}`,
+      null,
+      thunkAPI.rejectWithValue
+    );
+    // return: { success, message }
+    return { id, message: res.message };
   }
 );
 
+export const togglePublishCoupon = createAsyncThunk(
+  "coupon/togglePublish",
+  async (
+    { id, isPublished }: { id: string; isPublished: boolean },
+    thunkAPI
+  ) => {
+    const formData = new FormData();
+    formData.append("isPublished", String(isPublished));
+    const res = await apiCall(
+      "put",
+      `${BASE}/admin/${id}`,
+      formData,
+      thunkAPI.rejectWithValue
+    );
+    return { ...res, data: res.data };
+  }
+);
+
+export const fetchCouponBySlug = createAsyncThunk(
+  "coupon/fetchBySlug",
+  async (slug: string, thunkAPI) => {
+    const res = await apiCall(
+      "get",
+      `${BASE}/slug/${slug}`,
+      null,
+      thunkAPI.rejectWithValue
+    );
+    return res.data;
+  }
+);
+
+// --- Slice ---
 const couponSlice = createSlice({
   name: "coupon",
   initialState,
@@ -87,86 +141,104 @@ const couponSlice = createSlice({
       state.error = null;
       state.successMessage = null;
     },
-    clearCurrentCoupon: (state) => {
-      state.current = null;
+    setSelectedCoupon: (state, action: PayloadAction<Coupon | null>) => {
+      state.selected = action.payload;
     },
   },
   extraReducers: (builder) => {
-    const loading = (state: CouponState) => {
+    const setLoading = (state: CouponState) => {
       state.loading = true;
+      state.status = "loading";
       state.error = null;
-      state.successMessage = null;
     };
-    const failed = (state: CouponState, action: PayloadAction<any>) => {
+
+    const setError = (state: CouponState, action: PayloadAction<any>) => {
       state.loading = false;
-      state.error = action.payload?.message || "An error occurred.";
+      state.status = "failed";
+      state.error = extractErrorMessage(action.payload);
     };
 
-    // --- Public: geçerli kuponlar ---
+    // 🌐 Public
     builder
-      .addCase(fetchCoupons.pending, loading)
-      .addCase(fetchCoupons.fulfilled, (state, action) => {
+      .addCase(fetchCoupon.pending, setLoading)
+      .addCase(fetchCoupon.fulfilled, (state, action) => {
         state.loading = false;
-        state.coupons = action.payload; // Coupon[]
+        state.status = "succeeded";
+        state.coupons = action.payload;
       })
-      .addCase(fetchCoupons.rejected, failed);
+      .addCase(fetchCoupon.rejected, setError);
 
-    // --- Public: kupon kodu kontrolü ---
+    // 🔐 Admin List
     builder
-      .addCase(checkCouponByCode.pending, loading)
-      .addCase(checkCouponByCode.fulfilled, (state, action) => {
-        state.loading = false;
-        state.current = action.payload; // Coupon
-        state.successMessage = "Coupon valid!";
-      })
-      .addCase(checkCouponByCode.rejected, failed);
-
-    // --- Admin: tüm kuponlar ---
-    builder
-      .addCase(fetchCouponsAdmin.pending, loading)
+      .addCase(fetchCouponsAdmin.pending, setLoading)
       .addCase(fetchCouponsAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.couponsAdmin = action.payload; // Coupon[]
+        state.status = "succeeded";
+        state.couponsAdmin = action.payload;
       })
-      .addCase(fetchCouponsAdmin.rejected, failed);
+      .addCase(fetchCouponsAdmin.rejected, setError);
 
-    // --- Admin: kupon oluştur ---
+    // ➕ Create
     builder
-      .addCase(createCouponAdmin.pending, loading)
-      .addCase(createCouponAdmin.fulfilled, (state, action) => {
+      .addCase(createCoupon.pending, setLoading)
+      .addCase(createCoupon.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Coupon created successfully.";
-        state.couponsAdmin.unshift(action.payload);
+        state.status = "succeeded";
+        state.couponsAdmin.unshift(action.payload.data);
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
-      .addCase(createCouponAdmin.rejected, failed);
+      .addCase(createCoupon.rejected, setError);
 
-    // --- Admin: kupon güncelle ---
+    // 📝 Update
     builder
-      .addCase(updateCouponAdmin.pending, loading)
-      .addCase(updateCouponAdmin.fulfilled, (state, action) => {
+      .addCase(updateCoupon.pending, setLoading)
+      .addCase(updateCoupon.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Coupon updated successfully.";
-        const updated = action.payload;
-        state.couponsAdmin = state.couponsAdmin.map((c) =>
-          c._id === updated._id ? updated : c
-        );
-        if (state.current && state.current._id === updated._id) state.current = updated;
+        state.status = "succeeded";
+        const updated = action.payload.data;
+        const i = state.couponsAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.couponsAdmin[i] = updated;
+        if (state.selected?._id === updated._id) state.selected = updated;
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
-      .addCase(updateCouponAdmin.rejected, failed);
+      .addCase(updateCoupon.rejected, setError);
 
-    // --- Admin: kupon sil ---
+    // 🗑️ Delete
     builder
-      .addCase(deleteCouponAdmin.pending, loading)
-      .addCase(deleteCouponAdmin.fulfilled, (state, action) => {
+      .addCase(deleteCoupon.pending, setLoading)
+      .addCase(deleteCoupon.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = "Coupon deleted successfully.";
-        const deletedId = action.payload;
-        state.couponsAdmin = state.couponsAdmin.filter((c) => c._id !== deletedId);
-        if (state.current && state.current._id === deletedId) state.current = null;
+        state.status = "succeeded";
+        state.couponsAdmin = state.couponsAdmin.filter((a) => a._id !== action.payload.id);
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
       })
-      .addCase(deleteCouponAdmin.rejected, failed);
+      .addCase(deleteCoupon.rejected, setError);
+
+    // 🌍 Toggle Publish
+    builder
+      .addCase(togglePublishCoupon.pending, setLoading)
+      .addCase(togglePublishCoupon.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = "succeeded";
+        const updated = action.payload.data;
+        const i = state.couponsAdmin.findIndex((a) => a._id === updated._id);
+        if (i !== -1) state.couponsAdmin[i] = updated;
+        if (state.selected?._id === updated._id) state.selected = updated;
+        state.successMessage = action.payload.message; // 👈 BACKEND'DEN
+      })
+      .addCase(togglePublishCoupon.rejected, setError);
+
+    // 🔎 Single (Slug)
+    builder
+      .addCase(fetchCouponBySlug.pending, setLoading)
+      .addCase(fetchCouponBySlug.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = "succeeded";
+        state.selected = action.payload;
+      })
+      .addCase(fetchCouponBySlug.rejected, setError);
   },
 });
 
-export const { clearCouponMessages, clearCurrentCoupon } = couponSlice.actions;
+export const { clearCouponMessages, setSelectedCoupon } = couponSlice.actions;
 export default couponSlice.reducer;

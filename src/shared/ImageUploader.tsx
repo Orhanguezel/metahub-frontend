@@ -1,3 +1,4 @@
+// src/shared/ImageUploader.tsx
 "use client";
 import styled from "styled-components";
 import { useMemo, useRef, useEffect, useState, useCallback } from "react";

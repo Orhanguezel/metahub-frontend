@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
@@ -13,6 +15,9 @@ import { KeyInputSection, ValueInputSection } from "../..";
 import { SUPPORTED_LOCALES } from "@/i18n";
 import type { ISetting, ISettingValue, ISettingsImage } from "../../types";
 import { completeLocales } from "@/utils/completeLocales";
+import { ImageUploader } from "@/shared";
+import type { UploadImage as UploaderImage } from "@/shared/ImageUploader";
+import type { ImageType } from "@/types/image";
 
 const IMAGE_KEYS = ["navbar_images", "footer_images", "logo_images", "images"];
 const THEMES_KEYS = ["available_themes", "site_template"];
@@ -42,16 +47,23 @@ const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({
   const dispatch = useAppDispatch();
   const { t } = useI18nNamespace("settings", translations);
 
-  // State
+  // === base state ===
   const [key, setKey] = useState("");
   const [value, setValue] = useState<any>("");
-  const [files, setFiles] = useState<File[]>([]);
-  const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [isMultiLang, setIsMultiLang] = useState(false);
   const [isImage, setIsImage] = useState(false);
   const [isNestedObject, setIsNestedObject] = useState(false);
 
-  // On edit, fill form
+  // === image uploader state (ortak pattern) ===
+  const [existing, setExisting] = useState<UploaderImage[]>([]);
+  const [removedExisting, setRemovedExisting] = useState<UploaderImage[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
+
+  // derive
+  const isTheme = useMemo(() => THEMES_KEYS.includes(key), [key]);
+  const isImageKey = useMemo(() => IMAGE_KEYS.includes(key), [key]);
+
+  // Fill on edit
   useEffect(() => {
     if (editingSetting) {
       setKey(editingSetting.key || "");
@@ -63,33 +75,30 @@ const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({
           !Array.isArray(editingSetting.value) &&
           !isTranslatedLabel(editingSetting.value)
       );
-      setRemovedImages([]);
+
+      // Map settings images -> ImageUploader format
+      const mapped: UploaderImage[] =
+        editingSetting.images?.map((img: ISettingsImage) => ({
+          url: img.url,
+          thumbnail: (img as any)?.thumbnail,
+          webp: (img as any)?.webp,
+          publicId: img.publicId,
+          type: "settings" as ImageType,
+        })) || [];
+      setExisting(mapped);
+      setRemovedExisting([]);
+      setFiles([]);
     } else {
       setKey("");
       setValue("");
       setIsMultiLang(false);
       setIsImage(false);
       setIsNestedObject(false);
-      setRemovedImages([]);
+      setExisting([]);
+      setRemovedExisting([]);
+      setFiles([]);
     }
-    setFiles([]);
   }, [editingSetting]);
-
-  // Key türüne göre inputlar
-  const isTheme = THEMES_KEYS.includes(key);
-  const isImageKey = IMAGE_KEYS.includes(key);
-
-  // Görseli sil (mevcut image array’den)
-  const handleRemoveImage = (img: ISettingsImage) => {
-    setRemovedImages((prev) =>
-      img.publicId ? [...prev, img.publicId] : prev
-    );
-  };
-
-  // Yeni dosya eklendiğinde
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFiles(e.target.files ? Array.from(e.target.files) : []);
-  };
 
   // Submit
   const handleSubmit = async (e: React.FormEvent) => {
@@ -97,33 +106,31 @@ const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({
 
     try {
       if (isImageKey) {
-        // Sıfırdan yeni image array ekleniyor (mevcut görsel yok ve yeni dosya eklendi)
+        const removedPublicIds = removedExisting
+          .map((x) => x.publicId)
+          .filter(Boolean) as string[];
+
+        // hiç mevcut yok + yeni dosya yüklendi → upsertSettingsImage
         if ((!editingSetting?.images || editingSetting.images.length === 0) && files.length > 0) {
           await dispatch(upsertSettingsImage({ key, files })).unwrap();
           toast.success(t("settingSaved", "Images uploaded successfully."));
           onSave();
           return;
         }
-        // Var olan görsellerde update (silinen ve/veya yeni eklenen varsa)
-        if (editingSetting?.images && (removedImages.length > 0 || files.length > 0)) {
-          await dispatch(updateSettingsImage({ key, files, removedImages })).unwrap();
+
+        // mevcut var ve (silinen ya da yeni dosya) → updateSettingsImage
+        if (editingSetting?.images && (removedPublicIds.length > 0 || files.length > 0)) {
+          await dispatch(updateSettingsImage({ key, files, removedImages: removedPublicIds })).unwrap();
           toast.success(t("settingSaved", "Images updated successfully."));
           onSave();
           return;
         }
-        // Sadece silinen görseller varsa (hiç yeni dosya yüklenmedi)
-        if (removedImages.length > 0 && !files.length) {
-          await dispatch(updateSettingsImage({ key, files: [], removedImages })).unwrap();
-          toast.success(t("settingSaved", "Images updated successfully."));
-          onSave();
-          return;
-        }
-        // Dosya da kaldırılmadıysa hiçbir şey yapma
+
         toast.info(t("noChanges", "No changes to save."));
         return;
       }
 
-      // THEMES normalize (array olarak gönder)
+      // THEMES normalize (array)
       let normalizedValue: ISettingValue = value;
       if (isTheme && typeof value === "string") {
         normalizedValue = value
@@ -132,7 +139,7 @@ const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({
           .filter(Boolean);
       }
 
-      // Multi-lang normalize (object/string → completeLocales)
+      // Multi-lang normalize
       if (isMultiLang && typeof value === "object") {
         normalizedValue = completeLocales(value);
       }
@@ -143,12 +150,12 @@ const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({
         );
       }
 
-      // Tema validation
+      // Theme validation
       if (
         key === "site_template" &&
-        typeof value === "string" &&
+        typeof normalizedValue === "string" &&
         availableThemes &&
-        !availableThemes.includes(value)
+        !availableThemes.includes(normalizedValue)
       ) {
         toast.error(t("invalidTheme", "Invalid theme selected."));
         return;
@@ -162,9 +169,10 @@ const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({
     }
   };
 
-  // --- Render
   return (
-    <FormWrapper onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit}>
+      <h2>{editingSetting ? t("editSetting", "Edit Setting") : t("createSetting", "Create Setting")}</h2>
+
       <KeyInputSection
         keyValue={key}
         setKey={setKey}
@@ -179,32 +187,21 @@ const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({
       />
 
       {isImageKey ? (
-        <FileInputGroup>
-          <Label>
-            {t("images", "Images")} *
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleFileChange}
-            />
-          </Label>
-          <ImagePreviews>
-            {/* Varolan mevcut görseller (silinebilir) */}
-            {editingSetting?.images?.filter(img => !removedImages.includes(img.publicId || "")).map((img, idx) => (
-              <PreviewBox key={img.publicId || img.url || idx}>
-                <PreviewImg src={img.url} alt={img.publicId || `img-${idx}`} />
-                <RemoveImgBtn type="button" onClick={() => handleRemoveImage(img)}>×</RemoveImgBtn>
-              </PreviewBox>
-            ))}
-            {/* Yeni yüklenen dosyalar (henüz kaydedilmemiş) */}
-            {files.map((file, idx) => (
-              <PreviewBox key={file.name + idx}>
-                <PreviewImg src={URL.createObjectURL(file)} alt={file.name} />
-              </PreviewBox>
-            ))}
-          </ImagePreviews>
-        </FileInputGroup>
+        <Block>
+          <BlockTitle>{t("images", "Images")}</BlockTitle>
+          <ImageUploader
+            existing={existing}
+            onExistingChange={setExisting}
+            removedExisting={removedExisting}
+            onRemovedExistingChange={setRemovedExisting}
+            files={files}
+            onFilesChange={setFiles}
+            maxFiles={12}
+            accept="image/*"
+            sizeLimitMB={15}
+            helpText={t("uploader.help", "jpg/png/webp • keeps order")}
+          />
+        </Block>
       ) : (
         <ValueInputSection
           keyValue={key}
@@ -214,102 +211,60 @@ const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({
           isMultiLang={isMultiLang}
           isNestedObject={isNestedObject}
           isImage={isImage}
-          // 👇 burada prop'u kaldırıyoruz!
-          // isEditing={!!editingSetting}  ← Bunu kaldır!
           supportedLocales={SUPPORTED_LOCALES}
+          // aşağıdaki props’lar image modülü içindi; non-image’da gerek yok
           files={files}
           setFiles={setFiles}
-          removedImages={removedImages}
-          setRemovedImages={setRemovedImages}
+          removedImages={[]} // kullanılmıyor
+          setRemovedImages={() => {}}
         />
       )}
 
-      <SaveButton type="submit">{t("save", "Save")}</SaveButton>
-    </FormWrapper>
+      <Actions>
+        <Primary type="submit">{t("save", "Save")}</Primary>
+      </Actions>
+    </Form>
   );
 };
 
 export default AdminSettingsForm;
 
-// --- Styled Components ---
-const FormWrapper = styled.form`
+/* ================= styles (ortak form patern) ================= */
+
+const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacings.md};
   width: 100%;
   max-width: ${({ theme }) => theme.layout.containerWidth};
-  margin: 0 auto;
 `;
 
-const SaveButton = styled.button`
-  margin-top: ${({ theme }) => theme.spacings.md};
+const Block = styled.section`
   padding: ${({ theme }) => theme.spacings.md};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.md};
+  background: ${({ theme }) => theme.colors.cardBackground};
+`;
+
+const BlockTitle = styled.h3`
+  margin: 0 0 ${({ theme }) => theme.spacings.sm} 0;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  color: ${({ theme }) => theme.colors.title};
+`;
+
+const Actions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: ${({ theme }) => theme.spacings.sm};
+`;
+
+const Primary = styled.button`
   background: ${({ theme }) => theme.buttons.primary.background};
   color: ${({ theme }) => theme.buttons.primary.text};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  font-size: ${({ theme }) => theme.fontSizes.md};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.buttons.primary.backgroundHover};
+  padding: 8px 14px;
+  border-radius: ${({ theme }) => theme.radii.md};
   cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.normal};
-  &:hover {
-    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
-  }
+  transition: filter .15s;
+  &:hover { filter: brightness(0.98); }
 `;
-
-const FileInputGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacings.sm};
-`;
-
-const Label = styled.label`
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  margin-bottom: ${({ theme }) => theme.spacings.xs};
-`;
-
-const ImagePreviews = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacings.sm};
-  flex-wrap: wrap;
-`;
-
-const PreviewBox = styled.div`
-  position: relative;
-  display: inline-block;
-`;
-
-const PreviewImg = styled.img`
-  margin-top: ${({ theme }) => theme.spacings.xs};
-  max-width: 120px;
-  max-height: 80px;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  object-fit: contain;
-`;
-
-const RemoveImgBtn = styled.button`
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: #ff4d4f;
-  color: #fff;
-  border: none;
-  border-radius: 50%;
-  width: 22px;
-  height: 22px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.11);
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  &:hover {
-    background: #f5222d;
-  }
-`;
-

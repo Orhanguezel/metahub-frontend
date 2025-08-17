@@ -1,11 +1,11 @@
 "use client";
 
 import styled from "styled-components";
-import { IPricing } from "@/modules/pricing";
+import type { IPricing } from "@/modules/pricing";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/pricing/locales";
 import { Skeleton } from "@/shared";
-import { SupportedLocale } from "@/types/common";
+import type { SupportedLocale } from "@/types/common";
 
 interface Props {
   pricing: IPricing[] | undefined;
@@ -40,127 +40,116 @@ export default function PricingList({
 
   if (error) return <ErrorText>❌ {error}</ErrorText>;
   if (!Array.isArray(pricing)) return null;
-  if (pricing.length === 0)
-    return <Empty>{t("pricing.empty", "No pricing available.")}</Empty>;
+  if (pricing.length === 0) return <Empty>{t("pricing.empty", "No pricing available.")}</Empty>;
 
-  // Çok dilli alanlar için (title/description)
-  const getMultiLang = (obj?: Record<string, string>) => {
-    if (!obj) return "";
-    return obj[lang] || obj["en"] || Object.values(obj)[0] || "—";
-  };
+  const getMultiLang = (obj?: Record<string, string>) => (obj ? obj[lang] || obj.en || Object.values(obj)[0] || "—" : "");
 
-  // ... aynı kodun devamı
+  return (
+    <div>
+      {pricing.map((item) => (
+        <Card key={item._id}>
+          <Header>
+            <Title>{getMultiLang(item.title)}</Title>
+            <Status $on={!!item.isPublished}>
+              {item.isPublished ? t("published", "Published") : t("draft", "Draft")}
+            </Status>
+          </Header>
 
-return (
-  <div>
-    {pricing.map((item) => (
-      <PricingCard key={item._id || item.title?.en || Math.random()}>
-        <h2>{getMultiLang(item.title)}</h2>
-        <p>
-          <strong>{t("pricing.description", "Description")}: </strong>
-          {getMultiLang(item.description)}
-        </p>
+          <Body>
+            <Row><Label>{t("pricing.description", "Description")}:</Label> <span>{getMultiLang(item.description)}</span></Row>
+            <Row><Label>{t("pricing.category", "Category")}:</Label> <span>{item.category || "—"}</span></Row>
+            <Row>
+              <Label>{t("pricing.price", "Price")}:</Label>
+              <span>
+                {item.price != null ? item.price : "—"} {item.currency || ""}
+                {item.period ? ` / ${t(`pricing.${item.period}`, item.period)}` : ""}
+              </span>
+            </Row>
+            <Row>
+              <Label>{t("pricing.popular", "Popular")}:</Label>
+              <span>{item.isPopular ? t("yes", "Yes") : t("no", "No")}</span>
+            </Row>
+            <Row><Label>{t("pricing.order", "Order")}:</Label> <span className="mono">{item.order ?? 0}</span></Row>
 
-        {/* ... diğer InfoLine alanları aynı ... */}
+            {/* Özellikler */}
+            <FeaturesBlock>
+              <SmallLabel>{t("pricing.features", "Features")}:</SmallLabel>
+              <ul>
+                {(item.features?.[lang] || item.features?.en || []).map((f, i) => (
+                  <li key={i}>{f}</li>
+                ))}
+              </ul>
+            </FeaturesBlock>
+          </Body>
 
-        {(onEdit || onDelete || onTogglePublish) && (
-          <ButtonGroup>
-            {onEdit && (
-              <ActionButton
-                onClick={() => onEdit(item)}
-                aria-label={t("edit", "Edit")}
-              >
-                {t("edit", "Edit")}
-              </ActionButton>
-            )}
-            {onDelete && item._id && (
-              <DeleteButton
-                onClick={() => onDelete(item._id as string)}
-                aria-label={t("delete", "Delete")}
-              >
-                {t("delete", "Delete")}
-              </DeleteButton>
-            )}
-            {onTogglePublish && item._id && (
-              <ToggleButton
-                onClick={() =>
-                  onTogglePublish(item._id as string, item.isPublished)
-                }
-                aria-label={
-                  item.isPublished
-                    ? t("pricing.unpublish", "Unpublish")
-                    : t("pricing.publish", "Publish")
-                }
-              >
-                {item.isPublished
-                  ? t("pricing.unpublish", "Unpublish")
-                  : t("pricing.publish", "Publish")}
-              </ToggleButton>
-            )}
-          </ButtonGroup>
-        )}
-      </PricingCard>
-    ))}
-  </div>
-);
-
+          {(onEdit || onDelete || onTogglePublish) && (
+            <Actions>
+              {onEdit && <Secondary onClick={() => onEdit(item)}>{t("edit", "Edit")}</Secondary>}
+              {onTogglePublish && item._id && (
+                <Secondary onClick={() => onTogglePublish(item._id as string, item.isPublished)}>
+                  {item.isPublished ? t("pricing.unpublish", "Unpublish") : t("pricing.publish", "Publish")}
+                </Secondary>
+              )}
+              {onDelete && item._id && <Danger onClick={() => onDelete(item._id as string)}>{t("delete", "Delete")}</Danger>}
+            </Actions>
+          )}
+        </Card>
+      ))}
+    </div>
+  );
 }
 
-// --- Styles ---
+/* ---- styled (Portfolio/Services list paternine yakın) ---- */
 const SkeletonWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display:flex; flex-direction:column; gap:1rem;
 `;
 
-const PricingCard = styled.div`
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.md};
-  padding: 1rem;
-  margin-bottom: 1rem;
-  background: ${({ theme }) => theme.colors.cardBackground};
+const Card = styled.article`
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  border-radius:${({theme})=>theme.radii.lg};
+  box-shadow:${({theme})=>theme.cards.shadow};
+  padding:${({theme})=>theme.spacings.lg};
+  margin-bottom:${({theme})=>theme.spacings.md};
 `;
 
-const Empty = styled.p`
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
+const Header = styled.header`
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:${({theme})=>theme.spacings.sm};
+`;
+const Title = styled.h3`margin:0;`;
+const Status = styled.span<{ $on:boolean }>`
+  padding:.2em .6em; border-radius:${({theme})=>theme.radii.pill};
+  background:${({$on,theme})=>$on?theme.colors.successBg:theme.colors.inputBackgroundLight};
+  color:${({$on,theme})=>$on?theme.colors.success:theme.colors.textSecondary};
+  font-size:${({theme})=>theme.fontSizes.xsmall};
 `;
 
-const ErrorText = styled.p`
-  color: ${({ theme }) => theme.colors.danger};
-  font-weight: bold;
+const Body = styled.div`display:flex; flex-direction:column; gap:6px;`;
+const Row = styled.div`display:flex; gap:6px; align-items:baseline;`;
+const Label = styled.span`font-weight:${({theme})=>theme.fontWeights.medium};`;
+const SmallLabel = styled.span`
+  color:${({theme})=>theme.colors.textSecondary};
+  font-size:${({theme})=>theme.fontSizes.xsmall};
 `;
 
-const ButtonGroup = styled.div`
-  margin-top: 1rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+const FeaturesBlock = styled.div`
+  margin-top:${({theme})=>theme.spacings.xs};
+  ul{ margin:.25rem 0 0 .9rem; }
 `;
 
-const ActionButton = styled.button`
-  padding: 0.4rem 0.75rem;
-  background: ${({ theme }) => theme.colors.warning};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+const Actions = styled.div`display:flex; gap:${({theme})=>theme.spacings.xs}; justify-content:flex-end; margin-top:${({theme})=>theme.spacings.md};`;
+const Secondary = styled.button`
+  padding:8px 10px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+  background:${({theme})=>theme.buttons.secondary.background};
+  color:${({theme})=>theme.buttons.secondary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
 `;
-
-const DeleteButton = styled.button`
-  padding: 0.4rem 0.75rem;
-  background: ${({ theme }) => theme.colors.danger};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+const Danger = styled(Secondary)`
+  background:${({theme})=>theme.colors.dangerBg};
+  color:${({theme})=>theme.colors.danger};
+  border-color:${({theme})=>theme.colors.danger};
+  &:hover{ background:${({theme})=>theme.colors.dangerHover}; color:${({theme})=>theme.colors.textOnDanger}; border-color:${({theme})=>theme.colors.dangerHover}; }
 `;
-
-const ToggleButton = styled.button`
-  padding: 0.4rem 0.75rem;
-  background: ${({ theme }) => theme.colors.success};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-`;
+const Empty = styled.p`text-align:center; color:${({theme})=>theme.colors.textSecondary};`;
+const ErrorText = styled.p`color:${({theme})=>theme.colors.danger}; font-weight:bold;`;

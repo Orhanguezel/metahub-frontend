@@ -22,6 +22,8 @@ const initialState: PricingState = {
   successMessage: null,
 };
 
+const BASE = "/pricing";
+
 const extractErrorMessage = (payload: unknown): string => {
   if (typeof payload === "string") return payload;
   if (
@@ -40,7 +42,7 @@ const extractErrorMessage = (payload: unknown): string => {
 export const fetchPricing = createAsyncThunk<IPricing[]>(
   "pricing/fetchAll",
   async (_, thunkAPI) => {
-    const res = await apiCall("get", `/pricing`, null, thunkAPI.rejectWithValue);
+    const res = await apiCall("get", `${BASE}`, null, thunkAPI.rejectWithValue);
     // API: { success, message, data }
     return res.data as IPricing[];
   }
@@ -52,7 +54,7 @@ export const fetchAllPricingAdmin = createAsyncThunk<IPricing[]>(
   async (_, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/pricing/admin`,
+      `${BASE}/admin`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -66,7 +68,7 @@ export const fetchPricingByIdAdmin = createAsyncThunk<IPricing, string>(
   async (id, thunkAPI) => {
     const res = await apiCall(
       "get",
-      `/pricing/admin/${id}`,
+      `${BASE}/admin/${id}`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -80,7 +82,7 @@ export const createPricing = createAsyncThunk(
   async (payload: Partial<IPricing>, thunkAPI) => {
     const res = await apiCall(
       "post",
-      "/pricing/admin",
+      `${BASE}/admin`,
       payload,
       thunkAPI.rejectWithValue
     );
@@ -94,7 +96,7 @@ export const updatePricing = createAsyncThunk(
   async ({ id, payload }: { id: string; payload: Partial<IPricing> }, thunkAPI) => {
     const res = await apiCall(
       "put",
-      `/pricing/admin/${id}`,
+      `${BASE}/admin/${id}`,
       payload,
       thunkAPI.rejectWithValue
     );
@@ -108,7 +110,7 @@ export const deletePricing = createAsyncThunk(
   async (id: string, thunkAPI) => {
     const res = await apiCall(
       "delete",
-      `/pricing/admin/${id}`,
+      `${BASE}/admin/${id}`,
       null,
       thunkAPI.rejectWithValue
     );

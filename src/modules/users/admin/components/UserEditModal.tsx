@@ -1,14 +1,14 @@
+// UserEditModal.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/store";
-import { updateUser } from "@/modules/users/slice/userCrudSlice";
 import { toast } from "react-toastify";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { adminUserTranslations } from "@/modules/users";
 import type { User } from "@/modules/users/types/user";
+import { useAppDispatch } from "@/store/hooks";
+import { updateUser } from "@/modules/users/slice/userCrudSlice";
 
 interface Props {
   user: User;
@@ -25,7 +25,7 @@ type FormState = {
 type FormErrors = Partial<Record<keyof FormState, string>>;
 
 export default function UserEditModal({ user, onClose }: Props) {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const { t } = useI18nNamespace("adminUser", adminUserTranslations);
 
   const [form, setForm] = useState<FormState>({
@@ -37,7 +37,6 @@ export default function UserEditModal({ user, onClose }: Props) {
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
-  // izinli roller – backend set’iyle eşleşiyor
   const roleOptions = useMemo<User["role"][]>(
     () => ["user", "customer", "staff", "moderator", "admin"],
     []
@@ -55,9 +54,7 @@ export default function UserEditModal({ user, onClose }: Props) {
     return () => window.removeEventListener("keydown", onEsc);
   }, [onClose]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     if (errors[e.target.name as keyof FormState]) {
       setErrors((prev) => ({ ...prev, [e.target.name]: undefined }));

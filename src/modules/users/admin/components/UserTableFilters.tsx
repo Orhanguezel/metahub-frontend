@@ -1,3 +1,4 @@
+// UserTableFilters.tsx
 "use client";
 
 import { useState } from "react";
@@ -186,7 +187,7 @@ const baseFieldCss = `
 
 const Input = styled.input`
   ${baseFieldCss}
-  padding-left: 36px; /* icon için */
+  padding-left: 36px;
   background: ${({ theme }) => theme.inputs.background};
   color: ${({ theme }) => theme.inputs.text};
   border: 1px solid ${({ theme }) => theme.inputs.border};
@@ -226,9 +227,9 @@ const ClearButton = styled.button`
   height: 40px;
   padding: 0 ${({ theme }) => theme.spacings.md};
   border-radius: ${({ theme }) => theme.radii.pill};
-  border: 1px solid ${({ theme }) => theme.colors.danger};
-  background: ${({ theme }) => theme.colors.danger};
-  color: ${({ theme }) => theme.colors.textOnDanger};
+  border: 1px solid ${({ theme }) => theme.buttons.danger.background};
+  background: ${({ theme }) => theme.buttons.danger.background};
+  color: ${({ theme }) => theme.buttons.danger.text};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   cursor: pointer;
   transition: filter 0.15s, transform 0.05s, box-shadow 0.15s;

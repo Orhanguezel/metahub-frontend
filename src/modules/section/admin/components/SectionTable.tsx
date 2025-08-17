@@ -1,3 +1,4 @@
+"use client";
 import styled from "styled-components";
 import { Button } from "@/shared";
 import type { ISectionMeta, ISectionSetting } from "@/modules/section/types";
@@ -26,7 +27,8 @@ export default function SectionTable({
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   const allSelected = metasAdmin.length > 0 && selectedKeys.length === metasAdmin.length;
-  function handleSelectAll() {
+
+  function toggleSelectAll() {
     if (allSelected) {
       metasAdmin.forEach((m) => {
         if (selectedKeys.includes(m.sectionKey)) onSelect(m.sectionKey);
@@ -39,17 +41,17 @@ export default function SectionTable({
   }
 
   return (
-    <ResponsiveTableWrapper>
+    <Wrap>
       {/* Desktop Table */}
-      <DesktopTable>
+      <Table>
         <thead>
           <tr>
             <th>
               <input
                 type="checkbox"
                 checked={allSelected}
-                onChange={handleSelectAll}
-                aria-label="Select all"
+                onChange={toggleSelectAll}
+                aria-label={t("selectAll", "Select all")}
               />
             </th>
             <th>{t("section.sectionKey", "Key")}</th>
@@ -60,47 +62,37 @@ export default function SectionTable({
           </tr>
         </thead>
         <tbody>
-          {metasAdmin.map((metaAdmin) => {
-            const setting = settings.find((s) => s.sectionKey === metaAdmin.sectionKey);
+          {metasAdmin.map((meta) => {
+            const setting = settings.find((s) => s.sectionKey === meta.sectionKey);
+            const enabled = setting?.enabled ?? meta.defaultEnabled;
+            const order = setting?.order ?? meta.defaultOrder;
+            const label =
+              meta.label?.[lang] || meta.label?.en || Object.values(meta.label || {})[0] || "-";
+
             return (
-              <tr key={metaAdmin.sectionKey}>
+              <tr key={meta.sectionKey}>
                 <td>
-                  <input
+                  <Checkbox
                     type="checkbox"
-                    checked={selectedKeys.includes(metaAdmin.sectionKey)}
-                    onChange={() => onSelect(metaAdmin.sectionKey)}
-                    aria-label={`Select ${metaAdmin.sectionKey}`}
+                    checked={selectedKeys.includes(meta.sectionKey)}
+                    onChange={() => onSelect(meta.sectionKey)}
+                    aria-label={`${t("select", "Select")} ${meta.sectionKey}`}
                   />
                 </td>
-                <td>{metaAdmin.sectionKey}</td>
-                <td>
-                  {metaAdmin.label?.[lang] ||
-                    metaAdmin.label?.en ||
-                    Object.values(metaAdmin.label || {})[0] ||
-                    "-"}
-                </td>
-                <td>
-                  <EnabledDot $enabled={setting?.enabled ?? metaAdmin.defaultEnabled} />
-                </td>
-                <td>
-                  {setting?.order !== undefined
-                    ? setting.order
-                    : metaAdmin.defaultOrder}
-                </td>
-                <td>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onEdit(metaAdmin, setting)}
-                  >
+                <td><Mono>{meta.sectionKey}</Mono></td>
+                <td>{label}</td>
+                <td><EnabledDot $enabled={!!enabled} aria-label={enabled ? t("on","On") : t("off","Off")} /></td>
+                <td>{order}</td>
+                <td className="actions">
+                  <Button size="sm" variant="outline" onClick={() => onEdit(meta, setting)}>
                     {t("edit", "Edit")}
                   </Button>
                   <Button
                     size="sm"
                     variant="danger"
-                    style={{ marginLeft: 8 }}
-                    onClick={() => onDelete(metaAdmin, setting)}
+                    onClick={() => onDelete(meta, setting)}
                     disabled={!setting}
+                    style={{ marginLeft: 8 }}
                   >
                     {t("delete", "Delete")}
                   </Button>
@@ -109,162 +101,143 @@ export default function SectionTable({
             );
           })}
         </tbody>
-      </DesktopTable>
+      </Table>
 
       {/* Mobile Cards */}
-      <MobileCards>
-        {metasAdmin.map((metaAdmin) => {
-          const setting = settings.find((s) => s.sectionKey === metaAdmin.sectionKey);
+      <Cards>
+        {metasAdmin.map((meta) => {
+          const setting = settings.find((s) => s.sectionKey === meta.sectionKey);
+          const enabled = setting?.enabled ?? meta.defaultEnabled;
+          const order = setting?.order ?? meta.defaultOrder;
+          const label =
+            meta.label?.[lang] || meta.label?.en || Object.values(meta.label || {})[0] || "-";
+          const selected = selectedKeys.includes(meta.sectionKey);
+
           return (
-            <Card key={metaAdmin.sectionKey} $selected={selectedKeys.includes(metaAdmin.sectionKey)}>
-              <CardHeader>
+            <Card key={meta.sectionKey} $selected={selected}>
+              <CardHead>
                 <Checkbox
                   type="checkbox"
-                  checked={selectedKeys.includes(metaAdmin.sectionKey)}
-                  onChange={() => onSelect(metaAdmin.sectionKey)}
-                  aria-label={`Select ${metaAdmin.sectionKey}`}
+                  checked={selected}
+                  onChange={() => onSelect(meta.sectionKey)}
+                  aria-label={`${t("select", "Select")} ${meta.sectionKey}`}
                 />
-                <CardKey>{metaAdmin.sectionKey}</CardKey>
-                <EnabledDot $enabled={setting?.enabled ?? metaAdmin.defaultEnabled} />
-              </CardHeader>
-              <CardRow>
-                <CardLabel>{t("section.label", "Label")}:</CardLabel>
-                <span>
-                  {metaAdmin.label?.[lang] ||
-                    metaAdmin.label?.en ||
-                    Object.values(metaAdmin.label || {})[0] ||
-                    "-"}
-                </span>
-              </CardRow>
-              <CardRow>
-                <CardLabel>{t("section.order", "Order")}:</CardLabel>
-                <span>
-                  {setting?.order !== undefined
-                    ? setting.order
-                    : metaAdmin.defaultOrder}
-                </span>
-              </CardRow>
-              <CardActions>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onEdit(metaAdmin, setting)}
-                >
+                <KeyText>{meta.sectionKey}</KeyText>
+                <EnabledDot $enabled={!!enabled} />
+              </CardHead>
+
+              <Row>
+                <Label>{t("section.label", "Label")}:</Label>
+                <span>{label}</span>
+              </Row>
+              <Row>
+                <Label>{t("section.order", "Order")}:</Label>
+                <span>{order}</span>
+              </Row>
+
+              <Actions>
+                <Button size="sm" variant="outline" onClick={() => onEdit(meta, setting)}>
                   {t("edit", "Edit")}
                 </Button>
-                <Button
-                  size="sm"
-                  variant="danger"
-                  onClick={() => onDelete(metaAdmin, setting)}
-                  disabled={!setting}
-                >
+                <Button size="sm" variant="danger" onClick={() => onDelete(meta, setting)} disabled={!setting}>
                   {t("delete", "Delete")}
                 </Button>
-              </CardActions>
+              </Actions>
             </Card>
           );
         })}
-      </MobileCards>
-    </ResponsiveTableWrapper>
+      </Cards>
+    </Wrap>
   );
 }
 
-// --- Styled Components ---
+/* styled */
+const Wrap = styled.div`width:100%;`;
 
-const ResponsiveTableWrapper = styled.div`
-  width: 100%;
-`;
-
-const DesktopTable = styled.table`
+/* Desktop table */
+const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  background: ${({ theme }) => theme.colors.card};
-  border-radius: ${({ theme }) => theme.radii.md};
-  overflow: hidden;
-  th, td { padding: 0.7rem 1rem; text-align: left; }
-  th {
-    background: ${({ theme }) => theme.colors.tableHeader};
-    font-weight: 600;
-    color: ${({ theme }) => theme.colors.text};
-    border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
-  }
-  td { border-bottom: 1px solid ${({ theme }) => theme.colors.borderLight}; color: ${({ theme }) => theme.colors.text}; }
-  tr:last-child td { border-bottom: none; }
-
-  /* --- Gizle mobile'da --- */
-  ${({ theme }) => theme.media.small} {
-    display: none;
-  }
-`;
-
-const MobileCards = styled.div`
-  display: none;
-
-  ${({ theme }) => theme.media.small} {
-    display: flex;
-    flex-direction: column;
-    gap: ${({ theme }) => theme.spacings.md};
-    margin-top: ${({ theme }) => theme.spacings.lg};
-  }
-`;
-
-const Card = styled.div<{ $selected: boolean }>`
   background: ${({ theme }) => theme.colors.cardBackground};
-  border: 2px solid ${({ $selected, theme }) => $selected ? theme.colors.primary : theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-  padding: ${({ theme }) => theme.spacings.md};
-  transition: border 0.22s;
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacings.sm};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  overflow: hidden;
+
+  thead th{
+    background:${({ theme }) => theme.colors.tableHeader};
+    color:${({ theme }) => theme.colors.text};
+    font-weight:${({ theme }) => theme.fontWeights.semiBold};
+    font-size:${({ theme }) => theme.fontSizes.sm};
+    padding:${({ theme }) => theme.spacings.md};
+    text-align:left; white-space:nowrap;
+    border-bottom:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  }
+  td{
+    padding:${({ theme }) => theme.spacings.md};
+    border-bottom:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
+    font-size:${({ theme }) => theme.fontSizes.sm};
+    color:${({ theme }) => theme.colors.text};
+    vertical-align:middle;
+  }
+  td.actions { text-align:right; }
+  tbody tr:hover td{ background:${({ theme }) => theme.colors.hoverBackground}; }
+
+  /* mobile'da gizle */
+  ${({ theme }) => theme.media.small} { display:none; }
 `;
 
-const CardHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacings.sm};
-  margin-bottom: ${({ theme }) => theme.spacings.sm};
+/* Mobile cards */
+const Cards = styled.div`
+  display:none;
+  ${({ theme }) => theme.media.small} {
+    display:grid; grid-template-columns:1fr; gap:${({ theme }) => theme.spacings.md};
+    margin-top:${({ theme }) => theme.spacings.md};
+  }
 `;
-
+const Card = styled.article<{ $selected:boolean }>`
+  background:${({ theme }) => theme.colors.cardBackground};
+  border:${({ theme }) => theme.borders.thin} ${({ theme, $selected }) => $selected ? theme.colors.primary : theme.colors.border};
+  border-radius:${({ theme }) => theme.radii.lg};
+  box-shadow:${({ theme }) => theme.cards.shadow};
+  padding:${({ theme }) => theme.spacings.md};
+  display:flex; flex-direction:column; gap:${({ theme }) => theme.spacings.sm};
+`;
+const CardHead = styled.header`
+  display:flex; align-items:center; gap:${({ theme }) => theme.spacings.sm};
+  margin-bottom:${({ theme }) => theme.spacings.xs};
+`;
 const Checkbox = styled.input`
-  accent-color: ${({ theme }) => theme.colors.primary};
-  width: 22px; height: 22px;
+  accent-color:${({ theme }) => theme.colors.primary};
+  width:18px; height:18px;
 `;
-
-const CardKey = styled.div`
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  flex: 1;
+const KeyText = styled.span`
+  font-weight:${({ theme }) => theme.fontWeights.bold};
+  color:${({ theme }) => theme.colors.textPrimary};
+  font-size:${({ theme }) => theme.fontSizes.md};
+  flex:1;
+  word-break: break-all;
 `;
-
-const CardLabel = styled.div`
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
+const Row = styled.div`
+  display:flex; gap:${({ theme }) => theme.spacings.sm}; align-items:center;
+  font-size:${({ theme }) => theme.fontSizes.sm};
+`;
+const Label = styled.span`
+  font-weight:${({ theme }) => theme.fontWeights.medium};
+  color:${({ theme }) => theme.colors.textSecondary};
+  min-width:70px;
+`;
+const Actions = styled.div`
+  display:flex; gap:${({ theme }) => theme.spacings.xs}; justify-content:flex-end;
+`;
+const EnabledDot = styled.span<{ $enabled:boolean }>`
+  width:16px; height:16px; border-radius:50%;
+  display:inline-block;
+  background:${({ $enabled, theme }) => ($enabled ? theme.colors.success : theme.colors.danger)};
+  box-shadow: 0 0 0 1.5px currentColor;
+  color:${({ $enabled, theme }) => ($enabled ? theme.colors.success : theme.colors.danger)};
+`;
+const Mono = styled.code`
+  font-family: ${({ theme }) => theme.fonts.mono};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
   color: ${({ theme }) => theme.colors.textSecondary};
-  min-width: 70px;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
-
-const CardRow = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacings.sm};
-  align-items: center;
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  margin-bottom: 2px;
-`;
-
-const CardActions = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacings.sm};
-  margin-top: ${({ theme }) => theme.spacings.sm};
-`;
-
-const EnabledDot = styled.span<{ $enabled: boolean }>`
-  display: inline-block;
-  width: 18px; height: 18px; border-radius: 50%;
-  background: ${({ $enabled, theme }) => $enabled ? theme.colors.success : theme.colors.danger};
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 1.5px ${({ $enabled, theme }) => $enabled ? theme.colors.success : theme.colors.danger};
-`;
-

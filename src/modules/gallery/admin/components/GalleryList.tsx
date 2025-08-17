@@ -1,99 +1,126 @@
+// src/modules/gallery/components/GalleryList.tsx
 "use client";
 
-import React, { useState } from "react";
-import { useAppDispatch } from "@/store/hooks";
-import { deleteGalleryItem,updateGalleryItem } from "@/modules/gallery/slice/gallerySlice";
+import React, { useMemo, useState } from "react";
 import styled from "styled-components";
+import { useAppDispatch } from "@/store/hooks";
+import { deleteGallery, updateGallery } from "@/modules/gallery/slice/gallerySlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
-import {translations} from "@/modules/gallery";
+import { translations } from "@/modules/gallery";
 import { Modal } from "@/shared";
 import { GalleryEditForm } from "@/modules/gallery";
-import type { IGalleryCategory, IGallery } from "@/modules/gallery/types";
+import type { GalleryCategory, IGallery } from "@/modules/gallery/types";
 
 interface GalleryListProps {
-  images: IGallery[];
-  categories: IGalleryCategory[];
+  items: IGallery[];
+  categories: GalleryCategory[];
   onUpdate: () => void;
 }
 
-const GalleryList: React.FC<GalleryListProps> = ({
-  images,
-  categories,
-  onUpdate,
-}) => {
+const GalleryList: React.FC<GalleryListProps> = ({ items, categories, onUpdate }) => {
   const dispatch = useAppDispatch();
   const { i18n, t } = useI18nNamespace("gallery", translations);
   const lang = (i18n.language?.slice(0, 2) || "en") as SupportedLocale;
+
   const [selectedItem, setSelectedItem] = useState<IGallery | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
 
-  const filteredItems = selectedCategory
-    ? images.filter((item) =>
-        typeof item.category === "string"
-          ? item.category === selectedCategory
-          : item.category?._id === selectedCategory
-      )
-    : images;
+  const filteredItems = useMemo(
+    () =>
+      selectedCategory
+        ? items.filter((item) =>
+            typeof item.category === "string"
+              ? item.category === selectedCategory
+              : item.category?._id === selectedCategory
+          )
+        : items,
+    [items, selectedCategory]
+  );
+
+  const totalCount = items.length;
+  const filteredCount = filteredItems.length;
 
   const handleDelete = async (id: string) => {
     if (window.confirm(t("delete.confirm", "Are you sure you want to delete?"))) {
-      await dispatch(deleteGalleryItem(id));
+      await dispatch(deleteGallery(id));
       onUpdate();
     }
   };
 
-const handleOpenEdit = (item: IGallery) => setSelectedItem(item);
-const handleCloseModal = () => {
-  setSelectedItem(null);
-  onUpdate();
-};
+  const handleOpenEdit = (item: IGallery) => setSelectedItem(item);
 
+  const handleCloseModal = () => {
+    setSelectedItem(null);
+    onUpdate();
+  };
 
-const handleSubmitGalleryEdit = async (formData: FormData, id?: string) => {
-  if (!id) return;
-  await dispatch(updateGalleryItem({ id, formData })).unwrap();
-  onUpdate();
-  handleCloseModal();
-};
+  const handleSubmitGalleryEdit = async (formData: FormData, id?: string) => {
+    if (!id) return;
+    await dispatch(updateGallery({ id, formData })).unwrap();
+    onUpdate();
+    handleCloseModal();
+  };
 
-
+  const getLocalized = (obj?: Record<string, string>) =>
+    obj?.[lang] ||
+    obj?.en ||
+    SUPPORTED_LOCALES.map((l) => obj?.[l as SupportedLocale]).find(Boolean) ||
+    "";
 
   return (
     <>
-      {/* Category Filter */}
-      <CategoryButtons>
-        <CategoryButton
-          $active={selectedCategory === ""}
-          onClick={() => setSelectedCategory("")}
-        >
-          {t("form.all", "All")}
-        </CategoryButton>
-        {categories.map((cat) => (
-          <CategoryButton
-            key={cat._id}
-            $active={selectedCategory === cat._id}
-            onClick={() => setSelectedCategory(cat._id)}
+      {/* Filter / Count Bar */}
+      <TopBar>
+        <Chips role="tablist" aria-label={t("filter.categories", "Filter by category")}>
+          <Chip
+            role="tab"
+            aria-selected={selectedCategory === ""}
+            $active={selectedCategory === ""}
+            onClick={() => setSelectedCategory("")}
           >
-            {cat.name?.[lang] ||
-              SUPPORTED_LOCALES.map((l) => cat.name?.[l]).find(Boolean) ||
-              cat.slug}
-          </CategoryButton>
-        ))}
-      </CategoryButtons>
+            {t("form.all", "All")}
+            <CountBadge aria-label={t("count", "count")}>{totalCount}</CountBadge>
+          </Chip>
+
+          {categories.map((cat) => {
+            const active = selectedCategory === cat._id;
+            const label = getLocalized(cat.name) || (cat as any).slug || "—";
+            const countForCat = items.filter((x) =>
+              typeof x.category === "string" ? x.category === cat._id : x.category?._id === cat._id
+            ).length;
+
+            return (
+              <Chip
+                key={cat._id}
+                role="tab"
+                aria-selected={active}
+                $active={active}
+                onClick={() => setSelectedCategory(cat._id)}
+                title={label}
+              >
+                {label}
+                <CountBadge>{countForCat}</CountBadge>
+              </Chip>
+            );
+          })}
+        </Chips>
+
+        <TotalText>
+          {t("list.count", "{n} items")
+            .replace("{n}", String(filteredCount))}
+        </TotalText>
+      </TopBar>
 
       {/* Grid */}
       {filteredItems.length === 0 ? (
         <EmptyMessage>{t("empty", "No gallery items found.")}</EmptyMessage>
       ) : (
-        <GridWrapper>
+        <Grid>
           {filteredItems.map((item) => {
-            const firstItem = item.images?.[0];
-            const imageUrl = firstItem?.thumbnail || firstItem?.url || "";
-            const title =
-              firstItem?.name?.[lang] ||
-              SUPPORTED_LOCALES.map((l) => firstItem?.name?.[l]).find(Boolean) ||
-              t("noTitle", "No title");
+            const firstImg = (item.images || [])[0];
+            const imageUrl = firstImg?.thumbnail || firstImg?.url || "";
+            const title = getLocalized(item.title) || t("noTitle", "No title");
 
             const categoryObj =
               typeof item.category === "string"
@@ -101,108 +128,138 @@ const handleSubmitGalleryEdit = async (formData: FormData, id?: string) => {
                 : item.category;
 
             const categoryTitle =
-              categoryObj?.name?.[lang] ||
-              SUPPORTED_LOCALES.map((l) => categoryObj?.name?.[l]).find(Boolean) ||
-              categoryObj?.slug ||
+              (categoryObj && getLocalized(categoryObj.name)) ||
+              (categoryObj as any)?.slug ||
               t("noCategory", "No category");
 
             return (
-              <SmallCard key={item._id}>
-                {imageUrl ? (
-                  <ImagePreview src={imageUrl} alt={title} />
-                ) : (
-                  <Placeholder>{t("noImage", "No image")}</Placeholder>
-                )}
+              <Card key={item._id}>
+                <Media aria-label={title}>
+                  {imageUrl ? (
+                    <Thumb src={imageUrl} alt={title} />
+                  ) : (
+                    <NoThumb>{t("noImage", "No image")}</NoThumb>
+                  )}
 
-                <Info>
-                  <CategoryText>{categoryTitle}</CategoryText>
-                  <Type>{item.type}</Type>
-                  <p>{title}</p>
-                </Info>
+                  <Badges>
+                    <TypeBadge $type={item.type}>{item.type}</TypeBadge>
+                    <StateBadge $on={item.isPublished}>
+                      {item.isPublished ? t("published", "Published") : t("draft", "Draft")}
+                    </StateBadge>
+                  </Badges>
+                </Media>
 
-                <ButtonGroup>
-                  <ActionButton type="button" onClick={() => handleOpenEdit(item)}>
+                <Body>
+                  <Title>{title}</Title>
+                  <MetaRow>
+                    <Meta>
+                      <MetaKey>{t("form.category", "Category")}:</MetaKey>
+                      <MetaVal title={categoryTitle}>{categoryTitle}</MetaVal>
+                    </Meta>
+                    <Meta>
+                      <MetaKey>{t("form.order", "Order")}:</MetaKey>
+                      <MetaVal>{item.order ?? 0}</MetaVal>
+                    </Meta>
+                  </MetaRow>
+                </Body>
+
+                <Actions>
+                  <Primary onClick={() => handleOpenEdit(item)}>
                     {t("edit.button", "Edit")}
-                  </ActionButton>
-                  <DeleteButton type="button" onClick={() => handleDelete(item._id)}>
+                  </Primary>
+                  <Danger onClick={() => handleDelete(item._id)}>
                     {t("delete.button", "Delete")}
-                  </DeleteButton>
-                </ButtonGroup>
-              </SmallCard>
+                  </Danger>
+                </Actions>
+              </Card>
             );
           })}
-        </GridWrapper>
+        </Grid>
       )}
 
       {selectedItem && (
-  <Modal isOpen onClose={handleCloseModal}>
-    <GalleryEditForm
-      isOpen={!!selectedItem}
-      editingItem={selectedItem}
-      categories={categories}
-      onClose={handleCloseModal}
-      onSubmit={async (formData) => {
-        if (selectedItem && selectedItem._id) {
-          await handleSubmitGalleryEdit(formData, selectedItem._id);
-        }
-      }}
-    />
-  </Modal>
-)}
-
-
+        <Modal isOpen onClose={handleCloseModal}>
+          <GalleryEditForm
+            isOpen={!!selectedItem}
+            editingItem={selectedItem}
+            categories={categories}
+            onClose={handleCloseModal}
+            onSubmit={async (formData) => {
+              if (selectedItem && selectedItem._id) {
+                await handleSubmitGalleryEdit(formData, selectedItem._id);
+              }
+            }}
+          />
+        </Modal>
+      )}
     </>
   );
 };
 
 export default GalleryList;
 
+/* ================= Styles (UI standartları) ================= */
 
-// Styled Components
-
-const CategoryButtons = styled.div`
+const TopBar = styled.div`
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: ${({ theme }) => theme.spacings.sm};
   margin-bottom: ${({ theme }) => theme.spacings.lg};
-
-  @media ${({ theme }) => theme.media.mobile} {
-    gap: ${({ theme }) => theme.spacings.xs};
-    margin-bottom: ${({ theme }) => theme.spacings.md};
-  }
+  flex-wrap: wrap;
 `;
 
-const CategoryButton = styled.button<{ $active: boolean }>`
+const Chips = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.xs};
+  flex-wrap: wrap;
+`;
+
+const Chip = styled.button<{ $active?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: ${({ theme }) => theme.radii.pill};
   background: ${({ $active, theme }) =>
     $active ? theme.colors.primary : theme.colors.backgroundSecondary};
   color: ${({ $active, theme }) =>
     $active ? theme.colors.buttonText : theme.colors.textSecondary};
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-weight: ${({ $active, theme }) =>
-    $active ? theme.fontWeights.bold : theme.fontWeights.medium};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  padding: ${({ theme }) => theme.spacings.sm}
-    ${({ theme }) => theme.spacings.xl};
-  box-shadow: ${({ $active, theme }) =>
-    $active ? theme.shadows.button : "none"};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.normal},
-    color ${({ theme }) => theme.transition.normal},
-    box-shadow ${({ theme }) => theme.transition.normal};
+  transition: ${({ theme }) => theme.transition.normal};
+  box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.button : "none")};
 
   &:hover,
-  &:focus {
-    background: ${({ theme }) => theme.colors.primaryHover};
+  &:focus-visible {
+    background: ${({ $active, theme }) =>
+      $active ? theme.colors.primaryHover : theme.colors.primaryLight};
     color: ${({ theme }) => theme.colors.buttonText};
-    box-shadow: ${({ theme }) => theme.shadows.md};
+    outline: none;
   }
 `;
 
-const GridWrapper = styled.div`
+const CountBadge = styled.span`
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const TotalText = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: ${({ theme }) => theme.spacings.lg};
   margin-bottom: ${({ theme }) => theme.spacings.xl};
 
@@ -216,140 +273,154 @@ const GridWrapper = styled.div`
   }
 `;
 
-const SmallCard = styled.div`
+const Card = styled.article`
   background: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.text};
-  padding: ${({ theme }) => theme.spacings.xl}
-    ${({ theme }) => theme.spacings.lg};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.md};
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-height: 230px;
-  transition: background ${({ theme }) => theme.transition.normal},
-    box-shadow ${({ theme }) => theme.transition.normal},
-    transform ${({ theme }) => theme.transition.normal};
+  transition: transform .12s ease, box-shadow .18s ease;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.hoverBackground};
+    transform: translateY(-2px);
     box-shadow: ${({ theme }) => theme.shadows.lg};
-    transform: scale(1.025);
   }
 
   @media ${({ theme }) => theme.media.mobile} {
-    border-radius: ${({ theme }) => theme.radii.md};
-    padding: ${({ theme }) => theme.spacings.lg}
-      ${({ theme }) => theme.spacings.sm};
-    min-height: 170px;
+    border-radius: ${({ theme }) => theme.radii.lg};
   }
 `;
 
-const Info = styled.div`
-  margin-top: ${({ theme }) => theme.spacings.md};
+const Media = styled.div`
+  position: relative;
+`;
+
+const Thumb = styled.img`
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+`;
+
+const NoThumb = styled.div`
+  width: 100%;
+  height: 140px;
+  display: grid;
+  place-items: center;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const Badges = styled.div`
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  gap: 6px;
+`;
+
+const TypeBadge = styled.span<{ $type: "image" | "video" }>`
+  padding: 4px 8px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  background: ${({ $type, theme }) =>
+    $type === "video" ? theme.colors.warning : theme.colors.successBg};
+  color: ${({ $type, theme }) =>
+    $type === "video" ? theme.colors.warning : theme.colors.success};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ $type, theme }) => ($type === "video" ? theme.colors.warning : theme.colors.success)};
+`;
+
+const StateBadge = styled.span<{ $on: boolean }>`
+  padding: 4px 8px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  background: ${({ $on, theme }) => ($on ? theme.colors.successBg : theme.colors.dangerBg)};
+  color: ${({ $on, theme }) => ($on ? theme.colors.success : theme.colors.danger)};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ $on, theme }) => ($on ? theme.colors.success : theme.colors.danger)};
+`;
+
+const Body = styled.div`
+  padding: ${({ theme }) => theme.spacings.md};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacings.xs};
 `;
 
-const CategoryText = styled.p`
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-family: ${({ theme }) => theme.fonts.body};
+const Title = styled.h3`
   margin: 0;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  color: ${({ theme }) => theme.colors.title};
+  line-height: 1.2;
 `;
 
-const Type = styled.p`
-  font-size: ${({ theme }) => theme.fontSizes.xs};
+const MetaRow = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.md};
+  align-items: center;
+  flex-wrap: wrap;
+`;
+
+const Meta = styled.div`
+  display: inline-flex; gap: 6px; align-items: baseline;
+`;
+
+const MetaKey = styled.span`
   color: ${({ theme }) => theme.colors.textSecondary};
-  margin: 0;
-  font-family: ${({ theme }) => theme.fonts.body};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
 `;
 
-const ButtonGroup = styled.div`
+const MetaVal = styled.span`
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const Actions = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacings.sm};
-  margin-top: ${({ theme }) => theme.spacings.sm};
+  padding: ${({ theme }) => theme.spacings.md};
+  padding-top: 0;
+  justify-content: flex-end;
 `;
 
-const ActionButton = styled.button`
+const BaseBtn = styled.button`
+  padding: 8px 12px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  cursor: pointer;
+  transition: ${({ theme }) => theme.transition.normal};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-family: ${({ theme }) => theme.fonts.body};
+  box-shadow: ${({ theme }) => theme.shadows.button};
+
+  &:focus-visible { outline: none; box-shadow: ${({ theme }) => theme.colors.shadowHighlight}; }
+`;
+
+const Primary = styled(BaseBtn)`
   background: ${({ theme }) => theme.buttons.primary.background};
   color: ${({ theme }) => theme.buttons.primary.text};
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.medium};
-  border: none;
-  padding: ${({ theme }) => theme.spacings.xs}
-    ${({ theme }) => theme.spacings.lg};
-  border-radius: ${({ theme }) => theme.radii.pill};
-  cursor: pointer;
-  box-shadow: ${({ theme }) => theme.shadows.button};
-  transition: background ${({ theme }) => theme.transition.normal},
-    color ${({ theme }) => theme.transition.normal},
-    box-shadow ${({ theme }) => theme.transition.normal};
-
-  &:hover,
-  &:focus {
-    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
-    color: ${({ theme }) => theme.buttons.primary.textHover};
-    box-shadow: ${({ theme }) => theme.shadows.md};
-  }
+  border-color: ${({ theme }) => theme.buttons.primary.background};
+  &:hover { background: ${({ theme }) => theme.buttons.primary.backgroundHover}; color: ${({ theme }) => theme.buttons.primary.textHover}; }
 `;
 
-const DeleteButton = styled(ActionButton)`
+const Danger = styled(BaseBtn)`
   background: ${({ theme }) => theme.buttons.danger.background};
-
-  &:hover,
-  &:focus {
-    background: ${({ theme }) => theme.buttons.danger.backgroundHover};
-    color: ${({ theme }) => theme.buttons.danger.textHover};
-  }
+  color: ${({ theme }) => theme.buttons.danger.text};
+  border-color: ${({ theme }) => theme.buttons.danger.background};
+  &:hover { background: ${({ theme }) => theme.buttons.danger.backgroundHover}; color: ${({ theme }) => theme.buttons.danger.textHover}; }
 `;
 
 const EmptyMessage = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: ${({ theme }) => theme.fontSizes.lg};
   text-align: center;
-  margin-top: ${({ theme }) => theme.spacings.xl};
-  margin-bottom: ${({ theme }) => theme.spacings.xl};
+  margin: ${({ theme }) => theme.spacings.xl} 0;
   font-family: ${({ theme }) => theme.fonts.body};
 `;
-
-const ImagePreview = styled.img`
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-  border-radius: ${({ theme }) => theme.radii.lg};
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-`;
-
-const Placeholder = styled.div`
-  width: 100%;
-  height: 120px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-`;
-
-export {
-  CategoryButtons,
-  CategoryButton,
-  GridWrapper,
-  SmallCard,
-  Info,
-  CategoryText,
-  Type,
-  ButtonGroup,
-  ActionButton,
-  DeleteButton,
-  EmptyMessage,
-  ImagePreview,
-  Placeholder,
-};

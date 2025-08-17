@@ -1,245 +1,277 @@
+// src/modules/gallery/pages/AdminGalleryPage.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import styled from "styled-components";
+import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  getGalleryStats,
-  clearGalleryMessages,
-} from "@/modules/gallery/slice/gallerySlice";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+
+import { clearGalleryMessages } from "@/modules/gallery/slice/gallerySlice";
+
 import {
   GalleryList,
   GalleryMultiForm,
-  GalleryStats,
   CategoryListPage,
   CategoryForm,
   translations,
 } from "@/modules/gallery";
-import { Modal } from "@/shared";
+
 import {
   createGalleryCategory,
   updateGalleryCategory,
 } from "@/modules/gallery/slice/galleryCategorySlice";
-import styled from "styled-components";
-import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import { motion, AnimatePresence } from "framer-motion";
-import { IGalleryCategory } from "@/modules/gallery/types";
-import { toast } from "react-toastify";
+
+import type { GalleryCategory } from "@/modules/gallery/types";
+import { Modal } from "@/shared";
 
 const AdminGalleryPage: React.FC = () => {
   const dispatch = useAppDispatch();
-
-  const images = useAppSelector((state) => state.gallery.adminImages);
-  const loading = useAppSelector((state) => state.gallery.loading);
-  const successMessage = useAppSelector((state) => state.gallery.successMessage);
-  const error = useAppSelector((state) => state.gallery.error);
-  const stats = useAppSelector((state) => state.gallery.stats);
-  const categories = useAppSelector((s) => s.galleryCategory.adminCategories);
-
   const { t } = useI18nNamespace("gallery", translations);
 
-  const [activeTab, setActiveTab] = useState<"list" | "add" | "stats" | "categories">("list");
-  const [editCategory, setEditCategory] = useState<IGalleryCategory | null>(null);
+  // Slice state
+  const items = useAppSelector((s) => s.gallery.galleryAdmin);
+  const loading = useAppSelector((s) => s.gallery.loading);
+  const successMessage = useAppSelector((s) => s.gallery.successMessage);
+  const error = useAppSelector((s) => s.gallery.error);
+  const categories = useAppSelector((s) => s.galleryCategory.adminCategories);
+
+  // UI state
+  const [activeTab, setActiveTab] = useState<"list" | "create" | "categories">("list");
+  const [editCategory, setEditCategory] = useState<GalleryCategory | null>(null);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
 
-  // ✅ Modal kapatma handler
+  const hasItems = useMemo(() => Array.isArray(items) && items.length > 0, [items]);
+  const count = items?.length ?? 0;
+
   const handleModalClose = () => {
     setShowCategoryForm(false);
     setEditCategory(null);
   };
 
+  // Toast + mesaj temizleme
   useEffect(() => {
     if (successMessage) toast.success(successMessage);
     if (error) toast.error(error);
-    if (successMessage || error) {
-      dispatch(clearGalleryMessages());
-    }
+    if (successMessage || error) dispatch(clearGalleryMessages());
   }, [successMessage, error, dispatch]);
 
-  useEffect(() => {
-    if (!stats || Object.keys(stats).length === 0) {
-      dispatch(getGalleryStats());
-    }
-  }, [dispatch, stats]);
-
-  const handleUpdate = async () => {
-    await dispatch(getGalleryStats());
+  // Parent fetch ettiği için burada ekstra fetch yok
+  const handleUpdate = () => {
+    // no-op (çocuklar kendi dispatch'lerini yapıyor)
   };
 
-  // ✅ Kategori create/update submit handler
+  // Kategori create/update
   const handleSubmitCategory = async (formData: FormData, id?: string) => {
     if (id) {
-      // Update
       await dispatch(updateGalleryCategory({ id, data: formData })).unwrap();
     } else {
-      // Create
       await dispatch(createGalleryCategory(formData)).unwrap();
     }
-    handleModalClose(); // Modal'ı kapat
+    handleModalClose();
   };
 
   const handleAddCategory = () => {
     setEditCategory(null);
     setShowCategoryForm(true);
   };
-  const handleEditCategory = (category: IGalleryCategory) => {
+  const handleEditCategory = (category: GalleryCategory) => {
     setEditCategory(category);
     setShowCategoryForm(true);
   };
 
   return (
-    <Container>
-      <Title>{t("title")}</Title>
-
-      <TabButtons>
-        <TabButton $active={activeTab === "stats"} onClick={() => setActiveTab("stats")}>
-          {t("tab.stats")}
-        </TabButton>
-        <TabButton $active={activeTab === "add"} onClick={() => setActiveTab("add")}>
-          {t("tab.add")}
-        </TabButton>
-        <TabButton $active={activeTab === "list"} onClick={() => setActiveTab("list")}>
-          {t("tab.list")}
-        </TabButton>
-        <TabButton $active={activeTab === "categories"} onClick={() => setActiveTab("categories")}>
-          {t("tab.categories", "Categories")}
-        </TabButton>
-      </TabButtons>
-
-      <AnimatePresence mode="wait">
-        {activeTab === "stats" && (
-          <MotionWrapper
-            key="stats"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
+    <PageWrap>
+      {/* Header — About sayfası paternine uyumlu */}
+      <Header>
+        <TitleBlock>
+          <h1>{t("admin.title", "Gallery Management")}</h1>
+          <Subtitle>{t("admin.subtitle", "Create, organize and publish your gallery items")}</Subtitle>
+        </TitleBlock>
+        <Right>
+          <Counter aria-label="gallery-count">{count}</Counter>
+          <PrimaryBtn
+            onClick={() => {
+              setActiveTab("create");
+            }}
           >
-            <GalleryStats stats={stats} />
-          </MotionWrapper>
-        )}
+            + {t("create", "Create")}
+          </PrimaryBtn>
+        </Right>
+      </Header>
 
-        {activeTab === "add" && (
-          <MotionWrapper
-            key="add"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            <GalleryMultiForm categories={categories || []} onUpdate={handleUpdate} />
-          </MotionWrapper>
-        )}
+      {/* Sekmeler */}
+      <Tabs>
+        <Tab $active={activeTab === "list"} onClick={() => setActiveTab("list")}>
+          {t("list", "List")}
+        </Tab>
+        <Tab $active={activeTab === "create"} onClick={() => setActiveTab("create")}>
+          {t("create", "Create")}
+        </Tab>
+        <Tab $active={activeTab === "categories"} onClick={() => setActiveTab("categories")}>
+          {t("categories", "Categories")}
+        </Tab>
+      </Tabs>
 
-        {activeTab === "list" && (
-          <MotionWrapper
-            key="list"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            {loading ? (
-              <EmptyMessage>{t("loading")}</EmptyMessage>
-            ) : images.length > 0 ? (
-              <GalleryList
-                images={images}
-                categories={categories}
-                onUpdate={handleUpdate}
-              />
-            ) : (
-              <EmptyMessage>{t("empty")}</EmptyMessage>
-            )}
-          </MotionWrapper>
-        )}
+      {/* Sekme içerikleri — SectionHead + Card patern */}
+      <Section>
+        <SectionHead>
+          <h2>
+            {activeTab === "list" && t("list", "List")}
+            {activeTab === "create" && t("create", "Create")}
+            {activeTab === "categories" && t("categories", "Categories")}
+          </h2>
 
-        {activeTab === "categories" && (
-          <MotionWrapper
-            key="categories"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            <CategoryListPage
-              onAdd={handleAddCategory}
-              onEdit={handleEditCategory}
-            />
+          {activeTab === "list" ? (
+            <SmallBtn disabled={loading}>{t("refresh", "Refresh")}</SmallBtn>
+          ) : activeTab === "create" ? (
+            <SmallBtn onClick={() => setActiveTab("list")}>{t("backToList", "Back to list")}</SmallBtn>
+          ) : (
+            <SmallBtn onClick={handleAddCategory}>+ {t("newCategory", "New Category")}</SmallBtn>
+          )}
+        </SectionHead>
 
-            <AnimatePresence>
-              {showCategoryForm && (
-                <Modal isOpen={showCategoryForm} onClose={handleModalClose}>
-                  <CategoryForm
-                    isOpen={showCategoryForm}
-                    onClose={handleModalClose}
-                    editingItem={editCategory}
-                    onSubmit={handleSubmitCategory}
-                  />
-                </Modal>
+        <Card>
+          {activeTab === "list" && (
+            <>
+              {loading ? (
+                <EmptyMessage>{t("loading", "Loading...")}</EmptyMessage>
+              ) : hasItems ? (
+                <GalleryList items={items} categories={categories} onUpdate={handleUpdate} />
+              ) : (
+                <EmptyMessage>{t("empty", "No gallery items yet.")}</EmptyMessage>
               )}
-            </AnimatePresence>
-          </MotionWrapper>
-        )}
-      </AnimatePresence>
-    </Container>
+            </>
+          )}
+
+          {activeTab === "create" && (
+            <GalleryMultiForm categories={categories || []} onUpdate={handleUpdate} />
+          )}
+
+          {activeTab === "categories" && (
+            <>
+              <CategoryListPage onAdd={handleAddCategory} onEdit={handleEditCategory} />
+              <Modal isOpen={showCategoryForm} onClose={handleModalClose}>
+                <CategoryForm
+                  isOpen={showCategoryForm}
+                  onClose={handleModalClose}
+                  editingItem={editCategory}
+                  onSubmit={handleSubmitCategory}
+                />
+              </Modal>
+            </>
+          )}
+        </Card>
+      </Section>
+    </PageWrap>
   );
 };
 
 export default AdminGalleryPage;
 
-// ---- Styles (değişmedi) ----
-
-const Container = styled.div`
-  padding: ${({ theme }) => theme.spacings.xxl}
-    ${({ theme }) => theme.spacings.md};
-  background: ${({ theme }) => theme.colors.sectionBackground};
-  color: ${({ theme }) => theme.colors.text};
-  min-height: 70vh;
-  border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: ${({ theme }) => theme.shadows.xl};
+/* ---- styled (About/Section paternine uyumlu) ---- */
+const PageWrap = styled.div`
   max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
-  transition: background 0.3s;
+  padding: ${({ theme }) => theme.spacings.xl};
+
+  ${({ theme }) => theme.media.mobile} {
+    padding: ${({ theme }) => theme.spacings.lg};
+  }
 `;
 
-const Title = styled.h1`
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: ${({ theme }) => theme.spacings.xl};
-  text-align: left;
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  letter-spacings: 0.02em;
+const Header = styled.div`
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
+
+  ${({ theme }) => theme.media.mobile} {
+    flex-direction: column; align-items: flex-start; gap: ${({ theme }) => theme.spacings.sm};
+  }
 `;
 
-const TabButtons = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacings.sm};
-  margin-bottom: ${({ theme }) => theme.spacings.xl};
-  justify-content: flex-start;
-  flex-wrap: wrap;
+const TitleBlock = styled.div`
+  display: flex; flex-direction: column; gap: 4px;
+
+  h1 {
+    margin: 0;
+    font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+  }
+
+  ${({ theme }) => theme.media.mobile} {
+    h1 { font-size: ${({ theme }) => theme.fontSizes.lg}; }
+  }
 `;
 
-const TabButton = styled.button<{ $active: boolean }>`
-  padding: 0.6rem 2rem;
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-family: ${({ theme }) => theme.fonts.main};
-  border: none;
+const Subtitle = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+`;
+
+const Right = styled.div`
+  display: flex; gap: ${({ theme }) => theme.spacings.sm}; align-items: center;
+`;
+
+const Counter = styled.span`
+  padding: 6px 10px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+`;
+
+const Tabs = styled.div`
+  display: flex; gap: ${({ theme }) => theme.spacings.xs};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
+`;
+
+const Tab = styled.button<{ $active?: boolean }>`
+  padding: 8px 12px;
   border-radius: ${({ theme }) => theme.radii.pill};
   background: ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.backgroundSecondary};
-  color: ${({ $active, theme }) =>
-    $active ? theme.colors.buttonText : theme.colors.text};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+    $active ? theme.colors.primaryLight : theme.colors.cardBackground};
+  color: ${({ theme }) => theme.colors.text};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   cursor: pointer;
-  box-shadow: ${({ theme }) => theme.shadows.button};
-  transition: background 0.22s, color 0.22s, box-shadow 0.22s;
+`;
 
-  &:hover {
-    background: ${({ $active, theme }) =>
-      $active ? theme.colors.primaryHover : theme.colors.primaryLight};
-    color: ${({ theme }) => theme.colors.buttonText};
-    box-shadow: ${({ theme }) => theme.shadows.lg};
+const Section = styled.section`
+  margin-top: ${({ theme }) => theme.spacings.sm};
+`;
+
+const SectionHead = styled.div`
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
+
+  h2 {
+    margin: 0;
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+    color: ${({ theme }) => theme.colors.title};
   }
+`;
+
+const Card = styled.div`
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  padding: ${({ theme }) => theme.spacings.lg};
+`;
+
+const PrimaryBtn = styled.button`
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.buttons.primary.backgroundHover};
+  padding: 8px 12px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  cursor: pointer;
+`;
+
+const SmallBtn = styled.button`
+  background: ${({ theme }) => theme.buttons.secondary.background};
+  color: ${({ theme }) => theme.buttons.secondary.text};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  padding: 6px 10px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  cursor: pointer;
 `;
 
 const EmptyMessage = styled.p`
@@ -250,9 +282,3 @@ const EmptyMessage = styled.p`
   font-family: ${({ theme }) => theme.fonts.body};
   opacity: 0.75;
 `;
-
-const MotionWrapper = styled(motion.div)`
-  width: 100%;
-  min-height: 300px;
-`;
-

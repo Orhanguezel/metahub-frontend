@@ -64,7 +64,7 @@ import {
   clearBlogCategoryMessages,
 } from "@/modules/blog/slice/blogCategorySlice";
 import {
-  fetchCoupons,
+  fetchCouponsAdmin,
   clearCouponMessages,
 } from "@/modules/coupon/slice/couponSlice";
 import {
@@ -117,7 +117,7 @@ import {
 } from "@/modules/sparepart/slice/sparepartCategorySlice";
 
 import {
-  fetchGallery,
+  fetchAllGalleryAdmin,
   clearGalleryMessages,
 } from "@/modules/gallery/slice/gallerySlice";
 import {
@@ -461,13 +461,13 @@ const opsJobs = useAppSelector((state) => state.opsjobs);
       dispatch(fetchArchivedSessionsAdmin());
 
     if (!coupons.couponsAdmin.length && !coupons.loading)
-      dispatch(fetchCoupons());
+      dispatch(fetchCouponsAdmin());
     if (!newsList.newsAdmin.length && !newsList.loading)
       dispatch(fetchAllNewsAdmin());
     if (!newsCategories.categories.length && !newsCategories.loading)
       dispatch(fetchNewsCategories());
-    if (!galleryList.adminImages.length && !galleryList.loading)
-      dispatch(fetchGallery());
+    if (!galleryList.galleryAdmin.length && !galleryList.loading)
+      dispatch(fetchAllGalleryAdmin());
     if (!galleryCategory.adminCategories.length && galleryCategory.status === "idle") {
       dispatch(fetchAdminGalleryCategories());
     }

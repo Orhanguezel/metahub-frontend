@@ -1,14 +1,15 @@
+// UserTable.tsx
 "use client";
 
-import { useEffect, useMemo, useState} from "react";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, RootState } from "@/store";
-import { UserTableRow } from "@/modules/users"; // artık kart render ediyor
+import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { adminUserTranslations } from "@/modules/users";
 import type { User } from "@/modules/users/types/user";
 import type { UserFilterState } from "@/app/admin/users/page";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { UserTableRow } from "@/modules/users";
+// import { fetchUsers } from "@/modules/users/slice/userCrudSlice"; // örn: server fetch (varsa)
 
 interface Props {
   filters: UserFilterState;
@@ -16,38 +17,34 @@ interface Props {
 
 export default function UserTable({ filters }: Props) {
   const { t } = useI18nNamespace("adminUser", adminUserTranslations);
-  const dispatch = useDispatch<AppDispatch>();
-  const { users, loading, error, meta } = useSelector((s: RootState) => s.userCrud);
+  const dispatch = useAppDispatch();
+  const { users, loading, error, meta } = useAppSelector((s) => s.userCrud);
 
-  // local pagination
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(12);
 
-  // Filters → server query
   const queryObj = useMemo(() => {
     const q: Record<string, string | number> = { page, limit };
     if (filters.query) q.q = filters.query;
     if (filters.role) q.role = filters.role;
-    if (filters.isActive) q.isActive = filters.isActive; // "true" | "false"
+    if (filters.isActive) q.isActive = filters.isActive;
     return q;
   }, [filters, page, limit]);
 
-  // Debounced fetch
+  // Debounced fetch (örnek)
   useEffect(() => {
     const id = setTimeout(() => {
+      // dispatch(fetchUsers(queryObj) as any);
     }, 250);
     return () => clearTimeout(id);
   }, [dispatch, queryObj]);
 
-  // Clamp page if backend meta changes (örn. filtreyle sayfa sayısı küçüldü)
   useEffect(() => {
     if (meta?.totalPages && page > meta.totalPages && meta.totalPages > 0) {
       setPage(meta.totalPages);
     }
   }, [meta?.totalPages, page]);
 
-
-  // Safety: UI bozulmasın diye boolean normalize
   const normalizedUsers: User[] = (users || []).map((u: any) => ({
     ...u,
     isActive: !!u.isActive,
@@ -75,7 +72,7 @@ export default function UserTable({ filters }: Props) {
             id="perPage"
             value={limit}
             onChange={(e) => {
-              setPage(1); // limit değişince başa dön
+              setPage(1);
               setLimit(parseInt(e.target.value, 10));
             }}
           >
@@ -88,7 +85,6 @@ export default function UserTable({ filters }: Props) {
         </RightControls>
       </TopBar>
 
-      {/* === Kart Grid === */}
       <CardsWrap aria-label={t("users.title", "Kullanıcılar")}>
         {loading && <Empty>{t("users.loading", "Yükleniyor…")}</Empty>}
         {error && !loading && <Empty>{t("table.error", "Bir hata oluştu.")}</Empty>}
@@ -123,9 +119,7 @@ export default function UserTable({ filters }: Props) {
             type="button"
             disabled={loading || !meta?.totalPages || page >= meta.totalPages}
             onClick={() =>
-              setPage((p) =>
-                meta?.totalPages ? Math.min(meta.totalPages, p + 1) : p + 1
-              )
+              setPage((p) => (meta?.totalPages ? Math.min(meta.totalPages, p + 1) : p + 1))
             }
             aria-label={t("pager.next", "Sonraki")}
           >
@@ -202,7 +196,6 @@ const CardsWrap = styled.div`
   padding: ${({ theme }) => theme.spacings.md};
   grid-template-columns: 1fr;
 
-  /* daha geniş ekranlarda kolon sayısını artır */
   @media (min-width: ${({ theme }) => theme.breakpoints.laptopS}) {
     grid-template-columns: repeat(2, 1fr);
   }
