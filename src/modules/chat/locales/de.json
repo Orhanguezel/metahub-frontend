@@ -1,54 +1,33 @@
 {
-  "publicFaq": {
-    "title": "Häufig gestellte Fragen",
-    "noFaqs": "Derzeit sind keine FAQs verfügbar.",
-    "askTitle": "Stelle eine Frage",
-    "askRequired": "Bitte gib eine Frage ein.",
-    "askPlaceholder": "z. B. Wie funktioniert das System?",
-    "askButton": "Fragen",
-    "answerTitle": "Antwort",
-    "question": "Deine Frage"
+  "support": {
+    "title": "Live-Support",
+    "subtitle": "Hier können Sie Ihre Fragen stellen.",
+    "brand": "{{brand}} Live-Support",
+    "brand_title": "{{brand}} Live-Support",
+    "loading": "Wird geladen…",
+    "login_required": "Bitte melden Sie sich an, um den Live-Support zu nutzen…",
+    "open": "Live-Support",
+    "new_message": "Neue Nachricht",
+    "notification_title": "Neue Nachricht",
+    "unread_btn": "Neue Nachricht",
+    "unread_aria": "{{count}} neue Nachricht — Live-Support",
+    "unread_live": "{{count}} neue Nachricht",
+    "unread_badge": "{{count}} neu",
+    "modal_aria": "Live-Support-Fenster",
+    "type_to_start": "Zum Starten unten schreiben.",
+    "no_messages": "Noch keine Nachrichten.",
+    "input_placeholder": "Schreiben Sie Ihre Frage…",
+    "send": "Senden",
+    "hint_enter": "Enter zum Senden, Shift+Enter für Zeilenumbruch",
+    "input_aria": "Nachrichtenfeld",
+    "message_log": "Nachrichtenprotokoll",
+    "me": "Ich",
+    "bot": "Bot",
+    "agent": "Support",
+    "tagline": "Sofort-Hilfe-Leitung",
+    "session_id": "Konversations-ID",
+    "session_tag": "Support",
+    "notice": "Dieser Chat kann zu Qualitätszwecken aufgezeichnet werden. Ihre Daten sind geschützt."
   },
-  "adminFaq": {
-    "title": "FAQ-Verwaltung",
-    "create": "Neu erstellen",
-    "listEmpty": "Keine FAQs gefunden.",
-    "actions": "Aktionen",
-    "form": {
-      "required": "Bitte fülle alle Felder in allen Sprachen aus.",
-      "title": "Neue FAQ hinzufügen",
-      "titleEdit": "FAQ bearbeiten",
-      "question": "Frage",
-      "answer": "Antwort",
-      "category": "Kategorie",
-      "categoryPlaceholder": "z. B. Versand, Rückgabe",
-      "submit": "Erstellen",
-      "success": "FAQ wurde erfolgreich erstellt.",
-      "updated": "FAQ wurde erfolgreich aktualisiert.",
-      "error": "Vorgang fehlgeschlagen."
-    },
-    "ask": {
-      "title": "Stelle eine Frage",
-      "placeholder": "z. B. Wie funktioniert das System?",
-      "submit": "Fragen",
-      "answerTitle": "Antwort"
-    },
-    "messages": {
-      "created": "FAQ wurde erfolgreich erstellt.",
-      "error": "Fehler beim Erstellen der FAQ."
-    },
-    "titleMulti": "Neue FAQ (Mehrsprachig)"
-  },
-  "common": {
-    "loading": "Lade...",
-    "edit": "Bearbeiten",
-    "delete": "Löschen",
-    "save": "Speichern",
-    "cancel": "Abbrechen",
-    "update": "Aktualisieren",
-    "create": "Erstellen"
-  },
-  "confirm": {
-    "delete": "Möchten Sie diese FAQ wirklich löschen?"
-  }
+  "close": "Schließen"
 }

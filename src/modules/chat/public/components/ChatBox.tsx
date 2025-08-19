@@ -1,176 +1,199 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
+import { useAppDispatch } from "@/store/hooks";
 import { getSocket } from "@/lib/socket";
+import type { ChatMessage } from "@/modules/chat/types";
+import {
+  fetchRoomMessages,
+  markRoomMessagesRead,
+  messageReceived,
+  sendUserMessage,
+} from "@/modules/chat/slice/chatSlice";
+import PublicMessageList from "./PublicMessageList";
+import PublicChatInput from "./PublicChatInput";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/chat";
-import {
-  ChatMessage,
-  PublicMessageList,
-  PublicChatInput,
-} from "@/modules/chat";
-import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 
-const ChatBox = () => {
-  const { t } = useI18nNamespace("chat", translations);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [roomId, setRoomId] = useState<string>("");
-
-  const socket = getSocket();
-
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.connect();
-
-    const handleRoomAssigned = async (assignedRoomId: string) => {
-      setRoomId(assignedRoomId);
-
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/chat/${assignedRoomId}`,
-          { credentials: "include" }
-        );
-        const data = await res.json();
-        if (Array.isArray(data)) setMessages(data);
-      } catch (err) {
-        console.error("❌ Geçmiş mesajlar alınamadı:", err);
-      }
-    };
-
-    const handleIncomingMessage = (msg: ChatMessage) => {
-      setMessages((prev) => {
-        const alreadyExists = prev.some((m) => m._id === msg._id);
-        return alreadyExists ? prev : [...prev, msg];
-      });
-    };
-
-    socket.on("room-assigned", handleRoomAssigned);
-    socket.on("chat-message", handleIncomingMessage);
-    socket.on("bot-message", handleIncomingMessage);
-    socket.on("admin-message", handleIncomingMessage);
-
-    return () => {
-      socket.off("room-assigned", handleRoomAssigned);
-      socket.off("chat-message", handleIncomingMessage);
-      socket.off("bot-message", handleIncomingMessage);
-      socket.off("admin-message", handleIncomingMessage);
-      socket.disconnect();
-    };
-  }, [socket]);
-
-  const handleSend = (message: string) => {
-    if (!message.trim() || !roomId || !socket) return;
-
-    const filledLanguage: Record<SupportedLocale, string> = {} as any;
-    SUPPORTED_LOCALES.forEach((lng) => {
-      filledLanguage[lng] = message;
-    });
-
-    socket.emit("chat-message", {
-      room: roomId,
-      message,
-      language: filledLanguage,
-    });
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        _id: `temp-${Date.now()}`,
-        sender: null,
-        message,
-        roomId,
-        tenant: "",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isFromAdmin: false,
-        isFromBot: false,
-        isRead: false,
-        language: filledLanguage,
-      },
-    ]);
-  };
-
-  return (
-    <Wrapper>
-      <Header>
-        <h4>🤖 {t("assistantTitle", "Sanal Asistan")}</h4>
-      </Header>
-      <MessageArea>
-        <PublicMessageList messages={messages} />
-      </MessageArea>
-      <InputArea>
-        <PublicChatInput onSend={handleSend} />
-      </InputArea>
-    </Wrapper>
-  );
+type Props = {
+  userId: string;               // <<< zorunlu
+  roomId?: string;
+  lang: string;
+  loading?: boolean;
+  error?: string;
+  messages: ChatMessage[];
+  onRoomResolved?: (roomId: string) => void;
+  brandTitle?: string;          // <<< dışarıdan gelirse kullan
 };
 
-export default ChatBox;
+const makeUserRoomId = (uid: string) => `user:${uid}`;
 
-// Styled Components - Ensotek Theme & Responsive
+export default function ChatBox({
+  userId,
+  roomId,
+  lang,
+  loading,
+  error,
+  messages,
+  onRoomResolved,
+  brandTitle,
+}: Props) {
+  const { t } = useI18nNamespace("chat", translations);
 
-const Wrapper = styled.div`
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.md};
-  border: 1.5px solid ${({ theme }) => theme.colors.border};
-  display: flex;
-  flex-direction: column;
-  height: 75vh;
-  min-height: 450px;
-  overflow: hidden;
-  position: relative;
-  transition: box-shadow 0.22s;
-  @media (max-width: 700px) {
-    max-width: 100%;
-    border-radius: ${({ theme }) => theme.radii.md};
-    height: 68vh;
-    min-height: 350px;
-  }
+  const dispatch = useAppDispatch();
+  const [localRoom, setLocalRoom] = useState<string | undefined>(roomId || makeUserRoomId(userId));
+  const [online, setOnline] = useState(true);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const socket = getSocket();
+
+  // Varsayılan başlık (eğer parent vermezse)
+  const resolvedBrandTitle =
+    brandTitle ?? t("support.brand_title", "{{brand}} Canlı Destek", { brand: "Metahub" });
+
+  // Dışarıdan gelen roomId değişirse senkronla; yoksa user odası
+  useEffect(() => {
+    const rid = roomId || makeUserRoomId(userId);
+    if (rid !== localRoom) setLocalRoom(rid);
+  }, [roomId, userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Socket lifecycle
+  useEffect(() => {
+    if (!socket) return;
+    socket.connect();
+
+    const onConn = () => setOnline(true);
+    const onDisc = () => setOnline(false);
+    socket.on("connect", onConn);
+    socket.on("disconnect", onDisc);
+
+    const onInbound = (msg: ChatMessage) => {
+      if (msg.roomId !== localRoom) return;
+      dispatch(messageReceived(msg));
+      listRef.current?.scrollTo({ top: 1e9, behavior: "smooth" });
+    };
+    socket.on("chat-message", onInbound);
+    socket.on("admin-message", onInbound);
+
+    return () => {
+      socket.off("connect", onConn);
+      socket.off("disconnect", onDisc);
+      socket.off("chat-message", onInbound);
+      socket.off("admin-message", onInbound);
+      socket.disconnect();
+    };
+  }, [dispatch, socket, localRoom]);
+
+  // Odaya gir/çık
+  useEffect(() => {
+    if (!socket || !localRoom) return;
+    socket.emit("join-room", { roomId: localRoom });
+    dispatch(fetchRoomMessages({ roomId: localRoom, page: 1, limit: 20, sort: "asc" }));
+    dispatch(markRoomMessagesRead({ roomId: localRoom }));
+    return () => { socket.emit("leave-room", { roomId: localRoom }); };
+  }, [socket, localRoom, dispatch]);
+
+  // Mesaj gönder
+  const handleSend = useCallback(async (text: string) => {
+    const rid = localRoom || makeUserRoomId(userId);
+    if (!localRoom) {
+      setLocalRoom(rid);
+      onRoomResolved?.(rid);
+    }
+    try {
+      await dispatch(sendUserMessage({ roomId: rid, message: text })).unwrap();
+      listRef.current?.scrollTo({ top: 1e9, behavior: "smooth" });
+    } catch {/* slice hata tutuyor */}
+  }, [dispatch, localRoom, userId, onRoomResolved]);
+
+  const emptyText = useMemo(
+    () => (!localRoom ? t("support.type_to_start", "Sohbete başlamak için aşağıya yazın.") : t("support.no_messages", "Henüz mesaj yok.")),
+    [localRoom, t]
+  );
+
+  const shortId = localRoom ? localRoom.replace(/^user:/, "").slice(0, 8) : "";
+
+  return (
+    <Box aria-label="Canlı destek sohbet kutusu">
+      <HeaderBar>
+        <Left>
+          <Status $on={online} aria-hidden />
+          <Title>{resolvedBrandTitle}</Title>
+          <Subtitle>— {t("support.tagline", "Anlık yardım hattı")}</Subtitle>
+        </Left>
+        {localRoom && (
+          <Right title={`${t("support.session_id", "Konuşma Kimliği")}: ${localRoom}`}>
+            <SessionTag>{t("support.session_tag", "Destek")} #{shortId}</SessionTag>
+          </Right>
+        )}
+      </HeaderBar>
+
+      <ListWrap ref={listRef}>
+        <PublicMessageList messages={messages} error={error} emptyText={emptyText} />
+      </ListWrap>
+
+      <InputWrap>
+        <PublicChatInput
+          lang={lang}
+          placeholder={t("support.input_placeholder", "Sorunuzu yazın…")}
+          sendLabel={t("support.send", "Gönder")}
+          disabled={!!loading}
+          onSend={handleSend}
+        />
+        <Note>
+          {t("support.notice", "Bu sohbet hizmet kalitesi için kaydedilebilir. Kişisel verileriniz KVKK kapsamında korunur.")}
+        </Note>
+      </InputWrap>
+    </Box>
+  );
+}
+
+/* styled */
+const Box = styled.div`
+  display:flex; flex-direction:column; gap:${({ theme }) => theme.spacings.md};
+  height: 100%;
 `;
-
-const Header = styled.div`
-  background: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.buttonText};
-  padding: 1rem 1.6rem;
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  border-bottom: 1.5px solid ${({ theme }) => theme.colors.primaryDark};
-  display: flex;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  h4 {
-    margin: 0;
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-    color: ${({ theme }) => theme.colors.buttonText};
-    font-family: ${({ theme }) => theme.fonts.heading};
-  }
+const HeaderBar = styled.div`
+  display:flex; align-items:center; justify-content:space-between;
+  padding:${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
+  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
+  border-radius:${({ theme }) => theme.radii.lg};
+  background:${({ theme }) => theme.colors.backgroundAlt};
 `;
-
-const MessageArea = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  background: ${({ theme }) => theme.colors.background};
-  padding: 1.3rem 1rem 0.7rem 1rem;
-  @media (max-width: 700px) {
-    padding: 1rem 0.3rem 0.5rem 0.3rem;
-  }
+const Left = styled.div`display:flex; align-items:center; gap:${({ theme }) => theme.spacings.sm}; min-width:0;`;
+const Right = styled.div`display:flex; align-items:center; gap:${({ theme }) => theme.spacings.sm};`;
+const Status = styled.span<{ $on: boolean }>`
+  width:10px; height:10px; border-radius:${({ theme }) => theme.radii.circle};
+  background:${({ $on, theme }) => ($on ? theme.colors.success : theme.colors.muted)};
+  box-shadow: 0 0 0 2px rgba(0,0,0,.04) inset;
 `;
-
-const InputArea = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  padding: 1rem 1.3rem 1.2rem 1.3rem;
-  border-top: 1.5px solid ${({ theme }) => theme.colors.border};
-  @media (max-width: 700px) {
-    padding: 0.7rem 0.5rem 0.7rem 0.5rem;
-  }
+const Title = styled.h3`
+  margin:0; font-size:${({ theme }) => theme.fontSizes.md};
+  color:${({ theme }) => theme.colors.title};
 `;
-
+const Subtitle = styled.span`
+  color:${({ theme }) => theme.colors.textSecondary};
+  font-size:${({ theme }) => theme.fontSizes.sm};
+`;
+const SessionTag = styled.span`
+  font-size:${({ theme }) => theme.fontSizes.xsmall};
+  color:${({ theme }) => theme.colors.textSecondary};
+  background:${({ theme }) => theme.colors.inputBackgroundLight};
+  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
+  padding:2px 8px; border-radius:${({ theme }) => theme.radii.pill};
+`;
+const ListWrap = styled.div`
+  flex:1 1 auto;
+  max-height: 52vh;
+  overflow:auto;
+  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
+  border-radius:${({ theme }) => theme.radii.lg};
+  background:${({ theme }) => theme.colors.cardBackground};
+`;
+const InputWrap = styled.div`display:flex; flex-direction:column; gap:${({ theme }) => theme.spacings.xs};`;
+const Note = styled.p`
+  margin:0;
+  color:${({ theme }) => theme.colors.textSecondary};
+  font-size:${({ theme }) => theme.fontSizes.xsmall};
+  text-align:left;
+`;

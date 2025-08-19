@@ -20,11 +20,6 @@ import { fetchBikes } from "@/modules/bikes/slice/bikesSlice";
 import { fetchEnsotekprod } from "@/modules/ensotekprod/slice/ensotekprodSlice";
 import { fetchSparepart } from "@/modules/sparepart/slice/sparepartSlice";
 import { fetchCoupon } from "@/modules/coupon/slice/couponSlice";
-import {
-  fetchAllChatSessions,
-  fetchActiveChatSessions,
-  fetchArchivedSessions,
-} from "@/modules/chat/slice/chatSlice";
 import { fetchLibrary } from "@/modules/library/slice/librarySlice";
 import { fetchLibraryCategories } from "@/modules/library/slice/libraryCategorySlice";
 import { fetchTeam } from "@/modules/team/slice/teamSlice";
@@ -59,7 +54,6 @@ export const usePublicLayoutInit = () => {
   const ensotekprodSlice = useAppSelector((s) => s.ensotekprod);
   const sparepartSlice = useAppSelector((s) => s.sparepart);
   const couponSlice = useAppSelector((s) => s.coupon);
-  const chat = useAppSelector((s) => s.chat);
   const profile = useAppSelector((s) => s.account.profile);
   const librarySlice = useAppSelector((s) => s.library);
   const libraryCategorySlice = useAppSelector((s) => s.libraryCategory);
@@ -164,13 +158,6 @@ useEffect(() => {
     if ((!apartmentSlice.apartment || apartmentSlice.apartment.length === 0) && apartmentSlice.status === "idle") {
       dispatch(fetchApartment());
     }
-
-    // --- Chat sadece login olan için ---
-    if (profile) {
-      if (chat.sessions.length === 0) dispatch(fetchAllChatSessions());
-      if (chat.activeSessions.length === 0) dispatch(fetchActiveChatSessions());
-      if (chat.archivedSessions.length === 0) dispatch(fetchArchivedSessions());
-    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenant?._id, tenantLoading, tenant, dispatch, profile]); // Sadece tenant değişince veya ilk mount'ta çalışır
 
@@ -207,10 +194,6 @@ useEffect(() => {
     coupons: couponSlice.coupons,
     couponsStatus: couponSlice.status,
     couponsError: couponSlice.error,
-    chatSessions: chat.sessions,
-    activeChatSessions: chat.activeSessions,
-    archivedChatSessions: chat.archivedSessions,
-    chatMessages: chat.chatMessages,
     about: aboutSlice.about,
     aboutStatus: aboutSlice.status,
     aboutError: aboutSlice.error,

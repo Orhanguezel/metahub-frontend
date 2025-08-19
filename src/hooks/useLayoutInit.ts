@@ -156,13 +156,6 @@ import {
 } from "@/modules/order/slice/ordersSlice";
 
 import {
-  fetchAllChatSessionsAdmin,
-  fetchActiveChatSessionsAdmin,
-  fetchArchivedSessionsAdmin,
-  fetchMessagesByRoomAdmin,
-  clearChatMessages,
-} from "@/modules/chat/slice/chatSlice";
-import {
   fetchAllLibraryAdmin,
   clearLibraryMessages,
 } from "@/modules/library/slice/librarySlice";
@@ -267,7 +260,6 @@ const cleanupActions = [
   clearSectionMetaMessages,
   clearSectionSettingMessages,
   clearOrderMessages,
-  clearChatMessages,
   clearLibraryMessages,
   clearLibraryCategoryMessages,
   clearSparepartMessages,
@@ -435,30 +427,6 @@ const opsJobs = useAppSelector((state) => state.opsjobs);
       dispatch(fetchSparepartAdmin());
     if (!sparepartCategories.categories.length && !sparepartCategories.loading)
       dispatch(fetchSparepartCategories());
-
-    if (
-      chat.roomId &&
-      !chat.loading &&
-      (!chat.chatMessagesAdmin.length || chat.chatMessagesAdmin[0]?.roomId !== chat.roomId)
-    ) {
-      dispatch(fetchMessagesByRoomAdmin(chat.roomId));
-    }
-    // Tüm chat oturumları
-    if (!chat.sessionsAdmin.length && !chat.loading) {
-      dispatch(fetchAllChatSessionsAdmin());
-    }
-    // Aktif chat oturumları
-    if (!chat.activeSessionsAdmin.length && !chat.loading) {
-      dispatch(fetchActiveChatSessionsAdmin());
-    }
-    // Arşivlenmiş chat oturumları
-    if (!chat.archivedSessionsAdmin.length && !chat.loading) {
-      dispatch(fetchArchivedSessionsAdmin());
-    }
-    if (!chat.activeSessionsAdmin.length && !chat.loading)
-      dispatch(fetchActiveChatSessionsAdmin());
-    if (!chat.archivedSessionsAdmin.length && !chat.loading)
-      dispatch(fetchArchivedSessionsAdmin());
 
     if (!coupons.couponsAdmin.length && !coupons.loading)
       dispatch(fetchCouponsAdmin());

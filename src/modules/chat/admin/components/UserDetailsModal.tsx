@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import styled from "styled-components";
-import { EscalatedRoom } from "@/modules/chat/types";
+import type { EscalatedRoom } from "@/modules/chat/types";
 
 interface Props {
   session: EscalatedRoom | null;
@@ -10,16 +10,12 @@ interface Props {
 }
 
 const UserDetailsModal: React.FC<Props> = ({ session, onClose }) => {
-  // ✅ useEffect her zaman çağrılır
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
+    const onEsc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onEsc);
+    return () => window.removeEventListener("keydown", onEsc);
   }, [onClose]);
 
-  // JSX'te conditional rendering yapılır
   if (!session) return null;
 
   const { user, room, lang, message, createdAt } = session;
@@ -28,24 +24,14 @@ const UserDetailsModal: React.FC<Props> = ({ session, onClose }) => {
     <Overlay role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <Modal>
         <Title id="modal-title">👤 Kullanıcı Bilgisi</Title>
-        <Info>
-          <strong>Ad:</strong> {user.name}
-        </Info>
-        <Info>
-          <strong>E-posta:</strong> {user.email}
-        </Info>
-        <Info>
-          <strong>Oda:</strong> {room}
-        </Info>
-        <Info>
-          <strong>Dil:</strong> {lang?.toUpperCase()}
-        </Info>
-        <Info>
-          <strong>İlk Mesaj:</strong> {message}
-        </Info>
-        <Info>
-          <strong>Başlangıç:</strong> {new Date(createdAt).toLocaleString()}
-        </Info>
+
+        <Info><strong>Ad:</strong> {user?.name ?? "—"}</Info>
+        <Info><strong>E-posta:</strong> {user?.email ?? "—"}</Info>
+        <Info><strong>Oda:</strong> {room}</Info>
+        <Info><strong>Dil:</strong> {lang?.toUpperCase() || "—"}</Info>
+        <Info><strong>İlk Mesaj:</strong> {message}</Info>
+        <Info><strong>Başlangıç:</strong> {formatDT(createdAt)}</Info>
+
         <CloseButton onClick={onClose}>Kapat</CloseButton>
       </Modal>
     </Overlay>
@@ -54,54 +40,55 @@ const UserDetailsModal: React.FC<Props> = ({ session, onClose }) => {
 
 export default UserDetailsModal;
 
-// 💅 Styles
+/* 💅 Styles (classicTheme) */
 const Overlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1050;
+  position: fixed; inset: 0;
+  background: ${({theme})=>theme.colors.overlayBackground};
+  display:flex; justify-content:center; align-items:center;
+  z-index: ${({theme})=>theme.zIndex.modal};
 `;
 
 const Modal = styled.div`
-  background: white;
-  border-radius: 10px;
-  padding: 2rem;
-  width: 100%;
-  max-width: 460px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-  outline: none;
+  background:${({theme})=>theme.colors.cardBackground};
+  border-radius:${({theme})=>theme.radii.lg};
+  padding:${({theme})=>theme.spacings.lg};
+  width:100%; max-width:520px;
+  box-shadow:${({theme})=>theme.shadows.lg};
+  outline:none;
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
 `;
 
 const Title = styled.h3`
-  margin-top: 0;
-  font-size: 1.3rem;
+  margin-top:0; margin-bottom:${({theme})=>theme.spacings.sm};
+  font-size:${({theme})=>theme.fontSizes.md};
+  color:${({theme})=>theme.colors.title};
 `;
 
 const Info = styled.p`
-  margin: 0.5rem 0;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  margin:${({theme})=>theme.spacings.xs} 0;
+  font-size:${({theme})=>theme.fontSizes.sm};
+  color:${({theme})=>theme.colors.text};
 `;
 
 const CloseButton = styled.button`
-  margin-top: 2rem;
-  background-color: #0070f3;
-  color: white;
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #005bbb;
-  }
-
-  &:focus {
-    outline: 2px solid #005bbb;
-    outline-offset: 3px;
-  }
+  margin-top:${({theme})=>theme.spacings.md};
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  padding:10px 14px; border:none;
+  border-radius:${({theme})=>theme.radii.md};
+  font-weight:${({theme})=>theme.fontWeights.semiBold};
+  cursor:pointer;
+  &:hover{ background:${({theme})=>theme.buttons.primary.backgroundHover}; }
+  &:focus{ outline:2px solid ${({theme})=>theme.colors.inputOutline}; outline-offset:3px; }
 `;
+
+function formatDT(iso?: string) {
+  if (!iso) return "—";
+  try {
+    const d = new Date(iso);
+    return new Intl.DateTimeFormat(undefined, {
+      year:"numeric", month:"2-digit", day:"2-digit",
+      hour:"2-digit", minute:"2-digit"
+    }).format(d);
+  } catch { return iso; }
+}

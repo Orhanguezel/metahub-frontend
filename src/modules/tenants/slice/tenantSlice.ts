@@ -2,16 +2,18 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import { ITenant, TenantsListResponse, MessageResponse } from "../types";
 
-const initialTenantSlug = (() => {
+/** Lokal (localhost) için .env'den slug/id okur. Prod'da undefined döner. */
+export const getLocalTenantSlug = (): string | undefined => {
   if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+    // Bilerek öncelik sırası: NEXT_PUBLIC_TENANT_NAME > NEXT_PUBLIC_APP_ENV > TENANT_NAME
     return (
-      process.env.NEXT_PUBLIC_APP_ENV ||
       process.env.NEXT_PUBLIC_TENANT_NAME ||
+      process.env.NEXT_PUBLIC_APP_ENV ||
       process.env.TENANT_NAME
     );
   }
   return undefined;
-})();
+};
 
 // --- State Type ---
 interface TenantState {
@@ -26,6 +28,8 @@ interface TenantState {
 }
 
 // --- Initial State ---
+// ÖNEMLİ: selectedTenant'ı placeholder ile doldurmayıp null bırakıyoruz.
+// Map etme, fetch sonrası (fulfilled) yapılacak.
 const initialState: TenantState = {
   tenants: [],
   tenantsAdmin: [],
@@ -34,37 +38,55 @@ const initialState: TenantState = {
   error: null,
   successMessage: null,
   selectedTenantId: null,
-  selectedTenant: initialTenantSlug ? ({ slug: initialTenantSlug } as ITenant) : null,
+  selectedTenant: null,
 };
 
-// --- LOCAL/DEV tenant slug override (prod'da asla kullanılmaz) ---
-const getLocalTenantSlug = (): string | undefined => {
-  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
-    return (
-      process.env.NEXT_PUBLIC_APP_ENV ||
-      process.env.NEXT_PUBLIC_TENANT_NAME ||
-      process.env.TENANT_NAME
-    );
-  }
-  return undefined;
-};
+/** Ortak çözümleyici: seçilecek tenant'ı tek noktadan belirler. */
+const resolveSelectedTenant = (state: TenantState) => {
+  const localSlug = getLocalTenantSlug();
 
-// --- Helper: Local tenant seçimi ---
-const setLocalTenantIfAvailable = (state: TenantState) => {
-  const localTenantSlug = getLocalTenantSlug();
-  if (localTenantSlug) {
-    const found = state.tenants.find(
-      (t) => t.slug === localTenantSlug || t._id === localTenantSlug
-    );
-    if (found) {
-      state.selectedTenantId = found._id ?? null;
-      state.selectedTenant = found;
+  // 1) Lokal .env slug/id her şeyi ezer (yalnızca localhost)
+  if (localSlug) {
+    const envFound =
+      state.tenants.find((t) => t.slug === localSlug) ||
+      state.tenants.find((t) => t._id === localSlug);
+    if (envFound) {
+      state.selectedTenant = envFound;
+      state.selectedTenantId = envFound._id ?? null;
+      return;
     }
+  }
+
+  // 2) Placeholder olarak yalnızca slug set edilmişse (name yoksa) → gerçek objeye map et
+  if (state.selectedTenant?.slug && !state.selectedTenant?.name) {
+    const bySlug = state.tenants.find((t) => t.slug === state.selectedTenant!.slug);
+    if (bySlug) {
+      state.selectedTenant = bySlug;
+      state.selectedTenantId = bySlug._id ?? null;
+      return;
+    }
+  }
+
+  // 3) selectedTenantId doluysa listedeki karşılığını set et
+  if (state.selectedTenantId) {
+    const byId = state.tenants.find((t) => t._id === state.selectedTenantId);
+    if (byId) {
+      state.selectedTenant = byId;
+      return;
+    }
+    // id bulunamazsa düşür
+    state.selectedTenant = null;
+    state.selectedTenantId = null;
+  }
+
+  // 4) Hiçbiri yoksa/fail ise: ilk tenant (genel fallback)
+  if (!state.selectedTenant && state.tenants.length > 0) {
+    state.selectedTenant = state.tenants[0];
+    state.selectedTenantId = state.selectedTenant._id ?? null;
   }
 };
 
 // --- Admin çağrıları için platform/bypass opsiyonları ---
-// NOT: apiCall tipin 4 parametre alıyorsa TS uyarısını aşmak için (apiCall as any) kullandık.
 const PLATFORM_OPTS = {
   noTenantHeader: true,                 // apiCall bu opsiyonu okuyorsa tenant header'ını basmaz
   headers: { "x-platform": "1" },       // backend'te varsa platform-whitelist için sinyal
@@ -161,8 +183,8 @@ const tenantSlice = createSlice({
   initialState,
   reducers: {
     setTenants(state, action: PayloadAction<ITenant[]>) {
-      state.tenants = action.payload;
-      setLocalTenantIfAvailable(state);
+      state.tenants = action.payload || [];
+      resolveSelectedTenant(state); // liste güncellenince seçim mantığını çalıştır
     },
     clearTenantMessages(state) {
       state.error = null;
@@ -179,7 +201,7 @@ const tenantSlice = createSlice({
     setSelectedTenantId(state, action: PayloadAction<string | null>) {
       state.selectedTenantId = action.payload;
       state.selectedTenant =
-        state.tenants.find((t) => t._id === action.payload) || null;
+        (action.payload && state.tenants.find((t) => t._id === action.payload)) || null;
     },
   },
   extraReducers: (builder) => {
@@ -194,15 +216,7 @@ const tenantSlice = createSlice({
         state.loading = false;
         state.tenants = action.payload.data || [];
         state.successMessage = action.payload.message || null;
-        if (!state.selectedTenant) {
-          const slug = getLocalTenantSlug();
-          if (slug) {
-            const found = state.tenants.find(
-              (t) => t.slug === slug || t._id === slug
-            );
-            if (found) state.selectedTenant = found;
-          }
-        }
+        resolveSelectedTenant(state);
       })
       .addCase(fetchTenants.rejected, (state, action) => {
         state.loading = false;
@@ -227,7 +241,7 @@ const tenantSlice = createSlice({
         state.error = payload?.message || "Admin fetch failed!";
       })
 
-      // CRUD
+      // CRUD success messages
       .addCase(createTenant.fulfilled, (state, action) => {
         state.successMessage = action.payload.message || "Tenant created!";
       })
@@ -248,10 +262,7 @@ const tenantSlice = createSlice({
           state.error =
             typeof payload === "string"
               ? payload
-              : (payload &&
-                  typeof payload === "object" &&
-                  "message" in payload &&
-                  payload.message) ||
+              : (payload && typeof payload === "object" && "message" in payload && payload.message) ||
                 "Operation failed.";
         }
       );

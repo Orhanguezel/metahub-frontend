@@ -1,55 +1,44 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Search } from "lucide-react"; // veya herhangi bir icon paketi
 
-interface Props {
-  onSearch: (term: string) => void;
+type Props = {
   placeholder?: string;
-}
-
-const SearchBox: React.FC<Props> = ({ onSearch, placeholder }) => {
-  const [value, setValue] = useState("");
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const term = e.target.value;
-    setValue(term);
-    onSearch(term);
-  };
-
-  return (
-    <Wrapper>
-      <SearchIcon />
-      <Input
-        type="text"
-        placeholder={placeholder || "Search messages..."}
-        value={value}
-        onChange={handleChange}
-      />
-    </Wrapper>
-  );
+  onSearch: (term: string) => void;
+  delayMs?: number;
 };
 
-export default SearchBox;
+export default function SearchBox({ placeholder = "Search...", onSearch, delayMs = 300 }: Props) {
+  const [val, setVal] = useState("");
 
-// 💅 Styles
-const Wrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: 1px solid #ccc;
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
+  useEffect(() => {
+    const t = setTimeout(() => onSearch(val), delayMs);
+    return () => clearTimeout(t);
+  }, [val, delayMs, onSearch]);
+
+  return (
+    <InputWrap>
+      <Input
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        placeholder={placeholder}
+      />
+    </InputWrap>
+  );
+}
+
+const InputWrap = styled.div`
+  display:flex; align-items:center;
+  background:${({theme})=>theme.colors.inputBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  border-radius:${({theme})=>theme.radii.md};
+  padding: 6px 10px;
 `;
 
 const Input = styled.input`
-  border: none;
-  outline: none;
-  flex: 1;
-`;
-
-const SearchIcon = styled(Search)`
-  width: 18px;
-  height: 18px;
-  color: #888;
+  width:100%; border:none; outline:none;
+  font-size:${({theme})=>theme.fontSizes.sm};
+  background:transparent; color:${({theme})=>theme.colors.text};
+  &::placeholder{ color:${({theme})=>theme.colors.placeholder}; }
 `;

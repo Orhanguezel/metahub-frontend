@@ -61,8 +61,8 @@ const FloatingWrapper = styled.a`
 
   svg {
     flex-shrink: 0;
-    width: 32px;
-    height: 32px;
+    width: 25px;
+    height: 25px;
     color: #fff;
     filter: drop-shadow(0 2px 6px #2225);
   }
@@ -70,7 +70,7 @@ const FloatingWrapper = styled.a`
   @media (max-width: 600px) {
     left: 84px;
     bottom: 14px;
-    padding: 0.7em 0.85em;
+    padding: 0.8em 0.85em;
     font-size: ${({ theme }) => theme.fontSizes.md};
   }
 `;

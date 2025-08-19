@@ -1,80 +1,33 @@
 {
-  "page": {
-    "allBike": "Tous les vélos",
-    "noBike": "Aucun vélo trouvé.",
-    "price": "Prix",
-    "stock": "Stock",
-    "brand": "Marque",
-    "readMore": "Voir les détails →",
-    "other": "Autres produits",
-    "untitled": "Sans titre",
-    "noSummary": "Pas de description.",
-    "bike": {
-      "title": "Dernier vélo",
-      "readMore": "Voir les détails",
-      "all": "Tous les vélos"
-    }
+  "support": {
+    "title": "Assistance en direct",
+    "subtitle": "Vous pouvez poser vos questions ici.",
+    "brand": "Assistance en direct {{brand}}",
+    "brand_title": "Assistance en direct {{brand}}",
+    "loading": "Chargement…",
+    "login_required": "Veuillez vous connecter pour utiliser l’assistance en direct…",
+    "open": "Assistance en direct",
+    "new_message": "Nouveau message",
+    "notification_title": "Nouveau message",
+    "unread_btn": "Nouveau message",
+    "unread_aria": "{{count}} nouveau message — Assistance en direct",
+    "unread_live": "{{count}} nouveau message",
+    "unread_badge": "{{count}} nouv.",
+    "modal_aria": "Fenêtre d’assistance en direct",
+    "type_to_start": "Écrivez ci-dessous pour commencer la discussion.",
+    "no_messages": "Pas encore de messages.",
+    "input_placeholder": "Écrivez votre question…",
+    "send": "Envoyer",
+    "hint_enter": "Entrée pour envoyer, Maj+Entrée pour une nouvelle ligne",
+    "input_aria": "Champ de message",
+    "message_log": "Journal des messages",
+    "me": "Moi",
+    "bot": "Bot",
+    "agent": "Support",
+    "tagline": "Ligne d’aide instantanée",
+    "session_id": "ID de conversation",
+    "session_tag": "Support",
+    "notice": "Cette conversation peut être enregistrée à des fins de qualité. Vos données sont protégées."
   },
-  "admin": {
-    "tabs": {
-      "bike": "Vélos",
-      "create": "Nouveau vélo",
-      "categories": "Catégories"
-    },
-    "bike": {
-      "create": "Ajouter un nouveau vélo",
-      "edit": "Modifier le vélo",
-      "name": "Nom du vélo",
-      "description": "Description",
-      "brand": "Marque",
-      "price": "Prix",
-      "stock": "Stock",
-      "tags": "Tags",
-      "image": "Image",
-      "category": "Catégorie",
-      "select_category": "Sélectionner une catégorie",
-      "publish_status": "Publié ?",
-      "no_images": "Aucune image",
-      "publish": "Publier",
-      "unpublish": "Dépublier",
-      "empty": "Aucun vélo disponible."
-    },
-    "categories": {
-      "title": "Catégories de vélos",
-      "add": "Nouvelle catégorie",
-      "empty": "Aucune catégorie trouvée."
-    },
-    "language": {
-      "en": "Anglais",
-      "tr": "Turc",
-      "de": "Allemand"
-    },
-    "slug": "Slug",
-    "actions": "Actions",
-    "edit": "Modifier",
-    "delete": "Supprimer",
-    "cancel": "Annuler",
-    "update": "Mettre à jour",
-    "create": "Créer",
-    "yes": "Oui",
-    "no": "Non",
-    "loading": "Chargement...",
-    "confirm": {
-      "delete": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
-      "delete_bike": "Êtes-vous sûr de vouloir supprimer ce vélo ?"
-    },
-    "optional_description": "Description (optionnel)",
-    "category_info": "À propos de cette catégorie ?",
-    "saving": "Enregistrement...",
-    "save": "Enregistrer",
-    "update2": "Mettre à jour",
-    "editCategory": "Modifier la catégorie",
-    "newCategory": "Nouvelle catégorie"
-  },
-  "seo": {
-    "title": "Titre SEO",
-    "description": "Description SEO"
-  },
-  "none": "Aucun",
-  "delete_confirm": "Êtes-vous sûr de vouloir supprimer ?"
+  "close": "Fermer"
 }

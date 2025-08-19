@@ -1,94 +1,86 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import styled from "styled-components";
 
-interface Props {
+type Props = {
   onSend: (message: string) => void;
-  sendLabel?: string;
   placeholder?: string;
+  sendLabel?: string;
   lang?: string;
-}
+  disabled?: boolean;
+};
 
-const ChatInput: React.FC<Props> = ({
-  onSend,
-  sendLabel = "Gönder",
-  placeholder = "Mesaj yaz...",
-}) => {
-  const [value, setValue] = useState("");
+export default function ChatInput({ onSend, placeholder = "Type a message...", sendLabel = "Send", disabled }: Props) {
+  const [text, setText] = useState("");
+  const taRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const handleSend = () => {
-    const trimmed = value.trim();
-    if (!trimmed) return;
-    onSend(trimmed);
-    setValue("");
-  };
+  const send = useCallback(() => {
+    const msg = text.trim();
+    if (!msg || disabled) return;
+    onSend(msg);
+    setText("");
+    taRef.current?.focus();
+  }, [text, disabled, onSend]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      send();
     }
   };
 
   return (
-    <Wrapper>
-      <StyledTextarea
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
+    <Composer>
+      <Area
+        ref={taRef}
+        value={text}
+        onChange={(e)=>setText(e.target.value)}
+        onKeyDown={handleKey}
         placeholder={placeholder}
+        disabled={disabled}
         rows={2}
-        onKeyDown={handleKeyDown}
       />
-      <SendButton onClick={handleSend} disabled={!value.trim()}>
+      <SendBtn onClick={send} disabled={disabled}>
         {sendLabel}
-      </SendButton>
-    </Wrapper>
+      </SendBtn>
+    </Composer>
   );
-};
+}
 
-export default ChatInput;
-
-// 💅 Styles
-const Wrapper = styled.div`
-  display: flex;
-  gap: 1rem;
-  align-items: flex-end;
-  margin-top: 1rem;
+const Composer = styled.div`
+  display:flex; gap:${({theme})=>theme.spacings.sm};
+  align-items:flex-end;
 `;
 
-const StyledTextarea = styled.textarea`
-  flex: 1;
-  padding: 0.6rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  resize: none;
-  font-size: 1rem;
-  line-height: 1.4;
-  transition: border-color 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: #0070f3;
+const Area = styled.textarea`
+  flex:1;
+  resize:vertical;
+  min-height:56px;
+  font-size:${({theme})=>theme.fontSizes.sm};
+  line-height:${({theme})=>theme.lineHeights.normal};
+  background:${({theme})=>theme.colors.inputBackground};
+  color:${({theme})=>theme.colors.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  border-radius:${({theme})=>theme.radii.md};
+  padding:${({theme})=>theme.spacings.sm};
+  &:focus{
+    outline:none;
+    border-color:${({theme})=>theme.colors.inputBorderFocus};
+    box-shadow:${({theme})=>theme.colors.shadowHighlight};
+    background:${({theme})=>theme.colors.inputBackgroundFocus};
   }
+  &::placeholder{ color:${({theme})=>theme.colors.placeholder}; }
 `;
 
-const SendButton = styled.button`
-  padding: 0.6rem 1rem;
-  background-color: #0070f3;
-  color: white;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-
-  &:hover:enabled {
-    background-color: #005bbb;
-  }
-
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+const SendBtn = styled.button`
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.buttons.primary.backgroundHover};
+  padding:10px 14px; border-radius:${({theme})=>theme.radii.md};
+  cursor:pointer;
+  &:disabled{
+    opacity:${({theme})=>theme.opacity.disabled};
+    cursor:not-allowed;
   }
 `;

@@ -1,108 +1,79 @@
 "use client";
 
-import React from "react";
-import styled from "styled-components";
-import { useAppSelector } from "@/store/hooks";
-import { selectArchivedSessionsAdmin } from "@/modules/chat/slice/chatSlice";
-import { SupportedLocale } from "@/types/common";
+import React, { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { adminGetArchivedSessions, selectAdmin, setCurrentRoom } from "@/modules/chat/slice/chatSlice";
 import type { ArchivedSession } from "@/modules/chat/types";
+import { Empty, Table, TableWrap, Wrap, Header, Primary, Secondary } from "./ListStyles";
 
-interface Props {
-  lang?: SupportedLocale;
-  title?: string;
-  emptyText?: string;
-}
-
-const ArchivedSessions: React.FC<Props> = ({
-  lang = "tr",
-  title = "🗄️ Arşivlenmiş Sohbetler",
-  emptyText = "Şu anda arşivlenmiş sohbet yok."
-}) => {
-  const archivedSessions = useAppSelector(selectArchivedSessionsAdmin) as ArchivedSession[];
-
-  if (!archivedSessions || archivedSessions.length === 0) {
-    return (
-      <Wrapper>
-        <h4>{title}</h4>
-        <Empty>{emptyText}</Empty>
-      </Wrapper>
-    );
-  }
-
-  return (
-    <Wrapper>
-      <h4>{title}</h4>
-      <List>
-        {archivedSessions.map((session) => (
-          <Item key={session.room}>
-            <strong>{session.user?.name || "Ziyaretçi"}</strong>
-            <span>
-              {" "}
-              ({session.user?.email || "E-posta yok"})
-            </span>
-            <Msg>
-              — {session.lastMessage}
-            </Msg>
-            <Time>
-              {session.closedAt &&
-                new Date(session.closedAt).toLocaleString(lang, {
-                  year: "numeric",
-                  month: "2-digit",
-                  day: "2-digit",
-                  hour: "2-digit",
-                  minute: "2-digit"
-                })}
-            </Time>
-          </Item>
-        ))}
-      </List>
-    </Wrapper>
-  );
+type Props = {
+  lang?: string;
+  onOpenRoom?: (roomId: string) => void;
 };
 
-export default ArchivedSessions;
+export default function ArchivedSessions({ onOpenRoom }: Props) {
+  const dispatch = useAppDispatch();
+  const admin = useAppSelector(selectAdmin);
+  const archived = admin.archivedSessions;
 
-// 💅 Styles
-const Wrapper = styled.div`
-  background: #f7f7f7;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-`;
+  useEffect(() => {
+    dispatch(adminGetArchivedSessions());
+  }, [dispatch]);
 
-const List = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-`;
+  const open = (row: ArchivedSession) => {
+    onOpenRoom?.(row.room);
+    dispatch(setCurrentRoom(row.room));
+  };
 
-const Item = styled.div`
-  font-size: 0.98rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  background: #fff;
-  border-radius: 5px;
-  padding: 0.7rem 0.8rem;
-  border: 1px solid #e4e4e4;
-`;
+  return (
+    <Wrap>
+      <Header>
+        <h4 style={{margin:0}}>Archived</h4>
+        <span>{archived.length}</span>
+      </Header>
 
-const Msg = styled.div`
-  color: #222;
-  font-size: 0.95em;
-  margin-left: 1.1em;
-`;
+      <TableWrap>
+        <Table>
+          <thead>
+            <tr>
+              <th style={{width: 180}}>Room</th>
+              <th>User</th>
+              <th>Last Message</th>
+              <th style={{width: 170}}>Closed</th>
+              <th style={{width: 120}}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {archived.length === 0 && (
+              <tr><td colSpan={5}><Empty>No archived sessions.</Empty></td></tr>
+            )}
+            {archived.map((a, idx) => (
+              <tr key={`${a.room}-${idx}`}>
+                <td className="mono">{a.room}</td>
+                <td>{a.user ? `${a.user.name} <${a.user.email}>` : "—"}</td>
+                <td title={a.lastMessage}>
+                  {a.lastMessage.length > 80 ? a.lastMessage.slice(0, 77)+"…" : a.lastMessage}
+                </td>
+                <td>{formatDT(a.closedAt)}</td>
+                <td className="actions">
+                  <Primary onClick={()=>open(a)}>Open</Primary>{" "}
+                  <Secondary onClick={()=>navigator.clipboard?.writeText(a.room)}>Copy ID</Secondary>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </TableWrap>
+    </Wrap>
+  );
+}
 
-const Time = styled.div`
-  color: #888;
-  font-size: 0.82em;
-  margin-left: 1.1em;
-`;
-
-const Empty = styled.div`
-  color: #999;
-  font-style: italic;
-  padding: 0.5rem 0 0.5rem 0.1rem;
-`;
-
+function formatDT(iso: string) {
+  try {
+    const d = new Date(iso);
+    return new Intl.DateTimeFormat(undefined, {
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit"
+    }).format(d);
+  } catch { return iso; }
+}

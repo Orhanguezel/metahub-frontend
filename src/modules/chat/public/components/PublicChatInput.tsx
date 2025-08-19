@@ -1,137 +1,133 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import styled from "styled-components";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import { translations } from "@/modules/chat";
 
-interface Props {
+type Props = {
   onSend: (message: string) => void;
+  /** Eğer geçmezsen i18n'den dinamik gelir */
   placeholder?: string;
+  /** Eğer geçmezsen i18n'den dinamik gelir */
   sendLabel?: string;
+  /** UI dili (opsiyonel). Geçmezsen i18n'den alınır. */
+  lang?: string;
   disabled?: boolean;
-}
+};
 
-const PublicChatInput: React.FC<Props> = ({
-  onSend,
-  placeholder = "Bir şey yazın...",
-  sendLabel = "Gönder",
-  disabled = false,
-}) => {
-  const [value, setValue] = useState("");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+export default function PublicChatInput(props: Props) {
+  const { t, i18n } = useI18nNamespace("chat", translations);
 
-  useEffect(() => {
-    textareaRef.current?.focus();
-  }, []);
+  const {
+    onSend,
+    placeholder,
+    sendLabel,
+    lang,
+    disabled,
+  } = props;
 
-  const handleSend = () => {
-    const trimmed = value.trim();
-    if (!trimmed || disabled) return;
-    onSend(trimmed);
-    setValue("");
-    textareaRef.current?.focus();
-  };
+  // i18n fallback’leri
+  const effectivePlaceholder =
+    placeholder ?? t("support.input_placeholder", "Sorunuzu yazın…");
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const effectiveSendLabel =
+    sendLabel ?? t("support.send", "Gönder");
+
+  const hintText = t(
+    "support.hint_enter",
+    "Enter ile gönder, Shift+Enter ile satır atla"
+  );
+
+  const ariaInput = t("support.input_aria", "Mesaj alanı");
+
+  // <textarea> için lang attribute (tahmini)
+  const langAttr = (lang || i18n?.language || "tr").slice(0, 2);
+
+  const [text, setText] = useState("");
+  const taRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const send = useCallback(() => {
+    const msg = text.trim();
+    if (!msg || disabled) return;
+    onSend(msg);
+    setText("");
+    taRef.current?.focus();
+  }, [text, disabled, onSend]);
+
+  const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      send();
     }
   };
 
   return (
-    <Wrapper>
-      <Textarea
-        ref={textareaRef}
-        rows={2}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        aria-label={placeholder}
+    <Composer>
+      <Area
+        ref={taRef}
+        value={text}
+        onChange={(e)=>setText(e.target.value)}
+        onKeyDown={handleKey}
+        placeholder={effectivePlaceholder}
         disabled={disabled}
-        maxLength={512}
-        spellCheck={true}
-        tabIndex={0}
+        rows={2}
+        aria-label={ariaInput}
+        lang={langAttr}
+        enterKeyHint="send"
       />
-      <SendButton type="button" onClick={handleSend} disabled={disabled || !value.trim()}>
-        {sendLabel}
-      </SendButton>
-    </Wrapper>
+      <Actions>
+        <Hint>{hintText}</Hint>
+        <SendBtn
+          onClick={send}
+          disabled={disabled || !text.trim()}
+          aria-label={effectiveSendLabel}
+        >
+          {effectiveSendLabel}
+        </SendBtn>
+      </Actions>
+    </Composer>
   );
-};
+}
 
-export default PublicChatInput;
-
-// --- Styled Components ---
-const Wrapper = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacings.sm};
-  align-items: flex-end;
-  padding: ${({ theme }) => theme.spacings.md};
-  border-top: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-bottom-left-radius: ${({ theme }) => theme.radii.md};
-  border-bottom-right-radius: ${({ theme }) => theme.radii.md};
-
-  @media (max-width: 600px) {
-    padding: ${({ theme }) => theme.spacings.sm};
-    gap: ${({ theme }) => theme.spacings.xs};
-    border-radius: 0 0 ${({ theme }) => theme.radii.sm} ${({ theme }) => theme.radii.sm};
-  }
+/* styled */
+const Composer = styled.div`
+  display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.xs};
 `;
 
-const Textarea = styled.textarea`
-  flex: 1;
-  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
-  background: ${({ theme }) => theme.colors.inputBackground};
-  color: ${({ theme }) => theme.colors.text};
-  min-height: 40px;
-  max-height: 90px;
-  resize: none;
-  font-family: inherit;
-  outline: none;
-  transition: border 0.17s;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
-    box-shadow: 0 0 0 1.5px ${({ theme }) => theme.colors.inputOutline};
+const Area = styled.textarea`
+  flex:1; resize:vertical; min-height:56px;
+  font-size:${({theme})=>theme.fontSizes.sm};
+  line-height:${({theme})=>theme.lineHeights.normal};
+  background:${({theme})=>theme.colors.inputBackground};
+  color:${({theme})=>theme.colors.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  border-radius:${({theme})=>theme.radii.md};
+  padding:${({theme})=>theme.spacings.sm};
+  &:focus{
+    outline:none;
+    border-color:${({theme})=>theme.colors.inputBorderFocus};
+    box-shadow:${({theme})=>theme.colors.shadowHighlight};
+    background:${({theme})=>theme.colors.inputBackgroundFocus};
   }
-
-  &:disabled {
-    background: ${({ theme }) => theme.colors.disabled};
-    color: ${({ theme }) => theme.colors.textMuted};
-    opacity: 0.65;
-  }
+  &::placeholder{ color:${({theme})=>theme.colors.placeholder}; }
 `;
 
-const SendButton = styled.button`
-  background: ${({ theme }) => theme.buttons.primary.background};
-  color: ${({ theme }) => theme.buttons.primary.text};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  border: none;
-  padding: 0.65rem 1.1rem;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.fast}, color ${({ theme }) => theme.transition.fast};
-  min-width: 90px;
-  box-shadow: ${({ theme }) => theme.shadows.xs};
+const Actions = styled.div`
+  display:flex; align-items:center; justify-content:space-between;
+  gap:${({theme})=>theme.spacings.sm};
+`;
 
-  &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
-    color: ${({ theme }) => theme.buttons.primary.textHover};
-  }
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
+const Hint = styled.span`
+  color:${({theme})=>theme.colors.textSecondary};
+  font-size:${({theme})=>theme.fontSizes.xsmall};
+`;
 
-  @media (max-width: 600px) {
-    font-size: ${({ theme }) => theme.fontSizes.xs};
-    min-width: 66px;
-    padding: ${({ theme }) => theme.spacings.xs} ${({ theme }) => theme.spacings.sm};
-  }
+const SendBtn = styled.button`
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.buttons.primary.backgroundHover};
+  padding:10px 14px; border-radius:${({theme})=>theme.radii.md};
+  cursor:pointer;
+  &:disabled{ opacity:${({theme})=>theme.opacity.disabled}; cursor:not-allowed; }
 `;

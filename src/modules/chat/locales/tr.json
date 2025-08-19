@@ -1,54 +1,33 @@
 {
-  "publicFaq": {
-    "title": "Sıkça Sorulan Sorular",
-    "noFaqs": "Şu anda görüntülenecek SSS bulunmamaktadır.",
-    "askTitle": "Bir Soru Sor",
-    "askRequired": "Lütfen bir soru girin.",
-    "askPlaceholder": "Örn: Sistem nasıl çalışıyor?",
-    "askButton": "Sor",
-    "answerTitle": "Cevap",
-    "question": "Sorunuz"
+  "support": {
+    "title": "Canlı Destek",
+    "subtitle": "Sorularınızı buradan iletebilirsiniz.",
+    "brand": "{{brand}} Canlı Destek",
+    "brand_title": "{{brand}} Canlı Destek",
+    "loading": "Yükleniyor…",
+    "login_required": "Canlı desteği kullanmak için lütfen giriş yapın…",
+    "open": "Canlı Destek",
+    "new_message": "Yeni mesajınız var",
+    "notification_title": "Yeni mesajınız var",
+    "unread_btn": "Yeni mesajınız var",
+    "unread_aria": "{{count}} yeni mesaj — Canlı Destek",
+    "unread_live": "{{count}} yeni mesaj",
+    "unread_badge": "{{count}} yeni mesaj",
+    "modal_aria": "Canlı Destek penceresi",
+    "type_to_start": "Sohbete başlamak için aşağıya yazın.",
+    "no_messages": "Henüz mesaj yok.",
+    "input_placeholder": "Sorunuzu yazın…",
+    "send": "Gönder",
+    "hint_enter": "Enter ile gönder, Shift+Enter ile satır atla",
+    "input_aria": "Mesaj alanı",
+    "message_log": "Mesaj günlüğü",
+    "me": "Ben",
+    "bot": "Bot",
+    "agent": "Destek",
+    "tagline": "Anlık yardım hattı",
+    "session_id": "Konuşma Kimliği",
+    "session_tag": "Destek",
+    "notice": "Bu sohbet hizmet kalitesi için kaydedilebilir. Kişisel verileriniz KVKK kapsamında korunur."
   },
-  "adminFaq": {
-    "title": "SSS Yönetimi",
-    "create": "Yeni Oluştur",
-    "listEmpty": "SSS bulunamadı.",
-    "actions": "İşlemler",
-    "form": {
-      "required": "Lütfen tüm dillerde tüm alanları doldurun.",
-      "title": "Yeni SSS Ekle",
-      "titleEdit": "SSS'yi Düzenle",
-      "question": "Soru",
-      "answer": "Cevap",
-      "category": "Kategori",
-      "categoryPlaceholder": "Örn: Kargo, İade",
-      "submit": "Oluştur",
-      "success": "SSS başarıyla oluşturuldu.",
-      "updated": "SSS başarıyla güncellendi.",
-      "error": "İşlem başarısız oldu."
-    },
-    "ask": {
-      "title": "Bir Soru Sor",
-      "placeholder": "Örn: Sistem nasıl çalışıyor?",
-      "submit": "Sor",
-      "answerTitle": "Cevap"
-    },
-    "messages": {
-      "created": "SSS başarıyla oluşturuldu.",
-      "error": "SSS oluşturulurken hata oluştu."
-    },
-    "titleMulti": "Yeni SSS (Çok Dilli)"
-  },
-  "common": {
-    "loading": "Yükleniyor...",
-    "edit": "Düzenle",
-    "delete": "Sil",
-    "save": "Kaydet",
-    "cancel": "İptal",
-    "update": "Güncelle",
-    "create": "Oluştur"
-  },
-  "confirm": {
-    "delete": "Bu SSS'yi silmek istediğinizden emin misiniz?"
-  }
+  "close": "Kapat"
 }

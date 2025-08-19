@@ -1,80 +1,33 @@
 {
-  "page": {
-    "allBike": "Wszystkie rowery",
-    "noBike": "Nie znaleziono rowerów.",
-    "price": "Cena",
-    "stock": "Stan",
-    "brand": "Marka",
-    "readMore": "Zobacz szczegóły →",
-    "other": "Inne produkty",
-    "untitled": "Bez tytułu",
-    "noSummary": "Brak opisu.",
-    "bike": {
-      "title": "Najnowszy rower",
-      "readMore": "Zobacz szczegóły",
-      "all": "Wszystkie rowery"
-    }
+  "support": {
+    "title": "Czat na żywo",
+    "subtitle": "Tutaj możesz zadać pytania.",
+    "brand": "{{brand}} Czat na żywo",
+    "brand_title": "{{brand}} Czat na żywo",
+    "loading": "Ładowanie…",
+    "login_required": "Zaloguj się, aby korzystać z czatu na żywo…",
+    "open": "Czat na żywo",
+    "new_message": "Masz nową wiadomość",
+    "notification_title": "Masz nową wiadomość",
+    "unread_btn": "Masz nową wiadomość",
+    "unread_aria": "{{count}} nowa wiadomość — czat na żywo",
+    "unread_live": "{{count}} nowa wiadomość",
+    "unread_badge": "{{count}} nowe",
+    "modal_aria": "Okno czatu na żywo",
+    "type_to_start": "Napisz poniżej, aby rozpocząć rozmowę.",
+    "no_messages": "Brak wiadomości.",
+    "input_placeholder": "Napisz swoje pytanie…",
+    "send": "Wyślij",
+    "hint_enter": "Enter — wyślij, Shift+Enter — nowa linia",
+    "input_aria": "Pole wiadomości",
+    "message_log": "Dziennik wiadomości",
+    "me": "Ja",
+    "bot": "Bot",
+    "agent": "Wsparcie",
+    "tagline": "Linia szybkiej pomocy",
+    "session_id": "ID rozmowy",
+    "session_tag": "Wsparcie",
+    "notice": "Czat może być nagrywany w celach jakościowych. Twoje dane są chronione."
   },
-  "admin": {
-    "tabs": {
-      "bike": "Rowery",
-      "create": "Nowy rower",
-      "categories": "Kategorie"
-    },
-    "bike": {
-      "create": "Dodaj nowy rower",
-      "edit": "Edytuj rower",
-      "name": "Nazwa roweru",
-      "description": "Opis",
-      "brand": "Marka",
-      "price": "Cena",
-      "stock": "Stan",
-      "tags": "Tagi",
-      "image": "Obraz",
-      "category": "Kategoria",
-      "select_category": "Wybierz kategorię",
-      "publish_status": "Opublikowano?",
-      "no_images": "Brak zdjęć",
-      "publish": "Opublikuj",
-      "unpublish": "Ukryj",
-      "empty": "Brak dostępnych rowerów."
-    },
-    "categories": {
-      "title": "Kategorie rowerów",
-      "add": "Nowa kategoria",
-      "empty": "Nie znaleziono kategorii."
-    },
-    "language": {
-      "en": "Angielski",
-      "tr": "Turecki",
-      "de": "Niemiecki"
-    },
-    "slug": "Slug",
-    "actions": "Akcje",
-    "edit": "Edytuj",
-    "delete": "Usuń",
-    "cancel": "Anuluj",
-    "update": "Aktualizuj",
-    "create": "Utwórz",
-    "yes": "Tak",
-    "no": "Nie",
-    "loading": "Ładowanie...",
-    "confirm": {
-      "delete": "Czy na pewno chcesz usunąć tę kategorię?",
-      "delete_bike": "Czy na pewno chcesz usunąć ten rower?"
-    },
-    "optional_description": "Opis (opcjonalnie)",
-    "category_info": "Czego dotyczy ta kategoria?",
-    "saving": "Zapisywanie...",
-    "save": "Zapisz",
-    "update2": "Aktualizuj",
-    "editCategory": "Edytuj kategorię",
-    "newCategory": "Nowa kategoria"
-  },
-  "seo": {
-    "title": "Tytuł SEO",
-    "description": "Opis SEO"
-  },
-  "none": "Brak",
-  "delete_confirm": "Czy na pewno chcesz usunąć?"
+  "close": "Zamknij"
 }

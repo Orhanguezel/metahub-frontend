@@ -1,9 +1,7 @@
 import type { SupportedLocale } from "@/types/common";
 
-// Çok dilli alan için merkezi tip
-export type TranslatedField = {
-  [lang in SupportedLocale]?: string;
-};
+// Çok dilli alan FE tipi (BE TranslatedLabel ile eşleşir)
+export type TranslatedField = Partial<Record<SupportedLocale, string>>;
 
 // Mesaj (kullanıcı, bot, admin)
 export interface ChatMessage {
@@ -14,14 +12,14 @@ export interface ChatMessage {
     email: string;
   } | null;
   tenant: string;
-  roomId: string;              // (backend: roomId)
+  roomId: string;            // BE: roomId
   message: string;
   isFromBot?: boolean;
   isFromAdmin?: boolean;
   isRead?: boolean;
-  language: TranslatedField;   // backenddeki language ile birebir!
+  language: TranslatedField; // BE: language
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 // Sohbet oturumu (session)
@@ -38,7 +36,7 @@ export interface ChatSession {
   closedAt?: string;
 }
 
-// Arşivlenmiş oturum
+// Arşivlenmiş oturum (admin görünümü)
 export interface ArchivedSession {
   room: string;
   user: {
@@ -50,7 +48,7 @@ export interface ArchivedSession {
   closedAt: string;
 }
 
-// Destek/Escalation (isteğe bağlı)
+// (Opsiyonel) Destek/Escalation kaydı — UI tarafında göstermek için
 export interface EscalatedRoom {
   room: string;
   user: {
@@ -59,6 +57,6 @@ export interface EscalatedRoom {
     email: string;
   };
   message: string;
-  lang: string;
-  createdAt: string;
+  lang: string;        // örn. "tr"
+  createdAt: string;   // ISO
 }

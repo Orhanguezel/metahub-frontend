@@ -6,65 +6,58 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/chat";
 import {
-  sendManualMessage,
-  clearManualMessageState,
-  markMessagesAsRead,
-  fetchMessagesByRoom,
-  selectChatRoomId,
-  selectManualMessageState,
+  adminSendManualMessage,
+  adminMarkMessagesRead,
+  fetchRoomMessages,
+  selectCurrentRoomId,
+  selectChatState,
+  clearChatError,
 } from "@/modules/chat/slice/chatSlice";
 
 const ManualMessageForm = () => {
   const dispatch = useAppDispatch();
   const { t } = useI18nNamespace("chat", translations);
 
-  // Slice state
-  const selectedRoom = useAppSelector(selectChatRoomId);
-  const manualMessage = useAppSelector(selectManualMessageState);
-  const { loading, success, error } = manualMessage;
+  const selectedRoom = useAppSelector(selectCurrentRoomId);
+  const { loading, error, successMessage } = useAppSelector(selectChatState);
 
-  // Local form state
   const [message, setMessage] = useState("");
   const [closeSession, setCloseSession] = useState(false);
 
-  // Mesaj gönderimi
   const handleSend = async () => {
     if (!message.trim() || !selectedRoom) return;
 
     try {
       await dispatch(
-        sendManualMessage({
-          roomId: selectedRoom,
-          message,
-          // lang slice tarafında veya backendde otomatik belirleniyorsa göndermek zorunda değilsin!
-          close: closeSession,
-        })
+        adminSendManualMessage({ roomId: selectedRoom, message, close: closeSession })
       ).unwrap();
 
       setMessage("");
       setCloseSession(false);
 
-      // Son mesajları tekrar yükle
-      dispatch(fetchMessagesByRoom(selectedRoom));
-      dispatch(markMessagesAsRead(selectedRoom));
+      // Son mesajları tazele + okundu işaretle
+      dispatch(fetchRoomMessages({ roomId: selectedRoom, page: 1, limit: 20, sort: "asc" }));
+      dispatch(adminMarkMessagesRead({ roomId: selectedRoom }));
     } catch (err) {
-      console.error("Mesaj gönderilirken hata oluştu:", err);
+      // slice rejected zaten error’a yazar; ekstra log istersen:
+      if (process.env.NODE_ENV === "development") console.error(err);
     }
   };
 
-  // Otomatik başarı/hata temizliği
+  // Başarı/hata mesajlarını kısa süre sonra temizle
   useEffect(() => {
-    if (success || error) {
-      const timer = setTimeout(() => {
-        dispatch(clearManualMessageState());
-      }, 3000);
-      return () => clearTimeout(timer);
+    if (successMessage || error) {
+      const t = setTimeout(() => {
+        dispatch(clearChatError());
+      }, 2500);
+      return () => clearTimeout(t);
     }
-  }, [success, error, dispatch]);
+  }, [successMessage, error, dispatch]);
 
   return (
     <Wrapper>
       <Label>{t("admin.manual_message_title", "📤 Manuel Mesaj Gönder")}</Label>
+
       <Textarea
         rows={2}
         value={message}
@@ -80,93 +73,89 @@ const ManualMessageForm = () => {
             checked={closeSession}
             onChange={(e) => setCloseSession(e.target.checked)}
           />
-          <label htmlFor="closeSession">
-            {t("admin.close_session", "Oturumu kapat")}
-          </label>
+          <label htmlFor="closeSession">{t("admin.close_session", "Oturumu kapat")}</label>
         </CheckboxWrapper>
 
-        <Button disabled={!message.trim() || loading} onClick={handleSend}>
-          {loading
-            ? t("admin.sending", "Gönderiliyor...")
-            : t("admin.send", "Gönder")}
+        <Button disabled={!message.trim() || loading || !selectedRoom} onClick={handleSend}>
+          {loading ? t("admin.sending", "Gönderiliyor...") : t("admin.send", "Gönder")}
         </Button>
       </Row>
 
-      {success && <SuccessText>{t("admin.success", "Mesaj gönderildi ✅")}</SuccessText>}
-      {error && <ErrorText>{error}</ErrorText>}
+      {successMessage && <SuccessText>{t("admin.success", "Mesaj gönderildi ✅")}</SuccessText>}
+      {error && <ErrorText>{String(error)}</ErrorText>}
     </Wrapper>
   );
 };
 
 export default ManualMessageForm;
 
-// 💅 Styles
+/* 💅 Styles (classicTheme) */
 const Wrapper = styled.div`
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 1rem;
-  margin-top: 2rem;
+  border: ${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  border-radius: ${({theme})=>theme.radii.md};
+  padding: ${({theme})=>theme.spacings.md};
+  margin-top: ${({theme})=>theme.spacings.lg};
+  background:${({theme})=>theme.colors.cardBackground};
+  box-shadow:${({theme})=>theme.cards.shadow};
 `;
 
 const Label = styled.p`
-  font-weight: bold;
-  margin-bottom: 0.5rem;
+  font-weight:${({theme})=>theme.fontWeights.semiBold};
+  margin:0 0 ${({theme})=>theme.spacings.sm} 0;
 `;
 
 const Textarea = styled.textarea`
-  width: 100%;
-  padding: 0.6rem;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  resize: none;
-  font-size: 0.95rem;
+  width:100%;
+  padding:${({theme})=>theme.spacings.sm};
+  border-radius:${({theme})=>theme.radii.md};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
+  resize:none;
+  font-size:${({theme})=>theme.fontSizes.sm};
+  background:${({theme})=>theme.colors.inputBackground};
+  color:${({theme})=>theme.colors.text};
+  &:focus{
+    outline:none;
+    border-color:${({theme})=>theme.colors.inputBorderFocus};
+    background:${({theme})=>theme.colors.inputBackgroundFocus};
+    box-shadow:${({theme})=>theme.colors.shadowHighlight};
+  }
 `;
 
 const Row = styled.div`
-  margin-top: 0.8rem;
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
+  margin-top:${({theme})=>theme.spacings.sm};
+  display:flex; gap:${({theme})=>theme.spacings.md}; align-items:center; flex-wrap:wrap;
 `;
 
-const CheckboxWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.85rem;
+const CheckboxWrapper = styled.label`
+  display:flex; align-items:center; gap:${({theme})=>theme.spacings.xs};
+  font-size:${({theme})=>theme.fontSizes.xsmall};
+  input{ accent-color:${({theme})=>theme.colors.primary}; }
 `;
 
 const Button = styled.button`
-  padding: 0.5rem 1rem;
-  background-color: #0070f3;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s ease-in-out;
+  padding: 10px 14px;
+  background:${({theme})=>theme.buttons.primary.background};
+  color:${({theme})=>theme.buttons.primary.text};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.buttons.primary.backgroundHover};
+  border-radius:${({theme})=>theme.radii.md};
+  font-weight:${({theme})=>theme.fontWeights.medium};
+  cursor:pointer;
+  transition:${({theme})=>theme.transition.fast};
 
-  &:disabled {
-    background-color: #aaa;
-    cursor: not-allowed;
-  }
-
-  &:hover:enabled {
-    background-color: #005bbb;
-  }
+  &:disabled { opacity:${({theme})=>theme.opacity.disabled}; cursor:not-allowed; }
+  &:hover:enabled { background:${({theme})=>theme.buttons.primary.backgroundHover}; }
 `;
 
 const SuccessText = styled.p`
-  margin-top: 0.6rem;
-  color: green;
-  font-size: 0.85rem;
-  font-weight: 500;
+  margin-top:${({theme})=>theme.spacings.xs};
+  color:${({theme})=>theme.colors.success};
+  font-size:${({theme})=>theme.fontSizes.xsmall};
+  font-weight:${({theme})=>theme.fontWeights.medium};
 `;
 
 const ErrorText = styled.p`
-  margin-top: 0.6rem;
-  color: red;
-  font-size: 0.85rem;
-  font-weight: 500;
+  margin-top:${({theme})=>theme.spacings.xs};
+  color:${({theme})=>theme.colors.danger};
+  font-size:${({theme})=>theme.fontSizes.xsmall};
+  font-weight:${({theme})=>theme.fontWeights.medium};
 `;
