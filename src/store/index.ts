@@ -28,6 +28,7 @@ import dailyOverviewReducer from "@/modules/dashboard/slice/dailyOverviewSlice";
 import chartDataReducer from "@/modules/dashboard/slice/chartDataSlice";
 import reportsReducer from "@/modules/dashboard/slice/reportsSlice";
 import analyticsReducer from "@/modules/dashboard/slice/analyticsSlice";
+import logsReducer from "@/modules/dashboard/slice/logsSlice";
 import servicesReducer from "@/modules/services/slice/servicesSlice";
 import servicesCategoryReducer from "@/modules/services/slice/servicesCategorySlice";
 import activityReducer from "@/modules/activity/slice/activitySlice";
@@ -119,11 +120,12 @@ const rootReducer = combineReducers({
   servicesCategory: servicesCategoryReducer,
   activity: activityReducer,
   activityCategory: activityCategoryReducer,
-  dashboard: dashboardReducer,
-  dailyOverview: dailyOverviewReducer,
-  chartData: chartDataReducer,
-  reports: reportsReducer,
+  dashboardAll: dashboardReducer,
+  dashboardOverview: dailyOverviewReducer,
+  dashboardCharts: chartDataReducer,
+  dashboardReport: reportsReducer,
   analytics: analyticsReducer,
+  dashboardLogs: logsReducer,
   about: aboutReducer,
   aboutCategory: aboutCategoryReducer,
   chat: chatReducer,

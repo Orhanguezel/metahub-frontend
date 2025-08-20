@@ -1,80 +1,76 @@
-// src/modules/dashboard/slice/dashboardSlice.ts
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
+import type { DashboardAllData, DashboardAllState, GroupBy, RangeParams, ApiEnvelope } from "../types";
 
-// API: /dashboard → { stats: { ... } }
-export interface DashboardStats {
-  [key: string]: number | undefined;
-  revenue?: number;
-}
-
-interface DashboardState {
-  stats: DashboardStats | null;
-  loading: boolean;
-  error: string | null;
-}
-
-const initialState: DashboardState = {
-  stats: null,
-  loading: false,
-  error: null,
+export type FetchAllParams = RangeParams & {
+  include?: string; // "overview,stats,latest"
+  groupBy?: GroupBy;
+  latestLimit?: number;
 };
 
-export const fetchDashboardStats = createAsyncThunk<DashboardStats>(
-  "dashboard/fetchStats",
-  async (_, thunkAPI) => {
-    const res = await apiCall("get", "/dashboard", null, thunkAPI.rejectWithValue);
-    // Doğru yapı: { success, message, stats }
-    if (res?.stats) {
-      return res.stats as DashboardStats;
-    }
-    // Fallback: hata fırlat
-    return thunkAPI.rejectWithValue("Dashboard stats not found.");
+export const fetchDashboardAll = createAsyncThunk<
+  DashboardAllData,
+  FetchAllParams | undefined,
+  { rejectValue: { status: number | string; message: string } }
+>("dashboard/fetchAll", async (params, { rejectWithValue }) => {
+  const query = {
+    include: params?.include ?? "overview,stats,latest",
+    groupBy: params?.groupBy ?? "week",
+    dateFrom: params?.dateFrom,
+    dateTo: params?.dateTo,
+    latestLimit: params?.latestLimit ?? 10,
+  };
+  const res = await apiCall("get", "/dashboard", query, rejectWithValue);
+  const env = (res?.data ?? res) as ApiEnvelope<DashboardAllData> | any;
+
+  if (env?.success === false) {
+    return rejectWithValue({ status: 400, message: env?.message || "Failed" });
   }
-);
+  return env?.data ?? env;
+});
+
+const initialState: DashboardAllState = {
+  data: null,
+  loading: false,
+  error: null,
+  successMessage: null,
+};
 
 const dashboardSlice = createSlice({
-  name: "dashboard",
+  name: "dashboardAll",
   initialState,
   reducers: {
-    clearDashboardError: (state) => {
+    clearDashboardAllError(state) {
       state.error = null;
     },
-    resetDashboardStats: (state) => {
-      state.stats = null;
-      state.loading = false;
-      state.error = null;
+    resetDashboardAll(state) {
+      Object.assign(state, initialState);
     },
-    clearDashboardMessages: (state) => {
-      state.stats = null;
-      state.loading = false;
-      state.error = null;
-    }
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchDashboardStats.pending, (state) => {
+      .addCase(fetchDashboardAll.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.successMessage = null;
       })
-      .addCase(fetchDashboardStats.fulfilled, (state, action: PayloadAction<DashboardStats>) => {
+      .addCase(fetchDashboardAll.fulfilled, (state, action) => {
         state.loading = false;
-        state.stats = action.payload;
-        state.error = null;
+        state.data = action.payload;
+        state.successMessage = "dashboard.all.success";
       })
-      .addCase(fetchDashboardStats.rejected, (state, action) => {
+      .addCase(fetchDashboardAll.rejected, (state, action) => {
         state.loading = false;
-        // Hata tipi bazen string bazen object olabiliyor!
-        if (typeof action.payload === "string") {
-          state.error = action.payload;
-        } else if (typeof action.payload === "object" && action.payload !== null && "message" in action.payload) {
-          state.error = (action.payload as any).message;
-        } else {
-          state.error = "Dashboard stats yüklenemedi.";
-        }
+        state.error = action.payload?.message || "dashboard.all.error";
       });
   },
 });
 
-export const { clearDashboardError, resetDashboardStats, clearDashboardMessages } = dashboardSlice.actions;
+export const { clearDashboardAllError, resetDashboardAll } = dashboardSlice.actions;
+
+/* Selectors */
+export const selectDashboardAll = (s: any) => s.dashboardAll as DashboardAllState;
+export const selectDashboardAllData = (s: any) => (s.dashboardAll as DashboardAllState).data;
+export const selectDashboardAllLoading = (s: any) => (s.dashboardAll as DashboardAllState).loading;
+
 export default dashboardSlice.reducer;

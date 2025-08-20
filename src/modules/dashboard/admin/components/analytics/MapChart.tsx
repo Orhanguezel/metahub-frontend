@@ -1,30 +1,28 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import L, { Icon } from "leaflet";
 import "leaflet.markercluster";
 import styled, { useTheme } from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
+import translations from "@/modules/dashboard/locales";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
-// --- TYPES ---
 interface AnalyticsEvent {
   module: string;
   eventType: string;
-  location?: { type: "Point"; coordinates: [number, number] };
+  location?: { type: "Point"; coordinates: [number, number] }; // [lon, lat]
   userId?: string;
   timestamp?: string;
 }
-
 interface Props {
   data: AnalyticsEvent[];
 }
 
-// --- Olay tipine göre marker rengi ---
+/* renkler */
 const EVENT_COLORS: Record<string, string> = {
   add: "3cba54",
   delete: "db3236",
@@ -44,38 +42,36 @@ const getIconByEvent = (eventType: string): Icon => {
 
 export default function MapChart({ data }: Props) {
   const theme = useTheme();
-  const { t, i18n } = useI18nNamespace("dashboard", translations);
+  const { t } = useI18nNamespace("dashboard", translations);
 
-  // Leaflet default marker görsellerini sadece bir kez set et
+  // Leaflet default marker görselleri
   useEffect(() => {
     if (typeof window === "undefined") return;
-    delete (L.Icon.Default.prototype as any)._getIconUrl;
+    // @ts-expect-error leaflet internals
+    delete L.Icon.Default.prototype._getIconUrl;
     L.Icon.Default.mergeOptions({
-      iconRetinaUrl: markerIcon2x.src || markerIcon2x,
-      iconUrl: markerIcon.src || markerIcon,
-      shadowUrl: markerShadow.src || markerShadow,
+      iconRetinaUrl: (markerIcon2x as any).src || (markerIcon2x as any),
+      iconUrl: (markerIcon as any).src || (markerIcon as any),
+      shadowUrl: (markerShadow as any).src || (markerShadow as any),
     });
   }, []);
 
-  // Geçerli eventleri filtrele
-  const validEvents: AnalyticsEvent[] = Array.isArray(data)
-    ? data.filter(
-        (e) =>
-          !!e.location &&
-          Array.isArray(e.location.coordinates) &&
-          e.location.coordinates.length === 2 &&
-          typeof e.location.coordinates[0] === "number" &&
-          typeof e.location.coordinates[1] === "number"
-      )
-    : [];
+  // yalnızca geçerli koordinatlı eventler
+  const validEvents: AnalyticsEvent[] = useMemo(
+    () =>
+      Array.isArray(data)
+        ? data.filter((e) => {
+            const c = e?.location?.coordinates;
+            return Array.isArray(c) && c.length === 2 && c.every((n) => typeof n === "number");
+          })
+        : [],
+    [data]
+  );
 
-  // Harita merkezi: ilk event veya fallback (İstanbul)
+  // merkez (ilk event) veya İstanbul
   const center: [number, number] =
     validEvents.length > 0
-      ? [
-          validEvents[0].location!.coordinates[1],
-          validEvents[0].location!.coordinates[0],
-        ]
+      ? [validEvents[0].location!.coordinates[1], validEvents[0].location!.coordinates[0]]
       : [41.01, 28.97];
 
   return (
@@ -88,11 +84,12 @@ export default function MapChart({ data }: Props) {
         aria-label={t("analytics.mapAria", "Log haritası")}
       >
         <TileLayer
-          attribution='&copy; OpenStreetMap'
+          attribution="&copy; OpenStreetMap"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MarkerClusterGroupWrapper events={validEvents} t={t} i18n={i18n} />
+        <MarkerClusterGroupWrapper events={validEvents} />
       </MapContainer>
+
       {validEvents.length === 0 && (
         <NoData>
           <strong>
@@ -106,93 +103,95 @@ export default function MapChart({ data }: Props) {
   );
 }
 
-// --- Cluster bileşeni (memory/perf için useRef) ---
-function MarkerClusterGroupWrapper({
-  events,
-  t,
-  i18n,
-}: {
-  events: AnalyticsEvent[];
-  t: ReturnType<typeof useI18nNamespace>["t"];
-  i18n: ReturnType<typeof useI18nNamespace>["i18n"];
-}) {
+/* Cluster bileşeni */
+function MarkerClusterGroupWrapper({ events }: { events: AnalyticsEvent[] }) {
+  const { t, i18n } = useI18nNamespace("dashboard", translations);
   const map = useMap();
-  const markerClusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
+  const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
 
-  // Sadece ilk mount'ta cluster instance oluştur
-  if (!markerClusterGroupRef.current) {
-    markerClusterGroupRef.current = L.markerClusterGroup();
+  // cluster'i bir kere oluştur
+  if (!clusterRef.current) {
+    clusterRef.current = L.markerClusterGroup({
+      chunkedLoading: true,
+      showCoverageOnHover: false,
+      disableClusteringAtZoom: 8,
+      spiderfyOnMaxZoom: true,
+      maxClusterRadius: 50,
+    }) as any;
   }
 
   useEffect(() => {
-    const markerClusterGroup = markerClusterGroupRef.current!;
-    markerClusterGroup.clearLayers();
+    const group = clusterRef.current!;
+    group.clearLayers();
 
-    events.forEach((event) => {
-      const [lon, lat] = event.location!.coordinates;
-      const icon = getIconByEvent(event.eventType);
+    const bounds = L.latLngBounds([]);
 
-      // Tarih formatı (tip güvenli)
+    for (const e of events) {
+      const [lon, lat] = e.location!.coordinates;
+      const icon = getIconByEvent(e.eventType);
+
       let formattedDate = "-";
-      if (event.timestamp) {
-        const date = new Date(event.timestamp);
-        formattedDate = `${date.toLocaleDateString(i18n.language)} ${date
-          .getHours()
-          .toString()
-          .padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+      if (e.timestamp) {
+        const d = new Date(e.timestamp);
+        if (!Number.isNaN(d.getTime())) {
+          const hh = d.getHours().toString().padStart(2, "0");
+          const mm = d.getMinutes().toString().padStart(2, "0");
+          formattedDate = `${d.toLocaleDateString(i18n.language)} ${hh}:${mm}`;
+        }
       }
 
-      const moduleLabel = t(`modules.${event.module}`, event.module);
-      const eventLabel = t(`events.${event.eventType}`, event.eventType);
+      const moduleLabel = t(`modules.${e.module}`, e.module);
+      const eventLabel = t(`events.${e.eventType}`, e.eventType);
 
       const marker = L.marker([lat, lon], { icon });
       marker.bindPopup(
-        `<div style="font-size: 0.93rem">
-          <strong>${moduleLabel}</strong><br/>
-          ${eventLabel}<br/>
-          ${
-            event.userId
-              ? `<span style='color:gray'>${event.userId}</span><br/>`
-              : ""
-          }
-          <small>${formattedDate}</small>
-        </div>`
+        `<div style="font-size:0.93rem">
+           <strong>${moduleLabel}</strong><br/>
+           ${eventLabel}<br/>
+           ${e.userId ? `<span style='color:gray'>${e.userId}</span><br/>` : ""}
+           <small>${formattedDate}</small>
+         </div>`
       );
 
-      markerClusterGroup.addLayer(marker);
-    });
+      group.addLayer(marker);
+      bounds.extend([lat, lon]);
+    }
 
-    map.addLayer(markerClusterGroup);
+    map.addLayer(group);
+
+    // bounds'a sığdır (en az 2 nokta varsa)
+    if (events.length > 1 && bounds.isValid()) {
+      map.fitBounds(bounds, { padding: [24, 24] });
+    }
 
     return () => {
-      map.removeLayer(markerClusterGroup);
+      map.removeLayer(group);
     };
   }, [events, map, t, i18n.language]);
 
   return null;
 }
 
-// --- Styled Components ---
+/* styled */
 const MapWrapper = styled.div<{ $border: string }>`
   width: 100%;
   height: 400px;
   border-radius: 1rem;
   overflow: hidden;
   border: 1px solid ${({ $border }) => $border};
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   position: relative;
 `;
 
 const NoData = styled.div`
   position: absolute;
-  left: 0;
+  inset-inline: 0;
   top: 50%;
-  width: 100%;
+  transform: translateY(-50%);
   text-align: center;
   color: ${({ theme }) => theme.colors.textMuted};
   font-size: ${({ theme }) => theme.fontSizes.md};
   pointer-events: none;
-  transform: translateY(-50%);
   background: rgba(255,255,255,0.8);
 `;
 

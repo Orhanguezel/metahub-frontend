@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import styled, { keyframes, css } from "styled-components";
 import { BsChatDots, BsChatDotsFill } from "react-icons/bs";
-import ChatBox from "@/modules/chat/public/components/ChatBox";
+import {ChatBox} from "@/modules/chat";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/chat";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";

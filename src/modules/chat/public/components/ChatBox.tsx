@@ -11,8 +11,7 @@ import {
   messageReceived,
   sendUserMessage,
 } from "@/modules/chat/slice/chatSlice";
-import PublicMessageList from "./PublicMessageList";
-import PublicChatInput from "./PublicChatInput";
+import {PublicMessageList,PublicChatInput} from "@/modules/chat";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/chat";
 

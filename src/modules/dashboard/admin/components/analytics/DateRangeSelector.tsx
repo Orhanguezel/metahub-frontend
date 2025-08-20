@@ -1,19 +1,37 @@
-// src/shared/DateRangeSelector.tsx
 "use client";
-import React, { useId } from "react";
+import React, { useId, useMemo } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
-import { SUPPORTED_LOCALES, SupportedLocale, DATE_FORMATS } from "@/types/common";
+import translations from "@/modules/dashboard/locales";
+import { SupportedLocale, DATE_FORMATS } from "@/types/common";
 
 interface DateRangeSelectorProps {
   startDate: Date | null;
   endDate: Date | null;
   onChange: (range: { startDate: Date | null; endDate: Date | null }) => void;
-  dateFormat?: string;
+  dateFormat?: string; // sadece placeholder için (native date input kendi formatını kullanır)
   minDate?: Date;
   maxDate?: Date;
 }
+
+/** YYYY-MM-DD (local) – UTC kaymasını önlemek için TZ offset düşer */
+function toLocalInputValue(d: Date | null | undefined): string {
+  if (!(d instanceof Date) || Number.isNaN(d.getTime())) return "";
+  const dt = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return dt.toISOString().slice(0, 10);
+}
+
+/** input[type=date] → Date (local gün başlangıcı) */
+function fromInputValue(v: string | null | undefined): Date | null {
+  if (!v) return null;
+  const parsed = new Date(`${v}T00:00:00`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+const maxOf = (a?: Date, b?: Date) =>
+  !a ? b : !b ? a : a.getTime() > b.getTime() ? a : b;
+const minOf = (a?: Date, b?: Date) =>
+  !a ? b : !b ? a : a.getTime() < b.getTime() ? a : b;
 
 export default function DateRangeSelector({
   startDate,
@@ -27,65 +45,111 @@ export default function DateRangeSelector({
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const pickerId = useId();
 
-  // date-fns ya da başka bir datepicker locale eklemeye gerek yok, düz input[type=date]
-  const resolvedFormat = dateFormat || DATE_FORMATS[lang] || "yyyy-MM-dd";
+  const placeholderFmt = dateFormat || DATE_FORMATS[lang] || "yyyy-MM-dd";
 
-  const safeStart = startDate instanceof Date ? startDate : null;
-  const safeEnd = endDate instanceof Date ? endDate : null;
+  const safeStart =
+    startDate instanceof Date && !Number.isNaN(startDate.getTime())
+      ? startDate
+      : null;
+  const safeEnd =
+    endDate instanceof Date && !Number.isNaN(endDate.getTime())
+      ? endDate
+      : null;
 
-  // Değişiklikleri parent'a aktar
+  // karşılıklı kısıtları hesapla (memoize)
+  const { startMin, startMax, endMin, endMax } = useMemo(() => {
+    return {
+      startMin: minDate,
+      startMax: minOf(maxDate, safeEnd ?? undefined),
+      endMin: maxOf(minDate, safeStart ?? undefined),
+      endMax: maxDate,
+    };
+  }, [minDate, maxDate, safeStart, safeEnd]);
+
   const handleStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value ? new Date(e.target.value) : null;
-    onChange({ startDate: val, endDate: safeEnd });
+    const s = fromInputValue(e.target.value);
+    // end < start ise end'i start'a çek
+    if (s && safeEnd && safeEnd.getTime() < s.getTime()) {
+      onChange({ startDate: s, endDate: s });
+    } else {
+      onChange({ startDate: s, endDate: safeEnd });
+    }
   };
+
   const handleEndChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value ? new Date(e.target.value) : null;
-    onChange({ startDate: safeStart, endDate: val });
+    const eDate = fromInputValue(e.target.value);
+    // end < start ise start'ı end'e çek
+    if (eDate && safeStart && eDate.getTime() < safeStart.getTime()) {
+      onChange({ startDate: eDate, endDate: eDate });
+    } else {
+      onChange({ startDate: safeStart, endDate: eDate });
+    }
   };
 
   return (
-    <Wrapper>
-      <Label htmlFor={`${pickerId}-start`}>
+    <Wrapper role="group" aria-labelledby={`${pickerId}-label`}>
+      <Label id={`${pickerId}-label`}>
         {t("analytics.dateRange", "Tarih Aralığı")}
       </Label>
       <Row>
-        <input
+        <Input
           id={`${pickerId}-start`}
           type="date"
-          value={safeStart ? safeStart.toISOString().split("T")[0] : ""}
+          value={toLocalInputValue(safeStart)}
           onChange={handleStartChange}
-          min={minDate ? minDate.toISOString().split("T")[0] : undefined}
-          max={maxDate ? maxDate.toISOString().split("T")[0] : undefined}
-          placeholder={t("analytics.startDate", "Başlangıç")}
-          pattern={resolvedFormat.replace(/[dMy]/g, "\\d")}
+          min={startMin ? toLocalInputValue(startMin) : undefined}
+          max={startMax ? toLocalInputValue(startMax) : undefined}
+          aria-label={t("analytics.startDate", "Başlangıç")}
+          placeholder={placeholderFmt}
         />
-        <span>—</span>
-        <input
+        <Dash aria-hidden>—</Dash>
+        <Input
           id={`${pickerId}-end`}
           type="date"
-          value={safeEnd ? safeEnd.toISOString().split("T")[0] : ""}
+          value={toLocalInputValue(safeEnd)}
           onChange={handleEndChange}
-          min={minDate ? minDate.toISOString().split("T")[0] : undefined}
-          max={maxDate ? maxDate.toISOString().split("T")[0] : undefined}
-          placeholder={t("analytics.endDate", "Bitiş")}
-          pattern={resolvedFormat.replace(/[dMy]/g, "\\d")}
+          min={endMin ? toLocalInputValue(endMin) : undefined}
+          max={endMax ? toLocalInputValue(endMax) : undefined}
+          aria-label={t("analytics.endDate", "Bitiş")}
+          placeholder={placeholderFmt}
         />
       </Row>
     </Wrapper>
   );
 }
 
+/* styled */
 const Wrapper = styled.div`
-  margin-bottom: 2rem;
+  margin-bottom: ${({ theme }) => theme.spacings.md};
 `;
 const Row = styled.div`
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: ${({ theme }) => theme.spacings.sm};
+  flex-wrap: wrap;
+`;
+const Dash = styled.span`
+  color: ${({ theme }) => theme.colors.textMuted};
 `;
 const Label = styled.label`
+  display: inline-block;
+  margin-bottom: ${({ theme }) => theme.spacings.xs};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  margin-bottom: 0.5rem;
   color: ${({ theme }) => theme.colors.textPrimary};
+`;
+const Input = styled.input`
+  padding: ${({ theme }) => theme.spacings.sm};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.inputs.background};
+  color: ${({ theme }) => theme.inputs.text};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  min-width: 180px;
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primary}22;
+  }
 `;

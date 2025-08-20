@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { useI18nNamespace } from "@/hooks/useI18nNamespace";
+import { translations } from "@/modules/chat";
 
 type Props = {
   placeholder?: string;
@@ -9,31 +11,47 @@ type Props = {
   delayMs?: number;
 };
 
-export default function SearchBox({ placeholder = "Search...", onSearch, delayMs = 300 }: Props) {
+export default function SearchBox({ placeholder, onSearch, delayMs = 300 }: Props) {
+  const { t } = useI18nNamespace("chat", translations);
   const [val, setVal] = useState("");
 
   useEffect(() => {
-    const t = setTimeout(() => onSearch(val), delayMs);
-    return () => clearTimeout(t);
+    const tm = setTimeout(() => onSearch(val), delayMs);
+    return () => clearTimeout(tm);
   }, [val, delayMs, onSearch]);
 
+  const finalPlaceholder =
+    placeholder ?? t("admin.search_placeholder", "Mesajlarda ara...");
+
   return (
-    <InputWrap>
-      <Input
-        value={val}
-        onChange={(e) => setVal(e.target.value)}
-        placeholder={placeholder}
-      />
-    </InputWrap>
+    <Form role="search" aria-label={t("admin.search_aria", "Sohbet arama")}>
+      <InputWrap>
+        <Input
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          placeholder={finalPlaceholder}
+          aria-label={finalPlaceholder}
+        />
+      </InputWrap>
+    </Form>
   );
 }
 
+const Form = styled.form`
+  margin: 0;
+`;
+
 const InputWrap = styled.div`
-  display:flex; align-items:center;
+  display:flex; align-items:center; gap:${({theme})=>theme.spacings.xs};
   background:${({theme})=>theme.colors.inputBackground};
   border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
   border-radius:${({theme})=>theme.radii.md};
   padding: 6px 10px;
+  &:focus-within{
+    border-color:${({theme})=>theme.colors.inputBorderFocus};
+    box-shadow:${({theme})=>theme.colors.shadowHighlight};
+    background:${({theme})=>theme.colors.inputBackgroundFocus};
+  }
 `;
 
 const Input = styled.input`

@@ -13,7 +13,7 @@ import {
   fetchRoomMessages,
   markRoomMessagesRead,
 } from "@/modules/chat/slice/chatSlice";
-import ChatBox from "@/modules/chat/public/components/ChatBox";
+import {ChatBox} from "@/modules/chat";
 import type { SupportedLocale } from "@/types/common";
 import { SUPPORTED_LOCALES, getMultiLang } from "@/types/common";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";

@@ -16,7 +16,7 @@ import {
 
 const ManualMessageForm = () => {
   const dispatch = useAppDispatch();
-  const { t } = useI18nNamespace("chat", translations);
+  const { t, i18n } = useI18nNamespace("chat", translations);
 
   const selectedRoom = useAppSelector(selectCurrentRoomId);
   const { loading, error, successMessage } = useAppSelector(selectChatState);
@@ -39,7 +39,6 @@ const ManualMessageForm = () => {
       dispatch(fetchRoomMessages({ roomId: selectedRoom, page: 1, limit: 20, sort: "asc" }));
       dispatch(adminMarkMessagesRead({ roomId: selectedRoom }));
     } catch (err) {
-      // slice rejected zaten error’a yazar; ekstra log istersen:
       if (process.env.NODE_ENV === "development") console.error(err);
     }
   };
@@ -47,39 +46,57 @@ const ManualMessageForm = () => {
   // Başarı/hata mesajlarını kısa süre sonra temizle
   useEffect(() => {
     if (successMessage || error) {
-      const t = setTimeout(() => {
+      const tm = setTimeout(() => {
         dispatch(clearChatError());
       }, 2500);
-      return () => clearTimeout(t);
+      return () => clearTimeout(tm);
     }
   }, [successMessage, error, dispatch]);
 
+  const labelId = "manual-message-label";
+  const textareaId = "manual-message-textarea";
+  const checkboxId = "closeSession";
+
   return (
-    <Wrapper>
-      <Label>{t("admin.manual_message_title", "📤 Manuel Mesaj Gönder")}</Label>
+    <Wrapper role="form" aria-labelledby={labelId}>
+      <Label id={labelId}>
+        {t("admin.manual_message_title", "📤 Manuel Mesaj Gönder")}
+      </Label>
 
       <Textarea
-        rows={2}
+        id={textareaId}
+        rows={3}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         placeholder={t("admin.input_placeholder", "Mesaj içeriği...")}
+        aria-label={t("admin.input_placeholder", "Mesaj içeriği...")}
+        lang={i18n.language}
       />
 
       <Row>
-        <CheckboxWrapper>
+        <CheckboxWrapper htmlFor={checkboxId}>
           <input
             type="checkbox"
-            id="closeSession"
+            id={checkboxId}
             checked={closeSession}
             onChange={(e) => setCloseSession(e.target.checked)}
           />
-          <label htmlFor="closeSession">{t("admin.close_session", "Oturumu kapat")}</label>
+          <span>{t("admin.close_session", "Oturumu kapat")}</span>
         </CheckboxWrapper>
 
-        <Button disabled={!message.trim() || loading || !selectedRoom} onClick={handleSend}>
+        <Button
+          aria-label={t("admin.send", "Gönder")}
+          disabled={!message.trim() || loading || !selectedRoom}
+          onClick={handleSend}
+        >
           {loading ? t("admin.sending", "Gönderiliyor...") : t("admin.send", "Gönder")}
         </Button>
       </Row>
+
+      <Live aria-live="polite" aria-atomic="true">
+        {successMessage ? t("admin.success", "Mesaj gönderildi ✅") : ""}
+        {error ? String(error) : ""}
+      </Live>
 
       {successMessage && <SuccessText>{t("admin.success", "Mesaj gönderildi ✅")}</SuccessText>}
       {error && <ErrorText>{String(error)}</ErrorText>}
@@ -102,6 +119,7 @@ const Wrapper = styled.div`
 const Label = styled.p`
   font-weight:${({theme})=>theme.fontWeights.semiBold};
   margin:0 0 ${({theme})=>theme.spacings.sm} 0;
+  color:${({theme})=>theme.colors.title};
 `;
 
 const Textarea = styled.textarea`
@@ -109,7 +127,8 @@ const Textarea = styled.textarea`
   padding:${({theme})=>theme.spacings.sm};
   border-radius:${({theme})=>theme.radii.md};
   border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
-  resize:none;
+  resize:vertical;
+  min-height: 84px;
   font-size:${({theme})=>theme.fontSizes.sm};
   background:${({theme})=>theme.colors.inputBackground};
   color:${({theme})=>theme.colors.text};
@@ -158,4 +177,9 @@ const ErrorText = styled.p`
   color:${({theme})=>theme.colors.danger};
   font-size:${({theme})=>theme.fontSizes.xsmall};
   font-weight:${({theme})=>theme.fontWeights.medium};
+`;
+
+const Live = styled.div`
+  position:absolute;
+  width:1px;height:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);
 `;

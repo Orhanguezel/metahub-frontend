@@ -1,3 +1,4 @@
+// src/modules/dashboard/admin/components/analytics/LineChart.tsx
 "use client";
 
 import {
@@ -9,86 +10,91 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
-import { useTheme } from "styled-components";
+import styled, { useTheme } from "styled-components";
+import { useMemo } from "react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../../locales";
-import styled from "styled-components";
+import translations from "@/modules/dashboard/locales";
 import { SupportedLocale, DATE_FORMATS } from "@/types/common";
 
-type TrendEntry = {
+/* ---------- Types ---------- */
+export type TrendEntry = {
   _id: {
     year: number;
-    month: number;
-    day: number;
+    month: number; // 1-12
+    day: number;   // 1-31
   };
   total: number;
 };
 
-interface Props {
+export interface AnalyticsLineChartProps {
   data: TrendEntry[];
+  height?: number; // opsiyonel: default 300
 }
 
-// Dil ve type güvenliği ile tarih formatı
-function formatDate(entry: TrendEntry, lang: string): string {
+/* ---------- Utils ---------- */
+function formatDate(entry: TrendEntry, lang: SupportedLocale): string {
   const { year, month, day } = entry._id;
-  // Dil desteğini koddan değil, tanımdan al
-  // ex: "yyyy-MM-dd" / "dd.MM.yyyy" / "dd/MM/yyyy"
-  const format =
-    DATE_FORMATS[lang as keyof typeof DATE_FORMATS] || "yyyy-MM-dd";
-  if (format === "yyyy-MM-dd") {
-    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(
-      2,
-      "0"
-    )}`;
+  const dd = String(day).padStart(2, "0");
+  const mm = String(month).padStart(2, "0");
+  const yyyy = String(year);
+
+  const fmt = DATE_FORMATS[lang] || "yyyy-MM-dd";
+  switch (fmt) {
+    case "yyyy-MM-dd":
+      return `${yyyy}-${mm}-${dd}`;
+    case "dd.MM.yyyy":
+      return `${dd}.${mm}.${yyyy}`;
+    case "dd/MM/yyyy":
+      return `${dd}/${mm}/${yyyy}`;
+    default:
+      return `${dd}.${mm}.${yyyy}`;
   }
-  if (format === "dd.MM.yyyy") {
-    return `${String(day).padStart(2, "0")}.${String(month).padStart(
-      2,
-      "0"
-    )}.${year}`;
-  }
-  if (format === "dd/MM/yyyy") {
-    return `${String(day).padStart(2, "0")}/${String(month).padStart(
-      2,
-      "0"
-    )}/${year}`;
-  }
-  // Fallback
-  return `${String(day).padStart(2, "0")}.${String(month).padStart(
-    2,
-    "0"
-  )}.${year}`;
 }
 
-export default function LineChart({ data }: Props) {
-  const { t, i18n } = useI18nNamespace("admin-dashboard", translations);
+/* ---------- Component ---------- */
+function AnalyticsLineChart({ data, height = 300 }: AnalyticsLineChartProps) {
+  const { t, i18n } = useI18nNamespace("dashboard", translations);
   const theme = useTheme();
-  // Locale güvenli şekilde SupportedLocale'e düşür
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const lang = (i18n.language?.slice(0, 2) || "en") as SupportedLocale;
 
-  // Güvenli veri kontrolü
-  const safeData = Array.isArray(data) ? data : [];
+  // güvenli + sıralı veriyi tek seferde hazırla
+  const chartData = useMemo(() => {
+    const arr = Array.isArray(data) ? data : [];
 
-  if (!safeData.length) {
+    // TrendEntry -> { ts, date, count }
+    const mapped = arr.map((entry) => {
+      const { year, month, day } = entry._id || ({} as any);
+      // JS Date month 0-based
+      const ts = new Date(
+        Number(year) || 1970,
+        Math.max(0, Math.min(11, (Number(month) || 1) - 1)),
+        Math.max(1, Math.min(31, Number(day) || 1))
+      ).getTime();
+
+      return {
+        ts,
+        date: formatDate(entry, lang),
+        count: Number.isFinite(entry.total) ? entry.total : 0,
+      };
+    });
+
+    // tarihe göre artan sırala
+    mapped.sort((a, b) => a.ts - b.ts);
+    return mapped;
+  }, [data, lang]);
+
+  if (!chartData.length) {
     return <NoData>{t("noData", "Veri bulunamadı.")}</NoData>;
   }
 
-  const chartData = safeData.map((entry) => ({
-    date: formatDate(entry, lang),
-    count: typeof entry.total === "number" ? entry.total : 0,
-  }));
-
   return (
     <ChartWrapper>
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={height}>
         <ReLineChart
           data={chartData}
-          margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
+          margin={{ top: 10, right: 30, left: 0, bottom: 8 }}
           role="img"
-          aria-label={t(
-            "analytics.trendChartLabel",
-            "Günlük etkinlik trendi çizgi grafiği"
-          )}
+          aria-label={t("analytics.trendChartLabel", "Günlük etkinlik trendi çizgi grafiği")}
         >
           <CartesianGrid stroke={theme.colors.border} strokeDasharray="3 3" />
           <XAxis
@@ -122,20 +128,10 @@ export default function LineChart({ data }: Props) {
               fontSize: "0.9rem",
               borderRadius: "8px",
             }}
-            labelStyle={{
-              color: theme.colors.textPrimary,
-              fontWeight: 500,
-            }}
-            itemStyle={{
-              color: theme.colors.primary,
-            }}
-            formatter={(value: any) => [
-              `${value}`,
-              t("analytics.total", "Toplam"),
-            ]}
-            labelFormatter={(label: any) =>
-              `${t("analytics.date", "Tarih")}: ${label}`
-            }
+            labelStyle={{ color: theme.colors.textPrimary, fontWeight: 500 }}
+            itemStyle={{ color: theme.colors.primary }}
+            formatter={(value: any) => [`${value}`, t("analytics.total", "Toplam")]}
+            labelFormatter={(label: any) => `${t("analytics.date", "Tarih")}: ${label}`}
           />
           <Line
             type="monotone"
@@ -151,6 +147,9 @@ export default function LineChart({ data }: Props) {
   );
 }
 
+export default AnalyticsLineChart;
+
+/* ---------- styled ---------- */
 const ChartWrapper = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   padding: ${({ theme }) => theme.spacings.md};

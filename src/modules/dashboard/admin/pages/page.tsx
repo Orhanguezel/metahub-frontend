@@ -1,228 +1,197 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
-import Link from "next/link";
-import { useAppSelector } from "@/store/hooks";
+import { toast } from "react-toastify";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import translations from "@/modules/dashboard/locales";
+
+import { StatsGrid, AnalyticsPanel } from "@/modules/dashboard";
+
+/* selectors + clear actions (yalnızca okumalar) */
 import {
-  FeedbacksCard,
-  RevenueCard,
-  StatsGrid,
-  UsersCard,
-  AnalyticsPanel,
-} from "@/modules/dashboard";
-import type { SupportedLocale } from "@/types/common";
+  clearOverviewError,
+  selectOverview,
+  selectOverviewData,
+  selectOverviewLoading,
+} from "@/modules/dashboard/slice/dailyOverviewSlice";
+import {
+  clearChartsError,
+  selectCharts,
+  selectChartsData,
+  selectChartsLoading,
+} from "@/modules/dashboard/slice/chartDataSlice";
+import {
+  clearLogsError,
+  selectDashboardLogs,
+} from "@/modules/dashboard/slice/logsSlice";
+import {
+  clearAnalyticsError,
+  selectAnalytics,
+  selectAnalyticsLoading,
+} from "@/modules/dashboard/slice/analyticsSlice";
+
+import {ModulesGrid,DashboardCharts} from "@/modules/dashboard";
+import {
+  PageWrap,
+  HeaderBar,
+  Right,
+  Counter,
+  Section,
+  SectionHead,
+  Card,
+  SmallBtn,
+} from "../components/Layout";
+
+type TabKey = "modules" | "stats" | "charts" | "analytics";
 
 export default function AdminDashboardPage() {
   const { t } = useI18nNamespace("dashboard", translations);
-  const [tab, setTab] = useState<
-    "modules" | "stats" | "users" | "revenue" | "feedbacks" | "analytics"
-  >("modules");
+  const dispatch = useAppDispatch();
 
-  const stats = useAppSelector((state) => state.dashboard.stats);
+  // slice okumaları
+  const overviewState   = useAppSelector(selectOverview);
+  const overviewData    = useAppSelector(selectOverviewData);
+  const overviewLoading = useAppSelector(selectOverviewLoading);
 
-  const tabs = [
-    { key: "modules", label: t("tabs.modules", "Modules") },
-    { key: "stats", label: t("tabs.stats", "Statistics") },
-    { key: "users", label: t("tabs.users", "Users") },
-    { key: "revenue", label: t("tabs.revenue", "Revenue") },
-    { key: "feedbacks", label: t("tabs.feedbacks", "Feedbacks") },
+  const chartsState   = useAppSelector(selectCharts);
+  const chartsData    = useAppSelector(selectChartsData);
+  const chartsLoading = useAppSelector(selectChartsLoading);
+
+  const logsState   = useAppSelector(selectDashboardLogs);
+
+  const analyticsState   = useAppSelector(selectAnalytics);
+  const analyticsLoading = useAppSelector(selectAnalyticsLoading);
+
+  const [tab, setTab] = useState<TabKey>("modules");
+
+  // toast + temizleme (merkezî fetch sonrası yalnız mesajları ele al)
+  useEffect(() => {
+    if (overviewState.error)  { toast.error(String(overviewState.error));   dispatch(clearOverviewError()); }
+    if (chartsState.error)    { toast.error(String(chartsState.error));     dispatch(clearChartsError()); }
+    if (logsState.error)      { toast.error(String(logsState.error));       dispatch(clearLogsError()); }
+    if (analyticsState.error) { toast.error(String(analyticsState.error));  dispatch(clearAnalyticsError()); }
+
+    if (overviewState.successMessage)  toast.success(String(overviewState.successMessage));
+    if (chartsState.successMessage)    toast.success(String(chartsState.successMessage));
+    if (logsState.successMessage)      toast.success(String(logsState.successMessage));
+    if (analyticsState.successMessage) toast.success(String(analyticsState.successMessage));
+  }, [overviewState, chartsState, logsState, analyticsState, dispatch]);
+
+  // stat kartları
+  const statEntries = useMemo(() => {
+    const {
+      apartments = 0,
+      employees = 0,
+      activeContracts = 0,
+      overdueInvoices = 0,
+      plannedJobsToday = 0,
+      timeLast7dMinutes = 0,
+    } = (overviewData?.counters ?? {}) as Partial<{
+      apartments: number;
+      employees: number;
+      activeContracts: number;
+      overdueInvoices: number;
+      plannedJobsToday: number;
+      timeLast7dMinutes: number;
+    }>;
+
+    const { revenue = 0, expenses = 0, net = 0 } = (overviewData?.finance ??
+      {}) as Partial<{ revenue: number; expenses: number; net: number }>;
+
+    return [
+      { key: "apartments", label: t("stats.apartments", "Apartments"), value: apartments },
+      { key: "employees",  label: t("stats.employees", "Employees"),   value: employees },
+      { key: "contracts",  label: t("stats.contracts", "Active Contracts"), value: activeContracts },
+      { key: "overdue",    label: t("stats.overdueInvoices", "Overdue Invoices"), value: overdueInvoices },
+      { key: "jobsToday",  label: t("stats.jobsToday", "Jobs Today"), value: plannedJobsToday },
+      { key: "time",       label: t("stats.timeLast7d", "Time (7d, min)"), value: timeLast7dMinutes },
+      { key: "revenue",    label: t("stats.revenue", "Revenue"), value: revenue,  highlight: true },
+      { key: "expenses",   label: t("stats.expenses", "Expenses"), value: expenses },
+      { key: "net",        label: t("stats.net", "Net"), value: net, highlight: true },
+    ];
+  }, [overviewData, t]);
+
+  const modulesCount = useAppSelector((s: any) =>
+    Array.isArray(s?.moduleSetting)
+      ? s.moduleSetting.filter((m: any) => m?.showInDashboard !== false && m?.enabled !== false).length
+      : 0
+  );
+
+  const isLoadingCurrentTab =
+    (tab === "stats"     && overviewLoading) ||
+    (tab === "charts"    && chartsLoading)  ||
+    (tab === "analytics" && analyticsLoading);
+
+  const tabs: { key: TabKey; label: string }[] = [
+    { key: "modules",   label: t("tabs.modules",   "Modules") },
+    { key: "stats",     label: t("tabs.stats",     "Statistics") },
+    { key: "charts",    label: t("tabs.revenue",   "Revenue & Series") },
     { key: "analytics", label: t("tabs.analytics", "Analytics") },
   ];
 
-  const statEntries = useMemo(() => {
-    if (!stats) return [];
-    return [
-      {
-        key: "users",
-        label: t("stats.users", "Users"),
-        value: stats.users || 0,
-      },
-      {
-        key: "products",
-        label: t("stats.products", "Products"),
-        value: stats.products || 0,
-      },
-      {
-        key: "orders",
-        label: t("stats.orders", "Orders"),
-        value: stats.orders || 0,
-      },
-      {
-        key: "revenue",
-        label: t("stats.revenue", "Total Revenue"),
-        value: stats.revenue || 0,
-        highlight: true,
-      },
-      {
-        key: "analytics",
-        label: t("stats.analytics", "Analytics"),
-        value: stats.analytics || 0,
-      },
-    ];
-  }, [stats, t]);
-
   return (
-    <Main>
-      <TabBar>
-        {tabs.map((item) => (
-          <TabBtn
-            key={item.key}
-            $active={tab === item.key}
-            onClick={() => setTab(item.key as any)}
-          >
-            {item.label}
+    <PageWrap>
+      <HeaderBar>
+        <h1>{t("title", "Dashboard")}</h1>
+        <Right>
+          <Counter>{modulesCount}</Counter>
+          {isLoadingCurrentTab && <SmallBtn disabled>{t("loading", "Loading…")}</SmallBtn>}
+        </Right>
+      </HeaderBar>
+
+      <TabsBar>
+        {tabs.map(tb => (
+          <TabBtn key={tb.key} $active={tab===tb.key} onClick={()=>setTab(tb.key)} type="button">
+            {tb.label}
           </TabBtn>
         ))}
-      </TabBar>
+      </TabsBar>
 
-      {tab === "modules" && <ModulesGrid />}
-      {tab === "stats" && <StatsGrid entries={statEntries} />}
-      {tab === "users" && <UsersCard />}
-      {tab === "revenue" && <RevenueCard />}
-      {tab === "feedbacks" && <FeedbacksCard />}
-      {tab === "analytics" && <AnalyticsPanel />}
-    </Main>
+      {tab === "modules" && (
+        <Section>
+          <SectionHead><h2>{t("tabs.modules","Modules")}</h2></SectionHead>
+          <Card><ModulesGrid /></Card>
+        </Section>
+      )}
+
+      {tab === "stats" && (
+        <Section>
+          <SectionHead><h2>{t("tabs.stats","Statistics")}</h2></SectionHead>
+          <Card><StatsGrid entries={statEntries} /></Card>
+        </Section>
+      )}
+
+      {tab === "charts" && (
+        <Section>
+          <SectionHead><h2>{t("tabs.revenue","Revenue & Series")}</h2></SectionHead>
+          <Card><DashboardCharts data={chartsData} /></Card>
+        </Section>
+      )}
+
+      {tab === "analytics" && (
+        <Section>
+          <SectionHead><h2>{t("tabs.analytics","Analytics")}</h2></SectionHead>
+          <Card><AnalyticsPanel /></Card>
+        </Section>
+      )}
+    </PageWrap>
   );
 }
 
-// --- Module grid sadece selector ile state çeker ---
-function ModulesGrid() {
-  const { i18n } = useI18nNamespace("dashboard", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-  const modules = useAppSelector((state) => state.moduleSetting);
-
-  const dashboardModules = Array.isArray(modules)
-    ? modules
-        .filter((mod) => mod.showInDashboard !== false && mod.enabled !== false)
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-        .map((mod) => ({
-          key: mod.name,
-          label: mod.label?.[lang] || mod.label?.en || mod.name,
-          description: mod.description?.[lang] || mod.description?.en || "",
-          slug: mod.slug || mod.name,
-        }))
-    : [];
-
-  return (
-    <Grid>
-      {dashboardModules.map((mod) => (
-        <Link
-          href={`/admin/${mod.slug}`}
-          key={mod.key}
-          style={{ textDecoration: "none", color: "inherit" }}
-        >
-          <Card tabIndex={0}>
-            <Label>{mod.label}</Label>
-            <Description>{mod.description}</Description>
-          </Card>
-        </Link>
-      ))}
-    </Grid>
-  );
-}
-
-// --- Styled Components ---
-const Main = styled.div`
-  width: 100%;
-  padding: ${({ theme }) => theme.spacings.xl};
-  min-height: 76vh;
-  @media (max-width: 900px) {
-    padding: ${({ theme }) => theme.spacings.md};
-  }
-  @media (max-width: 600px) {
-    padding: ${({ theme }) => theme.spacings.sm};
-  }
+/* — Tabs UI — */
+const TabsBar = styled.div`
+  display:flex; align-items:center; gap:${({theme})=>theme.spacings.sm};
+  margin-bottom:${({theme})=>theme.spacings.lg};
+  flex-wrap:wrap;
 `;
-
-const TabBar = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacings.sm};
-  margin-bottom: ${({ theme }) => theme.spacings.xl};
-  @media (max-width: 600px) {
-    gap: ${({ theme }) => theme.spacings.xs};
-    margin-bottom: ${({ theme }) => theme.spacings.md};
-    justify-content: center;
-  }
+const TabBtn = styled.button<{ $active:boolean }>`
+  padding:${({theme})=>`${theme.spacings.sm} ${theme.spacings.lg}`};
+  border:none; cursor:pointer; border-radius:${({theme})=>theme.radii.pill};
+  background:${({$active,theme})=>$active?theme.colors.primary:theme.colors.background};
+  color:${({$active,theme})=>$active?theme.colors.white:theme.colors.textPrimary};
+  font-weight:${({$active})=>$active?700:400};
+  box-shadow:${({$active,theme})=>$active?theme.shadows.sm:"none"};
+  transition:${({theme})=>theme.transition.fast};
 `;
-
-const TabBtn = styled.button<{ $active: boolean }>`
-  padding: ${({ theme }) => `${theme.spacings.sm} ${theme.spacings.lg}`};
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  border-radius: ${({ theme }) => theme.radii.pill};
-  border: none;
-  cursor: pointer;
-  background: ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.background};
-  color: ${({ $active, theme }) =>
-    $active ? theme.colors.white : theme.colors.textPrimary};
-  font-weight: ${({ $active }) => ($active ? 700 : 400)};
-  box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.sm : "none")};
-  transition: ${({ theme }) => theme.transition.fast};
-
-  @media (max-width: 600px) {
-    padding: ${({ theme }) => `${theme.spacings.xs} ${theme.spacings.sm}`};
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-  }
-`;
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(238px, 1fr));
-  gap: ${({ theme }) => theme.spacings.xl};
-
-  @media (max-width: 900px) {
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: ${({ theme }) => theme.spacings.md};
-  }
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacings.sm};
-  }
-`;
-
-const Card = styled.div`
-  background: ${({ theme }) => theme.cards.background};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.cards.shadow};
-  padding: ${({ theme }) => `${theme.spacings.xl} ${theme.spacings.md}`};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  min-height: 110px;
-  transition: ${({ theme }) => theme.transition.fast};
-  &:hover,
-  &:focus {
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-    background: ${({ theme }) => theme.colors.backgroundAlt};
-    outline: 2px solid ${({ theme }) => theme.colors.primary};
-  }
-
-  @media (max-width: 900px) {
-    padding: ${({ theme }) => `${theme.spacings.lg} ${theme.spacings.sm}`};
-    min-height: 90px;
-  }
-  @media (max-width: 600px) {
-    padding: ${({ theme }) => `${theme.spacings.md} ${theme.spacings.xs}`};
-    min-height: 70px;
-  }
-`;
-
-const Label = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  margin-bottom: ${({ theme }) => theme.spacings.sm};
-  text-align: center;
-`;
-
-const Description = styled.div`
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  text-align: center;
-  word-break: break-word;
-`;
-

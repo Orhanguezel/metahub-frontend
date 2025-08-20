@@ -2,40 +2,42 @@
 import React from "react";
 import styled from "styled-components";
 
-interface StatCardProps {
-  label: string; // Parent bileşen i18n ile çevirip göndermeli!
+export interface StatCardProps {
+  /** Parent i18n ile çevrilmiş label göndermeli */
+  label: string;
   value: number | string;
   icon?: React.ReactNode;
   highlight?: boolean;
 }
 
-const StatCard: React.FC<StatCardProps> = ({
+export const StatCard: React.FC<StatCardProps> = ({
   label,
   value,
   icon,
   highlight,
 }) => (
-  <Card $highlight={!!highlight} tabIndex={0} aria-label={label}>
-    {icon && <IconWrapper>{icon}</IconWrapper>}
+  <Card $highlight={!!highlight} tabIndex={0} aria-label={label} role="group">
+    {icon && <IconWrapper aria-hidden="true">{icon}</IconWrapper>}
     <Label>{label}</Label>
-    <Value $highlight={!!highlight}>{value}</Value>
+    <Value $highlight={!!highlight}>{String(value)}</Value>
   </Card>
 );
 
 export default StatCard;
 
-// --- Styled Components ---
+/* styled */
 const Card = styled.div<{ $highlight: boolean }>`
   background: ${({ theme, $highlight }) =>
-    $highlight ? theme.colors.primary + "18" : theme.colors.background};
+    $highlight ? theme.colors.primary + "18" : theme.colors.cardBackground};
   border-radius: 1.2rem;
   padding: 1.5rem 1.2rem;
   text-align: center;
   box-shadow: 0 3px 16px rgba(0, 0, 0, 0.07);
   border: ${({ $highlight, theme }) =>
-    $highlight ? `2px solid ${theme.colors.primary}` : "none"};
-  transition: background 0.22s, border 0.22s;
+    $highlight ? `2px solid ${theme.colors.primary}` : "1px solid ${theme.colors.borderLight}"};
+  transition: background 0.22s, border 0.22s, box-shadow 0.22s;
   outline: none;
+
   &:focus {
     box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary + "33"};
   }
@@ -59,9 +61,9 @@ const Label = styled.div`
 
 const Value = styled.div<{ $highlight: boolean }>`
   font-size: 2rem;
-  font-weight: bold;
+  font-weight: 700;
   color: ${({ theme, $highlight }) =>
     $highlight ? theme.colors.primary : theme.colors.textPrimary};
-  letter-spacings: 0.5px;
+  letter-spacing: 0.5px; /* <- düzeltildi */
   transition: color 0.15s;
 `;

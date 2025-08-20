@@ -224,6 +224,10 @@ import {fetchPriceListsAdmin,clearPriceListMsgs} from "@/modules/pricelist/slice
 import {fetchBillingPlans,fetchOccurrences,clearBillingMessages} from "@/modules/billing/slice/billingSlice";
 import {fetchAllContractsAdmin,clearContractMessages} from "@/modules/contracts/slice/contractsSlice";
 import { fetchAllOpsJobsAdmin, clearOpsJobsMessages } from "@/modules/operationsjobs/slice/opsjobsSlice";
+import {fetchDashboardOverview} from "@/modules/dashboard/slice/dailyOverviewSlice";
+import {fetchDashboardCharts} from "@/modules/dashboard/slice/chartDataSlice";
+import {fetchDashboardLogs} from "@/modules/dashboard/slice/logsSlice";
+import {fetchAnalyticsEvents} from "@/modules/dashboard/slice/analyticsSlice";
 
 // -- Cleanup aksiyonları merkezi:
 const cleanupActions = [
@@ -307,7 +311,6 @@ export const useLayoutInit = () => {
   const tenants = useAppSelector((state) => state.tenants);
   
   const accountProfile = useAppSelector((state) => state.account);
-  const dashboard = useAppSelector((state) => state.dashboard);
   const aboutList = useAppSelector((state) => state.about);
   const aboutCategories = useAppSelector((state) => state.aboutCategory);
   const activityList = useAppSelector((state) => state.activity);
@@ -369,6 +372,12 @@ const billing = useAppSelector((state) => state.billing);
 const occurrences = useAppSelector((state) => state.billing.occurrences);
 const contracts = useAppSelector((state) => state.contracts);
 const opsJobs = useAppSelector((state) => state.opsjobs);
+const overview = useAppSelector((state) => state.dashboardOverview);
+const chartsData = useAppSelector((state) => state.dashboardCharts);
+const logsItems = useAppSelector((state) => state.dashboardLogs);
+const analyticsItems = useAppSelector((state) => state.analytics);
+
+
 
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
   useEffect(() => {
@@ -538,6 +547,14 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
       dispatch(fetchAllContractsAdmin());
     if (!opsJobs.items.length && !opsJobs.loading)
       dispatch(fetchAllOpsJobsAdmin());
+    if (!overview.data && !overview.loading)
+      dispatch(fetchDashboardOverview());
+    if (!chartsData.data && !chartsData.loading)
+      dispatch(fetchDashboardCharts());
+    if (!logsItems.items.length && !logsItems.loading)
+      dispatch(fetchDashboardLogs());
+    if (!analyticsItems.events.length && !analyticsItems.loading)
+      dispatch(fetchAnalyticsEvents());
 
     // Cleanup actions
     cleanupActions.forEach((action) => dispatch(action()));
@@ -561,7 +578,6 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
     moduleMaintenance,
     tenants,
     accountProfile,
-    dashboard,
     aboutList,
     aboutCategories,
     activityList,
@@ -617,6 +633,11 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
   priceLists,
   billing,
   opsJobs,
+  occurrences,
+  overview,
+  chartsData,
+  logsItems,
+  analyticsItems,
     // gerekirse analyticsTrends vs ekleyebilirsin
   };
 };

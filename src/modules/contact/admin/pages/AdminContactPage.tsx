@@ -93,10 +93,13 @@ const PageWrap = styled.div`
   max-width:${({theme})=>theme.layout.containerWidth};
   margin:0 auto;
   padding:${({theme})=>theme.spacings.xl};
+  background:${({theme})=>theme.colors.background};
+  @media (max-width: 640px){ padding:${({theme})=>theme.spacings.md}; }
 `;
 const Header = styled.div`
   display:flex; align-items:center; justify-content:space-between;
   margin-bottom:${({theme})=>theme.spacings.lg};
+  @media (max-width: 768px){ flex-direction:column; align-items:flex-start; gap:${({theme})=>theme.spacings.xs}; }
 `;
 const TitleBlock = styled.div`
   display:flex; flex-direction:column; gap:4px;

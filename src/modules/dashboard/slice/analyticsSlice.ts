@@ -1,6 +1,32 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
-import type { AnalyticsEvent, AnalyticsState } from "../types";
+import type { AnalyticsEvent, AnalyticsState, ApiEnvelope } from "../types";
+
+export type AnalyticsListParams = {
+  limit?: number;
+  offset?: number;
+  dateFrom?: string;
+  dateTo?: string;
+  module?: string;
+  eventType?: string;
+};
+
+export const fetchAnalyticsEvents = createAsyncThunk<
+  { events: AnalyticsEvent[]; count: number; message?: string },
+  AnalyticsListParams | undefined,
+  { rejectValue: { status: number | string; message: string } }
+>("analytics/fetchList", async (params, { rejectWithValue }) => {
+  const res = await apiCall("get", "/analytics", params ?? {}, rejectWithValue);
+  const env = (res?.data ?? res) as ApiEnvelope<{ events: AnalyticsEvent[]; count: number }> | any;
+
+  if (env?.success === false) {
+    return rejectWithValue({ status: 400, message: env?.message || "Failed" });
+  }
+
+  const events = env?.data?.events ?? env?.events ?? [];
+  const count = env?.data?.count ?? env?.count ?? events.length;
+  return { events, count, message: env?.message };
+});
 
 const initialState: AnalyticsState = {
   events: [],
@@ -8,126 +34,45 @@ const initialState: AnalyticsState = {
   trends: [],
   loading: false,
   error: null,
+  successMessage: null,
 };
-
-// Event loglama
-export const logAnalyticsEvent = createAsyncThunk(
-  "analytics/logEvent",
-  async (data: Partial<AnalyticsEvent>, thunkAPI) =>
-    await apiCall("post", "/analytics/events", data, thunkAPI.rejectWithValue)
-);
-
-// Event listesi (filtrelenmiş ya da parametresiz)
-export const fetchAnalyticsEvents = createAsyncThunk(
-  "analytics/fetchEvents",
-  async (query: Record<string, any> = {}, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      "/analytics/events",
-      query,
-      thunkAPI.rejectWithValue
-    );
-    return res;
-  }
-);
-
-// Sayı (opsiyonel filtre ile)
-export const fetchAnalyticsCount = createAsyncThunk(
-  "analytics/fetchCount",
-  async (query: Record<string, any> = {}, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      "/analytics/count",
-      query,
-      thunkAPI.rejectWithValue
-    );
-    return res;
-  }
-);
-
-// Trend (opsiyonel filtre ile)
-export const fetchAnalyticsTrends = createAsyncThunk(
-  "analytics/fetchTrends",
-  async (query: Record<string, any> = {}, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      "/analytics/trends",
-      query,
-      thunkAPI.rejectWithValue
-    );
-    return res;
-  }
-);
-
-// Eventleri topluca sil (filter ile)
-export const deleteAnalyticsEvents = createAsyncThunk(
-  "analytics/deleteEvents",
-  async (data: Record<string, any> = {}, thunkAPI) =>
-    await apiCall("delete", "/analytics/events", data, thunkAPI.rejectWithValue)
-);
 
 const analyticsSlice = createSlice({
   name: "analytics",
   initialState,
   reducers: {
-    clearAnalyticsState: (state) => {
-      state.events = [];
-      state.count = 0;
-      state.trends = [];
-      state.loading = false;
+    clearAnalyticsError(state) {
       state.error = null;
     },
-    clearAnalyticsMessage: (state) => {
-      state.error = null;
-    }
+    resetAnalytics(state) {
+      Object.assign(state, initialState);
+    },
   },
   extraReducers: (builder) => {
     builder
-      // Eventler
       .addCase(fetchAnalyticsEvents.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.successMessage = null;
       })
-      .addCase(fetchAnalyticsEvents.fulfilled, (state, action: PayloadAction<any>) => {
+      .addCase(fetchAnalyticsEvents.fulfilled, (state, action) => {
         state.loading = false;
-        // Backend data alanını her iki şekilde de yakala
-        if (Array.isArray(action.payload?.data)) {
-          state.events = action.payload.data;
-          state.count = action.payload.count ?? action.payload.data.length;
-        } else if (Array.isArray(action.payload)) {
-          state.events = action.payload;
-          state.count = action.payload.length;
-        } else {
-          state.events = [];
-          state.count = 0;
-        }
+        state.events = action.payload.events;
+        state.count = action.payload.count;
+        state.successMessage = action.payload.message ?? "OK";
       })
-      .addCase(fetchAnalyticsEvents.rejected, (state, action: PayloadAction<any>) => {
+      .addCase(fetchAnalyticsEvents.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || "Error fetching events";
+        state.error = action.payload?.message || "Fetch analytics failed";
       });
-
-    builder
-      // Count
-      .addCase(fetchAnalyticsCount.fulfilled, (state, action: PayloadAction<any>) => {
-        state.count = typeof action.payload?.count === "number" ? action.payload.count : 0;
-      });
-
-    builder
-      // Trendler
-      .addCase(fetchAnalyticsTrends.fulfilled, (state, action: PayloadAction<any>) => {
-        if (Array.isArray(action.payload?.data)) {
-          state.trends = action.payload.data;
-        } else if (Array.isArray(action.payload)) {
-          state.trends = action.payload;
-        } else {
-          state.trends = [];
-        }
-      });
-
-    // Diğer toplu işlemler eklenebilir.
   },
 });
 
-export const { clearAnalyticsState, clearAnalyticsMessage } = analyticsSlice.actions;
+export const { clearAnalyticsError, resetAnalytics } = analyticsSlice.actions;
+
+/* Selectors */
+export const selectAnalytics = (s: any) => s.analytics as AnalyticsState;
+export const selectAnalyticsEvents = (s: any) => (s.analytics as AnalyticsState).events;
+export const selectAnalyticsLoading = (s: any) => (s.analytics as AnalyticsState).loading;
+
 export default analyticsSlice.reducer;
