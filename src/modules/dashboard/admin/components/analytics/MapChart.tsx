@@ -1,28 +1,39 @@
+// src/modules/dashboard/admin/components/analytics/MapChart.tsx
 "use client";
 
 import React, { useEffect, useMemo, useRef } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
-import L, { Icon } from "leaflet";
+import L from "leaflet";
+
+// CSS
+import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+// JS plugin (L'yi genişletir)
 import "leaflet.markercluster";
+
 import styled, { useTheme } from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/dashboard/locales";
+
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
+/* ---------------- types ---------------- */
 interface AnalyticsEvent {
   module: string;
-  eventType: string;
-  location?: { type: "Point"; coordinates: [number, number] }; // [lon, lat]
+  eventType?: string;
+  status?: string;
+  type?: string;
+  location?: { type: "Point"; coordinates: [number | string, number | string] }; // [lon, lat]
   userId?: string;
   timestamp?: string;
+  ts?: string | number | Date;
 }
-interface Props {
-  data: AnalyticsEvent[];
-}
+interface Props { data: AnalyticsEvent[]; }
 
-/* renkler */
+/* ---------------- icons ---------------- */
 const EVENT_COLORS: Record<string, string> = {
   add: "3cba54",
   delete: "db3236",
@@ -30,25 +41,40 @@ const EVENT_COLORS: Record<string, string> = {
 };
 const DEFAULT_COLOR = "999999";
 
-const getIconByEvent = (eventType: string): Icon => {
-  const color = EVENT_COLORS[eventType] || DEFAULT_COLOR;
-  return new L.Icon({
-    iconUrl: `https://chart.googleapis.com/chart?chst=d_map_pin_icon&chld=pin|${color}`,
-    iconSize: [30, 42],
-    iconAnchor: [15, 42],
-    popupAnchor: [0, -36],
-  });
+// Tip-uyumlu fallback icon (CSP veya ağ sorunlarında)
+const FALLBACK_ICON = new L.Icon({
+  iconRetinaUrl: (markerIcon2x as any).src || (markerIcon2x as any),
+  iconUrl: (markerIcon as any).src || (markerIcon as any),
+  shadowUrl: (markerShadow as any).src || (markerShadow as any),
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const getIconByEvent = (eventType: string): L.Icon => {
+  try {
+    const color = EVENT_COLORS[eventType] || DEFAULT_COLOR;
+    return new L.Icon({
+      iconUrl: `https://chart.googleapis.com/chart?chst=d_map_pin_icon&chld=pin|${color}`,
+      iconSize: [30, 42],
+      iconAnchor: [15, 42],
+      popupAnchor: [0, -36],
+    });
+  } catch {
+    return FALLBACK_ICON;
+  }
 };
 
+/* ---------------- component ---------------- */
 export default function MapChart({ data }: Props) {
   const theme = useTheme();
   const { t } = useI18nNamespace("dashboard", translations);
 
-  // Leaflet default marker görselleri
+  // Leaflet default marker görselleri (Next ortamında gerekli)
   useEffect(() => {
     if (typeof window === "undefined") return;
-    // @ts-expect-error leaflet internals
-    delete L.Icon.Default.prototype._getIconUrl;
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
     L.Icon.Default.mergeOptions({
       iconRetinaUrl: (markerIcon2x as any).src || (markerIcon2x as any),
       iconUrl: (markerIcon as any).src || (markerIcon as any),
@@ -56,22 +82,52 @@ export default function MapChart({ data }: Props) {
     });
   }, []);
 
-  // yalnızca geçerli koordinatlı eventler
-  const validEvents: AnalyticsEvent[] = useMemo(
-    () =>
-      Array.isArray(data)
-        ? data.filter((e) => {
-            const c = e?.location?.coordinates;
-            return Array.isArray(c) && c.length === 2 && c.every((n) => typeof n === "number");
-          })
-        : [],
-    [data]
-  );
+  // Koordinatları güvenle sayıya çevir + sağlam fallback’ler
+  const validEvents = useMemo<AnalyticsEvent[]>(() => {
+    if (!Array.isArray(data)) return [];
+    const mapped = data.map((e) => {
+      const eventType = e.eventType ?? e.status ?? e.type ?? "event";
+      const timestamp =
+        e.timestamp ??
+        (e.ts ? new Date(e.ts as any).toISOString() : undefined);
+
+      const c = e?.location?.coordinates;
+      let lon: number | undefined;
+      let lat: number | undefined;
+      if (Array.isArray(c) && c.length === 2) {
+        lon = typeof c[0] === "string" ? Number(c[0]) : (c[0] as number);
+        lat = typeof c[1] === "string" ? Number(c[1]) : (c[1] as number);
+      }
+
+      return {
+        ...e,
+        eventType,
+        timestamp,
+        location:
+          Number.isFinite(lon) && Number.isFinite(lat)
+            ? { type: "Point", coordinates: [lon as number, lat as number] }
+            : undefined,
+      } as AnalyticsEvent;
+    });
+
+    return mapped.filter((e) => {
+      const coords = e.location?.coordinates;
+      return (
+        Array.isArray(coords) &&
+        coords.length === 2 &&
+        Number.isFinite(coords[0]) &&
+        Number.isFinite(coords[1])
+      );
+    });
+  }, [data]);
 
   // merkez (ilk event) veya İstanbul
   const center: [number, number] =
     validEvents.length > 0
-      ? [validEvents[0].location!.coordinates[1], validEvents[0].location!.coordinates[0]]
+      ? [
+          validEvents[0].location!.coordinates[1] as number,
+          validEvents[0].location!.coordinates[0] as number,
+        ]
       : [41.01, 28.97];
 
   return (
@@ -103,21 +159,21 @@ export default function MapChart({ data }: Props) {
   );
 }
 
-/* Cluster bileşeni */
+/* ---------------- cluster wrapper ---------------- */
 function MarkerClusterGroupWrapper({ events }: { events: AnalyticsEvent[] }) {
   const { t, i18n } = useI18nNamespace("dashboard", translations);
   const map = useMap();
-  const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
+  const clusterRef = useRef<any>(null); // TS augment’i görünmezse any kullan
 
-  // cluster'i bir kere oluştur
+  // tek seferlik cluster instance
   if (!clusterRef.current) {
-    clusterRef.current = L.markerClusterGroup({
+    clusterRef.current = (L as any).markerClusterGroup({
       chunkedLoading: true,
       showCoverageOnHover: false,
       disableClusteringAtZoom: 8,
       spiderfyOnMaxZoom: true,
       maxClusterRadius: 50,
-    }) as any;
+    });
   }
 
   useEffect(() => {
@@ -127,12 +183,14 @@ function MarkerClusterGroupWrapper({ events }: { events: AnalyticsEvent[] }) {
     const bounds = L.latLngBounds([]);
 
     for (const e of events) {
-      const [lon, lat] = e.location!.coordinates;
-      const icon = getIconByEvent(e.eventType);
+      const [lon, lat] = e.location!.coordinates as [number, number];
+      const icon = getIconByEvent(e.eventType ?? "event");
 
+      // tarih biçimi
       let formattedDate = "-";
-      if (e.timestamp) {
-        const d = new Date(e.timestamp);
+      const tv = e.timestamp ?? e.ts;
+      if (tv) {
+        const d = new Date(tv as any);
         if (!Number.isNaN(d.getTime())) {
           const hh = d.getHours().toString().padStart(2, "0");
           const mm = d.getMinutes().toString().padStart(2, "0");
@@ -141,7 +199,7 @@ function MarkerClusterGroupWrapper({ events }: { events: AnalyticsEvent[] }) {
       }
 
       const moduleLabel = t(`modules.${e.module}`, e.module);
-      const eventLabel = t(`events.${e.eventType}`, e.eventType);
+      const eventLabel = t(`events.${e.eventType}`, e.eventType ?? "event");
 
       const marker = L.marker([lat, lon], { icon });
       marker.bindPopup(
@@ -159,7 +217,7 @@ function MarkerClusterGroupWrapper({ events }: { events: AnalyticsEvent[] }) {
 
     map.addLayer(group);
 
-    // bounds'a sığdır (en az 2 nokta varsa)
+    // En az 2 nokta varsa ekrana sığdır
     if (events.length > 1 && bounds.isValid()) {
       map.fitBounds(bounds, { padding: [24, 24] });
     }
@@ -172,7 +230,7 @@ function MarkerClusterGroupWrapper({ events }: { events: AnalyticsEvent[] }) {
   return null;
 }
 
-/* styled */
+/* ---------------- styled ---------------- */
 const MapWrapper = styled.div<{ $border: string }>`
   width: 100%;
   height: 400px;

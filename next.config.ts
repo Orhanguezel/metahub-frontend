@@ -18,7 +18,7 @@ const prodImagePatterns = tenantDomains.map((host) => ({
   pathname: "/**",
 }));
 
-// CDN + paylaşılan kaynaklar
+// CDN + paylaşılan kaynaklar (sadece GERÇEK kullandıklarını bırak)
 const sharedImagePatterns = [
   { protocol: "https", hostname: "via.placeholder.com", pathname: "/**" },
   { protocol: "https", hostname: "res.cloudinary.com", pathname: "/**" },
@@ -26,20 +26,36 @@ const sharedImagePatterns = [
   { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
   { protocol: "https", hostname: "cdn.shopify.com", pathname: "/**" },
 
-  // 🔴 ÖNEMLİ: Hatanın kaynağı olan CDN hostları
-  { protocol: "https", hostname: "cdn.guzelwebdesign.com", pathname: "/**" },
-  { protocol: "https", hostname: "cdn.guezelwebdesign.com", pathname: "/**" },
+  // 🔵 Senin subdomain'lerin (uzaktan görsel yüklüyorsan tut; aksi halde silebilirsin)
+  { protocol: "https", hostname: "metahub.guezelwebdesign.com", pathname: "/**" },
+  { protocol: "https", hostname: "test.guezelwebdesign.com", pathname: "/**" },
 ];
 
-// --- CSP (PDF önizleme için frame-src & arkadaşları) ---
-const frameSrc = ["'self'", "res.cloudinary.com", "docs.google.com"];
-const connectSrc = ["'self'", "res.cloudinary.com"];
+/* ----------------------  CSP: reCAPTCHA + PDF + Görseller  ---------------------- */
+// reCAPTCHA domainleri
+const RECAPTCHA_SCRIPT = [
+  "https://www.google.com",
+  "https://www.gstatic.com",
+  "https://www.recaptcha.net",
+];
+const RECAPTCHA_FRAME = [
+  "https://www.google.com",
+  "https://recaptcha.google.com",
+  "https://www.recaptcha.net",
+];
+
+// frame-src (PDF önizleme & reCAPTCHA)
+const frameSrc = ["'self'", "res.cloudinary.com", "docs.google.com", ...RECAPTCHA_FRAME];
+
+// connect-src (XHR/fetch). API ya da farklı origin'e istek atıyorsan buraya ekle.
+const connectSrc = ["'self'", "res.cloudinary.com", ...RECAPTCHA_SCRIPT];
 if (isDev) {
   frameSrc.push("http://localhost:5019");
   connectSrc.push("http://localhost:5019");
 }
 
-// img-src
+// img-src (görseller). Kendi origin'in için 'self' yeter.
+// Başka subdomain'den görsel çekiyorsan ekliyoruz:
 const imgSrc = [
   "'self'",
   "data:",
@@ -49,23 +65,50 @@ const imgSrc = [
   "i.imgur.com",
   "images.unsplash.com",
   "cdn.shopify.com",
-  // 🔴 CDN hostlarını CSP'ye ekle
-  "cdn.guzelwebdesign.com",
-  "cdn.guezelwebdesign.com",
+
+  // 🔵 Senin subdomain'lerin (cross-origin görsel kullanıyorsan)
+  "metahub.guezelwebdesign.com",
+  "test.guezelwebdesign.com",
+
+  // reCAPTCHA/Google görselleri
+  "www.google.com",
+  "www.gstatic.com",
+  "ssl.gstatic.com",
 ];
-// Dev’de local görseller için (örn. proxy/CDN simülasyonu)
 if (isDev) imgSrc.push("http://localhost:5019");
+
+// script-src (dev’de unsafe-eval serbest, prod’da kapalı)
+const scriptSrc = [
+  "'self'",
+  "'unsafe-inline'",
+  ...RECAPTCHA_SCRIPT,
+  ...(isDev ? ["'unsafe-eval'"] : []),
+];
+
+// script-src-elem (bazı tarayıcılar için element tabanlı direktif gerekli)
+const scriptSrcElem = [
+  "'self'",
+  "'unsafe-inline'",
+  ...RECAPTCHA_SCRIPT,
+  ...(isDev ? ["'unsafe-eval'"] : []),
+];
 
 const csp = [
   `default-src 'self'`,
-  `script-src 'self' 'unsafe-inline' 'unsafe-eval'`,
-  `style-src 'self' 'unsafe-inline'`,
+  `base-uri 'self'`,
+  `object-src 'none'`,
+  `worker-src 'self' blob:`,
+  `frame-ancestors 'self'`,
+
+  `script-src ${scriptSrc.join(" ")}`,
+  `script-src-elem ${scriptSrcElem.join(" ")}`,
+
+  `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
+  `font-src 'self' data: https://fonts.gstatic.com`,
+
   `img-src ${imgSrc.join(" ")}`,
   `frame-src ${frameSrc.join(" ")}`,
   `connect-src ${connectSrc.join(" ")}`,
-  `font-src 'self' data:`,
-  `object-src 'none'`,
-  `base-uri 'self'`,
 ].join("; ");
 
 const nextConfig = {

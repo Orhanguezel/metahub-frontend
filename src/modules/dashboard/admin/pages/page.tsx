@@ -1,38 +1,33 @@
+// src/modules/dashboard/admin/pages/AdminDashboardPage.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
-import { toast } from "react-toastify";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/dashboard/locales";
 
-import { StatsGrid, AnalyticsPanel } from "@/modules/dashboard";
+import { StatsGrid, AnalyticsPanel, ModulesGrid, DashboardCharts } from "@/modules/dashboard";
 
-/* selectors + clear actions (yalnızca okumalar) */
+/* selectors + clear actions */
 import {
-  clearOverviewError,
-  selectOverview,
   selectOverviewData,
   selectOverviewLoading,
 } from "@/modules/dashboard/slice/dailyOverviewSlice";
 import {
-  clearChartsError,
-  selectCharts,
   selectChartsData,
   selectChartsLoading,
 } from "@/modules/dashboard/slice/chartDataSlice";
+
+/* ✅ parametresiz analytics slice (fetch sadece sayfada!) */
 import {
-  clearLogsError,
-  selectDashboardLogs,
-} from "@/modules/dashboard/slice/logsSlice";
-import {
-  clearAnalyticsError,
-  selectAnalytics,
   selectAnalyticsLoading,
+  setEventsQuery,
+  setTrendsQuery,
+  fetchAnalyticsEvents,
+  fetchAnalyticsTrends,
 } from "@/modules/dashboard/slice/analyticsSlice";
 
-import {ModulesGrid,DashboardCharts} from "@/modules/dashboard";
 import {
   PageWrap,
   HeaderBar,
@@ -46,38 +41,80 @@ import {
 
 type TabKey = "modules" | "stats" | "charts" | "analytics";
 
+type AnalyticsFilters = {
+  startDate?: string;
+  endDate?: string;
+  module?: string;
+  eventType?: string;
+};
+
 export default function AdminDashboardPage() {
   const { t } = useI18nNamespace("dashboard", translations);
   const dispatch = useAppDispatch();
 
   // slice okumaları
-  const overviewState   = useAppSelector(selectOverview);
   const overviewData    = useAppSelector(selectOverviewData);
   const overviewLoading = useAppSelector(selectOverviewLoading);
-
-  const chartsState   = useAppSelector(selectCharts);
   const chartsData    = useAppSelector(selectChartsData);
   const chartsLoading = useAppSelector(selectChartsLoading);
-
-  const logsState   = useAppSelector(selectDashboardLogs);
-
-  const analyticsState   = useAppSelector(selectAnalytics);
   const analyticsLoading = useAppSelector(selectAnalyticsLoading);
 
   const [tab, setTab] = useState<TabKey>("modules");
 
-  // toast + temizleme (merkezî fetch sonrası yalnız mesajları ele al)
-  useEffect(() => {
-    if (overviewState.error)  { toast.error(String(overviewState.error));   dispatch(clearOverviewError()); }
-    if (chartsState.error)    { toast.error(String(chartsState.error));     dispatch(clearChartsError()); }
-    if (logsState.error)      { toast.error(String(logsState.error));       dispatch(clearLogsError()); }
-    if (analyticsState.error) { toast.error(String(analyticsState.error));  dispatch(clearAnalyticsError()); }
+  // 🔁 Panel fetch yerine: filtreleri burada tut
+  const [analyticsFilters, setAnalyticsFilters] = useState<AnalyticsFilters | null>(null);
 
-    if (overviewState.successMessage)  toast.success(String(overviewState.successMessage));
-    if (chartsState.successMessage)    toast.success(String(chartsState.successMessage));
-    if (logsState.successMessage)      toast.success(String(logsState.successMessage));
-    if (analyticsState.successMessage) toast.success(String(analyticsState.successMessage));
-  }, [overviewState, chartsState, logsState, analyticsState, dispatch]);
+
+  // 📡 Fetch sadece burada: Analytics tabı açıldığında ve/veya filtreler değiştiğinde
+  useEffect(() => {
+    if (tab !== "analytics") return;
+
+    // default 30 gün (filtre yoksa)
+    let next = analyticsFilters;
+    if (!next) {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(end.getDate() - 30);
+      next = {
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
+      };
+      setAnalyticsFilters(next); // state'i doldur, bu effect bir sonraki render'da fetch'leyecek
+      return;
+    }
+
+    // store query yaz + fetch
+    dispatch(setEventsQuery({ limit: 500, ...next }));
+    dispatch(setTrendsQuery({ period: "day", ...next }));
+    dispatch(fetchAnalyticsEvents());
+    dispatch(fetchAnalyticsTrends());
+  }, [tab, analyticsFilters, dispatch]);
+
+  // Panel'den gelen filtre değişimlerini burada yakala
+  const handleAnalyticsFiltersChange = (f?: AnalyticsFilters) => {
+    if (!f || (!f.startDate && !f.endDate && !f.module && !f.eventType)) {
+      // reset → 30 gün default
+      const end = new Date();
+      const start = new Date();
+      start.setDate(end.getDate() - 30);
+      setAnalyticsFilters({
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
+      });
+      return;
+    }
+    setAnalyticsFilters((prev) => {
+      const next = { ...prev, ...f };
+      // gereksiz re-render/fetch'i önlemek için shallow compare
+      const same =
+        prev &&
+        prev.startDate === next.startDate &&
+        prev.endDate === next.endDate &&
+        prev.module === next.module &&
+        prev.eventType === next.eventType;
+      return same ? prev : next;
+    });
+  };
 
   // stat kartları
   const statEntries = useMemo(() => {
@@ -173,7 +210,13 @@ export default function AdminDashboardPage() {
       {tab === "analytics" && (
         <Section>
           <SectionHead><h2>{t("tabs.analytics","Analytics")}</h2></SectionHead>
-          <Card><AnalyticsPanel /></Card>
+          {/* Panel fetch yapmaz; filtre değişimini parent'a bildirir */}
+          <Card>
+            <AnalyticsPanel
+              onFiltersChange={(f) => handleAnalyticsFiltersChange(f)}
+              onResetFilters={() => handleAnalyticsFiltersChange(undefined)}
+            />
+          </Card>
         </Section>
       )}
     </PageWrap>

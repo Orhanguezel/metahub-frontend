@@ -227,7 +227,6 @@ import { fetchAllOpsJobsAdmin, clearOpsJobsMessages } from "@/modules/operations
 import {fetchDashboardOverview} from "@/modules/dashboard/slice/dailyOverviewSlice";
 import {fetchDashboardCharts} from "@/modules/dashboard/slice/chartDataSlice";
 import {fetchDashboardLogs} from "@/modules/dashboard/slice/logsSlice";
-import {fetchAnalyticsEvents} from "@/modules/dashboard/slice/analyticsSlice";
 
 // -- Cleanup aksiyonları merkezi:
 const cleanupActions = [
@@ -375,7 +374,7 @@ const opsJobs = useAppSelector((state) => state.opsjobs);
 const overview = useAppSelector((state) => state.dashboardOverview);
 const chartsData = useAppSelector((state) => state.dashboardCharts);
 const logsItems = useAppSelector((state) => state.dashboardLogs);
-const analyticsItems = useAppSelector((state) => state.analytics);
+
 
 
 
@@ -553,8 +552,6 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
       dispatch(fetchDashboardCharts());
     if (!logsItems.items.length && !logsItems.loading)
       dispatch(fetchDashboardLogs());
-    if (!analyticsItems.events.length && !analyticsItems.loading)
-      dispatch(fetchAnalyticsEvents());
 
     // Cleanup actions
     cleanupActions.forEach((action) => dispatch(action()));
@@ -637,7 +634,5 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
   overview,
   chartsData,
   logsItems,
-  analyticsItems,
-    // gerekirse analyticsTrends vs ekleyebilirsin
   };
 };

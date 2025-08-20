@@ -11,15 +11,68 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/dashboard/locales";
 import { Loader } from "@/shared";
 
-// ↘️ Doğru bileşenleri doğrudan kendi klasöründen içe aktarın
-import AnalyticsLineChart from "@/modules/dashboard/admin/components/analytics/LineChart";
-import AnalyticsBarChart from "@/modules/dashboard/admin/components/analytics/BarChart";
-import AnalyticsTable from "@/modules/dashboard/admin/components/analytics/AnalyticsTable";
+// Grafik ve tablo
+import { LineChart, BarChart, AnalyticsTable } from "@/modules/dashboard";
 
-// FilterBar & DateRangeSelector barrel’da kalabilir
+// Barrel
 import { FilterBar, DateRangeSelector, LogsList } from "@/modules/dashboard";
 
-/* ---- Helpers ---- */
+type TabKey = "trends" | "distribution" | "geo" | "table";
+type TrendEntry = { _id: { year: number; month: number; day: number }; total: number };
+
+// Harita tipi
+type MapChartEvent = {
+  module: string;
+  eventType: string;
+  location?: { type: "Point"; coordinates: [number, number] }; // [lon, lat]
+  userId?: string;
+  timestamp?: string;
+};
+type MapChartProps = { data: MapChartEvent[] };
+
+const MapChart = dynamic<MapChartProps>(
+  () => import("@/modules/dashboard/admin/components/analytics/MapChart").then((m) => m.default),
+  { ssr: false }
+);
+
+/* ---- helpers ---- */
+const toISO = (v: any | undefined): string | undefined => {
+  if (!v) return undefined;
+  const d = v instanceof Date ? v : new Date(v);
+  return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
+};
+
+function normalizeEvents(raw: any[]): any[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((e) => {
+    const moduleName = (e?.module ?? e?.type ?? "unknown").toString();
+    const evt = (e?.eventType ?? e?.status ?? e?.type ?? "event").toString();
+    const ts = e?.timestamp ?? e?.ts;
+    return { ...e, module: moduleName, eventType: evt, timestamp: toISO(ts) };
+  });
+}
+
+function buildTrendsFromEvents(events: any[]): TrendEntry[] {
+  const map = new Map<string, number>();
+  for (const e of events) {
+    const ts = e?.timestamp ?? e?.ts;
+    const d = ts ? new Date(ts) : null;
+    if (!d || Number.isNaN(d.getTime())) continue;
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const key = `${yyyy}-${mm}-${dd}`;
+    map.set(key, (map.get(key) || 0) + 1);
+  }
+  return Array.from(map.entries())
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([key, total]) => {
+      const [y, m, d] = key.split("-").map(Number);
+      return { _id: { year: y, month: m, day: d }, total };
+    });
+}
+
+/** CSV export helper (panel içinde kullanılacak) */
 function exportToCSV(data: any[], filename = "analytics-export.csv") {
   if (!Array.isArray(data) || !data.length) return;
   const keys = Array.from(
@@ -49,55 +102,59 @@ function exportToCSV(data: any[], filename = "analytics-export.csv") {
   document.body.removeChild(a);
 }
 
-/* ---- Tipler ---- */
-type TabKey = "trends" | "distribution" | "geo" | "table";
-type TrendEntry = { _id: { year: number; month: number; day: number }; total: number };
-
-// Harita için tip
-type MapChartEvent = {
-  module: string;
-  eventType: string;
-  location?: { type: "Point"; coordinates: [number, number] }; // [lon, lat]
-  userId?: string;
-  timestamp?: string;
+type FiltersChange = {
+  startDate?: string;
+  endDate?: string;
+  module?: string;
+  eventType?: string;
 };
-type MapChartProps = { data: MapChartEvent[] };
 
-/* Harita SSR’siz + tipli dynamic import */
-const MapChart = dynamic<MapChartProps>(
-  () => import("@/modules/dashboard/admin/components/analytics/MapChart").then((m) => m.default),
-  { ssr: false }
-);
+interface Props {
+  /** Üst bileşen fetch edecek */
+  onFiltersChange?: (f: FiltersChange) => void;
+  onResetFilters?: () => void;
+}
 
-export default function AnalyticsPanel() {
+export default function AnalyticsPanel({ onFiltersChange, onResetFilters }: Props) {
   const { t, i18n } = useI18nNamespace("dashboard", translations);
+  const lang = i18n.language;
 
-  // Slice’lar
-  const analytics = useAppSelector((s: any) => s.analytics) || {};
-  const modMeta   = useAppSelector((s: any) => s.moduleMeta) || {};
-  const modSet    = useAppSelector((s: any) => s.moduleSetting) || {};
+  // store’dan oku (yalnızca görüntüleme)
+  const analytics    = useAppSelector((s: any) => s.analytics) || {};
+  const dashboardLog = useAppSelector((s: any) => s.dashboardLogs);
+  const modMeta      = useAppSelector((s: any) => s.moduleMeta) || {};
+  const modSet       = useAppSelector((s: any) => s.moduleSetting) || {};
 
-  // ↘️ Esnek ve stabilize okuma (projeler arası alan adları farklı olabilir)
-  const events = useMemo<any[]>(() => {
-    const a = analytics;
-    if (Array.isArray(a?.events)) return a.events;
-    if (Array.isArray(a?.items)) return a.items;
-    if (Array.isArray(a?.data?.events)) return a.data.events;
-    if (Array.isArray(a?.data?.items)) return a.data.items;
-    return [];
-  }, [analytics]);
+  const loading = !!analytics.loading;
 
-  const trends = useMemo<TrendEntry[]>(() => {
-    const src =
-      (analytics?.trends as any[]) ??
-      (analytics?.data?.trends as any[]) ??
-      [];
-    return Array.isArray(src) ? (src as TrendEntry[]) : [];
-  }, [analytics]);
+  // Fallback: eski dashboard logs – memoize
+  const fallbackRaw = useMemo<any[]>(() => {
+    const a = dashboardLog?.data?.events;
+    const b = dashboardLog?.events;
+    const c = dashboardLog?.items;
+    return (Array.isArray(a) && a) || (Array.isArray(b) && b) || (Array.isArray(c) && c) || [];
+  }, [dashboardLog]);
 
-  // modüller
+  // normalize + fallback — storeEvents'i ayrıca tanımlamıyoruz; direkt state üzerinden okuyoruz
+  const events = useMemo<any[]>(
+    () => {
+      const se = Array.isArray(analytics?.events) ? analytics.events : [];
+      return se.length ? se : normalizeEvents(fallbackRaw);
+    },
+    [analytics?.events, fallbackRaw]
+  );
+
+  const trends = useMemo<TrendEntry[]>(
+    () => {
+      const st = Array.isArray(analytics?.trends) ? analytics.trends : [];
+      return st.length ? (st as any) : buildTrendsFromEvents(events);
+    },
+    [analytics?.trends, events]
+  );
+
+  // meta / tenant modules (select’leri doldurmak için)
   const metaModules = useMemo<any[]>(
-    () => (Array.isArray(modMeta.modules) ? modMeta.modules : []),
+    () => (Array.isArray(modMeta.modules) ? metaModulesSanitize(modMeta.modules) : []),
     [modMeta.modules]
   );
   const tenantModules = useMemo<any[]>(
@@ -105,13 +162,15 @@ export default function AnalyticsPanel() {
     [modSet.tenantModules]
   );
 
-  const loading = !!analytics.loading || !!modMeta.loading || !!modSet.loading;
-  const error   = analytics?.error ? String(analytics.error) : null;
+  const error =
+    (analytics?.error ? String(analytics.error) : null) ||
+    (dashboardLog?.error ? String(dashboardLog.error) : null) ||
+    null;
 
-  // Filtreler
+  // Filtreler (yalnız UI state) — fetch parent’ta
   const [tab, setTab] = useState<TabKey>("trends");
   const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate,   setEndDate]   = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [selectedModule, setSelectedModule] = useState<string>("");
   const [selectedEventType, setSelectedEventType] = useState<string>("");
 
@@ -125,11 +184,11 @@ export default function AnalyticsPanel() {
       })
       .map((m: any) => ({
         value: m.name,
-        label: m?.label?.[i18n.language as keyof typeof m.label] || m?.label?.en || m.name,
+        label: m?.label?.[lang as keyof typeof m.label] || m?.label?.en || m.name,
       }));
-  }, [metaModules, tenantModules, i18n.language]);
+  }, [metaModules, tenantModules, lang]);
 
-  // Otomatik listeler (events üzerinden)
+  // Otomatik listeler (normalize edilmiş events)
   const availableEventTypes = useMemo(
     () => Array.from(new Set(events.map((e) => e?.eventType).filter(Boolean))),
     [events]
@@ -139,7 +198,7 @@ export default function AnalyticsPanel() {
     [events]
   );
 
-  // Filtreler → veri
+  // Filtreler → client-side görünüm
   const filteredEvents = useMemo(() => {
     let res = events;
     if (selectedModule)    res = res.filter((e) => e?.module === selectedModule);
@@ -152,8 +211,8 @@ export default function AnalyticsPanel() {
   const filteredTrends = useMemo<TrendEntry[]>(() => {
     if (!trends.length) return [];
     return trends.filter((t: any) => {
-      if (selectedModule && t?.module !== selectedModule) return false;     // varsa filtrele
-      if (selectedEventType && t?.eventType !== selectedEventType) return false; // varsa filtrele
+      if (selectedModule && t?.module && t?.module !== selectedModule) return false;
+      if (selectedEventType && t?.eventType && t?.eventType !== selectedEventType) return false;
       return true;
     });
   }, [trends, selectedModule, selectedEventType]);
@@ -161,10 +220,24 @@ export default function AnalyticsPanel() {
   const geoEvents = useMemo<MapChartEvent[]>(
     () =>
       filteredEvents.filter(
-        (e: any) => Array.isArray(e?.location?.coordinates) && e.location.coordinates.length === 2
+        (e: any) =>
+          Array.isArray(e?.location?.coordinates) &&
+          e.location.coordinates.length === 2 &&
+          e.location.coordinates.every((n: any) => typeof n === "number")
       ),
     [filteredEvents]
   );
+
+  // ---- Parent’a bildirim helpers (panel fetch yapmaz) ----
+  const notifyParent = (next?: Partial<FiltersChange>) => {
+    onFiltersChange?.({
+      startDate: startDate ? startDate.toISOString() : undefined,
+      endDate:   endDate   ? endDate.toISOString()   : undefined,
+      module: selectedModule || undefined,
+      eventType: selectedEventType || undefined,
+      ...(next || {}),
+    });
+  };
 
   // Export
   const handleExport = (fmt: "csv" | "json") => {
@@ -187,6 +260,7 @@ export default function AnalyticsPanel() {
     setEndDate(null);
     setSelectedModule("");
     setSelectedEventType("");
+    onResetFilters?.();
   };
 
   return (
@@ -211,13 +285,22 @@ export default function AnalyticsPanel() {
           <select
             id="moduleSelect"
             value={selectedModule}
-            onChange={(e) => setSelectedModule(e.target.value)}
-            disabled={!activeAnalyticsModules.length}
+            onChange={(e) => {
+              const next = e.target.value;
+              setSelectedModule(next);
+              notifyParent({ module: next || undefined });
+            }}
+            disabled={!activeAnalyticsModules.length && !availableModules.length}
           >
             <option value="">{t("allModules", "Tümü")}</option>
             {activeAnalyticsModules.map((m: any) => (
-              <option key={m.value} value={m.value}>{m.label}</option>
+              <option key={`meta-${m.value}`} value={m.value}>{m.label}</option>
             ))}
+            {availableModules
+              .filter((m) => !activeAnalyticsModules.some((x: any) => x.value === m))
+              .map((m) => (
+                <option key={`ev-${m}`} value={m}>{m}</option>
+              ))}
           </select>
         </Field>
 
@@ -226,7 +309,11 @@ export default function AnalyticsPanel() {
           <select
             id="eventTypeSelect"
             value={selectedEventType}
-            onChange={(e) => setSelectedEventType(e.target.value)}
+            onChange={(e) => {
+              const next = e.target.value;
+              setSelectedEventType(next);
+              notifyParent({ eventType: next || undefined });
+            }}
             disabled={!availableEventTypes.length}
           >
             <option value="">{t("allEvents", "Tümü")}</option>
@@ -242,6 +329,10 @@ export default function AnalyticsPanel() {
           onChange={({ startDate, endDate }) => {
             setStartDate(startDate);
             setEndDate(endDate);
+            notifyParent({
+              startDate: startDate ? startDate.toISOString() : undefined,
+              endDate:   endDate   ? endDate.toISOString()   : undefined,
+            });
           }}
         />
       </Filters>
@@ -253,6 +344,7 @@ export default function AnalyticsPanel() {
         onChange={({ module, eventType }) => {
           setSelectedModule(module);
           setSelectedEventType(eventType);
+          notifyParent({ module: module || undefined, eventType: eventType || undefined });
         }}
         availableModules={availableModules}
         availableEventTypes={availableEventTypes}
@@ -274,14 +366,14 @@ export default function AnalyticsPanel() {
           {tab === "trends" && (
             <Section>
               <SectionTitle>{t("analytics.dailyTrends", "Günlük Event Trendleri")}</SectionTitle>
-              {filteredTrends.length ? <AnalyticsLineChart data={filteredTrends} /> : <NoData>{t("noData", "Veri yok")}</NoData>}
+              {filteredTrends.length ? <LineChart data={filteredTrends} /> : <NoData>{t("noData", "Veri yok")}</NoData>}
             </Section>
           )}
 
           {tab === "distribution" && (
             <Section>
               <SectionTitle>{t("analytics.moduleDistribution", "Modül Bazlı Yoğunluk")}</SectionTitle>
-              {filteredEvents.length ? <AnalyticsBarChart data={filteredEvents} /> : <NoData>{t("noData", "Veri yok")}</NoData>}
+              {filteredEvents.length ? <BarChart data={filteredEvents} /> : <NoData>{t("noData", "Veri yok")}</NoData>}
             </Section>
           )}
 
@@ -301,7 +393,6 @@ export default function AnalyticsPanel() {
         </>
       )}
 
-      {/* Dashboard Logs her zaman altta */}
       <Divider />
       <Section>
         <SectionTitle>{t("analytics.activity", "Dashboard Aktiviteleri")}</SectionTitle>
@@ -310,6 +401,9 @@ export default function AnalyticsPanel() {
     </PanelWrap>
   );
 }
+
+/* utils */
+function metaModulesSanitize(arr: any[]) { return arr; }
 
 /* ---- Styled ---- */
 const PanelWrap = styled.div`
