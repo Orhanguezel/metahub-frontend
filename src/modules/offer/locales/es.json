@@ -23,5 +23,10 @@
   "form.message": "Producto/servicio solicitado y nota adicional...",
   "form.sending": "Enviando...",
   "form.send": "Enviar",
-  "buttonText": "Solicitar oferta"
+  "buttonText": "Solicitar oferta",
+  "productTypes": {
+    "ensotekprod": "Nueva torre de enfriamiento",
+    "sparepart": "Repuesto",
+    "bikes": "Bicicleta"
+  }
 }

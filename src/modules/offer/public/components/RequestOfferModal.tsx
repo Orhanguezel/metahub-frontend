@@ -4,54 +4,83 @@ import styled from "styled-components";
 import { motion } from "framer-motion";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../../offer/locales";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   sendRequestOffer,
   clearRequestOfferMessages,
 } from "@/modules/offer/slice/requestOfferSlice";
 import type { RequestOfferPayload } from "@/modules/offer/types";
-import { useRouter } from "next/navigation"; // <-- eklendi
+import { useRouter } from "next/navigation";
 
-interface Props {
-  open: boolean;
-  onClose: () => void;
-  defaultProductId?: string;
-  defaultProductType?: RequestOfferPayload["productType"];
-}
+type PT = RequestOfferPayload["productType"];
 
 export default function RequestOfferModal({
   onClose,
   defaultProductId,
   defaultProductType,
-}: Props) {
+  top = 120, // üst boşluk (px ya da "3rem")
+}: {
+  open?: boolean;
+  onClose: () => void;
+  defaultProductId?: string;
+  defaultProductType?: RequestOfferPayload["productType"];
+  top?: number | string;
+}) {
   const { t, i18n } = useI18nNamespace("offer", translations);
-  const lang = (i18n.language?.slice(0, 2) as any) || "en";
   const dispatch = useAppDispatch();
-  const router = useRouter(); // <-- eklendi
-  const { loading, error, successMessage, customerId, offerId } = useAppSelector((s) => s.requestOffer);
-
-  // Tüm ürün state'lerini alın
-  const { ensotekprod } = useAppSelector((s) => s.ensotekprod);
-  const { sparepart } = useAppSelector((s) => s.sparepart);
-  const { bikes } = useAppSelector((s) => s.bikes);
-
-  // Dinamik ürün tipleri ve seçenekler
-  const productTypes = useMemo(
-    () =>
-      [
-        ensotekprod?.length ? { value: "ensotekprod", label: "Ensotek Ürünü", options: ensotekprod } : null,
-        sparepart?.length ? { value: "sparepart", label: "Yedek Parça", options: sparepart } : null,
-        bikes?.length ? { value: "bikes", label: "Bisiklet", options: bikes } : null,
-      ].filter(Boolean) as {
-        value: RequestOfferPayload["productType"];
-        label: string;
-        options: any[];
-      }[],
-    [ensotekprod, sparepart, bikes]
+  const router = useRouter();
+  const { loading, error, successMessage, customerId, offerId } = useAppSelector(
+    (s) => s.requestOffer
   );
 
-  // Adres bilgisi gerekiyorsa state'e ekle
+  // ürün state'leri
+  const { ensotekprod: ensotekProducts } = useAppSelector((s) => s.ensotekprod);
+  const { sparepart: spareparts } = useAppSelector((s) => s.sparepart);
+  const { bikes: bikesList } = useAppSelector((s) => s.bikes);
+
+  // i18n dili
+  const lang = (i18n.language?.split("-")[0] || "en") as string;
+
+  // i18n label getter (callback)
+  const getTypeLabel = useCallback(
+    (value: Exclude<PT, undefined>) => t(`productTypes.${value}`),
+    [t]
+  );
+
+  // Dinamik ürün tipleri
+  const productTypes = useMemo(
+    () =>
+      ([
+        ensotekProducts?.length
+          ? {
+              value: "ensotekprod" as const,
+              label: getTypeLabel("ensotekprod"),
+              options: ensotekProducts,
+            }
+          : null,
+        spareparts?.length
+          ? {
+              value: "sparepart" as const,
+              label: getTypeLabel("sparepart"),
+              options: spareparts,
+            }
+          : null,
+        bikesList?.length
+          ? {
+              value: "bikes" as const,
+              label: getTypeLabel("bikes"),
+              options: bikesList,
+            }
+          : null,
+      ].filter(Boolean) as {
+        value: Exclude<PT, undefined>;
+        label: string;
+        options: any[];
+      }[]),
+    [ensotekProducts, spareparts, bikesList, getTypeLabel]
+  );
+
   const [form, setForm] = useState<RequestOfferPayload>({
     name: "",
     email: "",
@@ -62,28 +91,25 @@ export default function RequestOfferModal({
     productType: defaultProductType || (productTypes[0]?.value ?? undefined),
   });
 
-  // Ürün tipi değişirse ürün id sıfırlanır!
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     if (name === "productType") {
-      setForm((prev) => ({ ...prev, productType: value as any, productId: "" }));
+      setForm((prev) => ({ ...prev, productType: value as PT, productId: "" }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
 
-  // Seçili ürün tipi ve ürünler
   const currentType = productTypes.find((pt) => pt.value === form.productType);
   const currentOptions = currentType?.options || [];
 
-  // --- BAŞARIYLA YANIT ALINCA YÖNLENDİR ---
+  // başarıda yönlendir
   useEffect(() => {
     if (successMessage && customerId && offerId) {
-      // 1.7 saniye sonra yönlendir ve modalı kapat
       const timeout = setTimeout(() => {
-        onClose(); // modalı kapat
+        onClose();
         router.push(`/offer?customerId=${customerId}&offerId=${offerId}`);
         dispatch(clearRequestOfferMessages());
       }, 1700);
@@ -94,28 +120,39 @@ export default function RequestOfferModal({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     dispatch(sendRequestOffer(form));
-    // Unwrap artık gerek yok, yönlendirme useEffect ile
   }
+
+  // çok dilli alan seçici
+  const pickLocalized = (obj: any, lng: string) =>
+    obj?.[lng] ?? obj?.tr ?? obj?.en ?? (obj ? Object.values(obj)[0] : "");
+
+  const offsetTop = typeof top === "number" ? `${top}px` : top;
 
   return (
     <Overlay onClick={onClose}>
       <Modal
-        as={motion.div}
         initial={{ x: 360, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: 360, opacity: 0 }}
         transition={{ duration: 0.4 }}
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+        $offsetTop={offsetTop}        // <-- transient prop
+        role="dialog"
+        aria-modal="true"
+        aria-label={t("modalTitle")}
       >
-        <CloseButton onClick={onClose}>×</CloseButton>
-        <ModalTitle>{t("modalTitle", "Teklif İste Formu")}</ModalTitle>
+        <CloseButton onClick={onClose} aria-label={t("admin.close", "Close")}>
+          ×
+        </CloseButton>
+        <ModalTitle>{t("modalTitle")}</ModalTitle>
+
         {successMessage ? (
           <SuccessMsg>{successMessage}</SuccessMsg>
         ) : (
           <form onSubmit={handleSubmit} autoComplete="off">
             <Input
               name="name"
-              placeholder={t("form.name", "Ad Soyad")}
+              placeholder={t("form.name")}
               required
               value={form.name}
               onChange={handleChange}
@@ -124,7 +161,7 @@ export default function RequestOfferModal({
             <Input
               name="email"
               type="email"
-              placeholder={t("form.email", "E-posta")}
+              placeholder={t("form.email")}
               required
               value={form.email}
               onChange={handleChange}
@@ -132,7 +169,7 @@ export default function RequestOfferModal({
             />
             <Input
               name="company"
-              placeholder={t("form.company", "Firma Adı")}
+              placeholder={t("form.company")}
               required
               value={form.company}
               onChange={handleChange}
@@ -140,12 +177,13 @@ export default function RequestOfferModal({
             />
             <Input
               name="phone"
-              placeholder={t("form.phone", "Telefon")}
+              placeholder={t("form.phone")}
               required
               value={form.phone}
               onChange={handleChange}
               disabled={loading}
             />
+
             {productTypes.length > 0 && (
               <Select
                 name="productType"
@@ -154,7 +192,7 @@ export default function RequestOfferModal({
                 disabled={loading}
                 required
               >
-                <option value="">{t("form.productType", "Ürün tipi seçiniz")}</option>
+                <option value="">{t("form.productType")}</option>
                 {productTypes.map((pt) => (
                   <option key={pt.value} value={pt.value}>
                     {pt.label}
@@ -162,6 +200,7 @@ export default function RequestOfferModal({
                 ))}
               </Select>
             )}
+
             {currentOptions?.length > 0 && (
               <Select
                 name="productId"
@@ -170,22 +209,18 @@ export default function RequestOfferModal({
                 disabled={loading}
                 required
               >
-                <option value="">{t("form.productId", "Ürün seçiniz")}</option>
-                {currentOptions.map((item) => (
+                <option value="">{t("form.productId")}</option>
+                {currentOptions.map((item: any) => (
                   <option key={item._id} value={item._id}>
-                    {typeof item.name === "object"
-                      ? item.name[lang] ||
-                        item.name.tr ||
-                        item.name.en ||
-                        Object.values(item.name)[0]
-                      : item.name}
+                    {typeof item.name === "object" ? pickLocalized(item.name, lang) : item.name}
                   </option>
                 ))}
               </Select>
             )}
+
             <Textarea
               name="message"
-              placeholder={t("form.message", "İstediğiniz ürün/hizmet ve ek notunuz...")}
+              placeholder={t("form.message")}
               value={form.message}
               onChange={handleChange}
               disabled={loading}
@@ -203,7 +238,7 @@ export default function RequestOfferModal({
                 !form.phone
               }
             >
-              {loading ? t("form.sending", "Gönderiliyor...") : t("form.send", "Gönder")}
+              {loading ? t("form.sending") : t("form.send")}
             </SubmitBtn>
           </form>
         )}
@@ -211,33 +246,36 @@ export default function RequestOfferModal({
     </Overlay>
   );
 }
-// --- Styled Components (ensotekTheme ile tam uyumlu) ---
+
+/* ---------- styled ---------- */
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
   background: ${({ theme }) => theme.colors.overlayBackground};
   z-index: ${({ theme }) => theme.zIndex.overlay};
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-start;
 `;
 
-const Modal = styled.div`
+const Modal = styled(motion.div)<{ $offsetTop: string }>`
   width: 380px;
   background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: ${({ theme }) => theme.radii.xl} 0 0 ${({ theme }) => theme.radii.xl};
-  margin: 2.8rem 0 0 0;
-  padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.xl};
+  padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.xl}
+    ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.xl};
   box-shadow: ${({ theme }) => theme.shadows.form};
-  position: relative;
+  position: fixed;
+  right: 0;
+  top: ${({ $offsetTop }) => $offsetTop};   /* <-- transient prop DOM’a gitmez */
   display: flex;
   flex-direction: column;
   min-height: 350px;
   font-family: ${({ theme }) => theme.fonts.body};
+
   ${({ theme }) => theme.media.xsmall} {
     width: 100vw;
     border-radius: 0;
-    margin: 0;
+    right: 0;
+    left: 0;
+    top: 0;
     padding: ${({ theme }) => theme.spacings.lg};
   }
 `;
@@ -337,9 +375,7 @@ const SubmitBtn = styled.button`
   transition: background ${({ theme }) => theme.transition.fast};
   font-family: ${({ theme }) => theme.fonts.body};
   letter-spacing: 0.01em;
-  &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
-  }
+  &:hover:not(:disabled) { background: ${({ theme }) => theme.buttons.primary.backgroundHover}; }
   &:disabled {
     opacity: ${({ theme }) => theme.opacity.disabled};
     cursor: not-allowed;
@@ -386,4 +422,3 @@ const Select = styled.select`
     cursor: not-allowed;
   }
 `;
-

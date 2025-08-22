@@ -8,12 +8,12 @@ import {
   togglePublishComment,
   deleteComment,
   clearCommentMessages,
-  fetchAllCommentsAdmin,
+  setCommentsAdminQuery,   // ✅ sadece query güncelliyoruz (fetch parent’ta)
 } from "@/modules/comment/slice/commentSlice";
 import type { IComment, CommentContentType, CommentType } from "@/modules/comment/types";
-import { DetailsModal } from "@/modules/comment";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations3 from "@/modules/comment/locales";
+import {ReplyForm} from "@/modules/comment";
 
 /* --- helpers --- */
 const fmtDateTime = (v?: string) => {
@@ -64,23 +64,26 @@ export default function AdminCommentPage() {
   const [publishFilter, setPublishFilter] = useState<"all" | "published" | "unpublished">("all");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
+  // ❌ Modal yok → seçili yoruma inline form göstereceğiz
   const [selected, setSelected] = useState<IComment | null>(null);
 
-  // initial fetch
+  // ✅ İlk açılış + sayfa / tip değişimlerinde SADECE query güncelle (parent fetch ediyor)
   useEffect(() => {
-    dispatch(fetchAllCommentsAdmin({ page: currentPage, commentType: typeFilter !== "all" ? typeFilter : undefined }));
+    dispatch(
+      setCommentsAdminQuery({
+        page: currentPage,
+        commentType: typeFilter !== "all" ? typeFilter : undefined,
+      })
+    );
   }, [dispatch, currentPage, typeFilter]);
 
-  // toasts
+  // Toasts
   useEffect(() => {
     if (successMessage) toast.success(successMessage);
     if (error) toast.error(error);
     if (successMessage || error) dispatch(clearCommentMessages());
   }, [successMessage, error, dispatch]);
-
-  const onRefresh = useCallback(() => {
-    dispatch(fetchAllCommentsAdmin({ page: currentPage, commentType: typeFilter !== "all" ? typeFilter : undefined }));
-  }, [dispatch, currentPage, typeFilter]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -109,6 +112,17 @@ export default function AdminCommentPage() {
     [dispatch, t]
   );
 
+  const gotoPage = (page: number) => {
+    setCurrentPage(page);
+    dispatch(
+      setCommentsAdminQuery({
+        page,
+        commentType: typeFilter !== "all" ? typeFilter : undefined,
+      })
+    );
+    setSelected(null); // sayfa değişince formu kapat
+  };
+
   return (
     <PageWrap>
       {/* Header */}
@@ -119,21 +133,43 @@ export default function AdminCommentPage() {
         </TitleBlock>
         <Right>
           <Counter aria-label="comment-count">{commentsAdmin.length}</Counter>
-          <PrimaryBtn onClick={onRefresh} disabled={loading}>
-            {t("admin.refresh", "Yenile")}
-          </PrimaryBtn>
         </Right>
       </Header>
 
+      {/* Inline Reply Form (seçili yorum varsa) */}
+      {selected && (
+        <InlineFormCard>
+          <ReplyForm
+            comment={selected}
+            onClose={() => setSelected(null)}
+          />
+        </InlineFormCard>
+      )}
+
       {/* Toolbar (filters + search) */}
       <Toolbar>
-        <Select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as any)}>
+        <Select
+          value={typeFilter}
+          onChange={(e) => {
+            const val = e.target.value as "all" | CommentType;
+            setTypeFilter(val);
+            setCurrentPage(1);
+            dispatch(
+              setCommentsAdminQuery({
+                page: 1,
+                commentType: val !== "all" ? val : undefined,
+              })
+            );
+            setSelected(null);
+          }}
+        >
           {typeOptions.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
             </option>
           ))}
         </Select>
+
         <Select value={contentTypeFilter} onChange={(e) => setContentTypeFilter(e.target.value as any)}>
           {contentTypeOptions.map((o) => (
             <option key={o.value} value={o.value}>
@@ -141,6 +177,7 @@ export default function AdminCommentPage() {
             </option>
           ))}
         </Select>
+
         <Select value={publishFilter} onChange={(e) => setPublishFilter(e.target.value as any)}>
           <option value="all">{t("filter.allStatus", "Tüm Durumlar")}</option>
           <option value="published">{t("published", "Yayınlandı")}</option>
@@ -186,31 +223,31 @@ export default function AdminCommentPage() {
                   c.contentId && typeof c.contentId === "object" && typeof (c.contentId as any).title === "string"
                     ? (c.contentId as any).title
                     : "-";
+                const isSelected = selected?._id === c._id;
                 return (
-                  <tr key={c._id}>
+                  <tr key={c._id} style={isSelected ? { outline: "2px solid var(--primary)" } : undefined}>
                     <td>{c.type || "-"}</td>
                     <td>{c.contentType}</td>
                     <td>{user?.name || c.name || "-"}</td>
                     <td>{user?.email || c.email || "-"}</td>
                     <td>{contentTitle}</td>
                     <td>{c.label || "-"}</td>
-                    <td>
-                      <SubjectLink
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setSelected(c);
-                        }}
-                      >
-                        {c.text}
-                      </SubjectLink>
-                    </td>
+                    <td>{c.text}</td>
                     <td>{fmtDateTime(c.createdAt)}</td>
-                    <td>{c.isPublished ? <Badge $on>{t("published", "Yayınlandı")}</Badge> : <Badge>{t("unpublished", "Yayınlanmadı")}</Badge>}</td>
+                    <td>
+                      {c.isPublished ? (
+                        <Badge $on>{t("published", "Yayınlandı")}</Badge>
+                      ) : (
+                        <Badge>{t("unpublished", "Yayınlanmadı")}</Badge>
+                      )}
+                    </td>
                     <td className="actions">
                       <Row>
                         <Secondary onClick={() => handleToggle(c._id!)}>{t("toggle", "Aç/Kapat")}</Secondary>
                         <Danger onClick={() => handleDelete(c._id!)}>{t("delete", "Sil")}</Danger>
+                        <Primary onClick={() => setSelected(isSelected ? null : c)}>
+                          {isSelected ? t("admin.closeForm", "Formu Kapat") : t("admin.reply", "Yanıtla")}
+                        </Primary>
                       </Row>
                     </td>
                   </tr>
@@ -230,6 +267,7 @@ export default function AdminCommentPage() {
             c.contentId && typeof c.contentId === "object" && typeof (c.contentId as any).title === "string"
               ? (c.contentId as any).title
               : "-";
+          const isSelected = selected?._id === c._id;
           return (
             <Card key={c._id}>
               <CardHeader>
@@ -266,21 +304,27 @@ export default function AdminCommentPage() {
               <CardActions>
                 <Secondary onClick={() => handleToggle(c._id!)}>{t("toggle", "Aç/Kapat")}</Secondary>
                 <Danger onClick={() => handleDelete(c._id!)}>{t("delete", "Sil")}</Danger>
-                <Primary onClick={() => setSelected(c)}>{t("admin.view", "Görüntüle")}</Primary>
+                <Primary onClick={() => setSelected(isSelected ? null : c)}>
+                  {isSelected ? t("admin.closeForm", "Formu Kapat") : t("admin.reply", "Yanıtla")}
+                </Primary>
               </CardActions>
+
+              {/* Kartın altında inline form */}
+              {isSelected && (
+                <InlineFormCard style={{ marginTop: 12 }}>
+                  <ReplyForm comment={c} onClose={() => setSelected(null)} />
+                </InlineFormCard>
+              )}
             </Card>
           );
         })}
       </CardsWrap>
 
-      {/* Modal */}
-      {selected && <DetailsModal comment={selected} onClose={() => setSelected(null)} />}
-
       {/* Pagination */}
       {pagination?.pages > 1 && (
         <PaginationBar>
           {Array.from({ length: pagination.pages }, (_, i) => (
-            <button key={i} onClick={() => setCurrentPage(i + 1)} disabled={pagination.page === i + 1}>
+            <button key={i} onClick={() => gotoPage(i + 1)} disabled={pagination.page === i + 1}>
               {i + 1}
             </button>
           ))}
@@ -317,6 +361,15 @@ const Counter = styled.span`
   font-weight:${({ theme }) => theme.fontWeights.medium};
 `;
 
+const InlineFormCard = styled.div`
+  background:${({ theme }) => theme.colors.cardBackground};
+  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  border-radius:${({ theme }) => theme.radii.lg};
+  box-shadow:${({ theme }) => theme.cards.shadow};
+  padding:${({ theme }) => theme.spacings.md};
+  margin-bottom:${({ theme }) => theme.spacings.md};
+`;
+
 const Toolbar = styled.div`
   display:flex; gap:${({ theme }) => theme.spacings.sm}; justify-content:flex-end; flex-wrap:wrap;
   margin-bottom:${({ theme }) => theme.spacings.sm};
@@ -338,16 +391,6 @@ const Select = styled.select`
   border-radius:${({ theme }) => theme.radii.md};
   background:${({ theme }) => theme.inputs.background};
   color:${({ theme }) => theme.inputs.text};
-`;
-
-const PrimaryBtn = styled.button`
-  background:${({ theme }) => theme.buttons.primary.background};
-  color:${({ theme }) => theme.buttons.primary.text};
-  border:${({ theme }) => theme.borders.thin} transparent;
-  padding:8px 12px; border-radius:${({ theme }) => theme.radii.md}; cursor:pointer;
-  transition:opacity ${({ theme }) => theme.transition.normal};
-  &:hover{ opacity:${({ theme }) => theme.opacity.hover}; background:${({ theme }) => theme.buttons.primary.backgroundHover}; }
-  &:disabled{ opacity:${({ theme }) => theme.opacity.disabled}; cursor:not-allowed; }
 `;
 
 const TableWrap = styled.div`
@@ -373,11 +416,6 @@ const Table = styled.table`
   td.actions{ text-align:right; }
   tbody tr:hover td{ background:${({ theme }) => theme.colors.hoverBackground}; }
 `;
-const SubjectLink = styled.a`
-  color:${({ theme }) => theme.colors.link};
-  &:hover{ color:${({ theme }) => theme.colors.linkHover}; text-decoration:underline; }
-`;
-
 const CardsWrap = styled.div`
   display:none;
   ${({ theme }) => theme.media.mobile} {

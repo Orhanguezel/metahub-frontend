@@ -8,11 +8,11 @@ import type { ImageType } from "@/types/image";
 
 /** Bu komponentin beklediği mevcut görsel yapısı */
 export type UploadImage = {
+  _id?: string;
   url: string;
   thumbnail?: string;
   webp?: string;
   publicId?: string;
-  /** İstersen kullan: "about" vb. */
   type?: ImageType;
 };
 
@@ -175,7 +175,8 @@ export default function ImageUploader({
   };
 
   const removeExisting = (img: UploadImage) => {
-    const next = existing.filter((x) => x.url !== img.url);
+    // ✅ _id varsa onunla sil; yoksa url ile
+    const next = existing.filter((x) => (img._id ? x._id !== img._id : x.url !== img.url));
     onExistingChange(next);
     if (onRemovedExistingChange) {
       onRemovedExistingChange([...(removedExisting || []), img]);
@@ -224,7 +225,7 @@ export default function ImageUploader({
 
       <Grid>
         {existing.map((img) => (
-          <Item key={img.url}>
+          <Item key={img._id || img.url}>
             <Thumb $bg={img.thumbnail || img.webp || img.url} role="img" aria-label={short(img.url)} />
             <Row>
               <span className="mono small" title={img.url}>
@@ -337,7 +338,6 @@ const ErrorText = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.xsmall};
 `;
 
-
 const Actions = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -359,7 +359,6 @@ const BaseButton = styled.button`
 
 const Btn = styled(BaseButton)``;
 
-
 const HiddenInput = styled.input`
   display: none;
 `;
@@ -370,12 +369,11 @@ const SmallInfo = styled.div`
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
-
 /* === layout tweaks === */
 const Grid = styled.div`
   display: grid;
   gap: ${({ theme }) => theme.spacings.sm};
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* 160→180 */
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 `;
 
 const Item = styled.div`
@@ -403,7 +401,6 @@ const Row = styled.div`
   gap: 8px;
   padding: 8px;
 
-  /* dosya adı tek satır + ellipsis, butona yer kalsın */
   .mono.small {
     flex: 1 1 auto;
     overflow: hidden;
@@ -412,15 +409,12 @@ const Row = styled.div`
   }
 `;
 
-
-
 const Danger = styled(BaseButton)`
-  flex: 0 0 auto;           /* buton sıkışıp daralmasın */
-  padding: 6px 10px;        /* daha kompakt */
+  flex: 0 0 auto;
+  padding: 6px 10px;
   line-height: 1;
   background: ${({ theme }) => theme.colors.dangerBg};
   color: ${({ theme }) => theme.colors.danger};
   border-color: ${({ theme }) => theme.colors.danger};
   &:hover { filter: brightness(0.98); }
 `;
-

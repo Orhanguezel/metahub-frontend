@@ -3,20 +3,22 @@
 
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import styled from "styled-components";
+import { createSelector } from "@reduxjs/toolkit";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/chat";
 import type { RootState } from "@/store";
 import {
   selectChatState,
-  selectMessagesByRoom,
   fetchRoomMessages,
   markRoomMessagesRead,
 } from "@/modules/chat/slice/chatSlice";
-import {ChatBox} from "@/modules/chat";
+import { ChatBox } from "@/modules/chat";
 import type { SupportedLocale } from "@/types/common";
 import { SUPPORTED_LOCALES, getMultiLang } from "@/types/common";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
+/* ----------------- helpers ----------------- */
 
 const LS_ROOM = "chat_room";
 const makeUserRoomId = (uid: string) => `user:${uid}`;
@@ -35,6 +37,34 @@ const getUILang = (lng?: string): SupportedLocale => {
   return (SUPPORTED_LOCALES as readonly SupportedLocale[]).includes(two) ? two : "tr";
 };
 
+// Stabil boş dizi referansı
+const EMPTY_ARR: any[] = [];
+
+// Odaya göre mesajları referans-stabil döndüren selector factory
+const makeSelectMessagesForRoom = () =>
+  createSelector(
+    [
+      (s: RootState) => (s as any).chat,                   // chat slice
+      (_: RootState, rid: string) => rid || "__none__",    // roomId
+    ],
+    (chat, rid) => {
+      if (!chat) return EMPTY_ARR;
+
+      // 1) Normalized yapı
+      const byRoom = chat.byRoom || chat.roomsById || chat.roomMap;
+      if (byRoom && byRoom[rid]?.messages) return byRoom[rid].messages as any[];
+
+      // 2) Düz liste → filtre (memoize sayesinde referans korunur)
+      const all = Array.isArray(chat.messages) ? chat.messages : [];
+      if (!all.length) return EMPTY_ARR;
+
+      const filtered = all.filter((m: any) => m?.roomId === rid);
+      return filtered.length ? filtered : EMPTY_ARR;
+    }
+  );
+
+/* ----------------- component ----------------- */
+
 export default function ChatPage() {
   const router = useRouter();
   const pathname = usePathname();
@@ -48,7 +78,7 @@ export default function ChatPage() {
   const isAuthenticated = !!user?._id;
   const userId = user?._id;
 
-  // 🔧 Lokal slug (.env) — sadece localhost'ta anlamlıdır
+  // Lokal slug (.env) — sadece localhost
   const localSlug =
     typeof window !== "undefined" && window.location.hostname === "localhost"
       ? (process.env.NEXT_PUBLIC_TENANT_NAME ||
@@ -56,11 +86,10 @@ export default function ChatPage() {
          process.env.TENANT_NAME)
       : undefined;
 
-  // 🏷️ Tenant adı (lokalde .env slugu öncelikli)
+  // Tenant adı (lokalde .env slugu öncelikli)
   const tenantNameObj = useAppSelector((s: RootState) => {
     const st = s.tenants;
 
-    // a) Lokal slug varsa, listedeki o tenant'ı kullan
     if (localSlug) {
       const envMatch = st.tenants.find(
         (t) => t.slug === localSlug || t._id === localSlug
@@ -68,16 +97,13 @@ export default function ChatPage() {
       if (envMatch) return envMatch;
     }
 
-    // b) Seçilmiş tenant
     if (st.selectedTenant?.name) return st.selectedTenant.name;
 
-    // c) ID seçiliyse listeden bul
     if (st.selectedTenantId) {
       const byId = st.tenants.find((t) => t._id === st.selectedTenantId)?.name;
       if (byId) return byId;
     }
 
-    // d) Fallback: ilk tenant
     return st.tenants[0]?.name;
   });
 
@@ -85,7 +111,6 @@ export default function ChatPage() {
     getMultiLang(tenantNameObj as any, lang) ||
     (typeof tenantNameObj === "string" ? tenantNameObj : "Metahub");
 
-  // i18n stringinde {{brand}} → tenantName
   const brandTitle = t("support.brand", "{{brand}} Canlı Destek", { brand: tenantName });
 
   const dispatch = useAppDispatch();
@@ -100,8 +125,7 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    if (!canRedirect) return;
-    if (userLoading) return;
+    if (!canRedirect || userLoading) return;
     if (!isAuthenticated) {
       const qs = searchParams?.toString();
       const nextUrl = qs ? `${pathname}?${qs}` : pathname || "/";
@@ -116,9 +140,9 @@ export default function ChatPage() {
     try { localStorage.setItem(LS_ROOM, rid!); } catch {}
   }, [isAuthenticated, userId]);
 
-  const messages = useAppSelector(
-    useMemo(() => selectMessagesByRoom(roomId || "__none__"), [roomId])
-  );
+  // ⚡️ Memoize selector (oda id değişmedikçe aynı selector kullanılır)
+  const selectMessagesForRoom = useMemo(makeSelectMessagesForRoom, []);
+  const messages = useAppSelector((s) => selectMessagesForRoom(s, roomId || "__none__"));
 
   const handleResolved = useCallback(async (rid: string) => {
     setRoomId(rid);

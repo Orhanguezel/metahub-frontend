@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm"; // 👈 GFM için şart (tablo, checkbox, strikethrough vb.)
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
@@ -9,6 +10,7 @@ import translations from "@/modules/library/locales";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import Link from "next/link";
 import Image from "next/image";
+import rehypeRaw from "rehype-raw";
 import { Skeleton, ErrorMessage } from "@/shared";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -82,7 +84,7 @@ export default function LibraryDetailSection() {
     } else {
       dispatch(fetchLibraryBySlug(slug));
     }
-    setMainIndex(0); // Farklı içeriğe geçtiğinde ana görsel sıfırla
+    setMainIndex(0);
     return () => {
       dispatch(clearLibraryMessages());
     };
@@ -105,19 +107,18 @@ export default function LibraryDetailSection() {
   }
 
   function formatFileSize(bytes?: number) {
-  if (!bytes) return "";
-  if (bytes < 1024) return bytes + " B";
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-}
-
+    if (!bytes) return "";
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  }
 
   function formatText(txt: string | undefined) {
     if (!txt) return "";
-    return txt.replace(/\\n/g, '\n');
+    // DB'de çift kaçış geliyorsa düzelt
+    return txt.replace(/\\n/g, "\n");
   }
 
-  // Mevcut slug harici diğer içerikler
   const otherLibrary = Array.isArray(allLibrary)
     ? allLibrary.filter((item: ILibrary) => item.slug !== slug)
     : [];
@@ -150,7 +151,7 @@ export default function LibraryDetailSection() {
               aria-label={t("detail.openImage", "Büyüt")}
             />
           </MainImageFrame>
-          {/* Modal */}
+
           {openModal && (
             <Modal
               isOpen={openModal}
@@ -171,7 +172,7 @@ export default function LibraryDetailSection() {
                     boxShadow: "0 6px 42px #2225",
                     background: "#111",
                     width: "auto",
-                    height: "auto"
+                    height: "auto",
                   }}
                   sizes="(max-width: 800px) 90vw, 1280px"
                 />
@@ -181,7 +182,7 @@ export default function LibraryDetailSection() {
               </div>
             </Modal>
           )}
-          {/* Thumbnail Galeri */}
+
           {images.length > 1 && (
             <Gallery>
               {images.map((img, i) => (
@@ -209,56 +210,51 @@ export default function LibraryDetailSection() {
 
       {/* Özet */}
       {library.summary && (library.summary?.[lang] || library.summary?.en || library.summary?.tr) && (
-        <SummaryBox>
-          <ReactMarkdown>
-            {formatText(library.summary?.[lang] || library.summary?.en || library.summary?.tr)}
-          </ReactMarkdown>
-        </SummaryBox>
-      )}
-
-      {library.content && (library.content?.[lang] || library.content?.en || library.content?.tr) && (
-  <ContentBox>
-    <ReactMarkdown>
-      {formatText(library.content?.[lang] || library.content?.en || library.content?.tr)}
-    </ReactMarkdown>
-    {/* --- EK: Dökümanlar Alanı --- */}
-    {Array.isArray(library.files) && library.files.length > 0 && (
-      <FilesSection>
-        <FilesTitle>{t("detail.documents", "İlgili Dökümanlar")}</FilesTitle>
-        <FilesGrid>
-          {library.files.map((file) => (
-            <FileCard key={file.url}>
-              <FileIconWrap>
-                {file.type?.includes("pdf") ? (
-                  <PdfIcon>📄</PdfIcon>
-                ) : (
-                  <FileIcon>📎</FileIcon>
-                )}
-              </FileIconWrap>
-              <FileInfo>
-                <FileName title={file.name}>{file.name}</FileName>
-                <FileMeta>
-                  {file.type || "Dosya"}
-                  {file.size ? ` • ${formatFileSize(file.size)}` : ""}
-                </FileMeta>
-              </FileInfo>
-              <DownloadBtn
-  href={file.url}
-  download={file.name}
-  target="_blank"
-  rel="noopener noreferrer"
->
-  {t("detail.download", "İndir")}
-</DownloadBtn>
-
-            </FileCard>
-          ))}
-        </FilesGrid>
-      </FilesSection>
-    )}
-  </ContentBox>
+  <SummaryBox>
+    <Markdown className="md">
+      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+        {formatText(library.summary?.[lang] || library.summary?.en || library.summary?.tr)}
+      </ReactMarkdown>
+    </Markdown>
+  </SummaryBox>
 )}
 
+      {/* İçerik */}
+      {library.content && (library.content?.[lang] || library.content?.en || library.content?.tr) && (
+  <ContentBox>
+    <Markdown className="md">
+     <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+        {formatText(library.content?.[lang] || library.content?.en || library.content?.tr)}
+      </ReactMarkdown>
+    </Markdown>
+
+          {/* --- Dökümanlar --- */}
+          {Array.isArray(library.files) && library.files.length > 0 && (
+            <FilesSection>
+              <FilesTitle>{t("detail.documents", "İlgili Dökümanlar")}</FilesTitle>
+              <FilesGrid>
+                {library.files.map((file) => (
+                  <FileCard key={file.url}>
+                    <FileIconWrap>
+                      {file.type?.includes("pdf") ? <PdfIcon>📄</PdfIcon> : <FileIcon>📎</FileIcon>}
+                    </FileIconWrap>
+                    <FileInfo>
+                      <FileName title={file.name}>{file.name}</FileName>
+                      <FileMeta>
+                        {file.type || "Dosya"}
+                        {file.size ? ` • ${formatFileSize(file.size)}` : ""}
+                      </FileMeta>
+                    </FileInfo>
+                    <DownloadBtn href={file.url} download={file.name} target="_blank" rel="noopener noreferrer">
+                      {t("detail.download", "İndir")}
+                    </DownloadBtn>
+                  </FileCard>
+                ))}
+              </FilesGrid>
+            </FilesSection>
+          )}
+        </ContentBox>
+      )}
 
       {/* Diğer içerikler */}
       {otherLibrary.length > 0 && (
@@ -269,20 +265,13 @@ export default function LibraryDetailSection() {
               <OtherCard key={item._id} as={motion.div} whileHover={{ y: -6, scale: 1.025 }}>
                 <OtherImgWrap>
                   {Array.isArray(item.images) && item.images[0]?.url ? (
-                    <OtherImg
-                      src={item.images[0].url}
-                      alt={item.title?.[lang] || "Untitled"}
-                      width={60}
-                      height={40}
-                    />
+                    <OtherImg src={item.images[0].url} alt={item.title?.[lang] || "Untitled"} width={60} height={40} />
                   ) : (
                     <OtherImgPlaceholder />
                   )}
                 </OtherImgWrap>
                 <OtherTitleMini>
-                  <Link href={`/library/${item.slug}`}>
-                    {item.title?.[lang] || "Untitled"}
-                  </Link>
+                  <Link href={`/library/${item.slug}`}>{item.title?.[lang] || "Untitled"}</Link>
                 </OtherTitleMini>
               </OtherCard>
             ))}
@@ -293,7 +282,8 @@ export default function LibraryDetailSection() {
   );
 }
 
-// --- Styled Components (Thumbnail Gallery + Modal destekli) ---
+/* ---------- Styled ---------- */
+
 const Container = styled(motion.section)`
   max-width: 950px;
   margin: 0 auto;
@@ -349,7 +339,7 @@ const Gallery = styled.div`
 `;
 
 const ThumbFrame = styled.button<{ $active?: boolean }>`
-  border: 2px solid ${({ $active, theme }) => $active ? theme.colors.primary : theme.colors.borderLight};
+  border: 2px solid ${({ $active, theme }) => ($active ? theme.colors.primary : theme.colors.borderLight)};
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   padding: 0;
   outline: none;
@@ -361,11 +351,9 @@ const ThumbFrame = styled.button<{ $active?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: ${({ $active, theme }) => $active ? theme.shadows.md : theme.shadows.xs};
+  box-shadow: ${({ $active, theme }) => ($active ? theme.shadows.md : theme.shadows.xs)};
   border-radius: ${({ theme }) => theme.radii.lg};
-  transition:
-    border ${({ theme }) => theme.transition.fast},
-    box-shadow ${({ theme }) => theme.transition.fast};
+  transition: border ${({ theme }) => theme.transition.fast}, box-shadow ${({ theme }) => theme.transition.fast};
 
   &:hover,
   &:focus-visible {
@@ -415,6 +403,62 @@ const ContentBox = styled.div`
     margin-bottom: ${({ theme }) => theme.spacings.sm};
   }
 `;
+
+/* 👇 Markdown içi tablo/başlık/kod stilleri */
+const Markdown = styled.div`
+  width: 100%;
+  overflow-x: auto;
+
+  /* .md wrapper’ı üzerinden scope’lanmış stiller */
+  &.md {
+    h1, h2, h3, h4, h5, h6 {
+      margin: 1.2em 0 0.6em;
+      line-height: 1.25;
+      color: ${({ theme }) => theme.colors.title};
+    }
+    p { margin: 0.6em 0; }
+
+    /* tablolar */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.8rem 0 1rem;
+      overflow: hidden;
+      border: 1px solid ${({ theme }) => theme.colors.borderLight};
+      border-radius: ${({ theme }) => theme.radii.md};
+    }
+    thead th {
+      background: ${({ theme }) => theme.colors.backgroundSecondary};
+    }
+    th, td {
+      border: 1px solid ${({ theme }) => theme.colors.borderLight};
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+      font-size: ${({ theme }) => theme.fontSizes.sm};
+    }
+
+    /* code */
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      background: ${({ theme }) => theme.colors.backgroundSecondary};
+      border: 1px solid ${({ theme }) => theme.colors.borderLight};
+      padding: 0.1em 0.35em;
+      border-radius: 6px;
+      font-size: 0.92em;
+    }
+    pre > code {
+      display: block;
+      padding: 12px 14px;
+      overflow-x: auto;
+    }
+
+    /* listeler */
+    ul, ol { padding-left: 1.3rem; margin: 0.6rem 0; }
+    li { margin: 0.25rem 0; }
+  }
+`;
+
 
 const OtherSection = styled.div`
   margin-top: ${({ theme }) => theme.spacings.xxl};
@@ -492,9 +536,7 @@ const OtherTitleMini = styled.div`
   a {
     color: inherit;
     text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
+    &:hover { text-decoration: underline; }
   }
 `;
 

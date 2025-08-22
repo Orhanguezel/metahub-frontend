@@ -192,32 +192,49 @@ const Desc = styled.div`
 const Right = styled.div`
   flex: 2.8 1 500px;
   display: flex;
-  justify-content: center;
+  justify-content: center;   /* grid’i ortala */
   align-items: stretch;
+  width: 100%;
 `;
 
 const CardGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.4rem 1.7rem;
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
 
+  /* 3 sütun (desktop) */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.4rem 1.7rem;
+  justify-content: center;  /* kalan boşlukta ortala */
+  justify-items: stretch;   /* kartlar kolon genişliğini doldursun */
+  align-items: stretch;
+
   @media (max-width: 1100px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.1rem 1.1rem;
+    /* 2 sütun (tablet) */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.1rem;
     max-width: 650px;
   }
+
   @media (max-width: 700px) {
-    grid-template-columns: repeat(2, 1fr);   // Mobilde de 2 sütun!
-    gap: 0.8rem 0.8rem;
-    max-width: 99vw;
+    /* 2 sütun (mobil çoğu cihaz) */
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+    gap: 0.8rem;
+    max-width: 560px;
+    margin: 0 auto;
+
+    /* Son eleman tek kalırsa tüm satırı kapla */
+    & > *:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
   }
-  @media (max-width: 430px) {
-    grid-template-columns: 1fr;    // Çok dar ekranda tek sütun, taşmasın diye!
-    gap: 0.5rem 0.5rem;
-    padding: 0 0.1rem;
+
+  @media (max-width: 380px) {
+    /* Çok dar ekran: tek sütun, doğal olarak tam satır */
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+    max-width: 100%;
   }
 `;
 
@@ -238,11 +255,12 @@ const CardLink = styled(Link)`
   overflow: hidden;
   transition: box-shadow 0.18s, transform 0.18s;
   cursor: pointer;
+  width: 100%;  /* grid kolonu tam doldur */
 
   @media (max-width: 700px) {
-    min-height: 148px;  /* Mobilde çok daha kısa! */
+    min-height: 148px;
   }
-  @media (max-width: 430px) {
+  @media (max-width: 380px) {
     min-height: 122px;
   }
 
@@ -254,9 +272,9 @@ const CardLink = styled(Link)`
 `;
 
 
-
 const CardImgBox = styled.div`
   width: 100%;
+  /* sabit yükseklik yerine daha akışkan görünüm istersen aspect-ratio kullanabilirsin */
   height: 160px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   display: flex;
@@ -264,15 +282,9 @@ const CardImgBox = styled.div`
   justify-content: center;
   overflow: hidden;
 
-  @media (max-width: 1100px) {
-    height: 120px;
-  }
-  @media (max-width: 700px) {
-    height: 100px;
-  }
-  @media (max-width: 430px) {
-    height: 86px;
-  }
+  @media (max-width: 1100px) { height: 120px; }
+  @media (max-width: 700px) { height: 100px; }
+  @media (max-width: 380px) { height: 86px; }
 `;
 
 

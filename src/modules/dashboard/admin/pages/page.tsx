@@ -164,7 +164,7 @@ export default function AdminDashboardPage() {
   const tabs: { key: TabKey; label: string }[] = [
     { key: "modules",   label: t("tabs.modules",   "Modules") },
     { key: "stats",     label: t("tabs.stats",     "Statistics") },
-    { key: "charts",    label: t("tabs.revenue",   "Revenue & Series") },
+    { key: "charts",    label: t("tabs.charts",   "Charts") },
     { key: "analytics", label: t("tabs.analytics", "Analytics") },
   ];
 
@@ -202,7 +202,7 @@ export default function AdminDashboardPage() {
 
       {tab === "charts" && (
         <Section>
-          <SectionHead><h2>{t("tabs.revenue","Revenue & Series")}</h2></SectionHead>
+          <SectionHead><h2>{t("tabs.charts","Charts")}</h2></SectionHead>
           <Card><DashboardCharts data={chartsData} /></Card>
         </Section>
       )}

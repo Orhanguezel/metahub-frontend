@@ -116,7 +116,7 @@ export default function ArchivedSessions({ onOpenRoom }: Props) {
         {archived.map((a, idx) => (
           <Card key={`${a.room}-${idx}`} role="listitem">
             <CardTop>
-              <Room mono title={a.room}>{a.room}</Room>
+              <Room $mono title={a.room}>{a.room}</Room>
               <Actions>
                 <Primary onClick={() => open(a)} aria-label={T.open}>
                   {T.open}
@@ -248,8 +248,8 @@ const CardTop = styled.div`
   margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 
-const Room = styled.span<{ mono?: boolean }>`
-  font-family: ${({ mono, theme }) => (mono ? theme.fonts.mono : theme.fonts.main)};
+const Room = styled.span<{ $mono?: boolean }>`
+  font-family: ${({ $mono, theme }) => ($mono ? theme.fonts.mono : theme.fonts.main)};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.text};
   max-width: 60%;

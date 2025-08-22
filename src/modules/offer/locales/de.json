@@ -23,5 +23,10 @@
   "form.message": "Ihr gewünschtes Produkt/Dienstleistung und Notiz...",
   "form.sending": "Wird gesendet...",
   "form.send": "Senden",
-  "buttonText": "Angebot anfragen"
+  "buttonText": "Angebot anfragen",
+  "productTypes": {
+    "ensotekprod": "Neue Kühlanlage",
+    "sparepart": "Ersatzteil",
+    "bikes": "Fahrrad"
+  }
 }

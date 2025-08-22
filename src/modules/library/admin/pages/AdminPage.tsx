@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/library/locales";
@@ -11,12 +11,10 @@ import {
   deleteLibrary,
   togglePublishLibrary,
   clearLibraryMessages,
-  fetchAllLibraryAdmin,
 } from "@/modules/library/slice/librarySlice";
 import {
   createLibraryCategory,
   updateLibraryCategory,
-  fetchLibraryCategories,
   clearLibraryCategoryMessages,
 } from "@/modules/library/slice/libraryCategorySlice";
 import { FormModal, CategoryForm, CategoryListPage } from "@/modules/library";
@@ -67,12 +65,6 @@ export default function AdminLibraryPage() {
   const [editingCategory, setEditingCategory] = useState<LibraryCategory | null>(null);
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
 
-  // initial fetch
-  useEffect(() => {
-    dispatch(fetchAllLibraryAdmin());
-    dispatch(fetchLibraryCategories());
-  }, [dispatch]);
-
   // toasts
   useEffect(() => {
     if (successMessage) toast.success(successMessage);
@@ -86,9 +78,6 @@ export default function AdminLibraryPage() {
     if (catSuccess || catError) dispatch(clearLibraryCategoryMessages());
   }, [catSuccess, catError, dispatch]);
 
-  const onRefresh = useCallback(() => {
-    dispatch(fetchAllLibraryAdmin());
-  }, [dispatch]);
 
   const openCreate = () => {
     setEditingItem(null);
@@ -148,12 +137,12 @@ export default function AdminLibraryPage() {
           <Subtitle>{t("admin.subtitle", "İçerikleri listeleyin, düzenleyin ve yönetin")}</Subtitle>
         </TitleBlock>
         <Right>
-          <Counter aria-label="library-count">{library.length}</Counter>
+          <Counter aria-label="library-count">{library.length ?? 0}</Counter>
           <Secondary onClick={() => setCategoryModalOpen(true)}>
             {t("admin.categories", "Kategoriler")}
           </Secondary>
           <PrimaryBtn onClick={openCreate}>{t("admin.new", "Yeni İçerik")}</PrimaryBtn>
-          <PrimaryBtn onClick={onRefresh} disabled={loading}>
+          <PrimaryBtn disabled={loading}>
             {t("admin.refresh", "Yenile")}
           </PrimaryBtn>
         </Right>

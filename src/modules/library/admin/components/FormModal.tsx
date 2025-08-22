@@ -1,3 +1,4 @@
+// src/modules/library/admin/components/FormModal.tsx
 "use client";
 
 import styled from "styled-components";
@@ -12,7 +13,8 @@ import { toast } from "react-toastify";
 
 /* === helpers for TL + UI lang (same pattern) === */
 type TL = Partial<Record<SupportedLocale, string>>;
-type UploadImage = { url: string; thumbnail?: string; webp?: string; publicId?: string };
+type UploadImage = { _id?: string; url: string; thumbnail?: string; webp?: string; publicId?: string };
+
 const getUILang = (lng?: string): SupportedLocale => {
   const two = (lng || "").slice(0, 2).toLowerCase();
   return (SUPPORTED_LOCALES as ReadonlyArray<string>).includes(two)
@@ -23,6 +25,19 @@ const setTL = (obj: TL | undefined, l: SupportedLocale, val: string): TL => ({ .
 const getTLStrict = (obj?: TL, l?: SupportedLocale) => (l ? (obj?.[l] ?? "") : "");
 const toTL = (v: any, lang: SupportedLocale): TL =>
   v && typeof v === "object" && !Array.isArray(v) ? (v as TL) : v ? ({ [lang]: String(v) } as TL) : {};
+
+// URL normalizasyonu (http/https, query/hash ve trailing slash farklılıklarını tolere et)
+const normalizeUrl = (u?: string) => {
+  if (!u) return "";
+  try {
+    const url = new URL(u, typeof window !== "undefined" ? window.location.origin : "http://localhost");
+    url.hash = "";
+    url.search = "";
+    return url.toString().replace(/\/+$/, "");
+  } catch {
+    return (u || "").replace(/\/+$/, "");
+  }
+};
 
 interface Props {
   isOpen: boolean;
@@ -60,20 +75,27 @@ export default function FormModal({ isOpen, onClose, editingItem, onSubmit }: Pr
 
   // --- images (ImageUploader pattern) ---
   const originalExisting = useMemo(
-    () => (editingItem?.images || []).map((img) => ({ url: img.url, thumbnail: img.thumbnail, webp: img.webp, publicId: img.publicId })) as UploadImage[],
+    () =>
+      (editingItem?.images || []).map((img) => ({
+        _id: img._id,
+        url: img.url,
+        thumbnail: img.thumbnail,
+        webp: img.webp,
+        publicId: img.publicId,
+      })) as UploadImage[],
     [editingItem?.images]
   );
   const [existingUploads, setExistingUploads] = useState<UploadImage[]>(originalExisting);
   const [removedExisting, setRemovedExisting] = useState<UploadImage[]>([]);
   const [newFiles, setNewFiles] = useState<File[]>([]);
 
-  // map (url/publicId) -> _id for removeImageIds[]
+  // (url/publicId) ⇒ _id fallback haritası
   const idBySig = useMemo(() => {
     const m = new Map<string, string>();
     (editingItem?.images || []).forEach((img) => {
       if (!img._id) return;
       if (img.publicId) m.set(`pid:${img.publicId}`, img._id);
-      if (img.url) m.set(`url:${img.url}`, img._id);
+      if (img.url) m.set(`url:${normalizeUrl(img.url)}`, img._id);
     });
     return m;
   }, [editingItem?.images]);
@@ -136,7 +158,10 @@ export default function FormModal({ isOpen, onClose, editingItem, onSubmit }: Pr
   }, [successMessage, error, onClose]);
 
   // --- JSON editor combined value ---
-  const combinedJSONValue = useMemo(() => ({ title: titles, summary: summaries, content: contents }), [titles, summaries, contents]);
+  const combinedJSONValue = useMemo(
+    () => ({ title: titles, summary: summaries, content: contents }),
+    [titles, summaries, contents]
+  );
   const onCombinedJSONChange = (v: any) => {
     setTitles(toTL(v?.title, lang));
     setSummaries(toTL(v?.summary, lang));
@@ -165,44 +190,80 @@ export default function FormModal({ isOpen, onClose, editingItem, onSubmit }: Pr
     e.preventDefault();
     const fd = new FormData();
 
+    // --- i18n alanları (JSON) ---
     fd.append("title", JSON.stringify(titles || {}));
     fd.append("summary", JSON.stringify(summaries || {}));
     fd.append("content", JSON.stringify(contents || {}));
+
+    // --- basit alanlar ---
     fd.append("author", (author || "").trim());
     if (category) fd.append("category", category);
 
-    // tags as array
-    (tags || "")
+    // --- tags: hem simple ('tags[]'), hem JSON ('tags') ---
+    const tagsArr = (tags || "")
       .split(",")
       .map((s) => s.trim())
-      .filter(Boolean)
-      .forEach((tg) => fd.append("tags[]", tg));
+      .filter(Boolean);
+    tagsArr.forEach((tg) => fd.append("tags[]", tg));
+    fd.append("tags", JSON.stringify(tagsArr));
 
-    // images: new + removed + existing order
+    // ✅ Yeni görseller (multer array('images')) ile uyumlu
     newFiles.forEach((f) => fd.append("images", f));
 
-    // removeImageIds[] (if backend supports ordering by ids) + removedImages (pid/url signature)
+    // ✅ Silinecek görseller: öncelik _id; yoksa publicId/url fallback
     const removeIds: string[] = [];
+    const removeFallback: Array<{ publicId?: string; url?: string }> = [];
+
     removedExisting.forEach((img) => {
-      const id = (img.publicId && idBySig.get(`pid:${img.publicId}`)) || (img.url && idBySig.get(`url:${img.url}`));
-      if (id) removeIds.push(id);
+      if (img._id) {
+        removeIds.push(img._id);
+        return;
+      }
+      const byPid = img.publicId && idBySig.get(`pid:${img.publicId}`);
+      const byUrl = img.url && idBySig.get(`url:${normalizeUrl(img.url)}`);
+      if (byPid || byUrl) {
+        removeIds.push((byPid || byUrl) as string);
+      } else {
+        removeFallback.push({ publicId: img.publicId, url: img.url });
+      }
     });
-    removeIds.forEach((id) => fd.append("removeImageIds[]", id));
 
-    if (removedExisting.length) {
-      fd.append("removedImages", JSON.stringify(removedExisting.map((x) => ({ publicId: x.publicId, url: x.url }))));
+    // --- SİLME: hem simple (tekrar eden field), hem JSON ---
+    if (removeIds.length) {
+      removeIds.forEach((id) => fd.append("removeImageIds[]", id));        // simple
+      fd.append("removeImageIds", JSON.stringify(removeIds));              // json (mevcut backend alışkanlığı)
+      // Alternatif isim isteyen backend'ler için (opsiyonel ama faydalı)
+      fd.append("removedImageIds", JSON.stringify(removeIds));             // json (alternatif)
+    }
+    if (removeFallback.length) {
+      fd.append("removedImages", JSON.stringify(removeFallback));          // (objeler için JSON tek doğru yol)
     }
 
-    if (existingUploads.length) {
-      const orderSig = existingUploads.map((x) => x.publicId || x.url).filter(Boolean) as string[];
-      fd.append("existingImagesOrder", JSON.stringify(orderSig));
+    // ✅ Sıralama: id’ler varsa existingImagesOrderIds, yoksa existingImagesOrder (signature)
+    const orderIds = existingUploads.map((x) => x._id).filter(Boolean) as string[];
+    if (orderIds.length) {
+      // hem simple hem json
+      orderIds.forEach((id) => fd.append("existingImagesOrderIds[]", id)); // simple
+      fd.append("existingImagesOrderIds", JSON.stringify(orderIds));       // json
+    } else if (existingUploads.length) {
+      const orderSig = existingUploads
+        .map((x) => x.publicId || x.url)
+        .filter(Boolean) as string[];
+      if (orderSig.length) {
+        fd.append("existingImagesOrder", JSON.stringify(orderSig));        // signature listesi (JSON)
+      }
     }
 
-    // pdf
+    // ✅ PDF
     if (selectedPdf) fd.append("files", selectedPdf);
-    if (removedFiles.length) fd.append("removedFiles", JSON.stringify(removedFiles));
 
-    // create defaults to published true (kept from previous behavior)
+    // PDF silme bilgisi: hem simple (dizi), hem JSON
+    if (removedFiles.length) {
+      removedFiles.forEach((u) => fd.append("removedFiles[]", u));         // simple
+      fd.append("removedFiles", JSON.stringify(removedFiles));             // json
+    }
+
+    // create → default publish (eski davranış)
     if (!editingItem) fd.append("isPublished", "true");
 
     await onSubmit(fd, editingItem?._id);
@@ -265,18 +326,35 @@ export default function FormModal({ isOpen, onClose, editingItem, onSubmit }: Pr
         <>
           <Row>
             <Col style={{ gridColumn: "span 2" }}>
-              <Label>{t("admin.library.title", "Title")} ({lang.toUpperCase()})</Label>
-              <Input value={getTLStrict(titles, lang)} onChange={(e) => setTitles(setTL(titles, lang, e.target.value))} />
+              <Label>
+                {t("admin.library.title", "Title")} ({lang.toUpperCase()})
+              </Label>
+              <Input
+                value={getTLStrict(titles, lang)}
+                onChange={(e) => setTitles(setTL(titles, lang, e.target.value))}
+              />
             </Col>
             <Col style={{ gridColumn: "span 2" }}>
-              <Label>{t("admin.library.summary", "Summary")} ({lang.toUpperCase()})</Label>
-              <TextArea rows={2} value={getTLStrict(summaries, lang)} onChange={(e) => setSummaries(setTL(summaries, lang, e.target.value))} />
+              <Label>
+                {t("admin.library.summary", "Summary")} ({lang.toUpperCase()})
+              </Label>
+              <TextArea
+                rows={2}
+                value={getTLStrict(summaries, lang)}
+                onChange={(e) => setSummaries(setTL(summaries, lang, e.target.value))}
+              />
             </Col>
           </Row>
           <Row>
             <Col style={{ gridColumn: "span 4" }}>
-              <Label>{t("admin.library.content", "Content")} ({lang.toUpperCase()})</Label>
-              <TextArea rows={8} value={getTLStrict(contents, lang)} onChange={(e) => setContents(setTL(contents, lang, e.target.value))} />
+              <Label>
+                {t("admin.library.content", "Content")} ({lang.toUpperCase()})
+              </Label>
+              <TextArea
+                rows={8}
+                value={getTLStrict(contents, lang)}
+                onChange={(e) => setContents(setTL(contents, lang, e.target.value))}
+              />
             </Col>
           </Row>
         </>

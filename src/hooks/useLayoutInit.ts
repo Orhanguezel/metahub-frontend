@@ -3,49 +3,17 @@
 import { useRef,useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useActiveTenant } from "@/hooks/useActiveTenant";
-import {
-  fetchSettingsAdmin,
-  clearSettingsMessages,
-} from "@/modules/settings/slice/settingsSlice";
-import {
-  fetchCompanyAdmin,
-  clearCompanyMessages,
-} from "@/modules/company/slice/companySlice";
-import {
-  fetchModuleMetas,
-  clearModuleMetaMessages,
-} from "@/modules/adminmodules/slices/moduleMetaSlice";
-import {
-  fetchTenantModuleSettings,
-  clearModuleSettingMessages,
-} from "@/modules/adminmodules/slices/moduleSettingSlice";
-import {
-  fetchModuleTenantMatrix,
-  clearModuleMaintenanceMessages,
-} from "@/modules/adminmodules/slices/moduleMaintenanceSlice";
-import {
-  fetchAllAboutAdmin,
-  clearAboutMessages,
-} from "@/modules/about/slice/aboutSlice";
-import {
-  fetchAboutCategories,
-  clearAboutCategoryMessages,
-} from "@/modules/about/slice/aboutCategorySlice";
-import {
-  fetchAllActivityAdmin,
-  clearActivityMessages,
-} from "@/modules/activity/slice/activitySlice";
-import {
-  fetchActivityCategories,
-  clearActivityCategoryMessages,
-} from "@/modules/activity/slice/activityCategorySlice";
-import {
-  fetchAllArticlesAdmin,
-  clearArticlesMessages,
-} from "@/modules/articles/slice/articlesSlice";
-import {
-  fetchArticlesCategories,
-  clearArticlesCategoryMessages,
+import {fetchSettingsAdmin,clearSettingsMessages,} from "@/modules/settings/slice/settingsSlice";
+import {fetchCompanyAdmin,clearCompanyMessages,} from "@/modules/company/slice/companySlice";
+import {fetchModuleMetas,clearModuleMetaMessages,} from "@/modules/adminmodules/slices/moduleMetaSlice";
+import {fetchTenantModuleSettings,clearModuleSettingMessages,} from "@/modules/adminmodules/slices/moduleSettingSlice";
+import {fetchModuleTenantMatrix,clearModuleMaintenanceMessages,} from "@/modules/adminmodules/slices/moduleMaintenanceSlice";
+import {fetchAllAboutAdmin,clearAboutMessages,} from "@/modules/about/slice/aboutSlice";
+import {fetchAboutCategories,clearAboutCategoryMessages,} from "@/modules/about/slice/aboutCategorySlice";
+import {fetchAllActivityAdmin,clearActivityMessages,} from "@/modules/activity/slice/activitySlice";
+import {fetchActivityCategories,clearActivityCategoryMessages,} from "@/modules/activity/slice/activityCategorySlice";
+import {fetchAllArticlesAdmin,clearArticlesMessages} from "@/modules/articles/slice/articlesSlice";
+import {fetchArticlesCategories,clearArticlesCategoryMessages,
 } from "@/modules/articles/slice/articlesCategorySlice";
 import {
   fetchAllBlogAdmin,
@@ -149,7 +117,6 @@ import {
   fetchSectionSettingsAdmin,
   clearSectionSettingMessages,
 } from "@/modules/section/slices/sectionSettingSlice";
-// Dosyanın en üstüne ekle:
 import {
   fetchAllOrdersAdmin,
   clearOrderMessages,
@@ -214,8 +181,8 @@ import {
 clearNeighborhoodMessages
 } from "@/modules/neighborhood/slice/neighborhoodSlice";
 
-import { fetchAllEmployeesAdmin, clearEmployeeMessages} from "@/modules/employees/slice/employeesSlice";
-import { fetchCatalogs, clearSvcMsgs} from "@/modules/servicecatalog/slice/serviceCatalogSlice";
+import {fetchAllEmployeesAdmin, clearEmployeeMessages} from "@/modules/employees/slice/employeesSlice";
+import {fetchCatalogs, clearSvcMsgs} from "@/modules/servicecatalog/slice/serviceCatalogSlice";
 import {fetchUsers,clearUserCrudMessages} from "@/modules/users/slice/userCrudSlice";
 import {fetchAccounts,fetchEntries, clearCashbookMessages,clearEntrySelection} from "@/modules/cashbook/slice/cashbookSlice";
 import {fetchPlans,clearSchedulingMsgs } from "@/modules/scheduling/slice/schedulingSlice";
@@ -223,10 +190,11 @@ import {fetchAllOpsTemplatesAdmin,clearOpsTemplateMsgs} from "@/modules/opstempl
 import {fetchPriceListsAdmin,clearPriceListMsgs} from "@/modules/pricelist/slice/pricelistSlice";
 import {fetchBillingPlans,fetchOccurrences,clearBillingMessages} from "@/modules/billing/slice/billingSlice";
 import {fetchAllContractsAdmin,clearContractMessages} from "@/modules/contracts/slice/contractsSlice";
-import { fetchAllOpsJobsAdmin, clearOpsJobsMessages } from "@/modules/operationsjobs/slice/opsjobsSlice";
+import {fetchAllOpsJobsAdmin, clearOpsJobsMessages } from "@/modules/operationsjobs/slice/opsjobsSlice";
 import {fetchDashboardOverview} from "@/modules/dashboard/slice/dailyOverviewSlice";
 import {fetchDashboardCharts} from "@/modules/dashboard/slice/chartDataSlice";
 import {fetchDashboardLogs} from "@/modules/dashboard/slice/logsSlice";
+import {fetchAllCommentsAdmin,clearCommentMessages} from "@/modules/comment/slice/commentSlice";
 
 // -- Cleanup aksiyonları merkezi:
 const cleanupActions = [
@@ -289,6 +257,7 @@ const cleanupActions = [
   clearBillingMessages, // Billing cleanup
   clearContractMessages, // Contract cleanup
   clearOpsJobsMessages, // Operations jobs cleanup
+  clearCommentMessages, // Comment cleanup
 ];
 
 // --- useLayoutInit ---
@@ -374,6 +343,7 @@ const opsJobs = useAppSelector((state) => state.opsjobs);
 const overview = useAppSelector((state) => state.dashboardOverview);
 const chartsData = useAppSelector((state) => state.dashboardCharts);
 const logsItems = useAppSelector((state) => state.dashboardLogs);
+const commentsAdmin = useAppSelector((state) => state.comments);
 
 
 
@@ -552,6 +522,8 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
       dispatch(fetchDashboardCharts());
     if (!logsItems.items.length && !logsItems.loading)
       dispatch(fetchDashboardLogs());
+    if (!commentsAdmin.commentsAdmin.length && !commentsAdmin.loading)
+      dispatch(fetchAllCommentsAdmin());
 
     // Cleanup actions
     cleanupActions.forEach((action) => dispatch(action()));
@@ -634,5 +606,6 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
   overview,
   chartsData,
   logsItems,
+  commentsAdmin,
   };
 };

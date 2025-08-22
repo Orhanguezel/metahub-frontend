@@ -1,4 +1,5 @@
 "use client";
+
 import React from "react";
 import styled from "styled-components";
 
@@ -34,7 +35,7 @@ const Card = styled.div<{ $highlight: boolean }>`
   text-align: center;
   box-shadow: 0 3px 16px rgba(0, 0, 0, 0.07);
   border: ${({ $highlight, theme }) =>
-    $highlight ? `2px solid ${theme.colors.primary}` : "1px solid ${theme.colors.borderLight}"};
+    $highlight ? `2px solid ${theme.colors.primary}` : `1px solid ${theme.colors.borderLight}`};
   transition: background 0.22s, border 0.22s, box-shadow 0.22s;
   outline: none;
 
@@ -64,6 +65,6 @@ const Value = styled.div<{ $highlight: boolean }>`
   font-weight: 700;
   color: ${({ theme, $highlight }) =>
     $highlight ? theme.colors.primary : theme.colors.textPrimary};
-  letter-spacing: 0.5px; /* <- düzeltildi */
+  letter-spacing: 0.5px;
   transition: color 0.15s;
 `;

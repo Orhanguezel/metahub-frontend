@@ -4,7 +4,7 @@ import React, { useMemo, ChangeEvent } from "react";
 import styled from "styled-components";
 import Image from "next/image";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import translations from "@/modules/settings/locales";
 import { useAppDispatch } from "@/store/hooks";
 import { deleteSettings, upsertSettings } from "@/modules/settings/slice/settingsSlice";
 import { toast } from "react-toastify";
@@ -52,12 +52,21 @@ const AdminSettingsList: React.FC<AdminSettingsListProps> = ({ settings, onEdit 
 
   const isImageKey = (k: string) => LOGO_KEYS.includes(k);
 
+  // ✅ Mobilde taşma yok: grid + akışkan küçük görseller
   const renderImages = (images: any[] = []) => (
     <LogoGroup>
       {images.map((img, idx) =>
         img?.url ? (
           <LogoPreview key={img.url + idx}>
-            <Image src={img.url} alt={img.publicId || `image-${idx}`} width={80} height={40} style={{ height: "auto" }} />
+            <Thumb>
+              <Image
+                src={img.url}
+                alt={img.publicId || `image-${idx}`}
+                fill
+                sizes="(max-width: 768px) 22vw, 80px"
+                style={{ objectFit: "contain" }}
+              />
+            </Thumb>
             {img.publicId && <span>{img.publicId}</span>}
           </LogoPreview>
         ) : null
@@ -104,7 +113,6 @@ const AdminSettingsList: React.FC<AdminSettingsListProps> = ({ settings, onEdit 
       typeof val === "object" &&
       Object.values(val).some((v: any) => v && typeof v === "object" && "label" in v && "url" in v)
     ) {
-      // Record<string, {label: Translated; url: string}>
       return (
         <NestedList>
           {Object.entries(val).map(([k, v]: any) =>
@@ -187,11 +195,13 @@ const AdminSettingsList: React.FC<AdminSettingsListProps> = ({ settings, onEdit 
 
 export default AdminSettingsList;
 
-/* =============== styles — services list patern =============== */
+/* =============== styles (classicTheme ile uyumlu) =============== */
 
 const TableWrap = styled.div`
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.cards.shadow};
   background: ${({ theme }) => theme.colors.cardBackground};
@@ -216,11 +226,18 @@ const Table = styled.table`
     border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
     font-size: ${({ theme }) => theme.fontSizes.sm};
     vertical-align: top;
+    /* uzun içerikler mobilde satır içine sığsın */
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   td.actions { text-align: right; }
   td.mono { font-family: ${({ theme }) => theme.fonts.mono}; }
   tbody tr:hover td { background: ${({ theme }) => theme.colors.hoverBackground}; }
+
+  ${({ theme }) => theme.media.mobile} {
+    thead th, td { padding: ${({ theme }) => theme.spacings.sm}; }
+  }
 `;
 
 const Row = styled.div`
@@ -237,6 +254,9 @@ const Secondary = styled.button`
   background: ${({ theme }) => theme.buttons.secondary.background};
   color: ${({ theme }) => theme.buttons.secondary.text};
   border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  box-shadow: ${({ theme }) => theme.shadows.button};
+  transition: ${({ theme }) => theme.transition.fast};
+  &:hover { background: ${({ theme }) => theme.buttons.secondary.backgroundHover}; }
 `;
 
 const Danger = styled(Secondary)`
@@ -276,24 +296,48 @@ const LangWrap = styled.div`
   flex-wrap: wrap;
 `;
 
+/* ---- LOGO/GÖRSEL KÜMESİ ----
+   Grid → otomatik sarma, mobilde 2–4 sütun arası; masaüstünde daha fazla */
 const LogoGroup = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(56px, 22vw, 80px), 1fr));
   gap: ${({ theme }) => theme.spacings.sm};
-  flex-wrap: wrap;
-  align-items: center;
+  align-items: start;
+  width: 100%;
+  max-width: 100%;
+
+  ${({ theme }) => theme.media.mobile} {
+    gap: ${({ theme }) => theme.spacings.xs};
+  }
 `;
 
 const LogoPreview = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-width: 0; /* grid item içinde taşmayı önler */
+  max-width: 100%;
 
   span {
     font-size: ${({ theme }) => theme.fontSizes.xs};
     margin-top: ${({ theme }) => theme.spacings.xs};
     color: ${({ theme }) => theme.colors.textMuted};
     opacity: 0.8;
+    text-align: center;
+    word-break: break-word;
   }
+`;
+
+/* Görseli saran oranlı çerçeve (2:1) — akışkan genişlik */
+const Thumb = styled.div`
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.borderBright};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  overflow: hidden;
+  box-shadow: ${({ theme }) => theme.shadows.xs};
 `;
 
 const Empty = styled.p`

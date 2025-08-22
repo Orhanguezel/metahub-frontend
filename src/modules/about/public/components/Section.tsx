@@ -1,3 +1,4 @@
+"use client";
 import styled from "styled-components";
 import Link from "next/link";
 import translations from "@/modules/about/locales";
@@ -63,8 +64,7 @@ export default function AboutSection() {
 
   const validAbout = about.filter((item) => !!item && typeof item === "object");
   const main = validAbout[0] || {};
-const featuresData = [validAbout[1] || {}, validAbout[2] || {}];
-
+  const featuresData = [validAbout[1] || {}, validAbout[2] || {}];
 
   const icons = [
     <FaChartLine size={32} color="#2875c2" key="vizyon" />,
@@ -125,33 +125,37 @@ const featuresData = [validAbout[1] || {}, validAbout[2] || {}];
             {t("page.about.all", "Daha Fazla Bilgi")}
           </SeeAllBtn>
         </Left>
+
         {/* SAĞ BLOK */}
         <Right>
           {main?.slug && main?.images?.[0]?.url && (
             <MainImageWrap as={Link} href={`/about/${main.slug}`}>
+              {/* width/height kaldırıldı, fill + aspect-ratio kullanılıyor */}
               <MainImage
                 src={main.images[0].url}
                 alt={main.title?.[lang] || "About"}
-                width={340}
-                height={191} // 16:9 oranı
+                fill
                 sizes="(max-width: 600px) 100vw, 340px"
                 priority
               />
             </MainImageWrap>
           )}
+
           <StackedImages>
             {rightImages.map(
               (item) =>
                 item?.images?.[0]?.url &&
                 item?.slug && (
                   <StackedImageLink key={item.slug} href={`/about/${item.slug}`}>
-                    <StackedImage
-                      src={item.images[0].url}
-                      alt={item.title?.[lang] || "About"}
-                      width={135}
-                      height={90}
-                      sizes="(max-width: 600px) 50vw, 135px"
-                    />
+                    <StackedImageFrame>
+                      {/* width/height kaldırıldı, fill + aspect-ratio kullanılıyor */}
+                      <StackedImage
+                        src={item.images[0].url}
+                        alt={item.title?.[lang] || "About"}
+                        fill
+                        sizes="(max-width: 600px) 50vw, 135px"
+                      />
+                    </StackedImageFrame>
                   </StackedImageLink>
                 )
             )}
@@ -162,7 +166,7 @@ const featuresData = [validAbout[1] || {}, validAbout[2] || {}];
   );
 }
 
-// --- Styled Components (güncel, overflow & stacking fixli) ---
+/* ===================== Styles ===================== */
 
 const Section = styled(motion.section)`
   background: ${({ theme }) => theme.colors.sectionBackground};
@@ -185,7 +189,7 @@ const AboutGrid = styled.div`
     gap: 2rem;
   }
   ${({ theme }) => theme.media.small} {
-    flex-direction: column;  // <-- kritik!
+    flex-direction: column;
     gap: 2rem;
     padding: 0 ${({ theme }) => theme.spacings.sm};
     text-align: center;
@@ -203,9 +207,9 @@ const Left = styled.div`
   justify-content: flex-start;
 
   ${({ theme }) => theme.media.small} {
-    min-width: 0 !important;      // <-- kritik!
-    max-width: 100% !important;   // <-- kritik!
-    width: 100% !important;       // <-- kritik!
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
     align-items: center;
     text-align: center;
     gap: 2rem;
@@ -221,9 +225,9 @@ const Right = styled.div`
   gap: 1.7rem;
 
   ${({ theme }) => theme.media.small} {
-    min-width: 0 !important;      // <-- kritik!
-    max-width: 100% !important;   // <-- kritik!
-    width: 100% !important;       // <-- kritik!
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
     margin: 0 auto;
     flex-direction: column;
     align-items: center;
@@ -231,14 +235,15 @@ const Right = styled.div`
   }
 `;
 
+/* --- Ana görsel: fill + aspect-ratio --- */
 const MainImageWrap = styled(Link)`
   width: 340px;
-  aspect-ratio: 16/9;
+  aspect-ratio: 16 / 9;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   overflow: hidden;
   box-shadow: 0 8px 30px 0 rgba(40,117,194,0.16), ${({ theme }) => theme.shadows.lg};
   margin-bottom: 0.8rem;
-  position: relative;
+  position: relative; /* fill için gerekli */
   isolation: isolate;
   cursor: pointer;
   display: block;
@@ -256,28 +261,28 @@ const MainImageWrap = styled(Link)`
     box-shadow: 0 12px 38px 0 rgba(40,117,194,0.25), ${({ theme }) => theme.shadows.xl};
     transform: scale(1.025);
   }
+
   ${({ theme }) => theme.media.small} {
     width: 100%;
     max-width: 340px;
     min-width: 170px;
-    height: 175px;
+    /* sabit height kaldırıldı; aspect-ratio korunsun */
     margin: 0 auto 0.5rem auto;
   }
 `;
 
 const MainImage = styled(Image)`
-  width: 100%;
-  height: 100%;
   object-fit: cover;
   display: block;
-  position: relative;
   z-index: 2;
 `;
 
+/* --- Küçük yığılmış görseller: frame + fill --- */
 const StackedImages = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.15rem;
+
   ${({ theme }) => theme.media.small} {
     width: 100%;
     max-width: 340px;
@@ -289,28 +294,38 @@ const StackedImages = styled.div`
 
 const StackedImageLink = styled(Link)`
   display: block;
-  overflow: hidden;
   cursor: pointer;
+`;
 
-  &:hover img,
-  &:focus-visible img {
+/* Görsel için oranlı çerçeve (3:2) */
+const StackedImageFrame = styled.div`
+  width: 135px;
+  aspect-ratio: 3 / 2;
+  position: relative; /* fill için zorunlu */
+  overflow: hidden;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  box-shadow: 0 2px 14px 0 rgba(40,117,194,0.07);
+  transition: box-shadow 0.17s, transform 0.15s;
+
+  &:hover, &:focus-visible {
     box-shadow: 0 7px 32px 0 rgba(40,117,194,0.14);
-    transform: scale(1.055);
+    transform: translateY(-2px);
     outline: none;
+  }
+
+  ${({ theme }) => theme.media.small} {
+    width: 50%;
+    max-width: 170px;
   }
 `;
 
 const StackedImage = styled(Image)`
-  width: 100%;
-  height: 100%;
   object-fit: cover;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  box-shadow: 0 2px 14px 0 rgba(40,117,194,0.07);
-  transition: box-shadow 0.17s, transform 0.15s;
-  cursor: pointer;
-  ${({ theme }) => theme.media.small} {
-    width: 50%;
-    max-height: 120px;
+  transition: transform 0.15s;
+  /* hover efekti için frame’den hedefle */
+  ${StackedImageFrame}:hover &,
+  ${StackedImageFrame}:focus-visible & {
+    transform: scale(1.055);
   }
 `;
 

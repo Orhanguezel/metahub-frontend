@@ -5,7 +5,7 @@ import { useState } from "react";
 import { HiOutlineMailOpen } from "react-icons/hi";
 import NewsletterModal from "./NewsletterModal";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import translations from "@/modules/newsletter/locales";
 
 export default function NewsletterButton() {
   const [open, setOpen] = useState(false);
@@ -13,86 +13,129 @@ export default function NewsletterButton() {
 
   return (
     <>
-      <FloatingButton
-        aria-label={t("buttonText", "E-Bülten")}
+      <Fab
+        type="button"
+        aria-label={t("buttonText")}
+        title={t("buttonText")}
         onClick={() => setOpen(true)}
       >
-        <HiOutlineMailOpen size={28} />
-        <span>{t("buttonText", "E-Bülten")}</span>
-      </FloatingButton>
+        <IconWrap>
+          <HiOutlineMailOpen />
+        </IconWrap>
+        <Label>{t("buttonText")}</Label>
+      </Fab>
+
       {open && <NewsletterModal open={open} onClose={() => setOpen(false)} />}
     </>
   );
 }
 
-const FloatingButton = styled.button`
+const Fab = styled.button`
   position: fixed;
-  top: 600px;
-  right: 0;
-  z-index: ${({ theme }) => theme.zIndex.modal + 1};
-  background: ${({ theme }) => theme.colors.accent};
-  color: ${({ theme }) => theme.colors.accentText};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.lg} 0 0 ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.lg};
-  display: flex;
+  top: 360px;
+  right: 16px;
+  z-index: ${({ theme }) => theme.zIndex.overlay};
+  display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacings.sm};
+  height: 48px;
+  width: 48px; /* başlangıç: ikon-only */
+  padding: 0 14px;
+  border: none;
   cursor: pointer;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: rotate(180deg);
-  padding: 1.1em 0.32em 1.1em 0.47em;
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  font-family: ${({ theme }) => theme.fonts.body};
+  overflow: hidden;
+  line-height: 0; /* ikon hizasını sabitle */
+
+  background: ${({ theme }) => theme.colors.accent};
+  color: ${({ theme }) => theme.colors.accentText};
+  border-radius: ${({ theme }) => theme.radii.pill};
+  box-shadow: ${({ theme }) => theme.shadows.lg};
+
   transition:
+    width ${({ theme }) => theme.transition.normal},
     background ${({ theme }) => theme.transition.fast},
-    color ${({ theme }) => theme.transition.fast},
-    box-shadow ${({ theme }) => theme.transition.fast};
+    box-shadow ${({ theme }) => theme.transition.fast},
+    transform ${({ theme }) => theme.transition.fast};
 
-  span {
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    font-size: ${({ theme }) => theme.fontSizes.base};
-    letter-spacing: 0.01em;
-    display: inline;
-    font-family: ${({ theme }) => theme.fonts.body};
-    transition: opacity ${({ theme }) => theme.transition.fast};
-  }
-
-  &:hover, &:focus-visible {
+  &:hover,
+  &:focus-visible {
+    width: 210px; /* hover’da yatay açılır */
     background: ${({ theme }) => theme.colors.accentHover};
-    color: ${({ theme }) => theme.colors.accentText};
     box-shadow: ${({ theme }) => theme.shadows.xl};
     outline: none;
   }
 
   &:active {
-    background: ${({ theme }) => theme.colors.accent};
-    opacity: ${({ theme }) => theme.opacity.hover};
+    transform: translateY(1px);
   }
 
-  // Mobilde sadece ikon (aynen eskisi gibi)
-  @media (max-width: 600px) {
+  /* mobil: daima ikon-only ve tam merkez */
+  ${({ theme }) => theme.media.mobile} {
+    right: 8px;
     top: 198px;
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    min-height: 36px;
-    border-radius: 14px 0 0 14px;
-    box-shadow: 0 3px 16px 0 rgba(20,80,180,0.08);
-    justify-content: center;
-    align-items: center;
+    height: 44px;
+    width: 44px;
     padding: 0;
+    border-radius: ${({ theme }) => theme.radii.circle};
 
-    span {
-      display: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center; /* << yatay- dikey merkez */
+    gap: 0;
+
+    &:hover,
+    &:focus-visible {
+      width: 44px; /* genişleme yok */
     }
+  }
+`;
+
+const IconWrap = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+
+  svg {
+    width: 24px;
+    height: 24px;
+    display: block; /* baseline ofsetini engelle */
+  }
+
+  ${({ theme }) => theme.media.mobile} {
+    width: 24px;
+    height: 24px;
     svg {
-      width: 21px;
-      height: 21px;
-      margin: 0;
+      width: 22px;
+      height: 22px;
     }
+  }
+`;
+
+const Label = styled.span`
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(8px);
+  pointer-events: none;
+
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  letter-spacing: 0.01em;
+  font-family: ${({ theme }) => theme.fonts.body};
+
+  transition:
+    opacity ${({ theme }) => theme.transition.normal},
+    transform ${({ theme }) => theme.transition.normal};
+
+  ${Fab}:hover &,
+  ${Fab}:focus-visible & {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  ${({ theme }) => theme.media.mobile} {
+    display: none;
   }
 `;

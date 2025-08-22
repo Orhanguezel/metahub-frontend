@@ -1,7 +1,9 @@
+// AdminChatPage.tsx
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
+import { createSelector } from "@reduxjs/toolkit";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/chat";
@@ -11,7 +13,6 @@ import {
   setCurrentRoom,
   messageReceived,
   selectCurrentRoomId,
-  selectMessagesByRoom,
   selectChatState,
   adminSendManualMessage,
   adminMarkMessagesRead,
@@ -32,6 +33,31 @@ import { getSocket } from "@/lib/socket";
 
 const isDev = process.env.NODE_ENV === "development";
 
+/* ------------ Memoize mesaj selector'u (oda bazlı) ------------ */
+const EMPTY_ARR: any[] = [];
+
+const makeSelectMessagesForRoom = () =>
+  createSelector(
+    [
+      (s: any) => s.chat,                         // chat slice
+      (_: any, rid: string) => rid || "__none__", // roomId
+    ],
+    (chat, rid) => {
+      if (!chat) return EMPTY_ARR;
+
+      // Normalized yapı
+      const byRoom = chat.byRoom || chat.roomsById || chat.roomMap;
+      if (byRoom && byRoom[rid]?.messages) return byRoom[rid].messages as any[];
+
+      // Düz liste ise filtrele (boşsa sabit referans)
+      const all = Array.isArray(chat.messages) ? chat.messages : [];
+      if (!all.length) return EMPTY_ARR;
+
+      const filtered = all.filter((m: any) => m?.roomId === rid);
+      return filtered.length ? filtered : EMPTY_ARR;
+    }
+  );
+
 export default function AdminChatPage() {
   const { i18n, t } = useI18nNamespace("chat", translations);
   const lang = (i18n.language?.slice(0, 2) as SupportedLocale) || "en";
@@ -43,10 +69,9 @@ export default function AdminChatPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  // Boş dizi için sabit referans önerisi: selectMessagesByRoom("__none__") bunu sağlamalı
-  const roomMessages = useAppSelector(
-    useMemo(() => selectMessagesByRoom(roomId || "__none__"), [roomId])
-  );
+  // ⚡️ Odaya göre mesajları stable referansla seç
+  const selectMessagesForRoom = useMemo(makeSelectMessagesForRoom, []);
+  const roomMessages = useAppSelector((s) => selectMessagesForRoom(s, roomId || "__none__"));
 
   const socket = getSocket();
 
@@ -88,24 +113,23 @@ export default function AdminChatPage() {
   const filtered = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) return roomMessages;
-    return roomMessages.filter((m) => m.message?.toLowerCase().includes(term));
+    return roomMessages.filter((m: any) => m.message?.toLowerCase().includes(term));
   }, [roomMessages, searchTerm]);
 
- const toggleSelect = (id: string) => {
-  setSelectedIds(prev => {
-    const next = new Set(prev);
-    if (next.has(id)) {
-      next.delete(id);
-    } else {
-      next.add(id);
-    }
-    return next;
-  });
-};
-
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   const selectAllVisible = () =>
-    setSelectedIds(new Set((filtered || []).map((m) => m._id).filter(Boolean) as string[]));
+    setSelectedIds(new Set((filtered || []).map((m: any) => m._id).filter(Boolean) as string[]));
 
   const clearSelection = () => setSelectedIds(new Set());
 
@@ -127,7 +151,9 @@ export default function AdminChatPage() {
       await dispatch(adminDeleteMessage({ id })).unwrap();
       if (roomId) await dispatch(fetchRoomMessages({ roomId, page: 1, limit: 20, sort: "asc" }));
       setSelectedIds((prev) => {
-        const next = new Set(prev); next.delete(id); return next;
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
       });
     } catch (e) {
       if (isDev) console.error("Delete failed:", e);
@@ -212,11 +238,14 @@ export default function AdminChatPage() {
         <SingleColumn>
           <SectionCard aria-label={t("admin.rooms_panel", "Odalar Paneli")}>
             <SectionTitle>{t("admin.rooms", "Odalar")}</SectionTitle>
-            {/* ChatSessionList de aşağıda kart (≤1440) / tablo (≥1441) olacak */}
-            <ChatSessionList lang={lang} selectedRoomId={roomId} onSelectRoom={(rid) => {
-              setSelectedIds(new Set());
-              dispatch(setCurrentRoom(rid));
-            }}/>
+            <ChatSessionList
+              lang={lang}
+              selectedRoomId={roomId}
+              onSelectRoom={(rid) => {
+                setSelectedIds(new Set());
+                dispatch(setCurrentRoom(rid));
+              }}
+            />
           </SectionCard>
 
           <SectionCard aria-label={t("admin.archived_panel", "Arşiv Paneli")}>

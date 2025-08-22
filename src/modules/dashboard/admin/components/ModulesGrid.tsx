@@ -1,14 +1,15 @@
+// src/modules/dashboard/admin/components/ModulesGrid.tsx
 "use client";
 
 import styled from "styled-components";
 import Link from "next/link";
+import { createSelector } from "@reduxjs/toolkit";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/dashboard/locales";
-import type { SupportedLocale } from "@/types/common";
 import { Muted } from "./Layout";
+import { useDashboardModules } from "@/hooks/useDashboardModules";
 
-/** Modül → sayaç eşlemesi (overview.counters/finance) */
 function getModuleValue(
   modNameRaw: string | undefined,
   counters: Record<string, any> | undefined,
@@ -16,8 +17,6 @@ function getModuleValue(
 ): number | undefined {
   if (!modNameRaw) return undefined;
   const name = String(modNameRaw).toLowerCase();
-
-  // doğrudan eşleşenler
   if (name === "payments")  return Number(finance?.revenue ?? counters?.["payments.sum"]);
   if (name === "expenses")  return Number(finance?.expenses ?? counters?.["expenses.sum"]);
   if (name === "invoicing") return Number(counters?.["invoicing.overdue"] ?? counters?.overdueInvoices);
@@ -30,76 +29,58 @@ function getModuleValue(
   if (name === "booking" || name === "bookings")     return Number(counters?.["booking.upcoming"]);
   if (name === "revenue")   return Number(finance?.revenue);
   if (name === "net")       return Number(finance?.net);
-
-  // genel fallback: "<module>.count"
   const genericKey = `${name}.count`;
   if (genericKey in (counters || {})) return Number((counters as any)[genericKey]);
-
-  // ikinci fallback: sayılabilecek direkt alan
-  const direct =
-    counters?.[name] ??
-    counters?.[`${name}s`] ??
-    undefined;
+  const direct = counters?.[name] ?? counters?.[`${name}s`];
   return typeof direct === "number" ? Number(direct) : undefined;
 }
 
+/* ---- memoized overview selector (aynı input → aynı obje) ---- */
+const EMPTY_OBJ: any = {};
+const selectCountersFinance = createSelector(
+  [
+    (s: any) => s.dashboardOverview ?? s.overview ?? s.dailyOverview ?? null,
+  ],
+  (ov) => ({
+    counters: (ov?.data?.counters as Record<string, any>) ?? EMPTY_OBJ,
+    finance: (ov?.data?.finance as { revenue?: number; expenses?: number; net?: number }) ?? EMPTY_OBJ,
+  })
+);
+
 export default function ModulesGrid() {
   const { i18n } = useI18nNamespace("dashboard", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const { dashboardModules, isLoading } = useDashboardModules({ activeOnly: true });
 
-  // Tenant modül ayarları (parent store’da)
-  const settings = useAppSelector((s: any) => s.moduleSetting);
-
-  // Overview verileri (sayılara buradan bakacağız)
-  const overview = useAppSelector((s: any) => s.dashboardOverview) ?? {};
-  const counters = overview?.data?.counters as Record<string, any> | undefined;
-  const finance  = overview?.data?.finance  as { revenue?: number; expenses?: number; net?: number } | undefined;
+  // ✅ Artık memoized selector kullanıyoruz
+  const { counters, finance } = useAppSelector(selectCountersFinance);
 
   const numberFmt = (v?: number) =>
     typeof v === "number" && Number.isFinite(v)
       ? new Intl.NumberFormat(i18n.language || "en").format(v)
       : "—";
 
-  // Ayarlarda dashboard’a açık + enabled olanları al
-  const dashboardModules =
-    Array.isArray(settings)
-      ? settings
-          .filter((m: any) => m?.showInDashboard !== false && m?.enabled !== false)
-          .sort((a: any, b: any) => (a?.order ?? 0) - (b?.order ?? 0))
-          .map((m: any) => {
-            const name = m?.name || m?.module; // IModuleSetting.module veya birleşik obje
-            const label =
-              m?.label?.[lang] ??
-              m?.seoTitle?.[lang] ??
-              m?.label?.en ??
-              m?.seoTitle?.en ??
-              name;
-            const description =
-              m?.description?.[lang] ??
-              m?.seoDescription?.[lang] ??
-              m?.description?.en ??
-              m?.seoDescription?.en ??
-              "";
-            const slug = m?.slug || name;
-            const value = getModuleValue(String(name || "").toLowerCase(), counters, finance);
-            return { key: name, label, description, slug, value };
-          })
-      : [];
+  const items = dashboardModules.map((m) => ({
+    ...m,
+    value: getModuleValue(m.key, counters, finance),
+    href : `/admin${m.slug ? `/${m.slug}` : ""}`,
+  }));
 
-  if (!dashboardModules.length) return <Muted>—</Muted>;
+  if (!items.length) return <Muted>{isLoading ? "…" : "—"}</Muted>;
 
   return (
     <Grid>
-      {dashboardModules.map((mod) => (
+      {items.map((mod) => (
         <Link
-          href={`/admin/${mod.slug}`}
+          href={mod.href}
           key={mod.key}
           style={{ textDecoration: "none", color: "inherit" }}
         >
           <CardMod tabIndex={0}>
             <TopRow>
               <Label>{mod.label}</Label>
-              <ValuePill title={String(mod.value ?? "")}>{numberFmt(mod.value)}</ValuePill>
+              <ValuePill title={String(mod.value ?? "")}>
+                {numberFmt(mod.value)}
+              </ValuePill>
             </TopRow>
             <Description>{mod.description}</Description>
           </CardMod>
@@ -109,7 +90,7 @@ export default function ModulesGrid() {
   );
 }
 
-/* styled */
+/* styled ... (değişmedi) */
 const Grid = styled.div`
   display:grid; grid-template-columns:repeat(auto-fill, minmax(238px, 1fr));
   gap:${({ theme }) => theme.spacings.xl};

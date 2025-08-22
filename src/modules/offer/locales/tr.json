@@ -23,5 +23,10 @@
   "form.message": "İstediğiniz ürün/hizmet ve ek notunuz...",
   "form.sending": "Gönderiliyor...",
   "form.send": "Gönder",
-  "buttonText": "Teklif İste"
+  "buttonText": "Teklif İste",
+  "productTypes": {
+    "ensotekprod": "Yeni Soğutma Kulesi",
+    "sparepart": "Yedek Parça",
+    "bikes": "Bisiklet"
+  }
 }

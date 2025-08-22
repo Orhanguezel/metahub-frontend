@@ -11,14 +11,21 @@ import {
   clearNewsletterState,
 } from "@/modules/newsletter/slice/newsletterSlice";
 
-export default function NewsletterModal({ onClose }: { open: boolean; onClose: () => void }) {
+export default function NewsletterModal({
+  onClose,
+  top = 120, // px ya da "3rem"
+}: {
+  open: boolean;
+  onClose: () => void;
+  top?: number | string;
+}) {
   const { t } = useI18nNamespace("newsletter", translations);
   const dispatch = useAppDispatch();
 
   const [email, setEmail] = useState("");
   const { loading, error, successMessage } = useAppSelector((state) => state.newsletter);
 
-  function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(subscribeNewsletter({ email })).then((res) => {
       if (res.meta.requestStatus === "fulfilled") {
@@ -28,26 +35,33 @@ export default function NewsletterModal({ onClose }: { open: boolean; onClose: (
         }, 1400);
       }
     });
-  }
+  };
 
-  // Modal kapandığında state sıfırlama
-  function handleClose() {
+  const handleClose = () => {
     dispatch(clearNewsletterState());
     onClose();
-  }
+  };
+
+  const offsetTop = typeof top === "number" ? `${top}px` : top;
 
   return (
     <Overlay onClick={handleClose}>
       <Modal
-        as={motion.div}
         initial={{ x: 360, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: 360, opacity: 0 }}
         transition={{ duration: 0.4 }}
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+        $offsetTop={offsetTop}   // <-- transient prop (DOM'a gitmez)
+        role="dialog"
+        aria-modal="true"
+        aria-label={t("modalTitle", "E-Bülten Aboneliği")}
       >
-        <CloseButton onClick={handleClose} aria-label={t("admin.close", "Kapat")}>×</CloseButton>
+        <CloseButton onClick={handleClose} aria-label={t("admin.close", "Kapat")}>
+          ×
+        </CloseButton>
         <ModalTitle>{t("modalTitle", "E-Bülten Aboneliği")}</ModalTitle>
+
         {successMessage ? (
           <SuccessMsg>{t("success", "Teşekkürler! E-bültenimize abone oldunuz.")}</SuccessMsg>
         ) : (
@@ -56,7 +70,7 @@ export default function NewsletterModal({ onClose }: { open: boolean; onClose: (
               placeholder={t("form.email", "E-posta adresiniz")}
               type="email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
               aria-label={t("form.email", "E-posta adresiniz")}
@@ -72,34 +86,40 @@ export default function NewsletterModal({ onClose }: { open: boolean; onClose: (
   );
 }
 
-// --- THEME SUPPORTED STYLES ---
+/* ---------------- THEME-SUPPORTED STYLES ---------------- */
 
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
   background: ${({ theme }) => theme.colors.overlayBackground};
   z-index: ${({ theme }) => theme.zIndex.overlay};
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-start;
 `;
 
-const Modal = styled.div`
+const Modal = styled(motion.div)<{ $offsetTop: string }>`
   width: 370px;
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.xl} 0 0 ${({ theme }) => theme.radii.xl};
-  margin: ${({ theme }) => theme.spacings.xxl} 0 0 0;
-  padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.lg};
+  padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.lg}
+    ${({ theme }) => theme.spacings.lg};
   box-shadow: ${({ theme }) => theme.shadows.lg};
-  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 180px;
   font-family: ${({ theme }) => theme.fonts.main};
+
+  /* Sağdan kayan panel: üst boşluk props ile kontrol ediliyor */
+  position: fixed;
+  right: 0;
+  top: ${({ $offsetTop }) => $offsetTop};
+  margin: 0;
+
+  /* Mobilde tam genişlik ve top:0 */
   ${({ theme }) => theme.media.small} {
     width: 100vw;
-    margin: 0;
-    border-radius: ${({ theme }) => theme.radii.md} 0 0 ${({ theme }) => theme.radii.md};
+    right: 0;
+    left: 0;
+    top: 0;
+    border-radius: 0;
     min-height: unset;
     padding: ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.sm};
   }
@@ -107,7 +127,8 @@ const Modal = styled.div`
 
 const CloseButton = styled.button`
   position: absolute;
-  top: 12px; right: 18px;
+  top: 12px;
+  right: 18px;
   font-size: 2em;
   background: none;
   border: none;
@@ -128,7 +149,8 @@ const ModalTitle = styled.div`
 `;
 
 const Input = styled.input`
-  width: 100%; margin-bottom: ${({ theme }) => theme.spacings.sm};
+  width: 100%;
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
   padding: 0.9em 1em;
   font-size: ${({ theme }) => theme.fontSizes.base};
   border-radius: ${({ theme }) => theme.radii.md};
@@ -136,11 +158,14 @@ const Input = styled.input`
   background: ${({ theme }) => theme.colors.inputBackground};
   color: ${({ theme }) => theme.colors.textPrimary};
   font-family: ${({ theme }) => theme.fonts.body};
-  transition: border ${({ theme }) => theme.transition.fast};
+  transition: border ${({ theme }) => theme.transition.fast},
+    background ${({ theme }) => theme.transition.fast};
+
   &:focus {
     border-color: ${({ theme }) => theme.colors.inputBorderFocus};
     background: ${({ theme }) => theme.colors.inputBackgroundFocus};
     outline: 0;
+    box-shadow: ${({ theme }) => theme.colors.shadowHighlight};
   }
   &::placeholder {
     color: ${({ theme }) => theme.colors.placeholder};
@@ -161,9 +186,13 @@ const SubmitBtn = styled.button`
   box-shadow: ${({ theme }) => theme.shadows.sm};
   margin-bottom: ${({ theme }) => theme.spacings.sm};
   transition: background ${({ theme }) => theme.transition.fast};
-  &:hover, &:focus-visible {
+
+  &:hover,
+  &:focus-visible {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+    outline: none;
   }
+
   &:disabled {
     background: ${({ theme }) => theme.colors.disabledBg};
     color: ${({ theme }) => theme.colors.textMuted};
@@ -187,4 +216,3 @@ const ErrorMsg = styled.div`
   margin-top: ${({ theme }) => theme.spacings.md};
   font-family: ${({ theme }) => theme.fonts.body};
 `;
-

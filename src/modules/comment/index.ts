@@ -10,6 +10,7 @@ export { default as TestimonialSectionGzl } from "./public/components/Testimonia
 export { default as DetailsModal } from "./admin/components/DetailsModal";
 export { default as CommentForm } from "./admin/components/CommentForm";
 export { default as CommentList } from "./admin/components/CommentList";
+export { default as ReplyForm } from "./admin/components/ReplyForm";
 
 // Redux Slice
 export { default as commentReducer } from "./slice/commentSlice";

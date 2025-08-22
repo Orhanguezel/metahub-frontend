@@ -47,8 +47,12 @@ const RECAPTCHA_FRAME = [
 // frame-src (PDF önizleme & reCAPTCHA)
 const frameSrc = ["'self'", "res.cloudinary.com", "docs.google.com", ...RECAPTCHA_FRAME];
 
-// connect-src (XHR/fetch). API ya da farklı origin'e istek atıyorsan buraya ekle.
-const connectSrc = ["'self'", "res.cloudinary.com", ...RECAPTCHA_SCRIPT];
+// ⬇⬇⬇ WS/WSS İZİNLERİ (YENİ) ⬇⬇⬇
+const wsDev = isDev ? ["ws://localhost:5019"] : [];
+const wsProd = !isDev ? tenantDomains.map((host) => `wss://${host}`) : [];
+
+// connect-src (XHR/fetch/WebSocket). API ya da farklı origin'e istek atıyorsan buraya ekle.
+const connectSrc = ["'self'", "res.cloudinary.com", ...RECAPTCHA_SCRIPT, ...wsDev, ...wsProd];
 if (isDev) {
   frameSrc.push("http://localhost:5019");
   connectSrc.push("http://localhost:5019");

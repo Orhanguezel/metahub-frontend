@@ -3,29 +3,30 @@
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import translations from "@/modules/catalog/locales";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { sendCatalogRequest, clearCatalogState } from "../../slice/catalogSlice";
+import { sendCatalogRequest, clearCatalogState } from "@/modules/catalog/slice/catalogSlice";
 import { SUPPORTED_LOCALES } from "@/types/common";
 import { toast } from "react-toastify";
 
 export default function CatalogRequestModal({
   onClose,
+  top = 120, // üst boşluk (px veya "3rem")
 }: {
   onClose: () => void;
+  top?: number | string;
 }) {
   const { t, i18n } = useI18nNamespace("catalogRequest", translations);
   const dispatch = useAppDispatch();
   const { loading, successMessage } = useAppSelector((s) => s.catalog);
 
-  // Locale'i i18n veya fallback'ten çek
   const locale =
     (i18n.language?.slice(0, 2) as typeof SUPPORTED_LOCALES[number]) || "tr";
 
-    const KATALOG_URL = "https://res.cloudinary.com/dbozv7wqd/raw/upload/v1753910122/uploads/ensotek/library/ensotekcatalog-1753910118660-672914705";
-const KATALOG_FILE_NAME = "ensotek.catalog.pdf";
-
+  const KATALOG_URL =
+    "https://res.cloudinary.com/dbozv7wqd/raw/upload/v1753910122/uploads/ensotek/library/ensotekcatalog-1753910118660-672914705";
+  const KATALOG_FILE_NAME = "ensotek.catalog.pdf";
 
   const [form, setForm] = useState({
     name: "",
@@ -36,24 +37,21 @@ const KATALOG_FILE_NAME = "ensotek.catalog.pdf";
     message: "",
   });
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
   }
 
-  // Form gönderimi
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     await dispatch(
-  sendCatalogRequest({
-    ...form,
-    locale,
-    catalogFileUrl: KATALOG_URL,
-    catalogFileName: KATALOG_FILE_NAME,
-  })
-)
+      sendCatalogRequest({
+        ...form,
+        locale,
+        catalogFileUrl: KATALOG_URL,
+        catalogFileName: KATALOG_FILE_NAME,
+      })
+    )
       .unwrap()
       .then(() => {
         setTimeout(() => {
@@ -62,8 +60,6 @@ const KATALOG_FILE_NAME = "ensotek.catalog.pdf";
         }, 1700);
       })
       .catch((err: any) => {
-        // Hata mesajlarını yönet
-        // API slice hata mesajı err.message veya err.errors olabilir
         if (err?.errors?.length) {
           err.errors.forEach((errorObj: any) => {
             toast.error(errorObj.msg || errorObj.message || "Bir hata oluştu!");
@@ -76,7 +72,6 @@ const KATALOG_FILE_NAME = "ensotek.catalog.pdf";
       });
   }
 
-  // Modal kapandığında form resetle
   function handleClose() {
     setForm({
       name: "",
@@ -90,17 +85,24 @@ const KATALOG_FILE_NAME = "ensotek.catalog.pdf";
     onClose();
   }
 
+  const offsetTop = typeof top === "number" ? `${top}px` : top;
+
   return (
     <Overlay onClick={handleClose}>
       <Modal
-        as={motion.div}
         initial={{ x: 360, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: 360, opacity: 0 }}
         transition={{ duration: 0.4 }}
         onClick={(e) => e.stopPropagation()}
+        $offsetTop={offsetTop}               // <-- transient prop (DOM’a sızmaz)
+        role="dialog"
+        aria-modal="true"
+        aria-label={t("modalTitle", "Katalog Talep Formu")}
       >
-        <CloseButton onClick={handleClose}>×</CloseButton>
+        <CloseButton onClick={handleClose} aria-label={t("admin.close", "Kapat")}>
+          ×
+        </CloseButton>
         <ModalTitle>{t("modalTitle", "Katalog Talep Formu")}</ModalTitle>
         {successMessage ? (
           <SuccessMsg>{t("success")}</SuccessMsg>
@@ -152,9 +154,7 @@ const KATALOG_FILE_NAME = "ensotek.catalog.pdf";
               disabled={loading}
             />
             <SubmitBtn type="submit" disabled={loading}>
-              {loading
-                ? t("form.sending", "Gönderiliyor...")
-                : t("form.send", "Gönder")}
+              {loading ? t("form.sending", "Gönderiliyor...") : t("form.send", "Gönder")}
             </SubmitBtn>
           </form>
         )}
@@ -163,34 +163,38 @@ const KATALOG_FILE_NAME = "ensotek.catalog.pdf";
   );
 }
 
-// Styled Components...
+/* ---------------- Styled Components ---------------- */
+
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
   background: ${({ theme }) => theme.colors.overlayBackground};
   z-index: ${({ theme }) => theme.zIndex.overlay};
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-start;
 `;
 
-const Modal = styled.div`
+const Modal = styled(motion.div)<{ $offsetTop: string }>`
   width: 380px;
   background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: ${({ theme }) => theme.radii.xl} 0 0 ${({ theme }) => theme.radii.xl};
-  margin: 2.8rem 0 0 0;
-  padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.xl};
+  padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.xl}
+    ${({ theme }) => theme.spacings.lg} ${({ theme }) => theme.spacings.xl};
   box-shadow: ${({ theme }) => theme.shadows.form};
-  position: relative;
+  position: fixed;
+  right: 0;
+  top: ${({ $offsetTop }) => $offsetTop};   /* transient prop kullanımı */
   display: flex;
   flex-direction: column;
   min-height: 350px;
   font-family: ${({ theme }) => theme.fonts.body};
-  ${({ theme }) => theme.media.xsmall} {
+
+  ${({ theme }) => theme.media.small} {
     width: 100vw;
+    right: 0;
+    left: 0;
+    top: 0;
     border-radius: 0;
-    margin: 0;
     padding: ${({ theme }) => theme.spacings.lg};
+    min-height: unset;
   }
 `;
 
@@ -289,9 +293,7 @@ const SubmitBtn = styled.button`
   transition: background ${({ theme }) => theme.transition.fast};
   font-family: ${({ theme }) => theme.fonts.body};
   letter-spacing: 0.01em;
-  &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
-  }
+  &:hover:not(:disabled) { background: ${({ theme }) => theme.buttons.primary.backgroundHover}; }
   &:disabled {
     opacity: ${({ theme }) => theme.opacity.disabled};
     cursor: not-allowed;

@@ -1,4 +1,5 @@
 "use client";
+
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations3 from "@/modules/comment/locales";
@@ -6,25 +7,29 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { MdStars } from "react-icons/md";
 import { useRouter } from "next/navigation";
-import { SupportedLocale } from "@/types/common";
-import { createComment, fetchCommentsForContent } from "@/modules/comment/slice/commentSlice";
+import type { SupportedLocale } from "@/types/common";
+import {
+  createComment,
+  fetchCommentsForContent,
+} from "@/modules/comment/slice/commentSlice";
 import { AnimatePresence, motion } from "framer-motion";
 import { resolveProfileImage } from "@/shared/resolveProfileImage";
 
-
+/* ----------------------- Component ----------------------- */
 
 export default function TestimonialSection() {
   const { i18n, t } = useI18nNamespace("testimonial", translations3);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { profile } = useAppSelector((state) => state.account);
 
-  // Varsayılan about içeriği (gerekirse prop olarak da alabilirsin)
+  // Varsayılan “about” içeriği
   const CONTENT_TYPE = "about";
   const CONTENT_ID = "000000000000000000000000";
 
-  // --- İlk render’da yorumları çek ---
+  // İlk render’da yorumları çek
   useEffect(() => {
     dispatch(
       fetchCommentsForContent({
@@ -35,7 +40,7 @@ export default function TestimonialSection() {
     );
   }, [dispatch]);
 
-  // Sadece ilk 6 yayınlanmış testimonial
+  // En fazla 6 yayınlanmış yorum
   const allComments = useAppSelector((state) => state.comments.comments);
   const testimonials = useMemo(
     () =>
@@ -47,14 +52,14 @@ export default function TestimonialSection() {
     [allComments]
   );
 
-  // Modal State
+  // Modal state
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ label: "", text: "" });
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
 
-  // --- Modal aç/login yönlendirme ---
+  // login yoksa login’e yönlendir, varsa modal aç
   const handleOpenModal = useCallback(() => {
     if (!profile) {
       router.push("/login");
@@ -63,12 +68,12 @@ export default function TestimonialSection() {
     setShowModal(true);
   }, [profile, router]);
 
-  // --- Form input değişikliği ---
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   };
 
-  // --- Form submit ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
@@ -79,6 +84,7 @@ export default function TestimonialSection() {
       return;
     }
     setSending(true);
+
     try {
       await dispatch(
         createComment({
@@ -96,10 +102,17 @@ export default function TestimonialSection() {
           isActive: true,
         })
       ).unwrap();
-      setFormSuccess(t("form.success", "Yorumunuz başarıyla gönderildi! Onaylandıktan sonra yayınlanacaktır."));
+
+      setFormSuccess(
+        t(
+          "form.success",
+          "Yorumunuz başarıyla gönderildi! Onaylandıktan sonra yayınlanacaktır."
+        )
+      );
       setForm({ label: "", text: "" });
       setShowModal(false);
-      // Ekledikten sonra tekrar fetch et (en güncel liste!)
+
+      // Listeyi yenile
       dispatch(
         fetchCommentsForContent({
           type: CONTENT_TYPE,
@@ -108,7 +121,9 @@ export default function TestimonialSection() {
         })
       );
     } catch (err: any) {
-      setFormError(err?.message || t("form.error", "Bir hata oluştu. Lütfen tekrar deneyin."));
+      setFormError(
+        err?.message || t("form.error", "Bir hata oluştu. Lütfen tekrar deneyin.")
+      );
     }
     setSending(false);
   };
@@ -119,48 +134,54 @@ export default function TestimonialSection() {
       ? field[lang] || field.tr || field.en || Object.values(field)[0] || ""
       : field || "";
 
+  if (!Array.isArray(testimonials)) return null;
+
   return (
     <Section>
-      <SectionTitle>
-        <MdStars size={28} style={{ marginRight: 10 }} />
-        <span>{t("sectionTitle", "Testimonials")}</span>
-      </SectionTitle>
-      <SectionDesc>
-        {t(
-          "sectionDesc",
-          "Kullanıcılarımızdan gelen gerçek yorumlar. Siz de yorum bırakmak için giriş yapın."
-        )}
-      </SectionDesc>
+      <SectionHeader>
+        <TitleLine>
+          <StarIcon aria-hidden="true" />
+          <Title>{t("sectionTitle", "Testimonials")}</Title>
+        </TitleLine>
+        <SectionDesc>
+          {t(
+            "sectionDesc",
+            "Kullanıcılarımızdan gelen gerçek yorumlar. Siz de yorum bırakmak için giriş yapın."
+          )}
+        </SectionDesc>
+      </SectionHeader>
 
       <CardsGrid>
         {testimonials.map((item, idx) => (
           <Card key={item._id || idx}>
             <CardHeader>
               <Avatar
-  src={resolveProfileImage(item.profileImage, "profile")}
-  alt={getLangField(item.name) || "Anonim"}
-  loading="lazy"
-  width={62}
-  height={62}
-/>
-              <CardHeaderText>
+                src={resolveProfileImage(item.profileImage, "profile")}
+                alt={getLangField(item.name) || "Anonim"}
+                loading="lazy"
+                width={62}
+                height={62}
+              />
+              <HeaderText>
                 <CardName>{getLangField(item.name) || t("anon", "Anonim")}</CardName>
-                <CardTitle>
-                  {getLangField(item.company) ||
-                    getLangField(item.label) ||
-                    ""}
-                </CardTitle>
-              </CardHeaderText>
+                <CardMeta>
+                  {getLangField(item.company) || getLangField(item.label) || ""}
+                </CardMeta>
+              </HeaderText>
             </CardHeader>
+
             <CardBody>
-              <Quote>
-                &quot;{getLangField(item.text)}&quot;
-              </Quote>
+              <Quote>&quot;{getLangField(item.text)}&quot;</Quote>
             </CardBody>
           </Card>
         ))}
+
         <AddCard>
-          <AddButton onClick={handleOpenModal}>
+          <AddButton
+            type="button"
+            onClick={handleOpenModal}
+            aria-label={t("form.addTestimonial", "Yorum Yaz")}
+          >
             {t("form.addTestimonial", "Yorum Yaz")}
           </AddButton>
         </AddCard>
@@ -177,6 +198,7 @@ export default function TestimonialSection() {
           >
             <ModalContent onClick={(e) => e.stopPropagation()}>
               <FormTitle>{t("form.title", "Yorumunuzu Bırakın")}</FormTitle>
+
               <TestimonialForm onSubmit={handleSubmit}>
                 <label>
                   {t("form.label", "Başlık/Unvan (opsiyonel)")}
@@ -188,6 +210,7 @@ export default function TestimonialSection() {
                     disabled={sending}
                   />
                 </label>
+
                 <label>
                   {t("form.text", "Yorumunuz")}
                   <textarea
@@ -199,11 +222,13 @@ export default function TestimonialSection() {
                     disabled={sending}
                   />
                 </label>
+
                 <SubmitButton type="submit" disabled={sending}>
                   {sending
                     ? t("form.sending", "Gönderiliyor...")
                     : t("form.submit", "Gönder")}
                 </SubmitButton>
+
                 {formSuccess && <FormSuccess>{formSuccess}</FormSuccess>}
                 {formError && <FormError>{formError}</FormError>}
               </TestimonialForm>
@@ -215,62 +240,84 @@ export default function TestimonialSection() {
   );
 }
 
-// ---- Styles (theme ve responsive ile tam uyumlu) ----
+/* ----------------------- Styles ----------------------- */
 
 const Section = styled.section`
-  background: ${({ theme }) => theme.colors.achievementBackground};
-  padding: ${({ theme }) => theme.spacings.xxl} 0;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  color: ${({ theme }) => theme.colors.text};
+  padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) =>
+      theme.spacings.xxl};
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: background-color ${({ theme }) => theme.transition.fast},
+    color ${({ theme }) => theme.transition.fast};
+
+  ${({ theme }) => theme.media.mobile} {
+    padding: ${({ theme }) => theme.spacings.xl} 0;
+  }
 `;
 
-const SectionTitle = styled.h2`
+const SectionHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: ${({ theme }) => theme.spacings.sm} 0 ${({ theme }) => theme.spacings.md};
+`;
+
+const TitleLine = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.36em;
-  color: ${({ theme }) => theme.colors.primary};
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-size: ${({ theme }) => theme.fontSizes.h2};
-  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-  text-align: center;
-  margin-bottom: 0.4em;
+  gap: ${({ theme }) => theme.spacings.sm};
+`;
 
-  /* İkonun boyutu ve spacing mobilde küçülsün */
-  svg {
-    display: inline-block;
-    margin-bottom: 0.06em; // yazı ile dikey hizalama
-    @media (max-width: 600px) {
-      width: 1.5em;
-      height: 1.5em;
-    }
-  }
+const StarIcon = styled(MdStars)`
+  width: 28px;
+  height: 28px;
+  color: ${({ theme }) => theme.colors.title};
+  flex: 0 0 auto;
 
-  @media (max-width: 700px) {
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-    gap: 0.25em;
+  ${({ theme }) => theme.media.mobile} {
+    width: 24px;
+    height: 24px;
   }
 `;
 
+const Title = styled.h2`
+  color: ${({ theme }) => theme.colors.title};
+  font-family: ${({ theme }) => theme.fonts.heading};
+  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
+  letter-spacing: -0.01em;
+  line-height: 1.13;
+  margin: 0;
+  font-size: clamp(2.1rem, 3.2vw, 2.7rem);
+`;
 
 const SectionDesc = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-family: ${({ theme }) => theme.fonts.main};
+  font-family: ${({ theme }) => theme.fonts.body};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.regular};
   text-align: center;
-  margin-bottom: 2.4rem;
-  max-width: 700px;
+  margin: 0.8rem;
+  max-width: 720px;
+
+  ${({ theme }) => theme.media.mobile} {
+    font-size: 1rem;
+    padding: 0 12px;
+  }
 `;
 
 const CardsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(clamp(260px, 40vw, 330px), 1fr)
+  );
   gap: ${({ theme }) => theme.spacings.xl};
   width: 100%;
   max-width: 1200px;
-  margin: 0 auto 2.7rem auto;
+  margin: 0 auto ${({ theme }) => theme.spacings.xl} auto;
   align-items: stretch;
 
   ${({ theme }) => theme.media.small} {
@@ -284,12 +331,14 @@ const Card = styled.div`
   box-shadow: ${({ theme }) => theme.cards.shadow};
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 2.5rem 1.9rem 2rem 1.9rem;
+  padding: 2.2rem 1.8rem 1.9rem 1.8rem;
   min-width: 0;
-  transition: box-shadow 0.17s;
+  transition: box-shadow ${({ theme }) => theme.transition.fast},
+    transform ${({ theme }) => theme.transition.fast};
+
   &:hover {
-    box-shadow: 0 16px 44px 0 rgba(40,117,194,0.09);
+    transform: translateY(-2px);
+    box-shadow: ${({ theme }) => `${theme.shadows.lg}, ${theme.colors.shadowHighlight}`};
   }
 `;
 
@@ -297,7 +346,7 @@ const CardHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 1.1em;
-  margin-bottom: 1.15em;
+  margin-bottom: 1.1em;
   width: 100%;
 `;
 
@@ -305,74 +354,81 @@ const Avatar = styled.img`
   width: 62px;
   height: 62px;
   border-radius: ${({ theme }) => theme.radii.circle};
-  border: 2.5px solid ${({ theme }) => theme.colors.primary};
+  border: 2px solid ${({ theme }) => theme.colors.borderHighlight};
   object-fit: cover;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
+  flex: 0 0 auto;
 `;
 
-const CardHeaderText = styled.div`
+const HeaderText = styled.div`
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: 0.14em;
 `;
 
 const CardName = styled.span`
-  color: ${({ theme }) => theme.colors.primaryDark};
+  color: ${({ theme }) => theme.colors.textPrimary};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   font-size: ${({ theme }) => theme.fontSizes.md};
   letter-spacing: 0.01em;
 `;
 
-const CardTitle = styled.span`
+const CardMeta = styled.span`
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-family: ${({ theme }) => theme.fonts.main};
+  font-family: ${({ theme }) => theme.fonts.body};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.fontWeights.regular};
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
 `;
 
 const CardBody = styled.div`
   width: 100%;
-  display: flex;
-  align-items: flex-start;
 `;
 
 const Quote = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.base};
   color: ${({ theme }) => theme.colors.text};
   line-height: ${({ theme }) => theme.lineHeights.relaxed};
-  text-align: left;
   margin: 0;
 `;
 
 const AddCard = styled(Card)`
-  min-height: 210px;
   justify-content: center;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  border: 2px dashed ${({ theme }) => theme.colors.primary};
+  align-items: center;
+  min-height: 210px;
   box-shadow: none;
-  cursor: pointer;
-  transition: border 0.2s, background 0.2s;
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  border: 2px dashed ${({ theme }) => theme.colors.borderHighlight};
+  transition: background ${({ theme }) => theme.transition.fast},
+    border-color ${({ theme }) => theme.transition.fast};
+
   &:hover {
-    border-color: ${({ theme }) => theme.colors.primaryHover};
     background: ${({ theme }) => theme.colors.inputBackgroundFocus};
+    border-color: ${({ theme }) => theme.colors.primaryHover};
   }
 `;
 
 const AddButton = styled.button`
-  padding: 1em 2.6em;
-  background: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.buttonText};
+  padding: 1em 2.4em;
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
   border: none;
   border-radius: ${({ theme }) => theme.radii.lg};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   cursor: pointer;
   box-shadow: ${({ theme }) => theme.shadows.button};
-  transition: background 0.14s;
-  &:hover { background: ${({ theme }) => theme.colors.primaryHover}; }
+  transition: background ${({ theme }) => theme.transition.fast},
+    transform ${({ theme }) => theme.transition.fast};
+
+  &:hover,
+  &:focus-visible {
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+    transform: translateY(-1px);
+    outline: none;
+  }
 `;
 
 const ModalOverlay = styled.div`
@@ -387,75 +443,93 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  padding: 2.5rem 2.3rem;
+  color: ${({ theme }) => theme.colors.text};
+  padding: 2.4rem 2.1rem;
   border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: ${({ theme }) => theme.shadows.lg};
+  box-shadow: ${({ theme }) => theme.shadows.xl};
   min-width: 320px;
-  max-width: 96vw;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  max-width: min(680px, 96vw);
+  width: 100%;
 `;
 
 const FormTitle = styled.h3`
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.title};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  margin-bottom: 1.2rem;
+  margin: 0 0 1rem 0;
 `;
 
 const TestimonialForm = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 1.08em;
-  width: 100%;
+  gap: 1rem;
+
   label {
+    display: block;
     font-size: ${({ theme }) => theme.fontSizes.base};
     color: ${({ theme }) => theme.colors.textSecondary};
     font-weight: ${({ theme }) => theme.fontWeights.medium};
-    margin-bottom: 0.22em;
-    font-family: ${({ theme }) => theme.fonts.main};
+    margin-bottom: 0.25rem;
+    font-family: ${({ theme }) => theme.fonts.body};
   }
-  input, textarea {
+
+  input,
+  textarea {
+    width: 100%;
     border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.inputBorder};
-    border-radius: ${({ theme }) => theme.radii.sm};
+    border-radius: ${({ theme }) => theme.radii.md};
     font-size: ${({ theme }) => theme.fontSizes.base};
-    padding: 0.85em 0.85em;
-    margin-top: 0.32em;
+    padding: 0.85em;
     background: ${({ theme }) => theme.colors.inputBackground};
-    font-family: inherit;
-    resize: none;
+    color: ${({ theme }) => theme.colors.text};
+    transition: border-color ${({ theme }) => theme.transition.fast},
+      background ${({ theme }) => theme.transition.fast};
+
     &:focus {
-      border-color: ${({ theme }) => theme.colors.primary};
+      border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+      background: ${({ theme }) => theme.colors.inputBackgroundFocus};
       outline: none;
+      box-shadow: ${({ theme }) => theme.colors.shadowHighlight};
     }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 120px;
   }
 `;
 
 const SubmitButton = styled.button`
-  padding: 0.83em 1.7em;
-  background: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.white};
+  padding: 0.83em 1.6em;
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
   border: none;
   border-radius: ${({ theme }) => theme.radii.md};
   font-size: ${({ theme }) => theme.fontSizes.md};
-  font-weight: 600;
-  margin-top: 0.7em;
-  transition: background 0.15s;
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  margin-top: 0.6rem;
   cursor: pointer;
   box-shadow: ${({ theme }) => theme.shadows.button};
-  &:hover { background: ${({ theme }) => theme.colors.primaryHover}; }
+  transition: background ${({ theme }) => theme.transition.fast},
+    transform ${({ theme }) => theme.transition.fast};
+
+  &:hover,
+  &:focus-visible {
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+    transform: translateY(-1px);
+    outline: none;
+  }
 `;
 
 const FormSuccess = styled.div`
   color: ${({ theme }) => theme.colors.success};
-  margin-top: 1.1em;
+  margin-top: 1rem;
   font-size: ${({ theme }) => theme.fontSizes.base};
 `;
 
 const FormError = styled.div`
   color: ${({ theme }) => theme.colors.danger};
-  margin-top: 1.1em;
+  margin-top: 1rem;
   font-size: ${({ theme }) => theme.fontSizes.base};
 `;

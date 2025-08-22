@@ -1,3 +1,4 @@
+"use client";
 import styled from "styled-components";
 import Link from "next/link";
 import translations from "@/modules/library/locales";
@@ -126,7 +127,7 @@ export default function LibrarySection() {
   );
 }
 
-// --- STYLES ---
+/* ===================== STYLES ===================== */
 
 const Section = styled.section`
   background: ${({ theme }) => theme.colors.sectionBackground};
@@ -138,7 +139,6 @@ const Section = styled.section`
     padding: 1.2rem 0 0.7rem 0;
   }
 `;
-
 
 const FullWidth = styled.div`
   max-width: 1280px;
@@ -163,13 +163,12 @@ const MainInfoRow = styled.div`
     margin-bottom: 0;
   }
   @media (max-width: 600px) {
-  align-items: center;
+    align-items: center;
     gap: 0;
     padding: 0;
     margin-bottom: 0 !important;
   }
 `;
-
 
 const MainTextCol = styled.div`
   flex: 1 1 0;
@@ -293,6 +292,7 @@ const Desc = styled.p`
   }
 `;
 
+/* ====== PROBLEM YAŞANAN KISIM ====== */
 const BottomRow = styled.div`
   display: flex;
   flex-direction: row;
@@ -305,32 +305,43 @@ const BottomRow = styled.div`
 
   @media (max-width: 900px) {
     flex-direction: column;
-    gap: 0;
+    align-items: center;     /* ortala */
+    gap: 0.5rem;             /* küçük bir boşluk (istersen 0 yap) */
     padding: 0;
     margin: 0;
   }
   @media (max-width: 600px) {
     flex-direction: column;
-    gap: 0;
+    align-items: center;
+    gap: 0.5rem;             /* küçük bir boşluk (istersen 0 yap) */
     padding: 0;
-    margin: 0 !important;
+    margin-top: 10px;
   }
 `;
 
+/* Eskiden: flex: 0 0 240px; -> mobilde yüksekliği 240px'e kilitliyordu */
 const SeeAllWrap = styled.div`
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
-  flex: 0 0 240px;
+  flex: 0 0 240px;   /* desktop için sabit sütun genişliği */
   min-width: 0;
   max-width: 100%;
   margin: 0;
   padding: 0;
 
+  /* butonun ekstra margin bırakmaması için güvenlik önlemi */
+  & > * { margin: 0 !important; }
+
   @media (max-width: 900px) {
+    flex: 0 0 auto;          /* sabit yükseklik/basis YOK */
+    width: auto;
     justify-content: center;
-    margin: 0;
-    padding: 0;
+  }
+  @media (max-width: 600px) {
+    flex: 0 0 auto;          /* sabit basis tamamen kalktı */
+    width: auto;
+    justify-content: center;
   }
 `;
 
@@ -351,9 +362,9 @@ const SmallCards = styled.div`
   }
   @media (max-width: 600px) {
     flex-direction: row;
-    gap: 0;
+    gap: 0.2rem;
     justify-content: center;
-    margin-top: 0 !important; /* SeeAllWrap ile arasında boşluk bırakma */
+    margin-top: 0 !important;
     padding: 0;
   }
 `;
@@ -367,7 +378,7 @@ const SmallCard = styled.div`
   align-items: center;
   min-width: 0;
   min-height: 120px;
-  width: 48%;   // Mobilde iki kart yan yana tam sığsın
+  width: 48%;   /* Mobilde iki kart yan yana */
   gap: 0.7rem;
   transition: box-shadow 0.17s, transform 0.13s;
   &:hover { box-shadow: 0 8px 28px 0 rgba(40,117,194,0.14); transform: translateY(-4px) scale(1.03); }
@@ -387,7 +398,6 @@ const SmallCard = styled.div`
     gap: 0;
   }
 `;
-
 
 const SmallCardImageWrap = styled(Link)`
   width: 80px;
@@ -417,7 +427,6 @@ const SmallCardImageWrap = styled(Link)`
     margin: 0 auto;
   }
 `;
-
 
 const SmallCardImage = styled(Image)`
   width: 100%;
@@ -450,4 +459,3 @@ const SmallCardTitle = styled.h3`
   margin: 0;
   line-height: 1.32;
 `;
-

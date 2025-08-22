@@ -23,5 +23,10 @@
   "form.message": "Your requested product/service and extra note...",
   "form.sending": "Sending...",
   "form.send": "Send",
-  "buttonText": "Request Offer"
+  "buttonText": "Request Offer",
+  "productTypes": {
+    "ensotekprod": "New Cooling Tower",
+    "sparepart": "Spare Part",
+    "bikes": "Bicycle"
+  }
 }

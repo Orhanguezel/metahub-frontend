@@ -1,8 +1,14 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+// src/modules/comments/store/comments.slice.ts
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 import type { IComment, CommentContentType, CommentType, TranslatedField } from "../types";
 
-// --- State ---
+/* ---------------- State ---------------- */
+export type AdminCommentsQuery = {
+  page?: number;
+  commentType?: CommentType;
+};
+
 interface CommentsState {
   comments: IComment[];          // Public (içerik özelinde)
   commentsAdmin: IComment[];     // Admin (tüm yorumlar)
@@ -15,6 +21,8 @@ interface CommentsState {
     pages: number;
     total: number;
   };
+  /** ✅ Admin listeleme için query bilgisi (parametresiz fetch buradan okur) */
+  adminQuery: AdminCommentsQuery;
 }
 
 const initialState: CommentsState = {
@@ -25,6 +33,7 @@ const initialState: CommentsState = {
   error: null,
   successMessage: null,
   pagination: { page: 1, pages: 1, total: 0 },
+  adminQuery: { page: 1, commentType: undefined },
 };
 
 function parseErrorMessage(payload: unknown): string {
@@ -34,25 +43,29 @@ function parseErrorMessage(payload: unknown): string {
   return "Something went wrong.";
 }
 
+const BASE = "/comment"; 
+
+/* ---------------- Thunks ---------------- */
+
 // 1. Public: Yorum/testimonial oluştur
 export const createComment = createAsyncThunk<
   IComment,
   {
-  comment: string;
-  profileImage?: string | { thumbnail?: string; url?: string };
-  label?: string;
-  text?: string;
-  contentType: CommentContentType;
-  contentId: string;
-  type?: CommentType;
-  name?: string;
-  company?: string;
-  position?: string;
-  email?: string;
-  recaptchaToken?: string;
-  rating?: number;
-  isPublished?: boolean; 
-  isActive?: boolean;
+    comment: string;
+    profileImage?: string | { thumbnail?: string; url?: string };
+    label?: string;
+    text?: string;
+    contentType: CommentContentType;
+    contentId: string;
+    type?: CommentType;
+    name?: string;
+    company?: string;
+    position?: string;
+    email?: string;
+    recaptchaToken?: string;
+    rating?: number;
+    isPublished?: boolean;
+    isActive?: boolean;
   }
 >("comments/createComment", async (data, thunkAPI) => {
   const res = await apiCall("post", "/comment", data, thunkAPI.rejectWithValue);
@@ -64,22 +77,47 @@ export const fetchCommentsForContent = createAsyncThunk<
   IComment[],
   { type: CommentContentType; id: string; commentType?: CommentType }
 >("comments/fetchForContent", async (payload, thunkAPI) => {
-  // Eğer commentType varsa, API'ya query param ekle
-  let url = `/comment/${payload.type}/${payload.id}`;
+  let url = `${BASE}/${payload.type}/${payload.id}`;
   if (payload.commentType) url += `?type=${payload.commentType}`;
   const res = await apiCall("get", url, null, thunkAPI.rejectWithValue);
   return res.data as IComment[];
 });
 
-// 3. Admin: Tüm yorumları getir (pagination, type ile filtre opsiyonel)
+// 3. Admin: Tüm yorumları getir — ✅ parametresiz
 export const fetchAllCommentsAdmin = createAsyncThunk<
   { data: IComment[]; pagination: CommentsState["pagination"] },
-  { page?: number; commentType?: CommentType }
->("comments/fetchAllAdmin", async ({ page = 1, commentType }, thunkAPI) => {
-  let url = `/comment?page=${page}`;
-  if (commentType) url += `&type=${commentType}`;
-  const res = await apiCall("get", url, null, thunkAPI.rejectWithValue);
-  return res as { data: IComment[]; pagination: CommentsState["pagination"] };
+  void,
+  { state: any; rejectValue: { message: string } }
+>("comments/fetchAllAdmin", async (_void, { getState, rejectWithValue }) => {
+  const state: any = getState();
+  const query: AdminCommentsQuery = state?.comments?.adminQuery ?? {};
+  const page = Number(query?.page ?? 1);
+  const type = query?.commentType;
+
+  let url = `${BASE}?page=${page}`;
+  if (type) url += `&type=${type}`;
+
+  try {
+    const res = await apiCall("get", url, null, rejectWithValue);
+    const raw = res?.data ?? res;
+
+    // Esnek zarf: {data, pagination} | {comments, page, pages, total} | [ ... ]
+    const data: IComment[] =
+      raw?.data ??
+      raw?.comments ??
+      (Array.isArray(raw) ? raw : []);
+
+    const pagination =
+      raw?.pagination ?? {
+        page: Number(raw?.page ?? page ?? 1),
+        pages: Number(raw?.pages ?? 1),
+        total: Number(raw?.total ?? data.length ?? 0),
+      };
+
+    return { data, pagination };
+  } catch (err: any) {
+    return rejectWithValue({ message: err?.message || "Failed to fetch comments." });
+  }
 });
 
 // 4. Admin: Yayın durumu toggle
@@ -88,7 +126,7 @@ export const togglePublishComment = createAsyncThunk<IComment, string>(
   async (id, thunkAPI) => {
     const res = await apiCall(
       "put",
-      `/comment/${id}/toggle`,
+      `${BASE}/${id}/toggle`,
       null,
       thunkAPI.rejectWithValue
     );
@@ -100,7 +138,7 @@ export const togglePublishComment = createAsyncThunk<IComment, string>(
 export const deleteComment = createAsyncThunk<string, string>(
   "comments/delete",
   async (id, thunkAPI) => {
-    await apiCall("delete", `/comment/${id}`, null, thunkAPI.rejectWithValue);
+    await apiCall("delete", `${BASE}/${id}`, null, thunkAPI.rejectWithValue);
     return id;
   }
 );
@@ -112,14 +150,14 @@ export const replyToComment = createAsyncThunk<
 >("comments/reply", async ({ id, text }, thunkAPI) => {
   const res = await apiCall(
     "put",
-    `/comment/${id}/reply`,
+    `${BASE}/${id}/reply`,
     { text },
     thunkAPI.rejectWithValue
   );
   return res.data as IComment;
 });
 
-// --- Slice ---
+/* ---------------- Slice ---------------- */
 const commentsSlice = createSlice({
   name: "comments",
   initialState,
@@ -133,10 +171,15 @@ const commentsSlice = createSlice({
       state.comments = [];
       state.commentsAdmin = [];
       state.pagination = { page: 1, pages: 1, total: 0 };
+      state.adminQuery = { page: 1, commentType: undefined };
       state.status = "idle";
       state.error = null;
       state.successMessage = null;
       state.loading = false;
+    },
+    /** ✅ Parametresiz fetch için sorguyu buradan set et */
+    setCommentsAdminQuery: (state, action: PayloadAction<AdminCommentsQuery>) => {
+      state.adminQuery = { ...state.adminQuery, ...(action.payload || {}) };
     },
   },
   extraReducers: (builder) => {
@@ -246,5 +289,10 @@ const commentsSlice = createSlice({
   },
 });
 
-export const { clearCommentMessages, resetComments } = commentsSlice.actions;
+export const {
+  clearCommentMessages,
+  resetComments,
+  setCommentsAdminQuery,   // ✅ dışarı aktar
+} = commentsSlice.actions;
+
 export default commentsSlice.reducer;

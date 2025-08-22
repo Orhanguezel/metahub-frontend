@@ -13,7 +13,7 @@ import {
 } from "@/modules/newsletter/slice/newsletterSlice";
 import type { INewsletter } from "@/modules/newsletter/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "../../locales";
+import translations from "@/modules/newsletter/locales";
 import { toast } from "react-toastify";
 
 // Alt componentler

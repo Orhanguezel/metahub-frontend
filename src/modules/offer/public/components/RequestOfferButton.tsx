@@ -13,85 +13,129 @@ export default function RequestOfferButton() {
 
   return (
     <>
-      <FloatingButton
-        aria-label={t("buttonText", "Teklif İste")}
+      <Fab
+        type="button"
+        aria-label={t("buttonText")}
+        title={t("buttonText")}
         onClick={() => setOpen(true)}
       >
-        <HiOutlineTag size={28} />
-        <span>{t("buttonText", "Teklif İste")}</span>
-      </FloatingButton>
+        <IconWrap>
+          <HiOutlineTag />
+        </IconWrap>
+        <Label>{t("buttonText")}</Label>
+      </Fab>
+
       {open && <RequestOfferModal open={open} onClose={() => setOpen(false)} />}
     </>
   );
 }
 
-const FloatingButton = styled.button`
+const Fab = styled.button`
   position: fixed;
-  top: 400px;
-  right: 0;
-  z-index: ${({ theme }) => theme.zIndex.modal + 1};
-  background: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.buttonText};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.lg} 0 0 ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.lg};
-  display: flex;
+  top: 260px;
+  right: 16px;
+  z-index: ${({ theme }) => theme.zIndex.overlay};
+  display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacings.sm};
+  height: 48px;
+  width: 48px; /* başlangıç: ikon-only */
+  padding: 0 14px;
+  border: none;
   cursor: pointer;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: rotate(180deg);
-  padding: 1.1em 0.32em 1.1em 0.47em;
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  font-family: ${({ theme }) => theme.fonts.body};
-  transition: 
+  overflow: hidden;
+  line-height: 0;
+
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
+  border-radius: ${({ theme }) => theme.radii.pill};
+  box-shadow: ${({ theme }) => theme.shadows.lg};
+
+  transition:
+    width ${({ theme }) => theme.transition.normal},
     background ${({ theme }) => theme.transition.fast},
-    color ${({ theme }) => theme.transition.fast},
-    box-shadow ${({ theme }) => theme.transition.fast};
+    box-shadow ${({ theme }) => theme.transition.fast},
+    transform ${({ theme }) => theme.transition.fast};
 
-  span {
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    font-size: ${({ theme }) => theme.fontSizes.base};
-    letter-spacing: 0.01em;
-    display: inline;
-    font-family: ${({ theme }) => theme.fonts.body};
-    transition: opacity ${({ theme }) => theme.transition.fast};
-  }
-
-  &:hover, &:focus-visible {
-    background: ${({ theme }) => theme.colors.primaryHover};
-    color: ${({ theme }) => theme.colors.buttonText};
+  &:hover,
+  &:focus-visible {
+    width: 190px; /* hover’da yatay açılır */
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
     box-shadow: ${({ theme }) => theme.shadows.xl};
     outline: none;
   }
 
   &:active {
-    background: ${({ theme }) => theme.colors.primaryDark};
+    transform: translateY(1px);
   }
 
-  // Mobilde: Sadece ikon ve 36x36, radius optimize
-  @media (max-width: 600px) {
-    top: 286px;
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    min-height: 36px;
-    border-radius: 14px 0 0 14px;
-    box-shadow: 0 3px 16px 0 rgba(20,80,180,0.08);
-    justify-content: center;
-    align-items: center;
+  /* mobil: ikon-only ve tam merkez */
+  ${({ theme }) => theme.media.mobile} {
+    right: 8px;
+    top: 280px;
+    height: 44px;
+    width: 44px;
     padding: 0;
+    border-radius: ${({ theme }) => theme.radii.circle};
 
-    span {
-      display: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center; /* << merkezleme */
+    gap: 0;
+
+    &:hover,
+    &:focus-visible {
+      width: 44px;
     }
+  }
+`;
+
+const IconWrap = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+
+  svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+  }
+
+  ${({ theme }) => theme.media.mobile} {
+    width: 24px;
+    height: 24px;
     svg {
-      width: 21px;
-      height: 21px;
-      margin: 0;
+      width: 22px;
+      height: 22px;
     }
+  }
+`;
+
+const Label = styled.span`
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(8px);
+  pointer-events: none;
+
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  letter-spacing: 0.01em;
+  font-family: ${({ theme }) => theme.fonts.body};
+
+  transition:
+    opacity ${({ theme }) => theme.transition.normal},
+    transform ${({ theme }) => theme.transition.normal};
+
+  ${Fab}:hover &,
+  ${Fab}:focus-visible & {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  ${({ theme }) => theme.media.mobile} {
+    display: none;
   }
 `;

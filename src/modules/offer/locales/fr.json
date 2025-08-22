@@ -23,5 +23,10 @@
   "form.message": "Votre demande de produit/service et note complémentaire...",
   "form.sending": "Envoi...",
   "form.send": "Envoyer",
-  "buttonText": "Demander une offre"
+  "buttonText": "Demander une offre",
+  "productTypes": {
+    "ensotekprod": "Nouvelle tour de refroidissement",
+    "sparepart": "Pièce de rechange",
+    "bikes": "Vélo"
+  }
 }

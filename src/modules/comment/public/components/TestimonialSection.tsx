@@ -9,13 +9,13 @@ import TestimonialCarousel from "./TestimonialCarousel";
 import TestimonialModal from "./TestimonialModal";
 import styled from "styled-components";
 import { MdAddComment } from "react-icons/md";
+import { motion } from "framer-motion";
 
 export default function TestimonialSection() {
   const { i18n, t } = useI18nNamespace("testimonial", translations3);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const dispatch = useAppDispatch();
 
-  // Sadece data state'leri
   const [windowed, setWindowed] = useState<any[]>([]);
   const [x, setX] = useState(0);
   const [isSliding, setIsSliding] = useState(false);
@@ -23,16 +23,17 @@ export default function TestimonialSection() {
   const [showModal, setShowModal] = useState(false);
   const [animKey, setAnimKey] = useState(0);
 
-  // Sabitler (modül üstünde)
   const contentType = "about";
   const contentId = "000000000000000000000000";
 
   useEffect(() => {
-    dispatch(fetchCommentsForContent({
-      type: contentType,
-      id: contentId,
-      commentType: "testimonial",
-    }));
+    dispatch(
+      fetchCommentsForContent({
+        type: contentType,
+        id: contentId,
+        commentType: "testimonial",
+      })
+    );
   }, [dispatch]);
 
   const allComments = useAppSelector((state) => state.comments.comments) || [];
@@ -51,10 +52,10 @@ export default function TestimonialSection() {
   }, [testimonials]);
 
   useEffect(() => {
-    if (windowed.length < 1) return;
-    if (isSliding) return;
+    if (windowed.length < 1 || isSliding) return;
     const timer = setTimeout(() => slide("next"), 4800);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowed, isSliding]);
 
   function slide(dir: "next" | "prev") {
@@ -70,6 +71,7 @@ export default function TestimonialSection() {
       newWindow = [...windowed, testimonials[nextIdx]];
       setWindowed(newWindow);
       setX(0);
+      // geniş kartlar için az, dar kartlar için daha az kaydır
       setTimeout(() => setX(-1 * (windowed.length > 1 ? 360 : 320)), 0);
     } else {
       const first = windowed[0];
@@ -83,11 +85,11 @@ export default function TestimonialSection() {
   }
 
   function handleAnimationComplete() {
-    if (direction === "next") setWindowed(w => w.slice(1));
-    else setWindowed(w => w.slice(0, -1));
+    if (direction === "next") setWindowed((w) => w.slice(1));
+    else setWindowed((w) => w.slice(0, -1));
     setX(0);
     setIsSliding(false);
-    setAnimKey(k => k + 1);
+    setAnimKey((k) => k + 1);
   }
 
   if (windowed.length < 1) return null;
@@ -105,6 +107,7 @@ export default function TestimonialSection() {
           )}
         </SectionDesc>
       </SectionHeader>
+
       <OuterContainer>
         <TestimonialCarousel
           cards={windowed}
@@ -117,16 +120,18 @@ export default function TestimonialSection() {
           lang={lang}
         />
       </OuterContainer>
-      <div style={{ textAlign: "center" }}>
+
+      <BtnRow>
         <AddCommentBtn
           onClick={() => setShowModal(true)}
           type="button"
           aria-label={t("form.addTestimonial", "Yorum Yaz")}
         >
-          <MdAddComment size={22} style={{ marginRight: 10 }} />
-          {t("form.addTestimonial", "Yorum Yaz")}
+          <MdAddComment size={22} />
+          <span>{t("form.addTestimonial", "Yorum Yaz")}</span>
         </AddCommentBtn>
-      </div>
+      </BtnRow>
+
       <TestimonialModal
         open={showModal}
         onClose={() => setShowModal(false)}
@@ -135,46 +140,35 @@ export default function TestimonialSection() {
         contentType={contentType}
         contentId={contentId}
         afterSubmit={() =>
-          dispatch(fetchCommentsForContent({
-            type: contentType,
-            id: contentId,
-            commentType: "testimonial",
-          }))
+          dispatch(
+            fetchCommentsForContent({
+              type: contentType,
+              id: contentId,
+              commentType: "testimonial",
+            })
+          )
         }
       />
     </Section>
   );
 }
 
-import { motion } from "framer-motion";
+/* -------------------- styled -------------------- */
 
-// Sadece OuterContainer örnek (istersen kendi styled'ını kullan)
-const OuterContainer = styled.div`
-background: ${({ theme }) => theme.colors.sectionBackground};
-  color: ${({ theme }) => theme.colors.text};
-  padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xxl};
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  box-sizing: border-box;
-  @media (max-width: 900px) {
-    padding: ${({ theme }) => theme.spacings.xl} 0;
-  }
-  @media (max-width: 600px) {
-    padding: ${({ theme }) => theme.spacings.lg} 0 ${({ theme }) => theme.spacings.xl} 0;
-    
-  }
-`;
 const Section = styled(motion.section)`
   background: ${({ theme }) => theme.colors.sectionBackground};
-  padding: 0 0 32px 0;
+  color: ${({ theme }) => theme.colors.text};
+  padding: 0 0 ${({ theme }) => theme.spacings.xxl};
   display: flex;
   flex-direction: column;
   align-items: center;
   min-height: 540px;
   width: 100%;
+  transition: background-color ${({ theme }) => theme.transition.fast},
+    color ${({ theme }) => theme.transition.fast};
+
   ${({ theme }) => theme.media.mobile} {
-    padding: 0 0 18px 0;
+    padding: 0 0 ${({ theme }) => theme.spacings.xl};
     min-height: 360px;
   }
 `;
@@ -183,20 +177,18 @@ const SectionHeader = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: ${({ theme }) => theme.spacings.md};
-  margin-top: ${({ theme }) => theme.spacings.sm};
+  margin: ${({ theme }) => theme.spacings.sm} 0 ${({ theme }) => theme.spacings.md};
 `;
 
 const TitleLine = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacings.sm};
-  margin-bottom: 0.1rem;
 `;
 
 const Title = styled.h2`
   font-size: clamp(2.2rem, 3.3vw, 2.7rem);
-  color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.title};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
   margin: 20px 0 0.23em 0;
@@ -212,17 +204,37 @@ const SectionDesc = styled.p`
   text-align: center;
   margin: 0.8rem;
   max-width: 720px;
+
   ${({ theme }) => theme.media.mobile} {
     font-size: 1rem;
     padding: 0 12px;
   }
 `;
 
+const OuterContainer = styled.div`
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xxl};
+  transition: background-color ${({ theme }) => theme.transition.fast};
+  box-sizing: border-box;
+
+  ${({ theme }) => theme.media.mobile} {
+    padding: ${({ theme }) => theme.spacings.lg} 0 ${({ theme }) => theme.spacings.xl};
+  }
+`;
+
+const BtnRow = styled.div`
+  text-align: center;
+  width: 100%;
+`;
+
 const AddCommentBtn = styled.button`
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.7em;
   margin: 2rem auto 0 auto;
+
   background: ${({ theme }) => theme.buttons.primary.background};
   color: ${({ theme }) => theme.buttons.primary.text};
   border: none;
@@ -230,15 +242,27 @@ const AddCommentBtn = styled.button`
   font-size: 1.13rem;
   font-weight: 600;
   padding: 0.85em 2.1em;
-  box-shadow: ${({ theme }) => theme.shadows.lg};
   cursor: pointer;
-  transition: background ${({ theme }) => theme.transition.fast};
-  outline: none;
-  &:hover, &:focus-visible {
+
+  /* tema uyumlu gölge + odak halkası */
+  box-shadow: ${({ theme }) => `${theme.shadows.lg}, ${theme.colors.shadowHighlight}`};
+  transition: background ${({ theme }) => theme.transition.fast},
+    box-shadow ${({ theme }) => theme.transition.fast},
+    transform ${({ theme }) => theme.transition.fast};
+
+  svg {
+    flex: 0 0 auto;
+  }
+
+  &:hover,
+  &:focus-visible {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
     color: ${({ theme }) => theme.buttons.primary.textHover};
-    opacity: ${({ theme }) => theme.opacity.hover};
+    outline: none;
+    transform: translateY(-1px);
+    box-shadow: ${({ theme }) => `${theme.shadows.xl}, ${theme.colors.shadowHighlight}`};
   }
+
   ${({ theme }) => theme.media.mobile} {
     width: 94vw;
     max-width: 350px;

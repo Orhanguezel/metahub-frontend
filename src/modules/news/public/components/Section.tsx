@@ -9,11 +9,7 @@ import { useAppSelector } from "@/store/hooks";
 import { Skeleton, ErrorMessage, SeeAllBtn } from "@/shared";
 import Image from "next/image";
 import type { SupportedLocale } from "@/types/common";
-import {
-  getLocaleStringFromLang,
-  getTitle,
-  getSummary,
-} from "@/types/common";
+import { getLocaleStringFromLang, getTitle, getSummary } from "@/types/common";
 
 export default function NewsSection() {
   const { i18n, t } = useI18nNamespace("news", translations);
@@ -64,9 +60,8 @@ export default function NewsSection() {
     );
   }
 
-  // Ana haber ve diğerleri
   const main = news[0];
-  const others = news.slice(1, 4); // 3 küçük kart göster
+  const others = news.slice(1, 4);
 
   return (
     <Section
@@ -85,24 +80,23 @@ export default function NewsSection() {
           >
             {getTitle(main, lang) || t("page.news.title", "Bizden Haberler")}
           </StyledLink>
-          <Desc>
-            {getSummary(main, lang) || "—"}
-          </Desc>
-          {/* Ana görsel aşağıda */}
+          <Desc>{getSummary(main, lang) || "—"}</Desc>
+
+          {/* Ana görsel */}
           <MainImageWrap as={Link} href={`/news/${main.slug}`}>
             {main.images?.[0]?.url ? (
               <MainImage
                 src={main.images[0].url}
                 alt={getTitle(main, lang) || "Untitled"}
-                width={500}
-                height={210}
-                style={{ objectFit: "cover" }}
+                fill
+                sizes="(max-width: 600px) 100vw, 520px"
                 priority
               />
             ) : (
               <ImgPlaceholder />
             )}
           </MainImageWrap>
+
           <SeeAllBtn href="/news">
             {t("page.news.all", "Tüm Haberler")}
           </SeeAllBtn>
@@ -117,19 +111,21 @@ export default function NewsSection() {
                   <CardImage
                     src={item.images[0].url}
                     alt={getTitle(item, lang)}
-                    width={90}
-                    height={56}
-                    style={{ objectFit: "cover" }}
+                    fill
+                    sizes="90px"
                   />
                 ) : (
                   <ImgPlaceholder />
                 )}
               </CardImageWrap>
+
               <CardBody>
                 <CardTitle as={Link} href={`/news/${item.slug}`}>
                   {getTitle(item, lang)}
                 </CardTitle>
-                <CardExcerpt>{getSummary(item, lang).slice(0, 72)}</CardExcerpt>
+                <CardExcerpt>
+                  {(getSummary(item, lang) || "").slice(0, 72)}
+                </CardExcerpt>
                 <CardDate>
                   {item.createdAt
                     ? new Date(item.createdAt).toLocaleDateString(
@@ -147,7 +143,7 @@ export default function NewsSection() {
   );
 }
 
-// --- STYLES ---
+/* === STYLES === */
 
 const Section = styled(motion.section)`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
@@ -186,6 +182,7 @@ const Left = styled.div`
   flex-direction: column;
   gap: 1.12rem;
   justify-content: flex-start;
+
   ${({ theme }) => theme.media.small} {
     max-width: 100%;
     align-items: center;
@@ -223,7 +220,9 @@ const StyledLink = styled(Link)`
   margin: 0 0 0.45em 0;
   display: inline-block;
   transition: color 0.2s;
-  &:hover, &:focus-visible {
+
+  &:hover,
+  &:focus-visible {
     color: ${({ theme }) => theme.colors.accent};
     text-decoration: underline;
   }
@@ -236,16 +235,16 @@ const Desc = styled.p`
   margin-bottom: 0.7rem;
 `;
 
+/* Ana görselin kapsayıcısı — oranla yönetiyoruz */
 const MainImageWrap = styled(Link)`
   width: 100%;
   max-width: 520px;
-  min-height: 190px;
-  max-height: 270px;
+  aspect-ratio: 16 / 9; /* sabit oran, height hesaplanır */
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   overflow: hidden;
-  box-shadow: 0 8px 30px 0 rgba(40,117,194,0.16), ${({ theme }) => theme.shadows.lg};
+  box-shadow: 0 8px 30px 0 rgba(40, 117, 194, 0.16), ${({ theme }) => theme.shadows.lg};
   margin-bottom: 1.2rem;
-  position: relative;
+  position: relative; /* fill için şart */
   isolation: isolate;
   cursor: pointer;
   display: block;
@@ -255,40 +254,36 @@ const MainImageWrap = styled(Link)`
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: linear-gradient(120deg, rgba(40,117,194,0.07) 12%, rgba(11,182,214,0.06) 100%);
+    background: linear-gradient(120deg, rgba(40, 117, 194, 0.07) 12%, rgba(11, 182, 214, 0.06) 100%);
     z-index: 1;
   }
 
-  &:hover, &:focus-visible {
-    box-shadow: 0 12px 38px 0 rgba(40,117,194,0.25), ${({ theme }) => theme.shadows.xl};
+  &:hover,
+  &:focus-visible {
+    box-shadow: 0 12px 38px 0 rgba(40, 117, 194, 0.25), ${({ theme }) => theme.shadows.xl};
     transform: scale(1.025);
   }
 
   ${({ theme }) => theme.media.small} {
     width: 100%;
     min-width: 140px;
-    min-height: 110px;
-    height: auto;
     margin: 0 auto 0.6rem auto;
   }
 `;
 
 const MainImage = styled(Image)`
-  width: 100%;
-  object-fit: cover;
-  display: block;
-  position: relative;
+  object-fit: cover;   /* sadece fit, width/height CSS YOK */
   z-index: 2;
 `;
 
 const ImgPlaceholder = styled.div`
   width: 100%;
   height: 100%;
-  min-height: 170px;
   background: ${({ theme }) => theme.colors.skeleton};
   opacity: 0.36;
 `;
 
+/* Kart görseli — wrap sabit ölçü + relative, içeride fill */
 const Right = styled.div`
   flex: 1.1 1 320px;
   min-width: 270px;
@@ -296,6 +291,7 @@ const Right = styled.div`
   flex-direction: column;
   align-items: flex-end;
   gap: 1.45rem;
+
   ${({ theme }) => theme.media.small} {
     width: 100%;
     max-width: 420px;
@@ -309,7 +305,7 @@ const Right = styled.div`
 const NewsCard = styled(motion.div)`
   width: 100%;
   background: ${({ theme }) => theme.colors.cardBackground};
-  box-shadow: 0 8px 30px 0 rgba(40,117,194,0.10);
+  box-shadow: 0 8px 30px 0 rgba(40, 117, 194, 0.1);
   overflow: hidden;
   display: flex;
   flex-direction: row;
@@ -317,28 +313,25 @@ const NewsCard = styled(motion.div)`
   max-width: 390px;
   border: 1px solid ${({ theme }) => theme.colors.borderLight};
   transition: box-shadow 0.16s, transform 0.11s;
+
   &:hover {
-    box-shadow: 0 14px 36px 0 rgba(40,117,194,0.17);
+    box-shadow: 0 14px 36px 0 rgba(40, 117, 194, 0.17);
     transform: scale(1.024) translateY(-2px);
   }
 `;
 
 const CardImageWrap = styled(Link)`
-  min-width: 72px;
-  width: 72px;
-  height: 56px;
+  width: 90px;              /* img'in hedef genişliği */
+  height: 56px;             /* img'in hedef yüksekliği */
+  position: relative;       /* fill için şart */
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
-  position: relative;
+  flex-shrink: 0;           /* kartta büzülmesin */
+  display: block;
 `;
 
 const CardImage = styled(Image)`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  object-fit: cover;        /* width/height CSS YOK */
 `;
 
 const CardBody = styled.div`
@@ -374,18 +367,19 @@ const CardExcerpt = styled.p`
   text-overflow: ellipsis;
   min-height: 2em;
 `;
+
 const CardDate = styled.span`
   background: linear-gradient(
     90deg,
     ${({ theme }) => theme.colors.primary} 55%,
     ${({ theme }) => theme.colors.accent} 100%
   );
-  color: ${({ theme }) => theme.colors.accentText}; // Genellikle #fff
+  color: ${({ theme }) => theme.colors.accentText};
   font-size: ${({ theme }) => theme.fontSizes.xsmall};
   padding: 0.15em 0.7em 0.17em 0.6em;
   border-radius: ${({ theme }) => theme.radii.pill};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-  box-shadow: 0 3px 8px 0 rgba(40,117,194,0.08), ${({ theme }) => theme.shadows.xs};
+  box-shadow: 0 3px 8px 0 rgba(40, 117, 194, 0.08), ${({ theme }) => theme.shadows.xs};
   letter-spacing: 0.01em;
   margin-top: auto;
   margin-right: 7px;
@@ -395,4 +389,3 @@ const CardDate = styled.span`
   user-select: none;
   display: inline-block;
 `;
-

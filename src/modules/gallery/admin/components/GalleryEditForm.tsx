@@ -1,6 +1,7 @@
+// src/modules/gallery/components/GalleryEditForm.tsx
 "use client";
 
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/gallery";
@@ -9,6 +10,20 @@ import ImageUploader, { type UploadImage } from "@/shared/ImageUploader";
 import { toast } from "react-toastify";
 import type { GalleryCategory, IGallery } from "@/modules/gallery/types";
 import { completeLocales } from "@/utils/completeLocales";
+
+// basit URL normalize: query/hash ve trailing slash farklarını tolere et
+const normalizeUrl = (u?: string) => {
+  if (!u) return "";
+  try {
+    const base = typeof window !== "undefined" ? window.location.origin : "http://localhost";
+    const url = new URL(u, base);
+    url.hash = "";
+    url.search = "";
+    return url.toString().replace(/\/+$/, "");
+  } catch {
+    return (u || "").replace(/\/+$/, "");
+  }
+};
 
 interface Props {
   isOpen: boolean;
@@ -43,11 +58,23 @@ export default function GalleryEditForm({
   const [category, setCategory] = useState("");
   const [type, setType] = useState<"image" | "video">("image");
   const [order, setOrder] = useState("0");
+  const [tags, setTags] = useState(""); // (opsiyonel) edit’te de destekle
 
   // ---- Görsel yönetimi (ImageUploader) ----
   const [existing, setExisting] = useState<UploadImage[]>([]);
   const [removedExisting, setRemovedExisting] = useState<UploadImage[]>([]);
   const [files, setFiles] = useState<File[]>([]);
+
+  // (url/publicId) ⇒ _id fallback haritası
+  const idBySig = useMemo(() => {
+    const m = new Map<string, string>();
+    (editingItem?.images || []).forEach((img) => {
+      if (!img?._id) return;
+      if (img.publicId) m.set(`pid:${img.publicId}`, img._id);
+      if (img.url) m.set(`url:${normalizeUrl(img.url)}`, img._id);
+    });
+    return m;
+  }, [editingItem?.images]);
 
   // Edit modunda değerleri yükle
   useEffect(() => {
@@ -64,14 +91,24 @@ export default function GalleryEditForm({
       setType(editingItem.type || "image");
       setOrder(String(editingItem.order ?? 0));
 
-      setExisting((editingItem.images || []).map((img) => ({
-        url: img.url,
-        thumbnail: img.thumbnail,
-        webp: img.webp,
-        publicId: img.publicId,
-      })));
+      // 🔴 ESKİ: _id’yi düşürüyordu → 🔵 YENİ: _id’yi koru
+      setExisting(
+        (editingItem.images || []).map((img) => ({
+          _id: img._id,                 // ← önemli
+          url: img.url,
+          thumbnail: img.thumbnail,
+          webp: img.webp,
+          publicId: img.publicId,
+        }))
+      );
+
       setRemovedExisting([]);
       setFiles([]);
+
+      // (opsiyonel) tags edit
+      try {
+        setTags((editingItem.tags || []).join(", "));
+      } catch { setTags(""); }
     } else {
       setTitle(initialByLocale());
       setSummary(initialByLocale());
@@ -82,6 +119,7 @@ export default function GalleryEditForm({
       setExisting([]);
       setRemovedExisting([]);
       setFiles([]);
+      setTags("");
     }
   }, [editingItem, isOpen]);
 
@@ -107,15 +145,59 @@ export default function GalleryEditForm({
     formData.append("type", type);
     formData.append("order", order);
 
+    // tags: CSV → hem simple hem JSON (backend flexible ise)
+    const tagsArr = (tags || "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (tagsArr.length) {
+      tagsArr.forEach((tg) => formData.append("tags[]", tg));
+      formData.append("tags", JSON.stringify(tagsArr));
+    }
+
+    // ✅ Yeni görseller (multer array('images'))
     files.forEach((file) => formData.append("images", file));
 
-    if (removedExisting.length > 0) {
-      formData.append(
-        "removedImages",
-        JSON.stringify(
-          removedExisting.map((x) => ({ url: x.url, publicId: x.publicId }))
-        )
-      );
+    // ✅ SİLME: önce id’ler, yoksa signature fallback
+    const removeIds: string[] = [];
+    const removeUrls: string[] = []; // backend’in yaygın beklediği alternatif
+
+    removedExisting.forEach((img) => {
+      if (img._id) {
+        removeIds.push(img._id);
+        return;
+      }
+      const byPid = img.publicId && idBySig.get(`pid:${img.publicId}`);
+      const byUrl = img.url && idBySig.get(`url:${normalizeUrl(img.url)}`);
+      if (byPid || byUrl) {
+        removeIds.push((byPid || byUrl) as string);
+      } else if (img.url) {
+        removeUrls.push(img.url);
+      }
+    });
+
+    if (removeIds.length) {
+      // hem simple hem JSON
+      removeIds.forEach((id) => formData.append("removeImageIds[]", id));
+      formData.append("removeImageIds", JSON.stringify(removeIds));
+      // bazı backendlerde alternatif isim:
+      formData.append("removedImageIds", JSON.stringify(removeIds));
+    }
+    if (removeUrls.length) {
+      // DİKKAT: string[] (objeyle değil) — çoğu backend bunu bekler
+      formData.append("removedImages", JSON.stringify(removeUrls));
+    }
+
+    // ✅ SIRALAMA: id’ler varsa onları gönder; yoksa signature
+    const orderIds = existing.map((x) => x._id).filter(Boolean) as string[];
+    if (orderIds.length) {
+      orderIds.forEach((id) => formData.append("existingImagesOrderIds[]", id));
+      formData.append("existingImagesOrderIds", JSON.stringify(orderIds));
+    } else if (existing.length) {
+      const orderSig = existing.map((x) => x.publicId || x.url).filter(Boolean) as string[];
+      if (orderSig.length) {
+        formData.append("existingImagesOrder", JSON.stringify(orderSig));
+      }
     }
 
     await onSubmit(formData, editingItem?._id);
@@ -207,6 +289,16 @@ export default function GalleryEditForm({
           min={0}
         />
 
+        {/* Tags (opsiyonel) */}
+        <label htmlFor="tags">{t("form.tags", "Tags (comma separated)")}</label>
+        <input
+          id="tags"
+          type="text"
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+          placeholder="art, summer, beach"
+        />
+
         {/* Görseller */}
         <label>{t("form.image", "Images")}</label>
         <ImageUploader
@@ -234,6 +326,7 @@ export default function GalleryEditForm({
     </FormWrapper>
   );
 }
+
 
 /* ---- styled ---- */
 const FormWrapper = styled.div`

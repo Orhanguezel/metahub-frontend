@@ -51,7 +51,7 @@ export interface ISparepartLite {
   price?: number;
 }
 
-export type OfferItemProductType = "ensotekprod" | "sparepart";
+export type OfferItemProductType = "ensotekprod" | "sparepart"| "bikes";
 
 export interface IOfferItem {
   /** Which catalog this line refers to */
@@ -217,7 +217,7 @@ export interface RequestOfferPayload {
   phone?: string;
   message?: string;
   productId?: string;
-  productType?: "product" | "ensotekprod" | "specialprod";
+  productType?: "ensotekprod" | "sparepart" | "bikes";
 }
 
 

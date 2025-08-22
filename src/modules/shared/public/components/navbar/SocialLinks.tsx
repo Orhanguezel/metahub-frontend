@@ -19,27 +19,39 @@ const ICON_MAP: Record<string, ReactNode> = {
   youtube: <FaYoutube />,
 };
 
+// basit url normalizer: şema yoksa https ekler
+const normalizeUrl = (u: unknown) => {
+  const s = String(u || "").trim();
+  if (!s) return "";
+  return /^https?:\/\//i.test(s) ? s : `https://${s}`;
+};
+
 export default function SocialLinks() {
   const company = useAppSelector((state) => state.company.company);
   if (!company || !company.socialLinks) return null;
-   return (
+
+  return (
     <SocialLinksWrapper>
       {Object.entries(company.socialLinks).map(([key, url]) => {
-        if (!url) return null;
-        const IconComponent = ICON_MAP[key.toLowerCase()];
-        if (!IconComponent) return null;
+        const icon = ICON_MAP[key.toLowerCase()];
+        const href = normalizeUrl(url);
+        if (!icon || !href) return null;
+
+        const label = key.charAt(0).toUpperCase() + key.slice(1);
 
         return (
           <IconCircleButton
+            // kritik kısım: anchor olarak render + href ekle
+            as="a"
+            href={href}
             key={key}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={key}
-            title={key.charAt(0).toUpperCase() + key.slice(1)}
+            aria-label={label}
+            title={label}
             tabIndex={0}
-
           >
-            {IconComponent}
+            {icon}
           </IconCircleButton>
         );
       })}
@@ -56,5 +68,3 @@ const SocialLinksWrapper = styled.div`
   @media (max-width: 900px) { gap: 10px; }
   @media (max-width: 600px) { gap: 6px; }
 `;
-
-

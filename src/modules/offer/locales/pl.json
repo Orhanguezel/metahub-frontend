@@ -23,5 +23,10 @@
   "form.message": "Żądany produkt/usługa i dodatkowa notatka...",
   "form.sending": "Wysyłanie...",
   "form.send": "Wyślij",
-  "buttonText": "Poproś o ofertę"
+  "buttonText": "Poproś o ofertę",
+  "productTypes": {
+    "ensotekprod": "Nowa wieża chłodnicza",
+    "sparepart": "Część zamienna",
+    "bikes": "Rower"
+  }
 }

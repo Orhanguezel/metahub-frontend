@@ -43,28 +43,18 @@ export default function NavbarLogo({
   }
 
   return (
-    <LogoWrapper href="/">
+    <LogoWrapper href="/" aria-label="Home">
       {logoSrc ? (
-        <LogoImgBox>
-  <Image
-    src={logoSrc}
-    alt="Ensotek Logo"
-    width={maxWidth}
-    height={height}
-    sizes={`${maxWidth}px`}
-    style={{
-      width: "100%",        // Sadece bunu verirsen:
-      height: "auto",       // Mutlaka bunu da ver!
-      maxHeight: `${height}px`,
-      maxWidth: `${maxWidth}px`,
-      objectFit: "contain",
-      background: "transparent",
-      display: "block",
-    }}
-    priority
-  />
-</LogoImgBox>
-
+        <LogoImgBox $h={height} $mw={maxWidth}>
+          <Image
+            src={logoSrc}
+            alt="Ensotek Logo"
+            fill
+            priority
+            sizes={`(max-width: 600px) 110px, ${maxWidth}px`}
+            style={{ objectFit: "contain" }} // oran korunur
+          />
+        </LogoImgBox>
       ) : (
         <Fallback style={{ height }}>{/* fallback */}</Fallback>
       )}
@@ -73,38 +63,30 @@ export default function NavbarLogo({
   );
 }
 
-// --- Styled Components ---
+/* --- styled --- */
+
 const LogoWrapper = styled(Link)`
-  display: flex;
+  display: inline-flex;          /* yüzdeye göre genişleyip uzamasın */
   flex-direction: column;
   align-items: center;
-  gap: 0.04em;
+  gap: 0.25rem;
   text-decoration: none;
   background: transparent;
   min-width: 0;
-  padding: 0;
-  margin: 0;
-  width: 100%;
-  max-width: 220px;
-
-  @media (max-width: 600px) {
-    max-width: 220px;
-  }
 `;
 
-const LogoImgBox = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+const LogoImgBox = styled.div<{ $h: number; $mw: number }>`
+  position: relative;
+  width: ${({ $mw }) => $mw}px;      /* en fazla bu kadar genişler */
+  height: ${({ $h }) => $h}px;       /* navbar yüksekliği */
+  max-width: 100%;
+  overflow: hidden;                  /* taşma yok */
   background: transparent;
-  padding: 0;
-  margin: 0;
-  height: auto;
-  width: 100%;
-  max-width: 200px;
+  line-height: 0;                    /* küçük sapmaları engeller */
 
   @media (max-width: 600px) {
-    max-width: 110px;
+    width: 110px;                    /* mobilde daha dar */
+    height: 38px;                    /* ve daha alçak */
   }
 `;
 
@@ -129,15 +111,13 @@ const LogoSlogan = styled.span`
   letter-spacing: 0.01em;
   line-height: 1.2;
 
-  white-space: nowrap;                // 👈 Sadece tek satır!
-  overflow: hidden;                   // 👈 Taşan kısmı gizle
-  text-overflow: ellipsis;            // 👈 ... göster
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   max-width: 220px;
 
   @media (max-width: 600px) {
     font-size: ${({ theme }) => theme.fontSizes.xsmall};
-    max-width: 75vw;                  // Mobilde daha fazla esneklik
+    max-width: 75vw;
   }
 `;
-
-

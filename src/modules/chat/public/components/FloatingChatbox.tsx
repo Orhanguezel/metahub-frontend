@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import styled, { keyframes, css } from "styled-components";
 import { BsChatDots, BsChatDotsFill } from "react-icons/bs";
-import {ChatBox} from "@/modules/chat";
+import { ChatBox } from "@/modules/chat";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/chat";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -42,6 +42,35 @@ const resolveRoomForUser = (userId?: string) => {
   return makeUserRoomId(userId);
 };
 
+/**
+ * Oda bazlı mesaj selector'ını, aynı içerikte ise aynı referansı döndürecek şekilde sarmalar.
+ * Böylece React-Redux'ın "selector twice with same params" kontrolü geçer ve uyarı kalkar.
+ */
+function makeStableRoomMessagesSelector(roomId?: string) {
+  const base = selectMessagesByRoom(roomId || "__none__");
+  let prev: ChatMessage[] = [];
+  let prevKey = "";
+
+  return (state: RootState) => {
+    const arr = (base(state) as ChatMessage[]) || [];
+    // İçerik anahtarı: uzun JSON yerine hızlı bir kimlik dizisi
+    const key =
+      arr.length +
+      "|" +
+      arr
+        .map((m) => (m as any)._id ?? (m as any).id ?? (m as any).clientId ?? (m as any).createdAt ?? "")
+        .join(",");
+
+    if (key === prevKey) {
+      // içerik aynı -> yine aynı referansı döndür
+      return prev;
+    }
+    prev = arr;
+    prevKey = key;
+    return arr;
+  };
+}
+
 export default function FloatingChatboxSection() {
   const router = useRouter();
   const pathname = usePathname();
@@ -53,12 +82,12 @@ export default function FloatingChatboxSection() {
   const isAuthenticated = !!user?._id;
   const userId = user?._id;
 
-  // 🏷️ Tenant adı
+  // 🏷️ Tenant adı (state’ten aynen alınır; referans sabit kalır)
   const tenantNameObj = useAppSelector((s: RootState) => {
     const st = s.tenants;
     if (st.selectedTenant?.name) return st.selectedTenant.name;
     if (st.selectedTenantId) {
-      const byId = st.tenants.find((tt) => tt._id === st.selectedTenantId)?.name;
+      const byId = st.tenants.find((tt: any) => tt._id === st.selectedTenantId)?.name;
       if (byId) return byId;
     }
     return st.tenants[0]?.name;
@@ -86,7 +115,9 @@ export default function FloatingChatboxSection() {
     const rid = resolveRoomForUser(userId);
     setLocalRoom(rid);
     dispatch(setCurrentRoom(rid));
-    try { localStorage.setItem(LS_ROOM, rid!); } catch {}
+    try {
+      localStorage.setItem(LS_ROOM, rid!);
+    } catch {}
   }, [isAuthenticated, userId, dispatch]);
 
   // Navbar’dan chat açma olayı
@@ -125,15 +156,18 @@ export default function FloatingChatboxSection() {
       img.onload = () => {
         const size = 32;
         const c = document.createElement("canvas");
-        c.width = size; c.height = size;
+        c.width = size;
+        c.height = size;
         const ctx = c.getContext("2d")!;
         ctx.drawImage(img, 0, 0, size, size);
         ctx.fillStyle = "#E53935";
-        ctx.beginPath(); ctx.arc(size - 8, 8, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath();
+        ctx.arc(size - 8, 8, 8, 0, Math.PI * 2);
+        ctx.fill();
         ctx.fillStyle = "#fff";
         ctx.font = "bold 10px sans-serif";
-        ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        // total unread yaz
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
         const text = count > 9 ? "9+" : String(count);
         ctx.fillText(text, size - 8, 8);
         link.href = c.toDataURL("image/png");
@@ -147,10 +181,9 @@ export default function FloatingChatboxSection() {
     updateFaviconBadge(totalUnread);
   }, [totalUnread, updateFaviconBadge]);
 
-  // Bu kullanıcının oda mesajları (ChatBox'a)
-  const messages = useAppSelector(
-    useMemo(() => selectMessagesByRoom(localRoom || "__none__"), [localRoom])
-  );
+  // Bu kullanıcının oda mesajları (memoize edilmiş stable selector ile)
+  const messagesSelector = useMemo(() => makeStableRoomMessagesSelector(localRoom), [localRoom]);
+  const messages = useAppSelector(messagesSelector);
 
   // Modal açılınca: geçmiş + read
   useEffect(() => {
@@ -159,7 +192,6 @@ export default function FloatingChatboxSection() {
       await dispatch(fetchRoomMessages({ roomId: localRoom, page: 1, limit: 20, sort: "asc" }));
       await dispatch(markRoomMessagesRead({ roomId: localRoom }));
       setToast(null);
-      // (Eski LS sayaçları kaldırıldı)
       window.dispatchEvent(new CustomEvent("metahub:chatRead"));
     })();
   }, [open, localRoom, dispatch]);
@@ -176,17 +208,16 @@ export default function FloatingChatboxSection() {
         joinedRef.current = localRoom;
       }
     };
-    if (socket.connected) join(); else socket.once("connect", join);
+    if (socket.connected) join();
+    else socket.once("connect", join);
 
     const onInbound = (msg: ChatMessage) => {
       if (msg.roomId !== localRoom) return;
-      // store’a yaz (unread artırma kararı slice’ta)
       dispatch(messageReceived(msg));
       playDing();
       const toastMsg = t("support.new_message", "Yeni mesajınız var");
       setToast(toastMsg);
       setTimeout(() => setToast(null), 3000);
-      // OS bildirimi
       showOSNotification(msg.message);
     };
 
@@ -290,7 +321,16 @@ const ChatButton = styled.button<{ $unread: boolean }>`
   border: 0; border-radius: ${({ theme }) => theme.radii.pill};
   padding: .75em 1.1em; display: inline-flex; align-items: center; gap: .6em; cursor: pointer;
   transition: ${({ theme }) => theme.transition.fast};
-  ${({ $unread }) => $unread ? css`animation:${pulse} 1.2s ease-in-out infinite;` : css`&:hover{background:${({theme})=>theme.colors.primaryHover};}`}
+  ${({ $unread }) =>
+    $unread
+      ? css`
+          animation: ${pulse} 1.2s ease-in-out infinite;
+        `
+      : css`
+          &:hover {
+            background: ${({ theme }) => theme.colors.primaryHover};
+          }
+        `}
   @media (max-width: 600px){ bottom:16px; right:56px; padding:.65em .9em; }
 `;
 const IconWrap = styled.span<{ $unread: boolean }>`
