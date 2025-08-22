@@ -18,7 +18,7 @@ const prodImagePatterns = tenantDomains.map((host) => ({
   pathname: "/**",
 }));
 
-// CDN + paylaşılan kaynaklar (sadece GERÇEK kullandıklarını bırak)
+// CDN + paylaşılan kaynaklar
 const sharedImagePatterns = [
   { protocol: "https", hostname: "via.placeholder.com", pathname: "/**" },
   { protocol: "https", hostname: "res.cloudinary.com", pathname: "/**" },
@@ -26,13 +26,19 @@ const sharedImagePatterns = [
   { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
   { protocol: "https", hostname: "cdn.shopify.com", pathname: "/**" },
 
-  // 🔵 Senin subdomain'lerin (uzaktan görsel yüklüyorsan tut; aksi halde silebilirsin)
+  // 🔵 Random User (ör: https://randomuser.me/api/portraits/women/45.jpg)
+  { protocol: "https", hostname: "randomuser.me", pathname: "/api/**" },
+
+  // 🔵 Sizin subdomain'ler
   { protocol: "https", hostname: "metahub.guezelwebdesign.com", pathname: "/**" },
   { protocol: "https", hostname: "test.guezelwebdesign.com", pathname: "/**" },
+
+  // (İsteğe bağlı) MapLibre sprite/görselleri için next/image kullanırsanız
+  { protocol: "https", hostname: "basemaps.cartocdn.com", pathname: "/**" },
 ];
 
-/* ----------------------  CSP: reCAPTCHA + PDF + Görseller  ---------------------- */
-// reCAPTCHA domainleri
+/* ----------------------  CSP ---------------------- */
+// reCAPTCHA
 const RECAPTCHA_SCRIPT = [
   "https://www.google.com",
   "https://www.gstatic.com",
@@ -47,19 +53,24 @@ const RECAPTCHA_FRAME = [
 // frame-src (PDF önizleme & reCAPTCHA)
 const frameSrc = ["'self'", "res.cloudinary.com", "docs.google.com", ...RECAPTCHA_FRAME];
 
-// ⬇⬇⬇ WS/WSS İZİNLERİ (YENİ) ⬇⬇⬇
+// WS/WSS
 const wsDev = isDev ? ["ws://localhost:5019"] : [];
 const wsProd = !isDev ? tenantDomains.map((host) => `wss://${host}`) : [];
 
-// connect-src (XHR/fetch/WebSocket). API ya da farklı origin'e istek atıyorsan buraya ekle.
-const connectSrc = ["'self'", "res.cloudinary.com", ...RECAPTCHA_SCRIPT, ...wsDev, ...wsProd];
+// 🔵 Harita kaynakları (MapLibre/Carto)
+const MAP_CONNECT = [
+  "https://basemaps.cartocdn.com",    // style.json, tiles, sprite
+  "https://fonts.openmaptiles.org",   // glyph pbf
+];
+
+// connect-src (XHR/fetch/WebSocket)
+const connectSrc = ["'self'", "res.cloudinary.com", ...RECAPTCHA_SCRIPT, ...wsDev, ...wsProd, ...MAP_CONNECT];
 if (isDev) {
   frameSrc.push("http://localhost:5019");
   connectSrc.push("http://localhost:5019");
 }
 
-// img-src (görseller). Kendi origin'in için 'self' yeter.
-// Başka subdomain'den görsel çekiyorsan ekliyoruz:
+// img-src (görseller)
 const imgSrc = [
   "'self'",
   "data:",
@@ -70,18 +81,24 @@ const imgSrc = [
   "images.unsplash.com",
   "cdn.shopify.com",
 
-  // 🔵 Senin subdomain'lerin (cross-origin görsel kullanıyorsan)
+  // 🔵 Random User
+  "randomuser.me",
+
+  // 🔵 Sizin subdomain'ler
   "metahub.guezelwebdesign.com",
   "test.guezelwebdesign.com",
 
-  // reCAPTCHA/Google görselleri
+  // 🔵 Harita sprite/görselleri (gerekirse)
+  "basemaps.cartocdn.com",
+
+  // Google görselleri
   "www.google.com",
   "www.gstatic.com",
   "ssl.gstatic.com",
 ];
 if (isDev) imgSrc.push("http://localhost:5019");
 
-// script-src (dev’de unsafe-eval serbest, prod’da kapalı)
+// script-src
 const scriptSrc = [
   "'self'",
   "'unsafe-inline'",
@@ -89,7 +106,7 @@ const scriptSrc = [
   ...(isDev ? ["'unsafe-eval'"] : []),
 ];
 
-// script-src-elem (bazı tarayıcılar için element tabanlı direktif gerekli)
+// script-src-elem
 const scriptSrcElem = [
   "'self'",
   "'unsafe-inline'",
@@ -139,7 +156,7 @@ const nextConfig = {
       {
         source: "/:path*",
         headers: [
-          { key: "Content-Security-Policy", value: csp },
+          { key: "Content-Security-Policy", value: csp }, // img-src & connect-src güncel
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         ],

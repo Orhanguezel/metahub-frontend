@@ -1,6 +1,6 @@
 // src/lib/tenant.ts
 
-// 1️⃣ Tenant mapping tablon
+// 1️⃣ Tenant mapping tablon (AYNI KALDI)
 export const DOMAIN_TENANT_MAP: Record<string, string> = {
   "koenigsmassage.com": "anastasia",
   "www.koenigsmassage.com": "anastasia",
@@ -17,7 +17,7 @@ export const DOMAIN_TENANT_MAP: Record<string, string> = {
   // ... diğerleri
 };
 
-// 2️⃣ Local ortamda tenant fallback (geliştirici için)
+// 2️⃣ Local ortamda tenant fallback (geliştirici için) — AYNI
 function getDefaultTenant(): string {
   return (
     process.env.NEXT_PUBLIC_TENANT_NAME ||
@@ -27,37 +27,66 @@ function getDefaultTenant(): string {
   );
 }
 
-// 3️⃣ Host'tan tenant tespiti (port temizliği eklendi)
-export function detectTenantFromHost(host?: string): string | undefined {
-  let h =
-    (host || (typeof window !== "undefined" ? window.location.hostname : "")).toLowerCase();
+/** Host normalize: port/trailing dot/WWW temizle, lowercase */
+function normalizeHost(raw?: string): { host: string; naked: string } {
+  const h =
+    (raw || (typeof window !== "undefined" ? window.location.hostname : "") || "")
+      .toLowerCase()
+      .replace(/:\d+$/, "")   // :3000
+      .replace(/\.$/, "");    // trailing dot
 
-  // PORTU TEMİZLE!
-  h = h.replace(/:\d+$/, "");
+  const naked = h.replace(/^www\./, "");
+  return { host: h, naked };
+}
+
+/**
+ * 3️⃣ Host'tan tenant tespiti
+ * - Önce TAM eşleşme (mapping) + naked eşleşme
+ * - Kaçarsa güvenli fallback: subdomain'i tenant say
+ *   ör: metahub.guezelwebdesign.com -> "metahub"
+ */
+export function detectTenantFromHost(host?: string): string | undefined {
+  const { host: h, naked } = normalizeHost(host);
 
   // LOCALHOST için fallback tenant
   if (h === "localhost" || h === "127.0.0.1") {
     return getDefaultTenant();
   }
 
-  // Map'ten doğrudan eşleşme
+  // 1) Map’ten doğrudan eşleşme
   if (DOMAIN_TENANT_MAP[h]) return DOMAIN_TENANT_MAP[h];
+  if (DOMAIN_TENANT_MAP[naked]) return DOMAIN_TENANT_MAP[naked];
 
-  // Alt domain ise kökü kullan
-  const parts = h.replace(/^www\./, "").split(".");
-  if (parts.length === 2) return parts[0];
-  if (parts.length > 2) return parts[parts.length - 2];
+  // 2) Güvenli fallback: subdomain’i tenant kabul et
+  //    "metahub.guezelwebdesign.com" -> ["metahub","guezelwebdesign","com"]
+  const parts = naked.split(".");
+  if (parts.length >= 3) return parts[0]; // ilk label
+  if (parts.length === 2) return parts[0]; // ensotek.de -> "ensotek"
 
-  // PROD'DA fallback asla olmayacak (undefined dön, üstte handle et)
+  // PROD'da üst katman handle etsin
   return undefined;
 }
 
-// 4️⃣ Tenant'a göre favicon dosya path'i (public/favicons/{tenant}.ico)
+// 4️⃣ Tenant'a göre favicon dosya path'i (public/favicons/{tenant}.ico) — AYNI
 export function getFaviconPathForTenant(tenant?: string): string {
-  // tenant yoksa veya bilinmeyense fallback favicon (public/favicon.ico)
   if (!tenant) return "/favicon.ico";
   return `/favicons/${tenant}.ico`;
 }
 
-// 5️⃣ (İstersen) Tenant'a göre başka static asset, logo, css vs. için de aynı yapı kullanılabilir
+/**
+ * 5️⃣ (Opsiyonel) Cookie domain yardımcı:
+ *    ".guezelwebdesign.com" döndürür; tek label ise host’u aynen döndürür.
+ *    Auth cookie’lerini subdomain’ler arası paylaşacaksanız işinize yarar.
+ */
+export function getApexCookieDomain(host?: string): string {
+  const { naked } = normalizeHost(host);
+  const parts = naked.split(".");
+  if (parts.length >= 2) {
+    const apex = `.${parts.slice(-2).join(".")}`;
+    return apex; // .guezelwebdesign.com, .md-hygienelogistik.de
+  }
+  return naked; // localhost gibi
+}
+
+// 6️⃣ (İsterseniz) başka asset yolları için de benzeri yardımcılar yazabilirsiniz.
 // export function getLogoPathForTenant(tenant?: string) { ... }
