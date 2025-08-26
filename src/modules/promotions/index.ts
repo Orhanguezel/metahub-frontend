@@ -1,6 +1,5 @@
 // Pages
 export { default as AdminPage } from "./admin/pages/AdminPage";
-export { default as Page } from "./public/pages/Page";
 
 // Admin Components
 export { default as PromotionsForm } from "./admin/components/Form";
