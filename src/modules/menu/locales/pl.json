@@ -1,0 +1,94 @@
+
+{
+  "additives": {
+    "1": "zawiera barwnik(i)",
+    "2": "zawiera konserwanty",
+    "3": "zawiera przeciwutleniacze",
+    "4": "zawiera wzmacniacz(e) smaku",
+    "5": "siarkowane",
+    "6": "przyciemniany (barwiony)",
+    "7": "woskowany",
+    "8": "zawiera substancje słodzące",
+    "9": "zawiera fosforany",
+    "10": "zawiera kofeinę",
+    "11": "zawiera chininę",
+    "12": "zawiera źródło fenyloalaniny",
+    "13": "mięso z kurczaka oddzielone mechanicznie"
+  },
+  "allergens": {
+    "a": "zawiera pszenicę",
+    "b": "zawiera laktozę",
+    "c": "zawiera jajko",
+    "d": "zawiera ryby",
+    "e": "zawiera orzeszki ziemne",
+    "f": "zawiera soję",
+    "g": "zawiera mleko",
+    "h": "zawiera pistacje",
+    "i": "zawiera seler",
+    "j": "zawiera musztardę",
+    "k": "zawiera nasiona sezamu",
+    "l": "zawiera dwutlenek siarki (siarczyny)",
+    "m": "zawiera łubin",
+    "n": "zawiera mięczaki",
+    "o": "zawiera gluten",
+    "p": "może zawierać śladowe ilości jęczmienia",
+    "q": "zawiera semolinę z pszenicy durum",
+    "r": "zawiera ciecierzycę"
+  },
+  "menu": {
+    "additives": {
+      "1": "zawiera barwnik(i)",
+      "2": "zawiera konserwanty",
+      "3": "zawiera przeciwutleniacze",
+      "4": "zawiera wzmacniacz(e) smaku",
+      "5": "siarkowane",
+      "6": "przyciemniany (barwiony)",
+      "7": "woskowany",
+      "8": "zawiera substancje słodzące",
+      "9": "zawiera fosforany",
+      "10": "zawiera kofeinę",
+      "11": "zawiera chininę",
+      "12": "zawiera źródło fenyloalaniny",
+      "13": "mięso z kurczaka oddzielone mechanicznie"
+    },
+    "allergens": {
+      "a": "zawiera pszenicę",
+      "b": "zawiera laktozę",
+      "c": "zawiera jajko",
+      "d": "zawiera ryby",
+      "e": "zawiera orzeszki ziemne",
+      "f": "zawiera soję",
+      "g": "zawiera mleko",
+      "h": "zawiera pistacje",
+      "i": "zawiera seler",
+      "j": "zawiera musztardę",
+      "k": "zawiera nasiona sezamu",
+      "l": "zawiera dwutlenek siarki (siarczyny)",
+      "m": "zawiera łubin",
+      "n": "zawiera mięczaki",
+      "o": "zawiera gluten",
+      "p": "może zawierać śladowe ilości jęczmienia",
+      "q": "zawiera semolinę z pszenicy durum",
+      "r": "zawiera ciecierzycę"
+    },
+    "variants": {
+      "names": { "S": "Mały", "M": "Średni", "L": "Duży", "REG": "Standard", "XL": "Bardzo duży" },
+      "sizes": { "S": "Mały", "M": "Średni", "L": "Duży", "REG": "Standard", "XL": "Bardzo duży" }
+    },
+    "price": { "kind": { "base": "Cena bazowa", "deposit": "Kaucja", "surcharge": "Dopłata", "discount": "Rabat" } },
+    "channels": { "delivery": "Dostawa", "pickup": "Odbiór własny", "dinein": "Na miejscu" },
+    "dietaryLabels": {
+      "vegetarian": "Wegetariańskie",
+      "vegan": "Wegańskie",
+      "pescatarian": "Pescetariańskie",
+      "halal": "Halal",
+      "kosher": "Koszerne",
+      "glutenFree": "Bez glutenu",
+      "lactoseFree": "Bez laktozy",
+      "nutFree": "Bez orzechów",
+      "eggFree": "Bez jaj",
+      "porkFree": "Bez wieprzowiny",
+      "containsAlcohol": "Zawiera alkohol"
+    }
+  }
+}

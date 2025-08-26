@@ -87,6 +87,12 @@ import timetrackingSlice from "@/modules/timetracking/slice/timeEntrySlice";
 import filesSlice from "@/modules/files/slice/filesSlice";
 import neighborhoodSlice from "@/modules/neighborhood/slice/neighborhoodSlice";
 
+import promotionsSlice from "@/modules/promotions/slice";
+import menuCategorySlice from "@/modules/menu/slice/menucategorySlice";
+import menuItemSlice from "@/modules/menu/slice/menuitemSlice";
+import menuSlice from "@/modules/menu/slice/menuSlice";
+import Branch from "@/modules/branch/slice";
+
 
 // --- Combine reducers ---
 // Sadece slice bazında persistReducer uygula!
@@ -175,6 +181,11 @@ const rootReducer = combineReducers({
   timetracking: timetrackingSlice,
   files: filesSlice,
   neighborhood: neighborhoodSlice,
+  promotions: promotionsSlice,
+  menucategory: menuCategorySlice,
+  menuitem: menuItemSlice,
+  menu: menuSlice,
+  branch: Branch,
 });
 
 // --- Store ---

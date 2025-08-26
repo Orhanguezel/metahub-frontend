@@ -1,0 +1,94 @@
+
+{
+  "additives": {
+    "1": "contiene colorantes",
+    "2": "contiene conservantes",
+    "3": "contiene antioxidantes",
+    "4": "contiene potenciadores del sabor",
+    "5": "sulfitado",
+    "6": "ennegrecido (coloreado)",
+    "7": "encerado",
+    "8": "contiene edulcorantes",
+    "9": "contiene fosfatos",
+    "10": "contiene cafeína",
+    "11": "contiene quinina",
+    "12": "contiene una fuente de fenilalanina",
+    "13": "carne de pollo separada mecánicamente"
+  },
+  "allergens": {
+    "a": "contiene trigo",
+    "b": "contiene lactosa",
+    "c": "contiene huevo",
+    "d": "contiene pescado",
+    "e": "contiene cacahuetes",
+    "f": "contiene soja",
+    "g": "contiene leche",
+    "h": "contiene pistachos",
+    "i": "contiene apio",
+    "j": "contiene mostaza",
+    "k": "contiene semillas de sésamo",
+    "l": "contiene dióxido de azufre (sulfitos)",
+    "m": "contiene altramuz",
+    "n": "contiene moluscos",
+    "o": "contiene gluten",
+    "p": "puede contener trazas de cebada",
+    "q": "contiene sémola de trigo duro",
+    "r": "contiene garbanzos"
+  },
+  "menu": {
+    "additives": {
+      "1": "contiene colorantes",
+      "2": "contiene conservantes",
+      "3": "contiene antioxidantes",
+      "4": "contiene potenciadores del sabor",
+      "5": "sulfitado",
+      "6": "ennegrecido (coloreado)",
+      "7": "encerado",
+      "8": "contiene edulcorantes",
+      "9": "contiene fosfatos",
+      "10": "contiene cafeína",
+      "11": "contiene quinina",
+      "12": "contiene una fuente de fenilalanina",
+      "13": "carne de pollo separada mecánicamente"
+    },
+    "allergens": {
+      "a": "contiene trigo",
+      "b": "contiene lactosa",
+      "c": "contiene huevo",
+      "d": "contiene pescado",
+      "e": "contiene cacahuetes",
+      "f": "contiene soja",
+      "g": "contiene leche",
+      "h": "contiene pistachos",
+      "i": "contiene apio",
+      "j": "contiene mostaza",
+      "k": "contiene semillas de sésamo",
+      "l": "contiene dióxido de azufre (sulfitos)",
+      "m": "contiene altramuz",
+      "n": "contiene moluscos",
+      "o": "contiene gluten",
+      "p": "puede contener trazas de cebada",
+      "q": "contiene sémola de trigo duro",
+      "r": "contiene garbanzos"
+    },
+    "variants": {
+      "names": { "S": "Pequeño", "M": "Mediano", "L": "Grande", "REG": "Regular", "XL": "Extra grande" },
+      "sizes": { "S": "Pequeño", "M": "Mediano", "L": "Grande", "REG": "Regular", "XL": "Extra grande" }
+    },
+    "price": { "kind": { "base": "Precio base", "deposit": "Depósito", "surcharge": "Recargo", "discount": "Descuento" } },
+    "channels": { "delivery": "Reparto", "pickup": "Para llevar", "dinein": "En el local" },
+    "dietaryLabels": {
+      "vegetarian": "Vegetariano",
+      "vegan": "Vegano",
+      "pescatarian": "Pescetariano",
+      "halal": "Halal",
+      "kosher": "Kosher",
+      "glutenFree": "Sin gluten",
+      "lactoseFree": "Sin lactosa",
+      "nutFree": "Sin frutos secos",
+      "eggFree": "Sin huevo",
+      "porkFree": "Sin cerdo",
+      "containsAlcohol": "Contiene alcohol"
+    }
+  }
+}

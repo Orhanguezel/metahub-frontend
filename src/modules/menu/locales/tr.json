@@ -1,0 +1,96 @@
+
+{
+  "additives": {
+    "1": "renklendirici içerir",
+    "2": "koruyucu madde içerir",
+    "3": "antioksidan içerir",
+    "4": "lezzet artırıcı içerir",
+    "5": "sülfürlenmiş",
+    "6": "karartılmış (renklendirilmiş)",
+    "7": "mumlanmış",
+    "8": "tatlandırıcı içerir",
+    "9": "fosfat içerir",
+    "10": "kafein içerir",
+    "11": "kinin içerir",
+    "12": "fenilalanin kaynağı içerir",
+    "13": "mekanik ayrılmış tavuk eti"
+  },
+  "allergens": {
+    "a": "buğday içerir",
+    "b": "laktoz içerir",
+    "c": "yumurta içerir",
+    "d": "balık içerir",
+    "e": "yer fıstığı içerir",
+    "f": "soya içerir",
+    "g": "süt içerir",
+    "h": "antep fıstığı içerir",
+    "i": "kereviz içerir",
+    "j": "hardal içerir",
+    "k": "susam tohumu içerir",
+    "l": "kükürt dioksit (sülfitler) içerir",
+    "m": "lupin içerir",
+    "n": "yumuşakçalar içerir",
+    "o": "gluten içerir",
+    "p": "arpa izleri içerebilir",
+    "q": "durum irmiği içerir",
+    "r": "nohut içerir"
+  },
+  "menu": {
+    "additives": {
+      "1": "renklendirici içerir",
+      "2": "koruyucu madde içerir",
+      "3": "antioksidan içerir",
+      "4": "lezzet artırıcı içerir",
+      "5": "sülfürlenmiş",
+      "6": "karartılmış (renklendirilmiş)",
+      "7": "mumlanmış",
+      "8": "tatlandırıcı içerir",
+      "9": "fosfat içerir",
+      "10": "kafein içerir",
+      "11": "kinin içerir",
+      "12": "fenilalanin kaynağı içerir",
+      "13": "mekanik ayrılmış tavuk eti"
+    },
+    "allergens": {
+      "a": "buğday içerir",
+      "b": "laktoz içerir",
+      "c": "yumurta içerir",
+      "d": "balık içerir",
+      "e": "yer fıstığı içerir",
+      "f": "soya içerir",
+      "g": "süt içerir",
+      "h": "antep fıstığı içerir",
+      "i": "kereviz içerir",
+      "j": "hardal içerir",
+      "k": "susam tohumu içerir",
+      "l": "kükürt dioksit (sülfitler) içerir",
+      "m": "lupin içerir",
+      "n": "yumuşakçalar içerir",
+      "o": "gluten içerir",
+      "p": "arpa izleri içerebilir",
+      "q": "durum irmiği içerir",
+      "r": "nohut içerir"
+    },
+    "variants": {
+      "names": { "S": "Küçük", "M": "Orta", "L": "Büyük", "REG": "Normal", "XL": "Ekstra Büyük" },
+      "sizes": { "S": "Küçük", "M": "Orta", "L": "Büyük", "REG": "Normal", "XL": "Ekstra Büyük" }
+    },
+    "price": {
+      "kind": { "base": "Liste fiyatı", "deposit": "Depozito", "surcharge": "Ek ücret", "discount": "İndirim" }
+    },
+    "channels": { "delivery": "Paket servis", "pickup": "Gel-al", "dinein": "Restoranda" },
+    "dietaryLabels": {
+      "vegetarian": "Vejetaryen",
+      "vegan": "Vegan",
+      "pescatarian": "Pesketaryen",
+      "halal": "Helal",
+      "kosher": "Kaşer",
+      "glutenFree": "Glutensiz",
+      "lactoseFree": "Laktozsuz",
+      "nutFree": "Kuruyemiş içermez",
+      "eggFree": "Yumurtasız",
+      "porkFree": "Domuz ürünü içermez",
+      "containsAlcohol": "Alkol içerir"
+    }
+  }
+}

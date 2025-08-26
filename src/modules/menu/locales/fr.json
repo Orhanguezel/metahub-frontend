@@ -1,0 +1,94 @@
+
+{
+  "additives": {
+    "1": "contient des colorants",
+    "2": "contient des conservateurs",
+    "3": "contient des antioxydants",
+    "4": "contient des exhausteurs de goût",
+    "5": "sulfité",
+    "6": "noirci (coloré)",
+    "7": "ciré",
+    "8": "contient des édulcorants",
+    "9": "contient des phosphates",
+    "10": "contient de la caféine",
+    "11": "contient de la quinine",
+    "12": "contient une source de phénylalanine",
+    "13": "viande de poulet séparée mécaniquement"
+  },
+  "allergens": {
+    "a": "contient du blé",
+    "b": "contient du lactose",
+    "c": "contient de l'œuf",
+    "d": "contient du poisson",
+    "e": "contient des arachides",
+    "f": "contient du soja",
+    "g": "contient du lait",
+    "h": "contient des pistaches",
+    "i": "contient du céleri",
+    "j": "contient de la moutarde",
+    "k": "contient des graines de sésame",
+    "l": "contient du dioxyde de soufre (sulfites)",
+    "m": "contient du lupin",
+    "n": "contient des mollusques",
+    "o": "contient du gluten",
+    "p": "peut contenir des traces d'orge",
+    "q": "contient de la semoule de blé dur",
+    "r": "contient des pois chiches"
+  },
+  "menu": {
+    "additives": {
+      "1": "contient des colorants",
+      "2": "contient des conservateurs",
+      "3": "contient des antioxydants",
+      "4": "contient des exhausteurs de goût",
+      "5": "sulfité",
+      "6": "noirci (coloré)",
+      "7": "ciré",
+      "8": "contient des édulcorants",
+      "9": "contient des phosphates",
+      "10": "contient de la caféine",
+      "11": "contient de la quinine",
+      "12": "contient une source de phénylalanine",
+      "13": "viande de poulet séparée mécaniquement"
+    },
+    "allergens": {
+      "a": "contient du blé",
+      "b": "contient du lactose",
+      "c": "contient de l'œuf",
+      "d": "contient du poisson",
+      "e": "contient des arachides",
+      "f": "contient du soja",
+      "g": "contient du lait",
+      "h": "contient des pistaches",
+      "i": "contient du céleri",
+      "j": "contient de la moutarde",
+      "k": "contient des graines de sésame",
+      "l": "contient du dioxyde de soufre (sulfites)",
+      "m": "contient du lupin",
+      "n": "contient des mollusques",
+      "o": "contient du gluten",
+      "p": "peut contenir des traces d'orge",
+      "q": "contient de la semoule de blé dur",
+      "r": "contient des pois chiches"
+    },
+    "variants": {
+      "names": { "S": "Petit", "M": "Moyen", "L": "Grand", "REG": "Standard", "XL": "Très grand" },
+      "sizes": { "S": "Petit", "M": "Moyen", "L": "Grand", "REG": "Standard", "XL": "Très grand" }
+    },
+    "price": { "kind": { "base": "Prix de base", "deposit": "Consigne", "surcharge": "Supplément", "discount": "Remise" } },
+    "channels": { "delivery": "Livraison", "pickup": "À emporter", "dinein": "Sur place" },
+    "dietaryLabels": {
+      "vegetarian": "Végétarien",
+      "vegan": "Végan",
+      "pescatarian": "Pescétarien",
+      "halal": "Halal",
+      "kosher": "Casher",
+      "glutenFree": "Sans gluten",
+      "lactoseFree": "Sans lactose",
+      "nutFree": "Sans fruits à coque",
+      "eggFree": "Sans œuf",
+      "porkFree": "Sans porc",
+      "containsAlcohol": "Contient de l’alcool"
+    }
+  }
+}

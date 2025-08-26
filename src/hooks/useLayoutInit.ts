@@ -195,6 +195,7 @@ import {fetchDashboardOverview} from "@/modules/dashboard/slice/dailyOverviewSli
 import {fetchDashboardCharts} from "@/modules/dashboard/slice/chartDataSlice";
 import {fetchDashboardLogs} from "@/modules/dashboard/slice/logsSlice";
 import {fetchAllCommentsAdmin,clearCommentMessages} from "@/modules/comment/slice/commentSlice";
+import {fetchBranchesAdmin,clearBranchMessages} from "@/modules/branch/slice";
 
 // -- Cleanup aksiyonları merkezi:
 const cleanupActions = [
@@ -258,6 +259,7 @@ const cleanupActions = [
   clearContractMessages, // Contract cleanup
   clearOpsJobsMessages, // Operations jobs cleanup
   clearCommentMessages, // Comment cleanup
+  clearBranchMessages, // Branch cleanup
 ];
 
 // --- useLayoutInit ---
@@ -344,6 +346,7 @@ const overview = useAppSelector((state) => state.dashboardOverview);
 const chartsData = useAppSelector((state) => state.dashboardCharts);
 const logsItems = useAppSelector((state) => state.dashboardLogs);
 const commentsAdmin = useAppSelector((state) => state.comments);
+const branchesAdmin = useAppSelector((state) => state.branch);
 
 
 
@@ -524,6 +527,8 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
       dispatch(fetchDashboardLogs());
     if (!commentsAdmin.commentsAdmin.length && !commentsAdmin.loading)
       dispatch(fetchAllCommentsAdmin());
+    if (!branchesAdmin.adminList.length && !branchesAdmin.loading)
+      dispatch(fetchBranchesAdmin());
 
     // Cleanup actions
     cleanupActions.forEach((action) => dispatch(action()));
@@ -607,5 +612,6 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
   chartsData,
   logsItems,
   commentsAdmin,
+  branchesAdmin,
   };
 };

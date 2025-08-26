@@ -1,0 +1,94 @@
+
+{
+  "additives": {
+    "1": "enthält Farbstoff(e)",
+    "2": "enthält Konservierungsstoffe",
+    "3": "enthält Antioxidationsmittel",
+    "4": "enthält Geschmacksverstärker",
+    "5": "geschwefelt",
+    "6": "geschwärzt (gefärbt)",
+    "7": "gewachst",
+    "8": "enthält Süßungsmittel",
+    "9": "enthält Phosphate",
+    "10": "enthält Koffein",
+    "11": "enthält Chinin",
+    "12": "enthält eine Phenylalaninquelle",
+    "13": "mechanisch getrenntes Hähnchenfleisch"
+  },
+  "allergens": {
+    "a": "enthält Weizen",
+    "b": "enthält Laktose",
+    "c": "enthält Ei",
+    "d": "enthält Fisch",
+    "e": "enthält Erdnüsse",
+    "f": "enthält Soja",
+    "g": "enthält Milch",
+    "h": "enthält Pistazien",
+    "i": "enthält Sellerie",
+    "j": "enthält Senf",
+    "k": "enthält Sesamsamen",
+    "l": "enthält Schwefeldioxid (Sulfite)",
+    "m": "enthält Lupinen",
+    "n": "enthält Weichtiere",
+    "o": "enthält Gluten",
+    "p": "kann Spuren von Gerste enthalten",
+    "q": "enthält Hartweizengrieß (Durum)",
+    "r": "enthält Kichererbsen"
+  },
+  "menu": {
+    "additives": {
+      "1": "enthält Farbstoff(e)",
+      "2": "enthält Konservierungsstoffe",
+      "3": "enthält Antioxidationsmittel",
+      "4": "enthält Geschmacksverstärker",
+      "5": "geschwefelt",
+      "6": "geschwärzt (gefärbt)",
+      "7": "gewachst",
+      "8": "enthält Süßungsmittel",
+      "9": "enthält Phosphate",
+      "10": "enthält Koffein",
+      "11": "enthält Chinin",
+      "12": "enthält eine Phenylalaninquelle",
+      "13": "mechanisch getrenntes Hähnchenfleisch"
+    },
+    "allergens": {
+      "a": "enthält Weizen",
+      "b": "enthält Laktose",
+      "c": "enthält Ei",
+      "d": "enthält Fisch",
+      "e": "enthält Erdnüsse",
+      "f": "enthält Soja",
+      "g": "enthält Milch",
+      "h": "enthält Pistazien",
+      "i": "enthält Sellerie",
+      "j": "enthält Senf",
+      "k": "enthält Sesamsamen",
+      "l": "enthält Schwefeldioxid (Sulfite)",
+      "m": "enthält Lupinen",
+      "n": "enthält Weichtiere",
+      "o": "enthält Gluten",
+      "p": "kann Spuren von Gerste enthalten",
+      "q": "enthält Hartweizengrieß (Durum)",
+      "r": "enthält Kichererbsen"
+    },
+    "variants": {
+      "names": { "S": "Klein", "M": "Mittel", "L": "Groß", "REG": "Regulär", "XL": "Extra Groß" },
+      "sizes": { "S": "Klein", "M": "Mittel", "L": "Groß", "REG": "Regulär", "XL": "Extra Groß" }
+    },
+    "price": { "kind": { "base": "Grundpreis", "deposit": "Pfand", "surcharge": "Zuschlag", "discount": "Rabatt" } },
+    "channels": { "delivery": "Lieferung", "pickup": "Abholung", "dinein": "Vor Ort" },
+    "dietaryLabels": {
+      "vegetarian": "Vegetarisch",
+      "vegan": "Vegan",
+      "pescatarian": "Pescetarisch",
+      "halal": "Halal",
+      "kosher": "Koscher",
+      "glutenFree": "Glutenfrei",
+      "lactoseFree": "Laktosefrei",
+      "nutFree": "Nussfrei",
+      "eggFree": "Eifrei",
+      "porkFree": "Schweinefrei",
+      "containsAlcohol": "Enthält Alkohol"
+    }
+  }
+}
