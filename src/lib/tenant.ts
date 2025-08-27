@@ -1,6 +1,6 @@
 // src/lib/tenant.ts
 
-// 1️⃣ Tenant mapping tablon (AYNI KALDI)
+// 1️⃣ Domain → tenant eşlemesi
 export const DOMAIN_TENANT_MAP: Record<string, string> = {
   "koenigsmassage.com": "anastasia",
   "www.koenigsmassage.com": "anastasia",
@@ -17,13 +17,25 @@ export const DOMAIN_TENANT_MAP: Record<string, string> = {
   // ... diğerleri
 };
 
-// 2️⃣ Local ortamda tenant fallback (geliştirici için) — AYNI
+// Bu projede public/favicons içinde gerçekten var olan .ico'lar
+const KNOWN_TENANTS = new Set([
+  "anastasia",
+  "antalya",
+  "ensotek",
+  "gzl",
+  "metahub",
+]);
+
+// Default tenant (fallback)
+const DEFAULT_TENANT = "metahub";
+
+// 2️⃣ Local ortamda tenant fallback (geliştirici için)
 function getDefaultTenant(): string {
   return (
     process.env.NEXT_PUBLIC_TENANT_NAME ||
     process.env.NEXT_PUBLIC_APP_ENV ||
     process.env.NEXT_PUBLIC_DEFAULT_TENANT ||
-    "metahub"
+    DEFAULT_TENANT
   );
 }
 
@@ -67,10 +79,14 @@ export function detectTenantFromHost(host?: string): string | undefined {
   return undefined;
 }
 
-// 4️⃣ Tenant'a göre favicon dosya path'i (public/favicons/{tenant}.ico) — AYNI
+/**
+ * 4️⃣ Tenant'a göre favicon dosya path'i
+ * public/favicons/{tenant}.ico içinde varsa döner,
+ * yoksa güvenli şekilde default'a (metahub.ico) düşer
+ */
 export function getFaviconPathForTenant(tenant?: string): string {
-  if (!tenant) return "/favicon.ico";
-  return `/favicons/${tenant}.ico`;
+  const t = tenant && KNOWN_TENANTS.has(tenant) ? tenant : DEFAULT_TENANT;
+  return `/favicons/${t}.ico`;
 }
 
 /**

@@ -1,14 +1,18 @@
-// app/(public)/menu/[slug]/page.tsx
 import Page from "@/modules/menu/public/pages/Page";
 
-type RouteProps = {
-  params: { slug: string };
-  // Next 15+: searchParams bir Promise
+/**
+ * Next 15: params & searchParams -> Promise
+ * Bu yüzden destructure edilen props'u Promise olarak tipleyip await ediyoruz.
+ */
+export default async function MenuRoutePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
   searchParams: Promise<{ branch?: string }>;
-};
-
-export default async function MenuRoutePage({ params, searchParams }: RouteProps) {
-  // ✅ önce çöz (await), sonra client bileşenine geçir
+}) {
+  const { slug } = await params;
   const sp = await searchParams;
-  return <Page params={params} searchParams={sp} />;
+
+  return <Page params={{ slug }} searchParams={sp} />;
 }
