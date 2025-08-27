@@ -374,7 +374,7 @@ const StyledThumbImage = styled(Image)<{ $active?: boolean }>`
 `;
 
 const SummaryBox = styled.div`
-  background: ${({ theme }) => theme.cards.background};
+  background: ${({ theme }) => theme.colors.background};
   border-left: 5px solid ${({ theme }) => theme.colors.accent};
   padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.lg};
   margin-bottom: ${({ theme }) => theme.spacings.xl};
@@ -414,7 +414,7 @@ const Markdown = styled.div`
     h1, h2, h3, h4, h5, h6 {
       margin: 1.2em 0 0.6em;
       line-height: 1.25;
-      color: ${({ theme }) => theme.colors.title};
+      color: ${({ theme }) => theme.colors.primary};
     }
     p { margin: 0.6em 0; }
 

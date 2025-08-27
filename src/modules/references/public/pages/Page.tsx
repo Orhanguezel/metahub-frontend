@@ -96,7 +96,7 @@ export default function ReferencesPage({ categorySlug, initialSearch }: PageProp
   /* group by */
   const grouped = useMemo(() => {
     const result: Record<string, IReferences[]> = {};
-    references.forEach((ref) => {
+    references.forEach((ref: IReferences) => {
       const catId = typeof ref.category === "string" ? ref.category : ref.category?._id || "none";
       if (!result[catId]) result[catId] = [];
       result[catId].push(ref);
@@ -344,7 +344,6 @@ const ModernSection = styled.section`
   max-width: 1200px;
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.sm};
-  background: ${({ theme }) => theme.colors.achievementBackground};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.lg};
   @media (max-width: 900px) { padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.xs}; }

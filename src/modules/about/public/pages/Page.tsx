@@ -14,7 +14,7 @@ import type { IAbout } from "@/modules/about/types";
 export default function AboutPage() {
   const { i18n, t } = useI18nNamespace("about", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-  const { about, loading, error } = useAppSelector((state) => state.about);
+  const { about, loading, error } = useAppSelector((s) => s.about ?? []);
 
   Object.entries(translations).forEach(([lng, resources]) => {
     if (!i18n.hasResourceBundle(lng, "about")) {
@@ -170,13 +170,16 @@ const ImageWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  line-height: 0;                 /* 🔧 */
 `;
 
 const StyledImage = styled(Image)`
   width: 100%;
   height: 180px;
   object-fit: cover;
+  display: block;                 /* 🔧 */
 `;
+
 
 const ImgPlaceholder = styled.div`
   width: 100%;

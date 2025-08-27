@@ -124,7 +124,7 @@ const Fallback = styled.div`
 const LogoSlogan = styled.span`
   margin-top: 14px;
   font-size: clamp(0.85rem, 1.5vw, 1.05rem);
-  color: ${({ theme }) => theme.colors.secondary};
+  color: ${({ theme }) => theme.colors.primary};
   font-family: ${({ theme }) => theme.fonts.body};
   font-style: italic;
   font-weight: ${({ theme }) => theme.fontWeights.medium};
@@ -147,7 +147,7 @@ const LogoSlogan = styled.span`
 const LogoTitle = styled.span`
   display: block;
   font-size: clamp(1.5rem, 3vw, 2.6rem);
-  color: ${({ theme }) => theme.colors.primaryDark};
+  color: ${({ theme }) => theme.colors.primary};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
   text-align: center;

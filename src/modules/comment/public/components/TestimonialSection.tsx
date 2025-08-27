@@ -36,7 +36,7 @@ export default function TestimonialSection() {
     );
   }, [dispatch]);
 
-  const allComments = useAppSelector((state) => state.comments.comments) || [];
+  const allComments = useAppSelector((s) => s.comments?.comments ?? []) as any[];
   const testimonials = useMemo(
     () =>
       Array.isArray(allComments)
@@ -188,7 +188,7 @@ const TitleLine = styled.div`
 
 const Title = styled.h2`
   font-size: clamp(2.2rem, 3.3vw, 2.7rem);
-  color: ${({ theme }) => theme.colors.title};
+  color: ${({ theme }) => theme.colors.primary};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
   margin: 20px 0 0.23em 0;

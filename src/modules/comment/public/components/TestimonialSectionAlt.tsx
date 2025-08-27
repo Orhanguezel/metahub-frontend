@@ -41,7 +41,7 @@ export default function TestimonialSection() {
   }, [dispatch]);
 
   // En fazla 6 yayınlanmış yorum
-  const allComments = useAppSelector((state) => state.comments.comments);
+  const allComments = useAppSelector((s) => s.comments?.comments ?? []) as any[];
   const testimonials = useMemo(
     () =>
       Array.isArray(allComments)
@@ -274,7 +274,7 @@ const TitleLine = styled.div`
 const StarIcon = styled(MdStars)`
   width: 28px;
   height: 28px;
-  color: ${({ theme }) => theme.colors.title};
+  color: ${({ theme }) => theme.colors.primary};
   flex: 0 0 auto;
 
   ${({ theme }) => theme.media.mobile} {
@@ -284,7 +284,7 @@ const StarIcon = styled(MdStars)`
 `;
 
 const Title = styled.h2`
-  color: ${({ theme }) => theme.colors.title};
+  color: ${({ theme }) => theme.colors.primary};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
   letter-spacing: -0.01em;

@@ -196,7 +196,6 @@ const Right = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  background: ${({ theme }) => theme.colors.inputBackgroundSofter};
   border-radius: ${({ theme }) => theme.radii.xl};
   padding: 54px 40px;
   margin: 24px 28px 24px 0;

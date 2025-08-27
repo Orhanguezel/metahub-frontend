@@ -184,7 +184,7 @@ const StyledImage = styled(Image)`
 `;
 
 const SummaryBox = styled.div`
-  background: ${({ theme }) => theme.colors.cardBackground};
+  background: ${({ theme }) => theme.colors.background};
   border-left: 5px solid ${({ theme }) => theme.colors.accent};
   padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.lg};
   margin-bottom: ${({ theme }) => theme.spacings.xl};
@@ -193,7 +193,7 @@ const SummaryBox = styled.div`
 `;
 
 const ContentBox = styled.div`
-  background: ${({ theme }) => theme.colors.contentBackground};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   padding: ${({ theme }) => theme.spacings.xl};
   margin-bottom: ${({ theme }) => theme.spacings.xl};
   border-radius: ${({ theme }) => theme.radii.xl};

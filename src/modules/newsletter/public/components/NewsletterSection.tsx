@@ -157,7 +157,7 @@ const MinorTitle = styled.div`
 
 const MainTitle = styled.h2`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  color: ${({ theme }) => theme.colors.title};
+  color: ${({ theme }) => theme.colors.primary};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
   margin: 0 0 .22em 0; letter-spacing: -0.01em; line-height: 1.13;

@@ -125,34 +125,28 @@ const Left = styled.div`
 `;
 
 const MinorTitle = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.small};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.accent};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 0.2em;
+  letter-spacing: 0.025em;
 `;
 
 const MainTitle = styled.h2`
-  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+  font-size: clamp(2.2rem, 3.3vw, 2.7rem);
   color: ${({ theme }) => theme.colors.primary};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-  margin: 0 0 0.2em 0;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  margin: 0 0 0.45em 0;
+  letter-spacing: -0.01em;
+  line-height: 1.13;
 `;
 
 const Desc = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.lg};
-  font-family: ${({ theme }) => theme.fonts.body};
-  line-height: 1.55;
-  margin-bottom: 0.4em;
-  max-width: 560px;
-  ${({ theme }) => theme.media.small} {
-    max-width: 100%;
-  }
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  line-height: 1.7;
+  margin-bottom: 1.8rem;
 `;
 
 const Right = styled.div`

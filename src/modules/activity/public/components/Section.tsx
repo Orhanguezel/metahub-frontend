@@ -14,7 +14,7 @@ import type { SupportedLocale } from "@/types/common";
 export default function ActivitySection() {
   const { i18n, t } = useI18nNamespace("activity", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-  const { activity, loading } = useAppSelector((state) => state.activity);
+  const { activity, loading } = useAppSelector((state) => state.activity ?? {});
 
   const allActivities = activity || [];
   const firstActivity = allActivities[0];

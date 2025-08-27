@@ -16,20 +16,14 @@ export default function NewsSection() {
   const { i18n, t } = useI18nNamespace("news", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  const { news, loading, error } = useAppSelector((state) => state.news);
+  const { news, loading, error } = useAppSelector((s) => s.news ?? []);
 
   if (loading) {
     return (
       <Section>
         <NewsGrid>
-          <Left>
-            <Skeleton />
-            <Skeleton />
-          </Left>
-          <Right>
-            <Skeleton />
-            <Skeleton />
-          </Right>
+           <Left><Skeleton /><Skeleton /><Skeleton /></Left>
+                    <Right><Skeleton /></Right>
         </NewsGrid>
       </Section>
     );

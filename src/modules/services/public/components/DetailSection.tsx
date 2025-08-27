@@ -346,46 +346,33 @@ const StyledThumbImage = styled(Image)<{ $active?: boolean }>`
 `;
 
 const SummaryBlock = styled.div`
-  background: ${({ theme }) => theme.colors.achievementBackground};
-  border-left: 6px solid ${({ theme }) => theme.colors.primary};
-  padding: 1.45rem 2.1rem 1.2rem 2rem;
-  margin-bottom: 2.1rem;
-  border-radius: 14px;
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-  h3 {
-    color: ${({ theme }) => theme.colors.primary};
-    font-size: ${({ theme }) => theme.fontSizes.md};
-    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-    margin-bottom: 0.7em;
-  }
-  div {
-    color: ${({ theme }) => theme.colors.textSecondary};
-    font-size: ${({ theme }) => theme.fontSizes.base};
-    line-height: 1.7;
-  }
+  background: ${({ theme }) => theme.colors.background};
+  border-left: 5px solid ${({ theme }) => theme.colors.accent};
+  padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.lg};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
 `;
 
 const ContentBlock = styled.div`
-  background: ${({ theme }) => theme.colors.contentBackground};
-  border-left: 6px solid ${({ theme }) => theme.colors.accent};
-  padding: 2.1rem 2.3rem 2rem 2.3rem;
-  margin-bottom: 2.6rem;
-  border-radius: 18px;
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  padding: ${({ theme }) => theme.spacings.xl};
+  margin-bottom: ${({ theme }) => theme.spacings.xl};
+  border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.sm};
+  border-left: 6px solid ${({ theme }) => theme.colors.primary};
+  line-height: ${({ theme }) => theme.lineHeights.relaxed};
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  color: ${({ theme }) => theme.colors.text};
+  letter-spacing: 0.01em;
 
   h3 {
-    color: ${({ theme }) => theme.colors.accent};
-    font-size: ${({ theme }) => theme.fontSizes.md};
-    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-    margin-bottom: 0.7em;
+    margin-bottom: ${({ theme }) => theme.spacings.md};
+    color: ${({ theme }) => theme.colors.primary};
+    font-size: ${({ theme }) => theme.fontSizes.lg};
   }
-  .services-content {
-    font-size: ${({ theme }) => theme.fontSizes.base};
-    color: ${({ theme }) => theme.colors.text};
-    line-height: 1.7;
-    p { margin-bottom: 0.9em; }
-    ul, ol { margin-bottom: 0.9em; }
-    li { margin-left: 1.2em; }
+  p, div {
+    margin-bottom: ${({ theme }) => theme.spacings.sm};
   }
 `;
 
