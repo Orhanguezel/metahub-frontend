@@ -9,7 +9,8 @@ import { useAppSelector } from "@/store/hooks";
 import { Skeleton, ErrorMessage, SeeAllBtn } from "@/shared";
 import Image from "next/image";
 import type { SupportedLocale } from "@/types/common";
-import { getLocaleStringFromLang, getTitle, getSummary } from "@/types/common";
+import { getTitle, getSummary } from "@/types/common";
+//import { getLocaleStringFromLang } from "@/types/common";
 
 export default function NewsSection() {
   const { i18n, t } = useI18nNamespace("news", translations);
@@ -126,6 +127,7 @@ export default function NewsSection() {
                 <CardExcerpt>
                   {(getSummary(item, lang) || "").slice(0, 72)}
                 </CardExcerpt>
+                {/*<CardDate> 
                 <CardDate>
                   {item.createdAt
                     ? new Date(item.createdAt).toLocaleDateString(
@@ -134,6 +136,7 @@ export default function NewsSection() {
                       )
                     : ""}
                 </CardDate>
+                */}
               </CardBody>
             </NewsCard>
           ))}
@@ -367,7 +370,7 @@ const CardExcerpt = styled.p`
   text-overflow: ellipsis;
   min-height: 2em;
 `;
-
+/*
 const CardDate = styled.span`
   background: linear-gradient(
     90deg,
@@ -389,3 +392,4 @@ const CardDate = styled.span`
   user-select: none;
   display: inline-block;
 `;
+*/

@@ -16,7 +16,7 @@ import type {
   MenuUpdatePayload,
 } from "@/modules/menu/types/menu";
 
-/* redux: menü kategorileri */
+/* redux */
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchMenuCategoriesAdmin,
@@ -70,6 +70,14 @@ export default function MenuForm({ initial, onSubmit, onCancel, lang: langProp }
   const dispatch = useAppDispatch();
   const categories = useAppSelector(selectMenuCategoriesAdmin);
 
+  /* redux: branches (parent fetch ediyor; buradan sadece select) */
+  const branches = useAppSelector((s) => s.branch?.adminList ?? []);
+  const branchesLoading = useAppSelector((s) => s.branch?.loading);
+  const branchesError = useAppSelector((s) => s.branch?.error);
+
+  const branchLabel = (b: any) =>
+    getMultiLang(b?.name as any, uiLang) || b?.code || b?.slug || String(b?._id || "");
+
   useEffect(() => {
     if (!categories?.length) dispatch(fetchMenuCategoriesAdmin({}) as any);
   }, [dispatch, categories?.length]);
@@ -97,9 +105,9 @@ export default function MenuForm({ initial, onSubmit, onCancel, lang: langProp }
   const [effectiveFrom, setEffectiveFrom] = useState<string>(toLocalInput(initial?.effectiveFrom || null));
   const [effectiveTo, setEffectiveTo] = useState<string>(toLocalInput(initial?.effectiveTo || null));
 
-  /* branches */
-  const [branchesCSV, setBranchesCSV] = useState<string>(
-    Array.isArray(initial?.branches) ? initial!.branches!.map(String).join(", ") : ""
+  /* --- BRANCHES: çoklu seçim --- */
+  const [selectedBranches, setSelectedBranches] = useState<string[]>(
+    Array.isArray(initial?.branches) ? initial!.branches!.map(String) : []
   );
 
   /* categories rows */
@@ -124,7 +132,7 @@ export default function MenuForm({ initial, onSubmit, onCancel, lang: langProp }
     setIsPublished(initial?.isPublished ?? false);
     setEffectiveFrom(toLocalInput(initial?.effectiveFrom || null));
     setEffectiveTo(toLocalInput(initial?.effectiveTo || null));
-    setBranchesCSV(Array.isArray(initial?.branches) ? initial!.branches!.map(String).join(", ") : "");
+    setSelectedBranches(Array.isArray(initial?.branches) ? initial!.branches!.map(String) : []);
     setCatRows(toCatRows(initial));
   }, [initial]);
 
@@ -132,8 +140,6 @@ export default function MenuForm({ initial, onSubmit, onCancel, lang: langProp }
   const delCatRow = (idx: number) => setCatRows((r) => r.filter((_, i) => i !== idx));
   const setCatField = (idx: number, patch: Partial<CatRow>) =>
     setCatRows((r) => r.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
-
-  const parseCSV = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
   /* submit */
   const handleSubmit = (e: React.FormEvent) => {
@@ -147,7 +153,10 @@ export default function MenuForm({ initial, onSubmit, onCancel, lang: langProp }
       isPublished,
       effectiveFrom: toISOOrNull(effectiveFrom) || undefined,
       effectiveTo: toISOOrNull(effectiveTo) || undefined,
-      branches: parseCSV(branchesCSV),
+
+      // 🔽 Branch seçimleri artık string[] olarak gidiyor
+      branches: selectedBranches,
+
       categories: catRows
         .filter((r) => !!getCatId(r.category))
         .map<IMenuCategoryRef>((r) => ({
@@ -226,8 +235,27 @@ export default function MenuForm({ initial, onSubmit, onCancel, lang: langProp }
       <BlockTitle>{t("branches", "Branches")}</BlockTitle>
       <Row>
         <Col style={{ gridColumn: "span 2" }}>
-          <Label>{t("branchIdsCSV", "Branch IDs (comma separated)")}</Label>
-          <Input value={branchesCSV} onChange={(e) => setBranchesCSV(e.target.value)} placeholder="65f..., 65a..., 60b..." />
+          {branchesError && <small style={{ color: "#e06b6b" }}>{String(branchesError)}</small>}
+          <Label>{t("selectBranches", "Select Branches")}</Label>
+          <Select
+            multiple
+            value={selectedBranches}
+            onChange={(e) => {
+              const vals = Array.from(e.target.selectedOptions).map((o) => o.value);
+              setSelectedBranches(vals);
+            }}
+            size={Math.min(10, Math.max(3, branches.length || 3))}
+            aria-busy={!!branchesLoading}
+          >
+            {branches.map((b: any) => (
+              <option key={String(b._id)} value={String(b._id)}>
+                {branchLabel(b)}
+              </option>
+            ))}
+          </Select>
+          <small style={{ opacity: 0.8 }}>
+            {t("multiSelectHelp", "Çoklu seçim için Ctrl/Cmd tuşunu basılı tutun")}
+          </small>
         </Col>
       </Row>
 
@@ -319,7 +347,7 @@ const Input = styled.input`
   min-width:0;
 `;
 const Select = styled.select`
-  padding:10px 12px;border-radius:${({theme})=>theme.radii.md};
+  padding:15px 12px;border-radius:${({theme})=>theme.radii.md};
   border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.inputBorder};
   background:${({theme})=>theme.inputs.background};color:${({theme})=>theme.inputs.text};
   width:100%;

@@ -8,7 +8,14 @@ import type {
 } from "../types/menuitem";
 
 /* ============= utils ============= */
-const dataOf = <T>(res: any): T => (res?.data ?? res) as T;
+const extractErrorMessage = (payload: unknown): string => {
+  if (typeof payload === "string") return payload;
+  if (payload && typeof payload === "object" && "message" in (payload as any)) {
+    const msg = (payload as any).message;
+    if (typeof msg === "string") return msg;
+  }
+  return "An error occurred.";
+};
 
 // JSON alanlarını her durumda (boş dizi/obje dahil) yaz:
 const appendJSON = (fd: FormData, key: string, v: any) => {
@@ -16,7 +23,7 @@ const appendJSON = (fd: FormData, key: string, v: any) => {
   fd.append(key, JSON.stringify(v));        // null, [], {} hepsi yazılır
 };
 
-// Primitive’lerde boş string’i yazma (mevcut davranış)
+// Primitive’lerde boş string’i yazma
 const appendVal = (fd: FormData, key: string, v: any) => {
   if (v === undefined || v === null || v === "") return;
   fd.append(key, v);
@@ -49,7 +56,7 @@ const toFDCreate = (payload: MenuItemCreatePayload | FormData): FormData => {
   return fd;
 };
 
-// --- UPDATE: boş dizileri/objeleri de gönder! ---
+/* JSON -> FormData (Update) — boş dizileri/objeleri de gönder */
 const toFDUpdate = (payload: MenuItemUpdatePayload | FormData): FormData => {
   if (payload instanceof FormData) return payload;
   const fd = new FormData();
@@ -88,31 +95,48 @@ const toFDUpdate = (payload: MenuItemUpdatePayload | FormData): FormData => {
 const BASE = "/menuitem";
 
 /* ============= thunks ============= */
+/** ⚠️ PUBLIC: backend’de /menuitem yoksa bu thunk kullanılmamalı */
 export const fetchMenuItemsPublic = createAsyncThunk<IMenuItem[], Record<string, any> | void>(
   "menuitem/fetchPublic",
-  async (params, thunk) => dataOf<IMenuItem[]>(await apiCall("get", `${BASE}`, params || {}, thunk.rejectWithValue))
+  async (params, thunk) => {
+    const res = await apiCall("get", `${BASE}`, params || {}, thunk.rejectWithValue);
+    return (res?.data as IMenuItem[]) || [];
+  }
 );
 
 export const fetchMenuItemBySlug = createAsyncThunk<IMenuItem, string>(
   "menuitem/fetchBySlug",
-  async (slug, thunk) => dataOf<IMenuItem>(await apiCall("get", `${BASE}/${encodeURIComponent(slug)}`, {}, thunk.rejectWithValue))
+  async (slug, thunk) => {
+    const res = await apiCall("get", `${BASE}/${encodeURIComponent(slug)}`, {}, thunk.rejectWithValue);
+    return res?.data as IMenuItem;
+  }
 );
 
 export const fetchMenuItemsAdmin = createAsyncThunk<IMenuItem[], Record<string, any> | void>(
   "menuitem/fetchAdmin",
-  async (params, thunk) => dataOf<IMenuItem[]>(await apiCall("get", `${BASE}/admin`, params || {}, thunk.rejectWithValue))
+  async (params, thunk) => {
+    const res = await apiCall("get", `${BASE}/admin`, params || {}, thunk.rejectWithValue);
+    return (res?.data as IMenuItem[]) || [];
+  }
 );
 
 export const fetchMenuItemAdminById = createAsyncThunk<IMenuItem, string>(
   "menuitem/fetchAdminById",
-  async (id, thunk) => dataOf<IMenuItem>(await apiCall("get", `${BASE}/admin/${id}`, {}, thunk.rejectWithValue))
+  async (id, thunk) => {
+    const res = await apiCall("get", `${BASE}/admin/${id}`, {}, thunk.rejectWithValue);
+    return res?.data as IMenuItem;
+  }
 );
 
 type ApiResp<T> = { success: boolean; message?: string; data?: T };
 
 export const createMenuItem = createAsyncThunk<ApiResp<IMenuItem>, MenuItemCreatePayload | FormData>(
   "menuitem/create",
-  async (payload, thunk) => await apiCall("post", `${BASE}/admin`, toFDCreate(payload), thunk.rejectWithValue)
+  async (payload, thunk) => {
+    const body = toFDCreate(payload);
+    const res = await apiCall("post", `${BASE}/admin`, body, thunk.rejectWithValue);
+    return res as ApiResp<IMenuItem>;
+  }
 );
 
 export const updateMenuItem = createAsyncThunk<ApiResp<IMenuItem>, { id: string; patch: MenuItemUpdatePayload | FormData }>(
@@ -123,7 +147,9 @@ export const updateMenuItem = createAsyncThunk<ApiResp<IMenuItem>, { id: string;
       if (patch.allergens === undefined) patch.allergens = [];
       if (patch.additives === undefined) patch.additives = [];
     }
-    return await apiCall("put", `${BASE}/admin/${id}`, toFDUpdate(patch), thunk.rejectWithValue);
+    const body = toFDUpdate(patch);
+    const res = await apiCall("put", `${BASE}/admin/${id}`, body, thunk.rejectWithValue);
+    return res as ApiResp<IMenuItem>;
   }
 );
 
@@ -131,7 +157,8 @@ export const changeMenuItemPublish = createAsyncThunk<ApiResp<IMenuItem>, { id: 
   "menuitem/changePublish",
   async ({ id, isPublished }, thunk) => {
     const fd = new FormData(); fd.append("isPublished", String(isPublished));
-    return await apiCall("put", `${BASE}/admin/${id}`, fd, thunk.rejectWithValue);
+    const res = await apiCall("put", `${BASE}/admin/${id}`, fd, thunk.rejectWithValue);
+    return res as ApiResp<IMenuItem>;
   }
 );
 
@@ -139,7 +166,8 @@ export const changeMenuItemStatus = createAsyncThunk<ApiResp<IMenuItem>, { id: s
   "menuitem/changeStatus",
   async ({ id, isActive }, thunk) => {
     const fd = new FormData(); fd.append("isActive", String(isActive));
-    return await apiCall("put", `${BASE}/admin/${id}`, fd, thunk.rejectWithValue);
+    const res = await apiCall("put", `${BASE}/admin/${id}`, fd, thunk.rejectWithValue);
+    return res as ApiResp<IMenuItem>;
   }
 );
 
@@ -147,7 +175,7 @@ export const deleteMenuItem = createAsyncThunk<{ id: string; message?: string },
   "menuitem/delete",
   async (id, thunk) => {
     const res = await apiCall("delete", `${BASE}/admin/${id}`, {}, thunk.rejectWithValue);
-    return { id, message: res?.message };
+    return { id, message: res?.message as string | undefined };
   }
 );
 
@@ -196,7 +224,7 @@ const menuItemSlice = createSlice({
     const start = (s: MenuItemState) => { s.loading = true; s.status = "loading"; s.error = null; s.successMessage = null; };
     const fail = (s: MenuItemState, a: any) => {
       s.loading = false; s.status = "failed";
-      s.error = a?.payload?.message || a?.error?.message || "An error occurred.";
+      s.error = extractErrorMessage(a?.payload) || a?.error?.message || "An error occurred.";
     };
 
     // public
@@ -218,9 +246,9 @@ const menuItemSlice = createSlice({
     b.addCase(fetchMenuItemAdminById.rejected, fail);
 
     // create/update + toggles
-    const onUpdateFulfilled = (s: MenuItemState, a: any) => {
+    const onUpdateFulfilled = (s: MenuItemState, a: PayloadAction<ApiResp<IMenuItem>>) => {
       s.loading = false; s.status = "succeeded";
-      const updated: IMenuItem | undefined = a.payload?.data || a.payload;
+      const updated = a.payload?.data;
       s.adminList = upsert([...s.adminList], updated);
       if (s.selected && updated && String(s.selected._id) === String(updated._id)) s.selected = updated;
       s.successMessage = a.payload?.message || null;

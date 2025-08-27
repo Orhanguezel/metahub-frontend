@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useRef, useState } from "react";
 import { useAppSelector } from "@/store/hooks";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
@@ -34,14 +34,14 @@ const HeroSlider = () => {
   const { i18n, t } = useI18nNamespace("home", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  // --- Kategori ID seçimi ---
+  // --- Pick category by slug ---
   const selectedCategoryId = useMemo(() => {
     if (!SLIDER_CATEGORY_SLUG || !Array.isArray(categories)) return "";
     const cat = categories.find((c) => c.slug === SLIDER_CATEGORY_SLUG);
     return cat?._id || "";
   }, [categories]);
 
-  // --- Galerileri slide'a dönüştür ---
+  // --- Map galleries to slides ---
   const slides = useMemo<Slide[]>(() => {
     if (!selectedCategoryId || !Array.isArray(gallery)) return [];
     return gallery
@@ -64,19 +64,20 @@ const HeroSlider = () => {
       .sort((a, b) => a.order - b.order);
   }, [gallery, selectedCategoryId]);
 
-  // --- Modal Hook ---
+  // --- Modal hook ---
   const { isOpen, open, close, next, prev, currentIndex, currentItem, setIndex } = useModal(slides);
 
-  // --- Otomatik Slider ---
+  // --- Auto slider (pause while interacting or modal open) ---
+  const [isInteracting, setIsInteracting] = useState(false);
   useEffect(() => {
-    if (slides.length === 0 || isOpen) return;
+    if (slides.length === 0 || isOpen || isInteracting) return;
     const timer = setInterval(() => {
       setIndex((current) => (current + 1) % slides.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, [slides.length, setIndex, isOpen]);
+  }, [slides.length, setIndex, isOpen, isInteracting]);
 
-  // --- Modal açıkken klavye ile sağ/sol/Esc ---
+  // --- Keyboard in modal ---
   useEffect(() => {
     if (!isOpen) return;
     const handleModalKey = (e: KeyboardEvent) => {
@@ -88,7 +89,16 @@ const HeroSlider = () => {
     return () => window.removeEventListener("keydown", handleModalKey);
   }, [isOpen, next, prev, close]);
 
-  // --- Loader ve empty ---
+  /* =========================================================
+   *  !!! ÖNEMLİ: Tüm useRef kancaları koşullu return'lerden önce
+   *  ========================================================= */
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const deltaX = useRef(0);
+  const dragging = useRef(false);
+
+  // --- Loading & empty ---
   if (loading) {
     return (
       <HeroWrapper>
@@ -97,12 +107,11 @@ const HeroSlider = () => {
       </HeroWrapper>
     );
   }
-
   if (slides.length === 0) {
     return <HeroWrapper>{t("noItemsFound", "No products found.")}</HeroWrapper>;
   }
 
-  // --- Aktif slide bilgisi ---
+  // --- Active slide ---
   const currentSlide = slides[currentIndex];
 
   const title =
@@ -127,10 +136,85 @@ const HeroSlider = () => {
 
   const detailLink = currentSlide?.slug ? `/gallery/${currentSlide.slug}` : `/gallery`;
 
+  // === Touch / Pointer swipe handlers (no external libs) ===
+  const begin = (x: number, y: number) => {
+    dragging.current = true;
+    setIsInteracting(true);
+    startX.current = x;
+    startY.current = y;
+    deltaX.current = 0;
+  };
+  const move = (x: number, y: number) => {
+    if (!dragging.current) return;
+    const dx = x - startX.current;
+    const dy = y - startY.current;
+    if (Math.abs(dx) > Math.abs(dy) * 1.2) {
+      deltaX.current = dx;
+    } else {
+      deltaX.current = 0;
+    }
+  };
+  const end = () => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    const width = containerRef.current?.offsetWidth || 1;
+    const threshold = Math.min(90, width * 0.15);
+    const dx = deltaX.current;
+    deltaX.current = 0;
+    setIsInteracting(false);
+    if (Math.abs(dx) >= threshold) {
+      if (dx < 0) next();
+      else prev();
+    }
+  };
+  const cancel = () => {
+    dragging.current = false;
+    deltaX.current = 0;
+    setIsInteracting(false);
+  };
+
+  const onTouchStart: React.TouchEventHandler<HTMLDivElement> = (e) => {
+    const t = e.touches[0];
+    if (!t) return;
+    begin(t.clientX, t.clientY);
+  };
+  const onTouchMove: React.TouchEventHandler<HTMLDivElement> = (e) => {
+    const t = e.touches[0];
+    if (!t) return;
+    move(t.clientX, t.clientY);
+  };
+  const onTouchEnd: React.TouchEventHandler<HTMLDivElement> = () => end();
+  const onTouchCancel: React.TouchEventHandler<HTMLDivElement> = () => cancel();
+
+  const onPointerDown: React.PointerEventHandler<HTMLDivElement> = (e) => {
+    if (e.pointerType === "mouse" && e.buttons !== 1) return;
+    begin(e.clientX, e.clientY);
+  };
+  const onPointerMove: React.PointerEventHandler<HTMLDivElement> = (e) => {
+    if (!dragging.current) return;
+    move(e.clientX, e.clientY);
+  };
+  const onPointerUp: React.PointerEventHandler<HTMLDivElement> = () => end();
+  const onPointerCancel: React.PointerEventHandler<HTMLDivElement> = () => cancel();
+
   return (
     <>
       <HeroWrapper>
-        <ImageCol>
+        <ImageCol
+          ref={containerRef}
+          // Touch
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          onTouchCancel={onTouchCancel}
+          // Pointer (mouse/pen/trackpad)
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerCancel}
+          aria-roledescription="carousel"
+          aria-label="Hero slider"
+        >
           <MainImage
             src={imageSrc}
             alt={title}
@@ -241,6 +325,7 @@ const ImageCol = styled.div`
   aspect-ratio: 16/9;
   min-height: 340px;
   box-shadow: ${({ theme }) => theme.shadows.lg};
+  touch-action: pan-y; /* allow vertical scroll; we handle horizontal swipe */
   @media (max-width: 1100px) {
     min-height: 210px;
     aspect-ratio: 16/9;
@@ -313,7 +398,7 @@ const ContentCol = styled.div`
 
 const HeroTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["2xl"]};
-  color: ${({ theme }) => theme.colors.title};
+  color: ${({ theme }) => theme.colors.primary};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
   letter-spacing: 0.01em;
@@ -323,7 +408,7 @@ const HeroTitle = styled.h1`
 
 const HeroDesc = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.lg};
-  color: ${({ theme }) => theme.colors.title};
+  color: ${({ theme }) => theme.colors.textSecondary};
   font-family: ${({ theme }) => theme.fonts.body};
   font-weight: ${({ theme }) => theme.fontWeights.regular};
   line-height: 1.6;

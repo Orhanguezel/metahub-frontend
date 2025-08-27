@@ -7,61 +7,41 @@ import { translations } from "@/modules/references";
 import { Skeleton, ErrorMessage } from "@/shared";
 import type { SupportedLocale } from "@/types/common";
 import type { IReferences } from "@/modules/references/types";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { slugify } from "@/lib/slug";
+
+/* --- props --- */
+type PageProps = {
+  /** /references/category/[slug] ise gelir; /references kökte undefined */
+  categorySlug?: string;
+  /** server'dan çözülen p/ps */
+  initialSearch?: { p?: string; ps?: string };
+};
 
 /* --- types --- */
 type MinReferencesCategory = {
   _id: string;
   name: Record<string, string>;
+  slug?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
 };
 
-/* --- helpers --- */
+type TabItem = { key: string; label: string; slug: string };
+
 const PAGE_SIZE_OPTIONS = [8, 12, 16, 24, 36] as const;
 
-const parseHash = (): { tab?: string; p?: number; ps?: number } => {
-  if (typeof window === "undefined") return {};
-  const raw = window.location.hash.startsWith("#")
-    ? window.location.hash.slice(1)
-    : window.location.hash;
-  const params = new URLSearchParams(raw);
-  const tab = params.get("tab") || undefined;
-  const p = params.get("p");
-  const ps = params.get("ps");
-  return {
-    tab,
-    p: p ? Math.max(1, Number(p) || 1) : undefined,
-    ps: ps ? Math.max(1, Number(ps) || 12) : undefined,
-  };
-};
-
-const setHash = (tab: string, p: number, ps: number) => {
-  if (typeof window === "undefined") return;
-  const params = new URLSearchParams();
-  params.set("tab", tab);
-  params.set("p", String(p));
-  params.set("ps", String(ps));
-  const next = `#${params.toString()}`;
-  if (window.location.hash !== next) {
-    window.history.replaceState(null, "", next);
-  }
-};
-
-/* compact sayfa butonları: 1 … 4 5 [6] 7 8 … 20  */
 const getPageItems = (total: number, current: number) => {
   const items: (number | "...")[] = [];
   const push = (v: number | "...") => items.push(v);
   const windowSize = 1;
   const start = Math.max(2, current - windowSize);
   const end = Math.min(total - 1, current + windowSize);
-
-  if (total <= 7) {
-    for (let i = 1; i <= total; i++) push(i);
-    return items;
-  }
+  if (total <= 7) { for (let i = 1; i <= total; i++) push(i); return items; }
   push(1);
   if (start > 2) push("...");
   for (let i = start; i <= end; i++) push(i);
@@ -70,16 +50,17 @@ const getPageItems = (total: number, current: number) => {
   return items;
 };
 
-export default function ReferencesPage() {
+export default function ReferencesPage({ categorySlug, initialSearch }: PageProps) {
   const { i18n, t } = useI18nNamespace("references", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const router = useRouter();
 
-  const rawReferences = useAppSelector((state) => state.references.references);
+  const rawReferences = useAppSelector((s) => s.references.references);
   const references = useMemo(() => rawReferences || [], [rawReferences]);
-  const loading = useAppSelector((state) => state.references.loading);
-  const error = useAppSelector((state) => state.references.error);
+  const loading = useAppSelector((s) => s.references.loading);
+  const error = useAppSelector((s) => s.references.error);
 
-  /* i18n bundle’ları */
+  /* i18n bundle */
   useEffect(() => {
     Object.entries(translations).forEach(([lng, resources]) => {
       if (!i18n.hasResourceBundle(lng, "references")) {
@@ -88,7 +69,7 @@ export default function ReferencesPage() {
     });
   }, [i18n]);
 
-  /* --- kategoriler --- */
+  /* kategoriler */
   const categories = useMemo<MinReferencesCategory[]>(() => {
     const map = new Map<string, MinReferencesCategory>();
     references.forEach((ref) => {
@@ -96,18 +77,13 @@ export default function ReferencesPage() {
       if (!cat) return;
       if (typeof cat === "string") {
         if (!map.has(cat)) {
-          map.set(cat, {
-            _id: cat,
-            name: {},
-            isActive: true,
-            createdAt: "",
-            updatedAt: "",
-          });
+          map.set(cat, { _id: cat, name: {}, isActive: true, createdAt: "", updatedAt: "" });
         }
       } else if (cat._id) {
         map.set(cat._id, {
           _id: cat._id,
           name: cat.name || {},
+          slug: (cat as any).slug,
           isActive: (cat as any).isActive ?? true,
           createdAt: (cat as any).createdAt ?? "",
           updatedAt: (cat as any).updatedAt ?? "",
@@ -117,13 +93,11 @@ export default function ReferencesPage() {
     return Array.from(map.values());
   }, [references]);
 
+  /* group by */
   const grouped = useMemo(() => {
     const result: Record<string, IReferences[]> = {};
     references.forEach((ref) => {
-      const catId =
-        typeof ref.category === "string"
-          ? ref.category
-          : ref.category?._id || "none";
+      const catId = typeof ref.category === "string" ? ref.category : ref.category?._id || "none";
       if (!result[catId]) result[catId] = [];
       result[catId].push(ref);
     });
@@ -132,82 +106,91 @@ export default function ReferencesPage() {
 
   const noCategory = grouped["none"] || [];
 
-  const sortedCategories = useMemo(
-    () => categories.filter((cat) => grouped[cat._id]?.length),
-    [categories, grouped]
+  /* slug haritası */
+  const { tabs, slugToId } = useMemo(() => {
+    const byId = categories.filter((cat) => grouped[cat._id]?.length);
+    const taken = new Set<string>();
+    const slugToId = new Map<string, string>();
+    const makeUnique = (base: string, id: string) => {
+      let s = base || "kategori";
+      if (taken.has(s)) s = `${s}-${id.slice(-6)}`;
+      taken.add(s);
+      return s;
+    };
+
+    const tabs: TabItem[] = [];
+    byId.forEach((c) => {
+      const rawName = c.name?.en || c.name?.tr || c.name?.de || Object.values(c.name || {})[0] || c._id;
+      const base = c.slug ? c.slug : slugify(rawName);
+      const uniq = makeUnique(base, c._id);
+      slugToId.set(uniq, c._id);
+      tabs.push({ key: c._id, label: c.name?.[lang] || c.name?.en || "Untitled", slug: uniq });
+    });
+
+    if (noCategory.length) {
+      slugToId.set("none", "none");
+      tabs.push({ key: "none", label: t("references.no_category", "No Category"), slug: "none" });
+    }
+    return { tabs, slugToId };
+  }, [categories, grouped, lang, t, noCategory.length]);
+
+  /* aktif slug */
+  const incomingSlug = categorySlug;            // sadece CATEGORY route’da dolu
+  const [activeSlug, setActiveSlug] = useState<string | undefined>(incomingSlug);
+  useEffect(() => {
+    const firstSlug = tabs[0]?.slug;
+    setActiveSlug(incomingSlug || firstSlug);   // /references kökte URL değiştirmeden ilk tab seçili
+  }, [incomingSlug, tabs]);
+
+  const activeCategoryId = activeSlug ? slugToId.get(activeSlug) : undefined;
+
+  /* p/ps (server’dan) */
+  const pageParam = Math.max(1, Number(initialSearch?.p || 1));
+  const psParam = Math.max(1, Number(initialSearch?.ps || 12));
+  const initialPageSize = PAGE_SIZE_OPTIONS.includes(psParam as any) ? psParam : 12;
+
+  const [page, setPage] = useState<number>(pageParam);
+  const [pageSize, setPageSize] = useState<number>(initialPageSize);
+
+  useEffect(() => { setPage(Math.max(1, pageParam || 1)); }, [activeCategoryId, pageParam]);
+  useEffect(() => { setPageSize(initialPageSize); }, [initialPageSize]);
+
+  const filteredRefs = useMemo(
+    () => (activeCategoryId ? grouped[activeCategoryId] || [] : []),
+    [activeCategoryId, grouped]
   );
-
-  const tabs = useMemo(
-    () => [
-      ...sortedCategories.map((cat) => ({
-        key: cat._id,
-        label: cat.name?.[lang] || "Untitled",
-      })),
-      ...(noCategory.length
-        ? [
-            {
-              key: "none",
-              label: t("references.no_category", "No Category"),
-            },
-          ]
-        : []),
-    ],
-    [sortedCategories, noCategory.length, lang, t]
-  );
-
-  /* --- aktif tab, sayfa ve sayfa boyutu (hash senkron) --- */
-  const [activeTab, setActiveTab] = useState<string>("");
-  const [page, setPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(12);
-
-  // ilk yükleme: hash oku
-  useEffect(() => {
-    const { tab, p, ps } = parseHash();
-    if (tabs.length === 0) return;
-
-    const first = tabs[0].key;
-    const nextTab = tab && tabs.some((t) => t.key === tab) ? tab : first;
-
-    const total = (grouped[nextTab] || []).length;
-    const initialPs = PAGE_SIZE_OPTIONS.includes((ps as any)) ? (ps as number) : 12;
-    const maxP = Math.max(1, Math.ceil(total / initialPs));
-    const nextP = Math.min(Math.max(1, p || 1), maxP);
-
-    setActiveTab(nextTab);
-    setPageSize(initialPs);
-    setPage(nextP);
-  }, [tabs, grouped]);
-
-  // tab değişince sayfa clamp + hash
-  useEffect(() => {
-    if (!activeTab) return;
-    const total = (grouped[activeTab] || []).length;
-    const maxP = Math.max(1, Math.ceil(total / pageSize));
-    const safePage = Math.min(page, maxP);
-    if (safePage !== page) setPage(safePage);
-    setHash(activeTab, safePage, pageSize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, grouped, pageSize, page]);
-
-  // sayfa veya sayfaBoyutu değişince hash ve scroll
-  useEffect(() => {
-    if (!activeTab) return;
-    setHash(activeTab, page, pageSize);
-  }, [page, pageSize, activeTab]);
-
-  /* --- filtre + sayfalama --- */
-  const filteredRefs = useMemo(() => grouped[activeTab] || [], [activeTab, grouped]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRefs.length / pageSize));
-  const pageItems = useMemo(() => getPageItems(totalPages, page), [totalPages, page]);
+  useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages]);
 
+  const pageItems = useMemo(() => getPageItems(totalPages, page), [totalPages, page]);
   const pagedRefs = useMemo(() => {
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
     return filteredRefs.slice(start, end);
   }, [filteredRefs, page, pageSize]);
 
-  /* --- render --- */
+  /* URL builder – KATEGORİ route’una gider */
+  const buildHref = useCallback(
+    (slug: string, p = 1, ps = pageSize) => {
+      const sp = new URLSearchParams();
+      if (p > 1) sp.set("p", String(p));
+      if (ps !== 12) sp.set("ps", String(ps));
+      const q = sp.toString();
+      return { pathname: `/references/category/${slug}`, query: q ? `?${q}` : "" };
+    },
+    [pageSize]
+  );
+
+  const inCategory = !!categorySlug; // sadece kategori route’unda URL güncelle
+
+  const replaceUrl = (slug: string, p = page, ps = pageSize) => {
+    if (!inCategory) return; // kökte URL değiştirme
+    const href = buildHref(slug, p, ps);
+    router.replace(`${href.pathname}${href.query}`);
+  };
+
+  /* render */
   if (loading) {
     return (
       <PageWrapper>
@@ -232,23 +215,29 @@ export default function ReferencesPage() {
 
   return (
     <ModernSection id="refs-top">
+      {/* Tabs -> SEO slug’lı Link; kökte de çalışır */}
       <TabsWrapper>
-        {tabs.map((tab) => (
-          <TabButton
-            key={tab.key}
-            $active={activeTab === tab.key}
-            onClick={() => {
-              setActiveTab(tab.key);
-              setPage(1);
-            }}
-            type="button"
-          >
-            {tab.label}
-          </TabButton>
-        ))}
+        {tabs.map((tab) => {
+          const hrefObj = buildHref(tab.slug, 1, pageSize);
+          const href = `${hrefObj.pathname}${hrefObj.query}`;
+          return (
+            <Link
+              key={tab.key}
+              href={href}   // ABSOLUTE path => /references/category/<slug>?...
+              onClick={() => {
+                setActiveSlug(tab.slug);
+                setPage(1);
+              }}
+            >
+              <TabButton type="button" $active={activeSlug === tab.slug}>
+                {tab.label}
+              </TabButton>
+            </Link>
+          );
+        })}
       </TabsWrapper>
 
-      {/* Toolbar: per-page + sayım */}
+      {/* Toolbar */}
       <Toolbar>
         <div />
         <Counter>
@@ -265,6 +254,7 @@ export default function ReferencesPage() {
               const ps = parseInt(e.target.value, 10) || 12;
               setPageSize(ps);
               setPage(1);
+              if (activeSlug) replaceUrl(activeSlug, 1, ps);
             }}
           >
             {PAGE_SIZE_OPTIONS.map((opt) => (
@@ -283,7 +273,6 @@ export default function ReferencesPage() {
             .map((item: IReferences) => (
               <LogoCard key={item._id}>
                 <div className="logo-img-wrap">
-                  {/* fill + contain + overflow hidden -> taşma yok */}
                   <Image
                     src={item.images[0].url}
                     alt={item.title?.[lang] || "Logo"}
@@ -299,12 +288,16 @@ export default function ReferencesPage() {
       </LogoGrid>
 
       {/* Pagination */}
-      {filteredRefs.length > pageSize && (
+      {filteredRefs.length > pageSize && activeSlug && (
         <Pagination aria-label={t("page.pagination", "Pagination")}>
           <PageBtn
             type="button"
             disabled={page <= 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            onClick={() => {
+              const np = Math.max(1, page - 1);
+              setPage(np);
+              replaceUrl(activeSlug, np, pageSize);
+            }}
           >
             ‹ {t("page.prev", "Prev")}
           </PageBtn>
@@ -317,7 +310,11 @@ export default function ReferencesPage() {
                 key={it}
                 $active={it === page}
                 type="button"
-                onClick={() => setPage(it as number)}
+                onClick={() => {
+                  const np = it as number;
+                  setPage(np);
+                  replaceUrl(activeSlug, np, pageSize);
+                }}
               >
                 {it}
               </PageNum>
@@ -327,7 +324,11 @@ export default function ReferencesPage() {
           <PageBtn
             type="button"
             disabled={page >= totalPages}
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            onClick={() => {
+              const np = Math.min(totalPages, page + 1);
+              setPage(np);
+              replaceUrl(activeSlug, np, pageSize);
+            }}
           >
             {t("page.next", "Next")} ›
           </PageBtn>
@@ -360,7 +361,6 @@ const TabsWrapper = styled.div`
   animation: ${fadeIn} .7s cubic-bezier(0.37,0,0.63,1);
 `;
 
-/* Toolbar */
 const Toolbar = styled.div`
   display: grid;
   grid-template-columns: 1fr auto auto;
@@ -424,8 +424,8 @@ const LogoCard = styled.div`
   .logo-img-wrap{
     position: relative;
     width: 140px;
-    aspect-ratio: 14 / 9;     /* 140x90 oranı */
-    overflow: hidden;         /* taşma yok */
+    aspect-ratio: 14 / 9;
+    overflow: hidden;
     @media (max-width: 600px){ width: 110px; }
     @media (max-width: 430px){ width: 82vw; }
   }

@@ -91,7 +91,8 @@ import promotionsSlice from "@/modules/promotions/slice";
 import menuCategorySlice from "@/modules/menu/slice/menucategorySlice";
 import menuItemSlice from "@/modules/menu/slice/menuitemSlice";
 import menuSlice from "@/modules/menu/slice/menuSlice";
-import Branch from "@/modules/branch/slice";
+import branchSlice from "@/modules/branch/slice";
+import webhooksSlice from "@/modules/webhooks/slice";
 
 
 // --- Combine reducers ---
@@ -185,7 +186,8 @@ const rootReducer = combineReducers({
   menucategory: menuCategorySlice,
   menuitem: menuItemSlice,
   menu: menuSlice,
-  branch: Branch,
+  branch: branchSlice,
+  webhooks: webhooksSlice,
 });
 
 // --- Store ---

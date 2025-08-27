@@ -24,6 +24,9 @@ import { ContactFormSection } from "@/modules/contact";
 import { PortfolioSection } from "@/modules/portfolio";
 import { SkillSection } from "@/modules/skill";
 import { TestimonialSection,TestimonialSectionAlt,TestimonialSectionGzl } from "@/modules/comment";
+import { ApartmentAltSection } from "@/modules/apartment";
+import { CategorySection } from "@/modules/menu";
+
 import WhatsAppFloatingSection from "@/modules/home/public/components/WhatsAppFloatingSection";
 import FloatingChatboxSection from "@/modules/chat/public/components/FloatingChatbox";
 import ScrollToTopSection from "@/modules/home/public/components/ScrollToTop";
@@ -32,7 +35,7 @@ import CatalogRequestButton from "@/modules/catalog/public/components/CatalogReq
 import NewsletterButton from "@/modules/newsletter/public/components/NewsletterButton";
 import NewsletterSection from "@/modules/newsletter/public/components/NewsletterSection";
 import PricingSection from "@/modules/pricing/public/components/Section";
-import { ApartmentAltSection } from "@/modules/apartment";
+
 
 
 import HeroSlider from "@/modules/home/public/components/HeroSlider";
@@ -80,6 +83,7 @@ const sectionComponents: Record<string, React.ComponentType<any> | undefined> = 
   skills: SkillSection,
   pricing: PricingSection,
   apartment: ApartmentAltSection,
+  menuCategory: CategorySection,
 };
 
 const isDev = process.env.NODE_ENV === "development";
