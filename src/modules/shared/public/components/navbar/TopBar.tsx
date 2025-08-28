@@ -49,7 +49,7 @@ export default function TopBar() {
 
 const TopBarWrapper = styled.div`
   width: 100%;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   color: ${({ theme }) => theme.colors.textMuted};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   padding: 0.2em ${({ theme }) => theme.spacings.xl};

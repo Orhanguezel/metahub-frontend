@@ -82,7 +82,7 @@ export const Title = styled.h2`
   font-size: ${({ theme }) => theme.fontSizes.xl};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   margin-bottom: ${({ theme }) => theme.spacings.md};
-  color: ${({ theme }) => theme.colors.title};
+  color: ${({ theme }) => theme.colors.primary};
   letter-spacings: 0.02em;
   text-shadow: 0 2px 12px ${({ theme }) => theme.colors.primaryTransparent};
 `;
@@ -222,7 +222,7 @@ export const FormGroup = styled.div`
     margin-bottom: 0.56rem;
     font-weight: ${({ theme }) => theme.fontWeights.semiBold};
     font-size: 1.1em;
-    color: ${({ theme }) => theme.colors.textLight};
+    color: ${({ theme }) => theme.colors.primary};
     letter-spacings: 0.03em;
     text-shadow: 0 1px 8px #0005;
   }
@@ -356,7 +356,7 @@ export const Label = styled.label`
   margin-bottom: ${({ theme }) => theme.spacings.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.text};
+  color: ${({ theme }) => theme.colors.primary};
   letter-spacings: 0.02em;
   cursor: pointer;
 `;

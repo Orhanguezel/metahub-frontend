@@ -15,11 +15,17 @@ export const MenuDropdown = ({
 }: MenuDropdownProps) => {
   return (
     <Wrapper $isMobile={isMobile}>
-      <Toggle $isMobile={isMobile} onClick={onToggle} aria-expanded={open}>
+      <Toggle
+        $isMobile={isMobile}
+        onClick={onToggle}
+        aria-expanded={!!open}
+        aria-haspopup="menu"
+      >
         {label} <FaChevronDown size={13} className="dropdown-chevron" />
       </Toggle>
+
       {open && (
-        <Dropdown $isMobile={isMobile}>
+        <Dropdown $isMobile={isMobile} role="menu">
           {React.Children.map(children, (child: any) =>
             React.cloneElement(child, { onClick: onClose })
           )}
@@ -38,17 +44,17 @@ interface MenuDropdownProps {
   onClose?: () => void;
 }
 
-
-// --- Styled Components ---
+/* ================= Styled Components ================ */
 
 const Wrapper = styled.div<{ $isMobile?: boolean }>`
   position: relative;
   display: ${({ $isMobile }) => ($isMobile ? "block" : "inline-block")};
+  width: ${({ $isMobile }) => ($isMobile ? "100%" : "auto")};
 `;
 
 const Toggle = styled.button<{ $isMobile?: boolean }>`
-  background: none;
-  border: none;
+  background: transparent;
+  border: ${({ theme }) => theme.borders.thin} transparent;
   color: ${({ theme }) => theme.colors.text};
   font: inherit;
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
@@ -62,7 +68,11 @@ const Toggle = styled.button<{ $isMobile?: boolean }>`
   padding: ${({ $isMobile, theme }) =>
     $isMobile ? `${theme.spacings.sm} 0` : `8px 18px 8px 14px`};
   width: ${({ $isMobile }) => ($isMobile ? "100%" : "auto")};
-  transition: color 0.18s, background 0.18s;
+  transition:
+    color ${({ theme }) => theme.transition.fast},
+    background ${({ theme }) => theme.transition.fast},
+    border-color ${({ theme }) => theme.transition.fast},
+    box-shadow ${({ theme }) => theme.transition.fast};
 
   .dropdown-chevron {
     margin-left: 3px;
@@ -70,10 +80,17 @@ const Toggle = styled.button<{ $isMobile?: boolean }>`
     ${({ $isMobile }) => !$isMobile && "position: relative; top: 1px;"}
   }
 
+  &[aria-expanded="true"] .dropdown-chevron {
+    transform: rotate(180deg);
+  }
+
   &:hover,
   &:focus-visible {
-    color: ${({ theme }) => theme.colors.primary};
-    background: ${({ theme }) => theme.colors.primaryTransparent};
+    background: ${({ theme }) => theme.colors.secondaryTransparent};
+    color: ${({ theme }) => theme.colors.white};
+    border-color: ${({ theme }) => theme.colors.borderHighlight};
+    outline: none;
+    box-shadow: ${({ theme }) => theme.colors.shadowHighlight};
   }
 `;
 
@@ -81,76 +98,94 @@ const Dropdown = styled.div<{ $isMobile?: boolean }>`
   display: flex;
   flex-direction: column;
   position: ${({ $isMobile }) => ($isMobile ? "static" : "absolute")};
-  background: ${({ theme }) => theme.colors.cardBackground};
   top: 100%;
   left: 0;
   z-index: ${({ theme }) => theme.zIndex.dropdown};
-  min-width: 200px;
-  padding: ${({ theme }) => theme.spacings.xs} 0;
-  border-radius: ${({ theme }) => theme.radii.lg};
+
+  background: ${({ theme }) => theme.colors.cardBackground};
+  color: ${({ theme }) => theme.colors.black};
+  border: ${({ $isMobile, theme }) =>
+    $isMobile ? "none" : `${theme.borders.thin} ${theme.colors.secondary}`};
   box-shadow: ${({ $isMobile, theme }) =>
     $isMobile ? "none" : theme.shadows.lg};
-  border: ${({ $isMobile, theme }) =>
-    $isMobile ? "none" : `${theme.borders.thin} ${theme.colors.border}`};
+  border-radius: ${({ $isMobile, theme }) =>
+    $isMobile ? "0" : theme.radii.lg};
+  min-width: 220px;
+  padding: ${({ theme }) => theme.spacings.xs} 0;
   margin-top: ${({ $isMobile }) => ($isMobile ? 0 : "8px")};
 
+  /* Mobilde X'in hemen altından başlatmak istiyorsan Navbar tarafında
+     --mobile-dropdown-offset tanımlayabilirsin. */
   ${({ $isMobile }) =>
     $isMobile &&
     `
-    box-shadow: none;
-    border-radius: 0;
-    min-width: 0;
-    margin: 0;
-  `}
+      margin-top: var(--mobile-dropdown-offset, 56px);
+      scroll-margin-top: var(--mobile-dropdown-offset, 56px);
+      width: 100%;
+      max-height: calc(100dvh - var(--navbar-h, 64px) - var(--mobile-dropdown-offset, 56px) - 16px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: env(safe-area-inset-bottom);
+    `}
 `;
 
 export const DropdownLink = styled(Link).attrs<{ $active?: boolean }>(props => ({
   className: props.$active ? "active" : "",
 }))<{ $isMobile?: boolean; $active?: boolean }>`
+  display: block;
   padding: ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.xl};
   white-space: nowrap;
   text-decoration: none;
-  color: ${({ $active, theme }) => ($active ? theme.colors.white : theme.colors.text)};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  background: ${({ $active, theme }) =>
-    $active ? theme.colors.primary : "none"};
-  font-family: ${({ theme }) => theme.fonts.main};
-  font-weight: ${({ $active, theme }) =>
-    $active ? theme.fontWeights.bold : theme.fontWeights.regular};
-  border-radius: ${({ theme }) => theme.radii.md};
-  box-shadow: ${({ $active, theme }) =>
-    $active ? theme.shadows.sm : "none"};
-  transition: 
-    background 0.18s, 
-    color 0.15s, 
-    font-weight 0.13s,
-    box-shadow 0.2s;
 
+  color: ${({ theme }) => theme.colors.black};
+  background: transparent;
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-family: ${({ theme }) => theme.fonts.main};
+
+  border: ${({ theme }) => theme.borders.thin} transparent;
+  border-radius: ${({ theme }) => theme.radii.md};
+
+  font-weight: ${({ theme }) => theme.fontWeights.regular};
+  transition:
+    background ${({ theme }) => theme.transition.fast},
+    color ${({ theme }) => theme.transition.fast},
+    border-color ${({ theme }) => theme.transition.fast},
+    box-shadow ${({ theme }) => theme.transition.fast};
+
+  /* 🟡 HOVER: aktif değilken primary arka plan */
   &:hover,
   &:focus-visible {
-    background: ${({ $active, theme }) =>
-      $active
-        ? theme.colors.primaryLight
-        : theme.colors.primaryTransparent};
-    color: ${({ $active, theme }) =>
-      $active ? theme.colors.white : theme.colors.primary};
+    background: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.black};
+    border-color: ${({ theme }) =>
+      (theme.colors as any).borderHighlight || theme.colors.primary};
+    outline: none;
+    box-shadow: ${({ theme }) => theme.shadows.sm};
     text-decoration: none;
     font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-    box-shadow: ${({ $active, theme }) =>
-      $active ? theme.shadows.md : theme.shadows.sm};
   }
 
-  &.active {
-    background: ${({ theme }) => theme.colors.primary};
+  /* 🔴 AKTİF: kırmızı (secondary) arka planı koru */
+  &.active,
+  ${({ $active }) => $active && "&"},
+  &[aria-current="page"] {
+    background: ${({ theme }) => theme.colors.secondary};
     color: ${({ theme }) => theme.colors.white};
+    border-color: ${({ theme }) => theme.colors.secondaryDark};
     font-weight: ${({ theme }) => theme.fontWeights.bold};
     box-shadow: ${({ theme }) => theme.shadows.sm};
-    &:hover,
-    &:focus-visible {
-      background: ${({ theme }) => theme.colors.primaryLight};
-      color: ${({ theme }) => theme.colors.white};
-      box-shadow: ${({ theme }) => theme.shadows.md};
-    }
+  }
+
+  /* Aktif + hover: aktif tonun koyusu */
+  &.active:hover,
+  &.active:focus-visible,
+  &[aria-current="page"]:hover,
+  &[aria-current="page"]:focus-visible {
+    background: ${({ theme }) => theme.colors.secondaryHover};
+    border-color: ${({ theme }) => theme.colors.secondaryDark};
+    color: ${({ theme }) => theme.colors.white};
+    box-shadow: ${({ theme }) => theme.shadows.md};
   }
 
   ${({ $isMobile }) =>

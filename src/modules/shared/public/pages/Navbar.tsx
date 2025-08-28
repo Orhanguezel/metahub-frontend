@@ -14,7 +14,7 @@ import { NotificationButton } from "@/modules/notification";
 /* 🔔 Yeni: Chat uyarı butonunu ekle */
 import ChatAlertButton from "@/modules/chat/public/components/ChatAlertButton";
 
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import {
   TopBar,
   Logo,
@@ -240,21 +240,29 @@ export default function Navbar() {
 const NavbarWrapper = styled.nav`
   display: flex;
   flex-direction: column;
-  background: ${({ theme }) => theme.colors.background};
+
+  /* 🔴 Antalya2: ana zemin kırmızı, yazılar açık sarı */
+  background: ${({ theme }) => theme.colors.sectionBackground};
   color: ${({ theme }) => theme.colors.text};
-  border-top: 0;
-  box-shadow: ${({ theme }) => theme.shadows.sm};
+
+  /* alt kenarda sarı vurgu */
+
+
+  box-shadow: ${({ theme }) => theme.shadows.md};
   z-index: ${({ theme }) => theme.zIndex.dropdown};
   border-radius: 0 0 22px 22px;
   position: relative;
+
   /* iOS safe-area üst boşluk için */
   padding-top: max(env(safe-area-inset-top), 0px);
+  padding-right: ${({ theme }) => theme.spacings.xs};
 `;
 
 const MobileMenu = styled(motion.div)`
   display: flex;
   flex-direction: column;
-  background: ${({ theme }) => theme.colors.background};
+  background: ${({ theme }) => theme.colors.sectionBackground};
+  color: ${({ theme }) => theme.colors.text};
   padding: ${({ theme }) => theme.spacings.lg} 0 ${({ theme }) => theme.spacings.md};
   position: fixed;
   top: calc(var(--navbar-h, 64px) + env(safe-area-inset-top));
@@ -263,12 +271,16 @@ const MobileMenu = styled(motion.div)`
   z-index: ${({ theme }) => theme.zIndex.overlay};
   box-shadow: ${({ theme }) => theme.shadows.lg};
   border-radius: 0 0 24px 24px;
-  animation: mobileMenuSlide 0.24s ease-out;
+  --mobile-dropdown-offset: 64px; /* X ikonlu üst barın yüksekliği kadar ayarla */
+
+  /* üst kenarda sarı çizgi */
+  border-top: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderHighlight};
 
   @keyframes mobileMenuSlide {
     from { opacity: 0; transform: translateY(-16px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  animation: mobileMenuSlide 0.24s ease-out;
 
   ${({ theme }) => theme.media.desktop} {
     display: none;
@@ -283,8 +295,13 @@ const CenterSection = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.xl};
+
+  /* 🔴 kırmızı zemin, alt sarı çizgi */
   background: ${({ theme }) => theme.colors.sectionBackground};
+  color: ${({ theme }) => theme.colors.text};
+  border-bottom: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderHighlight};
+
+  padding: ${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.xl};
   border-radius: 0 0 24px 24px;
   box-shadow: ${({ theme }) => theme.shadows.md};
 
@@ -318,11 +335,12 @@ const HideOnXS = styled.div`
 `;
 
 const ThemeToggle = styled.button`
+  /* 🟡 sarı buton, siyah ikon */
   background: ${({ theme }) => theme.colors.cardBackground};
-  border: none;
+  color: ${({ theme }) => theme.colors.black};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderHighlight};
   font-size: clamp(0.95rem, 2.8vw, 1.18rem);
   cursor: pointer;
-  color: ${({ theme }) => theme.colors.primary};
   padding: 0.36em 0.45em;
   border-radius: ${({ theme }) => theme.radii.circle};
   box-shadow: ${({ theme }) => theme.shadows.sm};
@@ -331,17 +349,16 @@ const ThemeToggle = styled.button`
               box-shadow ${({ theme }) => theme.transition.fast};
 
   &:hover {
-    background: ${({ theme }) => theme.colors.accent};
+    /* hover'da kırmızı zemin, beyaz ikon */
+    background: ${({ theme }) => theme.colors.secondary};
     color: ${({ theme }) => theme.colors.white};
     box-shadow: ${({ theme }) => theme.shadows.lg};
   }
 
-  /* ✅ medya sorgusu düzeltildi */
   @media (max-width: ${({ theme }) => theme.breakpoints.laptopS}) {
     font-size: 1.05rem;
     padding: 0.28em 0.34em;
   }
-
   ${({ theme }) => theme.media.small} {
     font-size: 0.92rem;
     padding: 0.18em 0.18em;
@@ -351,7 +368,6 @@ const ThemeToggle = styled.button`
 const Hamburger = styled.button`
   /* Varsayılan desktop'ta gizli; mobile'da göster */
   display: none;
-
   ${({ theme }) => theme.media.mobile} {
     display: inline-flex;
   }
@@ -361,11 +377,13 @@ const Hamburger = styled.button`
   width: clamp(40px, 9vw, 48px);
   height: clamp(40px, 9vw, 48px);
   line-height: 1;
-  background: ${({ theme }) => theme.colors.primaryTransparent};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderLight};
+
+  /* 🔴 kırmızı saydam arkaplan */
+  background: ${({ theme }) => theme.colors.secondaryTransparent};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderHighlight};
   font-size: clamp(18px, 6vw, 22px);
   cursor: pointer;
-  color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.primary}; /* ikon sarı */
   padding: 0;
   border-radius: ${({ theme }) => theme.radii.circle};
   box-shadow: ${({ theme }) => theme.shadows.xs};
@@ -375,7 +393,7 @@ const Hamburger = styled.button`
   z-index: ${({ theme }) => theme.zIndex.overlay};
 
   &:hover {
-    background: ${({ theme }) => theme.colors.accent};
+    background: ${({ theme }) => theme.colors.secondary};
     color: ${({ theme }) => theme.colors.white};
     box-shadow: ${({ theme }) => theme.shadows.button};
   }
@@ -386,17 +404,111 @@ const Hamburger = styled.button`
   }
 `;
 
+/* ---------- Ortak anchor stili (hover’da alt çizgi yok, aktifte var) ---------- */
+const linkStyles = css`
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+
+  color: ${({ theme }) => theme.colors.text};
+  background: transparent;
+  text-decoration: none; /* ✨ alt çizgi kapalı */
+
+  border: ${({ theme }) => theme.borders.thin} transparent;
+  border-radius: ${({ theme }) => theme.radii.pill};
+
+  font-family: ${({ theme }) => theme.fonts.body};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  font-size: 1.12rem;
+  text-transform: capitalize;
+  letter-spacing: 0.003em;
+  padding: 0.28rem 0.6rem;
+
+  transition:
+    background ${({ theme }) => theme.transition.fast},
+    color ${({ theme }) => theme.transition.fast},
+    border-color ${({ theme }) => theme.transition.fast},
+    box-shadow ${({ theme }) => theme.transition.fast};
+
+  /* Hover: alt çizgi yok; arkaplan + border değişir */
+  &:hover,
+  &:focus-visible {
+    text-decoration: none;
+    background: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.white};
+    border-color: ${({ theme }) => theme.colors.borderHighlight};
+    outline: none;
+    box-shadow: ${({ theme }) => theme.colors.shadowHighlight};
+  }
+
+  /* Aktif: sarı chip + siyah metin + sarı border + alt çizgi açık */
+  &.active,
+  &[aria-current="page"],
+  &[data-active="true"] {
+    background: ${({ theme }) => theme.colors.cardBackground};
+    color: ${({ theme }) => theme.colors.black};
+    border-color: ${({ theme }) => theme.colors.borderHighlight};
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
+  }
+
+  &.active:hover,
+  &.active:focus-visible,
+  &[aria-current="page"]:hover,
+  &[aria-current="page"]:focus-visible,
+  &[data-active="true"]:hover,
+  &[data-active="true"]:focus-visible {
+    background: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.black};
+    border-color: ${({ theme }) => theme.colors.secondaryDark};
+    box-shadow: ${({ theme }) => theme.shadows.sm};
+  }
+
+  /* Alt vurgu çizgisi — SADECE aktifken görünür */
+  &::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 4px;
+    height: 2px;
+    background: ${({ theme }) => theme.colors.borderHighlight};
+    border-radius: 2px;
+    opacity: 0;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.18s cubic-bezier(.4,1,.45,.95), opacity 0.12s;
+  }
+  &.active::after,
+  &[aria-current="page"]::after,
+  &[data-active="true"]::after {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  /* Responsive */
+  @media (max-width: 1440px) { font-size: 1.02rem; padding: 0.24rem 0.5rem; }
+  @media (max-width: 1024px) { font-size: 0.98rem; padding: 0.22rem 0.44rem; }
+  @media (max-width: 900px)  { font-size: 0.94rem; padding: 0.20rem 0.40rem; }
+  @media (max-width: 600px)  { font-size: 0.88rem; padding: 0.18rem 0.34rem; }
+  @media (max-width: 425px)  { font-size: 0.84rem; padding: 0.16rem 0.30rem; }
+`;
+
 const DesktopMenu = styled.ul`
   display: flex;
   list-style: none;
   gap: 1.1rem;
   margin: 0;
   padding: 20px;
+
+  background: transparent;
+  color: ${({ theme }) => theme.colors.text};
   font-family: ${({ theme }) => theme.fonts.main};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
 
-  /* ✅ medya sorgusu düzeltildi */
+  /* İçteki Link/anchor’lar */
+  a, a.nav-link { ${linkStyles} }
+
   @media (max-width: ${({ theme }) => theme.breakpoints.laptopS}) {
     font-size: ${({ theme }) => theme.fontSizes.sm};
     gap: 0.9rem;
@@ -416,9 +528,15 @@ const DesktopMenu2 = styled.ul`
   gap: 2.1rem;
   margin: 0;
   padding: 20px;
+
+  background: transparent;
+  color: ${({ theme }) => theme.colors.text};
   font-family: ${({ theme }) => theme.fonts.main};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+
+  /* İçteki Link/anchor’lar */
+  a, a.nav-link { ${linkStyles} }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.laptopS}) {
     font-size: ${({ theme }) => theme.fontSizes.md};
@@ -432,13 +550,10 @@ const DesktopMenu2 = styled.ul`
 const MenuBar = styled.div`
   display: flex;
   justify-content: center;
-  padding: ${({ theme }) => theme.spacings.sm} 0;
-  border-top: 0;
-  background: transparent;
 
-  ${({ theme }) => theme.media.mobile} {
-    display: none;
-  }
+  background: ${({ theme }) => theme.colors.sectionBackground};
+  color: ${({ theme }) => theme.colors.text};
+  padding: ${({ theme }) => theme.spacings.sm} 0;
 `;
 
 const StickyMenu = styled(motion.div)<{ isAdmin?: boolean }>`
@@ -446,7 +561,11 @@ const StickyMenu = styled(motion.div)<{ isAdmin?: boolean }>`
   top: ${({ isAdmin }) => (isAdmin ? "unset" : "0")};
   left: 0;
   width: 100%;
+
+  /* 🔴 kırmızı zemin */
   background: ${({ theme }) => theme.colors.sectionBackground};
+  color: ${({ theme }) => theme.colors.text};
+
   box-shadow: ${({ theme }) => theme.shadows.lg};
   padding: 7px ${({ theme }) => theme.spacings.xxl};
   display: flex;

@@ -11,6 +11,7 @@ import guezelwebTheme from "./guezelwebTheme";
 import radanorTheme from "./radanorTheme";
 import gzlTheme from "./gzlTheme";
 import antalyaTheme from "./antalyaTheme";
+import antalya2Theme from "./antalya2Theme";
 
 
 
@@ -28,6 +29,7 @@ export const themes = {
   radanor: radanorTheme,
   gzl: gzlTheme,
   antalya: antalyaTheme,
+  antalya2: antalya2Theme,
 
 };
 

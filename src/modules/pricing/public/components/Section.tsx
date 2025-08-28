@@ -12,7 +12,7 @@ import { useState } from "react";
 export default function PricingSection() {
   const { i18n, t } = useI18nNamespace("pricing", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-  const { pricing, loading, error } = useAppSelector((state) => state.pricing);
+  const { pricing, loading, error } = useAppSelector((state) => state.pricing ?? []);
 
   const [loadingBtnId, setLoadingBtnId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);

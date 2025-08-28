@@ -29,6 +29,7 @@ export default function NavbarLogo({
 }) {
   const { i18n } = useI18nNamespace("navbar", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+
   const settings = useAppSelector((state) => state.settings.settings || []);
   const navbarImagesSetting = settings.find((s: any) => s.key === "navbar_images");
   const logoSrc = resolveLogoSrc(navbarImagesSetting?.images || navbarImagesSetting?.value);
@@ -52,48 +53,63 @@ export default function NavbarLogo({
             fill
             priority
             sizes={`(max-width: 600px) 110px, ${maxWidth}px`}
-            style={{ objectFit: "contain" }} // oran korunur
+            style={{ objectFit: "contain" }}
           />
         </LogoImgBox>
       ) : (
-        <Fallback style={{ height }}>{/* fallback */}</Fallback>
+        <Fallback style={{ height }} />
       )}
       {slogan && <LogoSlogan>{slogan}</LogoSlogan>}
     </LogoWrapper>
   );
 }
 
-/* --- styled --- */
+/* --- styled (classicTheme uyumlu) --- */
+
+const LogoImgBox = styled.div<{ $h: number; $mw: number }>`
+  position: relative;
+  width: ${({ $mw }) => $mw}px;
+  height: ${({ $h }) => $h}px;
+  max-width: 100%;
+  overflow: hidden;
+
+  /* Kart görünümü (classic) */
+  border-radius: ${({ theme }) => theme.radii.md};
+  box-shadow: ${({ theme }) => theme.shadows.xs};
+
+  line-height: 0;
+
+  @media (max-width: 600px) {
+    width: 110px;
+    height: 38px;
+  }
+`;
 
 const LogoWrapper = styled(Link)`
-  display: inline-flex;          /* yüzdeye göre genişleyip uzamasın */
+  display: inline-flex;
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
   text-decoration: none;
-  background: transparent;
   min-width: 0;
+
+  /* Metin rengi (slogan vs.) */
+  color: ${({ theme }) => theme.colors.text};
+  background: transparent; /* Navbar ile bütün */
 `;
 
-const LogoImgBox = styled.div<{ $h: number; $mw: number }>`
-  position: relative;
-  width: ${({ $mw }) => $mw}px;      /* en fazla bu kadar genişler */
-  height: ${({ $h }) => $h}px;       /* navbar yüksekliği */
-  max-width: 100%;
-  overflow: hidden;                  /* taşma yok */
-  background: transparent;
-  line-height: 0;                    /* küçük sapmaları engeller */
 
-  @media (max-width: 600px) {
-    width: 110px;                    /* mobilde daha dar */
-    height: 38px;                    /* ve daha alçak */
-  }
-`;
 
 const Fallback = styled.div`
   height: 64px;
   min-width: 32px;
-  background: transparent;
+
+  /* Görsel yoksa skeleton tonu */
+  background: ${({ theme }) => theme.colors.skeletonBackground};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderLight};
+  border-radius: ${({ theme }) => theme.radii.md};
+  box-shadow: ${({ theme }) => theme.shadows.xs};
+
   @media (max-width: 600px) {
     height: 38px;
     min-width: 24px;
@@ -103,13 +119,15 @@ const Fallback = styled.div`
 const LogoSlogan = styled.span`
   margin-top: 2px;
   font-size: ${({ theme }) => theme.fontSizes.xs};
-  color: ${({ theme }) => theme.colors.secondary};
-  font-family: ${({ theme }) => theme.fonts.body};
-  font-style: italic;
+  line-height: 1.2;
+
+  /* Classic başlık rengi ile uyumlu vurgulu metin */
+  color: ${({ theme }) => theme.colors.title};
+  font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.light};
+  font-style: italic;
   text-align: center;
   letter-spacing: 0.01em;
-  line-height: 1.2;
 
   white-space: nowrap;
   overflow: hidden;

@@ -206,6 +206,7 @@ export default function FooterSection() {
 }
 
 // --- Styled Components --- (Aynı şekilde bırakabilirsin!)
+// --- Styled Components ---
 const FooterWrapper = styled.footer`
   width: 100%;
   background: ${({ theme }) => theme.colors.footerBackground};
@@ -213,19 +214,28 @@ const FooterWrapper = styled.footer`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: ${({ theme }) => theme.spacings.xl} 0 ${({ theme }) => theme.spacings.md};
+
+  /* ALT BOŞLUK YOK */
+  padding: ${({ theme }) => theme.spacings.xl} 0 0;
   row-gap: ${({ theme }) => theme.spacings.lg};
+  margin: 0;                 /* olası dış marjini sıfırla */
   z-index: 1;
+
+  /* Footer içindeki son elemanın margin-bottom'ını etkisizleştir */
+  > *:last-child {
+    margin-bottom: 0 !important;
+  }
+
   ${({ theme }) => theme.media.medium} {
-    padding: ${({ theme }) => theme.spacings.lg} 0 ${({ theme }) => theme.spacings.sm};
+    padding: ${({ theme }) => theme.spacings.lg} 0 0;
     row-gap: ${({ theme }) => theme.spacings.md};
   }
   ${({ theme }) => theme.media.small} {
-    padding: ${({ theme }) => theme.spacings.md} 0 ${({ theme }) => theme.spacings.sm};
+    padding: ${({ theme }) => theme.spacings.md} 0 0;
     row-gap: ${({ theme }) => theme.spacings.sm};
-
   }
 `;
+
 
 const FooterGrid = styled.div`
   display: grid;
@@ -285,12 +295,16 @@ const LegalLinks = styled.div`
   justify-content: center;
   align-items: center;
   gap: 8px;
-  margin: 18px 0 2px 0;
+
+  /* Alt boşluğu kaldır */
+  margin: 18px 0 0 0;
+
   font-size: 1.07rem;
   font-family: ${({ theme }) => theme.fonts.body};
   font-weight: 500;
   color: ${({ theme }) => theme.colors.text};
   opacity: 0.92;
+
   a {
     color: ${({ theme }) => theme.colors.text};
     text-decoration: none;
@@ -300,13 +314,14 @@ const LegalLinks = styled.div`
       text-decoration: underline;
     }
   }
+
   @media (max-width: 600px) {
     font-size: 0.97rem;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 10px;
   }
 `;
+
 
 const Divider = styled.span`
   color: ${({ theme }) => theme.colors.text};

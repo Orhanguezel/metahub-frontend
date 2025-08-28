@@ -156,7 +156,7 @@ export default function TestimonialSection() {
 /* -------------------- styled -------------------- */
 
 const Section = styled(motion.section)`
-  background: ${({ theme }) => theme.colors.sectionBackground};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   color: ${({ theme }) => theme.colors.text};
   padding: 0 0 ${({ theme }) => theme.spacings.xxl};
   display: flex;

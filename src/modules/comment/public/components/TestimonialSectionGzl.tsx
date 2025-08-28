@@ -272,7 +272,7 @@ export default function TestimonialSection() {
 // ---- Styles (hiçbir değişiklik yok, responsive ve theme uyumlu) ----
 
 const Section = styled.section`
-  background: ${({ theme }) => theme.colors.achievementBackground};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   padding: ${({ theme }) => theme.spacings.xxl} 0;
   display: flex;
   flex-direction: column;

@@ -1,4 +1,3 @@
-// src/modules/gallery/pages/AdminGalleryPage.tsx
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -101,14 +100,14 @@ const AdminGalleryPage: React.FC = () => {
       </Header>
 
       {/* Sekmeler */}
-      <Tabs>
-        <Tab $active={activeTab === "list"} onClick={() => setActiveTab("list")}>
+      <Tabs role="tablist" aria-label={t("tabs", "Gallery tabs")}>
+        <Tab role="tab" aria-selected={activeTab === "list"} $active={activeTab === "list"} onClick={() => setActiveTab("list")}>
           {t("list", "List")}
         </Tab>
-        <Tab $active={activeTab === "create"} onClick={() => setActiveTab("create")}>
+        <Tab role="tab" aria-selected={activeTab === "create"} $active={activeTab === "create"} onClick={() => setActiveTab("create")}>
           {t("create", "Create")}
         </Tab>
-        <Tab $active={activeTab === "categories"} onClick={() => setActiveTab("categories")}>
+        <Tab role="tab" aria-selected={activeTab === "categories"} $active={activeTab === "categories"} onClick={() => setActiveTab("categories")}>
           {t("categories", "Categories")}
         </Tab>
       </Tabs>
@@ -169,7 +168,7 @@ const AdminGalleryPage: React.FC = () => {
 
 export default AdminGalleryPage;
 
-/* ---- styled (About/Section paternine uyumlu) ---- */
+/* ---- styled (classicTheme renkleriyle) ---- */
 const PageWrap = styled.div`
   max-width: ${({ theme }) => theme.layout.containerWidth};
   margin: 0 auto;
@@ -194,7 +193,25 @@ const TitleBlock = styled.div`
 
   h1 {
     margin: 0;
+    font-family: ${({ theme }) => theme.fonts.heading};
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
     font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+    line-height: 1.1;
+    color: ${({ theme }) => theme.colors.title};
+    letter-spacing: .2px;
+    position: relative;
+
+    /* alt vurgu çizgisi (tema rengi) */
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -6px;
+      width: 54px;
+      height: 3px;
+      background: ${({ theme }) => theme.colors.borderHighlight};
+      border-radius: ${({ theme }) => theme.radii.pill};
+    }
   }
 
   ${({ theme }) => theme.media.mobile} {
@@ -203,9 +220,10 @@ const TitleBlock = styled.div`
 `;
 
 const Subtitle = styled.p`
-  margin: 0;
+  margin: 8px 0 0 0;
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-family: ${({ theme }) => theme.fonts.body};
 `;
 
 const Right = styled.div`
@@ -215,7 +233,9 @@ const Right = styled.div`
 const Counter = styled.span`
   padding: 6px 10px;
   border-radius: ${({ theme }) => theme.radii.pill};
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: ${({ theme }) => theme.colors.primaryLight};
+  border: 1px solid ${({ theme }) => theme.colors.borderHighlight};
+  color: ${({ theme }) => theme.colors.title};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
 `;
 
@@ -225,13 +245,27 @@ const Tabs = styled.div`
 `;
 
 const Tab = styled.button<{ $active?: boolean }>`
-  padding: 8px 12px;
+  padding: 8px 14px;
   border-radius: ${({ theme }) => theme.radii.pill};
   background: ${({ $active, theme }) =>
-    $active ? theme.colors.primaryLight : theme.colors.cardBackground};
-  color: ${({ theme }) => theme.colors.text};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+    $active ? theme.colors.primary : theme.colors.cardBackground};
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors.buttonText : theme.colors.text};
+  border: ${({ theme, $active }) =>
+    $active
+      ? `${theme.borders.thin} ${theme.colors.primary}`
+      : `${theme.borders.thin} ${theme.colors.border}`};
   cursor: pointer;
+  transition: background ${({ theme }) => theme.durations.normal} ease;
+
+  &:hover,
+  &:focus-visible {
+    background: ${({ $active, theme }) =>
+      $active ? theme.colors.primaryHover : theme.colors.primaryLight};
+    color: ${({ theme }) => theme.colors.buttonText};
+    outline: none;
+    box-shadow: ${({ theme }) => theme.colors.shadowHighlight};
+  }
 `;
 
 const Section = styled.section`
@@ -244,6 +278,8 @@ const SectionHead = styled.div`
 
   h2 {
     margin: 0;
+    font-family: ${({ theme }) => theme.fonts.heading};
+    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
     font-size: ${({ theme }) => theme.fontSizes.lg};
     color: ${({ theme }) => theme.colors.title};
   }
@@ -253,16 +289,27 @@ const Card = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: ${({ theme }) => theme.radii.lg};
   box-shadow: ${({ theme }) => theme.cards.shadow};
+  border: 1px solid ${({ theme }) => theme.colors.borderLight};
   padding: ${({ theme }) => theme.spacings.lg};
 `;
 
 const PrimaryBtn = styled.button`
   background: ${({ theme }) => theme.buttons.primary.background};
   color: ${({ theme }) => theme.buttons.primary.text};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.buttons.primary.backgroundHover};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.buttons.primary.background};
   padding: 8px 12px;
   border-radius: ${({ theme }) => theme.radii.md};
   cursor: pointer;
+  transition: background ${({ theme }) => theme.durations.normal} ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+    color: ${({ theme }) => theme.buttons.primary.textHover};
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: ${({ theme }) => theme.colors.shadowHighlight};
+  }
 `;
 
 const SmallBtn = styled.button`
@@ -272,6 +319,16 @@ const SmallBtn = styled.button`
   padding: 6px 10px;
   border-radius: ${({ theme }) => theme.radii.md};
   cursor: pointer;
+  transition: background ${({ theme }) => theme.durations.normal} ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.buttons.secondary.backgroundHover};
+    color: ${({ theme }) => theme.buttons.secondary.textHover};
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: ${({ theme }) => theme.colors.shadowHighlight};
+  }
 `;
 
 const EmptyMessage = styled.p`

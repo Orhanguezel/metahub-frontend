@@ -42,7 +42,7 @@ export default function LangSelect(props: Props) {
 };
 
 const LangSelectStyled = styled.select`
-  background: ${({ theme }) => theme.colors.background || "#222"};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   border: 1px solid ${({ theme }) => theme.colors.grey};
   padding: ${({ theme }) => theme.spacings.xs} ${({ theme }) => theme.spacings.sm};
   border-radius: 6px;
@@ -61,7 +61,7 @@ const LangSelectStyled = styled.select`
 
   option {
     color: ${({ theme }) => theme.colors.text};
-    background: ${({ theme }) => theme.colors.background || "#222"};
+    background: ${({ theme }) => theme.colors.backgroundAlt};
   }
 
   /* Tablet */

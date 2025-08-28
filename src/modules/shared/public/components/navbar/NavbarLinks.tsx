@@ -5,28 +5,22 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../../locales/navbar";
 import { SupportedLocale } from "@/types/common";
 import { useAppSelector } from "@/store/hooks";
-//import { SPECIAL_NAV_LINK } from "./navigationLinks";
 
 export default function NavbarLinks() {
-  const { i18n} = useI18nNamespace("navbar", translations);
+  const { i18n } = useI18nNamespace("navbar", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   const settings = useAppSelector((state) => state.settings.settings || []);
   const navbarLinksSetting = settings.find((s: any) => s.key === "navbar_main_links");
 
-  // Her bir link için url (json’da url), label ve fallback
   const links = navbarLinksSetting?.value || {};
 
   return (
     <>
       {Object.entries(links).map(([key, link]: any) => {
-        const label =
-          link.label?.[lang] ||
-          key;
-        const url = link.url || "/"; // **DOĞRU: url**
-
-        // Eğer url boşsa, link göstermeyelim!
-        if (!url.trim()) return null;
+        const label = link.label?.[lang] || key;
+        const url = (link.url || "/").trim();
+        if (!url) return null;
 
         return (
           <MenuItem key={key}>
@@ -34,18 +28,12 @@ export default function NavbarLinks() {
           </MenuItem>
         );
       })}
-
-      {/* Eğer özel bir ikonlu link varsa 
-      <MenuItem1>
-        <MenuLink href={SPECIAL_NAV_LINK.href}>
-          {SPECIAL_NAV_LINK.icon}
-        </MenuLink>
-      </MenuItem1>*/}
     </>
   );
 }
 
-// --- Styled Components ---
+/* ---------------- styled ---------------- */
+
 const MenuItem = styled.li`
   list-style: none;
   position: relative;
@@ -53,17 +41,10 @@ const MenuItem = styled.li`
   align-items: center;
   margin: 0 0.12rem;
 
-  ${({ theme }) => theme.breakpoints.laptop} {
+  @media (max-width: ${({ theme }) => theme.breakpoints.laptop}) {
     margin: 0 0.06rem;
   }
 `;
-/*
-const MenuItem1 = styled(MenuItem)`
-  padding: 0;
-  justify-content: flex-end;
-  align-items: center;
-`;
-*/
 
 const MenuLink = styled(Link).attrs<{ $active?: boolean }>(props => ({
   className: props.$active ? "active" : "",
@@ -71,82 +52,100 @@ const MenuLink = styled(Link).attrs<{ $active?: boolean }>(props => ({
   position: relative;
   display: inline-flex;
   align-items: center;
-  color: ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.text};
+
+  color: ${({ theme }) => theme.colors.text};
+  background: transparent;
+  text-decoration: none;                 /* ✨ temel durumda alt çizgi yok */
+
   font-family: ${({ theme }) => theme.fonts.body};
-  font-weight: ${({ $active, theme }) =>
-    $active ? theme.fontWeights.bold : theme.fontWeights.medium};
-  font-size: 1.45rem;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  font-size: 1.12rem;
   text-transform: capitalize;
   letter-spacing: 0.003em;
-  padding: 0.15rem 0.36rem 0.13rem 0.32rem;  // Yine de küçük!
-  border-radius: ${({ theme }) => theme.radii.sm};
-  background: ${({ $active, theme }) =>
-    $active ? theme.colors.primaryTransparent : "transparent"};
+  padding: 0.28rem 0.6rem;
+  border-radius: ${({ theme }) => theme.radii.pill};
 
   transition:
-    background 0.13s,
-    color 0.12s,
-    font-weight 0.10s,
-    font-size 0.09s,
-    padding 0.1s;
+    background ${({ theme }) => theme.transition.fast},
+    color ${({ theme }) => theme.transition.fast},
+    border-color ${({ theme }) => theme.transition.fast},
+    box-shadow ${({ theme }) => theme.transition.fast};
 
+  /* 🔥 Hover: alt çizgi YOK, sadece arkaplan/border rengi */
   &:hover,
   &:focus-visible {
-    color: ${({ theme }) => theme.colors.primary};
-    background: ${({ theme }) => theme.colors.primaryTransparent};
-    font-weight: ${({ theme }) => theme.fontWeights.bold};
+    background: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.white};
+    border-color: ${({ theme }) => theme.colors.borderHighlight};
+    outline: none;
+    box-shadow: ${({ theme }) => theme.colors.shadowHighlight};
     text-decoration: none;
   }
 
+  /* ✅ Active: sarı chip + siyah metin + sarı border */
   &.active,
-  &[aria-current="page"] {
-    color: ${({ theme }) => theme.colors.primary};
-    background: ${({ theme }) => theme.colors.primaryTransparent};
+  &[aria-current="page"],
+  ${({ $active }) => $active && "&"} {
+    background: ${({ theme }) => theme.colors.cardBackground};
+    color: ${({ theme }) => theme.colors.black};
+    border-color: ${({ theme }) => theme.colors.borderHighlight};
     font-weight: ${({ theme }) => theme.fontWeights.bold};
   }
 
+  /* Active + hover: görünümü koru (alt çizgi kalacak) */
+  &.active:hover,
+  &.active:focus-visible {
+    background: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.black};
+    border-color: ${({ theme }) => theme.colors.secondaryDark};
+    box-shadow: ${({ theme }) => theme.shadows.sm};
+  }
+
+  /* 🔻 Alt vurgu çizgisi — SADECE aktifken */
   &::after {
     content: "";
-    display: block;
     position: absolute;
-    left: 6px;
-    right: 6px;
-    bottom: 2px;
-    height: 1.8px;
-    background: ${({ theme }) => theme.colors.primary};
-    border-radius: 1px;
-    opacity: ${({ $active }) => ($active ? 1 : 0)};
-    transform: scaleX(${({ $active }) => ($active ? 1 : 0)});
+    left: 10px;
+    right: 10px;
+    bottom: 4px;
+    height: 2px;
+    background: ${({ theme }) => theme.colors.borderHighlight};
+    border-radius: 2px;
+    opacity: 0;
+    transform: scaleX(0);
     transform-origin: center;
-    transition: transform 0.13s cubic-bezier(.4,1,.45,.95), opacity 0.09s;
+    transition: transform 0.18s cubic-bezier(.4,1,.45,.95), opacity 0.12s;
+  }
+  &.active::after,
+  &[aria-current="page"]::after,
+  ${({ $active }) => $active && "&::after"} {
+    opacity: 1;
+    transform: scaleX(1);
   }
 
-  // RESPONSIVE KISIMDA DA max-width, overflow, ellipsis KULLANMA!
+  /* Responsive */
   @media (min-width: 1640px) {
-    font-size: 1.27rem;
-    padding: 0.19rem 0.40rem 0.16rem 0.34rem;
+    font-size: 1.08rem;
+    padding: 0.26rem 0.56rem;
   }
-  @media (min-width: 1440px) and (max-width: 1639px) {
-    font-size: 1.10rem;
-    padding: 0.15rem 0.23rem 0.13rem 0.19rem;
+  @media (max-width: 1440px) {
+    font-size: 1.02rem;
+    padding: 0.24rem 0.5rem;
   }
-  @media (min-width: 1024px) and (max-width: 1439px) {
-    font-size: 1.03rem;
-    padding: 0.12rem 0.12rem 0.10rem 0.10rem;
+  @media (max-width: 1024px) {
+    font-size: 0.98rem;
+    padding: 0.22rem 0.44rem;
   }
-  @media (min-width: 900px) and (max-width: 1023px) {
-    font-size: 0.97rem;
-    padding: 0.08rem 0.09rem 0.08rem 0.09rem;
+  @media (max-width: 900px) {
+    font-size: 0.94rem;
+    padding: 0.2rem 0.4rem;
   }
-  @media (min-width: 600px) and (max-width: 899px) {
-    font-size: 0.8rem;
-    padding: 0.06rem 0.07rem 0.06rem 0.07rem;
+  @media (max-width: 600px) {
+    font-size: 0.88rem;
+    padding: 0.18rem 0.34rem;
   }
-  @media (min-width: 425px) and (max-width: 599px) {
-    font-size: 0.7rem;
-    padding: 0.03rem 0.05rem 0.03rem 0.04rem;
+  @media (max-width: 425px) {
+    font-size: 0.84rem;
+    padding: 0.16rem 0.3rem;
   }
 `;
-
-

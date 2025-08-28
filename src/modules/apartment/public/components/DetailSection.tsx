@@ -136,6 +136,7 @@ const Container = styled(motion.section)`
   max-width: 900px;
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.md};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
 `;
 
 const Title = styled.h1`

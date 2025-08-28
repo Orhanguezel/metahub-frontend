@@ -137,7 +137,7 @@ const AccordionHeader = styled.button`
   border-radius: ${({ theme }) => theme.radii.xl};
   transition: background 0.16s;
   &:hover, &:focus-visible {
-    background: ${({ theme }) => theme.colors.inputBackgroundFocus};
+    background: ${({ theme }) => theme.colors.inputBackground};
   }
 `;
 
@@ -145,6 +145,7 @@ const HeaderTitle = styled.span`
   flex: 1;
   text-align: left;
   letter-spacing: 0.01em;
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const IconWrapper = styled.span`

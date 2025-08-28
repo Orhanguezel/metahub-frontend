@@ -100,7 +100,7 @@ const FlexItem = styled.div`
 
 // --- CONTACT INFO CARD ---
 const ContactInfoCard = styled.div`
-  background: ${({ theme }) => theme.colors.inputBackgroundSofter};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: ${({ theme }) => theme.radii.md};
   padding: 18px 18px 12px 18px;
   margin-bottom: 24px;

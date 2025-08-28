@@ -100,7 +100,7 @@ const Form = styled.form`
 const Input = styled.input`
   padding: 12px 16px;
   border-radius: 8px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid ${({ theme }) => theme.colors.borderLight};
   font-size: 1rem;
   background: ${({ theme }) => theme.colors.inputBackground};
   color: ${({ theme }) => theme.colors.text};
@@ -109,7 +109,7 @@ const Input = styled.input`
 const TextArea = styled.textarea`
   padding: 12px 16px;
   border-radius: 8px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid ${({ theme }) => theme.colors.borderLight};
   font-size: 1rem;
   background: ${({ theme }) => theme.colors.inputBackground};
   color: ${({ theme }) => theme.colors.text};

@@ -11,8 +11,12 @@ import { ModuleStatusToggle } from "@/modules/adminmodules";
 import { useAppDispatch } from "@/store/hooks";
 import { toast } from "react-toastify";
 
-import { updateModuleMeta } from "@/modules/adminmodules/slices/moduleMetaSlice";
+import {
+  updateModuleMeta,
+  deleteModuleMeta, // ✅ EKLENDİ
+} from "@/modules/adminmodules/slices/moduleMetaSlice";
 import { updateModuleSetting } from "@/modules/adminmodules/slices/moduleSettingSlice";
+
 import type {
   IModuleMeta,
   IModuleSetting,
@@ -26,7 +30,7 @@ interface ModuleCardProps {
   search?: string;
   type?: ModuleType;
   onShowDetail?: (module: IModuleMeta | IModuleSetting, type: ModuleType) => void;
-  onDelete?: (moduleKey: string) => void; // sadece meta için
+  onDelete?: (moduleKey: string) => void; // sadece meta için (opsiyonel)
 }
 
 // --- Dynamic icon function ---
@@ -59,7 +63,9 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
   const { i18n, t } = useI18nNamespace("adminModules", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const dispatch = useAppDispatch();
-  const [updatingModuleKey, setUpdatingModuleKey] = useState<string | null>(null);
+
+  const [busyKey, setBusyKey] = useState<string | null>(null); // toggle/delete sırasında disable için
+  const [deleting, setDeleting] = useState<boolean>(false);    // sadece delete için
 
   const isMeta = type === "meta";
   const asMeta = module as IModuleMeta;
@@ -79,14 +85,42 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
   const IconComponent = dynamicIcon(isMeta ? asMeta.icon : undefined);
 
   // --- Delete (sadece meta) ---
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isMeta && onDelete) onDelete(moduleKey);
+  const handleDeleteClick = async (e: React.MouseEvent) => {
+    e.preventDefault();   // ✅ form submit vb. engelle
+    e.stopPropagation();  // ✅ kartın onClick’ine tırmanmasın
+    if (!isMeta) return;
+
+    const ok = window.confirm(
+      t("confirmDelete", "Silmek istediğinize emin misiniz?")
+    );
+    if (!ok) return;
+
+    try {
+      setBusyKey(moduleKey);
+      setDeleting(true);
+
+      if (onDelete) {
+        // Parent kendi akışını yönetmek istiyorsa
+        await Promise.resolve(onDelete(moduleKey));
+      } else {
+        // ✅ Fallback: prop gelmese bile thunk ile sil
+        await dispatch(deleteModuleMeta(moduleKey)).unwrap();
+        toast.success(t("deleted", "Modül silindi"));
+      }
+    } catch (err: any) {
+      toast.error(
+        t("deleteError", "Silme işlemi başarısız") +
+          (err?.message ? `: ${err.message}` : "")
+      );
+    } finally {
+      setDeleting(false);
+      setBusyKey(null);
+    }
   };
 
   // --- Toggle handler ---
   const handleToggle = async (key: keyof (IModuleMeta & IModuleSetting)) => {
-    setUpdatingModuleKey(moduleKey);
+    setBusyKey(moduleKey);
     try {
       if (!isMeta && globalEnabled === false) {
         toast.warn(t("globalDisabledWarn", "Globally disabled, cannot activate!"));
@@ -112,7 +146,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
         t("updateError", "Update error!") + (err?.message ? `: ${err.message}` : "")
       );
     } finally {
-      setUpdatingModuleKey(null);
+      setBusyKey(null);
     }
   };
 
@@ -143,6 +177,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
       ? asMeta.routes.slice(-5)
       : [];
 
+  const isRowDisabled = !isMeta && globalEnabled === false;
 
   return (
     <Card
@@ -151,8 +186,9 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
       aria-label={moduleLabel}
       onClick={handleCardClick}
       onKeyDown={handleKeyDown}
-      data-disabled={!isMeta && globalEnabled === false}
-      style={!isMeta && globalEnabled === false ? { opacity: 0.5 } : {}}
+      data-disabled={isRowDisabled}
+      aria-disabled={isRowDisabled}
+      style={isRowDisabled ? { opacity: 0.5 } : {}}
     >
       <CardHeader>
         <IconWrapper>
@@ -178,9 +214,11 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
         <Actions>
           {isMeta && (
             <TrashButton
+              type="button"                  // ✅ submit değil
               onClick={handleDeleteClick}
               title={t("delete", "Delete Module")}
               aria-label={t("delete", "Delete Module")}
+              disabled={deleting || busyKey === moduleKey} // ✅ busy iken kilitle
             >
               <Trash2 size={18} />
             </TrashButton>
@@ -198,7 +236,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
             <ModuleStatusToggle
               isActive={!!(asMeta as any).enabled}
               onToggle={() => handleToggle("enabled")}
-              disabled={updatingModuleKey === moduleKey}
+              disabled={busyKey === moduleKey}
             />
           </StatusItem>
         )}
@@ -211,7 +249,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
                 <ModuleStatusToggle
                   isActive={!!asSetting.enabled && globalEnabled !== false}
                   onToggle={() => handleToggle("enabled")}
-                  disabled={updatingModuleKey === moduleKey || globalEnabled === false}
+                  disabled={busyKey === moduleKey || globalEnabled === false}
                   title={
                     globalEnabled === false
                       ? t(
@@ -229,7 +267,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
                 <ModuleStatusToggle
                   isActive={!!asSetting.visibleInSidebar && globalEnabled !== false}
                   onToggle={() => handleToggle("visibleInSidebar")}
-                  disabled={updatingModuleKey === moduleKey || globalEnabled === false}
+                  disabled={busyKey === moduleKey || globalEnabled === false}
                 />
               </StatusItem>
             )}
@@ -239,7 +277,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
                 <ModuleStatusToggle
                   isActive={!!asSetting.useAnalytics && globalEnabled !== false}
                   onToggle={() => handleToggle("useAnalytics")}
-                  disabled={updatingModuleKey === moduleKey || globalEnabled === false}
+                  disabled={busyKey === moduleKey || globalEnabled === false}
                 />
               </StatusItem>
             )}
@@ -249,7 +287,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({
                 <ModuleStatusToggle
                   isActive={!!asSetting.showInDashboard && globalEnabled !== false}
                   onToggle={() => handleToggle("showInDashboard")}
-                  disabled={updatingModuleKey === moduleKey || globalEnabled === false}
+                  disabled={busyKey === moduleKey || globalEnabled === false}
                 />
               </StatusItem>
             )}
@@ -401,16 +439,15 @@ const Actions = styled.div`
   display: flex;
   gap: 0.3rem;
 `;
-const TrashButton = styled.button`
+const TrashButton = styled.button.attrs({ type: "button" })`
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
   color: ${({ theme }) => theme.colors.danger};
   transition: opacity ${({ theme }) => theme.transition.fast};
-  &:hover {
-    opacity: 0.7;
-  }
+  &:hover { opacity: 0.7; }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
 `;
 const LabelText = styled.h3`
   font-size: ${({ theme }) => theme.fontSizes.md};

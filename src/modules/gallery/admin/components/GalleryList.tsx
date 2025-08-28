@@ -1,10 +1,13 @@
-// src/modules/gallery/components/GalleryList.tsx
 "use client";
 
 import React, { useMemo, useState } from "react";
 import styled from "styled-components";
 import { useAppDispatch } from "@/store/hooks";
-import { deleteGallery, updateGallery } from "@/modules/gallery/slice/gallerySlice";
+import {
+  deleteGallery,
+  updateGallery,
+  togglePublishGallery, // ⬅️ eklendi
+} from "@/modules/gallery/slice/gallerySlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/types/common";
 import { translations } from "@/modules/gallery";
@@ -62,6 +65,12 @@ const GalleryList: React.FC<GalleryListProps> = ({ items, categories, onUpdate }
     handleCloseModal();
   };
 
+  // ✅ Publish toggle (tek uç)
+  const handleTogglePublish = async (id: string) => {
+    await dispatch(togglePublishGallery({ id })).unwrap();
+    onUpdate();
+  };
+
   const getLocalized = (obj?: Record<string, string>) =>
     obj?.[lang] ||
     obj?.en ||
@@ -107,8 +116,7 @@ const GalleryList: React.FC<GalleryListProps> = ({ items, categories, onUpdate }
         </Chips>
 
         <TotalText>
-          {t("list.count", "{n} items")
-            .replace("{n}", String(filteredCount))}
+          {t("list.count", "{n} items").replace("{n}", String(filteredCount))}
         </TotalText>
       </TopBar>
 
@@ -143,7 +151,20 @@ const GalleryList: React.FC<GalleryListProps> = ({ items, categories, onUpdate }
 
                   <Badges>
                     <TypeBadge $type={item.type}>{item.type}</TypeBadge>
-                    <StateBadge $on={item.isPublished}>
+
+                    {/* ⬇️ Yayın durumu toggle: tıklanabilir badge */}
+                    <StateBadge
+                      as="button"
+                      type="button"
+                      $on={item.isPublished}
+                      aria-pressed={item.isPublished}
+                      title={
+                        item.isPublished
+                          ? t("unpublish", "Click to unpublish")
+                          : t("publish", "Click to publish")
+                      }
+                      onClick={() => handleTogglePublish(item._id)}
+                    >
                       {item.isPublished ? t("published", "Published") : t("draft", "Draft")}
                     </StateBadge>
                   </Badges>
@@ -164,9 +185,15 @@ const GalleryList: React.FC<GalleryListProps> = ({ items, categories, onUpdate }
                 </Body>
 
                 <Actions>
+                  {/* Ayrı bir toggle butonu da ekliyoruz */}
+                  <ToggleBtn onClick={() => handleTogglePublish(item._id)}>
+                    {item.isPublished ? t("unpublish", "Unpublish") : t("publish", "Publish")}
+                  </ToggleBtn>
+
                   <Primary onClick={() => handleOpenEdit(item)}>
                     {t("edit.button", "Edit")}
                   </Primary>
+
                   <Danger onClick={() => handleDelete(item._id)}>
                     {t("delete.button", "Delete")}
                   </Danger>
@@ -333,6 +360,7 @@ const TypeBadge = styled.span<{ $type: "image" | "video" }>`
     ${({ $type, theme }) => ($type === "video" ? theme.colors.warning : theme.colors.success)};
 `;
 
+// ⬇️ Badge'ı tıklanabilir yaptık
 const StateBadge = styled.span<{ $on: boolean }>`
   padding: 4px 8px;
   border-radius: ${({ theme }) => theme.radii.pill};
@@ -341,6 +369,7 @@ const StateBadge = styled.span<{ $on: boolean }>`
   color: ${({ $on, theme }) => ($on ? theme.colors.success : theme.colors.danger)};
   border: ${({ theme }) => theme.borders.thin}
     ${({ $on, theme }) => ($on ? theme.colors.success : theme.colors.danger)};
+  cursor: pointer;
 `;
 
 const Body = styled.div`
@@ -401,6 +430,13 @@ const BaseBtn = styled.button`
   box-shadow: ${({ theme }) => theme.shadows.button};
 
   &:focus-visible { outline: none; box-shadow: ${({ theme }) => theme.colors.shadowHighlight}; }
+`;
+
+const ToggleBtn = styled(BaseBtn)`
+  background: ${({ theme }) => theme.buttons.secondary.background};
+  color: ${({ theme }) => theme.buttons.secondary.text};
+  border-color: ${({ theme }) => theme.buttons.secondary.background};
+  &:hover { background: ${({ theme }) => theme.buttons.secondary.backgroundHover}; }
 `;
 
 const Primary = styled(BaseBtn)`

@@ -339,7 +339,7 @@ const ModernSection = styled.section`
   max-width: 1200px;
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.sm};
-  background: ${({ theme }) => theme.colors.achievementBackground};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.lg};
   @media (max-width: 900px) { padding: ${({ theme }) => theme.spacings.xl} ${({ theme }) => theme.spacings.xs}; }
@@ -397,7 +397,7 @@ const LogoGrid = styled.div`
 `;
 
 const LogoCard = styled.div`
-  background: linear-gradient(110deg, #fafdff 60%, #e7f5ff 100%);
+  background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: 22px; border: 1.8px solid ${({ theme }) => theme.colors.achievementGradientStart}19;
   box-shadow: ${({ theme }) => theme.shadows.md};
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .55rem;
@@ -413,7 +413,7 @@ const LogoCard = styled.div`
   &:hover,&:focus-visible{
     box-shadow: 0 12px 32px 0 ${({ theme }) => theme.colors.achievementGradientStart}25;
     border-color: ${({ theme }) => theme.colors.achievementGradientEnd};
-    background: linear-gradient(110deg, #f1fbff 45%, #d1f1fd 100%);
+    background: ${({ theme }) => theme.colors.background};
     transform: scale(1.05) translateY(-3px);
     z-index: 2;
   }

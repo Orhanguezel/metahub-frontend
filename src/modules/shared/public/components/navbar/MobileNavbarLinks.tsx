@@ -98,37 +98,47 @@ const MobileMenuButton = styled.button<{ $active?: boolean }>`
   font-family: ${({ theme }) => theme.fonts.main};
   font-weight: ${({ $active, theme }) =>
     $active ? theme.fontWeights.bold : theme.fontWeights.medium};
-  color: ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.text};
+
+  /* varsayılan metin rengi */
+  color: ${({ theme }) => theme.colors.text};
+
   padding: 16px 24px;
   border: none;
   border-radius: ${({ theme }) => theme.radii.lg};
   margin-bottom: 3px;
-  background: ${({ $active, theme }) =>
-    $active ? theme.colors.primaryTransparent : "transparent"};
-  border-left: 4px solid
-    ${({ $active, theme }) =>
-      $active ? theme.colors.primary : "transparent"};
   text-align: left;
   cursor: pointer;
+
+  /* aktif: sarı zemin, siyah metin, kırmızı sol şerit */
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.primary : "transparent"};
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors.black : theme.colors.text};
+  border-left: 4px solid
+    ${({ $active, theme }) =>
+      $active ? theme.colors.secondary : "transparent"};
+
   transition:
     background 0.16s,
     color 0.14s,
     border-color 0.15s,
-    font-weight 0.13s;
+    font-weight 0.13s,
+    box-shadow 0.15s;
 
   &:hover,
   &:focus-visible {
-    color: ${({ theme }) => theme.colors.primary};
-    background: ${({ theme }) => theme.colors.cardBackground};
-    border-left: 4px solid ${({ theme }) => theme.colors.primary};
+    background: ${({ theme }) => theme.colors.primary};     /* 🟡 */
+    color: ${({ theme }) => theme.colors.black};            /* kontrast */
+    border-left-color: ${({ theme }) => theme.colors.secondary}; /* 🔴 vurgu */
     text-decoration: none;
     font-weight: ${({ theme }) => theme.fontWeights.bold};
     outline: none;
+    box-shadow: ${({ theme }) => theme.colors.shadowHighlight};
   }
 
   &:active {
-    background: ${({ theme }) => theme.colors.primaryTransparent};
-    color: ${({ theme }) => theme.colors.primaryDark};
+    /* basılı tutarken çok hafif koyulaştırılmış görünüm */
+    filter: brightness(0.97);
   }
 `;
+
