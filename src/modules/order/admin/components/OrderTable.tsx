@@ -41,6 +41,8 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders = [], onShowDetail, onDe
                   ? (order.shippingAddress.name as any)[lang] || Object.values(order.shippingAddress.name as any)[0]
                   : order.shippingAddress.name
                 : "-";
+            const currency = (order.currency || "EUR").toUpperCase();
+            const total = Number(order.finalTotal || 0);
             return (
               <tr key={oid}>
                 <OrderIdTd data-label={t("orderNumber", "Order #")}>
@@ -52,7 +54,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ orders = [], onShowDetail, onDe
                 <td data-label={t("customer", "Customer")}>{customer}</td>
                 <td data-label={t("total", "Total")}>
                   <Price>
-                    {(order.totalPrice ?? 0).toFixed(2)} <Currency>EUR</Currency>
+                    {total.toFixed(2)} <Currency>{currency}</Currency>
                   </Price>
                 </td>
                 <td data-label={t("status", "Status")}><OrderStatusDropdown order={order} /></td>

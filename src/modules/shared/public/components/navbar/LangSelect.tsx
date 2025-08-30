@@ -47,7 +47,7 @@ const LangSelectStyled = styled.select`
   padding: ${({ theme }) => theme.spacings.xs} ${({ theme }) => theme.spacings.sm};
   border-radius: 6px;
   font-size: ${({ theme }) => theme.fontSizes.small};
-  color: ${({ theme }) => theme.colors.text};
+  color: ${({ theme }) => theme.colors.primary};
   cursor: pointer;
   min-width: 64px;
   max-width: 110px;
@@ -55,6 +55,8 @@ const LangSelectStyled = styled.select`
 
   &:hover,
   &:focus-visible {
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  color: ${({ theme }) => theme.colors.primary};
     border-color: ${({ theme }) => theme.colors.primary};
     outline: none;
   }

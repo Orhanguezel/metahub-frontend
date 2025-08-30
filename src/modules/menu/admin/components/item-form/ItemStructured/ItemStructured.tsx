@@ -1,12 +1,20 @@
 "use client";
+import React from "react";
 import type { SupportedLocale } from "@/types/common";
-import { CategoriesSection, VariantsSection, ModifierGroupsSection,AllergensAdditivesSection,DietaryOpsSection } from "@/modules/menu";
+import {
+  CategoriesSection,
+  VariantsSection,
+  ModifierGroupsSection,
+  AllergensAdditivesSection,
+  DietaryOpsSection,
+} from "@/modules/menu";
 import type { MenuCategory, StructuredObj, TFunc, TLGetter } from "./types";
 
 type Props = {
   lang: SupportedLocale;
   structured: StructuredObj;
-  setStructured: (updater: (p: StructuredObj) => StructuredObj) => void;
+  // ✔ React setState tipiyle uyumlu
+  setStructured: React.Dispatch<React.SetStateAction<StructuredObj>>;
 
   allCats: MenuCategory[];
   catLabel: (c?: MenuCategory) => string;
@@ -16,7 +24,13 @@ type Props = {
 };
 
 export default function ItemStructured({
-  lang, structured, setStructured, allCats, catLabel, getTLStrict, t
+  lang,
+  structured,
+  setStructured,
+  allCats,
+  catLabel,
+  getTLStrict,
+  t,
 }: Props) {
   return (
     <>
@@ -52,11 +66,7 @@ export default function ItemStructured({
         t={t}
       />
 
-      <DietaryOpsSection
-        structured={structured}
-        setStructured={setStructured}
-        t={t}
-      />
+      <DietaryOpsSection structured={structured} setStructured={setStructured} t={t} />
     </>
   );
 }

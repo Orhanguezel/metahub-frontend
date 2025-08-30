@@ -1,18 +1,23 @@
-// src/modules/menu/admin/components/item-form/ItemStructured/VariantsSection.tsx
 "use client";
 import { AddBtn, BlockTitle, CheckRow, Col, Input, Label, Row, VarCard } from "../ItemForm.styles";
 import type { SupportedLocale, TranslatedLabel } from "@/types/common";
 import type { StructuredObj, TFunc, TLGetter } from "./types";
-import { makeTL } from "@/i18n/getUILang";
+import PriceListEditor from "./PriceListEditor"; // ✅ EKLENDİ
 import { buildMenuTL, getLabelNested } from "@/modules/menu/constants/foodLabels";
 
 type Props = {
   lang: SupportedLocale;
   structured: StructuredObj;
-  setStructured: (updater: (p: StructuredObj) => StructuredObj) => void;
+  // React setState ile uyumlu
+  setStructured: React.Dispatch<React.SetStateAction<StructuredObj>>;
   getTLStrict: TLGetter;
   t: TFunc;
 };
+
+// Lokal boş TL yardımcısı (dışa bağımlılığı azaltmak için)
+const makeEmptyTL = (): TranslatedLabel => ({
+  tr: "", en: "", de: "", pl: "", fr: "", es: ""
+});
 
 export default function VariantsSection({ lang, structured, setStructured, t }: Props) {
   const pushRow = (row: any) =>
@@ -24,7 +29,7 @@ export default function VariantsSection({ lang, structured, setStructured, t }: 
   const updateRow = (idx: number, patch: any) =>
     setStructured((p) => ({ ...p, variants: (p.variants || []).map((r: any, i: number) => (i === idx ? { ...r, ...patch } : r)) }));
 
-  /** code değişince isim & sizeLabel’ı tüm diller için sözlükten doldur */
+  /** code değişince isim & sizeLabel’ı sözlükten doldur */
   const onCodeChange = (idx: number, code: string) => {
     const nameTL: TranslatedLabel = buildMenuTL("variants.names", code);
     const sizeTL: TranslatedLabel = buildMenuTL("variants.sizes", code);
@@ -43,7 +48,7 @@ export default function VariantsSection({ lang, structured, setStructured, t }: 
               <Input value={v.code || ""} onChange={(e) => onCodeChange(i, e.target.value)} />
             </Col>
 
-            {/* İsim alanı artık sözlükten okunur — sadece önizleme */}
+            {/* İsim (sözlükten, sadece önizleme) */}
             <Col>
               <Label>{t("name", "Name")} ({lang})</Label>
               <Input value={getLabelNested("variants.names", String(v.code || ""), lang)} disabled />
@@ -51,19 +56,28 @@ export default function VariantsSection({ lang, structured, setStructured, t }: 
 
             <Col>
               <Label>{t("order", "Order")}</Label>
-              <Input type="number" value={v.order ?? ""} onChange={(e) => updateRow(i, { order: e.target.value })} />
+              <Input
+                type="number"
+                value={v.order ?? ""}
+                onChange={(e) => updateRow(i, { order: e.target.value === "" ? undefined : Number(e.target.value) })}
+              />
             </Col>
 
             <Col>
               <Label>{t("default", "Default?")}</Label>
               <CheckRow>
-                <input type="checkbox" checked={!!v.isDefault} onChange={(e) => updateRow(i, { isDefault: e.target.checked })} />
+                <input
+                  type="checkbox"
+                  checked={!!v.isDefault}
+                  onChange={(e) => updateRow(i, { isDefault: e.target.checked })}
+                />
               </CheckRow>
             </Col>
           </Row>
 
           <Row>
-            <Col><Label>SKU</Label>
+            <Col>
+              <Label>SKU</Label>
               <Input value={v.sku || ""} onChange={(e) => updateRow(i, { sku: e.target.value })} />
             </Col>
             <Col>
@@ -71,7 +85,7 @@ export default function VariantsSection({ lang, structured, setStructured, t }: 
               <Input value={v.barcode || ""} onChange={(e) => updateRow(i, { barcode: e.target.value })} />
             </Col>
 
-            {/* sizeLabel da sözlükten — yalnızca önizleme */}
+            {/* Size label (sözlükten, önizleme) */}
             <Col>
               <Label>{t("sizeLabel", "Size Label")} ({lang})</Label>
               <Input value={getLabelNested("variants.sizes", String(v.code || ""), lang)} disabled />
@@ -79,19 +93,29 @@ export default function VariantsSection({ lang, structured, setStructured, t }: 
 
             <Col>
               <Label>{t("volumeMl", "Volume (ml)")}</Label>
-              <Input type="number" value={v.volumeMl ?? ""} onChange={(e) => updateRow(i, { volumeMl: e.target.value })} />
+              <Input
+                type="number"
+                value={v.volumeMl ?? ""}
+                onChange={(e) => updateRow(i, { volumeMl: e.target.value === "" ? undefined : Number(e.target.value) })}
+              />
             </Col>
           </Row>
 
           <Row>
             <Col>
               <Label>{t("netWeightGr", "Net Weight (gr)")}</Label>
-              <Input type="number" value={v.netWeightGr ?? ""} onChange={(e) => updateRow(i, { netWeightGr: e.target.value })} />
+              <Input
+                type="number"
+                value={v.netWeightGr ?? ""}
+                onChange={(e) => updateRow(i, { netWeightGr: e.target.value === "" ? undefined : Number(e.target.value) })}
+              />
             </Col>
-            <Col><Label>PriceListItem</Label>
+            <Col>
+              <Label>PriceListItem</Label>
               <Input value={v.priceListItem || ""} onChange={(e) => updateRow(i, { priceListItem: e.target.value })} />
             </Col>
-            <Col><Label>DepositPriceListItem</Label>
+            <Col>
+              <Label>DepositPriceListItem</Label>
               <Input value={v.depositPriceListItem || ""} onChange={(e) => updateRow(i, { depositPriceListItem: e.target.value })} />
             </Col>
             <Col style={{ alignItems: "flex-end" }}>
@@ -99,23 +123,30 @@ export default function VariantsSection({ lang, structured, setStructured, t }: 
             </Col>
           </Row>
 
+          {/* ✅ FİYATLAR GERÇEKTEN GÖSTERİLİYOR */}
           <div style={{ marginTop: 8 }}>
             <Label style={{ fontWeight: 600 }}>{t("prices", "Prices")}</Label>
-            {/* PriceListEditor aynı kaldı, fakat etiketleri i18n'den alacak (aşağıda güncellendi) */}
+            <PriceListEditor
+              prices={Array.isArray(v.prices) ? v.prices : []}
+              onChange={(next) => updateRow(i, { prices: next })}
+              t={t}
+            />
           </div>
         </VarCard>
       ))}
 
       <AddBtn
         type="button"
-        onClick={() => pushRow({
-          code: "",
-          name: makeTL(),          // backend zorunluysa boş TL gönderir, code değişince otomatik set edilir
-          sizeLabel: makeTL(),
-          order: (structured.variants?.length || 0) + 1,
-          isDefault: false,
-          prices: [],
-        })}
+        onClick={() =>
+          pushRow({
+            code: "",
+            name: makeEmptyTL(),
+            sizeLabel: makeEmptyTL(),
+            order: (structured.variants?.length || 0) + 1,
+            isDefault: false,
+            prices: [], // yeni varyantta boş dizi
+          })
+        }
       >
         + {t("addVariant", "Add Variant")}
       </AddBtn>

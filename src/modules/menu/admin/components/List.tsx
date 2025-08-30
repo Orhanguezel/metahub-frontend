@@ -8,12 +8,10 @@ import type { IMenu } from "@/modules/menu/types/menu";
 import type { SupportedLocale } from "@/types/common";
 import { getUILang } from "@/i18n/getUILang";
 
-
 const nameAt = (obj: Record<string, string> | undefined, lang: SupportedLocale): string => {
   if (!obj) return "";
   const direct = obj[lang];
   if (direct && direct.trim()) return direct.trim();
-  // first non-empty fallback
   for (const k of Object.keys(obj)) {
     const v = obj[k as keyof typeof obj];
     if (typeof v === "string" && v.trim()) return v.trim();
@@ -27,7 +25,6 @@ const fmtDate = (iso?: string | Date | null): string => {
   return isNaN(d.getTime()) ? "—" : d.toLocaleString();
 };
 
-/* ---------- types ---------- */
 type Props = {
   menus: IMenu[];
   lang: SupportedLocale;
@@ -61,6 +58,7 @@ export default function List({
         <Table>
           <thead>
             <tr>
+              <th># {t("order", "Order")}</th>
               <th>{t("titleField", "Title")}</th>
               <th>{t("code", "Code")}</th>
               <th>{t("window", "Window")}</th>
@@ -74,7 +72,7 @@ export default function List({
           <tbody>
             {!loading && menus.length === 0 && (
               <tr>
-                <td colSpan={8}><Empty>∅</Empty></td>
+                <td colSpan={9}><Empty>∅</Empty></td>
               </tr>
             )}
             {menus.map((m) => {
@@ -86,9 +84,11 @@ export default function List({
               const win = `${fmtDate(m.effectiveFrom)} → ${fmtDate(m.effectiveTo)}`;
               const branchesCount = Array.isArray(m.branches) ? m.branches.length : 0;
               const catsCount = Array.isArray(m.categories) ? m.categories.length : 0;
+              const order = typeof m.order === "number" ? m.order : 0;
 
               return (
                 <tr key={String(m._id)}>
+                  <td className="mono">{order}</td>
                   <td title={title}>{title}</td>
                   <td className="mono">{m.code}</td>
                   <td>{win}</td>
@@ -128,12 +128,13 @@ export default function List({
             nameAt(m.name as any, uiLang) ||
             m.code ||
             String(m._id || "");
+          const order = typeof m.order === "number" ? m.order : 0;
           return (
             <Card key={String(m._id)}>
               <CardHeader>
                 <HeaderLeft>
                   <NameTitle title={title}>{title}</NameTitle>
-                  <SmallText>{m.code}</SmallText>
+                  <SmallText>{m.code} • #{order}</SmallText>
                 </HeaderLeft>
                 <Status $on={m.isPublished}>
                   {m.isPublished ? t("published","Published") : t("draft","Draft")}
@@ -234,29 +235,17 @@ const CardActions = styled.div`
     ${({ theme }) => theme.spacings.md};
   border-top: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
 
-  /* <=480px (theme.media.xsmall) -> 2 sütun grid */
   ${({ theme }) => theme.media.xsmall} {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     justify-content: stretch;
     gap: ${({ theme }) => theme.spacings.xs};
   }
-
-  /* <=360px -> tek sütun */
   @media (max-width: 360px) {
     grid-template-columns: 1fr;
   }
-
-  /* Butonların hücreyi doldurması için */
-  & > button {
-    min-width: 0;
-  }
-  ${({ theme }) => theme.media.xsmall} {
-    & > button {
-      width: 100%;
-      text-align: center;
-    }
-  }
+  & > button { min-width: 0; }
+  ${({ theme }) => theme.media.xsmall} { & > button { width: 100%; text-align: center; } }
 `;
 const Row = styled.div`display:flex;gap:${({theme})=>theme.spacings.xs};flex-wrap:wrap;justify-content:flex-end;`;
 const Secondary = styled.button`
@@ -266,7 +255,7 @@ const Secondary = styled.button`
   background: ${({ theme }) => theme.buttons.secondary.background};
   color: ${({ theme }) => theme.buttons.secondary.text};
   border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
-  min-width: 0; /* uzun metinlerde taşmayı engeller */
+  min-width: 0;
   word-break: keep-all;
 `;
 const Danger = styled(Secondary)`

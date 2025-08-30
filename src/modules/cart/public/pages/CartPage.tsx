@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
@@ -13,15 +15,13 @@ const CartPage = () => {
   const { profile, loading: profileLoading } = useAppSelector((state) => state.account);
   const { t } = useTranslation("cart");
 
-  // Sepet yüklemesi
   useEffect(() => {
     if (profile && profile._id) {
       dispatch(fetchCart());
     }
-    //eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, profile?._id]);
 
-  // Kullanıcının en az bir shipping adresi var mı? (profile'dan alıyoruz!)
   const hasShippingAddress = useMemo(
     () =>
       Array.isArray(profile?.addresses) &&
@@ -29,7 +29,6 @@ const CartPage = () => {
     [profile?.addresses]
   );
 
-  // Checkout butonuna tıklandığında kontrol!
   const handleCheckout = useCallback(() => {
     if (!hasShippingAddress) {
       alert(
@@ -44,7 +43,6 @@ const CartPage = () => {
     router.push("/checkout");
   }, [hasShippingAddress, router, t]);
 
-  // --- Render kısmı ---
   if (error) {
     return (
       <PageContainer>
@@ -90,8 +88,7 @@ export default CartPage;
 const PageContainer = styled.div`
   max-width: 1000px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacings.xxl}
-    ${({ theme }) => theme.spacings.md};
+  padding: ${({ theme }) => theme.spacings.xxl} ${({ theme }) => theme.spacings.md};
 `;
 
 const Title = styled.h1`
@@ -105,7 +102,5 @@ const Content = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: ${({ theme }) => theme.spacings.xl};
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
+  @media (max-width: 768px) { flex-direction: column; }
 `;

@@ -146,6 +146,20 @@
       "eggFree": "Yumurtasız",
       "porkFree": "Domuz ürünü içermez",
       "containsAlcohol": "Alkol içerir"
+    },
+    "labels": {
+      "price": "Fiyat",
+      "variant": "Boyut / Varyant",
+      "extras": "İlave / Seçenekler",
+      "quickView": "Hızlı Bakış",
+      "freshFood": "Taze Ürün",
+      "fastDelivery": "Hızlı Teslimat",
+      "service247": "7/24 Servis",
+      "allergens": "Alerjenler",
+      "additives": "Katkı Maddeleri",
+      "total": "Toplam",
+      "add": "Sepete Ekle",
+      "reviews": "{{count}} değerlendirme"
     }
   },
   "admin": {

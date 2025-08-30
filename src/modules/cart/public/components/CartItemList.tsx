@@ -1,3 +1,5 @@
+"use client";
+
 import styled from "styled-components";
 import Link from "next/link";
 import Image from "next/image";
@@ -7,32 +9,110 @@ import type { ICartItem } from "@/modules/cart/types";
 import type { IBikes } from "@/modules/bikes/types";
 import type { IEnsotekprod } from "@/modules/ensotekprod/types";
 import type { ISparepart } from "@/modules/sparepart/types";
+import type { IMenuItem, IMenuItemVariant, IMenuItemModifierGroup } from "@/modules/menu/types/menuitem";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getMultiLang } from "@/types/common";
 
-// Type guard
-function isPopulatedProduct(
+/* ------------ helpers ------------- */
+function isPopulatedNonMenu(
   product: unknown
 ): product is IBikes | IEnsotekprod | ISparepart {
-  return (
-    !!product &&
-    typeof product === "object" &&
-    "_id" in product &&
-    "name" in product
-  );
+  return !!product && typeof product === "object" && "_id" in product && "name" in product;
+}
+
+function isMenuItem(product: unknown): product is IMenuItem {
+  return !!product && typeof product === "object" && "_id" in product && "variants" in product;
 }
 
 const PRODUCT_TYPE_LABEL: Record<string, string> = {
   bike: "Bisiklet",
   ensotekprod: "Ensotek Ürün",
   sparepart: "Yedek Parça",
+  menuitem: "Menü Ürünü",
 };
 const PRODUCT_TYPE_SLUG: Record<string, string> = {
   bike: "/bikes/",
   ensotekprod: "/ensotekprod/",
   sparepart: "/sparepart/",
+  menuitem: "/menu/",
 };
+
+const currencySymbol = (code?: string) => {
+  switch ((code || "").toUpperCase()) {
+    case "EUR": return "€";
+    case "USD": return "$";
+    case "GBP": return "£";
+    case "TRY": return "₺";
+    default:    return code || "";
+  }
+};
+
+function pickVariantPrice(
+  variant: IMenuItemVariant | undefined,
+  channel: "delivery" | "pickup" | "dinein" = "delivery"
+) {
+  const prices = variant?.prices || [];
+  const match = prices.find(p => Array.isArray(p.channels) ? p.channels.includes(channel) : true) || prices[0];
+  const val = match?.value;
+  return val ? { amount: Number(val.amount || 0), currency: String(val.currency || "EUR") } : null;
+}
+
+function pickOptionPrice(
+  group: IMenuItemModifierGroup,
+  optionCode: string,
+  channel: "delivery" | "pickup" | "dinein" = "delivery"
+) {
+  const opt = (group.options || []).find(o => o.code === optionCode);
+  const prices = opt?.prices || [];
+  const match = prices.find(p => Array.isArray(p.channels) ? p.channels.includes(channel) : true) || prices[0];
+  const val = match?.value;
+  return val ? { amount: Number(val.amount || 0), currency: String(val.currency || "EUR") } : null;
+}
+
+/** Satır için güvenli birim fiyat ve para birimi hesapla (fallback’li) */
+function calcUnitAndCurrency(item: ICartItem): { unit: number; currency: string } {
+  // 1) BE'nin verdiği alanlar
+  const pc = item.priceComponents;
+  const fromPc = (pc?.base ?? 0) + (pc?.modifiersTotal ?? 0) + (pc?.deposit ?? 0);
+  if (item.priceAtAddition > 0) {
+    return { unit: item.priceAtAddition, currency: item.unitCurrency || pc?.currency || "EUR" };
+  }
+  if (item.unitPrice > 0) {
+    return { unit: item.unitPrice, currency: item.unitCurrency || pc?.currency || "EUR" };
+  }
+  if (fromPc > 0) {
+    return { unit: fromPc, currency: item.unitCurrency || pc?.currency || "EUR" };
+  }
+
+  // 2) Menü ürünü ise ürün içinden hesapla
+  if (item.productType === "menuitem" && isMenuItem(item.product)) {
+    const mi = item.product as IMenuItem;
+    const variantCode = item.menu?.variantCode || mi.variants?.find(v => (v as any).isDefault)?.code;
+    const variant = mi.variants?.find(v => v.code === variantCode) || mi.variants?.[0];
+    const base = pickVariantPrice(variant);
+    let modifiersTotal = 0;
+
+    if (Array.isArray(item.menu?.modifiers) && Array.isArray(mi.modifierGroups)) {
+      for (const pick of item.menu!.modifiers!) {
+        const group = mi.modifierGroups.find(g => g.code === pick.groupCode);
+        const val = group ? pickOptionPrice(group, pick.optionCode) : null;
+        if (val?.amount != null) {
+          const qty = typeof pick.quantity === "number" && pick.quantity > 0 ? pick.quantity : 1;
+          modifiersTotal += val.amount * qty;
+        }
+      }
+    }
+    const amount = (base?.amount || 0) + modifiersTotal;
+    const currency = base?.currency || item.unitCurrency || pc?.currency || "EUR";
+    return { unit: amount, currency };
+  }
+
+  // 3) Son çare
+  return { unit: 0, currency: item.unitCurrency || pc?.currency || "EUR" };
+}
+
+/* ------------ component ------------- */
 
 interface Props {
   items: ICartItem[];
@@ -40,16 +120,17 @@ interface Props {
 
 export default function CartItemList({ items }: Props) {
   const { i18n, t } = useTranslation("cart");
-  const lang = i18n.language?.split("-")[0] as any;
+  const lang = (i18n.language?.split("-")[0] || "en") as any;
   const dispatch = useAppDispatch();
 
   return (
     <ListContainer>
       {items.map((item) => {
         const { productType } = item;
+
         const productId: string =
-          isPopulatedProduct(item.product)
-            ? String(item.product._id)
+          (isPopulatedNonMenu(item.product) || isMenuItem(item.product))
+            ? String((item.product as any)._id)
             : String(item.product);
 
         let productName = "-";
@@ -57,20 +138,27 @@ export default function CartItemList({ items }: Props) {
         let productImage = "";
         let productStock: number | undefined = undefined;
 
-        if (isPopulatedProduct(item.product)) {
-          productName = getMultiLang((item.product as any).name, lang);
+        if (isPopulatedNonMenu(item.product)) {
+          productName = getMultiLang((item.product as any).name, lang) || "-";
           const slugBase = PRODUCT_TYPE_SLUG[productType] || "/";
-          productSlug =
-            (slugBase && (item.product as any).slug)
-              ? `${slugBase}${(item.product as any).slug}`
-              : "#";
+          productSlug = (slugBase && (item.product as any).slug) ? `${slugBase}${(item.product as any).slug}` : "#";
           productImage = (item.product as any).images?.[0]?.url || "";
           productStock = (item.product as any).stock;
+        } else if (isMenuItem(item.product)) {
+          productName = getMultiLang((item.product as IMenuItem).name as any, lang) || "-";
+          const slugBase = PRODUCT_TYPE_SLUG[productType] || "/";
+          const slug = (item.product as IMenuItem).slug;
+          productSlug = slug ? `${slugBase}${slug}` : "#";
+          productImage = (item.product as any).images?.[0]?.url || "";
         }
 
-        // Stok kritik: stok bilgisini her zaman kontrol et!
         const isIncreaseDisabled =
           typeof productStock === "number" && item.quantity >= productStock;
+
+        // ---- Fiyat hesap
+        const { unit, currency } = calcUnitAndCurrency(item);
+        const sym = currencySymbol(currency);
+        const lineTotal = Number(unit || 0) * Number(item.quantity || 0);
 
         return (
           <CartItemRow key={productId + "-" + productType}>
@@ -88,6 +176,7 @@ export default function CartItemList({ items }: Props) {
                 <ImgPlaceholder />
               )}
             </ThumbBox>
+
             <Details>
               <ProductName as={Link} href={productSlug}>
                 {productName}
@@ -95,6 +184,7 @@ export default function CartItemList({ items }: Props) {
               <ProductType>
                 {PRODUCT_TYPE_LABEL[productType] || productType}
               </ProductType>
+
               <Qty>
                 <span>{t("quantity", "Miktar")}:</span>
                 <QuantityControls>
@@ -120,7 +210,7 @@ export default function CartItemList({ items }: Props) {
                     <X size={17} />
                   </RemoveBtn>
                 </QuantityControls>
-                {/* Stok uyarısı */}
+
                 {isIncreaseDisabled && (
                   <StockWarning>
                     {t("stockLimit", "Stokta daha fazla ürün yok!")}
@@ -128,19 +218,16 @@ export default function CartItemList({ items }: Props) {
                 )}
               </Qty>
             </Details>
+
             <Price>
               <span>
-                {item.priceAtAddition.toFixed(2)} €
+                {Number(unit).toFixed(2)} {sym}
                 {item.quantity > 1 && (
-                  <small style={{ color: "#999", marginLeft: 4 }}>
-                    x{item.quantity}
-                  </small>
+                  <small style={{ color: "#999", marginLeft: 4 }}>x{item.quantity}</small>
                 )}
               </span>
               <Total>
-                <b>
-                  {(item.quantity * item.priceAtAddition).toFixed(2)} €
-                </b>
+                <b>{lineTotal.toFixed(2)} {sym}</b>
               </Total>
             </Price>
           </CartItemRow>
@@ -150,15 +237,16 @@ export default function CartItemList({ items }: Props) {
   );
 }
 
-// Uyarı için küçük bir stil (isteğe bağlı)
+/* ------------ styles ------------- */
+
+// Uyarı
 const StockWarning = styled.div`
   color: ${({ theme }) => theme.colors.danger || "#e74c3c"};
   font-size: 0.9em;
   margin-top: 3px;
 `;
 
-
-// --- Quantity Controls Style ---
+// Quantity Controls
 const QuantityControls = styled.span`
   margin-left: 12px;
   display: inline-flex;
@@ -173,13 +261,8 @@ const QuantityControls = styled.span`
     border-radius: 50%;
     cursor: pointer;
     font-weight: 600;
-    &:hover {
-      background: ${({ theme }) => theme.colors.primaryHover};
-    }
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    &:hover { background: ${({ theme }) => theme.colors.primaryHover}; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
   }
 `;
 
@@ -190,14 +273,10 @@ const RemoveBtn = styled.button`
   cursor: pointer;
   margin-left: 6px;
   transition: color 0.14s;
-  &:hover {
-    color: #900;
-  }
+  &:hover { color: #900; }
 `;
 
-
-// --- Styles ---
-// (Aynen bırakabilirsin)
+// Layout
 const ListContainer = styled.div`
   flex: 2;
   min-width: 340px;
@@ -272,7 +351,7 @@ const Qty = styled.div`
 `;
 
 const Price = styled.div`
-  min-width: 90px;
+  min-width: 120px;
   text-align: right;
   span {
     display: block;

@@ -144,6 +144,20 @@
       "eggFree": "Bez jaj",
       "porkFree": "Bez wieprzowiny",
       "containsAlcohol": "Zawiera alkohol"
+    },
+    "labels": {
+      "price": "Cena",
+      "variant": "Rozmiar / Wariant",
+      "extras": "Dodatki / Opcje",
+      "quickView": "Szybki Podgląd",
+      "freshFood": "Świeże Jedzenie",
+      "fastDelivery": "Szybka Dostawa",
+      "service247": "Obsługa 24/7",
+      "allergens": "Alergeny",
+      "additives": "Dodatki",
+      "total": "Razem",
+      "add": "Dodaj do Koszyka",
+      "reviews": "{{count}} Recenzje"
     }
   },
   "admin": {

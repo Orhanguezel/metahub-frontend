@@ -74,7 +74,7 @@ const antalya2Theme: DefaultTheme = {
   shadows: {
     xs: "0 1px 2px rgba(0,0,0,0.04)",
     sm: "0 2px 6px rgba(0,0,0,0.06)",
-    md: "0 4px 12px rgba(209,39,39,0.12)",  // primary gölgeli
+    md: "0 4px 12px rgba(209,39,39,0.12)",
     lg: "0 8px 24px rgba(0,0,0,0.14)",
     xl: "0 16px 32px rgba(0,0,0,0.18)",
     form: "0 6px 20px rgba(0,0,0,0.08)",
@@ -139,32 +139,32 @@ const antalya2Theme: DefaultTheme = {
 
   colors: {
     /* ——— Tema ana tonları ——— */
-    primary: "#F3CB00",
-    primaryLight: "#F5B5B5",
-    primaryHover: "#B11F1F",
-    primaryDark: "#8F1717",
-    primaryTransparent: "rgba(209,39,39,0.10)",
+    primary: "#F3CB00",                // sarı (vurgular)
+    primaryLight: "#FFE567",
+    primaryHover: "#D6B200",
+    primaryDark: "#B99300",
+    primaryTransparent: "rgba(243,203,0,0.10)",
 
-    secondary: "#D12727",
-    secondaryLight: "#FFE567",
-    secondaryHover: "#D6B200",
-    secondaryDark: "#F3CB00",
-    secondaryTransparent: "rgba(243,203,0,0.15)",
+    secondary: "#D12727",              // kırmızı (ağırlık)
+    secondaryLight: "#E24D4D",
+    secondaryHover: "#B11F1F",
+    secondaryDark: "#8F1717",
+    secondaryTransparent: "rgba(209,39,39,0.12)",
 
     accent: "#000000",
     accentHover: "#111111",
     accentText: "#ffffff",
 
     /* ——— Arkaplanlar ——— */
-    background: "#FFF6CC",            // sarının yumuşatılmış tonu
+    background: "#FFFCF6",             // açık krem
     backgroundSecondary: "#D12727",    // kırmızı blok alanlar
-    backgroundAlt: "#111111",         // siyah
-    sectionBackground: "#D12727",      // sarı ama daha açık
-    contentBackground: "#D12727",
+    backgroundAlt: "#111111",
+    sectionBackground: "#D12727",
+    contentBackground: "#FFFCF6",
     footerBackground: "#D12727",
 
     /* ——— Input/Kontrol ——— */
-    inputBackground: "#D12727",
+    inputBackground: "#FFF9E0",        // erişilebilir açık arka plan
     inputBackgroundFocus: "#FFF6CC",
     inputBorder: "#F3CB00",
     inputBorderFocus: "#F3CB00",
@@ -172,30 +172,30 @@ const antalya2Theme: DefaultTheme = {
     inputIcon: "#D12727",
     inputBackgroundLight: "#FFF9E0",
     inputBackgroundSofter: "#FFF6CC",
-    placeholder: "#F3CB00",
+    placeholder: "#8A6F6F",
 
     /* ——— Yazılar ——— */
-    text: "#FFF6CC",
-    textAlt: "#FFF6CC",
-    textSecondary: "#FFF6CC",
-    textPrimary: "#F3CB00",
-    textMuted: "#9c8a8a",
-    textLight: "#fff1f1",
-    title: "#F3CB00",
+    text: "#1E1E1E",                   // varsayılan metin (açık zeminde)
+    textAlt: "#FFF9EC",                // kırmızı zeminde kullanılacak
+    textSecondary: "#4A3E3E",
+    textPrimary: "#D12727",            // başlık/aksan metin
+    textMuted: "#8F8F8F",
+    textLight: "#ffffff",
+    title: "#D12727",
     textOnWarning: "#3a2e00",
     textOnSuccess: "#0a3d13",
     textOnDanger: "#ffffff",
 
     /* ——— Ögeler/çerçeveler ——— */
-    border: "#D12727",                 // sarı kenarlık
-    borderLight: "#D12727",
-    borderBright: "#D12727",
-    borderBrighter: "#D12727",
+    border: "#D12727",
+    borderLight: "#E6B8B8",
+    borderBright: "#FF9D9D",
+    borderBrighter: "#FFC1C1",
     borderHighlight: "#F3CB00",
     borderInput: "#F3CB00",
 
-    card: "#F3CB00",
-    cardBackground: "#F3CB00",
+    card: "#ffffff",
+    cardBackground: "#ffffff",
 
     /* ——— Buton (genel fallback) ——— */
     buttonBackground: "#D12727",
@@ -285,7 +285,7 @@ const antalya2Theme: DefaultTheme = {
   },
 
   inputs: {
-    background: "#ffffff",
+    background: "#FFF9E0",
     border: "#F3CB00",
     borderFocus: "#F3CB00",
     text: "#1e1e1e",

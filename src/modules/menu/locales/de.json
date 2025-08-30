@@ -144,6 +144,20 @@
       "eggFree": "Eifrei",
       "porkFree": "Schweinefrei",
       "containsAlcohol": "Enthält Alkohol"
+    },
+    "labels": {
+      "price": "Preis",
+      "variant": "Größe / Variante",
+      "extras": "Zusätze / Optionen",
+      "quickView": "Schnellansicht",
+      "freshFood": "Frische Lebensmittel",
+      "fastDelivery": "Schnelle Lieferung",
+      "service247": "24/7 Service",
+      "allergens": "Allergene",
+      "additives": "Zusatzstoffe",
+      "total": "Gesamt",
+      "add": "In den Warenkorb",
+      "reviews": "{{count}} Bewertungen"
     }
   },
   "admin": {

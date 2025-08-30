@@ -1,3 +1,4 @@
+// src/modules/menu/types/menu.ts
 import type { SupportedLocale } from "@/types/common";
 
 /** i18n */
@@ -34,6 +35,9 @@ export interface IMenu {
   branches?: string[];        // branch ids
   categories: IMenuCategoryRef[];
 
+  /** Genel sıralama alanı */
+  order?: number;             // 0..100000
+
   effectiveFrom?: string | null;  // ISO
   effectiveTo?: string | null;    // ISO
 
@@ -51,8 +55,11 @@ export type MenuCreatePayload = {
   description?: TranslatedLabel;
   branches?: string[];
   categories?: IMenuCategoryRef[];
-  effectiveFrom?: string | null;   // ISO
-  effectiveTo?: string | null;     // ISO
+  order?: number;                 // 👈 eklendi
+  isActive?: boolean;             // 👈 create sırasında da gönderilebilir
+  isPublished?: boolean;          // 👈 create sırasında da gönderilebilir
+  effectiveFrom?: string | null;  // ISO
+  effectiveTo?: string | null;    // ISO
   /** Optional: image files to upload; if present we’ll convert to FormData */
   images?: File[];
 };
@@ -60,8 +67,6 @@ export type MenuCreatePayload = {
 export type MenuUpdatePayload = Partial<
   Omit<MenuCreatePayload, "code">
 > & {
-  isPublished?: boolean;
-  isActive?: boolean;
   /** Optional: image files to upload; if present we’ll convert to FormData */
   images?: File[];
 };

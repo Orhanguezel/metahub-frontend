@@ -7,7 +7,9 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/order";
 import type { IOrder, OrderStatus } from "@/modules/order/types";
 
-export const ORDER_STATUSES: OrderStatus[] = ["pending","preparing","shipped","completed","cancelled","delivered"];
+/** BE tipi: "pending" | "preparing" | "shipped" | "completed" | "cancelled"
+ *  "delivered" status'ı yok; teslim bilgisini isDelivered flag'i tutuyor. */
+export const ORDER_STATUSES: OrderStatus[] = ["pending","preparing","shipped","completed","cancelled"];
 
 type Props = { order: IOrder };
 

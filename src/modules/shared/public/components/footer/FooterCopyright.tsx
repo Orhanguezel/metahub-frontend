@@ -59,7 +59,7 @@ export default function FooterCopyright() {
         target="_blank"
         rel="noopener noreferrer"
       >
-        Designed by OG
+        Designed by GuezelWebDesign
       </DesignLink>
     </Copyright>
   );

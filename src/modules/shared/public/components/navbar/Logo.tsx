@@ -122,7 +122,7 @@ const LogoSlogan = styled.span`
   line-height: 1.2;
 
   /* Classic başlık rengi ile uyumlu vurgulu metin */
-  color: ${({ theme }) => theme.colors.title};
+  color: ${({ theme }) => theme.colors.primary};
   font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.light};
   font-style: italic;

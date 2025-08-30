@@ -10,7 +10,25 @@ const OrderSuccessPage: React.FC = () => {
 
   return (
     <PageWrapper>
-      <WaveBackground />
+      {/* Dış URL yerine inline SVG */}
+      <WaveBackground
+        viewBox="0 0 1440 560"
+        preserveAspectRatio="xMidYMax slice"
+        aria-hidden
+      >
+        <defs>
+          <linearGradient id="ensotek-wave" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#2875c2" />
+            <stop offset="1" stopColor="#0bb6d6" />
+          </linearGradient>
+        </defs>
+        {/* basit bir wave path */}
+        <path
+          d="M0,320L80,309.3C160,299,320,277,480,293.3C640,309,800,363,960,373.3C1120,384,1280,352,1360,336L1440,320L1440,560L1360,560C1280,560,1120,560,960,560C800,560,640,560,480,560C320,560,160,560,80,560L0,560Z"
+          fill="url(#ensotek-wave)"
+        />
+      </WaveBackground>
+
       <MainContent>
         <SuccessIcon>
           <svg width="86" height="86" viewBox="0 0 86 86" fill="none">
@@ -30,10 +48,12 @@ const OrderSuccessPage: React.FC = () => {
             </defs>
           </svg>
         </SuccessIcon>
+
         <Title>{t("title")}</Title>
         <Message>{t("purchaseSuccess")}</Message>
         <Message>{t("emailInfo")}</Message>
         <Message>{t("shippingInfo")}</Message>
+
         <ButtonGroup>
           <StyledLink href="/order">{t("myOrders", "My Orders")}</StyledLink>
           <StyledLinkSecondary href="/">{t("backToHomepage")}</StyledLinkSecondary>
@@ -45,7 +65,7 @@ const OrderSuccessPage: React.FC = () => {
 
 export default OrderSuccessPage;
 
-// --- Styled Components ---
+/* --- Styled Components --- */
 
 const PageWrapper = styled.div`
   width: 100vw;
@@ -56,16 +76,15 @@ const PageWrapper = styled.div`
   overflow-x: hidden;
 `;
 
-const WaveBackground = styled.div`
+const WaveBackground = styled.svg`
   position: absolute;
-  inset: 0;
-  z-index: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  background: url("https://svgshare.com/i/14qv.svg") no-repeat bottom right;
-  background-size: 50vw 38vh;
+  right: 0;
+  bottom: 0;
+  width: 50vw;      /* önceki background-size değerlerine yakın */
+  height: 38vh;
   opacity: 0.11;
+  pointer-events: none;
+  z-index: 0;
 `;
 
 const MainContent = styled.main`

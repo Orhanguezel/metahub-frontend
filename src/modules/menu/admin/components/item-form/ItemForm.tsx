@@ -14,9 +14,9 @@ import type {
 import apiCall from "@/lib/apiCall";
 import { JSONEditor } from "@/shared";
 
-import { ItemBasics, ItemImages, ItemStructured, } from "@/modules/menu";
+import { ItemBasics, ItemImages, ItemStructured } from "@/modules/menu";
 
-import  { type StructuredObj } from "./ItemStructured/ItemStructured";
+import { type StructuredObj } from "./ItemStructured/ItemStructured";
 import {
   Actions,
   Form,
@@ -74,6 +74,12 @@ type Props = {
   ) => Promise<void> | void;
 };
 
+/* --- 🔧 VARIANT NORMALIZATION: prices hep dizi olsun --- */
+const normalizeVariant = (v: any) => ({
+  ...v,
+  prices: Array.isArray(v?.prices) ? v.prices : [],
+});
+
 export default function ItemForm({ isOpen, editingItem, onClose, onSubmit }: Props) {
   const { t, i18n } = useI18nNamespace("menu", translations);
   const lang = useMemo<SupportedLocale>(() => getUILang(i18n?.language), [i18n?.language]);
@@ -96,7 +102,7 @@ export default function ItemForm({ isOpen, editingItem, onClose, onSubmit }: Pro
   // structured
   const [structured, setStructured] = useState<StructuredObj>({
     categories: editingItem?.categories || [],
-    variants: editingItem?.variants || [],
+    variants: (editingItem?.variants || []).map(normalizeVariant), // ✅ prices normalize
     modifierGroups: editingItem?.modifierGroups || [],
     allergens: editingItem?.allergens || [],
     additives: editingItem?.additives || [],
@@ -147,7 +153,7 @@ export default function ItemForm({ isOpen, editingItem, onClose, onSubmit }: Pro
           order: c?.order,
           isFeatured: c?.isFeatured,
         })),
-        variants: editingItem.variants || [],
+        variants: (editingItem.variants || []).map(normalizeVariant), // ✅ prices normalize
         modifierGroups: editingItem.modifierGroups || [],
         allergens: editingItem.allergens || [],
         additives: editingItem.additives || [],
@@ -213,7 +219,7 @@ export default function ItemForm({ isOpen, editingItem, onClose, onSubmit }: Pro
         category: typeof c?.category === "string" ? c.category : c?.category?._id || c?.category,
         order: c?.order, isFeatured: !!c?.isFeatured,
       })),
-      variants: v.variants,
+      variants: (v.variants || []).map(normalizeVariant), // ✅ prices normalize
       modifierGroups: v.modifierGroups,
       allergens: v.allergens,
       additives: v.additives,

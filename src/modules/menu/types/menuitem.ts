@@ -1,3 +1,4 @@
+// src/modules/menu/types/menuitem.ts
 import type { TranslatedLabel } from "@/types/common";
 import type { AdditiveCode, AllergenCode } from "@/modules/menu/constants/foodLabels";
 

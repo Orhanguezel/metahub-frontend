@@ -1,4 +1,5 @@
 "use client";
+
 import styled from "styled-components";
 import type { SupportedLocale } from "@/types/common";
 import ItemCard from "./ItemCard";
@@ -31,10 +32,14 @@ export default function CategorySection({ id, title, items, lang, t, isLoading }
   );
 }
 
-const Section = styled.section`margin:18px 0; h2{font-size:18px;margin:0 0 10px;}`;
-const Grid = styled.div`display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+const Section = styled.section`
+  margin:18px 0;
+  h2{font-size:18px;margin:0 0 10px;color:${({theme})=>theme.colors.title};}
+`;
+const Grid = styled.div`
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
   @media (max-width:900px){grid-template-columns:repeat(2,1fr);}
   @media (max-width:600px){grid-template-columns:1fr;}
 `;
-const Skel = styled.div`height:140px;background:#f2f2f2;border-radius:10px;`;
+const Skel = styled.div`height:140px;background:${({theme})=>theme.colors.skeleton};border-radius:10px;`;
 const Empty = styled.div`opacity:.6;padding:12px 0;`;

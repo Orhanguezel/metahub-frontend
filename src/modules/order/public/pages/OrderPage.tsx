@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect } from "react";
+
+import React, { useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchMyOrders, clearOrderMessages } from "@/modules/order/slice/ordersSlice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
@@ -15,30 +16,32 @@ const OrderPage: React.FC = () => {
   const { t } = useI18nNamespace("order", translations);
 
   useEffect(() => {
-    if (profile && status === "idle") {
-      dispatch(fetchMyOrders());
-    }
-    return () => {
-      dispatch(clearOrderMessages());
-    };
+    if (profile && status === "idle") dispatch(fetchMyOrders());
+    return () => { dispatch(clearOrderMessages()); };
   }, [dispatch, profile, status]);
 
-  const errorMessage =
-    typeof error === "string"
-      ? error
-      : error && typeof (error as any).message === "string"
-      ? (error as any).message
-      : error && typeof error === "object"
-      ? JSON.stringify(error)
-      : "";
+  const errorMessage = useMemo(() => {
+    if (!error) return "";
+    if (typeof error === "string") return error;
+    if (typeof (error as any)?.message === "string") return (error as any).message;
+    try { return JSON.stringify(error); } catch { return String(error); }
+  }, [error]);
 
-  const isNoOrders =
-    !!errorMessage &&
-    (errorMessage.includes("noOrdersFound") || errorMessage.includes("404"));
+  const hasOrders = Array.isArray(myOrders) && myOrders.length > 0;
+  const showEmpty = !loading && !hasOrders && !errorMessage;
 
-  const isValidOrders = Array.isArray(myOrders) && myOrders.length > 0;
-
-  if (!profile) return null;
+  if (!profile) {
+    return (
+      <OrderPageWrapper>
+        <MainContent>
+          <Title>{t("title", "My Orders")}</Title>
+          <OrderMessage $error>
+            {t("loginRequired", "Siparişlerinizi görmek için giriş yapın.")}
+          </OrderMessage>
+        </MainContent>
+      </OrderPageWrapper>
+    );
+  }
 
   return (
     <OrderPageWrapper>
@@ -47,29 +50,25 @@ const OrderPage: React.FC = () => {
 
         {loading && <OrderMessage>{t("loading", "Loading...")}</OrderMessage>}
 
-        {!loading && isNoOrders && (
+        {showEmpty && (
           <>
             <NoOrdersSVG>
-              <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="32" fill="#2875c2"/><path d="M16 45c0-7 7.4-13 16-13s16 6 16 13" stroke="#fff" strokeWidth="2"/><circle cx="24" cy="30" r="4" fill="#fff"/><circle cx="40" cy="30" r="4" fill="#fff"/></svg>
+              <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                <circle cx="32" cy="32" r="32" fill="#2875c2"/>
+                <path d="M16 45c0-7 7.4-13 16-13s16 6 16 13" stroke="#fff" strokeWidth="2"/>
+                <circle cx="24" cy="30" r="4" fill="#fff"/>
+                <circle cx="40" cy="30" r="4" fill="#fff"/>
+              </svg>
             </NoOrdersSVG>
             <OrderMessage>{t("empty", "You have no orders yet.")}</OrderMessage>
           </>
         )}
 
-        {!loading && !isNoOrders && !!errorMessage && (
+        {!loading && !!errorMessage && !hasOrders && (
           <OrderMessage $error>{errorMessage}</OrderMessage>
         )}
 
-        {!loading && !isNoOrders && !errorMessage && !isValidOrders && (
-          <>
-            <NoOrdersSVG>
-              <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="32" fill="#2875c2"/><path d="M16 45c0-7 7.4-13 16-13s16 6 16 13" stroke="#fff" strokeWidth="2"/><circle cx="24" cy="30" r="4" fill="#fff"/><circle cx="40" cy="30" r="4" fill="#fff"/></svg>
-            </NoOrdersSVG>
-            <OrderMessage>{t("empty", "You have no orders yet.")}</OrderMessage>
-          </>
-        )}
-
-        {!loading && !isNoOrders && !errorMessage && isValidOrders && (
+        {!loading && hasOrders && (
           <OrderListWrapper>
             <OrderList orders={myOrders as IOrder[]} />
           </OrderListWrapper>
@@ -81,10 +80,7 @@ const OrderPage: React.FC = () => {
 
 export default OrderPage;
 
-
-
-
-// --- Modern ve tema uyumlu mesaj kutusu ---
+/* ===== styled ===== */
 const OrderMessage = styled.div<{ $error?: boolean }>`
   text-align: center;
   padding: 3.5rem 0 2.5rem;
@@ -92,21 +88,14 @@ const OrderMessage = styled.div<{ $error?: boolean }>`
   color: ${({ $error, theme }) =>
     $error ? theme.colors.danger : theme.colors.primaryDark};
   background: ${({ $error, theme }) =>
-    $error
-      ? theme.colors.dangerBg
-      : theme.colors.backgroundSecondary};
+    $error ? theme.colors.dangerBg : theme.colors.backgroundSecondary};
   border-radius: ${({ theme }) => theme.radii.lg};
   margin: 1.5rem 0;
   box-shadow: ${({ theme }) => theme.shadows.xs};
   transition: background 0.17s;
-  ${({ $error }) =>
-    $error &&
-    css`
-      border: 1.5px solid #ff6b6b;
-    `}
+  ${({ $error }) => $error && css`border: 1.5px solid #ff6b6b;`}
 `;
 
-// --- Ana Wrapper ---
 const OrderPageWrapper = styled.div`
   min-height: 100vh;
   width: 100vw;
@@ -115,7 +104,6 @@ const OrderPageWrapper = styled.div`
   position: relative;
 `;
 
-// --- Başlık ve ana içerik ---
 const MainContent = styled.main`
   flex-grow: 1;
   width: 100%;
@@ -139,7 +127,6 @@ const Title = styled.h1`
   box-shadow: 0 4px 12px 0 rgba(40,117,194,0.04);
 `;
 
-// --- Liste container ---
 const OrderListWrapper = styled.div`
   margin: 0 auto;
   padding: 0;
@@ -152,7 +139,5 @@ const NoOrdersSVG = styled.div`
   margin: 0 auto 2rem auto;
   width: 90px;
   opacity: 0.13;
-  svg {
-    width: 100%; height: auto; display: block;
-  }
+  svg { width: 100%; height: auto; display: block; }
 `;

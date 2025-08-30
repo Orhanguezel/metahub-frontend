@@ -1,3 +1,4 @@
+// src/app/(public)/menu/[slug]/page.tsx
 import Page from "@/modules/menu/public/pages/Page";
 
 /**

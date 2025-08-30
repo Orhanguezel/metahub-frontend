@@ -1,4 +1,5 @@
 "use client";
+
 import styled from "styled-components";
 import { getMultiLang } from "@/types/common";
 import type { SupportedLocale } from "@/types/common";
@@ -38,7 +39,7 @@ export default function MenuHeader({ menu, t, lang, isLoading }: Props) {
 }
 
 const Head = styled.header`display:flex;flex-direction:column;gap:6px;`;
-const Title = styled.h1`font-size:24px;font-weight:700;margin:0;`;
-const Desc = styled.p`opacity:.9;margin:0;`;
-const Meta = styled.div`opacity:.7;font-size:12px;`;
-const Skel = styled.div`background:#eaeaea;border-radius:6px;`;
+const Title = styled.h1`font-size:${({theme})=>theme.fontSizes.h2};font-weight:800;margin:0;color:${({theme})=>theme.colors.textAlt};`;
+const Desc = styled.p`opacity:.95;margin:0;color:${({theme})=>theme.colors.textAlt};`;
+const Meta = styled.div`opacity:.9;font-size:12px;color:${({theme})=>theme.colors.textAlt};`;
+const Skel = styled.div`background:${({theme})=>theme.colors.skeleton};border-radius:6px;`;

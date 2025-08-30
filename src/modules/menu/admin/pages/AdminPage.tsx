@@ -100,14 +100,16 @@ export default function AdminMenuPage() {
 
   /* ========= MENU handlers ========= */
   const handleMenuSubmit = async (
-    payload: MenuCreatePayload | MenuUpdatePayload,
+    payload: MenuCreatePayload | MenuUpdatePayload | FormData,
     id?: string
   ) => {
     try {
       if (id) {
-        await (dispatch(updateMenu({ id, patch: payload as MenuUpdatePayload }) as any)).unwrap();
+        const patch = payload instanceof FormData ? payload : (payload as MenuUpdatePayload);
+        await (dispatch(updateMenu({ id, patch }) as any)).unwrap();
       } else {
-        await (dispatch(createMenu(payload as MenuCreatePayload) as any)).unwrap();
+        const body = payload instanceof FormData ? payload : (payload as MenuCreatePayload);
+        await (dispatch(createMenu(body) as any)).unwrap();
       }
       setEditingMenu(null);
       setMenuTab("list");
@@ -148,7 +150,7 @@ export default function AdminMenuPage() {
     setCatOpen(true);
   };
 
-  // ✅ FormData | JSON kabul edecek şekilde genişlettik
+  // ✅ FormData | JSON destekli
   const handleCategorySubmit = async (
     payload: MenuCategoryCreatePayload | MenuCategoryUpdatePayload | FormData,
     id?: string
@@ -318,14 +320,14 @@ export default function AdminMenuPage() {
                   <Row>
                     {editingCat && editingCat._id && (
                       <DangerBtn
-                        onClick={()=>{
+                        onClick={() => {
                           handleCategoryDelete(editingCat._id!);
                         }}
                       >
                         {t("delete","Delete")}
                       </DangerBtn>
                     )}
-                    <SmallBtn onClick={()=>{ setCatOpen(false); setEditingCat(null); }}>
+                    <SmallBtn onClick={() => { setCatOpen(false); setEditingCat(null); }}>
                       {t("close","Close")}
                     </SmallBtn>
                   </Row>
@@ -372,14 +374,14 @@ export default function AdminMenuPage() {
                   <Row>
                     {editingItem && editingItem._id && (
                       <DangerBtn
-                        onClick={()=>{
+                        onClick={() => {
                           handleItemDelete(editingItem._id!);
                         }}
                       >
                         {t("delete","Delete")}
                       </DangerBtn>
                     )}
-                    <SmallBtn onClick={()=>{ setItemOpen(false); setEditingItem(null); }}>
+                    <SmallBtn onClick={() => { setItemOpen(false); setEditingItem(null); }}>
                       {t("close","Close")}
                     </SmallBtn>
                   </Row>
@@ -455,15 +457,14 @@ const SmallBtn = styled.button`
   border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
   padding:6px 10px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
 `;
-const Row = styled.div`display:flex; gap:${({theme})=>theme.spacings.xs}; align-items:center;`;
-const DangerBtn = styled.button`
+const DangerBtn = styled(SmallBtn)`
   background:${({theme})=>theme.colors.dangerBg};
   color:${({theme})=>theme.colors.danger};
-  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.danger};
-  padding:8px 12px; border-radius:${({theme})=>theme.radii.md}; cursor:pointer;
+  border-color:${({theme})=>theme.colors.danger};
   &:hover{
     background:${({theme})=>theme.colors.dangerHover};
     color:${({theme})=>theme.colors.textOnDanger};
     border-color:${({theme})=>theme.colors.dangerHover};
   }
 `;
+const Row = styled.div`display:flex; gap:${({theme})=>theme.spacings.xs}; align-items:center; flex-wrap: wrap;`;

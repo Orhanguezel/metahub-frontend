@@ -117,6 +117,7 @@ const CompanyLine = styled.div`
 const InfoRow = styled.div`
   display: flex;
   gap: 6px;
+  color: ${({ theme }) => theme.colors.primary};
   align-items: center;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-family: ${({ theme }) => theme.fonts.body};

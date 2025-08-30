@@ -32,6 +32,9 @@ function toFormDataFromCreate(payload: MenuCreatePayload | FormData): FormData {
   if (payload.categories) fd.append("categories", JSON.stringify(payload.categories));
   if (payload.effectiveFrom) fd.append("effectiveFrom", payload.effectiveFrom);
   if (payload.effectiveTo) fd.append("effectiveTo", payload.effectiveTo);
+  if (typeof payload.order === "number") fd.append("order", String(payload.order));                 // 👈
+  if (typeof payload.isActive === "boolean") fd.append("isActive", String(payload.isActive));       // 👈
+  if (typeof payload.isPublished === "boolean") fd.append("isPublished", String(payload.isPublished)); // 👈
   (payload.images || []).forEach((f) => fd.append("images", f));
   return fd;
 }
@@ -48,6 +51,7 @@ function toFormDataFromUpdate(payload: MenuUpdatePayload | FormData): FormData {
   if (payload.effectiveTo) fd.append("effectiveTo", payload.effectiveTo);
   if (typeof payload.isPublished === "boolean") fd.append("isPublished", String(payload.isPublished));
   if (typeof payload.isActive === "boolean") fd.append("isActive", String(payload.isActive));
+  if (typeof payload.order === "number") fd.append("order", String(payload.order));                 // 👈
   (payload.images || []).forEach((f) => fd.append("images", f));
   return fd;
 }

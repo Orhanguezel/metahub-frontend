@@ -32,6 +32,9 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClose }) =
       ? (order.user as any).email
       : undefined;
 
+  const currency = (order.currency || "EUR").toUpperCase();
+  const total = Number(order.finalTotal || 0);
+
   return (
     <Backdrop tabIndex={-1} onClick={onClose}>
       <Modal onClick={(e) => e.stopPropagation()}>
@@ -77,7 +80,10 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClose }) =
         </Section>
 
         <Section><Label>{t("paymentMethod", "Payment Method")}:</Label> <Mono>{order.paymentMethod}</Mono></Section>
-        <Section><Label>{t("total", "Total")}:</Label> <Total>{(order.totalPrice ?? 0).toFixed(2)} EUR</Total></Section>
+        <Section>
+          <Label>{t("total", "Total")}:</Label>{" "}
+          <Total>{total.toFixed(2)} {currency}</Total>
+        </Section>
 
         <Section>
           <Label>{t("productDetails", "Product Details")}:</Label>
@@ -124,7 +130,7 @@ const Status = styled.span<{ $status: OrderStatus }>`
   padding: .2em .8em; border-radius: ${({theme})=>theme.radii.pill};
   color: #fff;
   background: ${({ $status, theme }) =>
-    $status === "delivered" ? (theme.colors.success || "#13ae60") :
+    $status === "completed" ? (theme.colors.success || "#13ae60") :
     $status === "cancelled" ? (theme.colors.danger || "#e74c3c") :
     $status === "pending" ? (theme.colors.warning || "#FF9800") :
     (theme.colors.secondary || "#374151")};
