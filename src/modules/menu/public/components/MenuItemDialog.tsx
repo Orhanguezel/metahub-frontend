@@ -18,6 +18,7 @@ import {
   getVariantBasePrice,
   getOptionBasePrice,
 } from "./utils/pricing";
+import { useMenuitemReactions } from "@/hooks/useMenuitemReactions";
 
 type Props = {
   item: IMenuItem;
@@ -37,6 +38,12 @@ export default function MenuItemDialog({
   channel = "delivery",
 }: Props) {
   void branchId;
+
+  // reactions
+  const { summary, mine, toggle, toggleEmoji, rate } = useMenuitemReactions(
+    String((item as any)._id || "")
+  );
+  const EMOJIS = ["👍", "🔥", "😍", "😋"];
 
   // ---- default variant
   const defaultVariant = useMemo<IMenuItemVariant | undefined>(() => {
@@ -230,38 +237,59 @@ export default function MenuItemDialog({
           </Block>
         )}
 
-        {/* Alerjen / katkı */}
-        {(item.allergens?.length || item.additives?.length || item.dietary) && (
-          <Block>
-            <InfoGrid>
-              {item.allergens?.length ? (
-                <InfoCol>
-                  <BlockTitle>{t("allergens", "Alerjenler")}</BlockTitle>
-                  <Tags>
-                    {item.allergens.map((a) => (
-                      <li key={a.key}>
-                        {getMultiLang(a.value as any, lang) || a.key}
-                      </li>
-                    ))}
-                  </Tags>
-                </InfoCol>
-              ) : null}
-
-              {item.additives?.length ? (
-                <InfoCol>
-                  <BlockTitle>{t("additives", "Katkı Maddeleri")}</BlockTitle>
-                  <Tags>
-                    {item.additives.map((a) => (
-                      <li key={a.key}>
-                        {getMultiLang(a.value as any, lang) || a.key}
-                      </li>
-                    ))}
-                  </Tags>
-                </InfoCol>
-              ) : null}
-            </InfoGrid>
-          </Block>
-        )}
+        {/* Reactions */}
+        <Block>
+          <RxRow>
+            <Buttons>
+              <RxSmall
+                aria-pressed={mine.like}
+                onClick={() => toggle("LIKE")}
+                title={t("like", "Beğen")}
+              >
+                👍 {summary.likes}
+              </RxSmall>
+              <RxSmall
+                aria-pressed={mine.favorite}
+                onClick={() => toggle("FAVORITE")}
+                title={t("favorite", "Favori")}
+              >
+                ❤️ {summary.favorites}
+              </RxSmall>
+              <RxSmall
+                aria-pressed={mine.bookmark}
+                onClick={() => toggle("BOOKMARK")}
+                title={t("bookmark", "Kaydet")}
+              >
+                🔖 {summary.bookmarks}
+              </RxSmall>
+            </Buttons>
+            <StarsMini>
+              {[1, 2, 3, 4, 5].map((v) => (
+                <button
+                  key={v}
+                  onClick={() => rate(v as 1 | 2 | 3 | 4 | 5)}
+                  title={t("rate", "Puan ver")}
+                >
+                  {(mine.rating ?? Math.round(summary.ratingAvg || 0)) >= v
+                    ? "★"
+                    : "☆"}
+                </button>
+              ))}
+            </StarsMini>
+          </RxRow>
+          <EmojiRow>
+            {EMOJIS.map((e) => (
+              <Em
+                key={e}
+                $on={mine.emojis.has(e)}
+                onClick={() => toggleEmoji(e)}
+                title={`${e} ${summary.emojis[e] || 0}`}
+              >
+                {e} <small>{summary.emojis[e] || 0}</small>
+              </Em>
+            ))}
+          </EmojiRow>
+        </Block>
 
         {/* Alt bar: adet + toplam + sepete ekle */}
         <Footer>
@@ -297,10 +325,9 @@ export default function MenuItemDialog({
             </strong>
           </Total>
 
-          {/* Not: AddToCartButton şu an adet/seçim göndermiyor; API genişletildiğinde buraya aktarılabilir. */}
           <AddWrap>
             <AddToCartButton
-              productId={item._id}
+              productId={(item as any)._id}
               productType="menuitem"
               disabled={!canSubmit}
             >
@@ -362,9 +389,31 @@ const Opt = styled.div<{ $active?: boolean }>`
   em{ opacity:.8; }
 `;
 
-const InfoGrid = styled.div`display:grid; grid-template-columns:1fr 1fr; gap:10px;`;
-const InfoCol = styled.div``;
-const Tags = styled.ul`margin:0; padding-left:18px; display:grid; gap:4px;`;
+/* Reactions mini bar */
+const RxRow = styled.div`
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+`;
+const Buttons = styled.div`display:flex; gap:8px; flex-wrap:wrap;`;
+const RxSmall = styled.button`
+  padding:6px 10px; border-radius:12px;
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  background:${({theme})=>theme.colors.inputBackgroundLight};
+  cursor:pointer;
+  &[aria-pressed="true"]{ background:${({theme})=>theme.colors.primaryLight}; }
+`;
+const StarsMini = styled.div`
+  display:inline-flex; gap:4px;
+  button{ border:none; background:transparent; cursor:pointer; font-size:18px; }
+`;
+const EmojiRow = styled.div`display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;`;
+const Em = styled.button<{ $on?: boolean }>`
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  background:${({theme,$on})=>$on?theme.colors.primaryLight:theme.colors.inputBackgroundLight};
+  border-radius:${({theme})=>theme.radii.pill};
+  padding:4px 8px; cursor:pointer;
+  small{ opacity:.8; }
+`;
+
 const Footer = styled.div`
   position: sticky; bottom: 0; padding-top: 12px; margin-top: 16px;
   display:grid; grid-template-columns: auto 1fr auto; gap:12px;

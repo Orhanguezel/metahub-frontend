@@ -94,6 +94,8 @@ import menuSlice from "@/modules/menu/slice/menuSlice";
 import branchSlice from "@/modules/branch/slice";
 import webhooksSlice from "@/modules/webhooks/slice";
 
+import reactionSlice from "../modules/reactions/slice";
+
 
 // --- Combine reducers ---
 // Sadece slice bazında persistReducer uygula!
@@ -188,6 +190,7 @@ const rootReducer = combineReducers({
   menu: menuSlice,
   branch: branchSlice,
   webhooks: webhooksSlice,
+  reactions: reactionSlice,
 });
 
 // --- Store ---

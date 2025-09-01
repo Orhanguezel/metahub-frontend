@@ -18,12 +18,21 @@ type VM = {
 type Props = {
   vm: VM | null | undefined;
   uiLang: SupportedLocale;
-  t: (k: string, d?: string) => string;
+  t?: (k: string, d?: string) => string; // optional + runtime guard aşağıda
   isLoading: boolean;
   catDict: Map<string, IMenuCategory>;
 };
 
 export default function MenuSection({ vm, uiLang, t, isLoading, catDict }: Props) {
+  // t için güvenli çeviri yardımcıcısı
+  const tr = useMemo(
+    () =>
+      typeof t === "function"
+        ? t
+        : (k: string, d?: string) => (d ?? String(k)),
+    [t]
+  );
+
   const menu = vm?.menu ?? ({} as IMenu);
 
   // de-dupe + stabil sıralama
@@ -45,7 +54,7 @@ export default function MenuSection({ vm, uiLang, t, isLoading, catDict }: Props
   const [activeCat, setActiveCat] = useState<string | null>(firstSelectable);
   useEffect(() => { setActiveCat(firstSelectable); }, [firstSelectable]);
 
-  // 🔧 FIX: itemsByCategory için ayrı useMemo
+  // itemsByCategory için ayrı memo
   const itemsByCategory = useMemo(
     () => vm?.itemsByCategory ?? new Map<string, IMenuItem[]>(),
     [vm?.itemsByCategory]
@@ -61,7 +70,7 @@ export default function MenuSection({ vm, uiLang, t, isLoading, catDict }: Props
   return (
     <section>
       <Hero>
-        <MenuHeader menu={menu} t={t} lang={uiLang} isLoading={!!isLoading} />
+        <MenuHeader menu={menu} t={tr} lang={uiLang} isLoading={!!isLoading} />
         <div className="crumbs">Home / Menu</div>
       </Hero>
 
@@ -69,7 +78,7 @@ export default function MenuSection({ vm, uiLang, t, isLoading, catDict }: Props
         <CategoryNav
           categories={vm?.navCats ?? []}
           catDict={catDict}
-          t={t}
+          t={tr}
           lang={uiLang}
           isLoading={!!isLoading}
           anchorMap={new Map()}
@@ -78,9 +87,9 @@ export default function MenuSection({ vm, uiLang, t, isLoading, catDict }: Props
 
       <MainArea>
         <SidePanel>
-          <PanelTitle>{t("categories", "Categories")}</PanelTitle>
+          <PanelTitle>{tr("categories", "Categories")}</PanelTitle>
           {sideCats.length === 0 ? (
-            <EmptyBox>{t("noCategories", "Kategori yok")}</EmptyBox>
+            <EmptyBox>{tr("noCategories", "Kategori yok")}</EmptyBox>
           ) : (
             <CatList role="listbox" aria-label="Categories">
               {sideCats.map((c, idx) => {
@@ -108,10 +117,10 @@ export default function MenuSection({ vm, uiLang, t, isLoading, catDict }: Props
             <span className="results">
               {total > 0
                 ? `Showing 1–${total} of ${total} results`
-                : t("noItems", "Gösterilecek ürün bulunamadı.")}
+                : tr("noItems", "Gösterilecek ürün bulunamadı.")}
             </span>
             <select aria-label="Sort" defaultValue="default">
-              <option value="default">{t("defaultSorting", "Default sorting")}</option>
+              <option value="default">{tr("defaultSorting", "Default sorting")}</option>
             </select>
           </Toolbar>
 
@@ -121,7 +130,7 @@ export default function MenuSection({ vm, uiLang, t, isLoading, catDict }: Props
                 key={`${it._id ?? it.code ?? it.slug ?? "item"}-${idx}`}
                 item={it}
                 lang={uiLang}
-                t={t}
+                t={tr}
               />
             ))}
           </ItemGrid>
@@ -131,7 +140,7 @@ export default function MenuSection({ vm, uiLang, t, isLoading, catDict }: Props
   );
 }
 
-/* styles (değişmedi) */
+/* styles */
 const Hero = styled.header`
   background: linear-gradient(
     180deg,

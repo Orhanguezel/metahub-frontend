@@ -1,0 +1,67 @@
+{
+  "admin": {
+    "title": "Réactions",
+    "subtitle": "Lister, rechercher et effacer les réactions des utilisateurs",
+    "bulkDeleteTab": "Suppression en masse",
+    "confirm_delete": "Voulez-vous supprimer cet enregistrement de réaction ?",
+    "confirm_bulk_delete": "Voulez-vous supprimer toutes les réactions pour cette cible ?",
+    "bulkDelete": {
+      "title": "Supprimer par cible",
+      "submit": "Supprimer toutes les réactions pour la cible",
+      "hint": "Toutes les réactions (tous types et émojis) pour la cible indiquée seront supprimées."
+    },
+    "filters": {
+      "user": "ID utilisateur",
+      "targetType": "Type de cible",
+      "targetId": "ID de cible",
+      "kind": "Type",
+      "emoji": "Émoji",
+      "value": "Valeur de note",
+      "isActive": "Actif"
+    }
+  },
+
+  "refresh": "Actualiser",
+  "list": "Liste",
+  "clearMessages": "Effacer les messages",
+  "all": "Tous",
+  "yes": "Oui",
+  "no": "Non",
+  "page": "Page",
+  "limit": "Limite",
+  "search": "Rechercher",
+  "reset": "Réinitialiser",
+  "loading": "Chargement",
+  "empty": "Aucun enregistrement trouvé.",
+  "th": {
+    "createdAt": "Créé le",
+    "user": "Utilisateur",
+    "target": "Cible",
+    "kind": "Type"
+  },
+  "rating": "Note",
+  "active": "Actif",
+  "extra": "Supplément",
+  "delete": "Supprimer",
+
+  "public": {
+    "title": "Pour vous : Articles aimés",
+    "titleGuest": "Suggestions pour vous",
+    "titleEmpty": "Pour vous : Articles aimés",
+
+    "desc": "Éléments du menu que vous avez aimés, enregistrés, ajoutés en favoris ou auxquels vous avez réagi avec des émojis.",
+    "descGuest": "Après connexion, vous verrez ici les éléments que vous avez aimés/notés.",
+
+    "empty": "Vous n’avez encore réagi à aucun élément, ou les éléments ne sont pas encore chargés.",
+    "cta": { "login": "Se connecter" },
+
+    "badge": {
+      "like": "Vous aimez",
+      "favorite": "Ajouté aux favoris",
+      "bookmark": "Enregistré",
+      "rating": "Votre note : {{value}}",
+      "emoji": "Votre réaction : {{emoji}}",
+      "more": "Plus"
+    }
+  }
+}

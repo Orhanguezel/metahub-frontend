@@ -1,0 +1,67 @@
+{
+  "admin": {
+    "title": "Reaktionen",
+    "subtitle": "Benutzerreaktionen auflisten, suchen und bereinigen",
+    "bulkDeleteTab": "Massenlöschung",
+    "confirm_delete": "Möchten Sie diesen Reaktionsdatensatz wirklich löschen?",
+    "confirm_bulk_delete": "Möchten Sie alle Reaktionen für dieses Ziel löschen?",
+    "bulkDelete": {
+      "title": "Nach Ziel löschen",
+      "submit": "Alle Reaktionen für Ziel löschen",
+      "hint": "Alle Reaktionen (alle Typen und Emojis) für das angegebene Ziel werden gelöscht."
+    },
+    "filters": {
+      "user": "Benutzer-ID",
+      "targetType": "Zieltyp",
+      "targetId": "Ziel-ID",
+      "kind": "Typ",
+      "emoji": "Emoji",
+      "value": "Bewertungswert",
+      "isActive": "Aktiv"
+    }
+  },
+
+  "refresh": "Aktualisieren",
+  "list": "Liste",
+  "clearMessages": "Nachrichten löschen",
+  "all": "Alle",
+  "yes": "Ja",
+  "no": "Nein",
+  "page": "Seite",
+  "limit": "Limit",
+  "search": "Suchen",
+  "reset": "Zurücksetzen",
+  "loading": "Wird geladen",
+  "empty": "Keine Einträge gefunden.",
+  "th": {
+    "createdAt": "Erstellt am",
+    "user": "Benutzer",
+    "target": "Ziel",
+    "kind": "Typ"
+  },
+  "rating": "Bewertung",
+  "active": "Aktiv",
+  "extra": "Extra",
+  "delete": "Löschen",
+
+  "public": {
+    "title": "Für dich: Bevorzugte Artikel",
+    "titleGuest": "Vorschläge für dich",
+    "titleEmpty": "Für dich: Bevorzugte Artikel",
+
+    "desc": "Menüeinträge, die du mit „Gefällt mir“ markiert, gespeichert, favorisiert oder mit Emojis versehen hast.",
+    "descGuest": "Nach der Anmeldung siehst du hier die Artikel, die du geliked/bewertet hast.",
+
+    "empty": "Du hast noch auf keinen Artikel reagiert oder die Artikel wurden noch nicht geladen.",
+    "cta": { "login": "Anmelden" },
+
+    "badge": {
+      "like": "Gefällt dir",
+      "favorite": "Favorisiert",
+      "bookmark": "Gespeichert",
+      "rating": "Deine Bewertung: {{value}}",
+      "emoji": "Deine Reaktion: {{emoji}}",
+      "more": "Mehr"
+    }
+  }
+}

@@ -23,7 +23,7 @@ export { default as VariantsSection } from "./admin/components/item-form/ItemStr
 // Public Components
 export { default as MenuHeader } from "./public/components/MenuHeader";
 export { default as CategoryNav } from "./public/components/CategoryNav";
-export { default as CategorySection } from "./public/components/CategorySection";
+export { default as CategoryMenuSection } from "./public/components/CategoryMenuSection";
 export { default as ItemCard } from "./public/components/ItemCard";
 export { default as MenuSection } from "./public/components/MenuSection";
 export { default as MenuItemDetail } from "./public/components/MenuItemDetail";

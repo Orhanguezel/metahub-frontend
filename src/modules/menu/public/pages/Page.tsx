@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/menu/locales";
@@ -8,11 +8,8 @@ import { getMultiLang } from "@/types/common";
 import { getUILang } from "@/i18n/getUILang";
 import type { SupportedLocale } from "@/types/common";
 
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchMenusPublic } from "@/modules/menu/slice/menuSlice";
-import { fetchMenuCategoriesPublic } from "@/modules/menu/slice/menucategorySlice";
+import { useAppSelector } from "@/store/hooks";
 import {
-  fetchMenuItemsPublic,
   selectMenuItemsPublic,
 } from "@/modules/menu/slice/menuitemSlice";
 
@@ -45,8 +42,6 @@ export default function Page({ params, searchParams }: PageProps) {
     [t]
   );
 
-  const dispatch = useAppDispatch();
-
   // store
   const menus = useAppSelector((s) => s.menu?.publicList ?? []) as IMenu[];
   const categories = useAppSelector((s) => s.menucategory?.publicList ?? []) as IMenuCategory[];
@@ -58,12 +53,6 @@ export default function Page({ params, searchParams }: PageProps) {
   const errorItems = useAppSelector((s) => s.menuitem?.error as string | null);
 
   const isLoading = loadingMenu || loadingCats || loadingItems;
-
-  useEffect(() => {
-    dispatch(fetchMenusPublic({}) as any);
-    dispatch(fetchMenuCategoriesPublic({}) as any);
-    dispatch(fetchMenuItemsPublic({}) as any);
-  }, [dispatch]);
 
   // aktif + publish
   const menusActive = useMemo(

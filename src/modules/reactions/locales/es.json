@@ -1,0 +1,67 @@
+{
+  "admin": {
+    "title": "Reacciones",
+    "subtitle": "Listar, buscar y limpiar las reacciones de los usuarios",
+    "bulkDeleteTab": "Eliminación masiva",
+    "confirm_delete": "¿Deseas eliminar este registro de reacción?",
+    "confirm_bulk_delete": "¿Deseas eliminar todas las reacciones para este objetivo?",
+    "bulkDelete": {
+      "title": "Eliminar por objetivo",
+      "submit": "Eliminar todas las reacciones del objetivo",
+      "hint": "Se eliminarán todas las reacciones (todos los tipos y emojis) del objetivo indicado."
+    },
+    "filters": {
+      "user": "ID de usuario",
+      "targetType": "Tipo de objetivo",
+      "targetId": "ID del objetivo",
+      "kind": "Tipo",
+      "emoji": "Emoji",
+      "value": "Valor de calificación",
+      "isActive": "Activo"
+    }
+  },
+
+  "refresh": "Actualizar",
+  "list": "Lista",
+  "clearMessages": "Limpiar mensajes",
+  "all": "Todos",
+  "yes": "Sí",
+  "no": "No",
+  "page": "Página",
+  "limit": "Límite",
+  "search": "Buscar",
+  "reset": "Restablecer",
+  "loading": "Cargando",
+  "empty": "No se encontraron registros.",
+  "th": {
+    "createdAt": "Creado",
+    "user": "Usuario",
+    "target": "Objetivo",
+    "kind": "Tipo"
+  },
+  "rating": "Calificación",
+  "active": "Activo",
+  "extra": "Extra",
+  "delete": "Eliminar",
+
+  "public": {
+    "title": "Para ti: Artículos que te gustan",
+    "titleGuest": "Sugerencias para ti",
+    "titleEmpty": "Para ti: Artículos que te gustan",
+
+    "desc": "Elementos del menú que has marcado con «me gusta», guardado, añadido a favoritos o a los que has reaccionado con emojis.",
+    "descGuest": "Tras iniciar sesión, verás aquí los elementos que has marcado con «me gusta» o calificado.",
+
+    "empty": "Aún no has reaccionado a ningún elemento o los elementos no se han cargado.",
+    "cta": { "login": "Iniciar sesión" },
+
+    "badge": {
+      "like": "Te gusta",
+      "favorite": "Añadido a favoritos",
+      "bookmark": "Guardado",
+      "rating": "Tu calificación: {{value}}",
+      "emoji": "Tu reacción: {{emoji}}",
+      "more": "Más"
+    }
+  }
+}

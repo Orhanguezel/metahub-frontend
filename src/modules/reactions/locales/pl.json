@@ -1,0 +1,67 @@
+{
+  "admin": {
+    "title": "Reakcje",
+    "subtitle": "Wyświetlaj, wyszukuj i czyść reakcje użytkowników",
+    "bulkDeleteTab": "Masowe usuwanie",
+    "confirm_delete": "Czy na pewno chcesz usunąć ten wpis reakcji?",
+    "confirm_bulk_delete": "Czy chcesz usunąć wszystkie reakcje dla tego celu?",
+    "bulkDelete": {
+      "title": "Usuń według celu",
+      "submit": "Usuń wszystkie reakcje dla celu",
+      "hint": "Wszystkie reakcje (wszystkie typy i emoji) dla wskazanego celu zostaną usunięte."
+    },
+    "filters": {
+      "user": "ID użytkownika",
+      "targetType": "Typ celu",
+      "targetId": "ID celu",
+      "kind": "Typ",
+      "emoji": "Emoji",
+      "value": "Wartość oceny",
+      "isActive": "Aktywne"
+    }
+  },
+
+  "refresh": "Odśwież",
+  "list": "Lista",
+  "clearMessages": "Wyczyść wiadomości",
+  "all": "Wszystkie",
+  "yes": "Tak",
+  "no": "Nie",
+  "page": "Strona",
+  "limit": "Limit",
+  "search": "Szukaj",
+  "reset": "Resetuj",
+  "loading": "Ładowanie",
+  "empty": "Nie znaleziono rekordów.",
+  "th": {
+    "createdAt": "Utworzono",
+    "user": "Użytkownik",
+    "target": "Cel",
+    "kind": "Typ"
+  },
+  "rating": "Ocena",
+  "active": "Aktywne",
+  "extra": "Dodatkowe",
+  "delete": "Usuń",
+
+  "public": {
+    "title": "Dla Ciebie: Lubiane pozycje",
+    "titleGuest": "Propozycje dla Ciebie",
+    "titleEmpty": "Dla Ciebie: Lubiane pozycje",
+
+    "desc": "Pozycje menu, które polubiłeś(-aś), zapisałeś(-aś), dodałeś(-aś) do ulubionych lub na które zareagowałeś(-aś) emoji.",
+    "descGuest": "Po zalogowaniu zobaczysz tutaj pozycje, które polubiłeś(-aś) lub oceniłeś(-aś).",
+
+    "empty": "Nie zareagowałeś(-aś) jeszcze na żadną pozycję lub pozycje nie zostały jeszcze wczytane.",
+    "cta": { "login": "Zaloguj się" },
+
+    "badge": {
+      "like": "Polubiłeś(-aś)",
+      "favorite": "Dodano do ulubionych",
+      "bookmark": "Zapisano",
+      "rating": "Twoja ocena: {{value}}",
+      "emoji": "Twoja reakcja: {{emoji}}",
+      "more": "Więcej"
+    }
+  }
+}

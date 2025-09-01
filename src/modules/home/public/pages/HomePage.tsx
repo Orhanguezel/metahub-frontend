@@ -25,7 +25,7 @@ import { PortfolioSection } from "@/modules/portfolio";
 import { SkillSection } from "@/modules/skill";
 import { TestimonialSection,TestimonialSectionAlt,TestimonialSectionGzl } from "@/modules/comment";
 import { ApartmentAltSection } from "@/modules/apartment";
-import { CategorySection } from "@/modules/menu";
+
 
 import WhatsAppFloatingSection from "@/modules/home/public/components/WhatsAppFloatingSection";
 import FloatingChatboxSection from "@/modules/chat/public/components/FloatingChatbox";
@@ -35,6 +35,10 @@ import CatalogRequestButton from "@/modules/catalog/public/components/CatalogReq
 import NewsletterButton from "@/modules/newsletter/public/components/NewsletterButton";
 import NewsletterSection from "@/modules/newsletter/public/components/NewsletterSection";
 import PricingSection from "@/modules/pricing/public/components/Section";
+import CategoryMenuSection from "@/modules/menu/public/components/CategoryMenuSection";
+import MenuSection from "@/modules/menu/public/components/MenuSection";
+import ReactionsSection from "@/modules/reactions/public/components/ReactionsSection";
+
 
 
 
@@ -83,7 +87,10 @@ const sectionComponents: Record<string, React.ComponentType<any> | undefined> = 
   skills: SkillSection,
   pricing: PricingSection,
   apartment: ApartmentAltSection,
-  menuCategory: CategorySection,
+  menuCategory: CategoryMenuSection,
+  menuSection: MenuSection,
+  reactions: ReactionsSection,
+
 };
 
 const isDev = process.env.NODE_ENV === "development";

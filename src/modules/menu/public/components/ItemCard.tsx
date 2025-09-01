@@ -9,6 +9,8 @@ import type { SupportedLocale } from "@/types/common";
 import type { IMenuItem, PriceChannel } from "@/modules/menu/types/menuitem";
 import { findMinBasePrice } from "./utils/pricing";
 import slugify from "@/lib/slug";
+import { getLabelFor } from "@/modules/menu/constants/foodLabels";
+import { useMenuitemReactions } from "@/hooks/useMenuitemReactions";
 
 type Props = {
   item: IMenuItem;
@@ -52,15 +54,14 @@ export default function ItemCard({
       maximumFractionDigits: 2,
     }).format(price.amount);
 
-  // URL parçası:
-  // - slug varsa onu kullan
-  // - yoksa code varsa AYNI haliyle kullan (by-code fallback)
-  // - hiçbiri yoksa başlıktan slug üret
-  const slugPart = item.slug ?? (item.code ? item.code : slugify(title || item._id || ""));
-
-  // ✅ Detay route: /menu/item/[slug]
+  // URL parçası
+  const slugPart =
+    item.slug ?? (item.code ? item.code : slugify(title || (item as any)?._id || ""));
   const base = `/menu/item/${encodeURIComponent(slugPart)}`;
   const href = branchId ? `${base}?branch=${encodeURIComponent(branchId)}` : base;
+
+  // 🔗 reactions
+  const { summary } = useMenuitemReactions(String((item as any)._id || ""));
 
   return (
     <Card role="group" aria-label={title}>
@@ -93,9 +94,72 @@ export default function ItemCard({
           ) : (
             <span className="muted">{t("noPrice", "Fiyat bilgisi yok")}</span>
           )}
-
           <DetailsLink href={href}>{t("details", "Detaylar")}</DetailsLink>
         </Meta>
+
+        {/* mini reactions */}
+        <RxMini>
+          <span title={t("likes", "Beğeni")}>👍 {summary.likes}</span>
+          <span title={t("favorites", "Favori")}>❤️ {summary.favorites}</span>
+          <span title={t("bookmarks", "Kaydet")}>🔖 {summary.bookmarks}</span>
+          {summary.ratingAvg != null && (
+            <span title={t("rating", "Puan")}>
+              ⭐ {summary.ratingAvg.toFixed(1)} ({summary.ratingCount})
+            </span>
+          )}
+        </RxMini>
+
+        {(item.allergens?.length || item.additives?.length) && (
+          <FoodMeta role="note" aria-label="allergen-additive">
+            {item.allergens?.length ? (
+              <MetaGroup>
+                <small className="label">{t("allergens", "Alerjenler")}:</small>
+                <ChipRow>
+                  {item.allergens.slice(0, 3).map((a) => {
+                    const code = String(a.key).toUpperCase();
+                    const titleText =
+                      getMultiLang(a.value as any, lang) ||
+                      getLabelFor("allergens", a.key, lang);
+                    return (
+                      <MiniChip key={`alg-${code}`} title={titleText}>
+                        {code}
+                      </MiniChip>
+                    );
+                  })}
+                  {item.allergens.length > 3 && (
+                    <MiniChip title={t("more", "Daha fazla")} aria-label="more">
+                      +{item.allergens.length - 3}
+                    </MiniChip>
+                  )}
+                </ChipRow>
+              </MetaGroup>
+            ) : null}
+
+            {item.additives?.length ? (
+              <MetaGroup>
+                <small className="label">{t("additives", "Katkılar")}:</small>
+                <ChipRow>
+                  {item.additives.slice(0, 3).map((a) => {
+                    const code = String(a.key);
+                    const titleText =
+                      getMultiLang(a.value as any, lang) ||
+                      getLabelFor("additives", a.key, lang);
+                    return (
+                      <MiniChip key={`add-${code}`} title={titleText}>
+                        {code}
+                      </MiniChip>
+                    );
+                  })}
+                  {item.additives.length > 3 && (
+                    <MiniChip title={t("more", "Daha fazla")} aria-label="more">
+                      +{item.additives.length - 3}
+                    </MiniChip>
+                  )}
+                </ChipRow>
+              </MetaGroup>
+            ) : null}
+          </FoodMeta>
+        )}
       </Body>
     </Card>
   );
@@ -173,4 +237,36 @@ const DetailsLink = styled(Link)`
   border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
   cursor: pointer;
   text-decoration: none;
+`;
+
+const RxMini = styled.div`
+  margin-top: ${({ theme }) => theme.spacings.xs};
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.md};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+/* --- subtle food meta (not focus) --- */
+const FoodMeta = styled.div`
+  margin-top: 6px;
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  opacity: .9;
+`;
+const MetaGroup = styled.div`
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  .label { opacity: .8; }
+`;
+const ChipRow = styled.div`
+  display: inline-flex; gap: 4px; flex-wrap: wrap;
+`;
+const MiniChip = styled.span`
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 6px; border-radius: 999px;
+  background: ${({ theme }) => theme.colors.inputBackgroundLight};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  font-size: 10px; line-height: 1; color: ${({ theme }) => theme.colors.text};
 `;

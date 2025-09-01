@@ -29,6 +29,11 @@ import { fetchSkill } from "@/modules/skill/slice/skillSlice";
 import { fetchPricing } from "@/modules/pricing/slice/pricingSlice";
 import { fetchApartment } from "@/modules/apartment/slice/apartmentSlice";
 
+import { fetchMenuItemsPublic } from "@/modules/menu/slice/menuitemSlice"; 
+import { fetchMenuCategoriesPublic } from "@/modules/menu/slice/menucategorySlice";
+import { fetchMenusPublic } from "@/modules/menu/slice/menuSlice";
+import { fetchMyReactions } from "@/modules/reactions/slice";
+
 
 
 export const usePublicLayoutInit = () => {
@@ -63,6 +68,10 @@ export const usePublicLayoutInit = () => {
   const portfolioSlice = useAppSelector((s) => s.portfolio);
   const pricingSlice = useAppSelector((s) => s.pricing);
   const apartmentSlice = useAppSelector((s) => s.apartment);
+  const menuitemSlice = useAppSelector((s) => s.menuitem);
+  const menucategorySlice = useAppSelector((s) => s.menucategory);
+  const menuSlice = useAppSelector((s) => s.menu);
+  const reactionsSlice = useAppSelector((s) => s.reactions);
 
 const didInit = useRef<{ [key: string]: boolean }>({});
 
@@ -158,7 +167,21 @@ useEffect(() => {
     if ((!apartmentSlice.apartment || apartmentSlice.apartment.length === 0) && apartmentSlice.status === "idle") {
       dispatch(fetchApartment());
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    if ((!menuitemSlice.publicList || menuitemSlice.publicList.length === 0) && menuitemSlice.status === "idle") {
+      dispatch(fetchMenuItemsPublic());
+    }
+    if ((!menucategorySlice.publicList || menucategorySlice.publicList.length === 0) && menucategorySlice.status === "idle") {
+      dispatch(fetchMenuCategoriesPublic());
+    }
+
+    if ((!menuSlice.publicList || menuSlice.publicList.length === 0) && menuSlice.status === "idle") {
+      dispatch(fetchMenusPublic());
+    }
+
+    if (!reactionsSlice.my?.length && !reactionsSlice.loading) {
+      dispatch(fetchMyReactions({ targetType: "menuitem" }) as any);
+    }
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenant?._id, tenantLoading, tenant, dispatch, profile]); // Sadece tenant değişince veya ilk mount'ta çalışır
 
   // Return kısmı aynı kalabilir
@@ -244,5 +267,14 @@ useEffect(() => {
     apartment: apartmentSlice.apartment,
     apartmentStatus: apartmentSlice.status,
     apartmentError: apartmentSlice.error,
+    menuitem: menuitemSlice.publicList,
+    menuitemStatus: menuitemSlice.status,
+    menuitemError: menuitemSlice.error,
+    menucategory: menucategorySlice.publicList,
+    menucategoryStatus: menucategorySlice.status,
+    menucategoryError: menucategorySlice.error,
+    menu: menuSlice.publicList,
+    menuStatus: menuSlice.status,
+    menuError: menuSlice.error,
   };
 };

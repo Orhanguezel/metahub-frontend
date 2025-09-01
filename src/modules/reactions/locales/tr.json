@@ -1,0 +1,67 @@
+{
+  "admin": {
+    "title": "Tepkiler",
+    "subtitle": "Kullanıcı tepkilerini listele, ara ve temizle",
+    "bulkDeleteTab": "Toplu Sil",
+    "confirm_delete": "Bu tepki kaydını silmek istiyor musunuz?",
+    "confirm_bulk_delete": "Bu hedef için tüm tepkileri silmek istiyor musunuz?",
+    "bulkDelete": {
+      "title": "Hedefe Göre Sil",
+      "submit": "Hedef için tüm tepkileri sil",
+      "hint": "Belirtilen hedef için tüm tepkiler (tüm türler ve emojiler) silinir."
+    },
+    "filters": {
+      "user": "Kullanıcı ID",
+      "targetType": "Hedef Tipi",
+      "targetId": "Hedef ID",
+      "kind": "Tür",
+      "emoji": "Emoji",
+      "value": "Puan Değeri",
+      "isActive": "Aktif"
+    }
+  },
+
+  "refresh": "Yenile",
+  "list": "Liste",
+  "clearMessages": "Mesajları temizle",
+  "all": "Tümü",
+  "yes": "Evet",
+  "no": "Hayır",
+  "page": "Sayfa",
+  "limit": "Limit",
+  "search": "Ara",
+  "reset": "Sıfırla",
+  "loading": "Yükleniyor",
+  "empty": "Kayıt bulunamadı.",
+  "th": {
+    "createdAt": "Oluşturulma",
+    "user": "Kullanıcı",
+    "target": "Hedef",
+    "kind": "Tür"
+  },
+  "rating": "Puan",
+  "active": "Aktif",
+  "extra": "Ekstra",
+  "delete": "Sil",
+
+  "public": {
+    "title": "Sana Özel: Beğendiğin Ürünler",
+    "titleGuest": "Senin için öneriler",
+    "titleEmpty": "Sana Özel: Beğendiğin Ürünler",
+
+    "desc": "Beğendiğin, kaydettiğin, favorilediğin ya da emojili tepki verdiğin menü öğeleri.",
+    "descGuest": "Giriş yaptıktan sonra beğendiğin/oyladığın ürünleri burada göreceksin.",
+
+    "empty": "Henüz tepki verdiğin bir öğe yok veya ürünler daha yüklenmedi.",
+    "cta": { "login": "Giriş Yap" },
+
+    "badge": {
+      "like": "Beğendin",
+      "favorite": "Favoriledin",
+      "bookmark": "Kaydettin",
+      "rating": "Puanın: {{value}}",
+      "emoji": "Tepkin: {{emoji}}",
+      "more": "Daha fazla"
+    }
+  }
+}

@@ -44,7 +44,7 @@ export default function AddToCartButton({
   const isAuthenticated = !!useAppSelector((s) => s.account.profile);
 
   const isInCart =
-    cart?.items?.some((ci) => {
+    cart?.items?.some((ci: any) => {
       if (ci.productType !== productType) return false;
       if (ci.product && typeof ci.product === "object" && "_id" in (ci.product as any)) {
         return String((ci.product as any)._id) === String(productId);
@@ -128,7 +128,7 @@ export default function AddToCartButton({
 const StyledButton = styled.button<{ $added?: boolean }>`
   width: 100%;
   padding: ${({ theme }) => theme.spacings.sm};
-  background: ${({ theme, $added }) => ($added ? theme.colors.success : theme.colors.backgroundAlt)};
+  background: ${({ theme, $added }) => ($added ? theme.colors.success : theme.colors.secondary)};
   color: ${({ theme }) => theme.colors.buttonText || "#fff"};
   border: none;
   border-radius: ${({ theme }) => theme.radii.sm};
