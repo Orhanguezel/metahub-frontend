@@ -1,9 +1,23 @@
 {
- 
   "hero": {
     "products": "Productos",
     "bookAppointment": "Reservar cita",
-    "cta": "Obtener oferta"
+    "cta": "Solicitar presupuesto",
+    "badge": "¡NO TE LO PIERDAS!",
+    "orderNow": "Pedir ahora",
+    "viewMenu": "Ver menú"
+  },
+  "hero1": {
+    "heroTitle": "Pizza, kebab y más — Entrega rápida",
+    "heroSubtitle": "Pizzas humeantes, kebab bien cargado, burgers y wraps, ensaladas y postres… En tu puerta en minutos."
+  },
+  "menu": {
+    "search": "Búsqueda en el menú",
+    "category": "Categoría",
+    "allCategories": "Todas las categorías",
+    "searchPlaceholder": "Buscar aquí...",
+    "check": "Buscar"
   },
   "noItemsFound": "No se encontraron productos."
 }
+

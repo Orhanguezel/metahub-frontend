@@ -38,6 +38,7 @@ import PricingSection from "@/modules/pricing/public/components/Section";
 import CategoryMenuSection from "@/modules/menu/public/components/CategoryMenuSection";
 import MenuSection from "@/modules/menu/public/components/MenuSection";
 import ReactionsSection from "@/modules/reactions/public/components/ReactionsSection";
+import AboutUsSection from "@/modules/about/public/components/SectionUs";
 
 
 
@@ -45,8 +46,9 @@ import ReactionsSection from "@/modules/reactions/public/components/ReactionsSec
 import HeroSlider from "@/modules/home/public/components/HeroSlider";
 import HeroSection from "@/modules/home/public/components/HeroSection";
 import HeroSectionSlayt from "@/modules/home/public/components/HeroSectionSlayt";
-import HeroRobotic from "../components/HeroRobotic";
-import HeroMetahub from "../components/HeroMetahub";
+import HeroRobotic from "@/modules/home/public/components/HeroRobotic";
+import HeroMetahub from "@/modules/home/public/components/HeroMetahub";
+import HeroRestaurant from "@/modules/home/public/components/HeroRestaurant";
 
 
 // Section Key -> Component Map
@@ -90,7 +92,8 @@ const sectionComponents: Record<string, React.ComponentType<any> | undefined> = 
   menuCategory: CategoryMenuSection,
   menuSection: MenuSection,
   reactions: ReactionsSection,
-
+  heroRestaurant: HeroRestaurant,
+  aboutUs: AboutUsSection
 };
 
 const isDev = process.env.NODE_ENV === "development";

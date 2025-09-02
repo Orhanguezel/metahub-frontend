@@ -1,11 +1,22 @@
 {
-
   "hero": {
     "products": "Ürünler",
     "bookAppointment": "Randevu Al",
-    "cta": "Teklif Al"
-
-
+    "cta": "Teklif Al",
+    "badge": "KAÇIRMA!",
+    "orderNow": "Şimdi Sipariş Ver",
+    "viewMenu": "Menüyü Gör"
+  },
+  "hero1": {
+    "heroTitle": "Pizza, Döner ve Daha Fazlası — Hızlı Teslimat",
+    "heroSubtitle": "Sıcacık pizzalar, bol etli döner, burger & dürüm, salata ve tatlılar… Dakikalar içinde kapınızda."
+  },
+  "menu": {
+    "search": "Menü arama",
+    "category": "Kategori",
+    "allCategories": "Tüm Kategoriler",
+    "searchPlaceholder": "Burada ara...",
+    "check": "Ara"
   },
   "noItemsFound": "Hiçbir ürün bulunamadı."
 }

@@ -1,9 +1,22 @@
 {
-  
   "hero": {
     "products": "Produkte",
     "bookAppointment": "Termin buchen",
-    "cta": "Angebot erhalten"
+    "cta": "Angebot anfordern",
+    "badge": "NICHT VERPASSEN!",
+    "orderNow": "Jetzt bestellen",
+    "viewMenu": "Speisekarte ansehen"
+  },
+  "hero1": {
+    "heroTitle": "Pizza, Döner & mehr — Schnelle Lieferung",
+    "heroSubtitle": "Ofenheiße Pizzen, herzhafter Döner, Burger & Wraps, Salate und Desserts … In wenigen Minuten vor Ihrer Tür."
+  },
+  "menu": {
+    "search": "Menüsuche",
+    "category": "Kategorie",
+    "allCategories": "Alle Kategorien",
+    "searchPlaceholder": "Hier suchen...",
+    "check": "Suchen"
   },
   "noItemsFound": "Keine Produkte gefunden."
 }

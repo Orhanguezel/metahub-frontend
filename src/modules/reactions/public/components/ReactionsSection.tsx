@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { MdArrowBackIos, MdArrowForwardIos } from "react-icons/md";
 
 import { useAppSelector } from "@/store/hooks";
-import { Skeleton, ErrorMessage, SeeAllBtn } from "@/shared";
+import { Skeleton, ErrorMessage } from "@/shared";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/reactions/locales";
 
@@ -33,7 +33,7 @@ const normId = (v: any): string => {
 
 /* ------------ responsive sabitler ------------- */
 const CARD_WIDTH_DESKTOP = 360;
-const CARD_WIDTH_MOBILE  = 320;
+const CARD_WIDTH_MOBILE = 320;
 const GAP = 16;
 const FADE_WIDTH = 56;
 const NAV_BTN_WIDTH = 48;
@@ -43,6 +43,7 @@ const getCardWidth = (w: number) => (w < 700 ? CARD_WIDTH_MOBILE : CARD_WIDTH_DE
 
 export default function ReactionsSection() {
   const { i18n, t } = useI18nNamespace("reactions", translations);
+  void t; // metinler kart içinde de kullanılıyor
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
   const { profile } = useAppSelector((s) => s.account);
@@ -71,11 +72,13 @@ export default function ReactionsSection() {
     }
     return m;
   }, [itemsAll]);
+
   const bySlug = useMemo(() => {
     const m = new Map<string, IMenuItem>();
     for (const it of itemsAll) if (it?.slug) m.set(String(it.slug).toLowerCase(), it);
     return m;
   }, [itemsAll]);
+
   const byCode = useMemo(() => {
     const m = new Map<string, IMenuItem>();
     for (const it of itemsAll) if (it?.code) m.set(String(it.code).toLowerCase(), it);
@@ -86,8 +89,7 @@ export default function ReactionsSection() {
     const out: IMenuItem[] = [];
     for (const tid of targetIds) {
       const keyLc = String(tid).toLowerCase();
-      const it: IMenuItem | undefined =
-        byId.get(tid) ?? bySlug.get(keyLc) ?? byCode.get(keyLc);
+      const it: IMenuItem | undefined = byId.get(tid) ?? bySlug.get(keyLc) ?? byCode.get(keyLc);
       if (it) out.push(it);
     }
     return out;
@@ -119,7 +121,9 @@ export default function ReactionsSection() {
   }, []);
 
   const [cards, setCards] = useState<IMenuItem[]>([]);
-  useEffect(() => { setCards(itemsSorted); }, [itemsSorted]);
+  useEffect(() => {
+    setCards(itemsSorted);
+  }, [itemsSorted]);
 
   const [x, setX] = useState(0);
   const [isSliding, setIsSliding] = useState(false);
@@ -155,64 +159,51 @@ export default function ReactionsSection() {
 
   useEffect(() => {
     if (!canSlide) return;
-    const id = setInterval(() => { if (!isSliding) goNext(); }, 4800);
+    const id = setInterval(() => {
+      if (!isSliding) goNext();
+    }, 4800);
     return () => clearInterval(id);
   }, [canSlide, isSliding, goNext]);
 
-  const TOTAL_WIDTH =
-    cardWidth * slotCount + GAP * (slotCount - 1) + 2 * NAV_BTN_WIDTH;
+  const TOTAL_WIDTH = cardWidth * slotCount + GAP * (slotCount - 1) + 2 * NAV_BTN_WIDTH;
 
-  /* --- boşken hiç render etme (giriş yapıldı + veri hazır + hiç ürün yok) --- */
+  /* -------------------- GÖRÜNÜRLÜK KURALI --------------------
+   * 1) Login değil + içerik yok  -> hiç render etme
+   * 2) Login + ready + içerik yok -> hiç render etme
+   * 3) Diğer durumlarda (ör. login + loading) istersen skeleton göster
+   */
+  const hasContent = itemsSorted.length > 0;
   const isReady = !loadingRx && !menuLoading && !errorRx;
-  if (isLoggedIn && isReady && itemsSorted.length === 0) {
-    return null;
-  }
+
+  if (!isLoggedIn && !hasContent) return null;
+  if (isLoggedIn && isReady && !hasContent) return null;
 
   /* ----------- view seçimi ----------- */
   let content: React.ReactNode;
 
-  if (!isLoggedIn) {
+  if (isLoggedIn && (loadingRx || menuLoading)) {
     content = (
       <>
-        <Header>
-          <MainTitle>{t("public.titleGuest", "Senin için öneriler")}</MainTitle>
-          <Desc>
-            {t("public.descGuest","Giriş yaptıktan sonra beğendiğin/oyladığın ürünleri burada göreceksin.")}
-          </Desc>
-        </Header>
-        <SeeAllBtn href="/login">{t("public.cta.login", "Giriş Yap")}</SeeAllBtn>
-      </>
-    );
-  } else if (loadingRx || menuLoading) {
-    content = (
-      <>
-        <Header>
-          <MainTitle>{t("public.title","Sana Özel: Beğendiğin Ürünler")}</MainTitle>
-          <Desc>
-            {t("public.desc","Beğendiğin, kaydettiğin, favorilediğin ya da emojili tepki verdiğin menü öğeleri.")}
-          </Desc>
-        </Header>
+        <Header />
         <SkeletonRow>
-          {Array.from({ length: 4 }).map((_, i) => (<SkelCard key={i} />))}
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkelCard key={i} />
+          ))}
         </SkeletonRow>
       </>
     );
-  } else if (errorRx) {
+  } else if (isLoggedIn && errorRx) {
+    // Misafir hatalarını göstermiyoruz; sadece login kullanıcı gerçek hatayı görsün
     content = (
       <Header>
         <ErrorMessage />
       </Header>
     );
   } else {
+    // İçerik varsa carousel göster (login ya da ileride guest-suggest senaryosu)
     content = (
       <>
-        <Header>
-          <MainTitle>{t("public.title","Sana Özel: Beğendiğin Ürünler")}</MainTitle>
-          <Desc>
-            {t("public.desc","Beğendiğin, kaydettiğin, favorilediğin ya da emojili tepki verdiğin menü öğeleri.")}
-          </Desc>
-        </Header>
-
+        <Header />
         <CarouselWrapper $totalWidth={TOTAL_WIDTH}>
           <FadeEdgeXLeft $fadeWidth={FADE_WIDTH} />
           <FadeEdgeXRight $fadeWidth={FADE_WIDTH} />
@@ -232,7 +223,7 @@ export default function ReactionsSection() {
                 minHeight: 0,
                 position: "relative",
                 left: 0,
-                width: `calc(${cardWidth * cards.length + GAP * (cards.length - 1)}px)`
+                width: `calc(${cardWidth * cards.length + GAP * (cards.length - 1)}px)`,
               }}
               animate={{ x }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -278,24 +269,6 @@ const Header = styled.div`
   text-align: center;
 `;
 
-const MainTitle = styled.h2`
-  font-size: clamp(2.2rem, 3.3vw, 2.7rem);
-  color: ${({ theme }) => theme.colors.primary};
-  font-family: ${({ theme }) => theme.fonts.heading};
-  font-weight: ${({ theme }) => theme.fontWeights.extraBold};
-  margin: 0 0 0.45em 0;
-  letter-spacing: -0.01em;
-  line-height: 1.13;
-`;
-
-const Desc = styled.p`
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.base};
-  line-height: 1.7;
-  margin: 0 auto;
-  max-width: 720px;
-`;
-
 const SkeletonRow = styled.div`
   max-width: 1280px;
   margin: 0 auto;
@@ -309,8 +282,6 @@ const SkelCard = styled(Skeleton)`
   height: 210px;
   border-radius: ${({ theme }) => theme.radii.xl};
 `;
-
-/* ---- testimonial tarzı sonsuz slider stilleri ---- */
 
 const CarouselWrapper = styled.div<{ $totalWidth: number }>`
   width: ${({ $totalWidth }) => $totalWidth}px;
@@ -368,7 +339,9 @@ const FadeEdgeXLeft = styled.div<{ $fadeWidth: number }>`
   z-index: 8;
   pointer-events: none;
   background: ${({ theme }) => theme.colors.sectionBackground};
-  @media (max-width: 700px) { width: 32px; }
+  @media (max-width: 700px) {
+    width: 32px;
+  }
 `;
 
 const FadeEdgeXRight = styled(FadeEdgeXLeft)`
@@ -411,8 +384,12 @@ const NavBtn = styled.button<{ $side?: "left" | "right" }>`
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  ${({ $side }) => $side === "left" && css`left: 0;`}
-  ${({ $side }) => $side === "right" && css`right: 0;`}
+  ${({ $side }) => $side === "left" && css`
+    left: 0;
+  `}
+  ${({ $side }) => $side === "right" && css`
+    right: 0;
+  `}
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.primary};
   border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.primary};

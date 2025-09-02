@@ -1,9 +1,22 @@
 {
-  
   "hero": {
     "products": "Produits",
     "bookAppointment": "Prendre rendez-vous",
-    "cta": "Obtenir une offre"
+    "cta": "Demander un devis",
+    "badge": "À NE PAS MANQUER !",
+    "orderNow": "Commander maintenant",
+    "viewMenu": "Voir le menu"
   },
-  "noItemsFound": "Aucun produit trouvé."
+  "hero1": {
+    "heroTitle": "Pizza, kebab et plus — Livraison rapide",
+    "heroSubtitle": "Pizzas bien chaudes, kebab généreux, burgers & wraps, salades et desserts… Chez vous en quelques minutes."
+  },
+  "menu": {
+    "search": "Recherche dans le menu",
+    "category": "Catégorie",
+    "allCategories": "Toutes les catégories",
+    "searchPlaceholder": "Rechercher ici...",
+    "check": "Rechercher"
+  },
+  "noItemsFound": "Aucun article trouvé."
 }

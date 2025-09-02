@@ -73,49 +73,81 @@ type NonRatingKind = Exclude<ReactionKind, "RATING">;
 const tk = (targetId: string, kind: NonRatingKind, emoji?: string | null) =>
   `t:${targetId}|k:${kind}|e:${emoji || ""}`;
 
+// 401 guest algısı
+const isAuth401 = (err: any) => {
+  const s =
+    err?.status ||
+    err?.response?.status ||
+    err?.payload?.status ||
+    err?.data?.status;
+  return Number(s) === 401;
+};
+
 /* ================================================================== */
 /* 🌐 PUBLIC THUNKS                                                    */
 /* ================================================================== */
 
-/** PARAMETRESİZ: login kullanıcının MENUITEM reaksiyonları */
+/** PARAMETRESİZ: login kullanıcının MENUITEM reaksiyonları
+ *  🔇 401 => guest → [] ile fulfilled
+ */
 export const fetchMyMenuitemReactions = createAsyncThunk<IMyReactionItem[]>(
   "reactions/fetchMyMenuitemReactions",
   async (_, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      `${BASE}/me`,
-      { targetType: DEFAULT_TARGET_TYPE },
-      thunkAPI.rejectWithValue
-    ) as ApiItemResponse<IMyReactionItem[]>;
-    return (res.data as unknown as IMyReactionItem[]) || [];
+    try {
+      // ❗ rejectWithValue göndermiyoruz → hata throw edilsin
+      const res = (await apiCall(
+        "get",
+        `${BASE}/me`,
+        { targetType: DEFAULT_TARGET_TYPE }
+      )) as ApiItemResponse<IMyReactionItem[]>;
+      const data = (res?.data as unknown as IMyReactionItem[]) || [];
+      return Array.isArray(data) ? data : [];
+    } catch (err: any) {
+      if (isAuth401(err)) {
+        // guest modunda boş liste
+        return [];
+      }
+      const message =
+        err?.message ||
+        err?.data?.message ||
+        "reactions.errors.fetchFailed";
+      return thunkAPI.rejectWithValue({ message });
+    }
   }
 );
 
-/** GENEL: gerektiğinde farklı targetType için (geri uyum) */
+/** GENEL: gerektiğinde farklı targetType için (geri uyum)
+ *  🔇 401 => guest → [] ile fulfilled
+ */
 export const fetchMyReactions = createAsyncThunk<
   IMyReactionItem[],
-  // ⬇️ parametresiz çağrıya izin ver (void) + opsiyonel paramlar
   | void
   | { targetType?: ReactionTargetType; targetIds?: string[] }
 >(
   "reactions/fetchMine",
   async (arg, thunkAPI) => {
-    // ⬇️ varsayılan targetType
-    const targetType =
-      (arg && (arg as any).targetType) || DEFAULT_TARGET_TYPE;
+    const targetType = (arg && (arg as any).targetType) || DEFAULT_TARGET_TYPE;
     const targetIds = (arg && (arg as any).targetIds) as string[] | undefined;
 
     const params: any = { targetType };
     if (targetIds?.length) params.targetIds = targetIds.join(",");
 
-    const res = await apiCall(
-      "get",
-      `${BASE}/me`,
-      params,
-      thunkAPI.rejectWithValue
-    ) as ApiItemResponse<IMyReactionItem[]>;
-
-    return (res.data as unknown as IMyReactionItem[]) || [];
+    try {
+      const res = (await apiCall("get", `${BASE}/me`, params)) as ApiItemResponse<
+        IMyReactionItem[]
+      >;
+      const data = (res?.data as unknown as IMyReactionItem[]) || [];
+      return Array.isArray(data) ? data : [];
+    } catch (err: any) {
+      if (isAuth401(err)) {
+        return [];
+      }
+      const message =
+        err?.message ||
+        err?.data?.message ||
+        "reactions.errors.fetchFailed";
+      return thunkAPI.rejectWithValue({ message });
+    }
   }
 );
 
@@ -126,20 +158,27 @@ export const toggleReaction = createAsyncThunk<
 >(
   "reactions/toggle",
   async (payload, thunkAPI) => {
-    const res = await apiCall(
-      "post",
-      `${BASE}/toggle`,
-      payload,
-      thunkAPI.rejectWithValue
-    ) as ApiItemResponse<{ on: boolean }>;
+    try {
+      const res = (await apiCall(
+        "post",
+        `${BASE}/toggle`,
+        payload
+      )) as ApiItemResponse<{ on: boolean }>;
 
-    return {
-      targetId: payload.targetId,
-      kind: payload.kind,
-      emoji: payload.emoji,
-      on: !!res.data?.on,
-      message: res.message,
-    };
+      return {
+        targetId: payload.targetId,
+        kind: payload.kind,
+        emoji: payload.emoji,
+        on: !!res?.data?.on,
+        message: res?.message,
+      };
+    } catch (err: any) {
+      const message =
+        err?.message ||
+        err?.data?.message ||
+        "reactions.errors.toggleFailed";
+      return thunkAPI.rejectWithValue({ message });
+    }
   }
 );
 
@@ -149,20 +188,27 @@ export const setReaction = createAsyncThunk<
 >(
   "reactions/set",
   async (payload, thunkAPI) => {
-    const res = await apiCall(
-      "post",
-      `${BASE}/set`,
-      payload,
-      thunkAPI.rejectWithValue
-    ) as ApiItemResponse<{ on: boolean }>;
+    try {
+      const res = (await apiCall(
+        "post",
+        `${BASE}/set`,
+        payload
+      )) as ApiItemResponse<{ on: boolean }>;
 
-    return {
-      targetId: payload.targetId,
-      kind: payload.kind,
-      emoji: payload.emoji,
-      on: !!res.data?.on,
-      message: res.message,
-    };
+      return {
+        targetId: payload.targetId,
+        kind: payload.kind,
+        emoji: payload.emoji,
+        on: !!res?.data?.on,
+        message: res?.message,
+      };
+    } catch (err: any) {
+      const message =
+        err?.message ||
+        err?.data?.message ||
+        "reactions.errors.setFailed";
+      return thunkAPI.rejectWithValue({ message });
+    }
   }
 );
 
@@ -172,35 +218,53 @@ export const rateReaction = createAsyncThunk<
 >(
   "reactions/rate",
   async (payload, thunkAPI) => {
-    const res = await apiCall(
-      "post",
-      `${BASE}/rate`,
-      payload,
-      thunkAPI.rejectWithValue
-    ) as ApiItemResponse<{ value: number }>;
-    return { targetId: payload.targetId, value: res.data.value, message: res.message };
+    try {
+      const res = (await apiCall(
+        "post",
+        `${BASE}/rate`,
+        payload
+      )) as ApiItemResponse<{ value: number }>;
+      return {
+        targetId: payload.targetId,
+        value: Number(res?.data?.value ?? payload.value),
+        message: res?.message,
+      };
+    } catch (err: any) {
+      const message =
+        err?.message ||
+        err?.data?.message ||
+        "reactions.errors.rateFailed";
+      return thunkAPI.rejectWithValue({ message });
+    }
   }
 );
 
-// Summary/Ratings — (gerekirse) genel amaçlı; params tutuyoruz
+// Summary/Ratings — (genelde public; 401 beklemiyoruz)
 export const fetchReactionsSummary = createAsyncThunk<
   IReactionSummaryMap,
   { targetType: ReactionTargetType; targetId?: string; targetIds?: string[]; breakdown?: "none" | "kind" | "emoji" | "kind+emoji" }
 >(
   "reactions/fetchSummary",
   async ({ targetType, targetId, targetIds, breakdown = "kind" }, thunkAPI) => {
-    const params: any = { targetType, breakdown };
-    if (targetId) params.targetId = targetId;
-    if (targetIds?.length) params.targetIds = targetIds.join(",");
+    try {
+      const params: any = { targetType, breakdown };
+      if (targetId) params.targetId = targetId;
+      if (targetIds?.length) params.targetIds = targetIds.join(",");
 
-    const res = await apiCall(
-      "get",
-      `${BASE}/summary`,
-      params,
-      thunkAPI.rejectWithValue
-    ) as ApiMapResponse<IReactionSummaryMap>;
+      const res = (await apiCall(
+        "get",
+        `${BASE}/summary`,
+        params
+      )) as ApiMapResponse<IReactionSummaryMap>;
 
-    return res.data || {};
+      return res?.data || {};
+    } catch (err: any) {
+      const message =
+        err?.message ||
+        err?.data?.message ||
+        "reactions.errors.summaryFailed";
+      return thunkAPI.rejectWithValue({ message });
+    }
   }
 );
 
@@ -210,18 +274,25 @@ export const fetchRatingsSummary = createAsyncThunk<
 >(
   "reactions/fetchRatingsSummary",
   async ({ targetType, targetId, targetIds }, thunkAPI) => {
-    const params: any = { targetType };
-    if (targetId) params.targetId = targetId;
-    if (targetIds?.length) params.targetIds = targetIds.join(",");
+    try {
+      const params: any = { targetType };
+      if (targetId) params.targetId = targetId;
+      if (targetIds?.length) params.targetIds = targetIds.join(",");
 
-    const res = await apiCall(
-      "get",
-      `${BASE}/ratings/summary`,
-      params,
-      thunkAPI.rejectWithValue
-    ) as ApiMapResponse<IRatingSummaryMap>;
+      const res = (await apiCall(
+        "get",
+        `${BASE}/ratings/summary`,
+        params
+      )) as ApiMapResponse<IRatingSummaryMap>;
 
-    return res.data || {};
+      return res?.data || {};
+    } catch (err: any) {
+      const message =
+        err?.message ||
+        err?.data?.message ||
+        "reactions.errors.ratingsFailed";
+      return thunkAPI.rejectWithValue({ message });
+    }
   }
 );
 
@@ -245,13 +316,20 @@ export const adminListReactions = createAsyncThunk<
 >(
   "reactions/adminList",
   async (params, thunkAPI) => {
-    const res = await apiCall(
-      "get",
-      `${BASE}/admin`,
-      params,
-      thunkAPI.rejectWithValue
-    ) as ApiListResponse<IReactionDTO>;
-    return res.data || [];
+    try {
+      const res = (await apiCall(
+        "get",
+        `${BASE}/admin`,
+        params
+      )) as ApiListResponse<IReactionDTO>;
+      return res?.data || [];
+    } catch (err: any) {
+      const message =
+        err?.message ||
+        err?.data?.message ||
+        "reactions.errors.adminListFailed";
+      return thunkAPI.rejectWithValue({ message });
+    }
   }
 );
 
@@ -261,13 +339,20 @@ export const adminDeleteReaction = createAsyncThunk<
 >(
   "reactions/adminDeleteById",
   async (id, thunkAPI) => {
-    const res = await apiCall(
-      "delete",
-      `${BASE}/admin/${id}`,
-      null,
-      thunkAPI.rejectWithValue
-    ) as { success: boolean; message: string };
-    return { id, message: res.message };
+    try {
+      const res = (await apiCall(
+        "delete",
+        `${BASE}/admin/${id}`,
+        null
+      )) as { success: boolean; message: string };
+      return { id, message: res?.message };
+    } catch (err: any) {
+      const message =
+        err?.message ||
+        err?.data?.message ||
+        "reactions.errors.adminDeleteFailed";
+      return thunkAPI.rejectWithValue({ message });
+    }
   }
 );
 
@@ -277,14 +362,25 @@ export const adminDeleteReactionsByFilter = createAsyncThunk<
 >(
   "reactions/adminDeleteByFilter",
   async (params, thunkAPI) => {
-    const res = await apiCall(
-      "delete",
-      `${BASE}/admin`,
-      null,
-      thunkAPI.rejectWithValue,
-      { params }
-    ) as ApiItemResponse<{ deletedCount: number }>;
-    return { deletedCount: res.data.deletedCount, message: res.message };
+    try {
+      const res = (await apiCall(
+        "delete",
+        `${BASE}/admin`,
+        null,
+        undefined,
+        { params }
+      )) as ApiItemResponse<{ deletedCount: number }>;
+      return {
+        deletedCount: Number(res?.data?.deletedCount ?? 0),
+        message: res?.message,
+      };
+    } catch (err: any) {
+      const message =
+        err?.message ||
+        err?.data?.message ||
+        "reactions.errors.adminDeleteByFilterFailed";
+      return thunkAPI.rejectWithValue({ message });
+    }
   }
 );
 

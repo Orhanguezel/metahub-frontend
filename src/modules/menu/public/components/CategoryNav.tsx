@@ -16,7 +16,9 @@ type Props = {
   t: (k: string, d?: string) => string;
   lang: SupportedLocale;
   isLoading?: boolean;
+  /** id -> anchor eşlemesi. (Opsiyonel, route kullanıyoruz.) */
   anchorMap?: Map<string, string>;
+  /** /menu/category/:slug sayfasına branch query’si ile gitmek için (opsiyonel) */
   branchId?: string;
   /** px/sn – küçük ekranda otomatik biraz düşürülür */
   speed?: number;
@@ -27,26 +29,33 @@ export default function CategoryNav({
   catDict,
   lang,
   isLoading,
-  anchorMap = new Map(),
   branchId,
-  speed = 90,
+  speed = 120, // 🔼 default hız artırıldı
 }: Props) {
-  /* --- veri: label+href (ham liste) --- */
+  /* --- veri: label + href (ham liste) --- */
   const rawCats = useMemo(() => {
     return (categories || []).map((c) => {
       const id = String(c.category);
       const obj = catDict.get(id);
+
       const label = obj
         ? getMultiLang(obj.name as any, lang) || obj.slug || obj.code || id
         : id;
-      const slug = anchorMap.get(id) ?? `cat-${id}`;
+
+      // ✅ Kategori sayfasına git: slug varsa onu kullan, yoksa _id
+      const targetSlug = (obj?.slug || "").trim() ? String(obj!.slug) : id;
+
+      // (Opsiyonel) anchorMap yine de tutuluyor ama route öncelikli
+    
+
       const href =
         branchId
-          ? { pathname: `/menu/${slug}`, query: { branch: branchId } }
-          : `/menu/${slug}`;
+          ? { pathname: `/menu/category/${encodeURIComponent(targetSlug)}`, query: { branch: branchId } }
+          : `/menu/category/${encodeURIComponent(targetSlug)}`;
+
       return { id, label, href, isFeatured: !!c.isFeatured };
     });
-  }, [categories, catDict, lang, anchorMap, branchId]);
+  }, [categories, catDict, lang, branchId]);
 
   /* --- mükerrerleri ele (id + pathname + query signature) --- */
   const baseCats = useMemo(() => {
@@ -93,12 +102,14 @@ export default function CategoryNav({
 
   const effectiveSpeed = useMemo(() => {
     if (typeof window === "undefined") return speed;
-    return window.innerWidth < 700 ? Math.max(40, speed * 0.7) : speed;
+    // küçük ekranda biraz yavaşlat
+    return window.innerWidth < 700 ? Math.max(50, speed * 0.75) : speed;
   }, [speed]);
 
   const durationSec = useMemo(() => {
-    if (!halfWidth || !effectiveSpeed) return 20;
-    return Math.max(8, halfWidth / effectiveSpeed);
+    if (!halfWidth || !effectiveSpeed) return 12; // 🔼 default süre kısaldı
+    // süre = mesafe / hız
+    return Math.max(6, halfWidth / effectiveSpeed);
   }, [halfWidth, effectiveSpeed]);
 
   // içerik konteyneri aşarsa loop
@@ -140,7 +151,7 @@ export default function CategoryNav({
         >
           <TrackInner ref={firstTrackRef}>
             {baseCats.map((c, idx) => (
-              <Pill key={`a-${c.id}-${idx}`} href={c.href as any}>
+              <Pill key={`a-${c.id}-${idx}`} href={c.href as any} prefetch>
                 {c.label}
                 {c.isFeatured && <span className="feat">★</span>}
               </Pill>
@@ -151,7 +162,7 @@ export default function CategoryNav({
           {shouldLoop && (
             <TrackInner aria-hidden>
               {baseCats.map((c, idx) => (
-                <Pill key={`b-${c.id}-${idx}`} href={c.href as any} tabIndex={-1}>
+                <Pill key={`b-${c.id}-${idx}`} href={c.href as any} tabIndex={-1} prefetch>
                   {c.label}
                   {c.isFeatured && <span className="feat">★</span>}
                 </Pill>

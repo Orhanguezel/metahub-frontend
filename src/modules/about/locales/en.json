@@ -14,6 +14,11 @@
   "about.about.empty": "No About content found.",
   "about.gallery": "Gallery",
 
+  "page.aboutus.minorTitle": "ABOUT US",
+  "page.aboutus.title": "About Us",
+  "about.aboutus.empty": "No about content found.",
+  "page.aboutus.all": "Learn More",
+
   "admin.title": "About Articles",
   "admin.subtitle": "Create, organize and publish your About content",
 

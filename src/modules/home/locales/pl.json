@@ -1,9 +1,22 @@
 {
-  
   "hero": {
     "products": "Produkty",
     "bookAppointment": "Umów wizytę",
-    "hero.cta": "Uzyskaj Ofertę"
+    "cta": "Poproś o wycenę",
+    "badge": "NIE PRZEGAP!",
+    "orderNow": "Zamów teraz",
+    "viewMenu": "Zobacz menu"
   },
-  "noItemsFound": "Nie znaleziono żadnych produktów."
+  "hero1": {
+    "heroTitle": "Pizza, kebab i więcej — Szybka dostawa",
+    "heroSubtitle": "Gorące pizze, solidny kebab, burgery i wrapy, sałatki oraz desery… U Twoich drzwi w kilka minut."
+  },
+  "menu": {
+    "search": "Wyszukiwanie w menu",
+    "category": "Kategoria",
+    "allCategories": "Wszystkie kategorie",
+    "searchPlaceholder": "Szukaj tutaj...",
+    "check": "Szukaj"
+  },
+  "noItemsFound": "Nie znaleziono produktów."
 }

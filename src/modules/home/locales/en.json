@@ -1,9 +1,22 @@
 {
-  
   "hero": {
     "products": "Products",
     "bookAppointment": "Book Appointment",
-    "cta": "Get Quote"
+    "cta": "Get a Quote",
+    "badge": "DON'T MISS!",
+    "orderNow": "Order Now",
+    "viewMenu": "View Menu"
   },
-  "noItemsFound": "No products found."
+  "hero1": {
+    "heroTitle": "Pizza, Doner & More — Fast Delivery",
+    "heroSubtitle": "Piping-hot pizzas, meaty doner, burgers & wraps, salads and desserts… At your door in minutes."
+  },
+  "menu": {
+    "search": "Menu search",
+    "category": "Category",
+    "allCategories": "All Categories",
+    "searchPlaceholder": "Search here...",
+    "check": "Search"
+  },
+  "noItemsFound": "No items found."
 }
