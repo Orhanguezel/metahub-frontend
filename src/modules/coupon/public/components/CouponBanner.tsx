@@ -94,7 +94,6 @@ const Banner = styled.div<{ $bg: string }>`
   box-shadow: ${({ theme }) => theme.shadows.lg};
   padding: ${({ theme }) => `${theme.spacings.xl} ${theme.spacings.xxl}`};
   gap: ${({ theme }) => theme.spacings.lg};
-  margin: ${({ theme }) => theme.spacings.xl} 0 0 0;
   min-height: 110px;
 
   ${({ theme }) => theme.media.small} {

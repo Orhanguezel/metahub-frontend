@@ -205,8 +205,9 @@ export default function MenuItemDetail({
                 priority={false}
               />
             ) : (
-              <Ph aria-hidden>—</Ph>
-            )}
+  <Ph aria-hidden title={t("noImage", "Görsel yok")}>🍽️</Ph>
+)}
+
           </Hero>
 
           {Array.isArray(item.variants) && item.variants.length > 0 && (
@@ -531,8 +532,16 @@ const Hero = styled.div`
 `;
 
 const Ph = styled.div`
-  position: absolute; inset: 0; display: grid; place-items: center; color: #aaa;
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #b8b8b8;
+  font-size: clamp(48px, 10vw, 96px); /* büyük emoji */
+  line-height: 1;
+  text-shadow: 0 2px 14px rgba(0,0,0,.08); /* opsiyonel derinlik */
 `;
+
 
 const SideCard = styled.div`
   position: sticky;

@@ -77,7 +77,7 @@ export default function ItemCard({
               priority={false}
             />
           ) : (
-            <Ph aria-hidden>—</Ph>
+            <Ph aria-hidden>🍽️</Ph>
           )}
         </Thumb>
       </Link>
@@ -183,6 +183,7 @@ const Thumb = styled.div`
   aspect-ratio: 16/9;
   background: #fafafa;
   cursor: pointer;
+  overflow: hidden;          /* taşmaları gizle */
 `;
 
 const Ph = styled.div`
@@ -190,7 +191,12 @@ const Ph = styled.div`
   inset: 0;
   display: grid;
   place-items: center;
-  color: #aaa;
+  /* emoji'yi dev yap ve container'a göre ölçeklensin */
+  font-size: clamp(42px, 18vw, 100px);
+  line-height: 1;
+  color: #c8c8c8;
+  /* biraz derinlik verelim (opsiyonel) */
+  text-shadow: 0 2px 14px rgba(0,0,0,.08);
 `;
 
 const Body = styled.div`
