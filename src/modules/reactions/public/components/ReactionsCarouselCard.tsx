@@ -79,7 +79,7 @@ export default function ReactionsCarouselCard({
             style={{ objectFit: "cover" }}
           />
         ) : (
-          <Ph aria-hidden>—</Ph>
+          <Ph aria-hidden>🍽️</Ph>
         )}
 
         <Badges>
@@ -128,7 +128,8 @@ export default function ReactionsCarouselCard({
 const Card = styled(Link)`
   display: flex;
   flex-direction: column;
-  width: clamp(240px, 38vw, 320px);
+  /* width: clamp(240px, 38vw, 320px);  // <-- SİL */
+  width: 100%;                            // <-- slotu tamamen doldur
   background: ${({ theme }) => theme.colors.cardBackground};
   border: 1.5px solid ${({ theme }) => theme.colors.borderLight};
   box-shadow: 0 2px 14px 0 rgba(40, 117, 194, 0.07);
@@ -137,16 +138,20 @@ const Card = styled(Link)`
   text-decoration: none;
   color: inherit;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
+
   &:hover {
     transform: translateY(-1px);
     box-shadow: ${({ theme }) => theme.shadows.md};
   }
 `;
 
+
 const Thumb = styled.div`
   position: relative;
   aspect-ratio: 16/9;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  background: #fafafa;
+  cursor: pointer;
+  overflow: hidden;          /* taşmaları gizle */
 `;
 
 const Ph = styled.div`
@@ -154,7 +159,12 @@ const Ph = styled.div`
   inset: 0;
   display: grid;
   place-items: center;
-  color: #aaa;
+  /* emoji'yi dev yap ve container'a göre ölçeklensin */
+  font-size: clamp(42px, 18vw, 100px);
+  line-height: 1;
+  color: #c8c8c8;
+  /* biraz derinlik verelim (opsiyonel) */
+  text-shadow: 0 2px 14px rgba(0,0,0,.08);
 `;
 
 const Badges = styled.div`

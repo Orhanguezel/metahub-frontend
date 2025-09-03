@@ -351,22 +351,7 @@ const HeroRestaurant = () => {
         </Stage>
       </SliderGrid>
 
-      {/* MODAL */}
-      <Modal isOpen={isModalOpen} onClose={closeModal}>
-        <ModalContent>
-          <ModalImage
-            src={mainSrc}
-            alt={title}
-            fill
-            priority
-            style={{ objectFit: "contain", background: "#fff" }}
-          />
-          <ModalCaption>
-            <h3>{title}</h3>
-            <p>{description}</p>
-          </ModalCaption>
-        </ModalContent>
-      </Modal>
+      
     </Hero>
   );
 };
@@ -579,22 +564,4 @@ const MainImage = styled(Image)`
   width: 100% !important;
   height: 100% !important;
   object-fit: contain;
-  cursor: pointer;
-`;
-
-const ModalContent = styled.div`
-  display: flex; flex-direction: column; align-items: center;
-  max-width: 880px; width: 92vw; margin: 0 auto; padding: 2.2rem;
-  background: #fff; border-radius: ${({ theme }) => theme.radii.xl};
-  box-shadow: ${({ theme }) => theme.shadows.xl};
-`;
-const ModalImage = styled(Image)`
-  width: 100%; height: 480px; object-fit: contain;
-  border-radius: ${({ theme }) => theme.radii.lg}; background: #fff;
-  ${({ theme }) => theme.media.small} { height: 220px; min-height: 140px; }
-`;
-const ModalCaption = styled.div`
-  margin-top: 1.1em; text-align: center;
-  h3{ font-size: 1.24em; color: ${({ theme }) => theme.colors.primary}; margin-bottom:.2em; }
-  p{ color: ${({ theme }) => theme.colors.textSecondary}; max-width: 520px; margin: 0 auto; }
 `;

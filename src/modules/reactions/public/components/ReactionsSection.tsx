@@ -32,10 +32,10 @@ const normId = (v: any): string => {
 };
 
 /* ------------ responsive sabitler ------------- */
-const CARD_WIDTH_DESKTOP = 360;
+const CARD_WIDTH_DESKTOP = 320;
 const CARD_WIDTH_MOBILE = 320;
-const GAP = 16;
-const FADE_WIDTH = 56;
+const GAP = 8;
+const FADE_WIDTH = 32;
 const NAV_BTN_WIDTH = 48;
 
 const getSlotCount = (w: number) => (w < 700 ? 1 : 3);
@@ -275,7 +275,7 @@ const SkeletonRow = styled.div`
   padding: 0 ${({ theme }) => theme.spacings.xl};
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: ${({ theme }) => theme.spacings.xl};
+  gap: ${({ theme }) => theme.spacings.xs};
 `;
 
 const SkelCard = styled(Skeleton)`

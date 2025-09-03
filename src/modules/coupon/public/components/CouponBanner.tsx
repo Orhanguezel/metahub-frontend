@@ -1,61 +1,92 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/coupon/locales";
-import { SupportedLocale } from "@/types/common";
+import type { SupportedLocale } from "@/types/common";
 import { motion } from "framer-motion";
 import { PiTicketFill } from "react-icons/pi";
+import { MdClose } from "react-icons/md";
 
-// 🔥 En güncel, aktif ve geçerli kuponu göstermek için filtre uygula
 export default function WelcomeCouponBanner() {
   const { i18n, t } = useI18nNamespace("coupon", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
 
-  // Tüm public couponlar slice'ta coupons dizisi olarak bulunuyor
+  // store
   const coupons = useAppSelector((s) => s.coupon.coupons);
 
-  // Publicte aktif/geçerli bir kuponu göster (örneğin ilk aktif/valid kuponu al)
-  const now = Date.now();
-  const activeCoupon = coupons?.find(
-    (c) =>
-      c.isActive &&
-      (!c.expiresAt || new Date(c.expiresAt).getTime() > now)
-  );
+  // aktif/geçerli kuponu hesapla (now'ı dependency yapmayalım; her render değişmesin)
+  const activeCoupon = useMemo(() => {
+    if (!coupons?.length) return undefined;
+    const now = Date.now();
+    return coupons.find(
+      (c) => c.isActive && (!c.expiresAt || new Date(c.expiresAt).getTime() > now)
+    );
+  }, [coupons]);
 
-  if (!activeCoupon) return null; // Aktif kupon yoksa banner gösterme
+  // ⬇️ Hook'lar her zaman çalışır (erken return'dan önce)
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!activeCoupon) {
+      setVisible(false);
+      return;
+    }
+    if (typeof window === "undefined") return;
+    const key = `coupon:dismissed:${activeCoupon.code}`;
+    const isDismissed = window.localStorage.getItem(key) === "1";
+    setVisible(!isDismissed);
+  }, [activeCoupon?.code]);
+
+  const close = () => {
+    if (activeCoupon) {
+      try {
+        window?.localStorage?.setItem(`coupon:dismissed:${activeCoupon.code}`, "1");
+      } catch {}
+    }
+    setVisible(false);
+  };
+
+  if (!activeCoupon || !visible) return null;
 
   const title =
     activeCoupon.title?.[lang] ||
     activeCoupon.title?.en ||
     t("defaultTitle", "Welcome Coupon!");
-
   const desc =
     activeCoupon.description?.[lang] ||
     activeCoupon.description?.en ||
     t("defaultDesc", "Enjoy your special welcome discount!");
 
-  // Banner için arka plan rengi (temadan alabilirsin veya sabit verebilirsin)
-  const bgColor = "#f2f6ff"; // veya theme'den theme.colors.primaryLight gibi
-
   return (
-    <Banner
+    <FixedWrap
       as={motion.div}
-      initial={{ opacity: 0, y: -28 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: "spring", delay: 0.1, stiffness: 170 }}
-      $bg={bgColor}
+      role="region"
       aria-label="Welcome Coupon Banner"
+      initial={{ opacity: 0, y: 18, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.28, ease: "easeOut" }}
     >
-      <Left>
-        <TicketIcon>
-          <PiTicketFill size={46} />
-        </TicketIcon>
-        <div>
-          <BannerTitle>{title}</BannerTitle>
+      <BannerCard>
+        <CloseBtn onClick={close} aria-label={t("close", "Close")}>
+          <MdClose size={18} />
+        </CloseBtn>
+
+        <IconWrap aria-hidden>
+          <PiTicketFill size={40} />
+        </IconWrap>
+
+        <TextCol>
+          <TopRow>
+            <PromoBadge aria-hidden>Promo</PromoBadge>
+            <BannerTitle>{title}</BannerTitle>
+          </TopRow>
+
           <BannerDesc>{desc}</BannerDesc>
-          <BannerRow>
+
+          <Row>
             <Code>
               {t("code", "Code")}: <b>{activeCoupon.code}</b>
             </Code>
@@ -65,86 +96,144 @@ export default function WelcomeCouponBanner() {
             {activeCoupon.expiresAt && (
               <Expires>
                 {t("expires", "Expires")}:{" "}
-                <b>
-                  {new Date(activeCoupon.expiresAt).toLocaleDateString(lang)}
-                </b>
+                <b>{new Date(activeCoupon.expiresAt).toLocaleDateString(lang)}</b>
               </Expires>
             )}
-          </BannerRow>
-        </div>
-      </Left>
-      <CtaButton
-        as={motion.button}
-        whileHover={{ scale: 1.07 }}
-        whileTap={{ scale: 0.96 }}
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      >
-        {t("cta", "Use Now")}
-      </CtaButton>
-    </Banner>
+          </Row>
+        </TextCol>
+      </BannerCard>
+    </FixedWrap>
   );
 }
-// --- Styled Components ---
-const Banner = styled.div<{ $bg: string }>`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-radius: ${({ theme }) => theme.radii.xl};
-  background: ${({ $bg }) => $bg};
-  box-shadow: ${({ theme }) => theme.shadows.lg};
-  padding: ${({ theme }) => `${theme.spacings.xl} ${theme.spacings.xxl}`};
-  gap: ${({ theme }) => theme.spacings.lg};
-  min-height: 110px;
 
-  ${({ theme }) => theme.media.small} {
-    flex-direction: column;
-    padding: ${({ theme }) => theme.spacings.lg};
-    gap: ${({ theme }) => theme.spacings.sm};
-    align-items: flex-start;
-  }
+/* ===== Styles ===== */
+
+const FixedWrap = styled.div`
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  z-index: ${({ theme }) => (theme.zIndex?.overlay ?? 1200) + 2};
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  padding: 0 12px;
 `;
 
-const Left = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacings.md};
+const BannerCard = styled.div`
+  pointer-events: auto;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: flex-start;
+  gap: ${({ theme }) => theme.spacings.md};
+  box-sizing: border-box;
+
+  width: clamp(300px, 92vw, 600px);
+  min-height: 96px;
+
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
+  border-radius: ${({ theme }) => theme.radii.xl};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  padding: ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.xl};
+  background-image: linear-gradient(
+    180deg,
+    ${({ theme }) => theme.colors.inputBackgroundSofter} 0%,
+    ${({ theme }) => theme.colors.cardBackground} 100%
+  );
+  overflow: hidden;
 `;
 
-const TicketIcon = styled.div`
-  margin-right: ${({ theme }) => theme.spacings.sm};
+const CloseBtn = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: ${({ theme }) => theme.radii.circle};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  color: ${({ theme }) => theme.colors.text};
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: ${({ theme }) => theme.shadows.xs};
+  transition: transform ${({ theme }) => theme.transition.fast},
+              background ${({ theme }) => theme.transition.fast},
+              box-shadow ${({ theme }) => theme.transition.fast};
+  &:hover { transform: scale(1.06); background: ${({ theme }) => theme.colors.hoverBackground}; box-shadow: ${({ theme }) => theme.shadows.sm}; }
+  &:focus-visible { outline: none; box-shadow: ${({ theme }) => theme.colors.shadowHighlight}; }
+`;
+
+const IconWrap = styled.div`
+  color: ${({ theme }) => theme.colors.primary};
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,.12));
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15));
+`;
+
+const TextCol = styled.div`
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+`;
+
+const TopRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacings.sm};
+  min-width: 0;
+`;
+
+const PromoBadge = styled.span`
+  padding: 2px 8px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.warningBackground};
+  color: ${({ theme }) => theme.colors.textOnWarning};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  flex-shrink: 0;
 `;
 
 const BannerTitle = styled.div`
-  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-family: ${({ theme }) => theme.fonts.heading};
   font-weight: ${({ theme }) => theme.fontWeights.extraBold};
   color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: 2px;
-  font-family: ${({ theme }) => theme.fonts.heading};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  line-height: 1.15;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const BannerDesc = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: ${({ theme }) => theme.spacings.xs};
+  overflow-wrap: anywhere;
 `;
 
-const BannerRow = styled.div`
+const Row = styled.div`
+  margin-top: ${({ theme }) => theme.spacings.xs};
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: ${({ theme }) => theme.spacings.sm};
   font-size: ${({ theme }) => theme.fontSizes.md};
   color: ${({ theme }) => theme.colors.text};
-  align-items: center;
-  flex-wrap: wrap;
+  overflow-wrap: anywhere;
 `;
 
 const Code = styled.span`
-  background: ${({ theme }) => theme.colors.primary + "10"};
+  background: ${({ theme }) => theme.colors.primaryLight};
   border-radius: ${({ theme }) => theme.radii.sm};
   padding: 4px 12px;
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  letter-spacings: 1px;
+  letter-spacing: 0.5px;
   color: ${({ theme }) => theme.colors.primary};
 `;
 
@@ -156,25 +245,4 @@ const Discount = styled.span`
 const Expires = styled.span`
   color: ${({ theme }) => theme.colors.warning};
   font-weight: ${({ theme }) => theme.fontWeights.semiBold};
-`;
-
-const CtaButton = styled.button`
-  background: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.buttonText};
-  padding: 10px 34px;
-  border-radius: 999px;
-  font-weight: ${({ theme }) => theme.fontWeights.bold};
-  font-size: ${({ theme }) => theme.fontSizes.md};
-  border: none;
-  cursor: pointer;
-  box-shadow: ${({ theme }) => theme.shadows.button};
-  margin-left: auto;
-  font-family: ${({ theme }) => theme.fonts.body};
-  transition: background 0.22s;
-
-  ${({ theme }) => theme.media.small} {
-    width: 100%;
-    margin-left: 0;
-    margin-top: ${({ theme }) => theme.spacings.sm};
-  }
 `;
