@@ -36,7 +36,15 @@ export default function AboutUsSection() {
     () => (Array.isArray(about) ? about.filter((x) => x && typeof x === "object") : []),
     [about]
   );
-  const main = useMemo<IAbout | null>(() => (validAbout.length ? validAbout[0] : null), [validAbout]);
+
+  // Başlık/özet olan ilk kaydı seç (güçlendirilmiş)
+  const main = useMemo<IAbout | null>(() => {
+    if (!validAbout.length) return null;
+    const preferred = validAbout.find(
+      (x) => (x.title?.[lang] || x.title?.en) && (x.summary?.[lang] || x.summary?.en)
+    );
+    return preferred || validAbout[0];
+  }, [validAbout, lang]);
 
   const features = useMemo(() => {
     const arr = [validAbout[1], validAbout[2]].filter(Boolean) as IAbout[];
@@ -88,16 +96,21 @@ export default function AboutUsSection() {
   return (
     <Section
       variants={groupStagger}
+      /* 🚫 HATA KAYNAĞI: whileInView görünürlük eşiğine kadar çocuklar opacity:0 kalıyordu */
+      /* initial="initial" */
+      /* whileInView="animate" */
+      /* viewport={{ once: true, amount: 0.25 }} */
+
+      /* ✔ ÇÖZÜM 1: Mount’ta hemen animasyona geç (içerik her zaman görünür) */
       initial="initial"
-      whileInView="animate"
-      viewport={{ once: true, amount: 0.25 }}
+      animate="animate"
     >
       <Grid>
         {/* SOL — yalnızca 1. kaydın resmi */}
         <LeftCol>
           <VisualBoard>
             {mainImg && (
-              <MainFigure variants={fadeInLeft} as={motion.div} aria-label="main image">
+              <MainFigure variants={fadeInLeft} aria-label="main image">
                 <MainImg
                   src={mainImg}
                   alt={main?.title?.[lang] || main?.title?.en || "About"}
@@ -111,7 +124,12 @@ export default function AboutUsSection() {
         </LeftCol>
 
         {/* SAĞ — başlık, metin ve maddeler */}
-        <RightCol as={motion.div} variants={groupStagger}>
+        <RightCol
+          as={motion.div}
+          variants={groupStagger}
+          /* ✔ ÇÖZÜM 2 (opsiyonel): görünürlük tabanlı tetik istenirse eşiği çok düşür */
+          /* viewport={{ once: true, amount: 0.01 }} */
+        >
           <MinorTitle as={motion.div} variants={fadeUp}>
             {t("page.aboutus.minorTitle", "About Us")}
           </MinorTitle>

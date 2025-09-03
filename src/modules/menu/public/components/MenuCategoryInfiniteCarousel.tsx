@@ -25,7 +25,11 @@ const imageOf = (c?: IMenuCategory) => {
 type CardVM = { id: string; title: string; image?: string; href: string };
 
 /* ------------ component ------------ */
-export default function MenuCategoryInfiniteCarousel() {
+export default function MenuCategoryInfiniteCarousel({
+  durationSec = 10,
+}: {
+  durationSec?: number;
+}) {
   const { t, i18n } = useI18nNamespace("menu", translations);
   const uiLang = useMemo<SupportedLocale>(() => getUILang(i18n?.language), [i18n?.language]);
 
@@ -36,7 +40,7 @@ export default function MenuCategoryInfiniteCarousel() {
   // aktif & yayınlanmış menüler içinden **3. menü** (yoksa ilkine düş)
   const thirdMenu = useMemo(() => {
     const active = (menus || []).filter((m) => m?.isActive !== false && m?.isPublished !== false);
-    return active[0] || active[0] || null;
+    return active[0] || active[0] || null; // <— gerçek "3. menü"
   }, [menus]);
 
   // kategori sözlüğü
@@ -72,10 +76,13 @@ export default function MenuCategoryInfiniteCarousel() {
     return [...catCards, ...catCards, ...catCards];
   }, [thirdMenu, catCards]);
 
+  // animasyon süresini güvenli aralığa çek
+  const animDur = useMemo(() => Math.max(4, Math.min(60, durationSec)), [durationSec]);
+
   if (flow.length === 0) {
     return (
       <Wrapper>
-        <Info>{t("noCategories", { defaultValue: "Kategori yok" })}</Info>
+        <Info>{t("noCategories", "Kategori yok")}</Info>
       </Wrapper>
     );
   }
@@ -83,7 +90,7 @@ export default function MenuCategoryInfiniteCarousel() {
   return (
     <Wrapper>
       <Viewport>
-        <Track>
+        <Track $duration={animDur}>
           {flow.map((c, idx) => (
             <Item key={`${c.id}-${idx}`}>
               <CategoryCarouselCard title={c.title} image={c.image} href={c.href} />
@@ -99,7 +106,6 @@ export default function MenuCategoryInfiniteCarousel() {
 
 /* ------------ styles (tek satır sonsuz döngü) ------------ */
 
-/** HIZLANDIRILDI: 28s -> 16s */
 const slide = keyframes`
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
@@ -119,12 +125,12 @@ const Viewport = styled.div`
   user-select: none;
 `;
 
-const Track = styled.div`
+const Track = styled.div<{ $duration: number }>`
   display: flex;
   align-items: stretch;
   gap: ${({ theme }) => theme.spacings.sm};
   white-space: nowrap;
-  animation: ${slide} 16s linear infinite;
+  animation: ${slide} ${({ $duration }) => $duration}s linear infinite;
   will-change: transform;
 
   ${Viewport}:hover & { animation-play-state: paused; }

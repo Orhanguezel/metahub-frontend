@@ -17,7 +17,7 @@ export default function AboutSection() {
     }
   });
 
-  const { about, loading, error } = useAppSelector((state) => state.about);
+  const { about, loading, error } = useAppSelector((s) => s.about ?? {});
 
   if (loading) {
     return (
