@@ -17,7 +17,7 @@ import type { IAbout } from "../..";
 export default function AboutUsPage() {
   const { i18n, t } = useI18nNamespace("about", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-  const { about, loading, error } = useAppSelector((s) => s.about);
+  const { about, loading, error } = useAppSelector((s) => s.about ?? []);
 
   // SSR hydration için resources ekle
   Object.entries(translations).forEach(([lng, resources]) => {
