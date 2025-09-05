@@ -2,8 +2,6 @@
 import type { TranslatedLabel } from "@/types/common";
 import type { AdditiveCode, AllergenCode } from "@/modules/menu/constants/foodLabels";
 
-
-
 /** ---------------- Fiyat tipleri ---------------- */
 export type CurrencyCode = "EUR" | "TRY" | "USD";
 export type PriceKind = "base" | "deposit" | "surcharge" | "discount";
@@ -119,6 +117,42 @@ export interface IMenuItemCategoryRef {
   isFeatured?: boolean;
 }
 
+/** ---------------- Comment tipleri (public minimal) ---------------- */
+export type CommentType =
+  | "comment"
+  | "question"
+  | "complaint"
+  | "testimonial"
+  | "review";
+
+export interface ICommentUserLite {
+  _id: string;
+  name?: string;
+  email?: string;
+  profileImage?: string;
+}
+
+export interface ICommentReplyI18n {
+  text: TranslatedLabel;
+  createdAt: string; // ISO
+}
+
+/** Backend public select/populate ile uyumlu minimal alanlar */
+export interface ICommentPublic {
+  _id: string;
+  name?: string;
+  email?: string;
+  userId?: string | ICommentUserLite;
+  profileImage?: string;
+  text?: string | TranslatedLabel;
+  label?: string | TranslatedLabel;
+  rating?: number;
+  type?: CommentType;
+  reply?: ICommentReplyI18n;
+  createdAt?: string; // ISO
+}
+
+/** ---------------- Ana doküman ---------------- */
 export interface IMenuItem {
   _id: string;
 
@@ -132,6 +166,13 @@ export interface IMenuItem {
   images: IMenuItemImage[];
 
   categories: IMenuItemCategoryRef[];
+
+  /** Virtual populate ile gelebilir */
+  comments?: ICommentPublic[];
+
+  /** Virtual: yayınlanmış/aktif yorum sayısı */
+  commentsCount?: number;
+
   variants: IMenuItemVariant[];
   modifierGroups?: IMenuItemModifierGroup[];
 
@@ -161,7 +202,7 @@ export type MenuItemCreatePayload = {
   description?: TranslatedLabel;
 
   categories?: IMenuItemCategoryRef[];
-  variants?: IMenuItemVariant[];         // prices dahil
+  variants?: IMenuItemVariant[];            // prices dahil
   modifierGroups?: IMenuItemModifierGroup[]; // option.prices dahil
 
   allergens?: IKeyValueI18n<AllergenCode>[];
@@ -174,7 +215,7 @@ export type MenuItemCreatePayload = {
   barcode?: string;
   taxCode?: string;
 
-  images?: File[];                    // upload
+  images?: File[];                           // upload
 };
 
 export type RemovedImage =

@@ -28,13 +28,12 @@ import { fetchPortfolio } from "@/modules/portfolio/slice/portfolioSlice";
 import { fetchSkill } from "@/modules/skill/slice/skillSlice";
 import { fetchPricing } from "@/modules/pricing/slice/pricingSlice";
 import { fetchApartment } from "@/modules/apartment/slice/apartmentSlice";
+import { fetchCommentsForContent } from "@/modules/comment/slice/slice";
 
-import { fetchMenuItemsPublic } from "@/modules/menu/slice/menuitemSlice"; 
+import { fetchMenuItemsPublic } from "@/modules/menu/slice/menuitemSlice";
 import { fetchMenuCategoriesPublic } from "@/modules/menu/slice/menucategorySlice";
 import { fetchMenusPublic } from "@/modules/menu/slice/menuSlice";
 import { fetchMyReactions } from "@/modules/reactions/slice";
-
-
 
 export const usePublicLayoutInit = () => {
   const dispatch = useAppDispatch();
@@ -72,115 +71,193 @@ export const usePublicLayoutInit = () => {
   const menucategorySlice = useAppSelector((s) => s.menucategory);
   const menuSlice = useAppSelector((s) => s.menu);
   const reactionsSlice = useAppSelector((s) => s.reactions);
+  const commentSlice = useAppSelector((s) => s.comments);
 
-const didInit = useRef<{ [key: string]: boolean }>({});
+  const didInit = useRef<{ [key: string]: boolean }>({});
 
-useEffect(() => {
-  if (tenantLoading || !tenant) return;
+  useEffect(() => {
+    if (tenantLoading || !tenant) return;
 
-  // _id yoksa, slug kullan
-  const key = tenant._id || tenant.slug;
+    // _id yoksa, slug kullan
+    const key = tenant._id || tenant.slug;
 
-  if (didInit.current[key]) return;
-  didInit.current[key] = true;
+    if (didInit.current[key]) return;
+    didInit.current[key] = true;
 
     // --- Her slice için sadece boş ve idle ise fetch at ---
-    if ((!sectionMeta.metas || sectionMeta.metas.length === 0) && sectionMeta.status === "idle") {
+    if (
+      (!sectionMeta.metas || sectionMeta.metas.length === 0) &&
+      sectionMeta.status === "idle"
+    ) {
       dispatch(fetchSectionMetas());
     }
-    if ((!sectionSetting.settings || sectionSetting.settings.length === 0) && sectionSetting.status === "idle") {
+    if (
+      (!sectionSetting.settings || sectionSetting.settings.length === 0) &&
+      sectionSetting.status === "idle"
+    ) {
       dispatch(fetchSectionSettingsByTenant());
     }
-    if ((!settingsSlice.settings || settingsSlice.settings.length === 0) && settingsSlice.status === "idle") {
+    if (
+      (!settingsSlice.settings || settingsSlice.settings.length === 0) &&
+      settingsSlice.status === "idle"
+    ) {
       dispatch(fetchSettings());
     }
-    if ((!companySlice.company) && companySlice.status === "idle") {
+    if (!companySlice.company && companySlice.status === "idle") {
       dispatch(fetchCompanyInfo());
     }
-    if ((servicesSlice.services.length === 0) && servicesSlice.status === "idle") {
+    if (
+      servicesSlice.services.length === 0 &&
+      servicesSlice.status === "idle"
+    ) {
       dispatch(fetchServices());
     }
-    if ((massageSlice.massage.length === 0) && massageSlice.status === "idle") {
+    if (massageSlice.massage.length === 0 && massageSlice.status === "idle") {
       dispatch(fetchMassage());
     }
-    if ((aboutSlice.about.length === 0) && aboutSlice.status === "idle") {
+    if (aboutSlice.about.length === 0 && aboutSlice.status === "idle") {
       dispatch(fetchAbout());
     }
-    if ((newsSlice.news.length === 0) && newsSlice.status === "idle") {
+    if (newsSlice.news.length === 0 && newsSlice.status === "idle") {
       dispatch(fetchNews());
     }
-    if ((blogSlice.blog.length === 0) && blogSlice.status === "idle") {
+    if (blogSlice.blog.length === 0 && blogSlice.status === "idle") {
       dispatch(fetchBlog());
     }
-    if ((articlesSlice.articles.length === 0) && articlesSlice.status === "idle") {
+    if (
+      articlesSlice.articles.length === 0 &&
+      articlesSlice.status === "idle"
+    ) {
       dispatch(fetchArticles());
     }
-    if ((activitySlice.activity.length === 0) && activitySlice.status === "idle") {
+    if (
+      activitySlice.activity.length === 0 &&
+      activitySlice.status === "idle"
+    ) {
       dispatch(fetchActivity());
     }
-    if ((referencesSlice.references.length === 0) && referencesSlice.status === "idle") {
+    if (
+      referencesSlice.references.length === 0 &&
+      referencesSlice.status === "idle"
+    ) {
       dispatch(fetchReferences());
     }
-    if ((bikesSlice.bikes.length === 0) && bikesSlice.status === "idle") {
+    if (bikesSlice.bikes.length === 0 && bikesSlice.status === "idle") {
       dispatch(fetchBikes());
     }
-    if ((ensotekprodSlice.ensotekprod.length === 0) && ensotekprodSlice.status === "idle") {
+    if (
+      ensotekprodSlice.ensotekprod.length === 0 &&
+      ensotekprodSlice.status === "idle"
+    ) {
       dispatch(fetchEnsotekprod());
     }
-    if ((sparepartSlice.sparepart.length === 0) && sparepartSlice.status === "idle") {
+    if (
+      sparepartSlice.sparepart.length === 0 &&
+      sparepartSlice.status === "idle"
+    ) {
       dispatch(fetchSparepart());
     }
-    if ((!couponSlice.coupons || couponSlice.coupons.length === 0) && couponSlice.status === "idle") {
+    if (
+      (!couponSlice.coupons || couponSlice.coupons.length === 0) &&
+      couponSlice.status === "idle"
+    ) {
       dispatch(fetchCoupon());
     }
-    if ((gallery.gallery.length === 0) && gallery.status === "idle") {
+    if (gallery.gallery.length === 0 && gallery.status === "idle") {
       dispatch(fetchGallery());
     }
-    if ((!galleryCategory.categories || galleryCategory.categories.length === 0) && galleryCategory.status === "idle") {
+    if (
+      (!galleryCategory.categories ||
+        galleryCategory.categories.length === 0) &&
+      galleryCategory.status === "idle"
+    ) {
       dispatch(fetchGalleryCategories());
     }
-    if ((!librarySlice.library || librarySlice.library.length === 0) && librarySlice.status === "idle") {
+    if (
+      (!librarySlice.library || librarySlice.library.length === 0) &&
+      librarySlice.status === "idle"
+    ) {
       dispatch(fetchLibrary());
     }
-    if ((!libraryCategorySlice.categories || libraryCategorySlice.categories.length === 0) && libraryCategorySlice.status === "idle") {
+    if (
+      (!libraryCategorySlice.categories ||
+        libraryCategorySlice.categories.length === 0) &&
+      libraryCategorySlice.status === "idle"
+    ) {
       dispatch(fetchLibraryCategories());
     }
-    if ((!teamSlice.team || teamSlice.team.length === 0) && teamSlice.status === "idle") {
+    if (
+      (!teamSlice.team || teamSlice.team.length === 0) &&
+      teamSlice.status === "idle"
+    ) {
       dispatch(fetchTeam());
     }
-    if ((!faqSlice.faqs || faqSlice.faqs.length === 0) && faqSlice.status === "idle") {
+    if (
+      (!faqSlice.faqs || faqSlice.faqs.length === 0) &&
+      faqSlice.status === "idle"
+    ) {
       dispatch(fetchFAQs());
     }
 
-    if ((!skillSlice.skill || skillSlice.skill.length === 0) && skillSlice.status === "idle") {
+    if (
+      (!skillSlice.skill || skillSlice.skill.length === 0) &&
+      skillSlice.status === "idle"
+    ) {
       dispatch(fetchSkill());
     }
 
-    if ((!portfolioSlice.portfolio || portfolioSlice.portfolio.length === 0) && portfolioSlice.status === "idle") {
+    if (
+      (!portfolioSlice.portfolio || portfolioSlice.portfolio.length === 0) &&
+      portfolioSlice.status === "idle"
+    ) {
       dispatch(fetchPortfolio());
     }
 
-    if ((!pricingSlice.pricing || pricingSlice.pricing.length === 0) && pricingSlice.status === "idle") {
+    if (
+      (!pricingSlice.pricing || pricingSlice.pricing.length === 0) &&
+      pricingSlice.status === "idle"
+    ) {
       dispatch(fetchPricing());
     }
 
-    if ((!apartmentSlice.apartment || apartmentSlice.apartment.length === 0) && apartmentSlice.status === "idle") {
+    if (
+      (!apartmentSlice.apartment || apartmentSlice.apartment.length === 0) &&
+      apartmentSlice.status === "idle"
+    ) {
       dispatch(fetchApartment());
     }
-    if ((!menuitemSlice.publicList || menuitemSlice.publicList.length === 0) && menuitemSlice.status === "idle") {
+    if (
+      (!menuitemSlice.publicList || menuitemSlice.publicList.length === 0) &&
+      menuitemSlice.status === "idle"
+    ) {
       dispatch(fetchMenuItemsPublic());
     }
-    if ((!menucategorySlice.publicList || menucategorySlice.publicList.length === 0) && menucategorySlice.status === "idle") {
+    if (
+      (!menucategorySlice.publicList ||
+        menucategorySlice.publicList.length === 0) &&
+      menucategorySlice.status === "idle"
+    ) {
       dispatch(fetchMenuCategoriesPublic());
     }
 
-    if ((!menuSlice.publicList || menuSlice.publicList.length === 0) && menuSlice.status === "idle") {
+    if (
+      (!menuSlice.publicList || menuSlice.publicList.length === 0) &&
+      menuSlice.status === "idle"
+    ) {
       dispatch(fetchMenusPublic());
     }
 
     if (!reactionsSlice.my?.length && !reactionsSlice.loading) {
       dispatch(fetchMyReactions({ targetType: "menuitem" }) as any);
     }
+
+    if (
+      (!commentSlice.comments || commentSlice.comments.length === 0) &&
+      menuSlice.status === "idle"
+    ) {
+      dispatch(fetchMenusPublic());
+    }
+
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenant?._id, tenantLoading, tenant, dispatch, profile]); // Sadece tenant değişince veya ilk mount'ta çalışır
 
@@ -256,11 +333,11 @@ useEffect(() => {
     faqsLoading: faqSlice.loading,
     faqsStatus: faqSlice.status,
     faqsError: faqSlice.error,
-    skill:skillSlice,
+    skill: skillSlice,
     skillLoading: skillSlice.loading,
     skillStatus: skillSlice.status,
     skillError: skillSlice.error,
-    portfolio:portfolioSlice,
+    portfolio: portfolioSlice,
     portfolioLoading: portfolioSlice.loading,
     portfolioStatus: portfolioSlice.status,
     portfolioError: portfolioSlice.error,
@@ -276,5 +353,6 @@ useEffect(() => {
     menu: menuSlice.publicList,
     menuStatus: menuSlice.status,
     menuError: menuSlice.error,
+    comments: commentSlice,
   };
 };

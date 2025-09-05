@@ -17,7 +17,7 @@ import newsReducer from "@/modules/news/slice/newsSlice";
 import newsCategoryReducer from "@/modules/news/slice/newsCategorySlice";
 import articlesReducer from "@/modules/articles/slice/articlesSlice";
 import articlesCategoryReducer from "@/modules/articles/slice/articlesCategorySlice";
-import commentsReducer from "@/modules/comment/slice/commentSlice";
+import commentsReducer from "@/modules/comment/slice/slice";
 import companyReducer from "@/modules/company/slice/companySlice";
 import settingsReducer from "@/modules/settings/slice/settingsSlice";
 import galleryReducer from "@/modules/gallery/slice/gallerySlice";
@@ -95,7 +95,6 @@ import branchSlice from "@/modules/branch/slice";
 import webhooksSlice from "@/modules/webhooks/slice";
 
 import reactionSlice from "../modules/reactions/slice";
-
 
 // --- Combine reducers ---
 // Sadece slice bazında persistReducer uygula!

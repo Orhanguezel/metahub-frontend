@@ -1,13 +1,16 @@
 "use client";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations3 from "@/modules/comment/locales";
+import translations from "@/modules/comment/locales";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { useMemo, useState, useEffect, useCallback } from "react";
-import { MdStars } from "react-icons/md";
+import { useMemo, useState, useCallback } from "react";
+import { MdStars, MdStar, MdStarBorder } from "react-icons/md";
 import { useRouter } from "next/navigation";
-import { SupportedLocale } from "@/types/common";
-import { createComment, fetchCommentsForContent } from "@/modules/comment/slice/commentSlice";
+import type { SupportedLocale } from "@/types/common";
+import {
+  createComment,
+  selectCommentsFor,
+} from "@/modules/comment/slice/slice";
 import { AnimatePresence, motion } from "framer-motion";
 import { resolveProfileImage } from "@/shared/resolveProfileImage";
 
@@ -18,17 +21,18 @@ const DUMMY_TESTIMONIALS = [
     name: { tr: "Ayşe Demir", en: "Ayşe Demir" },
     company: { tr: "Apartman Yöneticisi", en: "Apartment Manager" },
     label: { tr: "Yönetici", en: "Manager" },
-    profileImage: "https://randomuser.me/api/portraits/women/45.jpg",
+    profileImage: "https://randomuser.me/api/portraits/women/41.jpg",
     text: {
       tr: "Güzel Temizlik ile merdiven ve ortak alan temizliğimiz kusursuz. Ekipleri güvenilir ve titiz çalışıyor.",
       en: "Cleaning of stairs and common areas is flawless with Güzel Temizlik. The team is trustworthy and meticulous.",
       de: "Die Treppen- und Gemeinschaftsreinigung mit Güzel Temizlik ist einwandfrei. Das Team arbeitet zuverlässig und gründlich.",
       pl: "Sprzątanie klatek i części wspólnych z Güzel Temizlik to najwyższy poziom. Zespół jest godny zaufania i dokładny.",
       fr: "Le nettoyage des escaliers et des parties communes est impeccable avec Güzel Temizlik. L'équipe est fiable et minutieuse.",
-      es: "La limpieza de escaleras y áreas comunes es impecable con Güzel Temizlik. El equipo es confiable y meticuloso."
+      es: "La limpieza de escaleras y áreas comunes es impecable con Güzel Temizlik. El equipo es confiable y meticuloso.",
     },
     isPublished: true,
-    type: "testimonial"
+    type: "testimonial",
+    rating: 5,
   },
   {
     _id: "dummy-2",
@@ -42,68 +46,68 @@ const DUMMY_TESTIMONIALS = [
       de: "Für regelmäßige und nachhaltige Reinigung sind sie unsere erste Wahl. Die Bewohner sind sehr zufrieden.",
       pl: "Są naszym pierwszym wyborem do regularnego i zrównoważonego sprzątania. Wszyscy mieszkańcy są bardzo zadowoleni.",
       fr: "Ils sont devenus notre premier choix pour un nettoyage régulier et durable. Tous les résidents sont ravis.",
-      es: "Se convirtieron en nuestra primera opción para limpieza regular y sostenible. Todos los residentes están muy satisfechos."
+      es: "Se convirtieron en nuestra primera opción para limpieza regular y sostenible. Todos los residentes están muy satisfechos.",
     },
     isPublished: true,
-    type: "testimonial"
+    type: "testimonial",
+    rating: 4,
   },
   {
     _id: "dummy-3",
     name: { tr: "Elif Kaya", en: "Elif Kaya" },
     company: { tr: "Apartman Yöneticisi", en: "Apartment Manager" },
     label: { tr: "Yönetici", en: "Manager" },
-    profileImage: "https://randomuser.me/api/portraits/women/78.jpg",
+    profileImage: "https://randomuser.me/api/portraits/women/71.jpg",
     text: {
       tr: "Fiyatları şeffaf ve her zaman ulaşılabilirler. Her seferinde beklediğimizden daha iyi hizmet aldık.",
       en: "Their pricing is transparent and they are always accessible. We always received better service than expected.",
       de: "Die Preise sind transparent und sie sind immer erreichbar. Der Service war stets besser als erwartet.",
       pl: "Ceny są przejrzyste, zawsze dostępni. Obsługa zawsze przerosła nasze oczekiwania.",
       fr: "Leurs prix sont transparents et ils sont toujours joignables. Nous avons toujours reçu un service au-delà de nos attentes.",
-      es: "Sus precios son transparentes y siempre están disponibles. Siempre recibimos un servicio mejor de lo esperado."
+      es: "Sus precios son transparentes y siempre están disponibles. Siempre recibimos un servicio mejor de lo esperado.",
     },
     isPublished: true,
-    type: "testimonial"
-  }
+    type: "testimonial",
+    rating: 5,
+  },
 ];
 
 export default function TestimonialSection() {
-  const { i18n, t } = useI18nNamespace("testimonial", translations3);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const { i18n, t } = useI18nNamespace("comment", translations);
+  const lang = i18n.language?.slice(0, 2) as SupportedLocale;
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { profile } = useAppSelector((state) => state.account);
 
   // --- Varsayılan About içeriği ---
-  const CONTENT_TYPE = "about";
+  const CONTENT_TYPE = "about" as const;
   const CONTENT_ID = "000000000000000000000000";
 
-  // --- Yorumları fetch et ---
-  useEffect(() => {
-    dispatch(
-      fetchCommentsForContent({
-        type: CONTENT_TYPE,
-        id: CONTENT_ID,
-        commentType: "testimonial",
-      })
-    );
-  }, [dispatch]);
-
-  // --- Redux'tan yorumları al ---
-  const allComments = useAppSelector((state) => state.comments.comments);
+  // ✅ Parent fetch ediyor: store’dan oku (keyed selector > legacy)
+  const keyed = useAppSelector((s) =>
+    selectCommentsFor(s, {
+      type: CONTENT_TYPE,
+      id: CONTENT_ID,
+      commentType: "testimonial",
+    })
+  );
+  const legacy = useAppSelector((s) => s.comments?.comments ?? []);
+  const source: any[] = (
+    Array.isArray(keyed) && keyed.length ? keyed : legacy
+  ) as any[];
 
   // --- Fallback: Dummy testimonial ---
   const testimonials = useMemo(() => {
-    if (Array.isArray(allComments) && allComments.some((c) => c.type === "testimonial" && c.isPublished)) {
-      return allComments
-        .filter((c) => c.type === "testimonial" && c.isPublished)
-        .slice(0, 6);
-    }
-    return DUMMY_TESTIMONIALS;
-  }, [allComments]);
+    const published = (source || []).filter(
+      (c) => c?.type === "testimonial" && c?.isPublished === true
+    );
+    return (published.length ? published : DUMMY_TESTIMONIALS).slice(0, 6);
+  }, [source]);
 
   // --- Modal State ---
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ label: "", text: "" });
+  const [rating, setRating] = useState<number>(0); // ⭐ puan
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -118,8 +122,19 @@ export default function TestimonialSection() {
   }, [profile, router]);
 
   // --- Form input değişikliği ---
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  };
+
+  // ⭐ Klavye ile rating ayarı
+  const handleKeyRating = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "ArrowRight") setRating((r) => Math.min(5, r + 1));
+    if (e.key === "ArrowLeft") setRating((r) => Math.max(0, r - 1));
+    if (e.key === "Home") setRating(1);
+    if (e.key === "End") setRating(5);
+    if (e.key === "Escape") setRating(0);
   };
 
   // --- Form submit ---
@@ -128,7 +143,7 @@ export default function TestimonialSection() {
     setFormError(null);
     setFormSuccess(null);
 
-    if (!form.text) {
+    if (!form.text.trim()) {
       setFormError(t("form.required", "Lütfen yorumunuzu yazın."));
       return;
     }
@@ -148,21 +163,24 @@ export default function TestimonialSection() {
           contentId: CONTENT_ID,
           isPublished: false,
           isActive: true,
+          ...(rating > 0 ? { rating } : {}), // 0 ise gönderme
         })
       ).unwrap();
-      setFormSuccess(t("form.success", "Yorumunuz başarıyla gönderildi! Onaylandıktan sonra yayınlanacaktır."));
-      setForm({ label: "", text: "" });
-      setShowModal(false);
-      // Ekledikten sonra tekrar fetch et
-      dispatch(
-        fetchCommentsForContent({
-          type: CONTENT_TYPE,
-          id: CONTENT_ID,
-          commentType: "testimonial",
-        })
+      setFormSuccess(
+        t(
+          "form.success",
+          "Yorumunuz başarıyla gönderildi! Onaylandıktan sonra yayınlanacaktır."
+        )
       );
+      setForm({ label: "", text: "" });
+      setRating(0);
+      setShowModal(false);
+      // ❌ Ek fetch yok; parent hallediyor.
     } catch (err: any) {
-      setFormError(err?.message || t("form.error", "Bir hata oluştu. Lütfen tekrar deneyin."));
+      setFormError(
+        err?.message ||
+          t("form.error", "Bir hata oluştu. Lütfen tekrar deneyin.")
+      );
     }
     setSending(false);
   };
@@ -198,18 +216,32 @@ export default function TestimonialSection() {
                 height={62}
               />
               <CardHeaderText>
-                <CardName>{getLangField(item.name) || t("anon", "Anonim")}</CardName>
+                <CardName>
+                  {getLangField(item.name) || t("anon", "Anonim")}
+                </CardName>
                 <CardTitle>
-                  {getLangField(item.company) ||
-                    getLangField(item.label) ||
-                    ""}
+                  {getLangField(item.company) || getLangField(item.label) || ""}
                 </CardTitle>
               </CardHeaderText>
             </CardHeader>
+
+            {/* ⭐ Kartta rating varsa göster */}
+            {typeof (item as any).rating === "number" &&
+              (item as any).rating > 0 && (
+                <StarsRow title={`${(item as any).rating}/5`}>
+                  {[1, 2, 3, 4, 5].map((n) =>
+                    (item as any).rating >= n ? (
+                      <MdStar key={n} size={18} />
+                    ) : (
+                      <MdStarBorder key={n} size={18} />
+                    )
+                  )}
+                  <StarsValue>{(item as any).rating}/5</StarsValue>
+                </StarsRow>
+              )}
+
             <CardBody>
-              <Quote>
-                &quot;{getLangField(item.text)}&quot;
-              </Quote>
+              <Quote>&quot;{getLangField(item.text)}&quot;</Quote>
             </CardBody>
           </Card>
         ))}
@@ -242,6 +274,47 @@ export default function TestimonialSection() {
                     disabled={sending}
                   />
                 </label>
+
+                {/* ⭐ Rating alanı */}
+                <FieldBlock>
+                  <FieldLabel htmlFor="rating-stars">
+                    {t("rating", "Değerlendirme")}{" "}
+                    <small style={{ opacity: 0.7 }}>
+                      ({t("optional", "opsiyonel")})
+                    </small>
+                  </FieldLabel>
+                  <StarsWrap
+                    id="rating-stars"
+                    role="radiogroup"
+                    aria-label={t("rating", "Değerlendirme")}
+                    tabIndex={0}
+                    onKeyDown={handleKeyRating}
+                  >
+                    {[1, 2, 3, 4, 5].map((n) => {
+                      const filled = rating >= n;
+                      return (
+                        <StarButton
+                          key={n}
+                          type="button"
+                          role="radio"
+                          aria-label={`${n} ${t("stars", "yıldız")}`}
+                          aria-checked={filled}
+                          onClick={() => setRating(n === rating ? 0 : n)}
+                        >
+                          {filled ? (
+                            <MdStar size={22} />
+                          ) : (
+                            <MdStarBorder size={22} />
+                          )}
+                        </StarButton>
+                      );
+                    })}
+                    <RatingValue>
+                      {rating > 0 ? `${rating}/5` : t("optional", "opsiyonel")}
+                    </RatingValue>
+                  </StarsWrap>
+                </FieldBlock>
+
                 <label>
                   {t("form.text", "Yorumunuz")}
                   <textarea
@@ -253,11 +326,13 @@ export default function TestimonialSection() {
                     disabled={sending}
                   />
                 </label>
+
                 <SubmitButton type="submit" disabled={sending}>
                   {sending
                     ? t("form.sending", "Gönderiliyor...")
                     : t("form.submit", "Gönder")}
                 </SubmitButton>
+
                 {formSuccess && <FormSuccess>{formSuccess}</FormSuccess>}
                 {formError && <FormError>{formError}</FormError>}
               </TestimonialForm>
@@ -269,7 +344,7 @@ export default function TestimonialSection() {
   );
 }
 
-// ---- Styles (hiçbir değişiklik yok, responsive ve theme uyumlu) ----
+/* ----------------------- Styles ----------------------- */
 
 const Section = styled.section`
   background: ${({ theme }) => theme.colors.backgroundAlt};
@@ -341,7 +416,7 @@ const Card = styled.div`
   min-width: 0;
   transition: box-shadow 0.17s;
   &:hover {
-    box-shadow: 0 16px 44px 0 rgba(40,117,194,0.09);
+    box-shadow: 0 16px 44px 0 rgba(40, 117, 194, 0.09);
   }
 `;
 
@@ -385,6 +460,21 @@ const CardTitle = styled.span`
   letter-spacing: 0.04em;
 `;
 
+const StarsRow = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0 8px 0;
+  svg {
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+const StarsValue = styled.small`
+  margin-left: 4px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+`;
+
 const CardBody = styled.div`
   width: 100%;
   display: flex;
@@ -415,16 +505,18 @@ const AddCard = styled(Card)`
 
 const AddButton = styled.button`
   padding: 1em 2.6em;
-  background: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.buttonText};
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
   border: none;
-  border-radius: ${({ theme }) => theme.radii.lg};
+  border-radius: ${({ theme }) => theme.radii.md};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   cursor: pointer;
   box-shadow: ${({ theme }) => theme.shadows.button};
   transition: background 0.14s;
-  &:hover { background: ${({ theme }) => theme.colors.primaryHover}; }
+  &:hover {
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+  }
 `;
 
 const ModalOverlay = styled.div`
@@ -460,35 +552,84 @@ const FormTitle = styled.h3`
 const TestimonialForm = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 1.08em;
-  width: 100%;
+  gap: 1rem;
+
   label {
+    display: block;
     font-size: ${({ theme }) => theme.fontSizes.base};
     color: ${({ theme }) => theme.colors.textSecondary};
     font-weight: ${({ theme }) => theme.fontWeights.medium};
-    margin-bottom: 0.22em;
-    font-family: ${({ theme }) => theme.fonts.main};
+    margin-bottom: 0.25rem;
+    font-family: ${({ theme }) => theme.fonts.body};
   }
-  input, textarea {
+
+  input,
+  textarea {
+    width: 100%;
     border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.inputBorder};
-    border-radius: ${({ theme }) => theme.radii.sm};
+    border-radius: ${({ theme }) => theme.radii.md};
     font-size: ${({ theme }) => theme.fontSizes.base};
-    padding: 0.85em 0.85em;
-    margin-top: 0.32em;
+    padding: 0.85em;
     background: ${({ theme }) => theme.colors.inputBackground};
-    font-family: inherit;
-    resize: none;
+    color: ${({ theme }) => theme.colors.text};
+    transition: border-color ${({ theme }) => theme.transition.fast},
+      background ${({ theme }) => theme.transition.fast};
+
     &:focus {
-      border-color: ${({ theme }) => theme.colors.primary};
+      border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+      background: ${({ theme }) => theme.colors.inputBackgroundFocus};
       outline: none;
+      box-shadow: ${({ theme }) => theme.colors.shadowHighlight};
     }
   }
+
+  textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+`;
+
+
+const FieldBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+const FieldLabel = styled.label`
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+`;
+
+const StarsWrap = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  svg {
+    color: ${({ theme }) => theme.colors.primary};
+  }
+  outline: none;
+`;
+const StarButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+`;
+const RatingValue = styled.span`
+  margin-left: 6px;
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const SubmitButton = styled.button`
   padding: 0.83em 1.7em;
-  background: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.white};
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
   border: none;
   border-radius: ${({ theme }) => theme.radii.md};
   font-size: ${({ theme }) => theme.fontSizes.md};
@@ -497,7 +638,9 @@ const SubmitButton = styled.button`
   transition: background 0.15s;
   cursor: pointer;
   box-shadow: ${({ theme }) => theme.shadows.button};
-  &:hover { background: ${({ theme }) => theme.colors.primaryHover}; }
+  &:hover {
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+  }
 `;
 
 const FormSuccess = styled.div`

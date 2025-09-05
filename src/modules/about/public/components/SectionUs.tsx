@@ -29,22 +29,30 @@ const groupStagger = {
 
 export default function AboutUsSection() {
   const { i18n, t } = useI18nNamespace("about", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const lang = ((i18n.resolvedLanguage || i18n.language || "tr").slice(0, 2) as SupportedLocale);
 
-  const { about, loading, error } = useAppSelector((s) => s.about ?? {});
+  /* 🔧 ÖNEMLİ: Her alanı ayrı select et → güvenilir re-render */
+  const aboutList = useAppSelector((s) => s.about?.about);
+  const loading = useAppSelector((s) => s.about?.loading);
+  const error   = useAppSelector((s) => s.about?.error);
+
+  
+
   const validAbout: IAbout[] = useMemo(
-    () => (Array.isArray(about) ? about.filter((x) => x && typeof x === "object") : []),
-    [about]
+    () => (Array.isArray(aboutList) ? aboutList.filter((x) => x && typeof x === "object") : []),
+    [aboutList]
   );
+
+  const hasData = validAbout.length > 0;
 
   // Başlık/özet olan ilk kaydı seç (güçlendirilmiş)
   const main = useMemo<IAbout | null>(() => {
-    if (!validAbout.length) return null;
+    if (!hasData) return null;
     const preferred = validAbout.find(
       (x) => (x.title?.[lang] || x.title?.en) && (x.summary?.[lang] || x.summary?.en)
     );
     return preferred || validAbout[0];
-  }, [validAbout, lang]);
+  }, [validAbout, lang, hasData]);
 
   const features = useMemo(() => {
     const arr = [validAbout[1], validAbout[2]].filter(Boolean) as IAbout[];
@@ -55,7 +63,8 @@ export default function AboutUsSection() {
     }));
   }, [validAbout, lang]);
 
-  if (loading) {
+  /* ---- erken dönüşler ---- */
+  if (loading && !hasData) {
     return (
       <Section>
         <Grid>
@@ -70,14 +79,16 @@ export default function AboutUsSection() {
       </Section>
     );
   }
-  if (error) {
+
+  if (error && !hasData) {
     return (
       <Section>
         <Grid><ErrorMessage /></Grid>
       </Section>
     );
   }
-  if (!validAbout.length) {
+
+  if (!hasData) {
     return (
       <Section>
         <Grid>
@@ -95,13 +106,9 @@ export default function AboutUsSection() {
 
   return (
     <Section
+      /* 💡 Data geldikten SONRA ağaç değişsin → olası hydration/animation edge-case’lerini sıfırlar */
+      key={hasData ? "about-has" : "about-none"}
       variants={groupStagger}
-      /* 🚫 HATA KAYNAĞI: whileInView görünürlük eşiğine kadar çocuklar opacity:0 kalıyordu */
-      /* initial="initial" */
-      /* whileInView="animate" */
-      /* viewport={{ once: true, amount: 0.25 }} */
-
-      /* ✔ ÇÖZÜM 1: Mount’ta hemen animasyona geç (içerik her zaman görünür) */
       initial="initial"
       animate="animate"
     >
@@ -124,12 +131,7 @@ export default function AboutUsSection() {
         </LeftCol>
 
         {/* SAĞ — başlık, metin ve maddeler */}
-        <RightCol
-          as={motion.div}
-          variants={groupStagger}
-          /* ✔ ÇÖZÜM 2 (opsiyonel): görünürlük tabanlı tetik istenirse eşiği çok düşür */
-          /* viewport={{ once: true, amount: 0.01 }} */
-        >
+        <RightCol as={motion.div} variants={groupStagger}>
           <MinorTitle as={motion.div} variants={fadeUp}>
             {t("page.aboutus.minorTitle", "About Us")}
           </MinorTitle>
@@ -163,7 +165,7 @@ export default function AboutUsSection() {
   );
 }
 
-/* ===================== Styles (antalya2Theme uyumlu) ===================== */
+/* ===================== Styles ===================== */
 
 const Section = styled(motion.section)`
   background: ${({ theme }) => theme.colors.sectionBackground};
@@ -196,7 +198,6 @@ const Grid = styled.div`
   }
 `;
 
-/* SOL sütun */
 const LeftCol = styled.div`
   flex: 1.1 1 440px;
   min-width: 320px;
@@ -219,7 +220,6 @@ const VisualBoard = styled.div`
   width: 100%;
 `;
 
-/* Next/Image wrapper – temalı arkaplan/border/shadow ve radius */
 const MainFigure = styled(motion.div)`
   width: 100%;
   margin: 0;
@@ -227,7 +227,6 @@ const MainFigure = styled(motion.div)`
   border-radius: ${({ theme }) => theme.radii.xl};
   overflow: hidden;
 
-  /* Next/Image dış <span> için */
   & > span {
     position: relative !important;
     display: block !important;
@@ -235,7 +234,6 @@ const MainFigure = styled(motion.div)`
     height: auto !important;
   }
 
-  /* <img> için */
   & > span > img {
     display: block !important;
     width: 100% !important;
@@ -256,7 +254,6 @@ const MainFigure = styled(motion.div)`
 
 const MainImg = styled(Image)``;
 
-/* SAĞ sütun */
 const RightCol = styled.div`
   display: flex;
   flex-direction: column;
@@ -296,7 +293,6 @@ const Desc = styled.p`
   margin-bottom: ${({ theme }) => theme.spacings.md};
 `;
 
-/* Maddeler – motion + temalı renkler */
 const Bullets = styled(motion.ul)`
   list-style: none;
   padding: 0;

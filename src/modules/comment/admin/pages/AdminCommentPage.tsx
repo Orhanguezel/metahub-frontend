@@ -1,3 +1,4 @@
+// src/modules/comment/components/AdminCommentPage.tsx
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
@@ -8,12 +9,36 @@ import {
   togglePublishComment,
   deleteComment,
   clearCommentMessages,
-  setCommentsAdminQuery,   // ✅ sadece query güncelliyoruz (fetch parent’ta)
-} from "@/modules/comment/slice/commentSlice";
-import type { IComment, CommentContentType, CommentType } from "@/modules/comment/types";
+  setCommentsAdminQuery,
+} from "@/modules/comment/slice/slice";
+import type {
+  IComment,
+  CommentContentType,
+  CommentType,
+} from "@/modules/comment/types";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations3 from "@/modules/comment/locales";
-import {ReplyForm} from "@/modules/comment";
+import translations from "@/modules/comment/locales";
+import { ReplyForm } from "@/modules/comment";
+import { MdStar, MdStarBorder } from "react-icons/md";
+
+/* ----- yardımcı: güvenli yıldız bileşeni ----- */
+const RatingStars = ({ value }: { value?: number | null }) => {
+  if (typeof value !== "number" || value <= 0) return <>-</>;
+  // 1..5 aralığına sabitle
+  const r = Math.max(1, Math.min(5, Math.trunc(value)));
+  return (
+    <StarsRow title={`${r}/5`}>
+      {[1, 2, 3, 4, 5].map((n) =>
+        r >= n ? (
+          <MdStar key={n} size={16} />
+        ) : (
+          <MdStarBorder key={n} size={16} />
+        )
+      )}
+      <StarsValue>{r}/5</StarsValue>
+    </StarsRow>
+  );
+};
 
 /* --- helpers --- */
 const fmtDateTime = (v?: string) => {
@@ -22,7 +47,10 @@ const fmtDateTime = (v?: string) => {
   return isNaN(d.valueOf()) ? "-" : d.toLocaleString();
 };
 
-const contentTypeOptions: { value: CommentContentType | "all"; label: string }[] = [
+const contentTypeOptions: {
+  value: CommentContentType | "all";
+  label: string;
+}[] = [
   { value: "all", label: "Tüm Türler" },
   { value: "blog", label: "Blog" },
   { value: "product", label: "Product" },
@@ -36,9 +64,8 @@ const contentTypeOptions: { value: CommentContentType | "all"; label: string }[]
   { value: "company", label: "Company" },
   { value: "ensotekprod", label: "Ensotekprod" },
   { value: "sparepart", label: "Sparepart" },
-  { value: "portfolio", label: "Portfolio" },
-  { value: "skill", label: "Skill" },
-  { value: "team", label: "Team" },
+  { value: "menuitem", label: "Menuitem" },
+  { value: "global", label: "Global" }, // ✅ artık union’da var
 ];
 
 const typeOptions: { value: CommentType | "all"; label: string }[] = [
@@ -53,22 +80,28 @@ const typeOptions: { value: CommentType | "all"; label: string }[] = [
 
 export default function AdminCommentPage() {
   const dispatch = useAppDispatch();
-  const { t } = useI18nNamespace("testimonial", translations3);
+  const { t } = useI18nNamespace("comment", translations);
 
-  const { commentsAdmin = [], loading, successMessage, error, pagination } = useAppSelector(
-    (s) => s.comments
-  );
+  const {
+    commentsAdmin = [],
+    loading,
+    successMessage,
+    error,
+    pagination,
+  } = useAppSelector((s) => s.comments);
 
   const [typeFilter, setTypeFilter] = useState<"all" | CommentType>("all");
-  const [contentTypeFilter, setContentTypeFilter] = useState<"all" | CommentContentType>("all");
-  const [publishFilter, setPublishFilter] = useState<"all" | "published" | "unpublished">("all");
+  const [contentTypeFilter, setContentTypeFilter] = useState<
+    "all" | CommentContentType
+  >("all");
+  const [publishFilter, setPublishFilter] = useState<
+    "all" | "published" | "unpublished"
+  >("all");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // ❌ Modal yok → seçili yoruma inline form göstereceğiz
   const [selected, setSelected] = useState<IComment | null>(null);
 
-  // ✅ İlk açılış + sayfa / tip değişimlerinde SADECE query güncelle (parent fetch ediyor)
   useEffect(() => {
     dispatch(
       setCommentsAdminQuery({
@@ -78,7 +111,6 @@ export default function AdminCommentPage() {
     );
   }, [dispatch, currentPage, typeFilter]);
 
-  // Toasts
   useEffect(() => {
     if (successMessage) toast.success(successMessage);
     if (error) toast.error(error);
@@ -88,21 +120,31 @@ export default function AdminCommentPage() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return (commentsAdmin || []).filter((c) => {
-      const user = c.userId && typeof c.userId === "object" ? c.userId : undefined;
+      const user =
+        c.userId && typeof c.userId === "object" ? c.userId : undefined;
       const name = user?.name || c.name || "";
       const email = user?.email || c.email || "";
-      const matchesContentType = contentTypeFilter === "all" || c.contentType === contentTypeFilter;
+      const matchesContentType =
+        contentTypeFilter === "all" || c.contentType === contentTypeFilter;
       const matchesType = typeFilter === "all" || c.type === typeFilter;
       const matchesStatus =
         publishFilter === "all" ||
         (publishFilter === "published" && c.isPublished) ||
         (publishFilter === "unpublished" && !c.isPublished);
-      const matchesSearch = [name, email, c.label ?? "", c.text ?? ""].join(" ").toLowerCase().includes(q);
-      return matchesContentType && matchesType && matchesStatus && matchesSearch;
+      const matchesSearch = [name, email, c.label ?? "", c.text ?? ""]
+        .join(" ")
+        .toLowerCase()
+        .includes(q);
+      return (
+        matchesContentType && matchesType && matchesStatus && matchesSearch
+      );
     });
   }, [commentsAdmin, contentTypeFilter, typeFilter, publishFilter, search]);
 
-  const handleToggle = useCallback((id: string) => dispatch(togglePublishComment(id)), [dispatch]);
+  const handleToggle = useCallback(
+    (id: string) => dispatch(togglePublishComment(id)),
+    [dispatch]
+  );
   const handleDelete = useCallback(
     (id: string) => {
       if (confirm(t("confirmDelete", "Yorumu silmek istiyor musunuz?"))) {
@@ -120,7 +162,7 @@ export default function AdminCommentPage() {
         commentType: typeFilter !== "all" ? typeFilter : undefined,
       })
     );
-    setSelected(null); // sayfa değişince formu kapat
+    setSelected(null);
   };
 
   return (
@@ -129,24 +171,23 @@ export default function AdminCommentPage() {
       <Header>
         <TitleBlock>
           <h1>{t("admin.title", "Yorum Yönetimi")}</h1>
-          <Subtitle>{t("admin.subtitle", "Site genelindeki yorumları yönetin")}</Subtitle>
+          <Subtitle>
+            {t("admin.subtitle", "Site genelindeki yorumları yönetin")}
+          </Subtitle>
         </TitleBlock>
         <Right>
           <Counter aria-label="comment-count">{commentsAdmin.length}</Counter>
         </Right>
       </Header>
 
-      {/* Inline Reply Form (seçili yorum varsa) */}
+      {/* Inline Reply Form */}
       {selected && (
         <InlineFormCard>
-          <ReplyForm
-            comment={selected}
-            onClose={() => setSelected(null)}
-          />
+          <ReplyForm comment={selected} onClose={() => setSelected(null)} />
         </InlineFormCard>
       )}
 
-      {/* Toolbar (filters + search) */}
+      {/* Toolbar */}
       <Toolbar>
         <Select
           value={typeFilter}
@@ -162,6 +203,7 @@ export default function AdminCommentPage() {
             );
             setSelected(null);
           }}
+          aria-label={t("filter.typeLabel", "Tip")}
         >
           {typeOptions.map((o) => (
             <option key={o.value} value={o.value}>
@@ -170,7 +212,11 @@ export default function AdminCommentPage() {
           ))}
         </Select>
 
-        <Select value={contentTypeFilter} onChange={(e) => setContentTypeFilter(e.target.value as any)}>
+        <Select
+          value={contentTypeFilter}
+          onChange={(e) => setContentTypeFilter(e.target.value as any)}
+          aria-label={t("contentType", "İçerik Türü")}
+        >
           {contentTypeOptions.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
@@ -178,10 +224,16 @@ export default function AdminCommentPage() {
           ))}
         </Select>
 
-        <Select value={publishFilter} onChange={(e) => setPublishFilter(e.target.value as any)}>
+        <Select
+          value={publishFilter}
+          onChange={(e) => setPublishFilter(e.target.value as any)}
+          aria-label={t("status", "Durum")}
+        >
           <option value="all">{t("filter.allStatus", "Tüm Durumlar")}</option>
           <option value="published">{t("published", "Yayınlandı")}</option>
-          <option value="unpublished">{t("unpublished", "Yayınlanmadı")}</option>
+          <option value="unpublished">
+            {t("unpublished", "Yayınlanmadı")}
+          </option>
         </Select>
 
         <SearchInput
@@ -204,6 +256,7 @@ export default function AdminCommentPage() {
               <th>{t("contentTitle", "İçerik Başlığı")}</th>
               <th>{t("label", "Başlık")}</th>
               <th>{t("comment", "Yorum")}</th>
+              <th>{t("rating", "Puan")}</th>
               <th>{t("date", "Tarih")}</th>
               <th>{t("status", "Durum")}</th>
               <th aria-label={t("admin.actions", "İşlemler")} />
@@ -212,20 +265,32 @@ export default function AdminCommentPage() {
           <tbody>
             {!loading && filtered.length === 0 ? (
               <tr>
-                <td colSpan={10}>
+                <td colSpan={11}>
                   <Empty>∅</Empty>
                 </td>
               </tr>
             ) : (
-              filtered.map((c: any) => {
-                const user = c.userId && typeof c.userId === "object" ? c.userId : undefined;
+              filtered.map((c) => {
+                const user =
+                  c.userId && typeof c.userId === "object"
+                    ? c.userId
+                    : undefined;
                 const contentTitle =
-                  c.contentId && typeof c.contentId === "object" && typeof (c.contentId as any).title === "string"
+                  c.contentId &&
+                  typeof c.contentId === "object" &&
+                  typeof (c.contentId as any).title === "string"
                     ? (c.contentId as any).title
                     : "-";
                 const isSelected = selected?._id === c._id;
                 return (
-                  <tr key={c._id} style={isSelected ? { outline: "2px solid var(--primary)" } : undefined}>
+                  <tr
+                    key={c._id}
+                    style={
+                      isSelected
+                        ? { outline: "2px solid var(--primary)" }
+                        : undefined
+                    }
+                  >
                     <td>{c.type || "-"}</td>
                     <td>{c.contentType}</td>
                     <td>{user?.name || c.name || "-"}</td>
@@ -233,6 +298,9 @@ export default function AdminCommentPage() {
                     <td>{contentTitle}</td>
                     <td>{c.label || "-"}</td>
                     <td>{c.text}</td>
+                    <td>
+                      <RatingStars value={c.rating} />
+                    </td>
                     <td>{fmtDateTime(c.createdAt)}</td>
                     <td>
                       {c.isPublished ? (
@@ -243,10 +311,18 @@ export default function AdminCommentPage() {
                     </td>
                     <td className="actions">
                       <Row>
-                        <Secondary onClick={() => handleToggle(c._id!)}>{t("toggle", "Aç/Kapat")}</Secondary>
-                        <Danger onClick={() => handleDelete(c._id!)}>{t("delete", "Sil")}</Danger>
-                        <Primary onClick={() => setSelected(isSelected ? null : c)}>
-                          {isSelected ? t("admin.closeForm", "Formu Kapat") : t("admin.reply", "Yanıtla")}
+                        <Secondary onClick={() => handleToggle(c._id!)}>
+                          {t("toggle", "Aç/Kapat")}
+                        </Secondary>
+                        <Danger onClick={() => handleDelete(c._id!)}>
+                          {t("delete", "Sil")}
+                        </Danger>
+                        <Primary
+                          onClick={() => setSelected(isSelected ? null : c)}
+                        >
+                          {isSelected
+                            ? t("admin.closeForm", "Formu Kapat")
+                            : t("admin.reply", "Yanıtla")}
                         </Primary>
                       </Row>
                     </td>
@@ -262,9 +338,12 @@ export default function AdminCommentPage() {
       <CardsWrap aria-busy={!!loading}>
         {filtered.length === 0 && !loading && <Empty>∅</Empty>}
         {filtered.map((c) => {
-          const user = c.userId && typeof c.userId === "object" ? c.userId : undefined;
+          const user =
+            c.userId && typeof c.userId === "object" ? c.userId : undefined;
           const contentTitle =
-            c.contentId && typeof c.contentId === "object" && typeof (c.contentId as any).title === "string"
+            c.contentId &&
+            typeof c.contentId === "object" &&
+            typeof (c.contentId as any).title === "string"
               ? (c.contentId as any).title
               : "-";
           const isSelected = selected?._id === c._id;
@@ -272,11 +351,15 @@ export default function AdminCommentPage() {
             <Card key={c._id}>
               <CardHeader>
                 <HeaderLeft>
-                  <NameTitle title={user?.name || c.name || "-"}>{user?.name || c.name || "-"}</NameTitle>
+                  <NameTitle title={user?.name || c.name || "-"}>
+                    {user?.name || c.name || "-"}
+                  </NameTitle>
                   <SmallText>{user?.email || c.email || "-"}</SmallText>
                 </HeaderLeft>
                 <Status $on={!!c.isPublished}>
-                  {c.isPublished ? t("published", "Yayınlandı") : t("unpublished", "Yayınlanmadı")}
+                  {c.isPublished
+                    ? t("published", "Yayınlandı")
+                    : t("unpublished", "Yayınlanmadı")}
                 </Status>
               </CardHeader>
 
@@ -299,17 +382,27 @@ export default function AdminCommentPage() {
                 <SmallText>
                   <b>{t("date", "Tarih")}:</b> {fmtDateTime(c.createdAt)}
                 </SmallText>
+                <SmallText
+                  style={{ display: "flex", alignItems: "center", gap: 6 }}
+                >
+                  <b>{t("rating", "Puan")}:</b> <RatingStars value={c.rating} />
+                </SmallText>
               </CardBody>
 
               <CardActions>
-                <Secondary onClick={() => handleToggle(c._id!)}>{t("toggle", "Aç/Kapat")}</Secondary>
-                <Danger onClick={() => handleDelete(c._id!)}>{t("delete", "Sil")}</Danger>
+                <Secondary onClick={() => handleToggle(c._id!)}>
+                  {t("toggle", "Aç/Kapat")}
+                </Secondary>
+                <Danger onClick={() => handleDelete(c._id!)}>
+                  {t("delete", "Sil")}
+                </Danger>
                 <Primary onClick={() => setSelected(isSelected ? null : c)}>
-                  {isSelected ? t("admin.closeForm", "Formu Kapat") : t("admin.reply", "Yanıtla")}
+                  {isSelected
+                    ? t("admin.closeForm", "Formu Kapat")
+                    : t("admin.reply", "Yanıtla")}
                 </Primary>
               </CardActions>
 
-              {/* Kartın altında inline form */}
               {isSelected && (
                 <InlineFormCard style={{ marginTop: 12 }}>
                   <ReplyForm comment={c} onClose={() => setSelected(null)} />
@@ -324,7 +417,11 @@ export default function AdminCommentPage() {
       {pagination?.pages > 1 && (
         <PaginationBar>
           {Array.from({ length: pagination.pages }, (_, i) => (
-            <button key={i} onClick={() => gotoPage(i + 1)} disabled={pagination.page === i + 1}>
+            <button
+              key={i}
+              onClick={() => gotoPage(i + 1)}
+              disabled={pagination.page === i + 1}
+            >
               {i + 1}
             </button>
           ))}
@@ -334,7 +431,7 @@ export default function AdminCommentPage() {
   );
 }
 
-/* ---------------- styled (classic admin theme) ---------------- */
+/* ---------------- styled (Antalya2 teması) ---------------- */
 
 const PageWrap = styled.div`
   max-width: ${({ theme }) => theme.layout.containerWidth};
@@ -343,169 +440,302 @@ const PageWrap = styled.div`
 `;
 
 const Header = styled.div`
-  display:flex; align-items:center; justify-content:space-between;
-  margin-bottom:${({ theme }) => theme.spacings.lg};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.spacings.lg};
   ${({ theme }) => theme.media.mobile} {
-    flex-direction:column; align-items:flex-start; gap:${({ theme }) => theme.spacings.sm};
+    flex-direction: column;
+    align-items: flex-start;
+    gap: ${({ theme }) => theme.spacings.sm};
   }
 `;
-const TitleBlock = styled.div`display:flex; flex-direction:column; gap:4px; h1{ margin:0; }`;
-const Subtitle = styled.p`
-  margin:0; color:${({ theme }) => theme.colors.textSecondary};
-  font-size:${({ theme }) => theme.fontSizes.sm};
+const TitleBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  h1 {
+    margin: 0;
+    font-size: ${({ theme }) => theme.fontSizes.h3};
+  }
 `;
-const Right = styled.div`display:flex; gap:${({ theme }) => theme.spacings.sm}; align-items:center;`;
+const Subtitle = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+`;
+const Right = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.sm};
+  align-items: center;
+`;
 const Counter = styled.span`
-  padding:6px 10px; border-radius:${({ theme }) => theme.radii.pill};
-  background:${({ theme }) => theme.colors.backgroundAlt};
-  font-weight:${({ theme }) => theme.fontWeights.medium};
+  padding: 6px 10px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.colors.border};
 `;
 
+
 const InlineFormCard = styled.div`
-  background:${({ theme }) => theme.colors.cardBackground};
-  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
-  border-radius:${({ theme }) => theme.radii.lg};
-  box-shadow:${({ theme }) => theme.cards.shadow};
-  padding:${({ theme }) => theme.spacings.md};
-  margin-bottom:${({ theme }) => theme.spacings.md};
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  padding: ${({ theme }) => theme.spacings.md};
+  margin-bottom: ${({ theme }) => theme.spacings.md};
 `;
 
 const Toolbar = styled.div`
-  display:flex; gap:${({ theme }) => theme.spacings.sm}; justify-content:flex-end; flex-wrap:wrap;
-  margin-bottom:${({ theme }) => theme.spacings.sm};
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.sm};
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
 const SearchInput = styled.input`
-  font-size:${({ theme }) => theme.fontSizes.sm};
-  padding:10px 12px;
-  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.inputBorder};
-  border-radius:${({ theme }) => theme.radii.md};
-  min-width:260px;
-  background:${({ theme }) => theme.inputs.background};
-  color:${({ theme }) => theme.inputs.text};
-  &::placeholder{ color:${({ theme }) => theme.inputs.placeholder}; }
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  padding: 10px 12px;
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.colors.inputBorder};
+  border-radius: ${({ theme }) => theme.radii.md};
+  min-width: 260px;
+  background: ${({ theme }) => theme.inputs.background};
+  color: ${({ theme }) => theme.inputs.text};
+  &::placeholder {
+    color: ${({ theme }) => theme.inputs.placeholder};
+  }
 `;
+
 const Select = styled.select`
-  font-size:${({ theme }) => theme.fontSizes.sm};
-  padding:10px 12px;
-  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.inputBorder};
-  border-radius:${({ theme }) => theme.radii.md};
-  background:${({ theme }) => theme.inputs.background};
-  color:${({ theme }) => theme.inputs.text};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  padding: 10px 12px;
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.colors.inputBorder};
+  border-radius: ${({ theme }) => theme.radii.md};
+  background: ${({ theme }) => theme.inputs.background};
+  color: ${({ theme }) => theme.inputs.text};
 `;
 
 const TableWrap = styled.div`
-  width:100%; overflow-x:auto; border-radius:${({ theme }) => theme.radii.lg};
-  box-shadow:${({ theme }) => theme.cards.shadow};
-  background:${({ theme }) => theme.colors.cardBackground};
-  ${({ theme }) => theme.media.mobile}{ display:none; }
+  width: 100%;
+  overflow-x: auto;
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  background: ${({ theme }) => theme.colors.cardBackground};
+  ${({ theme }) => theme.media.mobile} {
+    display: none;
+  }
 `;
 const Table = styled.table`
-  width:100%; border-collapse:collapse;
-  thead th{
-    background:${({ theme }) => theme.colors.tableHeader};
-    color:${({ theme }) => theme.colors.textSecondary};
-    font-weight:${({ theme }) => theme.fontWeights.semiBold};
-    font-size:${({ theme }) => theme.fontSizes.sm};
-    padding:${({ theme }) => theme.spacings.md}; text-align:left; white-space:nowrap;
+  width: 100%;
+  border-collapse: collapse;
+  thead th {
+    background: ${({ theme }) => theme.colors.tableHeader};
+    color: ${({ theme }) => theme.colors.textSecondary};
+    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    padding: ${({ theme }) => theme.spacings.md};
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: ${({ theme }) => theme.borders.thin}
+      ${({ theme }) => theme.colors.border};
   }
-  td{
-    padding:${({ theme }) => theme.spacings.md};
-    border-bottom:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
-    font-size:${({ theme }) => theme.fontSizes.sm}; vertical-align:middle;
+  td {
+    padding: ${({ theme }) => theme.spacings.md};
+    border-bottom: ${({ theme }) => theme.borders.thin}
+      ${({ theme }) => theme.colors.borderBright};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    vertical-align: middle;
   }
-  td.actions{ text-align:right; }
-  tbody tr:hover td{ background:${({ theme }) => theme.colors.hoverBackground}; }
+  td.actions {
+    text-align: right;
+  }
+  tbody tr:hover td {
+    background: ${({ theme }) => theme.colors.hoverBackground};
+  }
 `;
+
+
+
 const CardsWrap = styled.div`
-  display:none;
+  display: none;
   ${({ theme }) => theme.media.mobile} {
-    display:grid; grid-template-columns:1fr; gap:${({ theme }) => theme.spacings.md};
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: ${({ theme }) => theme.spacings.md};
   }
 `;
 const Card = styled.article`
-  background:${({ theme }) => theme.colors.cardBackground};
-  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
-  border-radius:${({ theme }) => theme.radii.lg};
-  box-shadow:${({ theme }) => theme.cards.shadow};
-  overflow:hidden;
-`;
-const CardHeader = styled.header`
-  background:${({ theme }) => theme.colors.primaryLight};
-  color:${({ theme }) => theme.colors.title};
-  padding:${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md};
-  display:flex; align-items:center; justify-content:space-between; gap:${({ theme }) => theme.spacings.sm};
-  border-bottom:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
-`;
-const HeaderLeft = styled.div`display:flex; flex-direction:column; gap:2px; min-width:0;`;
-const NameTitle = styled.span`
-  font-size:${({ theme }) => theme.fontSizes.sm};
-  color:${({ theme }) => theme.colors.textSecondary};
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:70vw;
-`;
-const SmallText = styled.span`font-size:${({ theme }) => theme.fontSizes.xsmall}; color:${({ theme }) => theme.colors.textSecondary};`;
-const Status = styled.span<{ $on:boolean }>`
-  padding:.2em .6em; border-radius:${({ theme }) => theme.radii.pill};
-  background:${({ $on, theme }) => ($on ? theme.colors.successBg : theme.colors.inputBackgroundLight)};
-  color:${({ $on, theme }) => ($on ? theme.colors.success : theme.colors.textSecondary)};
-  font-size:${({ theme }) => theme.fontSizes.xsmall};
-`;
-const CardBody = styled.div`padding:${({ theme }) => theme.spacings.md}; display:flex; flex-direction:column; gap:6px;`;
-const CardActions = styled.div`
-  display:flex; gap:${({ theme }) => theme.spacings.xs}; justify-content:flex-end;
-  padding:${({ theme }) => theme.spacings.sm} ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.md};
-  border-top:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.borderBright};
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.colors.borderBright};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.cards.shadow};
+  overflow: hidden;
 `;
 
-const Row = styled.div`display:flex; gap:${({ theme }) => theme.spacings.xs}; flex-wrap:wrap; justify-content:flex-end;`;
+
+
+const CardHeader = styled.header`
+  background: ${({ theme }) => theme.colors.primaryLight};
+  color: ${({ theme }) => theme.colors.title};
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.md};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacings.sm};
+  border-bottom: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.colors.borderBright};
+`;
+
+const HeaderLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+`;
+const NameTitle = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70vw;
+`;
+const SmallText = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+const Status = styled.span<{ $on: boolean }>`
+  padding: 0.2em 0.6em;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ $on, theme }) =>
+    $on ? theme.colors.successBg : theme.colors.inputBackgroundLight};
+  color: ${({ $on, theme }) =>
+    $on ? theme.colors.success : theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+`;
+const CardBody = styled.div`
+  padding: ${({ theme }) => theme.spacings.md};
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+const CardActions = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.xs};
+  justify-content: flex-end;
+  padding: ${({ theme }) => theme.spacings.sm}
+    ${({ theme }) => theme.spacings.md} ${({ theme }) => theme.spacings.md};
+  border-top: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.colors.borderBright};
+`;
+
+
+const Row = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.xs};
+  flex-wrap: wrap;
+  justify-content: flex-end;
+`;
 
 const BaseBtn = styled.button`
-  padding:8px 10px; border-radius:${({ theme }) => theme.radii.md};
-  border:${({ theme }) => theme.borders.thin} transparent; cursor:pointer;
-  font-weight:${({ theme }) => theme.fontWeights.medium};
-  box-shadow:${({ theme }) => theme.shadows.button};
-  transition:opacity ${({ theme }) => theme.transition.normal};
-  &:hover:not(:disabled){ opacity:${({ theme }) => theme.opacity.hover}; }
-  &:disabled{ opacity:${({ theme }) => theme.opacity.disabled}; cursor:not-allowed; }
+  padding: 8px 10px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: ${({ theme }) => theme.borders.thin} transparent;
+  cursor: pointer;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  box-shadow: ${({ theme }) => theme.shadows.button};
+  transition: opacity ${({ theme }) => theme.transition.normal};
+  &:hover:not(:disabled) {
+    opacity: ${({ theme }) => theme.opacity.hover};
+  }
+  &:disabled {
+    opacity: ${({ theme }) => theme.opacity.disabled};
+    cursor: not-allowed;
+  }
 `;
 const Secondary = styled(BaseBtn)`
-  background:${({ theme }) => theme.buttons.secondary.background};
-  color:${({ theme }) => theme.buttons.secondary.text};
-  &:hover:not(:disabled){
-    background:${({ theme }) => theme.buttons.secondary.backgroundHover};
-    color:${({ theme }) => theme.buttons.secondary.textHover};
+  background: ${({ theme }) => theme.buttons.secondary.background};
+  color: ${({ theme }) => theme.buttons.secondary.text};
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.buttons.secondary.backgroundHover};
+    color: ${({ theme }) => theme.buttons.secondary.textHover};
   }
 `;
 const Primary = styled(BaseBtn)`
-  background:${({ theme }) => theme.buttons.primary.background};
-  color:${({ theme }) => theme.buttons.primary.text};
-  &:hover:not(:disabled){ background:${({ theme }) => theme.buttons.primary.backgroundHover}; }
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.buttons.primary.backgroundHover};
+  }
 `;
 const Danger = styled(BaseBtn)`
-  background:${({ theme }) => theme.buttons.danger.background};
-  color:${({ theme }) => theme.buttons.danger.text};
-  &:hover:not(:disabled){ background:${({ theme }) => theme.buttons.danger.backgroundHover}; }
+  background: ${({ theme }) => theme.buttons.danger.background};
+  color: ${({ theme }) => theme.buttons.danger.text};
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.buttons.danger.backgroundHover};
+  }
 `;
 const Badge = styled.span<{ $on?: boolean }>`
-  display:inline-block; padding:.2em .6em; border-radius:${({ theme }) => theme.radii.pill};
-  background:${({ $on, theme }) => ($on ? theme.colors.successBg : theme.colors.warningBackground)};
-  color:${({ $on, theme }) => ($on ? theme.colors.success : theme.colors.textOnWarning)};
-  font-size:${({ theme }) => theme.fontSizes.xsmall};
+  display: inline-block;
+  padding: 0.2em 0.6em;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ $on, theme }) =>
+    $on ? theme.colors.successBg : theme.colors.warningBackground};
+  color: ${({ $on, theme }) =>
+    $on ? theme.colors.success : theme.colors.textOnWarning};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+`;
+
+const StarsRow = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  svg {
+    color: ${({ theme }) => theme.colors.accent};
+  }
+`;
+const StarsValue = styled.small`
+  margin-left: 4px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
 `;
 
 const Empty = styled.div`
-  display:flex; align-items:center; justify-content:center; width:100%; height:100%;
-  color:${({ theme }) => theme.colors.textSecondary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const PaginationBar = styled.div`
   margin-top: ${({ theme }) => theme.spacings.lg};
-  display:flex; gap:${({ theme }) => theme.spacings.xs}; justify-content:center;
-  button{
-    padding:${({ theme }) => theme.spacings.xs} ${({ theme }) => theme.spacings.sm};
-    border-radius:${({ theme }) => theme.radii.md};
-    border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
-    background:${({ theme }) => theme.colors.cardBackground};
-    cursor:pointer;
-    &:disabled{ opacity:${({ theme }) => theme.opacity.disabled}; cursor:not-allowed; }
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.xs};
+  justify-content: center;
+  button {
+    padding: ${({ theme }) => theme.spacings.xs}
+      ${({ theme }) => theme.spacings.sm};
+    border-radius: ${({ theme }) => theme.radii.md};
+    border: ${({ theme }) => theme.borders.thin}
+      ${({ theme }) => theme.colors.border};
+    background: ${({ theme }) => theme.colors.cardBackground};
+    cursor: pointer;
+    &:disabled {
+      opacity: ${({ theme }) => theme.opacity.disabled};
+      cursor: not-allowed;
+    }
+    &:not(:disabled):hover {
+      box-shadow: ${({ theme }) => theme.shadows.xs};
+    }
   }
 `;
+

@@ -23,6 +23,8 @@ import { getUILang } from "@/i18n/getUILang";
 import { buildDietChips } from "@/modules/menu/public/components/utils/buildDietChips";
 import { useMenuitemReactions } from "@/hooks/useMenuitemReactions";
 
+import MenuItemComments from "@/modules/menu/public/components/MenuItemComments";
+
 type Props = {
   item: IMenuItem;
   lang?: SupportedLocale; // opsiyonel: UI dili dinamik
@@ -416,6 +418,7 @@ export default function MenuItemDetail({
               <QVItem>🚚 {tl("fastDelivery", "Hızlı Teslimat")}</QVItem>
             </QVGrid>
           </QuickView>
+          <MenuItemComments itemId={String((item as any)._id || "")} />
         </RightCol>
       </Grid>
     </PageWrap>

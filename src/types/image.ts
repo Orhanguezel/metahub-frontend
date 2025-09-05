@@ -43,4 +43,7 @@ export type ImageType =
   | "portfolio"
   | "skill"
   | "apartment"
+  | "menuitem"
+  | "menu"
+  | "menucategory"
   | "misc";

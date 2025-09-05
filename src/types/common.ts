@@ -56,7 +56,6 @@ export function getTitle(
   return (
     item.title?.[lang] ||
     item.title?.en ||
-    item.title?.tr ||
     Object.values(item.title || {})[0] ||
     "-"
   );
@@ -69,7 +68,6 @@ export function getSummary(
   return (
     item.summary?.[lang] ||
     item.summary?.en ||
-    item.summary?.tr ||
     Object.values(item.summary || {})[0] ||
     "-"
   );

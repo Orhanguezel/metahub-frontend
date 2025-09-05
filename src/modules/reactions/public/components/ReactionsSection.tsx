@@ -215,30 +215,32 @@ export default function ReactionsSection() {
           )}
 
           <CarouselWindow $slotCount={slotCount} $cardWidth={cardWidth} $gap={GAP}>
-            <motion.div
-              key={animKey}
-              style={{
-                display: "flex",
-                gap: `${GAP}px`,
-                minHeight: 0,
-                position: "relative",
-                left: 0,
-                width: `calc(${cardWidth * cards.length + GAP * (cards.length - 1)}px)`,
-              }}
-              animate={{ x }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-              onAnimationComplete={isSliding ? onAnimationComplete : undefined}
-            >
-              {cards.map((item, idx) => (
-                <CardSlot
-                  key={normId((item as any)._id) || item.slug || item.code || idx}
-                  $cardWidth={cardWidth}
-                  $slotCount={slotCount}
-                >
-                  <ReactionsCarouselCard item={item} lang={lang} myAll={myAll} />
-                </CardSlot>
-              ))}
-            </motion.div>
+<motion.div
+  key={animKey}
+  style={{
+    display: "flex",
+    flexWrap: "nowrap",             // 🔒 satır sarmayı kapat
+    gap: `${GAP}px`,
+    minHeight: 0,
+    position: "relative",
+    left: 0,
+    width: `calc(${cardWidth * cards.length + GAP * (cards.length - 1)}px)`,
+  }}
+  animate={{ x }}
+  transition={{ duration: 0.5, ease: "easeInOut" }}
+  onAnimationComplete={isSliding ? onAnimationComplete : undefined}
+>
+  {cards.map((item, idx) => (
+    <CardSlot
+      key={normId((item as any)._id) || item.slug || item.code || idx}
+      $cardWidth={cardWidth}
+      $slotCount={slotCount}
+    >
+      <ReactionsCarouselCard item={item} lang={lang} myAll={myAll} />
+    </CardSlot>
+  ))}
+</motion.div>
+
           </CarouselWindow>
 
           {canSlide && (
@@ -256,10 +258,15 @@ export default function ReactionsSection() {
 
 /* ---------------- styles ---------------- */
 
-const Section = styled.section`
+const Section = styled(motion.section)`
   background: ${({ theme }) => theme.colors.sectionBackground};
   color: ${({ theme }) => theme.colors.text};
+  /* Alt boşluğu küçülttük */
   padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xl};
+
+  ${({ theme }) => theme.media.small} {
+    padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.lg};
+  }
 `;
 
 const Header = styled.div`
@@ -349,7 +356,9 @@ const FadeEdgeXRight = styled(FadeEdgeXLeft)`
   right: 0;
 `;
 
+// styled: CardSlot
 const CardSlot = styled.div<{ $cardWidth: number; $slotCount: number }>`
+  flex: 0 0 ${({ $cardWidth }) => $cardWidth}px;   /* 🔒 shrink/grow yok */
   width: ${({ $cardWidth }) => $cardWidth}px;
   min-width: ${({ $cardWidth }) => $cardWidth}px;
   max-width: ${({ $cardWidth }) => $cardWidth}px;
@@ -363,6 +372,7 @@ const CardSlot = styled.div<{ $cardWidth: number; $slotCount: number }>`
     $slotCount === 1 &&
     css`
       margin: 0 auto;
+      flex: 0 0 96vw !important;
       width: 96vw !important;
       min-width: 220px;
       max-width: 99vw;
@@ -371,6 +381,7 @@ const CardSlot = styled.div<{ $cardWidth: number; $slotCount: number }>`
     `}
 
   @media (max-width: 700px) {
+    flex: 0 0 94vw !important;
     width: 94vw !important;
     min-width: 220px;
     max-width: 99vw;
@@ -379,6 +390,7 @@ const CardSlot = styled.div<{ $cardWidth: number; $slotCount: number }>`
     align-items: center;
   }
 `;
+
 
 const NavBtn = styled.button<{ $side?: "left" | "right" }>`
   position: absolute;

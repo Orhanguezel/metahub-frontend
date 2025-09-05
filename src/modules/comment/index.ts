@@ -13,7 +13,7 @@ export { default as CommentList } from "./admin/components/CommentList";
 export { default as ReplyForm } from "./admin/components/ReplyForm";
 
 // Redux Slice
-export { default as commentReducer } from "./slice/commentSlice";
+export { default as commentReducer } from "./slice/slice";
 
 // Types (if any)
 export * from "./types";

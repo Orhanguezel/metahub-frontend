@@ -1,14 +1,17 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchCommentsForContent } from "@/modules/comment/slice/commentSlice";
+import {
+  fetchTestimonialsPublic,
+  selectTestimonials,
+} from "@/modules/comment/slice/slice";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations3 from "@/modules/comment/locales";
 import type { SupportedLocale } from "@/types/common";
 import TestimonialCarousel from "./TestimonialCarousel";
 import TestimonialModal from "./TestimonialModal";
 import styled from "styled-components";
-import { MdAddComment } from "react-icons/md";
+import { MdAddComment, MdStar, MdStarBorder } from "react-icons/md";
 import { motion } from "framer-motion";
 
 export default function TestimonialSection() {
@@ -16,6 +19,7 @@ export default function TestimonialSection() {
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
   const dispatch = useAppDispatch();
 
+  // --- carousel state ---
   const [windowed, setWindowed] = useState<any[]>([]);
   const [x, setX] = useState(0);
   const [isSliding, setIsSliding] = useState(false);
@@ -23,28 +27,50 @@ export default function TestimonialSection() {
   const [showModal, setShowModal] = useState(false);
   const [animKey, setAnimKey] = useState(0);
 
-  const contentType = "about";
-  const contentId = "000000000000000000000000";
-
+  // ✅ Doğru public fetch pattern’i
   useEffect(() => {
-    dispatch(
-      fetchCommentsForContent({
-        type: contentType,
-        id: contentId,
-        commentType: "testimonial",
-      })
-    );
-  }, [dispatch]);
+    dispatch(fetchTestimonialsPublic({ page: 1, limit: 6 }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const allComments = useAppSelector((s) => s.comments?.comments ?? []) as any[];
-  const testimonials = useMemo(
-    () =>
-      Array.isArray(allComments)
-        ? allComments.filter((c) => c.type === "testimonial" && c.isPublished)
-        : [],
-    [allComments]
-  );
+  // ✅ Store’dan testimonials
+  const source = useAppSelector(selectTestimonials);
 
+  // ✅ Çalışan filtreleme + ilk 6 + rating desc (eşitse tarihe göre yeni→eski)
+  const testimonials = useMemo(() => {
+    const list = (Array.isArray(source) ? source : [])
+      .filter((c) => (c?.type ? c.type === "testimonial" : true))
+      .filter((c) => c?.isPublished !== false)
+      .slice(0, 6);
+
+    const safeTime = (v: any) => {
+      const raw = typeof v === "string" ? v : v?.$date || v?.toString?.();
+      const d = raw ? new Date(raw) : null;
+      return d && !isNaN(d.valueOf()) ? d.getTime() : 0;
+    };
+
+    return [...list].sort((a, b) => {
+      const rb = typeof b.rating === "number" ? b.rating : 0;
+      const ra = typeof a.rating === "number" ? a.rating : 0;
+      if (rb !== ra) return rb - ra; // yüksek puan önce
+      return safeTime(b.createdAt) - safeTime(a.createdAt); // yeni önce
+    });
+  }, [source]);
+
+  // ⭐ Genel puan/oy sayısı (rank göstergesi)
+  const { avgRating, ratingCount } = useMemo(() => {
+    const ratings = testimonials
+      .map((c) => (typeof c.rating === "number" ? c.rating : 0))
+      .filter((r) => r > 0);
+    const total = ratings.length;
+    const sum = ratings.reduce((a, b) => a + b, 0);
+    return {
+      avgRating: total ? Math.round((sum / total) * 10) / 10 : 0,
+      ratingCount: total,
+    };
+  }, [testimonials]);
+
+  // pencere/otomatik kaydırma (karusel)
   useEffect(() => {
     setWindowed(testimonials.slice(0, Math.min(3, testimonials.length)));
     setX(0);
@@ -63,21 +89,19 @@ export default function TestimonialSection() {
     setDirection(dir);
     setIsSliding(true);
 
-    let newWindow = [...windowed];
     if (dir === "next") {
       const last = windowed[windowed.length - 1];
       const lastIdx = testimonials.findIndex((c) => c._id === last._id);
       const nextIdx = (lastIdx + 1) % testimonials.length;
-      newWindow = [...windowed, testimonials[nextIdx]];
+      const newWindow = [...windowed, testimonials[nextIdx]];
       setWindowed(newWindow);
       setX(0);
-      // geniş kartlar için az, dar kartlar için daha az kaydır
       setTimeout(() => setX(-1 * (windowed.length > 1 ? 360 : 320)), 0);
     } else {
       const first = windowed[0];
       const firstIdx = testimonials.findIndex((c) => c._id === first._id);
       const prevIdx = (firstIdx - 1 + testimonials.length) % testimonials.length;
-      newWindow = [testimonials[prevIdx], ...windowed];
+      const newWindow = [testimonials[prevIdx], ...windowed];
       setWindowed(newWindow);
       setX(-1 * (windowed.length > 1 ? 360 : 320));
       setTimeout(() => setX(0), 0);
@@ -106,11 +130,25 @@ export default function TestimonialSection() {
             "Kullanıcılarımızdan gelen gerçek yorumlar. Siz de yorum bırakmak için giriş yapın."
           )}
         </SectionDesc>
+
+        {/* ⭐ Rank (ortalama puan + toplam oy) */}
+        <RankWrap aria-label={t("rating.summary", "Ortalama puan")}>
+          <Stars aria-hidden="true">
+            {Array.from({ length: 5 }).map((_, i) => {
+              const fill = i + 1 <= Math.round(avgRating);
+              return fill ? <MdStar key={i} size={18} /> : <MdStarBorder key={i} size={18} />;
+            })}
+          </Stars>
+          <RankText>
+            {avgRating ? `${avgRating}/5` : "—/5"}{" "}
+            <Count>· {ratingCount} {t("votes", "oy")}</Count>
+          </RankText>
+        </RankWrap>
       </SectionHeader>
 
       <OuterContainer>
         <TestimonialCarousel
-          cards={windowed}
+          cards={windowed}          // IComment[] → her kartta rating alanı mevcut
           x={x}
           animKey={animKey}
           isSliding={isSliding}
@@ -118,6 +156,8 @@ export default function TestimonialSection() {
           onNext={() => slide("next")}
           onAnimationComplete={handleAnimationComplete}
           lang={lang}
+          // Eğer bileşen destekliyorsa rating göstermek için bir ipucu:
+          // showRating
         />
       </OuterContainer>
 
@@ -137,17 +177,8 @@ export default function TestimonialSection() {
         onClose={() => setShowModal(false)}
         t={t}
         lang={lang}
-        contentType={contentType}
-        contentId={contentId}
-        afterSubmit={() =>
-          dispatch(
-            fetchCommentsForContent({
-              type: contentType,
-              id: contentId,
-              commentType: "testimonial",
-            })
-          )
-        }
+        contentType="global"
+        afterSubmit={() => dispatch(fetchTestimonialsPublic({ page: 1, limit: 6 }))}
       />
     </Section>
   );
@@ -211,6 +242,28 @@ const SectionDesc = styled.p`
   }
 `;
 
+/* ⭐ Rank UI */
+const RankWrap = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+const Stars = styled.div`
+  display: inline-flex;
+  align-items: center;
+  svg {
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+const RankText = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+`;
+const Count = styled.span`
+  opacity: 0.8;
+`;
+
 const OuterContainer = styled.div`
   width: 100%;
   max-width: 1280px;
@@ -244,7 +297,6 @@ const AddCommentBtn = styled.button`
   padding: 0.85em 2.1em;
   cursor: pointer;
 
-  /* tema uyumlu gölge + odak halkası */
   box-shadow: ${({ theme }) => `${theme.shadows.lg}, ${theme.colors.shadowHighlight}`};
   transition: background ${({ theme }) => theme.transition.fast},
     box-shadow ${({ theme }) => theme.transition.fast},

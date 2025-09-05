@@ -135,7 +135,7 @@ const CarouselWindow = styled.div<{
   min-height: 320px;
   display: flex;
   align-items: center;
-  gap: ${({ $gap }) => $gap}px;
+
   z-index: 2;
   overflow: hidden; // Anahtar satır: taştığında taşanı gösterme
   @media (max-width: 700px) {

@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createComment } from "@/modules/comment/slice/commentSlice";
+import { createComment } from "@/modules/comment/slice/slice";
 import styled from "styled-components";
 
 export default function TestimonialModal({
@@ -13,12 +13,10 @@ export default function TestimonialModal({
   t: any;
   lang: string;
   contentType: string;
-  contentId: string;
   afterSubmit: () => void;
 }) {
 
   const CONTENT_TYPE = "about";
-  const CONTENT_ID = "000000000000000000000000";
 
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -59,7 +57,6 @@ export default function TestimonialModal({
           label: form.label,
           type: "testimonial",
           contentType: CONTENT_TYPE,
-          contentId: CONTENT_ID,
           recaptchaToken: "", // ReCAPTCHA entegrasyonu eklenebilir
           isPublished: false,
           isActive: true,

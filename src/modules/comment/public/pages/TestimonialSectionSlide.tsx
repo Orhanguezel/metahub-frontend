@@ -1,21 +1,22 @@
 "use client";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations3 from "@/modules/comment/locales";
+import translations from "@/modules/comment/locales";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { MdStars } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import { SupportedLocale } from "@/types/common";
-import { createComment, fetchCommentsForContent } from "@/modules/comment/slice/commentSlice";
+import {
+  createComment,
+  fetchCommentsForContent,
+} from "@/modules/comment/slice/slice";
 import { AnimatePresence, motion } from "framer-motion";
 import { resolveProfileImage } from "@/shared/resolveProfileImage";
 
-
-
 export default function TestimonialSection() {
-  const { i18n, t } = useI18nNamespace("testimonial", translations3);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const { i18n, t } = useI18nNamespace("comment", translations);
+  const lang = i18n.language?.slice(0, 2) as SupportedLocale;
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { profile } = useAppSelector((state) => state.account);
@@ -64,7 +65,9 @@ export default function TestimonialSection() {
   }, [profile, router]);
 
   // --- Form input değişikliği ---
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   };
 
@@ -96,7 +99,12 @@ export default function TestimonialSection() {
           isActive: true,
         })
       ).unwrap();
-      setFormSuccess(t("form.success", "Yorumunuz başarıyla gönderildi! Onaylandıktan sonra yayınlanacaktır."));
+      setFormSuccess(
+        t(
+          "form.success",
+          "Yorumunuz başarıyla gönderildi! Onaylandıktan sonra yayınlanacaktır."
+        )
+      );
       setForm({ label: "", text: "" });
       setShowModal(false);
       // Ekledikten sonra tekrar fetch et (en güncel liste!)
@@ -108,7 +116,10 @@ export default function TestimonialSection() {
         })
       );
     } catch (err: any) {
-      setFormError(err?.message || t("form.error", "Bir hata oluştu. Lütfen tekrar deneyin."));
+      setFormError(
+        err?.message ||
+          t("form.error", "Bir hata oluştu. Lütfen tekrar deneyin.")
+      );
     }
     setSending(false);
   };
@@ -137,25 +148,23 @@ export default function TestimonialSection() {
           <Card key={item._id || idx}>
             <CardHeader>
               <Avatar
-  src={resolveProfileImage(item.profileImage, "profile")}
-  alt={getLangField(item.name) || "Anonim"}
-  loading="lazy"
-  width={62}
-  height={62}
-/>
+                src={resolveProfileImage(item.profileImage, "profile")}
+                alt={getLangField(item.name) || "Anonim"}
+                loading="lazy"
+                width={62}
+                height={62}
+              />
               <CardHeaderText>
-                <CardName>{getLangField(item.name) || t("anon", "Anonim")}</CardName>
+                <CardName>
+                  {getLangField(item.name) || t("anon", "Anonim")}
+                </CardName>
                 <CardTitle>
-                  {getLangField(item.company) ||
-                    getLangField(item.label) ||
-                    ""}
+                  {getLangField(item.company) || getLangField(item.label) || ""}
                 </CardTitle>
               </CardHeaderText>
             </CardHeader>
             <CardBody>
-              <Quote>
-                &quot;{getLangField(item.text)}&quot;
-              </Quote>
+              <Quote>&quot;{getLangField(item.text)}&quot;</Quote>
             </CardBody>
           </Card>
         ))}
@@ -269,7 +278,7 @@ const Card = styled.div`
   min-width: 0;
   transition: box-shadow 0.17s;
   &:hover {
-    box-shadow: 0 16px 44px 0 rgba(40,117,194,0.09);
+    box-shadow: 0 16px 44px 0 rgba(40, 117, 194, 0.09);
   }
 `;
 
@@ -352,7 +361,9 @@ const AddButton = styled.button`
   cursor: pointer;
   box-shadow: ${({ theme }) => theme.shadows.button};
   transition: background 0.14s;
-  &:hover { background: ${({ theme }) => theme.colors.primaryHover}; }
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryHover};
+  }
 `;
 
 const ModalOverlay = styled.div`
@@ -388,30 +399,43 @@ const FormTitle = styled.h3`
 const TestimonialForm = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 1.08em;
-  width: 100%;
+  gap: 1rem;
+
   label {
+    display: block;
     font-size: ${({ theme }) => theme.fontSizes.base};
     color: ${({ theme }) => theme.colors.textSecondary};
     font-weight: ${({ theme }) => theme.fontWeights.medium};
-    margin-bottom: 0.22em;
-    font-family: ${({ theme }) => theme.fonts.main};
+    margin-bottom: 0.25rem;
+    font-family: ${({ theme }) => theme.fonts.body};
   }
-  input, textarea {
+
+  input,
+  textarea {
+    width: 100%;
     border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.inputBorder};
-    border-radius: ${({ theme }) => theme.radii.sm};
+    border-radius: ${({ theme }) => theme.radii.md};
     font-size: ${({ theme }) => theme.fontSizes.base};
-    padding: 0.85em 0.85em;
-    margin-top: 0.32em;
+    padding: 0.85em;
     background: ${({ theme }) => theme.colors.inputBackground};
-    font-family: inherit;
-    resize: none;
+    color: ${({ theme }) => theme.colors.text};
+    transition: border-color ${({ theme }) => theme.transition.fast},
+      background ${({ theme }) => theme.transition.fast};
+
     &:focus {
-      border-color: ${({ theme }) => theme.colors.primary};
+      border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+      background: ${({ theme }) => theme.colors.inputBackgroundFocus};
       outline: none;
+      box-shadow: ${({ theme }) => theme.colors.shadowHighlight};
     }
   }
+
+  textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
 `;
+
 
 const SubmitButton = styled.button`
   padding: 0.83em 1.7em;
@@ -425,7 +449,9 @@ const SubmitButton = styled.button`
   transition: background 0.15s;
   cursor: pointer;
   box-shadow: ${({ theme }) => theme.shadows.button};
-  &:hover { background: ${({ theme }) => theme.colors.primaryHover}; }
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryHover};
+  }
 `;
 
 const FormSuccess = styled.div`

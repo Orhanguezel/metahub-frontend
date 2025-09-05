@@ -2,64 +2,54 @@
 
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations3 from "@/modules/comment/locales";
+import translations from "@/modules/comment/locales";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { useMemo, useState, useEffect, useCallback } from "react";
-import { MdStars } from "react-icons/md";
+import { useMemo, useState, useCallback, useEffect } from "react";
+import { MdStars, MdStar, MdStarBorder } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import type { SupportedLocale } from "@/types/common";
+import type { IComment } from "@/modules/comment/types";
 import {
   createComment,
-  fetchCommentsForContent,
-} from "@/modules/comment/slice/commentSlice";
+  fetchTestimonialsPublic,
+  selectTestimonials,
+} from "@/modules/comment/slice/slice";
 import { AnimatePresence, motion } from "framer-motion";
 import { resolveProfileImage } from "@/shared/resolveProfileImage";
 
-/* ----------------------- Component ----------------------- */
-
-export default function TestimonialSection() {
-  const { i18n, t } = useI18nNamespace("testimonial", translations3);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+export default function TestimonialSectionAlt() {
+  const { i18n, t } = useI18nNamespace("comment", translations);
+  const lang = (i18n.language?.slice(0, 2) as SupportedLocale) || "tr";
 
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { profile } = useAppSelector((state) => state.account);
 
-  // Varsayılan “about” içeriği
-  const CONTENT_TYPE = "about";
-  const CONTENT_ID = "000000000000000000000000";
-
-  // İlk render’da yorumları çek
+  // Public testimonials (max 6)
   useEffect(() => {
-    dispatch(
-      fetchCommentsForContent({
-        type: CONTENT_TYPE,
-        id: CONTENT_ID,
-        commentType: "testimonial",
-      })
-    );
+    dispatch(fetchTestimonialsPublic({ page: 1, limit: 6 }));
   }, [dispatch]);
 
-  // En fazla 6 yayınlanmış yorum
-  const allComments = useAppSelector((s) => s.comments?.comments ?? []) as any[];
-  const testimonials = useMemo(
+  const source = useAppSelector(selectTestimonials);
+
+  // çalışan pattern + slice(0,6)
+  const testimonials = useMemo<IComment[]>(
     () =>
-      Array.isArray(allComments)
-        ? allComments
-            .filter((c: any) => c.type === "testimonial" && c.isPublished)
-            .slice(0, 6)
-        : [],
-    [allComments]
+      (Array.isArray(source) ? source : [])
+        .filter((c) => (c?.type ? c.type === "testimonial" : true))
+        .filter((c) => c?.isPublished !== false)
+        .slice(0, 6),
+    [source]
   );
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ label: "", text: "" });
+  const [rating, setRating] = useState<number>(0); // ⭐
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
 
-  // login yoksa login’e yönlendir, varsa modal aç
   const handleOpenModal = useCallback(() => {
     if (!profile) {
       router.push("/login");
@@ -79,7 +69,7 @@ export default function TestimonialSection() {
     setFormError(null);
     setFormSuccess(null);
 
-    if (!form.text) {
+    if (!form.text?.trim()) {
       setFormError(t("form.required", "Lütfen yorumunuzu yazın."));
       return;
     }
@@ -90,51 +80,46 @@ export default function TestimonialSection() {
         createComment({
           name: profile?.name ?? "",
           profileImage: profile?.profileImage ?? "",
-          company: profile?.company ?? "",
-          position: profile?.position ?? "",
+          company: (profile as any)?.company ?? "",
+          position: (profile as any)?.position ?? "",
           email: profile?.email ?? "",
           comment: form.text,
           label: form.label,
           type: "testimonial",
-          contentType: CONTENT_TYPE,
-          contentId: CONTENT_ID,
+          contentType: "global", // testimonial → global, contentId yok
           isPublished: false,
           isActive: true,
+          ...(rating > 0 ? { rating } : {}),
         })
       ).unwrap();
 
       setFormSuccess(
-        t(
-          "form.success",
-          "Yorumunuz başarıyla gönderildi! Onaylandıktan sonra yayınlanacaktır."
-        )
+        t("form.success", "Yorumunuz başarıyla gönderildi! Onaylandıktan sonra yayınlanacaktır.")
       );
       setForm({ label: "", text: "" });
+      setRating(0);
       setShowModal(false);
 
       // Listeyi yenile
-      dispatch(
-        fetchCommentsForContent({
-          type: CONTENT_TYPE,
-          id: CONTENT_ID,
-          commentType: "testimonial",
-        })
-      );
+      dispatch(fetchTestimonialsPublic({ page: 1, limit: 6 }));
     } catch (err: any) {
-      setFormError(
-        err?.message || t("form.error", "Bir hata oluştu. Lütfen tekrar deneyin.")
-      );
+      setFormError(err?.message || t("form.error", "Bir hata oluştu. Lütfen tekrar deneyin."));
     }
     setSending(false);
   };
 
-  // Çok dilli alan getter
+  // Çok dilli/sade alan getter
   const getLangField = (field: any) =>
     typeof field === "object" && field
       ? field[lang] || field.tr || field.en || Object.values(field)[0] || ""
       : field || "";
 
-  if (!Array.isArray(testimonials)) return null;
+  // Tarih normalize
+  const fmtDate = (v: any) => {
+    const raw = typeof v === "string" ? v : v?.$date || v?.toString?.();
+    const d = raw ? new Date(raw) : null;
+    return d && !isNaN(d.valueOf()) ? d.toLocaleString() : "";
+  };
 
   return (
     <Section>
@@ -144,37 +129,63 @@ export default function TestimonialSection() {
           <Title>{t("sectionTitle", "Testimonials")}</Title>
         </TitleLine>
         <SectionDesc>
-          {t(
-            "sectionDesc",
-            "Kullanıcılarımızdan gelen gerçek yorumlar. Siz de yorum bırakmak için giriş yapın."
-          )}
+          {t("sectionDesc", "Kullanıcılarımızdan gelen gerçek yorumlar. Siz de yorum bırakmak için giriş yapın.")}
         </SectionDesc>
       </SectionHeader>
 
       <CardsGrid>
-        {testimonials.map((item, idx) => (
-          <Card key={item._id || idx}>
-            <CardHeader>
-              <Avatar
-                src={resolveProfileImage(item.profileImage, "profile")}
-                alt={getLangField(item.name) || "Anonim"}
-                loading="lazy"
-                width={62}
-                height={62}
-              />
-              <HeaderText>
-                <CardName>{getLangField(item.name) || t("anon", "Anonim")}</CardName>
-                <CardMeta>
-                  {getLangField(item.company) || getLangField(item.label) || ""}
-                </CardMeta>
-              </HeaderText>
-            </CardHeader>
+        {testimonials.map((item, idx) => {
+          const key = item._id || `${item.email || "anon"}-${idx}`;
+          const replyText =
+            (item.reply?.text &&
+              (item.reply.text[lang] || item.reply.text.tr || item.reply.text.en)) ||
+            null;
 
-            <CardBody>
-              <Quote>&quot;{getLangField(item.text)}&quot;</Quote>
-            </CardBody>
-          </Card>
-        ))}
+          const ratingVal = typeof item.rating === "number" ? item.rating : 0;
+
+          return (
+            <Card key={key}>
+              <CardHeader>
+                <Avatar
+                  src={resolveProfileImage(item.profileImage, "profile")}
+                  alt={getLangField(item.name) || "Anonim"}
+                  loading="lazy"
+                  width={62}
+                  height={62}
+                />
+                <HeaderText>
+                  <CardName>{getLangField(item.name) || t("anon", "Anonim")}</CardName>
+                  <CardMeta>
+                    {getLangField((item as any).company) || getLangField(item.label) || ""}
+                    {item.createdAt ? <DateDot>· {fmtDate(item.createdAt)}</DateDot> : null}
+                  </CardMeta>
+                </HeaderText>
+              </CardHeader>
+
+              {/* ⭐ rating göster */}
+              {ratingVal > 0 && (
+                <StarsRow title={`${ratingVal}/5`} aria-label={`${ratingVal} / 5`}>
+                  {[1, 2, 3, 4, 5].map((n) =>
+                    ratingVal >= n ? <MdStar key={n} size={18} /> : <MdStarBorder key={n} size={18} />
+                  )}
+                  <StarsValue>{ratingVal}/5</StarsValue>
+                </StarsRow>
+              )}
+
+              <CardBody>
+                <Quote>&quot;{getLangField(item.text)}&quot;</Quote>
+
+                {replyText ? (
+                  <ReplyBlock>
+                    <ReplyTitle>{t("admin.reply", "Yanıt")}</ReplyTitle>
+                    <ReplyText>{replyText}</ReplyText>
+                    {item.reply?.createdAt ? <ReplyDate>{fmtDate(item.reply.createdAt)}</ReplyDate> : null}
+                  </ReplyBlock>
+                ) : null}
+              </CardBody>
+            </Card>
+          );
+        })}
 
         <AddCard>
           <AddButton
@@ -187,6 +198,7 @@ export default function TestimonialSection() {
         </AddCard>
       </CardsGrid>
 
+      {/* Modal */}
       <AnimatePresence>
         {showModal && (
           <ModalOverlay
@@ -211,6 +223,44 @@ export default function TestimonialSection() {
                   />
                 </label>
 
+                {/* ⭐ Rating alanı */}
+                <FieldBlock>
+                  <FieldLabel htmlFor="rating-stars">
+                    {t("rating", "Değerlendirme")}{" "}
+                    <small style={{ opacity: 0.7 }}>({t("optional", "opsiyonel")})</small>
+                  </FieldLabel>
+                  <StarsWrap
+                    id="rating-stars"
+                    role="radiogroup"
+                    aria-label={t("rating", "Değerlendirme")}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowRight") setRating((r) => Math.min(5, r + 1));
+                      if (e.key === "ArrowLeft") setRating((r) => Math.max(0, r - 1));
+                      if (e.key === "Home") setRating(1);
+                      if (e.key === "End") setRating(5);
+                      if (e.key === "Escape") setRating(0);
+                    }}
+                  >
+                    {[1, 2, 3, 4, 5].map((n) => {
+                      const filled = rating >= n;
+                      return (
+                        <StarButton
+                          key={n}
+                          type="button"
+                          role="radio"
+                          aria-label={`${n} ${t("stars", "yıldız")}`}
+                          aria-checked={filled}
+                          onClick={() => setRating(n === rating ? 0 : n)}
+                        >
+                          {filled ? <MdStar size={22} /> : <MdStarBorder size={22} />}
+                        </StarButton>
+                      );
+                    })}
+                    <RatingValue>{rating > 0 ? `${rating}/5` : t("optional", "opsiyonel")}</RatingValue>
+                  </StarsWrap>
+                </FieldBlock>
+
                 <label>
                   {t("form.text", "Yorumunuz")}
                   <textarea
@@ -224,9 +274,7 @@ export default function TestimonialSection() {
                 </label>
 
                 <SubmitButton type="submit" disabled={sending}>
-                  {sending
-                    ? t("form.sending", "Gönderiliyor...")
-                    : t("form.submit", "Gönder")}
+                  {sending ? t("form.sending", "Gönderiliyor...") : t("form.submit", "Gönder")}
                 </SubmitButton>
 
                 {formSuccess && <FormSuccess>{formSuccess}</FormSuccess>}
@@ -240,19 +288,17 @@ export default function TestimonialSection() {
   );
 }
 
-/* ----------------------- Styles ----------------------- */
+/* ----------------------- Styles (eksiksiz) ----------------------- */
 
 const Section = styled.section`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   color: ${({ theme }) => theme.colors.text};
-  padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) =>
-      theme.spacings.xxl};
+  padding: ${({ theme }) => theme.spacings.xxxl} 0 ${({ theme }) => theme.spacings.xxl};
   display: flex;
   flex-direction: column;
   align-items: center;
   transition: background-color ${({ theme }) => theme.transition.fast},
     color ${({ theme }) => theme.transition.fast};
-
   ${({ theme }) => theme.media.mobile} {
     padding: ${({ theme }) => theme.spacings.xl} 0;
   }
@@ -276,11 +322,6 @@ const StarIcon = styled(MdStars)`
   height: 28px;
   color: ${({ theme }) => theme.colors.primary};
   flex: 0 0 auto;
-
-  ${({ theme }) => theme.media.mobile} {
-    width: 24px;
-    height: 24px;
-  }
 `;
 
 const Title = styled.h2`
@@ -301,25 +342,16 @@ const SectionDesc = styled.p`
   text-align: center;
   margin: 0.8rem;
   max-width: 720px;
-
-  ${({ theme }) => theme.media.mobile} {
-    font-size: 1rem;
-    padding: 0 12px;
-  }
 `;
 
 const CardsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(clamp(260px, 40vw, 330px), 1fr)
-  );
+  grid-template-columns: repeat(auto-fit, minmax(clamp(260px, 40vw, 330px), 1fr));
   gap: ${({ theme }) => theme.spacings.xl};
   width: 100%;
   max-width: 1200px;
   margin: 0 auto ${({ theme }) => theme.spacings.xl} auto;
   align-items: stretch;
-
   ${({ theme }) => theme.media.small} {
     gap: ${({ theme }) => theme.spacings.lg};
   }
@@ -335,7 +367,6 @@ const Card = styled.div`
   min-width: 0;
   transition: box-shadow ${({ theme }) => theme.transition.fast},
     transform ${({ theme }) => theme.transition.fast};
-
   &:hover {
     transform: translateY(-2px);
     box-shadow: ${({ theme }) => `${theme.shadows.lg}, ${theme.colors.shadowHighlight}`};
@@ -381,6 +412,32 @@ const CardMeta = styled.span`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   letter-spacing: 0.03em;
   text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  flex-wrap: wrap;
+`;
+
+const DateDot = styled.span`
+  opacity: 0.7;
+  font-weight: normal;
+  text-transform: none;
+`;
+
+const StarsRow = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0 8px 0;
+  svg {
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+const StarsValue = styled.small`
+  margin-left: 4px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
 `;
 
 const CardBody = styled.div`
@@ -394,6 +451,33 @@ const Quote = styled.p`
   margin: 0;
 `;
 
+/* Admin reply */
+const ReplyBlock = styled.div`
+  margin-top: 0.75rem;
+  border-left: 3px solid ${({ theme }) => theme.colors.primary};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  padding: 0.6rem 0.75rem;
+  border-radius: ${({ theme }) => theme.radii.md};
+`;
+
+const ReplyTitle = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.secondary};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  margin-bottom: 0.25rem;
+`;
+
+const ReplyText = styled.div`
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  line-height: 1.55;
+`;
+
+const ReplyDate = styled.div`
+  margin-top: 0.25rem;
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
 const AddCard = styled(Card)`
   justify-content: center;
   align-items: center;
@@ -403,7 +487,6 @@ const AddCard = styled(Card)`
   border: 2px dashed ${({ theme }) => theme.colors.borderHighlight};
   transition: background ${({ theme }) => theme.transition.fast},
     border-color ${({ theme }) => theme.transition.fast};
-
   &:hover {
     background: ${({ theme }) => theme.colors.inputBackgroundFocus};
     border-color: ${({ theme }) => theme.colors.primaryHover};
@@ -422,7 +505,6 @@ const AddButton = styled.button`
   box-shadow: ${({ theme }) => theme.shadows.button};
   transition: background ${({ theme }) => theme.transition.fast},
     transform ${({ theme }) => theme.transition.fast};
-
   &:hover,
   &:focus-visible {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};
@@ -485,19 +567,59 @@ const TestimonialForm = styled.form`
     color: ${({ theme }) => theme.colors.text};
     transition: border-color ${({ theme }) => theme.transition.fast},
       background ${({ theme }) => theme.transition.fast};
+  }
 
-    &:focus {
-      border-color: ${({ theme }) => theme.colors.inputBorderFocus};
-      background: ${({ theme }) => theme.colors.inputBackgroundFocus};
-      outline: none;
-      box-shadow: ${({ theme }) => theme.colors.shadowHighlight};
-    }
+  input:focus,
+  textarea:focus {
+    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
+    background: ${({ theme }) => theme.colors.inputBackgroundFocus};
+    outline: none;
+    box-shadow: ${({ theme }) => theme.colors.shadowHighlight};
   }
 
   textarea {
     resize: vertical;
     min-height: 120px;
   }
+`;
+
+const FieldBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const FieldLabel = styled.label`
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+`;
+
+const StarsWrap = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  svg {
+    color: ${({ theme }) => theme.colors.primary};
+  }
+  outline: none;
+`;
+
+const StarButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+`;
+
+const RatingValue = styled.span`
+  margin-left: 6px;
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const SubmitButton = styled.button`
@@ -513,7 +635,6 @@ const SubmitButton = styled.button`
   box-shadow: ${({ theme }) => theme.shadows.button};
   transition: background ${({ theme }) => theme.transition.fast},
     transform ${({ theme }) => theme.transition.fast};
-
   &:hover,
   &:focus-visible {
     background: ${({ theme }) => theme.buttons.primary.backgroundHover};

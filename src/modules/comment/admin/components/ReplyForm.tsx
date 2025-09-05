@@ -3,9 +3,9 @@
 import styled from "styled-components";
 import { useMemo, useState } from "react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations3 from "@/modules/comment/locales";
+import translations from "@/modules/comment/locales";
 import { useAppDispatch } from "@/store/hooks";
-import { replyToComment } from "@/modules/comment/slice/commentSlice";
+import { replyToComment } from "@/modules/comment/slice/slice";
 import type { IComment } from "@/modules/comment/types";
 import type { SupportedLocale } from "@/types/common";
 
@@ -13,17 +13,26 @@ type TL = Partial<Record<SupportedLocale, string>>;
 
 const getUILang = (lng?: string): SupportedLocale => {
   const two = (lng || "").slice(0, 2).toLowerCase() as SupportedLocale;
-  // sistemde olmayan bir dil gelse bile TR'ye düş
   return (two || "tr") as SupportedLocale;
 };
 
-export default function ReplyForm({ comment, onClose }: { comment: IComment; onClose: () => void }) {
-  const { t, i18n } = useI18nNamespace("testimonial", translations3);
+export default function ReplyForm({
+  comment,
+  onClose,
+}: {
+  comment: IComment;
+  onClose: () => void;
+}) {
+  const { t, i18n } = useI18nNamespace("comment", translations);
   const dispatch = useAppDispatch();
-  const lang = useMemo<SupportedLocale>(() => getUILang(i18n?.language), [i18n?.language]);
+  const lang = useMemo<SupportedLocale>(
+    () => getUILang(i18n?.language),
+    [i18n?.language]
+  );
 
-  // mevcut reply metinlerini koru; sadece aktif dildeki alanı düzenle
-  const [text, setText] = useState<string>(() => (comment.reply?.text?.[lang] ?? "") as string);
+  const [text, setText] = useState<string>(
+    () => (comment.reply?.text?.[lang] ?? "") as string
+  );
   const [saving, setSaving] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -31,14 +40,18 @@ export default function ReplyForm({ comment, onClose }: { comment: IComment; onC
     setSaving(true);
     try {
       const nextTL: TL = { ...(comment.reply?.text || {}), [lang]: text };
-      await dispatch(replyToComment({ id: comment._id!, text: nextTL as Record<SupportedLocale, string> })).unwrap();
+      await dispatch(
+        replyToComment({
+          id: comment._id!,
+          text: nextTL as Record<SupportedLocale, string>,
+        })
+      ).unwrap();
       onClose();
     } finally {
       setSaving(false);
     }
   };
 
-  // küçük özet (okuma)
   const user = typeof comment.userId === "object" ? comment.userId : undefined;
   const name = user?.name || comment.name || "-";
   const email = user?.email || comment.email || "-";
@@ -60,7 +73,9 @@ export default function ReplyForm({ comment, onClose }: { comment: IComment; onC
       </Header>
 
       <Field>
-        <Label>{t("reply", "Yanıt")} ({lang.toUpperCase()})</Label>
+        <Label>
+          {t("reply", "Yanıt")} ({lang.toUpperCase()})
+        </Label>
         <TextArea
           rows={3}
           value={text}
@@ -70,7 +85,9 @@ export default function ReplyForm({ comment, onClose }: { comment: IComment; onC
       </Field>
 
       <Actions>
-        <Secondary type="button" onClick={onClose}>{t("cancel", "İptal")}</Secondary>
+        <Secondary type="button" onClick={onClose}>
+          {t("cancel", "İptal")}
+        </Secondary>
         <Primary type="submit" disabled={saving || !text.trim()}>
           {saving ? t("sending", "Gönderiliyor...") : t("sendReply", "Yanıtla")}
         </Primary>
@@ -81,39 +98,70 @@ export default function ReplyForm({ comment, onClose }: { comment: IComment; onC
 
 /* styled */
 const Form = styled.form`
-  display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.md};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacings.md};
 `;
 const Header = styled.div`
-  display:flex; align-items:flex-start; justify-content:space-between; gap:${({theme})=>theme.spacings.sm};
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacings.sm};
 `;
-const H3 = styled.h3`margin:0 0 2px 0;`;
+const H3 = styled.h3`
+  margin: 0 0 2px 0;
+`;
 const Meta = styled.div`
-  font-size:${({theme})=>theme.fontSizes.xsmall};
-  color:${({theme})=>theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 const LangTag = styled.span`
-  padding:4px 8px; border-radius:${({theme})=>theme.radii.pill};
-  background:${({theme})=>theme.colors.backgroundAlt};
-  font-size:${({theme})=>theme.fontSizes.xsmall};
+  padding: 4px 8px;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ theme }) => theme.colors.backgroundAlt};
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
 `;
-const Field = styled.div`display:flex; flex-direction:column; gap:${({theme})=>theme.spacings.xs};`;
-const Label = styled.label`font-size:${({theme})=>theme.fontSizes.xsmall}; color:${({theme})=>theme.colors.textSecondary};`;
+const Field = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacings.xs};
+`;
+const Label = styled.label`
+  font-size: ${({ theme }) => theme.fontSizes.xsmall};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
 const TextArea = styled.textarea`
-  width:100%; padding:10px 12px; border-radius:${({ theme }) => theme.radii.md};
-  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.inputBorder};
-  background:${({ theme }) => theme.inputs.background}; color:${({ theme }) => theme.inputs.text};
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.colors.inputBorder};
+  background: ${({ theme }) => theme.inputs.background};
+  color: ${({ theme }) => theme.inputs.text};
 `;
-const Actions = styled.div`display:flex; gap:${({theme})=>theme.spacings.sm}; justify-content:flex-end;`;
+const Actions = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacings.sm};
+  justify-content: flex-end;
+`;
 const Primary = styled.button`
-  background:${({theme})=>theme.buttons.primary.background};
-  color:${({theme})=>theme.buttons.primary.text};
-  border:${({theme})=>theme.borders.thin} transparent;
-  padding:8px 12px;border-radius:${({theme})=>theme.radii.md};cursor:pointer;
-  &:disabled{ opacity:${({ theme }) => theme.opacity.disabled}; cursor:not-allowed; }
+  background: ${({ theme }) => theme.buttons.primary.background};
+  color: ${({ theme }) => theme.buttons.primary.text};
+  border: ${({ theme }) => theme.borders.thin} transparent;
+  padding: 8px 12px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  cursor: pointer;
+  &:disabled {
+    opacity: ${({ theme }) => theme.opacity.disabled};
+    cursor: not-allowed;
+  }
 `;
 const Secondary = styled.button`
-  background:${({theme})=>theme.buttons.secondary.background};
-  color:${({theme})=>theme.buttons.secondary.text};
-  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
-  padding:8px 12px;border-radius:${({theme})=>theme.radii.md};cursor:pointer;
+  background: ${({ theme }) => theme.buttons.secondary.background};
+  color: ${({ theme }) => theme.buttons.secondary.text};
+  border: ${({ theme }) => theme.borders.thin}
+    ${({ theme }) => theme.colors.border};
+  padding: 8px 12px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  cursor: pointer;
 `;

@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { getMultiLang } from "@/types/common";
 import type { SupportedLocale } from "@/types/common";
 import type { IMenuItem, PriceChannel } from "@/modules/menu/types/menuitem";
@@ -61,12 +61,27 @@ export default function ItemCard({
   const href = branchId ? `${base}?branch=${encodeURIComponent(branchId)}` : base;
 
   // 🔗 reactions
-  const { summary } = useMenuitemReactions(String((item as any)._id || ""));
+  const { summary, mine, toggle } = useMenuitemReactions(String((item as any)._id || ""));
+  const onFavClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggle("FAVORITE");
+  }, [toggle]);
 
   return (
     <Card role="group" aria-label={title}>
       <Link href={href} aria-label={title} style={{ textDecoration: "none" }}>
         <Thumb title={title}>
+          {/* ❤️ FAVORITE toggle button */}
+          <FavBtn
+            type="button"
+            aria-pressed={mine.favorite}
+            onClick={onFavClick}
+            title={t("favorite", "Favori")}
+          >
+            {mine.favorite ? "❤️" : "🤍"}
+          </FavBtn>
+
           {img?.thumbnail || img?.webp || img?.url ? (
             <Image
               src={img.thumbnail || img.webp || img.url}
@@ -183,7 +198,34 @@ const Thumb = styled.div`
   aspect-ratio: 16/9;
   background: #fafafa;
   cursor: pointer;
-  overflow: hidden;          /* taşmaları gizle */
+  overflow: hidden;
+`;
+
+const FavBtn = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: ${({ theme }) => theme.radii.circle};
+  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
+
+  &:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+
+  /* aktifken (favori) temayla kırmızı vurgula */
+  &[aria-pressed="true"]{
+    border-color: ${({ theme }) => theme.colors.danger};
+    background: ${({ theme }) => theme.colors.white};
+    color: ${({ theme }) => theme.colors.danger};
+    filter: saturate(1.2);
+  }
 `;
 
 const Ph = styled.div`
@@ -191,11 +233,9 @@ const Ph = styled.div`
   inset: 0;
   display: grid;
   place-items: center;
-  /* emoji'yi dev yap ve container'a göre ölçeklensin */
   font-size: clamp(42px, 18vw, 100px);
   line-height: 1;
   color: #c8c8c8;
-  /* biraz derinlik verelim (opsiyonel) */
   text-shadow: 0 2px 14px rgba(0,0,0,.08);
 `;
 
@@ -253,7 +293,6 @@ const RxMini = styled.div`
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
-/* --- subtle food meta (not focus) --- */
 const FoodMeta = styled.div`
   margin-top: 6px;
   display: grid;

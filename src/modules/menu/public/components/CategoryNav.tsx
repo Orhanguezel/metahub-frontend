@@ -45,9 +45,6 @@ export default function CategoryNav({
       // ✅ Kategori sayfasına git: slug varsa onu kullan, yoksa _id
       const targetSlug = (obj?.slug || "").trim() ? String(obj!.slug) : id;
 
-      // (Opsiyonel) anchorMap yine de tutuluyor ama route öncelikli
-    
-
       const href =
         branchId
           ? { pathname: `/menu/category/${encodeURIComponent(targetSlug)}`, query: { branch: branchId } }
@@ -183,6 +180,8 @@ export default function CategoryNav({
 
 /* ================= styles ================= */
 
+import { css as _css } from "styled-components"; // (TS happy)
+
 const BarBase = css`
   display: flex;
   gap: 10px;
@@ -231,7 +230,7 @@ const CarouselShell = styled.div<{ $loop: boolean }>`
   /* loop yoksa klasik bar görünümü */
   ${({ $loop }) =>
     !$loop &&
-    css`
+    _css`
       ${BarBase}
       a {
         ${PillBase}

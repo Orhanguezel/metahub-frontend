@@ -12,8 +12,8 @@ import type { IMyReactionItem } from "@/modules/reactions/types";
 
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/reactions/locales";
+import { useEffect} from "react";
 
-/* helpers */
 const normId = (v: any): string => {
   if (!v) return "";
   if (typeof v === "string") return v;
@@ -49,6 +49,7 @@ const buildBadges = (myAll: IMyReactionItem[], targetId: string) => {
   return { like, fav, save, emojis: Array.from(emojis), rating };
 };
 
+/* ---------- component ---------- */
 export default function ReactionsCarouselCard({
   item,
   lang,
@@ -60,6 +61,16 @@ export default function ReactionsCarouselCard({
 }) {
   const { t } = useI18nNamespace("reactions", translations);
 
+  // responsive card width (carousel ile aynı mantık)
+
+  useEffect(() => {
+    const handleResize = () => {
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const id = normId((item as any)._id) || item.slug || item.code;
   const badges = buildBadges(myAll, id);
   const img = item?.images?.[0];
@@ -68,14 +79,14 @@ export default function ReactionsCarouselCard({
   const href = hrefFor(item);
 
   return (
-    <Card as={Link} href={href}>
+    <Card href={href}>
       <Thumb>
         {img?.thumbnail || img?.webp || img?.url ? (
           <Image
             src={img.thumbnail || img.webp || img.url}
             alt={ttl || "item"}
             fill
-            sizes="(max-width: 600px) 85vw, 320px"
+            sizes="(max-width: 700px) 94vw, 360px"
             style={{ objectFit: "cover" }}
           />
         ) : (
@@ -123,13 +134,16 @@ export default function ReactionsCarouselCard({
     </Card>
   );
 }
-/* ------- styles (kart) ------- */
 
+/* ---------- styles (card) ---------- */
+/* Kart, ebeveyn slot’un (CardSlot) verdiği genişliği tamamen kullanır. */
 const Card = styled(Link)`
   display: flex;
   flex-direction: column;
-  /* width: clamp(240px, 38vw, 320px);  // <-- SİL */
-  width: 100%;                            // <-- slotu tamamen doldur
+  width: 100%;
+  min-width: 0;
+  gap: 10px;
+
   background: ${({ theme }) => theme.colors.cardBackground};
   border: 1.5px solid ${({ theme }) => theme.colors.borderLight};
   box-shadow: 0 2px 14px 0 rgba(40, 117, 194, 0.07);
@@ -145,13 +159,12 @@ const Card = styled(Link)`
   }
 `;
 
-
 const Thumb = styled.div`
   position: relative;
   aspect-ratio: 16/9;
   background: #fafafa;
   cursor: pointer;
-  overflow: hidden;          /* taşmaları gizle */
+  overflow: hidden;
 `;
 
 const Ph = styled.div`
@@ -159,12 +172,10 @@ const Ph = styled.div`
   inset: 0;
   display: grid;
   place-items: center;
-  /* emoji'yi dev yap ve container'a göre ölçeklensin */
   font-size: clamp(42px, 18vw, 100px);
   line-height: 1;
   color: #c8c8c8;
-  /* biraz derinlik verelim (opsiyonel) */
-  text-shadow: 0 2px 14px rgba(0,0,0,.08);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
 `;
 
 const Badges = styled.div`
@@ -191,6 +202,7 @@ const Emoji = styled(Badge)`
   font-size: 14px;
   padding: 3px 7px;
 `;
+
 const Rate = styled(Badge)`
   font-weight: 700;
 `;

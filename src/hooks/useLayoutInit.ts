@@ -1,19 +1,51 @@
 "use client";
 
-import { useRef,useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useActiveTenant } from "@/hooks/useActiveTenant";
-import {fetchSettingsAdmin,clearSettingsMessages,} from "@/modules/settings/slice/settingsSlice";
-import {fetchCompanyAdmin,clearCompanyMessages,} from "@/modules/company/slice/companySlice";
-import {fetchModuleMetas,clearModuleMetaMessages,} from "@/modules/adminmodules/slices/moduleMetaSlice";
-import {fetchTenantModuleSettings,clearModuleSettingMessages,} from "@/modules/adminmodules/slices/moduleSettingSlice";
-import {fetchModuleTenantMatrix,clearModuleMaintenanceMessages,} from "@/modules/adminmodules/slices/moduleMaintenanceSlice";
-import {fetchAllAboutAdmin,clearAboutMessages,} from "@/modules/about/slice/aboutSlice";
-import {fetchAboutCategories,clearAboutCategoryMessages,} from "@/modules/about/slice/aboutCategorySlice";
-import {fetchAllActivityAdmin,clearActivityMessages,} from "@/modules/activity/slice/activitySlice";
-import {fetchActivityCategories,clearActivityCategoryMessages,} from "@/modules/activity/slice/activityCategorySlice";
-import {fetchAllArticlesAdmin,clearArticlesMessages} from "@/modules/articles/slice/articlesSlice";
-import {fetchArticlesCategories,clearArticlesCategoryMessages,
+import {
+  fetchSettingsAdmin,
+  clearSettingsMessages,
+} from "@/modules/settings/slice/settingsSlice";
+import {
+  fetchCompanyAdmin,
+  clearCompanyMessages,
+} from "@/modules/company/slice/companySlice";
+import {
+  fetchModuleMetas,
+  clearModuleMetaMessages,
+} from "@/modules/adminmodules/slices/moduleMetaSlice";
+import {
+  fetchTenantModuleSettings,
+  clearModuleSettingMessages,
+} from "@/modules/adminmodules/slices/moduleSettingSlice";
+import {
+  fetchModuleTenantMatrix,
+  clearModuleMaintenanceMessages,
+} from "@/modules/adminmodules/slices/moduleMaintenanceSlice";
+import {
+  fetchAllAboutAdmin,
+  clearAboutMessages,
+} from "@/modules/about/slice/aboutSlice";
+import {
+  fetchAboutCategories,
+  clearAboutCategoryMessages,
+} from "@/modules/about/slice/aboutCategorySlice";
+import {
+  fetchAllActivityAdmin,
+  clearActivityMessages,
+} from "@/modules/activity/slice/activitySlice";
+import {
+  fetchActivityCategories,
+  clearActivityCategoryMessages,
+} from "@/modules/activity/slice/activityCategorySlice";
+import {
+  fetchAllArticlesAdmin,
+  clearArticlesMessages,
+} from "@/modules/articles/slice/articlesSlice";
+import {
+  fetchArticlesCategories,
+  clearArticlesCategoryMessages,
 } from "@/modules/articles/slice/articlesCategorySlice";
 import {
   fetchAllBlogAdmin,
@@ -51,7 +83,7 @@ import {
   fetchServicesCategories,
   clearServicesCategoryMessages,
 } from "@/modules/services/slice/servicesCategorySlice";
-import{
+import {
   fetchAllMassageAdmin,
   clearMassageMessages,
 } from "@/modules/massage/slice/massageSlice";
@@ -156,15 +188,14 @@ import {
   clearFAQMessages,
 } from "@/modules/faq/slice/faqSlice";
 
-
 import {
   fetchOffersAdmin,
   clearOfferMessages,
 } from "@/modules/offer/slice/offerSlice";
 
-import { 
-  fetchCustomersAdmin, 
-  clearCustomerMessages 
+import {
+  fetchCustomersAdmin,
+  clearCustomerMessages,
 } from "@/modules/customer/slice/customerSlice";
 
 import {
@@ -178,24 +209,63 @@ import {
 } from "@/modules/apartment/slice/apartmentSlice";
 import {
   fetchNeighborhoods,
-clearNeighborhoodMessages
+  clearNeighborhoodMessages,
 } from "@/modules/neighborhood/slice/neighborhoodSlice";
 
-import {fetchAllEmployeesAdmin, clearEmployeeMessages} from "@/modules/employees/slice/employeesSlice";
-import {fetchCatalogs, clearSvcMsgs} from "@/modules/servicecatalog/slice/serviceCatalogSlice";
-import {fetchUsers,clearUserCrudMessages} from "@/modules/users/slice/userCrudSlice";
-import {fetchAccounts,fetchEntries, clearCashbookMessages,clearEntrySelection} from "@/modules/cashbook/slice/cashbookSlice";
-import {fetchPlans,clearSchedulingMsgs } from "@/modules/scheduling/slice/schedulingSlice";
-import {fetchAllOpsTemplatesAdmin,clearOpsTemplateMsgs} from "@/modules/opstemplates/slice/opstemplatesSlice";
-import {fetchPriceListsAdmin,clearPriceListMsgs} from "@/modules/pricelist/slice/pricelistSlice";
-import {fetchBillingPlans,fetchOccurrences,clearBillingMessages} from "@/modules/billing/slice/billingSlice";
-import {fetchAllContractsAdmin,clearContractMessages} from "@/modules/contracts/slice/contractsSlice";
-import {fetchAllOpsJobsAdmin, clearOpsJobsMessages } from "@/modules/operationsjobs/slice/opsjobsSlice";
-import {fetchDashboardOverview} from "@/modules/dashboard/slice/dailyOverviewSlice";
-import {fetchDashboardCharts} from "@/modules/dashboard/slice/chartDataSlice";
-import {fetchDashboardLogs} from "@/modules/dashboard/slice/logsSlice";
-import {fetchAllCommentsAdmin,clearCommentMessages} from "@/modules/comment/slice/commentSlice";
-import {fetchBranchesAdmin,clearBranchMessages} from "@/modules/branch/slice";
+import {
+  fetchAllEmployeesAdmin,
+  clearEmployeeMessages,
+} from "@/modules/employees/slice/employeesSlice";
+import {
+  fetchCatalogs,
+  clearSvcMsgs,
+} from "@/modules/servicecatalog/slice/serviceCatalogSlice";
+import {
+  fetchUsers,
+  clearUserCrudMessages,
+} from "@/modules/users/slice/userCrudSlice";
+import {
+  fetchAccounts,
+  fetchEntries,
+  clearCashbookMessages,
+  clearEntrySelection,
+} from "@/modules/cashbook/slice/cashbookSlice";
+import {
+  fetchPlans,
+  clearSchedulingMsgs,
+} from "@/modules/scheduling/slice/schedulingSlice";
+import {
+  fetchAllOpsTemplatesAdmin,
+  clearOpsTemplateMsgs,
+} from "@/modules/opstemplates/slice/opstemplatesSlice";
+import {
+  fetchPriceListsAdmin,
+  clearPriceListMsgs,
+} from "@/modules/pricelist/slice/pricelistSlice";
+import {
+  fetchBillingPlans,
+  fetchOccurrences,
+  clearBillingMessages,
+} from "@/modules/billing/slice/billingSlice";
+import {
+  fetchAllContractsAdmin,
+  clearContractMessages,
+} from "@/modules/contracts/slice/contractsSlice";
+import {
+  fetchAllOpsJobsAdmin,
+  clearOpsJobsMessages,
+} from "@/modules/operationsjobs/slice/opsjobsSlice";
+import { fetchDashboardOverview } from "@/modules/dashboard/slice/dailyOverviewSlice";
+import { fetchDashboardCharts } from "@/modules/dashboard/slice/chartDataSlice";
+import { fetchDashboardLogs } from "@/modules/dashboard/slice/logsSlice";
+import {
+  fetchAllCommentsAdmin,
+  clearCommentMessages,
+} from "@/modules/comment/slice/slice";
+import {
+  fetchBranchesAdmin,
+  clearBranchMessages,
+} from "@/modules/branch/slice";
 
 // -- Cleanup aksiyonları merkezi:
 const cleanupActions = [
@@ -244,7 +314,7 @@ const cleanupActions = [
   clearNewsletterSubscribers,
   clearOfferMessages,
   clearCustomerMessages,
-  clearPricingMessages, 
+  clearPricingMessages,
   clearApartmentMessages,
   clearNeighborhoodMessages,
   clearEmployeeMessages,
@@ -264,22 +334,24 @@ const cleanupActions = [
 
 // --- useLayoutInit ---
 export const useLayoutInit = () => {
-   const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
   const { tenant, loading: tenantLoading } = useActiveTenant();
   const didInit = useRef<string | undefined>(undefined);
   const tenantLoaded = !!tenant && !tenantLoading;
 
   // Slice stateleri
-  const settingsAdmin = useAppSelector(state => state.settings.settingsAdmin);
-  const loadingAdmin = useAppSelector(state => state.settings.loadingAdmin);
-  const fetchedSettingsAdmin = useAppSelector(state => state.settings.fetchedSettingsAdmin);
+  const settingsAdmin = useAppSelector((state) => state.settings.settingsAdmin);
+  const loadingAdmin = useAppSelector((state) => state.settings.loadingAdmin);
+  const fetchedSettingsAdmin = useAppSelector(
+    (state) => state.settings.fetchedSettingsAdmin
+  );
 
   const companyAdmin = useAppSelector((state) => state.company);
   const moduleMeta = useAppSelector((state) => state.moduleMeta);
   const moduleSetting = useAppSelector((state) => state.moduleSetting);
   const moduleMaintenance = useAppSelector((state) => state.moduleMaintenance);
   const tenants = useAppSelector((state) => state.tenants);
-  
+
   const accountProfile = useAppSelector((state) => state.account);
   const aboutList = useAppSelector((state) => state.about);
   const aboutCategories = useAppSelector((state) => state.aboutCategory);
@@ -296,7 +368,9 @@ export const useLayoutInit = () => {
   const ensotekprodList = useAppSelector((state) => state.ensotekprod);
   const ensotekCategories = useAppSelector((state) => state.ensotekCategory);
   const sparepartList = useAppSelector((state) => state.sparepart);
-  const sparepartCategories = useAppSelector((state) => state.sparepartCategory);
+  const sparepartCategories = useAppSelector(
+    (state) => state.sparepartCategory
+  );
   const chat = useAppSelector((state) => state.chat);
   const coupons = useAppSelector((state) => state.coupon);
   const newsList = useAppSelector((state) => state.news);
@@ -318,48 +392,45 @@ export const useLayoutInit = () => {
   );
   const ordersAdmin = useAppSelector((state) => state.orders);
   const libraryList = useAppSelector((state) => state.library);
-const libraryCategory = useAppSelector((state) => state.libraryCategory);
-const teamList = useAppSelector((state) => state.team);
-const faqList = useAppSelector((state) => state.faq);
-const portfolioList = useAppSelector((state) => state.portfolio);
-const skillList = useAppSelector((state) => state.skill);
-const skillCategories = useAppSelector((state) => state.skillCategory);
-const newsletterSubscribers = useAppSelector((state) => state.newsletter);
-const offerList = useAppSelector((state) => state.offer);
-const customerList = useAppSelector((state) => state.customer);
-const pricingList = useAppSelector((state) => state.pricing);
-const apartmentList = useAppSelector((state) => state.apartment);
-const neighborhood = useAppSelector((state) => state.neighborhood);
-const employeesAdmin = useAppSelector((state) => state.employees);
-const serviceCatalogList = useAppSelector((state) => state.servicecatalog);
-const userCrud = useAppSelector((state) => state.userCrud);
-const accounts = useAppSelector((state) => state.cashbook);
-const entries = useAppSelector((state) => state.cashbook.entries);
-const scheduling = useAppSelector((state) => state.scheduling);
-const opstemplates = useAppSelector((state) => state.opstemplates);
-const priceLists = useAppSelector((state) => state.pricelists);
-const billing = useAppSelector((state) => state.billing);
-const occurrences = useAppSelector((state) => state.billing.occurrences);
-const contracts = useAppSelector((state) => state.contracts);
-const opsJobs = useAppSelector((state) => state.opsjobs);
-const overview = useAppSelector((state) => state.dashboardOverview);
-const chartsData = useAppSelector((state) => state.dashboardCharts);
-const logsItems = useAppSelector((state) => state.dashboardLogs);
-const commentsAdmin = useAppSelector((state) => state.comments);
-const branchesAdmin = useAppSelector((state) => state.branch);
-
-
-
+  const libraryCategory = useAppSelector((state) => state.libraryCategory);
+  const teamList = useAppSelector((state) => state.team);
+  const faqList = useAppSelector((state) => state.faq);
+  const portfolioList = useAppSelector((state) => state.portfolio);
+  const skillList = useAppSelector((state) => state.skill);
+  const skillCategories = useAppSelector((state) => state.skillCategory);
+  const newsletterSubscribers = useAppSelector((state) => state.newsletter);
+  const offerList = useAppSelector((state) => state.offer);
+  const customerList = useAppSelector((state) => state.customer);
+  const pricingList = useAppSelector((state) => state.pricing);
+  const apartmentList = useAppSelector((state) => state.apartment);
+  const neighborhood = useAppSelector((state) => state.neighborhood);
+  const employeesAdmin = useAppSelector((state) => state.employees);
+  const serviceCatalogList = useAppSelector((state) => state.servicecatalog);
+  const userCrud = useAppSelector((state) => state.userCrud);
+  const accounts = useAppSelector((state) => state.cashbook);
+  const entries = useAppSelector((state) => state.cashbook.entries);
+  const scheduling = useAppSelector((state) => state.scheduling);
+  const opstemplates = useAppSelector((state) => state.opstemplates);
+  const priceLists = useAppSelector((state) => state.pricelists);
+  const billing = useAppSelector((state) => state.billing);
+  const occurrences = useAppSelector((state) => state.billing.occurrences);
+  const contracts = useAppSelector((state) => state.contracts);
+  const opsJobs = useAppSelector((state) => state.opsjobs);
+  const overview = useAppSelector((state) => state.dashboardOverview);
+  const chartsData = useAppSelector((state) => state.dashboardCharts);
+  const logsItems = useAppSelector((state) => state.dashboardLogs);
+  const commentsAdmin = useAppSelector((state) => state.comments);
+  const branchesAdmin = useAppSelector((state) => state.branch);
 
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
   useEffect(() => {
-   if (!tenantLoaded || !tenant?._id) return;
-  if (didInit.current === tenant._id) return;
-  didInit.current = tenant._id;
+    if (!tenantLoaded || !tenant?._id) return;
+    if (didInit.current === tenant._id) return;
+    didInit.current = tenant._id;
 
-  if (!fetchedSettingsAdmin && !loadingAdmin) {
-    dispatch(fetchSettingsAdmin());
-  }
+    if (!fetchedSettingsAdmin && !loadingAdmin) {
+      dispatch(fetchSettingsAdmin());
+    }
 
     if (!companyAdmin.company && !companyAdmin.loading)
       dispatch(fetchCompanyAdmin());
@@ -375,7 +446,7 @@ const branchesAdmin = useAppSelector((state) => state.branch);
       dispatch(fetchModuleTenantMatrix());
     }
 
-      dispatch(fetchAllAboutAdmin());
+    dispatch(fetchAllAboutAdmin());
     if (!aboutCategories.categories.length && !aboutCategories.loading)
       dispatch(fetchAboutCategories());
     if (!activityList.activityAdmin.length && !activityList.loading)
@@ -417,7 +488,10 @@ const branchesAdmin = useAppSelector((state) => state.branch);
       dispatch(fetchNewsCategories());
     if (!galleryList.galleryAdmin.length && !galleryList.loading)
       dispatch(fetchAllGalleryAdmin());
-    if (!galleryCategory.adminCategories.length && galleryCategory.status === "idle") {
+    if (
+      !galleryCategory.adminCategories.length &&
+      galleryCategory.status === "idle"
+    ) {
       dispatch(fetchAdminGalleryCategories());
     }
     if (!referencesList.referencesAdmin.length && !referencesList.loading)
@@ -455,10 +529,10 @@ const branchesAdmin = useAppSelector((state) => state.branch);
       dispatch(fetchAllOrdersAdmin());
     }
     if (!libraryList.libraryAdmin.length && !libraryList.loading)
-  dispatch(fetchAllLibraryAdmin());
+      dispatch(fetchAllLibraryAdmin());
 
-if (!libraryCategory.categories.length && !libraryCategory.loading)
-  dispatch(fetchLibraryCategories());
+    if (!libraryCategory.categories.length && !libraryCategory.loading)
+      dispatch(fetchLibraryCategories());
 
     if (!teamList.teamAdmin.length && !teamList.loading)
       dispatch(fetchAllTeamAdmin());
@@ -469,13 +543,16 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
     if (!portfolioList.portfolioAdmin.length && !portfolioList.loading)
       dispatch(fetchAllPortfolioAdmin());
 
-     if (!skillList.skillAdmin.length && !skillList.loading)
+    if (!skillList.skillAdmin.length && !skillList.loading)
       dispatch(fetchAllSkillAdmin());
 
     if (!skillCategories.categories.length && !skillCategories.loading)
       dispatch(fetchSkillCategories());
 
-    if (!newsletterSubscribers.subscribersAdmin.length && !newsletterSubscribers.loading)
+    if (
+      !newsletterSubscribers.subscribersAdmin.length &&
+      !newsletterSubscribers.loading
+    )
       dispatch(fetchAllSubscribers());
 
     if (!offerList.adminOffers.length && !offerList.loading)
@@ -499,28 +576,23 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
     if (!serviceCatalogList.items.length && !serviceCatalogList.loading)
       dispatch(fetchCatalogs());
 
-    if (!userCrud.users.length && !userCrud.loading)
-      dispatch(fetchUsers());
+    if (!userCrud.users.length && !userCrud.loading) dispatch(fetchUsers());
     if (!accounts.accounts.length && !accounts.loading)
       dispatch(fetchAccounts());
-    if (!entries.length && !accounts.loading)
-      dispatch(fetchEntries());
-    if (!scheduling.plans.length && !scheduling.loading)
-      dispatch(fetchPlans());
+    if (!entries.length && !accounts.loading) dispatch(fetchEntries());
+    if (!scheduling.plans.length && !scheduling.loading) dispatch(fetchPlans());
     if (!opstemplates.items.length && !opstemplates.loading)
       dispatch(fetchAllOpsTemplatesAdmin());
     if (!priceLists.items.length && !priceLists.loading)
       dispatch(fetchPriceListsAdmin());
     if (!billing.plans.length && !billing.loading)
       dispatch(fetchBillingPlans());
-    if (!occurrences.length && !billing.loading)
-      dispatch(fetchOccurrences());
+    if (!occurrences.length && !billing.loading) dispatch(fetchOccurrences());
     if (!contracts.contractsAdmin.length && !contracts.loading)
       dispatch(fetchAllContractsAdmin());
     if (!opsJobs.items.length && !opsJobs.loading)
       dispatch(fetchAllOpsJobsAdmin());
-    if (!overview.data && !overview.loading)
-      dispatch(fetchDashboardOverview());
+    if (!overview.data && !overview.loading) dispatch(fetchDashboardOverview());
     if (!chartsData.data && !chartsData.loading)
       dispatch(fetchDashboardCharts());
     if (!logsItems.items.length && !logsItems.loading)
@@ -538,10 +610,9 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
 
   useEffect(() => {
     return () => {
-     cleanupActions.forEach((action) => dispatch(action()));
+      cleanupActions.forEach((action) => dispatch(action()));
     };
   }, [dispatch]);
-
 
   // Return ile tüm state’leri döndür
   return {
@@ -585,33 +656,33 @@ if (!libraryCategory.categories.length && !libraryCategory.loading)
     sectionSettingsAdmin,
     ordersAdmin,
     libraryList,
-  libraryCategory,
-  teamList,
-  faqList,
-  portfolioList,
-  skillList,
-  skillCategories,
-  newsletterSubscribers,
-  offerList,
-  customerList,
-  pricingList,
-  apartmentList,
-  neighborhood,
-  employeesAdmin,
-  serviceCatalogList,
-  userCrud,
-  accounts,
-  entries,
-  scheduling,
-  opstemplates,
-  priceLists,
-  billing,
-  opsJobs,
-  occurrences,
-  overview,
-  chartsData,
-  logsItems,
-  commentsAdmin,
-  branchesAdmin,
+    libraryCategory,
+    teamList,
+    faqList,
+    portfolioList,
+    skillList,
+    skillCategories,
+    newsletterSubscribers,
+    offerList,
+    customerList,
+    pricingList,
+    apartmentList,
+    neighborhood,
+    employeesAdmin,
+    serviceCatalogList,
+    userCrud,
+    accounts,
+    entries,
+    scheduling,
+    opstemplates,
+    priceLists,
+    billing,
+    opsJobs,
+    occurrences,
+    overview,
+    chartsData,
+    logsItems,
+    commentsAdmin,
+    branchesAdmin,
   };
 };
