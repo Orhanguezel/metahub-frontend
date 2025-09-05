@@ -43,6 +43,9 @@ const folderMap: Record<ImageType, string> = {
   skill:"skill-images",
   portfolio:"portfolio-images",
   apartment:"apartment-images",
+  menuitem:"menuitem-images",
+  menu:"menu-images",
+  menucategory:"menucategory-images",
   misc: "misc",
 };
 
@@ -89,6 +92,9 @@ const defaultImageMap: Record<ImageType, string> = {
   skill:"skill.png",
   portfolio:"portfolio.png",
   apartment:"apartment.png",
+  menuitem:"menuitem.png",
+  menu:"menu.png",
+  menucategory:"menucategory.png",
   misc: "default.png",
 };
 

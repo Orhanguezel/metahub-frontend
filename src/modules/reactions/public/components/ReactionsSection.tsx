@@ -356,9 +356,7 @@ const FadeEdgeXRight = styled(FadeEdgeXLeft)`
   right: 0;
 `;
 
-// styled: CardSlot
 const CardSlot = styled.div<{ $cardWidth: number; $slotCount: number }>`
-  flex: 0 0 ${({ $cardWidth }) => $cardWidth}px;   /* 🔒 shrink/grow yok */
   width: ${({ $cardWidth }) => $cardWidth}px;
   min-width: ${({ $cardWidth }) => $cardWidth}px;
   max-width: ${({ $cardWidth }) => $cardWidth}px;
@@ -372,7 +370,6 @@ const CardSlot = styled.div<{ $cardWidth: number; $slotCount: number }>`
     $slotCount === 1 &&
     css`
       margin: 0 auto;
-      flex: 0 0 96vw !important;
       width: 96vw !important;
       min-width: 220px;
       max-width: 99vw;
@@ -381,7 +378,6 @@ const CardSlot = styled.div<{ $cardWidth: number; $slotCount: number }>`
     `}
 
   @media (max-width: 700px) {
-    flex: 0 0 94vw !important;
     width: 94vw !important;
     min-width: 220px;
     max-width: 99vw;
@@ -390,7 +386,6 @@ const CardSlot = styled.div<{ $cardWidth: number; $slotCount: number }>`
     align-items: center;
   }
 `;
-
 
 const NavBtn = styled.button<{ $side?: "left" | "right" }>`
   position: absolute;

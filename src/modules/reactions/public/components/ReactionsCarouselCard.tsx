@@ -12,7 +12,6 @@ import type { IMyReactionItem } from "@/modules/reactions/types";
 
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/reactions/locales";
-import { useEffect} from "react";
 
 const normId = (v: any): string => {
   if (!v) return "";
@@ -49,7 +48,6 @@ const buildBadges = (myAll: IMyReactionItem[], targetId: string) => {
   return { like, fav, save, emojis: Array.from(emojis), rating };
 };
 
-/* ---------- component ---------- */
 export default function ReactionsCarouselCard({
   item,
   lang,
@@ -60,16 +58,6 @@ export default function ReactionsCarouselCard({
   myAll: IMyReactionItem[];
 }) {
   const { t } = useI18nNamespace("reactions", translations);
-
-  // responsive card width (carousel ile aynı mantık)
-
-  useEffect(() => {
-    const handleResize = () => {
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const id = normId((item as any)._id) || item.slug || item.code;
   const badges = buildBadges(myAll, id);
@@ -136,7 +124,7 @@ export default function ReactionsCarouselCard({
 }
 
 /* ---------- styles (card) ---------- */
-/* Kart, ebeveyn slot’un (CardSlot) verdiği genişliği tamamen kullanır. */
+/* Kart, ebeveyn slot’un verdiği genişliği tamamen kullanır. */
 const Card = styled(Link)`
   display: flex;
   flex-direction: column;
