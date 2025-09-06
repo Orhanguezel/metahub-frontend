@@ -14,6 +14,8 @@ export const DOMAIN_TENANT_MAP: Record<string, string> = {
   "www.guezelwebdesign.com": "metahub",
   "test.guezelwebdesign.com": "antalya",
   "www.test.guezelwebdesign.com": "antalya",
+  "www.tarifintarifi.com": "tarifintarifi",
+  "tarifintarifi.com": "tarifintarifi",
   // ... diğerleri
 };
 
@@ -24,6 +26,8 @@ const KNOWN_TENANTS = new Set([
   "ensotek",
   "gzl",
   "metahub",
+  "antalya",
+  "tarifintarifi",
 ]);
 
 // Default tenant (fallback)

@@ -321,5 +321,6 @@ const AddCommentBtn = styled.button`
     padding: 0.8em 0;
     font-size: 1.01rem;
     margin: 1.5rem auto 0 auto;
+    text-align: center;
   }
 `;

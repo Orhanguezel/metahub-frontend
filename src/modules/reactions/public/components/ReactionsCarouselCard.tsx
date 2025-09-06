@@ -12,6 +12,7 @@ import type { IMyReactionItem } from "@/modules/reactions/types";
 
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/reactions/locales";
+import { useEffect } from "react";
 
 const normId = (v: any): string => {
   if (!v) return "";
@@ -35,7 +36,9 @@ const hrefFor = (item: IMenuItem) =>
 const buildBadges = (myAll: IMyReactionItem[], targetId: string) => {
   const mine = (myAll || []).filter((r) => normId(r.targetId) === targetId);
   const emojis = new Set<string>();
-  let like = false, fav = false, save = false;
+  let like = false,
+    fav = false,
+    save = false;
   let rating: number | null = null;
 
   for (const r of mine) {
@@ -48,6 +51,7 @@ const buildBadges = (myAll: IMyReactionItem[], targetId: string) => {
   return { like, fav, save, emojis: Array.from(emojis), rating };
 };
 
+/* ---------- component ---------- */
 export default function ReactionsCarouselCard({
   item,
   lang,
@@ -58,6 +62,13 @@ export default function ReactionsCarouselCard({
   myAll: IMyReactionItem[];
 }) {
   const { t } = useI18nNamespace("reactions", translations);
+
+  useEffect(() => {
+    const handleResize = () => {};
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const id = normId((item as any)._id) || item.slug || item.code;
   const badges = buildBadges(myAll, id);
@@ -76,6 +87,7 @@ export default function ReactionsCarouselCard({
             fill
             sizes="(max-width: 700px) 94vw, 360px"
             style={{ objectFit: "cover" }}
+            priority={false}
           />
         ) : (
           <Ph aria-hidden>🍽️</Ph>
@@ -99,7 +111,8 @@ export default function ReactionsCarouselCard({
           )}
           {typeof badges.rating === "number" && (
             <Rate title={t("public.badge.rating", { value: badges.rating })}>
-              <MdStarRate /> {badges.rating.toFixed(1)}
+              <MdStarRate />
+              <strong>{badges.rating.toFixed(1)}</strong>
             </Rate>
           )}
           {badges.emojis.slice(0, 3).map((e) => (
@@ -117,14 +130,14 @@ export default function ReactionsCarouselCard({
 
       <Body>
         <ItemTitle title={ttl}>{ttl}</ItemTitle>
-        {dsc && <ItemDesc>{dsc}</ItemDesc>}
+        {!!dsc && <ItemDesc>{dsc}</ItemDesc>}
       </Body>
     </Card>
   );
 }
 
 /* ---------- styles (card) ---------- */
-/* Kart, ebeveyn slot’un verdiği genişliği tamamen kullanır. */
+
 const Card = styled(Link)`
   display: flex;
   flex-direction: column;
@@ -133,26 +146,50 @@ const Card = styled(Link)`
   gap: 10px;
 
   background: ${({ theme }) => theme.colors.cardBackground};
-  border: 1.5px solid ${({ theme }) => theme.colors.borderLight};
-  box-shadow: 0 2px 14px 0 rgba(40, 117, 194, 0.07);
+  border: 1px solid ${({ theme }) => theme.colors.borderLight};
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   border-radius: ${({ theme }) => theme.radii.xl};
   overflow: hidden;
   text-decoration: none;
   color: inherit;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+
+  /* perf & interaction */
+  transform: translateZ(0);
+  contain: layout paint;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
 
   &:hover {
     transform: translateY(-1px);
     box-shadow: ${({ theme }) => theme.shadows.md};
+    border-color: ${({ theme }) => theme.colors.border};
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
   }
 `;
 
 const Thumb = styled.div`
   position: relative;
   aspect-ratio: 16/9;
-  background: #fafafa;
-  cursor: pointer;
+  background: #f4f6f8;
   overflow: hidden;
+
+  /* next/image wrapper spans */
+  & > span {
+    position: absolute !important;
+    inset: 0 !important;
+  }
+
+  /* subtle overlay to improve badge/text contrast */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0));
+  }
 `;
 
 const Ph = styled.div`
@@ -173,17 +210,27 @@ const Badges = styled.div`
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  z-index: 2;
 `;
 
 const Badge = styled.span`
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: ${({ theme }) => theme.colors.inputBackgroundLight};
-  border: ${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.pill};
   padding: 4px 8px;
+  border-radius: ${({ theme }) => theme.radii.pill};
   font-size: 12px;
+  line-height: 1;
+
+  /* better readability on photos */
+  background: rgba(255, 255, 255, 0.85);
+  color: ${({ theme }) => theme.colors.text};
+  border: 1px solid ${({ theme }) => theme.colors.borderLight};
+  backdrop-filter: saturate(140%) blur(4px);
+
+  svg {
+    font-size: 14px;
+  }
 `;
 
 const Emoji = styled(Badge)`
@@ -192,27 +239,40 @@ const Emoji = styled(Badge)`
 `;
 
 const Rate = styled(Badge)`
-  font-weight: 700;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  strong {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
 `;
 
 const Body = styled.div`
-  padding: 12px;
+  padding: 12px 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 `;
 
 const ItemTitle = styled.h3`
-  font-size: 15px;
   margin: 0;
-  line-height: 1.28;
   color: ${({ theme }) => theme.colors.primary};
+  font-size: 15px;
+  line-height: 1.28;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const ItemDesc = styled.p`
-  font-size: 12px;
-  opacity: 0.85;
   margin: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  opacity: 0.85;
+
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;

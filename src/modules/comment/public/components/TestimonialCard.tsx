@@ -30,12 +30,7 @@ export default function TestimonialCard({ card, lang, isActive }: any) {
       <Text $active={isActive}>
         <MdFormatQuote
           size={32}
-          style={{
-            opacity: 0.13,
-            marginBottom: -9,
-            marginRight: 7,
-            display: "inline"
-          }}
+          style={{ opacity: 0.13, marginBottom: -9, marginRight: 7, display: "inline" }}
         />
         <span>{getLangField(card.text)}</span>
       </Text>
@@ -43,7 +38,7 @@ export default function TestimonialCard({ card, lang, isActive }: any) {
   );
 }
 
-// Styled Components (TAM TEMA UYUMLU)
+/* ------------ styled ------------ */
 
 const CardMain = styled.div<{ $active?: boolean }>`
   background: ${({ $active, theme }) =>
@@ -71,9 +66,9 @@ const CardMain = styled.div<{ $active?: boolean }>`
     $active ? `2.2px solid ${theme.colors.primary}` : "2.2px solid transparent"};
   transition: all 0.26s cubic-bezier(.42,1.12,.48,1.07);
 
-  @media (max-width: 900px) {
+  @media (max-width: 700px) {
     min-height: 220px;
-    max-width: 98vw;
+    max-width: 80vw; /* mobil slot (≈88vw) içinde rahat */
     margin-bottom: 12px;
     transform: scale(1);
   }
@@ -138,4 +133,3 @@ const Text = styled.div<{ $active?: boolean }>`
     $active ? theme.colors.background : theme.colors.text};
   span { font-weight: 500; }
 `;
-
