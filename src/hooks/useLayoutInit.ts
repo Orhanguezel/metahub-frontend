@@ -267,6 +267,8 @@ import {
   clearBranchMessages,
 } from "@/modules/branch/slice";
 
+import { fetchRecipesAdmin,clearRecipesMessages} from "@/modules/recipes/slice/recipeSlice";
+
 // -- Cleanup aksiyonları merkezi:
 const cleanupActions = [
   clearSettingsMessages,
@@ -330,6 +332,7 @@ const cleanupActions = [
   clearOpsJobsMessages, // Operations jobs cleanup
   clearCommentMessages, // Comment cleanup
   clearBranchMessages, // Branch cleanup
+  clearRecipesMessages,
 ];
 
 // --- useLayoutInit ---
@@ -421,6 +424,7 @@ export const useLayoutInit = () => {
   const logsItems = useAppSelector((state) => state.dashboardLogs);
   const commentsAdmin = useAppSelector((state) => state.comments);
   const branchesAdmin = useAppSelector((state) => state.branch);
+  const recipesAdmin = useAppSelector((state) => state.recipe);
 
   // Optimize edilmiş useEffect (sadece primitive ve tenant’a bağlı)
   useEffect(() => {
@@ -601,6 +605,8 @@ export const useLayoutInit = () => {
       dispatch(fetchAllCommentsAdmin());
     if (!branchesAdmin.adminList.length && !branchesAdmin.loading)
       dispatch(fetchBranchesAdmin());
+    if (!recipesAdmin.adminList.length && !recipesAdmin.loading)
+      dispatch(fetchRecipesAdmin());
 
     // Cleanup actions
     cleanupActions.forEach((action) => dispatch(action()));
@@ -684,5 +690,6 @@ export const useLayoutInit = () => {
     logsItems,
     commentsAdmin,
     branchesAdmin,
+    recipesAdmin,
   };
 };

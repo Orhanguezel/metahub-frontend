@@ -28,12 +28,12 @@ import { fetchPortfolio } from "@/modules/portfolio/slice/portfolioSlice";
 import { fetchSkill } from "@/modules/skill/slice/skillSlice";
 import { fetchPricing } from "@/modules/pricing/slice/pricingSlice";
 import { fetchApartment } from "@/modules/apartment/slice/apartmentSlice";
-import { fetchCommentsForContent } from "@/modules/comment/slice/slice";
 
 import { fetchMenuItemsPublic } from "@/modules/menu/slice/menuitemSlice";
 import { fetchMenuCategoriesPublic } from "@/modules/menu/slice/menucategorySlice";
 import { fetchMenusPublic } from "@/modules/menu/slice/menuSlice";
 import { fetchMyReactions } from "@/modules/reactions/slice";
+import { fetchRecipesPublic} from "@/modules/recipes/slice/recipeSlice";
 
 export const usePublicLayoutInit = () => {
   const dispatch = useAppDispatch();
@@ -72,6 +72,7 @@ export const usePublicLayoutInit = () => {
   const menuSlice = useAppSelector((s) => s.menu);
   const reactionsSlice = useAppSelector((s) => s.reactions);
   const commentSlice = useAppSelector((s) => s.comments);
+  const recipeSlice =  useAppSelector((s) => s.recipe);
 
   const didInit = useRef<{ [key: string]: boolean }>({});
 
@@ -252,10 +253,10 @@ export const usePublicLayoutInit = () => {
     }
 
     if (
-      (!commentSlice.comments || commentSlice.comments.length === 0) &&
-      menuSlice.status === "idle"
+      (!recipeSlice.list || recipeSlice.list.length === 0) &&
+      recipeSlice.status === "idle"
     ) {
-      dispatch(fetchMenusPublic());
+      dispatch(fetchRecipesPublic());
     }
 
     //eslint-disable-next-line react-hooks/exhaustive-deps

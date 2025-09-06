@@ -94,7 +94,9 @@ import menuSlice from "@/modules/menu/slice/menuSlice";
 import branchSlice from "@/modules/branch/slice";
 import webhooksSlice from "@/modules/webhooks/slice";
 
-import reactionSlice from "../modules/reactions/slice";
+import reactionSlice from "@/modules/reactions/slice";
+import recipeSlice from "@/modules/recipes/slice/recipeSlice";
+import recipeCategorySlice from "@/modules/recipes/slice/recipeCategorySlice";
 
 // --- Combine reducers ---
 // Sadece slice bazında persistReducer uygula!
@@ -190,6 +192,8 @@ const rootReducer = combineReducers({
   branch: branchSlice,
   webhooks: webhooksSlice,
   reactions: reactionSlice,
+  recipe:recipeSlice,
+  recipesCategory:recipeCategorySlice
 });
 
 // --- Store ---

@@ -12,8 +12,8 @@ export const DOMAIN_TENANT_MAP: Record<string, string> = {
   "www.ensotek.de": "ensotek",
   "guezelwebdesign.com": "metahub",
   "www.guezelwebdesign.com": "metahub",
-  "test.guezelwebdesign.com": "tarifintarifi",
-  "www.test.guezelwebdesign.com": "tarifintarifi",
+  "test.guezelwebdesign.com": "antalya",
+  "www.test.guezelwebdesign.com": "tantalya",
   "www.tarifintarifi.com": "tarifintarifi",
   "tarifintarifi.com": "tarifintarifi",
   // ... diğerleri
