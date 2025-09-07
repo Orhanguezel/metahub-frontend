@@ -6,9 +6,9 @@ import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/recipes/locales";
 import type { IRecipe, RecipeCategory } from "@/modules/recipes/types";
 
-// ✅ 10 dilli recipes common
 import type { SupportedLocale } from "@/types/recipes/common";
-import { SUPPORTED_LOCALES, getMultiLang } from "@/types/recipes/common";
+import { getMultiLang } from "@/types/recipes/common";
+import { getUILang } from "@/i18n/recipes/getUILang";
 
 type Props = {
   recipes: IRecipe[];
@@ -19,13 +19,6 @@ type Props = {
   onDelete: (id: string) => void;
   onTogglePublish: (id: string, isPublished: boolean) => void;
   categories?: RecipeCategory[];
-};
-
-const getUILang = (lng?: string): SupportedLocale => {
-  const two = (lng || "").slice(0, 2).toLowerCase();
-  return (SUPPORTED_LOCALES as ReadonlyArray<string>).includes(two)
-    ? (two as SupportedLocale)
-    : "tr";
 };
 
 export default function List({
@@ -59,7 +52,6 @@ export default function List({
         : (v as any)?.$date || (v as any)?.date || (v as any)?.value || String(v);
     const dt = new Date(raw);
     return isNaN(dt.getTime()) ? "-" : dt.toLocaleString();
-    // not: admin liste endpointi createdAt/updatedAt dönüyor
   };
 
   const getCategoriesLabel = (r: IRecipe): string => {
@@ -67,7 +59,6 @@ export default function List({
     if (arr.length === 0) return "-";
     const labels = arr.map((c) => {
       if (typeof c === "string") return catLabelById.get(c) || "-";
-      // populate edilmiş obje: {_id, name}
       if ((c as any).name) return getMultiLang((c as any).name, uiLang) || "-";
       const id = (c as any)?.$oid || (c as any)?._id || (c as any)?.id;
       return id ? catLabelById.get(String(id)) || "-" : "-";
@@ -78,6 +69,7 @@ export default function List({
   const getThumb = (r: IRecipe): string | undefined => {
     const img = r?.images?.[0] as any;
     return img?.thumbnail || img?.webp || img?.url || undefined;
+    // not: backend images[] ile birebir uyumlu
   };
 
   return (
@@ -212,9 +204,14 @@ export default function List({
   );
 }
 
-/* styled … (mevcutla aynı) */
+/* styled */
 const Wrap = styled.div`display:flex;flex-direction:column;gap:${({ theme }) => theme.spacings.md};`;
-const ErrorBox = styled.div`padding:${({ theme }) => theme.spacings.sm};border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.danger};color:${({ theme }) => theme.colors.danger};border-radius:${({ theme }) => theme.radii.md};`;
+const ErrorBox = styled.div`
+  padding:${({ theme }) => theme.spacings.sm};
+  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.danger};
+  color:${({ theme }) => theme.colors.danger};
+  border-radius:${({ theme }) => theme.radii.md};
+`;
 const TableWrap = styled.div`
   width:100%;overflow-x:auto;border-radius:${({ theme }) => theme.radii.lg};
   box-shadow:${({ theme }) => theme.cards.shadow};background:${({ theme }) => theme.colors.cardBackground};

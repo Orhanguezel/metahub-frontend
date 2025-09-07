@@ -1,17 +1,15 @@
-// Çok dilli alanları projedeki ortak tipten alıyoruz
-import type { SupportedLocale } from "@/types/common";
+// frontend/modules/recipes/types.ts
+
+// Çok dilli alanlar ortak tipten
+import type { SupportedLocale, TranslatedLabel } from "@/types/recipes/common";
 
 /* ──────────────────────────────────────────────────────────────
    Çok dilli yardımcı tipler (GENEL)
    ────────────────────────────────────────────────────────────── */
 
-// Generic çok dilli alan
 export type TL<L extends string = string> = Partial<Record<L, string>>;
+export type TranslatedField = TranslatedLabel;
 
-// Proje genelinde kullanılan isim
-export type TranslatedField = TL<SupportedLocale>;
-
-// Upload image (UI tarafı için esnek)
 export type UploadImage = {
   url: string;
   thumbnail?: string;
@@ -34,27 +32,22 @@ export interface IRecipeImage {
 export interface IRecipeIngredient {
   name: TranslatedField;
   amount?: TranslatedField;
-  order?: number; // 0..100000
+  order?: number;
 }
 
 export interface IRecipeStep {
-  order: number; // 1..100000
+  order: number;
   text: TranslatedField;
 }
 
 export type RecipeCategoryRef =
   | string
-  | {
-      _id: string;
-      name?: TranslatedField;
-      slug?: string;
-    };
+  | { _id: string; name?: TranslatedField; slug?: string };
 
 export interface IRecipe {
   _id: string;
   tenant: string;
 
-  // Canonical & çok dilli slug
   slugCanonical: string;
   slug: TranslatedField;
 
@@ -80,7 +73,7 @@ export interface IRecipe {
   steps: IRecipeStep[];
 
   effectiveFrom?: string; // ISO
-  effectiveTo?: string; // ISO
+  effectiveTo?: string;   // ISO
 
   isPublished: boolean;
   isActive: boolean;
@@ -94,7 +87,7 @@ export type RecipeListQuery = {
   q?: string;
   tag?: string;
   maxTime?: number;
-  limit?: number; // varsayılan 20
+  limit?: number;
 };
 
 /** Admin listeleme filtreleri */
@@ -102,21 +95,24 @@ export type RecipeAdminListQuery = {
   q?: string;
   isActive?: boolean;
   isPublished?: boolean;
-  category?: string; // category ObjectId
-  limit?: number; // varsayılan 20..200
+  category?: string;
+  limit?: number;
 };
 
 /** Admin create/update form giriş tipi (UI form’dan topladığın veri) */
 export type RecipeFormInput = {
   // multipart ile gönderilecek alanlar
-  slug?: string;
+  slugCanonical?: string;            // ✅ eklendi
+  slug?: string | TranslatedField;
   order?: number;
 
   title?: TranslatedField;
   description?: TranslatedField;
 
   cuisines?: string[];
-  tags?: TranslatedField[];
+
+  // Hem string[] (anahtarlar) hem de çok dilli etiket nesneleri gelebilsin
+  tags?: (TranslatedField | string)[];   // ✅ esnetildi
 
   categories?: string[]; // only ids
 
@@ -126,6 +122,10 @@ export type RecipeFormInput = {
   totalMinutes?: number;
   calories?: number;
 
+  // opsiyonel yayın aralığı
+  effectiveFrom?: string | null;     // ✅ eklendi
+  effectiveTo?: string | null;       // ✅ eklendi
+
   ingredients?: IRecipeIngredient[];
   steps?: IRecipeStep[];
 
@@ -133,38 +133,37 @@ export type RecipeFormInput = {
   isActive?: boolean;
 
   // görseller: yeni upload’lar ve silinecekler
-  images?: File[]; // yeni eklenecek dosyalar
-  removedImages?: string[]; // publicId veya url bazlı (BE’nin beklediğine göre)
+  images?: File[];
+  removedImages?: string[];
 };
-
 export interface RecipeCategory {
   _id: string;
   tenant: string;
-  name: TranslatedField; // en az bir dil dolu
+  name: TranslatedField;
   slug: string;
   isActive: boolean;
   order?: number;
-  createdAt: string; // ISO
-  updatedAt: string; // ISO
+  createdAt: string;
+  updatedAt: string;
 }
 
 /** Public liste sorgusu */
 export type RecipeCategoryListQuery = {
   q?: string;
-  isActive?: boolean | string; // BE true/false string kabul ediyorsa
-  limit?: number; // varsayılan 20..50
+  isActive?: boolean | string;
+  limit?: number;
 };
 
 /** Create/Update payload (JSON) */
 export type RecipeCategoryUpsertInput = {
   name: TranslatedField;
-  slug?: string;
+  slug?: string | TranslatedField;
   order?: number;
   isActive?: boolean;
 };
 
 /* ──────────────────────────────────────────────────────────────
-   AI Generator tipleri (Admin + Public reusable)
+   AI Generator tipleri
    ────────────────────────────────────────────────────────────── */
 
 export type AiGenInput<L extends string = SupportedLocale> = {
@@ -183,18 +182,17 @@ export type AiGenInput<L extends string = SupportedLocale> = {
 
 export type AiResponse = {
   success: boolean;
-  data?: any; // BE'nin ürettiği tarif objesi (örnekteki yapı)
+  data?: any;
   message?: string;
 };
 
 export type AIGeneratorProps<L extends string = SupportedLocale> = {
-  endpoint?: string; // default: /api/recipes/ai/generate
+  endpoint?: string;
   defaultLang?: L;
   compact?: boolean;
   onGenerated: (ai: any, mode: "replace" | "merge") => void;
 };
 
-// (İstersen) Postman/BE için alias
 export type RecipeAIGeneratePayload = AiGenInput<SupportedLocale>;
 
 /* ──────────────────────────────────────────────────────────────
@@ -203,14 +201,15 @@ export type RecipeAIGeneratePayload = AiGenInput<SupportedLocale>;
 
 export function buildRecipeFormData(data: RecipeFormInput): FormData {
   const fd = new FormData();
-
   const put = (k: string, v: any) => {
     if (v === undefined || v === null) return;
-    if (v instanceof Blob) fd.append(k, v);
-    else if (typeof v === "object") fd.append(k, JSON.stringify(v));
-    else fd.append(k, String(v));
+    if (typeof File !== "undefined" && v instanceof File) { fd.append(k, v); return; }
+    if (typeof Blob !== "undefined" && v instanceof Blob) { fd.append(k, v); return; }
+    if (typeof v === "object") { fd.append(k, JSON.stringify(v)); return; }
+    fd.append(k, String(v));
   };
 
+  put("slugCanonical", data.slugCanonical);   // ✅
   put("slug", data.slug);
   put("order", data.order);
 
@@ -228,19 +227,16 @@ export function buildRecipeFormData(data: RecipeFormInput): FormData {
   put("totalMinutes", data.totalMinutes);
   put("calories", data.calories);
 
+  put("effectiveFrom", data.effectiveFrom);   // ✅
+  put("effectiveTo", data.effectiveTo);       // ✅
+
   put("ingredients", data.ingredients);
   put("steps", data.steps);
 
   put("isPublished", data.isPublished);
   put("isActive", data.isActive);
 
-  // images (çoklu dosya)
-  if (Array.isArray(data.images)) {
-    for (const file of data.images) {
-      if (file) fd.append("images", file);
-    }
-  }
-
+  if (Array.isArray(data.images)) for (const f of data.images) if (f) fd.append("images", f);
   put("removedImages", data.removedImages || []);
 
   return fd;

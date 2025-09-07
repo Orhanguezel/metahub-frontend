@@ -1,9 +1,10 @@
-import type { TL } from "../types";
+// frontend/modules/recipes/utils/index.ts
+import type { TL } from "@/modules/recipes/types";
 import type { SupportedLocale } from "@/types/recipes/common";
 import { SUPPORTED_LOCALES } from "@/types/recipes/common";
 import { TAG_CANON } from "@/modules/recipes/utils/ai.constants";
 
-// FE helper'lar
+// Geçerli UI dili (2 haneli) → SupportedLocale
 export const getUILang = (lng?: string): SupportedLocale => {
   const two = (lng || "").slice(0, 2).toLowerCase();
   const isSupported = (SUPPORTED_LOCALES as readonly string[]).includes(two);
@@ -28,6 +29,7 @@ export const slugifyLite = (s: string) =>
 
 // text -> string[] (JSON dizi veya virgül)
 export const parseArray = (txt: string): string[] => {
+  if (!txt) return [];
   try {
     const j = JSON.parse(txt);
     return Array.isArray(j) ? j.map(String).filter(Boolean) : [];

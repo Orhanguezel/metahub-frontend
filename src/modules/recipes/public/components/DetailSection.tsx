@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import Head from "next/head";
 
 import translations from "@/modules/recipes/locales";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
@@ -21,14 +22,82 @@ import {
 
 import type { IRecipe } from "@/modules/recipes/types";
 import { getMultiLang, type SupportedLocale } from "@/types/recipes/common";
+import { getUILang } from "@/i18n/recipes/getUILang";
+import { useRecipeReactions } from "@/hooks/useRecipeReactions";
+
+/* ---------- tiny toast (local) ---------- */
+type Toast = { id: number; type?: "info"|"success"|"error"; msg: string };
+function useToasts() {
+  const [items, setItems] = useState<Toast[]>([]);
+  const add = (msg: string, type: Toast["type"]="info") => {
+    const id = Date.now() + Math.random();
+    setItems((a)=>[...a, { id, type, msg }]);
+    setTimeout(()=> setItems((a)=>a.filter(t=>t.id!==id)), 2400);
+  };
+  const remove = (id:number)=>setItems((a)=>a.filter(t=>t.id!==id));
+  return { items, add, remove };
+}
+function Toasts({items, onRemove}:{items:Toast[]; onRemove:(id:number)=>void}) {
+  return (
+    <ToastWrap>
+      {items.map(t=>(
+        <ToastItem key={t.id} data-type={t.type}>
+          <span>{t.msg}</span>
+          <button onClick={()=>onRemove(t.id)} aria-label="close">×</button>
+        </ToastItem>
+      ))}
+    </ToastWrap>
+  );
+}
+
+/* ---------- JSON-LD component ---------- */
+function RecipeJsonLd({
+  recipe,
+  lang,
+  ratingAvg,
+  ratingCount,
+}: {
+  recipe: IRecipe;
+  lang: SupportedLocale;
+  ratingAvg: number | null;
+  ratingCount: number;
+}) {
+  const title = getMultiLang(recipe.title as any, lang) || recipe.slugCanonical || "Recipe";
+  const cover = recipe.images?.[0]?.url;
+  const desc = getMultiLang(recipe.description as any, lang) || "";
+  const ingredients = (recipe.ingredients || []).map((i) => getMultiLang((i as any).name, lang)).filter(Boolean);
+  const instructions = (recipe.steps || []).map((s) => ({ "@type": "HowToStep", text: getMultiLang((s as any).text, lang) })).filter((x) => !!x.text);
+  const data: any = {
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    name: title,
+    description: desc,
+    image: cover ? [cover] : [],
+    recipeCuisine: recipe.cuisines || [],
+    recipeIngredient: ingredients,
+    recipeInstructions: instructions,
+    recipeYield: recipe.servings ? `${recipe.servings} serving(s)` : undefined,
+    totalTime: recipe.totalMinutes ? `PT${recipe.totalMinutes}M` : undefined,
+  };
+  if (ratingCount > 0 && ratingAvg != null) {
+    data.aggregateRating = { "@type": "AggregateRating", ratingValue: ratingAvg, ratingCount };
+  }
+  return (
+    <Head>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
+    </Head>
+  );
+}
 
 export default function RecipesDetailSection() {
   const { slug } = useParams() as { slug: string };
   const { i18n, t } = useI18nNamespace("recipes", translations);
-  const lang = useMemo<SupportedLocale>(() => (i18n.language?.slice(0, 2) as SupportedLocale) || "tr", [i18n.language]);
+  const lang = useMemo<SupportedLocale>(() => getUILang(i18n?.language), [i18n?.language]);
 
   const dispatch = useAppDispatch();
   const { selected, list, loading, error } = useAppSelector((s) => s.recipe);
+
+  const { items:toasts, add:addToast, remove:removeToast } = useToasts();
 
   // i18n bundle’ları
   Object.entries(translations).forEach(([lng, resources]) => {
@@ -37,11 +106,12 @@ export default function RecipesDetailSection() {
     }
   });
 
+  // liste yoksa çek
   useEffect(() => {
-    // list yoksa listeyi de çek (other list için)
-    if (!list || list.length === 0) dispatch(fetchRecipesPublic());
-  }, [dispatch, list?.length]);
+    if (!list || list.length === 0) (dispatch as any)(fetchRecipesPublic());
+  }, [dispatch, list]);
 
+  // detayı çek
   useEffect(() => {
     const findLocal = (items: IRecipe[], slugIn: string): IRecipe | undefined =>
       items.find((r) => {
@@ -51,7 +121,7 @@ export default function RecipesDetailSection() {
           (so as any).tr,
           (so as any).en,
           r.slugCanonical,
-        ].filter(Boolean);
+        ].filter(Boolean).map(String).map((s) => s.toLowerCase());
         return slugs.includes(slugIn.toLowerCase());
       });
 
@@ -60,15 +130,33 @@ export default function RecipesDetailSection() {
       if (found) {
         dispatch(setSelectedRecipe(found));
       } else {
-        dispatch(fetchRecipeBySlug(slug));
+        (dispatch as any)(fetchRecipeBySlug(slug));
       }
     } else {
-      dispatch(fetchRecipeBySlug(slug));
+      (dispatch as any)(fetchRecipeBySlug(slug));
     }
 
     return () => { dispatch(clearRecipesMessages()); };
   }, [dispatch, list, slug, lang]);
 
+  // ---- REACTIONS HOOK (UNCONDITIONAL!) ----
+  // Hook her render’da çağrılsın; target yoksa undefined veriyoruz (hook no-op çalışır)
+  const rxTargetId = selected ? String(selected._id) : undefined;
+  const { summary, mine, toggle, toggleEmoji, rate } = useRecipeReactions(rxTargetId);
+  const EMOJIS = ["👍", "🔥", "😍", "😋"];
+
+  // öneriler
+  const [topReacted, setTopReacted] = useState<IRecipe[]>([]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await (dispatch as any)(fetchRecipesPublic({ sort: "top", limit: 8 } as any)).unwrap();
+        setTopReacted(res?.data || []);
+      } catch {/* ignore */}
+    })();
+  }, [dispatch]);
+
+  // erken dönüşler (hook çağrısından SONRA)
   if (loading) {
     return (
       <Container>
@@ -76,7 +164,6 @@ export default function RecipesDetailSection() {
       </Container>
     );
   }
-
   if (error || !selected) {
     return (
       <Container>
@@ -88,9 +175,7 @@ export default function RecipesDetailSection() {
   const recipe = selected;
   const title = getMultiLang(recipe.title, lang);
   const cover = recipe.images?.[0]?.url;
-  const others = (list || []).filter((r) => r._id !== recipe._id);
 
-  // yardımcı
   const toSlug = (r: IRecipe) =>
     (r.slug && (r.slug as any)[lang]) ||
     (r.slug && (r.slug as any).tr) ||
@@ -98,15 +183,74 @@ export default function RecipesDetailSection() {
     r.slugCanonical ||
     "";
 
+  const onToggle = async (kind: "LIKE"|"FAVORITE"|"BOOKMARK") => {
+    await toggle(kind);
+    addToast(t("saved","Kaydedildi"), "success");
+  };
+  const onEmoji = async (e: string) => {
+    await toggleEmoji(e);
+    addToast(`${t("saved","Kaydedildi")} ${e}`, "success");
+  };
+  const onRate = async (v: 1|2|3|4|5) => {
+    const ok = await rate(v);
+    addToast(ok ? t("saved","Kaydedildi") : t("error","Hata"), ok ? "success" : "error");
+  };
+
+  // diğerleri
+  const others = (list || []).filter((r) => r._id !== recipe._id);
+
   return (
     <Container initial={{ opacity: 0, y: 36 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.57 }}>
+      {/* JSON-LD */}
+      <RecipeJsonLd recipe={recipe} lang={lang} ratingAvg={summary.ratingAvg} ratingCount={summary.ratingCount} />
+
       <Title>{title}</Title>
 
       {cover && (
         <ImageWrapper>
-          <StyledImage src={cover} alt={title} width={1080} height={410} priority />
-      </ImageWrapper>
+          <StyledImage src={cover} alt={title} width={1080} height={410} priority sizes="(max-width:1000px) 100vw, 950px" />
+        </ImageWrapper>
       )}
+
+      {/* Reaksiyon barı */}
+      <RxWrap>
+        <Left>
+          <div className="emojis">
+            {EMOJIS.map((e) => (
+              <Emoji key={e} $on={mine.emojis.has(e)} onClick={() => onEmoji(e)} title={`${e} ${summary.emojis[e] || 0}`}>
+                <span>{e}</span>
+                <small>{summary.emojis[e] || 0}</small>
+              </Emoji>
+            ))}
+          </div>
+        </Left>
+        <Center>
+          {[1,2,3,4,5].map((v)=>(
+            <Star
+              key={v}
+              aria-pressed={mine.rating === v}
+              onClick={() => onRate(v as 1 | 2 | 3 | 4 | 5)}
+              title={t("rate", "Puan ver")}
+            >
+              {(mine.rating ?? Math.round(summary.ratingAvg || 0)) >= v ? "★" : "☆"}
+            </Star>
+          ))}
+          {summary.ratingAvg != null && (
+            <Avg>({summary.ratingAvg.toFixed(1)})</Avg>
+          )}
+        </Center>
+        <Right>
+          <RxBtn aria-pressed={mine.like} onClick={() => onToggle("LIKE")} title={t("like", "Beğen")}>
+            {mine.like ? "👍" : "👍🏻"}
+          </RxBtn>
+          <RxBtn aria-pressed={mine.favorite} onClick={() => onToggle("FAVORITE")} title={t("favorite", "Favori")}>
+            {mine.favorite ? "❤️" : "🤍"}
+          </RxBtn>
+          <RxBtn aria-pressed={mine.bookmark} onClick={() => onToggle("BOOKMARK")} title={t("bookmark", "Kaydet")}>
+            {mine.bookmark ? "🔖" : "📑"}
+          </RxBtn>
+        </Right>
+      </RxWrap>
 
       {/* Kısa açıklama */}
       {recipe.description && getMultiLang(recipe.description, lang) && (
@@ -128,7 +272,7 @@ export default function RecipesDetailSection() {
       {Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0 && (
         <SectionBlock>
           <h3>{t("ingredients", "Malzemeler")}</h3>
-          <List>
+          <UL>
             {recipe.ingredients.map((ing, i) => {
               const name = getMultiLang(ing.name as any, lang);
               const amount = ing.amount ? getMultiLang(ing.amount as any, lang) : "";
@@ -139,7 +283,7 @@ export default function RecipesDetailSection() {
                 </li>
               );
             })}
-          </List>
+          </UL>
         </SectionBlock>
       )}
 
@@ -147,11 +291,11 @@ export default function RecipesDetailSection() {
       {Array.isArray(recipe.steps) && recipe.steps.length > 0 && (
         <SectionBlock>
           <h3>{t("steps", "Adımlar")}</h3>
-          <Ol>
+          <OL>
             {recipe.steps.map((st) => (
               <li key={st.order}>{getMultiLang(st.text as any, lang)}</li>
             ))}
-          </Ol>
+          </OL>
         </SectionBlock>
       )}
 
@@ -180,11 +324,55 @@ export default function RecipesDetailSection() {
           </OtherGrid>
         </OtherSection>
       )}
+
+      {/* En çok reaksiyon alanlar */}
+      {topReacted.length > 0 && (
+        <OtherSection>
+          <OtherTitle>🔥 {t("page.topReacted", "En Çok Reaksiyon Alanlar")}</OtherTitle>
+          <OtherGrid>
+            {topReacted.map((item) => {
+              const s = toSlug(item);
+              return (
+                <OtherCard key={`top-${item._id}`} as={motion.div} whileHover={{ y: -6, scale: 1.025 }}>
+                  <OtherImgWrap>
+                    {item.images?.[0]?.url ? (
+                      <OtherImg src={item.images[0].url} alt={getMultiLang(item.title, lang)} width={60} height={40} />
+                    ) : (
+                      <OtherImgPlaceholder />
+                    )}
+                  </OtherImgWrap>
+                  <OtherTitleMini>
+                    <Link href={`/recipes/${s}`}>{getMultiLang(item.title, lang)}</Link>
+                  </OtherTitleMini>
+                </OtherCard>
+              );
+            })}
+          </OtherGrid>
+        </OtherSection>
+      )}
+
+      {/* toasts */}
+      <Toasts items={toasts} onRemove={removeToast} />
     </Container>
   );
 }
 
 /* --------- styles --------- */
+const ToastWrap = styled.div`
+  position: fixed; z-index: 9999; right: 16px; bottom: 16px;
+  display: grid; gap: 8px;
+`;
+const ToastItem = styled.div`
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:${({theme})=>theme.radii.md};
+  background:${({theme})=>theme.colors.cardBackground};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  box-shadow:${({theme})=>theme.shadows.md};
+  &[data-type="success"] { border-color: #20b26b55; }
+  &[data-type="error"] { border-color: #e0565655; }
+  button{border:0;background:transparent;cursor:pointer;font-size:16px;opacity:.75;}
+`;
+
 const Container = styled(motion.section)`
   max-width: 950px; margin: 0 auto;
   padding: ${({ theme }) => theme.spacings.xxxl} ${({ theme }) => theme.spacings.md};
@@ -204,6 +392,24 @@ const ImageWrapper = styled.div`
   display: flex; justify-content: center; align-items: center;
 `;
 const StyledImage = styled(Image)` max-width: 100%; height: auto; object-fit: contain !important; border-radius: ${({ theme }) => theme.radii.lg}; display: block; `;
+const RxWrap = styled.div`
+  display:flex; align-items:center; justify-content:space-between; gap:${({theme})=>theme.spacings.md};
+  margin-bottom:${({theme})=>theme.spacings.md};
+`;
+const Left = styled.div` .emojis{display:flex;gap:${({theme})=>theme.spacings.sm};flex-wrap:wrap;} `;
+const Center = styled.div` display:inline-flex;align-items:center;gap:6px; `;
+const Right = styled.div` display:flex;align-items:center;gap:${({theme})=>theme.spacings.sm}; `;
+const Emoji = styled.button<{ $on?: boolean }>`
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 10px;border-radius:${({theme})=>theme.radii.pill};
+  border:${({theme})=>theme.borders.thin} ${({theme})=>theme.colors.border};
+  background:${({theme,$on})=>($on?theme.colors.primaryLight:theme.colors.inputBackgroundLight)};
+  cursor:pointer; small{opacity:.8;}
+`;
+const Star = styled.button`border:none;background:transparent;cursor:pointer;font-size:22px;line-height:1;`;
+const Avg = styled.span`opacity:.75;margin-inline-start:4px;`;
+const RxBtn = styled.button`border:none;background:transparent;font-size:18px;cursor:pointer;`;
+
 const SummaryBox = styled.div`
   background: ${({ theme }) => theme.colors.background};
   border-left: 5px solid ${({ theme }) => theme.colors.accent};
@@ -225,10 +431,10 @@ const SectionBlock = styled.section`
   border-radius: ${({ theme }) => theme.radii.xl};
   box-shadow: ${({ theme }) => theme.shadows.sm};
   border-left: 6px solid ${({ theme }) => theme.colors.primary};
-  h3 { margin-bottom: ${({ theme }) => theme.spacings.md}; color: ${({ theme }) => theme.colors.primary}; font-size: ${({ theme }) => theme.fontSizes.lg}; }
+  h3 { margin-bottom: ${({ theme }) => theme.spacings.md}; color: ${({ theme }) => theme.colors.primary}; font-size: ${({ theme }) => theme.fontSizes.lg }; }
 `;
-const List = styled.ul` display: grid; gap: .4rem; padding-left: 1rem; `;
-const Ol = styled.ol` display: grid; gap: .4rem; padding-left: 1.2rem; `;
+const UL = styled.ul` display: grid; gap: .4rem; padding-left: 1rem; `;
+const OL = styled.ol` display: grid; gap: .4rem; padding-left: 1.2rem; `;
 const OtherSection = styled.div` margin-top: ${({ theme }) => theme.spacings.xxl}; border-top: 1.5px solid ${({ theme }) => theme.colors.borderLight}; padding-top: ${({ theme }) => theme.spacings.lg}; `;
 const OtherTitle = styled.h3` color: ${({ theme }) => theme.colors.primary}; font-size: ${({ theme }) => theme.fontSizes.large}; margin-bottom: ${({ theme }) => theme.spacings.lg}; font-weight: ${({ theme }) => theme.fontWeights.semiBold}; `;
 const OtherGrid = styled.div` display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem 1.8rem; margin-top: .7rem; `;

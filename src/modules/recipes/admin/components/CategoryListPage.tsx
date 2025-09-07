@@ -7,21 +7,13 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { deleteRecipeCategory } from "@/modules/recipes/slice/recipeCategorySlice";
 import type { RecipeCategory } from "@/modules/recipes/types";
 
-// ✅ hepsi recipes/common’dan
 import type { SupportedLocale } from "@/types/recipes/common";
-import { SUPPORTED_LOCALES, getMultiLang } from "@/types/recipes/common";
+import { getMultiLang } from "@/types/recipes/common";
+import { getUILang } from "@/i18n/recipes/getUILang";
 
 type Props = {
   onAdd: () => void;
   onEdit: (category: RecipeCategory) => void;
-};
-
-const isSupported = (s?: string): s is SupportedLocale =>
-  !!s && (SUPPORTED_LOCALES as readonly string[]).includes(s);
-
-const getUILang = (lng?: string): SupportedLocale => {
-  const two = (lng || "").slice(0, 2).toLowerCase();
-  return isSupported(two) ? two : "tr";
 };
 
 export default function CategoryListPage({ onAdd, onEdit }: Props) {
@@ -29,10 +21,7 @@ export default function CategoryListPage({ onAdd, onEdit }: Props) {
   const lang = useMemo<SupportedLocale>(() => getUILang(i18n?.language), [i18n?.language]);
   const dispatch = useAppDispatch();
 
-  // store key: recipesCategory
-  const { categories = [], loading, error } = useAppSelector(
-    (s) => (s as any).recipesCategory || {}
-  );
+  const { categories = [], loading, error } = useAppSelector((s) => s.recipesCategory);
 
   const remove = async (id: string) => {
     if (!confirm(t("confirm.delete_category", "Kategoriyi silmek istiyor musunuz?"))) return;
@@ -92,7 +81,12 @@ export default function CategoryListPage({ onAdd, onEdit }: Props) {
 /* styled */
 const Wrap = styled.div`display:flex;flex-direction:column;gap:${({ theme }) => theme.spacings.md};`;
 const Header = styled.div`display:flex;align-items:center;justify-content:space-between;`;
-const ErrorBox = styled.div`padding:${({ theme }) => theme.spacings.sm};border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.danger};color:${({ theme }) => theme.colors.danger};border-radius:${({ theme }) => theme.radii.md};`;
+const ErrorBox = styled.div`
+  padding:${({ theme }) => theme.spacings.sm};
+  border:${({ theme }) => theme.borders.thin} ${({ theme }) => theme.colors.danger};
+  color:${({ theme }) => theme.colors.danger};
+  border-radius:${({ theme }) => theme.radii.md};
+`;
 const TableWrap = styled.div`
   width:100%;overflow-x:auto;border-radius:${({ theme }) => theme.radii.lg};
   box-shadow:${({ theme }) => theme.cards.shadow};background:${({ theme }) => theme.colors.cardBackground};

@@ -1,15 +1,16 @@
+// frontend/modules/recipes/recipes.slice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiCall from "@/lib/apiCall";
 
-// ✅ Tipler type-import ile
 import type {
   IRecipe,
   RecipeListQuery,
   RecipeAdminListQuery,
   RecipeFormInput,
+  AiGenInput,
 } from "@/modules/recipes/types";
+import type { SupportedLocale } from "@/types/recipes/common";
 
-// ✅ Fonksiyon value-import ile
 import { buildRecipeFormData } from "@/modules/recipes/types";
 
 type Status = "idle" | "loading" | "succeeded" | "failed";
@@ -40,10 +41,9 @@ const initialState: RecipesState = {
   successMessage: null,
 };
 
-const BASE_PUBLIC = "/recipes";
-const BASE_ADMIN = "/recipes/admin";
+const BASE_PUBLIC = "/recipes";       // BE: public.routes
+const BASE_ADMIN = "/recipes/admin";  // BE: admin.routes
 
-// --- Helpers
 const extractErr = (p: unknown): string => {
   if (typeof p === "string") return p;
   if (p && typeof p === "object" && "message" in p) {
@@ -57,7 +57,9 @@ const extractErr = (p: unknown): string => {
 export const fetchRecipesPublic = createAsyncThunk<IRecipe[], RecipeListQuery | void>(
   "recipes/fetchPublic",
   async (query, thunkAPI) => {
-    const res = await apiCall("get", BASE_PUBLIC, query ?? {}, thunkAPI.rejectWithValue);
+    const q = query ?? {};
+    if (q.limit == null) (q as any).limit = 20; // FE default
+    const res = await apiCall("get", BASE_PUBLIC, q, thunkAPI.rejectWithValue);
     return res.data || [];
   }
 );
@@ -70,11 +72,22 @@ export const fetchRecipeBySlug = createAsyncThunk<IRecipe, string>(
   }
 );
 
+/** Public AI Generate (+ persist to DB) */
+export const generateRecipePublic = createAsyncThunk<
+  { message: string; data: IRecipe },
+  AiGenInput<SupportedLocale>
+>("recipes/generatePublic", async (payload, thunkAPI) => {
+  const res = await apiCall("post", `${BASE_PUBLIC}/generate`, payload, thunkAPI.rejectWithValue);
+  return { message: res.message || "Tarif üretildi.", data: res.data };
+});
+
 // --- Thunks (ADMIN) ---
 export const fetchRecipesAdmin = createAsyncThunk<IRecipe[], RecipeAdminListQuery | void>(
   "recipes/fetchAdmin",
   async (query, thunkAPI) => {
-    const res = await apiCall("get", BASE_ADMIN, query ?? {}, thunkAPI.rejectWithValue);
+    const q = query ?? {};
+    if (q.limit == null) (q as any).limit = 20; // FE default
+    const res = await apiCall("get", BASE_ADMIN, q, thunkAPI.rejectWithValue);
     return res.data || [];
   }
 );
@@ -181,6 +194,19 @@ const recipesSlice = createSlice({
         s.selected = a.payload;
       })
       .addCase(fetchRecipeBySlug.rejected, setFailed);
+
+    // Public generate
+    builder
+      .addCase(generateRecipePublic.pending, setLoading)
+      .addCase(generateRecipePublic.fulfilled, (s, a) => {
+        s.loading = false;
+        s.status = "succeeded";
+        const created = a.payload.data;
+        s.list.unshift(created);
+        s.selected = created;
+        s.successMessage = a.payload.message;
+      })
+      .addCase(generateRecipePublic.rejected, setFailed);
 
     // Admin list
     builder

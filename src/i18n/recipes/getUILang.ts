@@ -1,7 +1,7 @@
 // src/i18n/recipes/getUILang.ts
 "use client";
-import type { SupportedLocale, TranslatedLabel } from "@/types/common";
-import { SUPPORTED_LOCALES } from "@/types/common";
+import type { SupportedLocale, TranslatedLabel } from "@/types/recipes/common";
+import { SUPPORTED_LOCALES } from "@/types/recipes/common";
 
 /* ───── UI dili (2 harf) ───── */
 export const getUILang = (lng?: string): SupportedLocale => {
@@ -29,6 +29,19 @@ export const setTL = (
   val: string
 ): TranslatedLabel => ({ ...makeTL(obj), [l]: val });
 
+/** DB’den gelen değeri sağlam TL’ye çevirir (string → {tr: s}, object → {…}, diğer → {}) */
+export const toTL = (x: unknown): TranslatedLabel => {
+  if (!x) return {};
+  if (typeof x === "string") return { tr: x } as TranslatedLabel;
+  if (typeof x === "object" && !Array.isArray(x)) {
+    const out: TranslatedLabel = {};
+    for (const [k, v] of Object.entries(x as Record<string, unknown>)) {
+      if (typeof v === "string") (out as any)[k] = v;
+    }
+    return out;
+  }
+  return {};
+};
 
 /** Dili kesin ister; yoksa boş string döner (input value için birebir) */
 export const getTLStrict = (obj: TranslatedLabel | undefined, l: SupportedLocale): string =>
@@ -45,4 +58,17 @@ export const getTL = (
   if ((obj as any).en) return String((obj as any).en);
   const first = Object.values(obj)[0];
   return typeof first === "string" ? first : "";
+};
+
+/** TL birleştirme (replace/merge) */
+export const mergeTL = (
+  curr: TranslatedLabel,
+  next: TranslatedLabel,
+  mode: "replace" | "merge" = "merge"
+): TranslatedLabel => {
+  if (mode === "replace") return toTL(next);
+  const clean = Object.fromEntries(
+    Object.entries(next || {}).filter(([, v]) => typeof v === "string" && (v as string).trim())
+  ) as TranslatedLabel;
+  return { ...(curr || {}), ...clean };
 };
