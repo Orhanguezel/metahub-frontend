@@ -13,8 +13,8 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    lng: "en", // default
-    fallbackLng: "en",
+    lng: "de", // default
+    fallbackLng: "de",
     ns: [], // Namespace'ler otomatik belirlenir
     interpolation: {
       escapeValue: false,

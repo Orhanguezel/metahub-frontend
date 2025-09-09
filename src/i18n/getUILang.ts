@@ -8,7 +8,7 @@ export const getUILang = (lng?: string): SupportedLocale => {
   const two = (lng || "").slice(0, 2).toLowerCase();
   return (SUPPORTED_LOCALES as ReadonlyArray<string>).includes(two)
     ? (two as SupportedLocale)
-    : "tr";
+    : "de";
 };
 
 /* ───── TL helpers (merkezi) ───── */
