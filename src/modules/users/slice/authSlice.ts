@@ -37,137 +37,130 @@ const initialState: AuthState = {
   emailVerifyRequired: false,
 };
 
+// ---- helpers
+const isUserLike = (obj: any) =>
+  obj &&
+  typeof obj === "object" &&
+  (obj._id || obj.id || obj.email || obj.username || obj.role);
+
+/**
+ * response şekilleri:
+ *  A) { data: { user, needOtp?, mfaRequired?, emailVerifyRequired?, otpSession? } }
+ *  B) { user, needOtp?, mfaRequired?, emailVerifyRequired?, otpSession? }
+ *  C) { _id, email, role, ... }  // düz user
+ */
+const normalizeLogin = (raw: any): LoginResult => {
+  const flat = raw && typeof raw === "object" && "data" in raw ? raw.data : raw;
+
+  const user: User | null =
+    (flat && flat.user) ? flat.user :
+    (isUserLike(flat) ? flat as User : null);
+
+  const needOtp = Boolean(flat?.needOtp ?? raw?.needOtp ?? false);
+  const mfaRequired = Boolean(flat?.mfaRequired ?? raw?.mfaRequired ?? needOtp);
+  const emailVerifyRequired = Boolean(flat?.emailVerifyRequired ?? raw?.emailVerifyRequired ?? false);
+  const otpSession = flat?.otpSession ?? raw?.otpSession ?? null;
+
+  return { user, needOtp, mfaRequired, emailVerifyRequired, otpSession };
+};
+
 // --- THUNKS ---
 export const loginUser = createAsyncThunk<
   LoginResult,
   LoginPayload,
-  { rejectValue: { message: string } | string }
->(
-  "auth/loginUser",
-  async (data, thunkAPI) => {
-    try {
-      // apiCall zaten response.data döndürür
-      const res: any = await apiCall("post", "/users/login", data, thunkAPI.rejectWithValue);
-
-      // Olası server yanıt şekilleri:
-      // A) { success, data:{ user, needOtp?, mfaRequired?, emailVerifyRequired?, otpSession? }, needOtp? ... }
-      // B) { user, needOtp?, mfaRequired?, emailVerifyRequired?, otpSession? }
-      // C) sadece { data:{ user } }
-      const flat = (res && typeof res === "object") ? (res.data ?? res) : {};
-      const user: User | null = flat.user ?? res?.user ?? null;
-
-      const needOtp = Boolean(
-        flat.needOtp ?? res?.needOtp ?? flat.mfaRequired ?? res?.mfaRequired ?? (user as any)?.mfaEnabled
-      );
-      const mfaRequired = Boolean(flat.mfaRequired ?? res?.mfaRequired ?? needOtp);
-      const emailVerifyRequired = Boolean(flat.emailVerifyRequired ?? res?.emailVerifyRequired);
-      const otpSession = flat.otpSession ?? res?.otpSession ?? null;
-
-      return { user, needOtp, mfaRequired, emailVerifyRequired, otpSession };
-    } catch (error: any) {
-      const msg: string =
-        error?.message ||
-        error?.response?.data?.message ||
-        "Login failed";
-      return thunkAPI.rejectWithValue(msg);
-    }
+  { rejectValue: string }
+>("auth/loginUser", async (data, thunkAPI) => {
+  try {
+    const res: any = await apiCall("post", "/users/login", data, thunkAPI.rejectWithValue as any);
+    return normalizeLogin(res);
+  } catch (error: any) {
+    const msg: string =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Login failed";
+    return thunkAPI.rejectWithValue(msg);
   }
-);
+});
 
 export const registerUser = createAsyncThunk<
   { message: string },
   RegisterPayload,
   { rejectValue: string }
->(
-  "auth/registerUser",
-  async (formData, thunkAPI) => {
-    try {
-      const res: any = await apiCall("post", "/users/register", formData, thunkAPI.rejectWithValue);
-      return { message: res?.message || "Registration successful" };
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err?.message || err?.response?.data?.message || "Registration failed"
-      );
-    }
+>("auth/registerUser", async (formData, thunkAPI) => {
+  try {
+    const res: any = await apiCall("post", "/users/register", formData, thunkAPI.rejectWithValue as any);
+    const flat = res && typeof res === "object" && "data" in res ? res.data : res;
+    return { message: flat?.message || res?.message || "Registration successful" };
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err?.response?.data?.message || err?.message || "Registration failed"
+    );
   }
-);
+});
 
 export const changePassword = createAsyncThunk<
   { message: string },
   { currentPassword: string; newPassword: string },
   { rejectValue: string }
->(
-  "auth/changePassword",
-  async (data, thunkAPI) => {
-    try {
-      const res: any = await apiCall("put", "/users/account/me/password", data, thunkAPI.rejectWithValue);
-      return { message: res?.message || "Password changed successfully." };
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err?.message || err?.response?.data?.message || "Password change failed"
-      );
-    }
+>("auth/changePassword", async (data, thunkAPI) => {
+  try {
+    const res: any = await apiCall("put", "/users/account/me/password", data, thunkAPI.rejectWithValue as any);
+    const flat = res && typeof res === "object" && "data" in res ? res.data : res;
+    return { message: flat?.message || res?.message || "Password changed successfully." };
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err?.response?.data?.message || err?.message || "Password change failed"
+    );
   }
-);
+});
 
 export const resetPassword = createAsyncThunk<
   { message: string },
   { token: string; newPassword: string },
   { rejectValue: string }
->(
-  "auth/resetPassword",
-  async (data, thunkAPI) => {
-    try {
-      const res: any = await apiCall(
-        "post",
-        `/users/reset-password/${data.token}`,
-        { newPassword: data.newPassword },
-        thunkAPI.rejectWithValue
-      );
-      return { message: res?.message || "Password reset successfully." };
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(
-        error?.message || error?.response?.data?.message || "Reset password failed"
-      );
-    }
+>("auth/resetPassword", async (data, thunkAPI) => {
+  try {
+    const res: any = await apiCall("post", `/users/reset-password/${data.token}`, { newPassword: data.newPassword }, thunkAPI.rejectWithValue as any);
+    const flat = res && typeof res === "object" && "data" in res ? res.data : res;
+    return { message: flat?.message || res?.message || "Password reset successfully." };
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error?.response?.data?.message || error?.message || "Reset password failed"
+    );
   }
-);
+});
 
 export const forgotPassword = createAsyncThunk<
   { message: string },
   { email: string },
   { rejectValue: string }
->(
-  "auth/forgotPassword",
-  async (data, thunkAPI) => {
-    try {
-      const res: any = await apiCall("post", "/users/forgot-password", data, thunkAPI.rejectWithValue);
-      return { message: res?.message || "Reset email sent." };
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(
-        error?.message || error?.response?.data?.message || "Forgot password failed"
-      );
-    }
+>("auth/forgotPassword", async (data, thunkAPI) => {
+  try {
+    const res: any = await apiCall("post", "/users/forgot-password", data, thunkAPI.rejectWithValue as any);
+    const flat = res && typeof res === "object" && "data" in res ? res.data : res;
+    return { message: flat?.message || res?.message || "Reset email sent." };
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error?.response?.data?.message || error?.message || "Forgot password failed"
+    );
   }
-);
+});
 
 export const logoutUser = createAsyncThunk<
   { message: string },
   void,
   { rejectValue: string }
->(
-  "auth/logoutUser",
-  async (_, thunkAPI) => {
-    try {
-      const res: any = await apiCall("post", "/users/logout", null, thunkAPI.rejectWithValue);
-      return { message: res?.message || "Logged out successfully." };
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(
-        error?.message || error?.response?.data?.message || "Logout failed"
-      );
-    }
+>("auth/logoutUser", async (_, thunkAPI) => {
+  try {
+    const res: any = await apiCall("post", "/users/logout", null, thunkAPI.rejectWithValue as any);
+    const flat = res && typeof res === "object" && "data" in res ? res.data : res;
+    return { message: flat?.message || res?.message || "Logged out successfully." };
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error?.response?.data?.message || error?.message || "Logout failed"
+    );
   }
-);
+});
 
 // --- REDUCER HELPERS ---
 const setLoading = (state: AuthState) => {
@@ -212,9 +205,9 @@ const authSlice = createSlice({
     builder
       // LOGIN
       .addCase(loginUser.pending, setLoading)
-      .addCase(loginUser.fulfilled, (state, action: PayloadAction<LoginResult | undefined>) => {
+      .addCase(loginUser.fulfilled, (state, action: PayloadAction<LoginResult>) => {
         setSucceeded(state);
-        const payload = action.payload ?? { user: null };
+        const payload = action.payload || { user: null };
         state.user = payload.user ?? null;
         state.successMessage = "Login successful.";
         state.needOtp = !!(payload.needOtp || payload.mfaRequired);

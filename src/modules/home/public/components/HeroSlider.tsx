@@ -4,7 +4,7 @@ import { useMemo, useEffect, useRef, useState } from "react";
 import { useAppSelector } from "@/store/hooks";
 import styled from "styled-components";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import { translations } from "@/modules/home";
+import translations from "@/modules/home/locales";
 import Modal from "./Modal";
 import { SupportedLocale } from "@/types/common";
 import { FaArrowLeft, FaArrowRight, FaExpand } from "react-icons/fa";

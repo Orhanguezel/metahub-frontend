@@ -10,7 +10,10 @@ import { Skeleton, ErrorMessage } from "@/shared";
 import type { SupportedLocale } from "@/types/common";
 import Masonry from "react-masonry-css";
 import Modal from "@/modules/home/public/components/Modal";
-import type { IAbout } from "../..";
+import type { IAbout } from "@/modules/about/types";
+
+/* ✅ SEO: store’dan meta üretimi */
+import SeoFromStore from "@/modules/seo/SeoFromStore";
 
 /* ===================== PAGE ===================== */
 
@@ -31,26 +34,38 @@ export default function AboutUsPage() {
 
   if (loading) {
     return (
-      <PageWrapper>
-        <Skeleton />
-        <Skeleton />
-      </PageWrapper>
+      <>
+        {/* ✅ SEO */}
+        <SeoFromStore page="about" locale={lang} />
+        <PageWrapper>
+          <Skeleton />
+          <Skeleton />
+        </PageWrapper>
+      </>
     );
   }
 
   if (error) {
     return (
-      <PageWrapper>
-        <ErrorMessage message={error} />
-      </PageWrapper>
+      <>
+        {/* ✅ SEO */}
+        <SeoFromStore page="about" locale={lang} />
+        <PageWrapper>
+          <ErrorMessage message={error} />
+        </PageWrapper>
+      </>
     );
   }
 
   if (!Array.isArray(about) || about.length === 0) {
     return (
-      <PageWrapper>
-        <ErrorMessage message={tSimple("page.noAbout", "İçerik bulunamadı")} />
-      </PageWrapper>
+      <>
+        {/* ✅ SEO */}
+        <SeoFromStore page="about" locale={lang} />
+        <PageWrapper>
+          <ErrorMessage message={tSimple("page.noAbout", "İçerik bulunamadı")} />
+        </PageWrapper>
+      </>
     );
   }
 
@@ -65,16 +80,20 @@ export default function AboutUsPage() {
   });
 
   return (
-    <PageWrapper>
-      {items.map((it) => (
-        <AboutBlock
-          key={String(it._id || it.slug)}
-          item={it}
-          lang={lang}
-          t={tSimple}   // 👈 burada sarmalayıcıyı gönderiyoruz
-        />
-      ))}
-    </PageWrapper>
+    <>
+      {/* ✅ SEO */}
+      <SeoFromStore page="about" locale={lang} />
+      <PageWrapper>
+        {items.map((it) => (
+          <AboutBlock
+            key={String(it._id || it.slug)}
+            item={it}
+            lang={lang}
+            t={tSimple}
+          />
+        ))}
+      </PageWrapper>
+    </>
   );
 }
 
@@ -87,7 +106,7 @@ function AboutBlock({
 }: {
   item: IAbout;
   lang: SupportedLocale;
-  t: (k: string, d?: string) => string; // beklenen imza
+  t: (k: string, d?: string) => string;
 }) {
   const [openModal, setOpenModal] = useState(false);
   const [modalIdx, setModalIdx] = useState(0);
@@ -204,6 +223,30 @@ function AboutBlock({
     </BlockWrapper>
   );
 }
+
+/* ===================== STYLES (aynı) ===================== */
+/* ... stil kodların aynı, değişiklik yok ... */
+
+/* Keyframes inject (mevcut davranış korunur) */
+const fadeIn = `
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(24px);}
+  to { opacity: 1; transform: none;}
+}
+`;
+const fadeInUp = `
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(38px);}
+  to { opacity: 1; transform: none;}
+}
+`;
+if (typeof window !== "undefined" && !document.getElementById("about-theme-animations")) {
+  const style = document.createElement("style");
+  style.id = "about-theme-animations";
+  style.innerHTML = fadeIn + fadeInUp;
+  document.head.appendChild(style);
+}
+
 
 /* ===================== STYLES (aynı) ===================== */
 
@@ -464,23 +507,3 @@ const ModalImageWrap = styled.div`
   background: transparent;
   border-radius: ${({ theme }) => theme.radii.lg};
 `;
-
-/* Keyframes (sayfada bir kez ekle) */
-const fadeIn = `
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(24px);}
-  to { opacity: 1; transform: none;}
-}
-`;
-const fadeInUp = `
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(38px);}
-  to { opacity: 1; transform: none;}
-}
-`;
-if (typeof window !== "undefined" && !document.getElementById("about-theme-animations")) {
-  const style = document.createElement("style");
-  style.id = "about-theme-animations";
-  style.innerHTML = fadeIn + fadeInUp;
-  document.head.appendChild(style);
-}

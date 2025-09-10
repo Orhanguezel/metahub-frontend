@@ -6,7 +6,7 @@ import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import { translations } from "@/modules/home";
+import translations from "@/modules/home/locales";
 import type { SupportedLocale } from "@/types/common";
 import SkeletonBox from "@/shared/Skeleton";
 import type { IGallery, IGalleryImage, GalleryCategory } from "@/modules/gallery/types";

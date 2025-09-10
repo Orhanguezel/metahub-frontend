@@ -11,6 +11,9 @@ import Image from "next/image";
 import type { SupportedLocale } from "@/types/common";
 import type { IAbout } from "@/modules/about/types";
 
+/* ✅ SEO: store’dan meta üretir */
+import SeoFromStore from "@/modules/seo/SeoFromStore";
+
 export default function AboutPage() {
   const { i18n, t } = useI18nNamespace("about", translations);
   const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
@@ -28,87 +31,103 @@ export default function AboutPage() {
 
   if (loading) {
     return (
-      <PageWrapper>
-        <PageTitle>{t("page.allAbout", "Hakkımızda")}</PageTitle>
-        <AboutGrid>
-          {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} />
-          ))}
-        </AboutGrid>
-      </PageWrapper>
+      <>
+        {/* ✅ SEO (loading olsa da head’i doldurur) */}
+        <SeoFromStore page="about" locale={lang} />
+        <PageWrapper>
+          <PageTitle>{t("page.allAbout", "Hakkımızda")}</PageTitle>
+          <AboutGrid>
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} />
+            ))}
+          </AboutGrid>
+        </PageWrapper>
+      </>
     );
   }
 
   if (error) {
     return (
-      <PageWrapper>
-        <ErrorMessage message={error} />
-      </PageWrapper>
+      <>
+        {/* ✅ SEO */}
+        <SeoFromStore page="about" locale={lang} />
+        <PageWrapper>
+          <ErrorMessage message={error} />
+        </PageWrapper>
+      </>
     );
   }
 
   if (!about || about.length === 0) {
     return (
-      <PageWrapper>
-        <PageTitle>{t("page.allAbout", "Hakkımızda")}</PageTitle>
-        <EmptyMsg>
-          {t("page.noAbout", "Herhangi bir içerik bulunamadı.")}
-        </EmptyMsg>
-      </PageWrapper>
+      <>
+        {/* ✅ SEO */}
+        <SeoFromStore page="about" locale={lang} />
+        <PageWrapper>
+          <PageTitle>{t("page.allAbout", "Hakkımızda")}</PageTitle>
+          <EmptyMsg>
+            {t("page.noAbout", "Herhangi bir içerik bulunamadı.")}
+          </EmptyMsg>
+        </PageWrapper>
+      </>
     );
   }
 
   return (
-    <PageWrapper>
-      <PageTitle>{t("page.allAbout", "Hakkımızda")}</PageTitle>
-      <AboutGrid>
-        {about.map((item: IAbout, index: number) => {
-          const detailHref = `/about/${item.slug}`;
-          return (
-            <AboutCard
-              key={item._id}
-              as={motion.div}
-              initial={{ opacity: 0, y: 22 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.09, duration: 0.48 }}
-              viewport={{ once: true }}
-            >
-              <Link href={detailHref} tabIndex={-1} style={{ display: "block" }}>
-                <ImageWrapper>
-                  {item.images?.[0]?.url ? (
-                    <StyledImage
-                      src={item.images[0].url}
-                      alt={getMultiLang(item.title)}
-                      width={440}
-                      height={210}
-                      loading="lazy"
-                    />
-                  ) : (
-                    <ImgPlaceholder />
+    <>
+      {/* ✅ SEO */}
+      <SeoFromStore page="about" locale={lang} />
+      <PageWrapper>
+        <PageTitle>{t("page.allAbout", "Hakkımızda")}</PageTitle>
+        <AboutGrid>
+          {about.map((item: IAbout, index: number) => {
+            const detailHref = `/about/${item.slug}`;
+            return (
+              <AboutCard
+                key={item._id}
+                as={motion.div}
+                initial={{ opacity: 0, y: 22 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.09, duration: 0.48 }}
+                viewport={{ once: true }}
+              >
+                <Link href={detailHref} tabIndex={-1} style={{ display: "block" }}>
+                  <ImageWrapper>
+                    {item.images?.[0]?.url ? (
+                      <StyledImage
+                        src={item.images[0].url}
+                        alt={getMultiLang(item.title)}
+                        width={440}
+                        height={210}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <ImgPlaceholder />
+                    )}
+                  </ImageWrapper>
+                </Link>
+                <CardContent>
+                  <CardTitle as={Link} href={detailHref}>
+                    {getMultiLang(item.title)}
+                  </CardTitle>
+                  <CardSummary>{getMultiLang(item.summary)}</CardSummary>
+                  {item.tags?.length > 0 && (
+                    <Tags>
+                      {item.tags.map((tag, i) => (
+                        <Tag key={i}>{tag}</Tag>
+                      ))}
+                    </Tags>
                   )}
-                </ImageWrapper>
-              </Link>
-              <CardContent>
-                <CardTitle as={Link} href={detailHref}>
-                  {getMultiLang(item.title)}
-                </CardTitle>
-                <CardSummary>{getMultiLang(item.summary)}</CardSummary>
-                {item.tags?.length > 0 && (
-                  <Tags>
-                    {item.tags.map((tag, i) => (
-                      <Tag key={i}>{tag}</Tag>
-                    ))}
-                  </Tags>
-                )}
-                <ReadMore href={detailHref}>
-                  {t("page.readMore", "Detayları Gör →")}
-                </ReadMore>
-              </CardContent>
-            </AboutCard>
-          );
-        })} 
-      </AboutGrid>
-    </PageWrapper>
+                  <ReadMore href={detailHref}>
+                    {t("page.readMore", "Detayları Gör →")}
+                  </ReadMore>
+                </CardContent>
+              </AboutCard>
+            );
+          })}
+        </AboutGrid>
+      </PageWrapper>
+    </>
   );
 }
 
@@ -170,16 +189,15 @@ const ImageWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 0;                 /* 🔧 */
+  line-height: 0;
 `;
 
 const StyledImage = styled(Image)`
   width: 100%;
   height: 180px;
   object-fit: cover;
-  display: block;                 /* 🔧 */
+  display: block;
 `;
-
 
 const ImgPlaceholder = styled.div`
   width: 100%;

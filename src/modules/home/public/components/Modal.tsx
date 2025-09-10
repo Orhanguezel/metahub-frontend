@@ -1,3 +1,4 @@
+"use client"
 import React, { useEffect, useRef } from "react";
 import styled, { keyframes } from "styled-components";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";

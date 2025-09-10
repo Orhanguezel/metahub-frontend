@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import useModal from "@/hooks/useModal";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import { translations } from "@/modules/home";
+import translations from "@/modules/home/locales";
 import { SupportedLocale } from "@/types/common";
 import SkeletonBox from "@/shared/Skeleton";
 import type { IGallery, IGalleryImage, GalleryCategory } from "@/modules/gallery/types";

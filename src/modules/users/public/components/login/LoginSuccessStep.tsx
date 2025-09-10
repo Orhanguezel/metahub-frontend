@@ -1,11 +1,12 @@
 "use client";
+
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { loginTranslations } from "@/modules/users";
 import { FaCheckCircle } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useEffect, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "@/store";
+import type { RootState } from "@/store";
 import {
   Wrapper,
   Title,
@@ -21,6 +22,20 @@ interface Props {
   redirectDelayMs?: number;
 }
 
+type RoleLike = string | undefined;
+const ADMIN_ROLES = ["admin", "superadmin", "administrator", "owner", "manager"];
+const toRole = (r: RoleLike) => (r || "").toString().trim().toLowerCase();
+const isAdmin = (role?: RoleLike, roles?: string[]) =>
+  ADMIN_ROLES.includes(toRole(role)) ||
+  (Array.isArray(roles) && roles.map(toRole).some((x) => ADMIN_ROLES.includes(x)));
+
+const pickUserFromStore = (s: RootState): any =>
+  // auth.user öncelik + account.profile / account.user fallback
+  (s as any)?.auth?.user ||
+  (s as any)?.account?.profile ||
+  (s as any)?.account?.user ||
+  null;
+
 export default function LoginSuccessStep({
   onAuthSuccess,
   autoRedirect = true,
@@ -29,99 +44,94 @@ export default function LoginSuccessStep({
   const { t } = useI18nNamespace("login", loginTranslations);
   const router = useRouter();
 
-  // Hem Auth hem Account slice'ı dinle!
-  const user = useSelector(
-    (state: RootState) => state.auth.user || state.account.profile
-  );
+  // Sadece store’u dinle (provider zaten fetch ediyor)
+  const user: any = useSelector(pickUserFromStore);
 
-  // Hedef path (role'a göre)
+  // Hedef path — role yoksa güvenli varsayılan: /account
   const redirectPath = useMemo(() => {
-    if (!user?.role) return "/";
-    switch (user.role) {
-      case "admin":
-      case "superadmin":
-        return "/admin";
-      case "customer":
-      case "user":
-      case "staff":
-      case "moderator":
-        return "/account";
-      default:
-        return "/";
-    }
-  }, [user?.role]);
+    const role = user?.role ?? user?.user?.role;
+    const roles = user?.roles ?? user?.user?.roles;
+    return isAdmin(role, roles) ? "/admin" : "/account";
+  }, [user]);
 
-  // EN GARANTİ redirect (hem SPA, hem fallback)
+  // EN GARANTİ yönlendirme (push → replace → hard navigation)
   const guaranteedRedirect = useCallback(
     (path: string) => {
       try {
-        router.replace(path);
+        const before = typeof window !== "undefined" ? window.location.pathname : "";
+        router.push(path);
+        setTimeout(() => {
+          if (typeof window !== "undefined" && window.location.pathname === before) {
+            router.replace(path);
+          }
+        }, 120);
         setTimeout(() => {
           if (typeof window !== "undefined" && window.location.pathname !== path) {
-            window.location.replace(path);
+            window.location.assign(path);
           }
-        }, 800);
+        }, 700);
       } catch {
-        if (typeof window !== "undefined") window.location.replace(path);
+        if (typeof window !== "undefined") window.location.assign(path);
       }
     },
     [router]
   );
 
-  // --- State güncellendikçe yönlendirme (future-proof) ---
+  // Otomatik yönlendirme — user beklemeden fallback ile çalışır
   useEffect(() => {
     if (!autoRedirect) return;
-    if (user?.role) {
-      const timer = setTimeout(() => {
-        guaranteedRedirect(redirectPath);
-      }, redirectDelayMs);
-      return () => clearTimeout(timer);
-    }
-  }, [autoRedirect, user?.role, guaranteedRedirect, redirectPath, redirectDelayMs]);
+    const timer = setTimeout(() => {
+      onAuthSuccess?.();
+      guaranteedRedirect(redirectPath);
+    }, redirectDelayMs);
+    return () => clearTimeout(timer);
+  }, [autoRedirect, redirectDelayMs, guaranteedRedirect, redirectPath, onAuthSuccess]);
 
-  // Buton: elle yönlendirme
+  // Elle yönlendirme
   const handleClick = useCallback(() => {
-    if (onAuthSuccess) onAuthSuccess();
-    else guaranteedRedirect(redirectPath);
+    onAuthSuccess?.();
+    guaranteedRedirect(redirectPath);
   }, [onAuthSuccess, guaranteedRedirect, redirectPath]);
 
-  // User yüklenmediyse "loading"
+  // User yoksa da mesaj + otomatik yönlendirme çalışır
   if (!user) {
     return (
       <Wrapper style={{ maxWidth: 440, margin: "0 auto" }}>
         <IconWrap>
           <FaCheckCircle size={52} />
         </IconWrap>
-        <Title>{t("loginSuccess", "Login successful!")}</Title>
-        <Desc>{t("loadingUser", "Loading user...")}</Desc>
+        <Title>{t("loginSuccess", "Giriş başarılı!")}</Title>
+        <Desc>{t("loadingUser", "Kullanıcı yükleniyor...")}</Desc>
+        <RedirectMsg>{t("redirectingFallback", "Birazdan hesabına yönlendirileceksin...")}</RedirectMsg>
       </Wrapper>
     );
   }
 
-  // Başarı ekranı
   return (
     <Wrapper style={{ maxWidth: 440, margin: "0 auto" }}>
       <IconWrap>
-        <FaCheckCircle size={52} aria-label={t("loginSuccess", "Login successful!")} />
+        <FaCheckCircle size={52} aria-label={t("loginSuccess", "Giriş başarılı!")} />
       </IconWrap>
-      <Title>{t("loginSuccess", "Login successful!")}</Title>
+      <Title>{t("loginSuccess", "Giriş başarılı!")}</Title>
       <Desc>
         {t("welcomeUser", {
-          defaultValue: "Welcome, {{name}}!",
-          name: user.name || user.email || "",
+          defaultValue: "Hoş geldin, {{name}}!",
+          name: user?.name || user?.email || user?.user?.name || user?.user?.email || "",
         })}
       </Desc>
-      {user.email && <UserMail>{user.email}</UserMail>}
+      {(user?.email || user?.user?.email) && (
+        <UserMail>{user?.email || user?.user?.email}</UserMail>
+      )}
       <Button type="button" onClick={handleClick}>
-        {user.role === "admin" || user.role === "superadmin"
-          ? t("goToAdminDashboard", "Go to Admin Dashboard")
-          : t("goToAccount", "Go to My Account")}
+        {redirectPath === "/admin"
+          ? t("goToAdminDashboard", "Yönetim Paneline Git")
+          : t("goToAccount", "Hesabıma Git")}
       </Button>
       {autoRedirect && (
         <RedirectMsg>
-          {user.role === "admin" || user.role === "superadmin"
-            ? t("redirectingToDashboard", "Redirecting to the admin dashboard in a moment...")
-            : t("redirectingToAccount", "Redirecting to your account page in a moment...")}
+          {redirectPath === "/admin"
+            ? t("redirectingToDashboard", "Birazdan yönetim paneline yönlendirileceksin...")
+            : t("redirectingToAccount", "Birazdan hesap sayfana yönlendirileceksin...")}
         </RedirectMsg>
       )}
     </Wrapper>

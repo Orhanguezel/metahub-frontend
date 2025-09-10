@@ -11,6 +11,9 @@ import type { SupportedLocale } from "@/types/common";
 import type { IBlog } from "@/modules/blog/types";
 import { useState } from "react";
 
+/* ✅ SEO: store’dan meta üretimi */
+import SeoFromStore from "@/modules/seo/SeoFromStore";
+
 // Arşiv (Ay/Yıl)
 const getArchives = (blog: IBlog[]) => {
   if (!Array.isArray(blog)) return [];
@@ -19,10 +22,7 @@ const getArchives = (blog: IBlog[]) => {
     const dt = n.publishedAt || n.createdAt;
     if (dt) {
       const d = new Date(dt);
-      const label = d.toLocaleString("tr-TR", {
-        year: "numeric",
-        month: "long",
-      });
+      const label = d.toLocaleString("tr-TR", { year: "numeric", month: "long" });
       archiveSet.add(label);
     }
   });
@@ -66,9 +66,7 @@ export default function BlogPage() {
           .filter(
             (n) =>
               !search ||
-              (n.title?.[lang] ?? "")
-                .toLowerCase()
-                .includes(search.toLowerCase())
+              (n.title?.[lang] ?? "").toLowerCase().includes(search.toLowerCase())
           )
           .sort(
             (a, b) =>
@@ -83,142 +81,143 @@ export default function BlogPage() {
 
   if (loading) {
     return (
-      <PageWrapper>
-        <MainGrid>
-          <LeftColumn>
-            {[...Array(2)].map((_, i) => (
-              <Skeleton key={i} />
-            ))}
-          </LeftColumn>
-          <RightColumn>
-            <Skeleton />
-          </RightColumn>
-        </MainGrid>
-      </PageWrapper>
+      <>
+        {/* ✅ SEO */}
+        <SeoFromStore page="blog" locale={lang} />
+        <PageWrapper>
+          <MainGrid>
+            <LeftColumn>
+              {[...Array(2)].map((_, i) => (
+                <Skeleton key={i} />
+              ))}
+            </LeftColumn>
+            <RightColumn>
+              <Skeleton />
+            </RightColumn>
+          </MainGrid>
+        </PageWrapper>
+      </>
     );
   }
 
   if (error) {
     return (
-      <PageWrapper>
-        <ErrorMessage message={error} />
-      </PageWrapper>
+      <>
+        {/* ✅ SEO */}
+        <SeoFromStore page="blog" locale={lang} />
+        <PageWrapper>
+          <ErrorMessage message={error} />
+        </PageWrapper>
+      </>
     );
   }
 
   if (!blog || blog.length === 0) {
     return (
-      <PageWrapper>
-        <NoBlog>{t("page.noBlog", "Hiç blog bulunamadı.")}</NoBlog>
-      </PageWrapper>
+      <>
+        {/* ✅ SEO */}
+        <SeoFromStore page="blog" locale={lang} />
+        <PageWrapper>
+          <NoBlog>{t("page.noBlog", "Hiç blog bulunamadı.")}</NoBlog>
+        </PageWrapper>
+      </>
     );
   }
 
   return (
-    <PageWrapper>
-      <MainGrid>
-        <LeftColumn>
-          {filteredBlog.map((item: IBlog) => (
-            <BlogItem key={item._id}>
-              {item.images?.[0]?.url && (
-                <MainImageWrap>
-                  <StyledImage
-                    src={item.images[0].url}
-                    alt={item.title?.[lang] || "Blog Image"}
-                    width={800}
-                    height={460}
-                    loading="lazy"
-                  />
-                </MainImageWrap>
-              )}
-              <BlogTitle>
-                <Link href={`/blog/${item.slug}`}>{item.title?.[lang] || "Untitled"}</Link>
-              </BlogTitle>
-              <BlogMeta>
-                <span>
-                  {new Date(item.publishedAt || item.createdAt).toLocaleDateString("tr-TR", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </span>
-                {Array.isArray(item.tags) && item.tags.length > 0 && (
-                  <span>
-                    {item.tags.map((tag) => (
-                      <CategoryLabel key={tag}>{tag}</CategoryLabel>
-                    ))}
-                  </span>
+    <>
+      {/* ✅ SEO */}
+      <SeoFromStore page="blog" locale={lang} />
+      <PageWrapper>
+        <MainGrid>
+          <LeftColumn>
+            {filteredBlog.map((item: IBlog) => (
+              <BlogItem key={item._id}>
+                {item.images?.[0]?.url && (
+                  <MainImageWrap>
+                    <StyledImage
+                      src={item.images[0].url}
+                      alt={item.title?.[lang] || "Blog Image"}
+                      width={800}
+                      height={460}
+                      loading="lazy"
+                    />
+                  </MainImageWrap>
                 )}
-              </BlogMeta>
-              <BlogSummary>
-                {item.summary?.[lang] ||
-                  item.content?.[lang]?.substring(0, 180) + "..."}
-              </BlogSummary>
-              <ReadMoreBtn href={`/blog/${item.slug}`}>
-                {t("readMore", "Devamını Oku")}
-              </ReadMoreBtn>
-            </BlogItem>
-          ))}
-        </LeftColumn>
+                <BlogTitle>
+                  <Link href={`/blog/${item.slug}`}>{item.title?.[lang] || "Untitled"}</Link>
+                </BlogTitle>
+                <BlogMeta>
+                  <span>
+                    {new Date(item.publishedAt || item.createdAt).toLocaleDateString("tr-TR", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </span>
+                  {Array.isArray(item.tags) && item.tags.length > 0 && (
+                    <span>
+                      {item.tags.map((tag) => (
+                        <CategoryLabel key={tag}>{tag}</CategoryLabel>
+                      ))}
+                    </span>
+                  )}
+                </BlogMeta>
+                <BlogSummary>
+                  {item.summary?.[lang] || item.content?.[lang]?.substring(0, 180) + "..."}
+                </BlogSummary>
+                <ReadMoreBtn href={`/blog/${item.slug}`}>
+                  {t("readMore", "Devamını Oku")}
+                </ReadMoreBtn>
+              </BlogItem>
+            ))}
+          </LeftColumn>
 
-        <RightColumn>
-          <SidebarBox>
-            <SidebarTitle>{t("search", "Arama")}</SidebarTitle>
-            <SearchForm
-              onSubmit={(e) => {
-                e.preventDefault();
-              }}
-            >
-              <input
-                type="text"
-                placeholder={t("search", "Arama")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </SearchForm>
-          </SidebarBox>
+          <RightColumn>
+            <SidebarBox>
+              <SidebarTitle>{t("search", "Arama")}</SidebarTitle>
+              <SearchForm onSubmit={(e) => e.preventDefault()}>
+                <input
+                  type="text"
+                  placeholder={t("search", "Arama")}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </SearchForm>
+            </SidebarBox>
 
-          <SidebarBox>
-            <SidebarTitle>{t("recent", "Son Bloglar")}</SidebarTitle>
-            <SidebarList>
-              {recentBlog.length ? (
-                recentBlog.map((n) => (
-                  <li key={n._id}>
-                    <Link href={`/blog/${n.slug}`}>{n.title?.[lang]}</Link>
-                  </li>
-                ))
-              ) : (
-                <li>-</li>
-              )}
-            </SidebarList>
-          </SidebarBox>
-
-          <SidebarBox>
-            <SidebarTitle>{t("archives", "Arşivler")}</SidebarTitle>
-            <SidebarList>
-              {archives.length
-                ? archives.map((ar: string, i: number) => (
-                    <li key={ar + i}>{ar}</li>
-                  ))
-                : <li>-</li>}
-            </SidebarList>
-          </SidebarBox>
-
-          <SidebarBox>
-            <SidebarTitle>{t("categories", "Kategoriler")}</SidebarTitle>
-            <SidebarList>
-              {categories.length
-                ? categories.map((cat) => (
-                    <li key={cat.slug}>
-                      {cat.name}
+            <SidebarBox>
+              <SidebarTitle>{t("recent", "Son Bloglar")}</SidebarTitle>
+              <SidebarList>
+                {recentBlog.length ? (
+                  recentBlog.map((n) => (
+                    <li key={n._id}>
+                      <Link href={`/blog/${n.slug}`}>{n.title?.[lang]}</Link>
                     </li>
                   ))
-                : <li>-</li>}
-            </SidebarList>
-          </SidebarBox>
-        </RightColumn>
-      </MainGrid>
-    </PageWrapper>
+                ) : (
+                  <li>-</li>
+                )}
+              </SidebarList>
+            </SidebarBox>
+
+            <SidebarBox>
+              <SidebarTitle>{t("archives", "Arşivler")}</SidebarTitle>
+              <SidebarList>
+                {archives.length ? archives.map((ar: string, i: number) => <li key={ar + i}>{ar}</li>) : <li>-</li>}
+              </SidebarList>
+            </SidebarBox>
+
+            <SidebarBox>
+              <SidebarTitle>{t("categories", "Kategoriler")}</SidebarTitle>
+              <SidebarList>
+                {categories.length ? categories.map((cat) => <li key={cat.slug}>{cat.name}</li>) : <li>-</li>}
+              </SidebarList>
+            </SidebarBox>
+          </RightColumn>
+        </MainGrid>
+      </PageWrapper>
+    </>
   );
 }
 

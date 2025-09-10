@@ -10,7 +10,6 @@ import Image from "next/image";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useAppSelector } from "@/store/hooks";
 import type { IGallery, IGalleryImage, GalleryCategory } from "@/modules/gallery/types";
-import Modal from "./Modal";
 
 /* --- search için (yalnızca yönlendirme ve store) --- */
 import { useRouter, useSearchParams } from "next/navigation";
