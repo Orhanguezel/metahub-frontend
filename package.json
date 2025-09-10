@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "NODE_OPTIONS='--max-old-space-size=24576' next build",
+    "typecheck": "NODE_OPTIONS=--max-old-space-size=4096 tsc -p tsconfig.build.json --noEmit",
+    "build": "NODE_OPTIONS=--max-old-space-size=6144 next build --no-lint",
+    "build:full": "npm run typecheck && npm run build",
     "start": "next start",
     "lint": "next lint",
     "clean": "rm -rf .next && rm -rf node_modules/.cache",
     "test": "bun test",
-    "analyze": "ANALYZE=true next build"
+    "analyze": "NODE_OPTIONS=--max-old-space-size=6144 ANALYZE=true next build --no-lint"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -25,9 +27,9 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.5.0",
     "formik": "^2.4.6",
-    "framer-motion": "^12.5.0",
+    "framer-motion": "^12.6.3",
     "glob": "^11.0.3",
-    "i18next": "^23.6.1",
+    "i18next": "^23.16.8",
     "i18next-browser-languagedetector": "^8.0.4",
     "js-cookie": "^3.0.5",
     "leaflet": "^1.9.4",
@@ -36,10 +38,10 @@
     "maplibre-gl": "^5.6.2",
     "next": "^15.3.0",
     "next-i18next": "^15.4.2",
-    "react": "^18.2.0",
+    "react": "^18.3.1",
     "react-datepicker": "^8.4.0",
-    "react-dom": "^18.2.0",
-    "react-hook-form": "^7.56.2",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.56.3",
     "react-i18next": "^13.5.0",
     "react-icons": "^5.5.0",
     "react-image-lightbox": "^5.1.4",
@@ -57,7 +59,7 @@
     "remark-gfm": "^4.0.1",
     "slugify": "^1.6.6",
     "socket.io-client": "^4.8.1",
-    "styled-components": "^6.1.16",
+    "styled-components": "^6.1.17",
     "swiper": "^11.2.6",
     "yup": "^1.0.2",
     "zod": "^3.24.3",
@@ -68,11 +70,14 @@
     "@types/dotenv": "^8.2.3",
     "@types/mapbox-gl": "^3.4.1",
     "@types/node": "20.17.30",
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
     "babel-plugin-styled-components": "^2.1.4",
     "eslint": "^9",
     "eslint-config-next": "15.2.3",
     "typescript": "5.8.3"
+  },
+  "engines": {
+    "node": ">=20.10.0"
   }
 }
