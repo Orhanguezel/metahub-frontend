@@ -1,27 +1,31 @@
-// src/middleware.ts
 import { NextRequest, NextResponse } from "next/server";
 import { detectTenantFromHost, getFaviconPathForTenant } from "@/lib/tenant";
 
 function pickHost(req: NextRequest) {
-  return (
-    req.headers.get("x-forwarded-host") ||
-    req.headers.get("host") ||
-    ""
-  );
+  return req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
 }
 
 export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+  const url = new URL(req.url);
+  const { pathname } = url;
 
-  // Yalnızca favicon isteklerini ele al
-  // (İstersen apple-touch ve png varyantlarını da matcher'da ekle)
   if (pathname === "/favicon.ico") {
-    const host = pickHost(req);
-    const tenant = detectTenantFromHost(host);
-    const target = getFaviconPathForTenant(tenant); // /favicons/<tenant>.ico
+    const tenant = detectTenantFromHost(pickHost(req)) || "metahub";
+    url.pathname = getFaviconPathForTenant(tenant); // /favicons/<tenant>.ico
+    return NextResponse.rewrite(url);
+  }
 
-    // basePath/proxy güvenli mutlak URL
-    const url = new URL(target, req.url);
+  if (pathname === "/apple-touch-icon.png") {
+    const tenant = detectTenantFromHost(pickHost(req)) || "metahub";
+    url.pathname = `/favicons/${tenant}-apple-180.png`;
+    return NextResponse.rewrite(url);
+  }
+
+  // PNG favicon varyantlarını da yönlendirmek istersen (opsiyonel)
+  if (pathname === "/favicon-32x32.png" || pathname === "/favicon-16x16.png") {
+    const tenant = detectTenantFromHost(pickHost(req)) || "metahub";
+    const size = pathname.includes("32") ? 32 : 16;
+    url.pathname = `/favicons/${tenant}-${size}.png`;
     return NextResponse.rewrite(url);
   }
 
@@ -29,7 +33,10 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // İstersen diğer favicon yollarını da ekle:
-  // matcher: ["/favicon.ico", "/apple-touch-icon.png", "/favicon-16x16.png", "/favicon-32x32.png"],
-  matcher: ["/favicon.ico"],
+  matcher: [
+    "/favicon.ico",
+    "/apple-touch-icon.png",
+    "/favicon-32x32.png",
+    "/favicon-16x16.png",
+  ],
 };

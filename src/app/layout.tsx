@@ -1,7 +1,10 @@
+// src/app/layout.tsx
 import React from "react";
 import GlobalProviders from "@/providers/GlobalProviders";
 import { cookies, headers } from "next/headers";
+import type { Metadata } from "next";
 import { SUPPORTED_LOCALES, type SupportedLocale } from "@/types/common";
+import { detectTenantFromHost, getFaviconPathForTenant } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +27,30 @@ function pickFromAcceptLanguage(al: string | null): SupportedLocale | null {
   return null;
 }
 
+export async function generateMetadata(): Promise<Metadata> {
+  const hdrs = await headers();
+  const host = hdrs.get("x-forwarded-host") || hdrs.get("host") || "localhost:3000";
+  const tenant = detectTenantFromHost(host) || "metahub";
+
+  const ico = getFaviconPathForTenant(tenant); // /favicons/<tenant>.ico
+  const v = tenant; // basit cache-bust
+
+  return {
+    icons: {
+      icon: [
+        { url: `${ico}?v=${v}`, type: "image/x-icon" },
+        // ✅ kök fallback (eski bot/tarayıcılar için)
+        { url: `/favicon.ico?v=${v}`, type: "image/x-icon" },
+        { url: `/favicons/${tenant}-32.png?v=${v}`, type: "image/png", sizes: "32x32" },
+        { url: `/favicons/${tenant}-16.png?v=${v}`, type: "image/png", sizes: "16x16" },
+      ],
+      apple: [{ url: `/favicons/${tenant}-apple-180.png?v=${v}`, sizes: "180x180" }],
+      shortcut: [{ url: `${ico}?v=${v}` }],
+    },
+    robots: { index: true, follow: true },
+  };
+}
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
   const hdrs = await headers();
@@ -40,11 +67,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
       <head>
-        {/* favicon middleware /favicon.ico → /favicons/{tenant}.ico rewrite ediyor */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      {/* bazı eklentiler (ör. "cz-shortcut-listen") body attr ekler → mismatch uyarısı olmasın */}
       <body suppressHydrationWarning>
         <GlobalProviders>{children}</GlobalProviders>
       </body>

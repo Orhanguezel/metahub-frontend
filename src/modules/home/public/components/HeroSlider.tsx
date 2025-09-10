@@ -77,6 +77,11 @@ const HeroSlider = () => {
     return () => clearInterval(timer);
   }, [slides.length, setIndex, isOpen, isInteracting]);
 
+  // --- Clamp index when slides change ---
+  useEffect(() => {
+    setIndex((i) => (slides.length ? Math.min(i, slides.length - 1) : 0));
+  }, [slides.length, setIndex]);
+
   // --- Keyboard in modal ---
   useEffect(() => {
     if (!isOpen) return;
@@ -134,7 +139,7 @@ const HeroSlider = () => {
     imageSrc = `${imageSrc}?w=900&h=600&c_fill&q_auto,f_auto`;
   }
 
-  const detailLink = currentSlide?.slug ? `/gallery/${currentSlide.slug}` : `/gallery`;
+  const detailLink = currentSlide?.slug ? `/gallery/${currentSlide.slug}` : null;
 
   // === Touch / Pointer swipe handlers (no external libs) ===
   const begin = (x: number, y: number) => {
@@ -252,9 +257,15 @@ const HeroSlider = () => {
               <FaExpand />
             </ControlButton>
 
-            <StyledLink href={detailLink}>
-              {t("hero.products", "Ürünler")}
-            </StyledLink>
+            {detailLink ? (
+              <Link href={detailLink} prefetch={false} legacyBehavior passHref>
+                <PrimaryCTAasA>{t("hero.products", "Ürünler")}</PrimaryCTAasA>
+              </Link>
+            ) : (
+              <PrimaryCTA type="button" onClick={() => open(currentIndex)}>
+                {t("hero.products", "Ürünler")}
+              </PrimaryCTA>
+            )}
           </SliderControls>
         </ContentCol>
       </HeroWrapper>
@@ -463,7 +474,8 @@ const ControlButton = styled.button`
   }
 `;
 
-const StyledLink = styled(Link)`
+/** Link ile aynı görsel stil — a etiketi */
+const PrimaryCTAasA = styled.a`
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.white};
   border: none;
@@ -486,6 +498,39 @@ const StyledLink = styled(Link)`
     background: ${({ theme }) => theme.colors.accent};
     color: ${({ theme }) => theme.colors.white};
     text-decoration: none;
+  }
+  @media (max-width: 1100px) {
+    margin-left: 0;
+    margin-top: 14px;
+    width: 100%;
+    justify-content: center;
+  }
+`;
+
+/** Link yokken buton olarak aynı stil */
+const PrimaryCTA = styled.button`
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.white};
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+  padding: 11px 32px;
+  margin-left: 18px;
+  box-shadow: ${({ theme }) => theme.shadows.button};
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: background 0.18s, color 0.16s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover,
+  &:focus-visible {
+    background: ${({ theme }) => theme.colors.accent};
+    color: ${({ theme }) => theme.colors.white};
+    text-decoration: none;
+    outline: none;
   }
   @media (max-width: 1100px) {
     margin-left: 0;

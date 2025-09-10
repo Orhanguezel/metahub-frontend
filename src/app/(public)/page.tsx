@@ -1,4 +1,4 @@
-// Server Component (burada "use client" OLMAMALI)
+// /home/orhan/Dokumente/metahub-frontend/src/app/(public)/page.tsx
 import type { Metadata } from "next";
 import { headers, cookies } from "next/headers";
 import { SUPPORTED_LOCALES, type SupportedLocale } from "@/types/common";

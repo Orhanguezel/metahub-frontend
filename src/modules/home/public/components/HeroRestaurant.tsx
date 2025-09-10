@@ -10,6 +10,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useAppSelector } from "@/store/hooks";
 import type { IGallery, IGalleryImage, GalleryCategory } from "@/modules/gallery/types";
+import Modal from "./Modal"; // ✅ Modal eklendi
 
 /* --- search için (yalnızca yönlendirme ve store) --- */
 import { useRouter, useSearchParams } from "next/navigation";
@@ -117,7 +118,11 @@ const HeroRestaurant = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
-  useEffect(() => { setModalOpen(false); }, [lang, slides.length]);
+
+  // Dil veya slide seti değişince modalı kapat
+  useEffect(() => {
+    setModalOpen(false);
+  }, [lang, slides.length]);
 
   /* ====== SPRITE yerleşimi ====== */
   type SpriteLayout = { leftPct: number; topPct: number; size: number; delay: number; dur: number; rot: number };
@@ -350,7 +355,20 @@ const HeroRestaurant = () => {
         </Stage>
       </SliderGrid>
 
-      
+      {/* ✅ Modal artık kullanılıyor → ESLint hataları çözülür */}
+      <Modal isOpen={isModalOpen} onClose={closeModal}>
+        <ModalInner>
+          <Image
+            src={mainSrc}
+            alt={title || "Hero image"}
+            width={920}
+            height={560}
+            style={{ objectFit: "contain", width: "100%", maxHeight: "80vh", borderRadius: 18, background: "#fff" }}
+          />
+          <ModalTitle>{title}</ModalTitle>
+          <ModalDesc>{description}</ModalDesc>
+        </ModalInner>
+      </Modal>
     </Hero>
   );
 };
@@ -563,4 +581,23 @@ const MainImage = styled(Image)`
   width: 100% !important;
   height: 100% !important;
   object-fit: contain;
+`;
+
+const ModalInner = styled.div`
+  text-align: center;
+  padding: 22px 12px;
+  max-width: 98vw;
+`;
+
+const ModalTitle = styled.h2`
+  color: ${({ theme }) => theme.colors.white};
+  font-size: ${({ theme }) => theme.fontSizes.xl};
+  margin-top: 16px;
+`;
+
+const ModalDesc = styled.p`
+  color: ${({ theme }) => theme.colors.white};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  margin-top: 8px;
+  text-shadow: 0 2px 10px rgba(30, 80, 160, 0.08);
 `;
