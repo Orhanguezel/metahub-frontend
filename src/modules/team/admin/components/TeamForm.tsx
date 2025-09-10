@@ -76,7 +76,10 @@ export default function TeamForm({
   );
 
   // --- images (hook DEĞİL; koşullu çağrı şüphesi yok)
-  const originalExisting = Array.isArray(editingItem?.images) ? editingItem!.images : [];
+ const originalExisting = useMemo(
+    () => (Array.isArray(editingItem?.images) ? editingItem!.images : []),
+    [editingItem]
+  );
 
   const [existingUploads, setExistingUploads] = useState<UploadImage[]>(() =>
     originalExisting.map((img) => ({
@@ -109,7 +112,7 @@ export default function TeamForm({
     setAuthor(editingItem?.author || (currentUser as any)?.name || "");
     setTags(Array.isArray(editingItem?.tags) ? editingItem!.tags.join(", ") : "");
     setCategory(typeof editingItem?.category === "string" ? editingItem.category : "");
-  }, [editingItem]); // ← eksik dependency uyarısı çözülür
+  }, [editingItem, currentUser, originalExisting]); // ← eksik dependency uyarısı çözülür
 
   // id eşlemesi (url/publicId -> _id)
   const idBySig = useMemo(() => {

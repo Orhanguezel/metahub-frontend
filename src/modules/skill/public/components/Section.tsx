@@ -74,7 +74,7 @@ export default function SkillSection() {
     return result;
   }, [skill]);
 
-  const noCategory = grouped["none"] || [];
+ const noCategory = useMemo(() => grouped["none"] || [], [grouped]);
 
   const sortedCategories = useMemo(
     () => categories.filter((cat) => grouped[cat._id]?.length),

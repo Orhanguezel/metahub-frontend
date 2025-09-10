@@ -17,7 +17,7 @@ export default function CustomerForm({ initialValues, onSubmit, loading }: Props
 
   // ---------- Users (parent state) ----------
   const rawUsers = useAppSelector((s: any) => s?.userCrud?.users ?? []);
-  const users = Array.isArray(rawUsers) ? rawUsers : [];
+  const users = useMemo(() => (Array.isArray(rawUsers) ? rawUsers : []), [rawUsers]);
 
   const userLabel = (u: any) => {
     const name =

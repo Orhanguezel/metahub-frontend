@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import styled from "styled-components";
@@ -133,14 +133,14 @@ const CheckoutPage: React.FC = () => {
   const sumPC = (pc: any) =>
     Number(pc?.base || 0) + Number(pc?.modifiersTotal || 0) + Number(pc?.deposit || 0);
 
-  const getItemCurrency = (item: CartItem): string =>
+  const getItemCurrency = useCallback((item: CartItem): string =>
     (item as any).unitCurrency ||
     (item as any).priceComponents?.currency ||
     (cart as any)?.currency ||
-    defaultCurrency;
-
+    defaultCurrency
+ , [cart, defaultCurrency]);
   // (Yalnız son çare) Menü kalemini ürün şemasından yeniden fiyatla
-  const repriceMenuItem = (item: CartItem, svc: "delivery" | "pickup" | "dinein") => {
+  const repriceMenuItem = useCallback((item: CartItem, svc: "delivery" | "pickup" | "dinein") => {
     const channel = channelFromService(svc);
     const product = (item.product || {}) as Partial<IMenuItem>;
     const variantCode = item.menu?.variantCode;
@@ -187,7 +187,7 @@ const CheckoutPage: React.FC = () => {
         modifiers: mods,
       },
     };
-  };
+  },[cart, getItemCurrency]);
 
   // Sepet özetleri (UI)
   const summary = useMemo(() => {
@@ -230,8 +230,8 @@ const CheckoutPage: React.FC = () => {
     const sym = currencySymbol(singleCurrency);
 
     return { rows, subtotal, currency: singleCurrency, sym, mixed: currencyCodes.length > 1 };
-  }, [cart?.items, lang, defaultCurrency]);
-
+  }, [cart?.items, lang, defaultCurrency, getItemCurrency, repriceMenuItem]);
+  
   if (cartLoading || profileLoading || placingOrder)
     return <PageContainer>{t("loading", "Yükleniyor...")}</PageContainer>;
   if (!profile || !cart) return null;

@@ -38,7 +38,7 @@ export default function WelcomeCouponBanner() {
     const key = `coupon:dismissed:${activeCoupon.code}`;
     const isDismissed = window.localStorage.getItem(key) === "1";
     setVisible(!isDismissed);
-  }, [activeCoupon?.code]);
+  }, [activeCoupon]);
 
   const close = () => {
     if (activeCoupon) {

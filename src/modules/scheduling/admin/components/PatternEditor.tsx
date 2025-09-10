@@ -16,9 +16,10 @@ export default function PatternEditor({
   const { t, i18n } = useI18nNamespace("scheduling", translations);
   const lang = (i18n.language || "en").slice(0, 2);
 
-  const v: RecurrencePattern =
-    value || ({ type: "weekly", every: 1, daysOfWeek: [1] } as RecurrencePattern);
-
+   const v = useMemo<RecurrencePattern>(
+    () => value ?? ({ type: "weekly", every: 1, daysOfWeek: [1] } as RecurrencePattern),
+    [value]
+  );
   const set = (patch: Partial<RecurrencePattern>) =>
     onChange({ ...(v as any), ...patch } as RecurrencePattern);
 

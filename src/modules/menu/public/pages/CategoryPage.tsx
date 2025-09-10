@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import styled from "styled-components";
 import Link from "next/link";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
@@ -96,7 +96,7 @@ export default function CategoryPage({ params, searchParams }: Props) {
   const menuCatIds = useMemo(() => new Set(menuCatLinks.map((l) => String(l.category))), [menuCatLinks]);
 
   // branch filtresi
-  const matchBranch = (it: IMenuItem) => {
+  const matchBranch = useCallback((it: IMenuItem) => {
     if (!branchId) return true;
     const anyPriceMatches = (arr?: any[]) => {
       const list = Array.isArray(arr) ? arr : [];
@@ -115,7 +115,7 @@ export default function CategoryPage({ params, searchParams }: Props) {
         (g?.options || []).some((o) => Array.isArray(o?.prices) && o.prices.length)
       );
     return noPriceStruct || variantOk || optionsOk;
-  };
+  }, [branchId]);
 
   // Menü kapsamındaki ürünler ve kategoriye göre grupla
   const { itemsByCategory, sideCats } = useMemo(() => {
@@ -143,7 +143,7 @@ export default function CategoryPage({ params, searchParams }: Props) {
     });
 
     return { itemsByCategory: byCat, sideCats: sc };
-  }, [items, menuCatIds, menuCatLinks, catDict, uiLang]);
+  }, [items, menuCatIds, menuCatLinks, catDict, uiLang,matchBranch]);
 
   // aktif kategori = route’taki kategori; değilse menüde ilk dolu kategori
   const activeCatId = useMemo(() => {

@@ -4,8 +4,7 @@ import styled from "styled-components";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useMemo, useState } from "react";
-
+import { useMemo, useState, useCallback } from "react";
 import translations from "@/modules/recipes/locales";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { useAppSelector } from "@/store/hooks";
@@ -33,12 +32,15 @@ export default function RecipesSection() {
   );
   const main = useMemo<IRecipe | null>(() => (valid.length ? valid[0] : null), [valid]);
 
-  const toSlug = (r?: IRecipe | null) =>
-    (r?.slug && (r.slug as any)[lang]) ||
-    (r?.slug && (r.slug as any).tr) ||
-    (r?.slug && (r.slug as any).en) ||
-    r?.slugCanonical ||
-    "";
+  const toSlug = useCallback((r?: IRecipe | null) => {
+    return (
+     (r?.slug && (r.slug as any)[lang]) ||
+      (r?.slug && (r.slug as any).tr) ||
+      (r?.slug && (r.slug as any).en) ||
+            r?.slugCanonical ||
+      ""
+    );
+  }, [lang]);
 
   const features = useMemo(() => {
     const arr = [valid[1], valid[2]].filter(Boolean) as IRecipe[];
@@ -48,14 +50,14 @@ export default function RecipesSection() {
       summary: getMultiLang(item.description, lang),
       slug: toSlug(item),
     }));
-  }, [valid, lang]);
+  }, [valid,lang,toSlug]);
 
   const rightImagesRaw = useMemo(() => {
     if (!main) return [] as IRecipe[];
     return valid
-      .filter((item) => toSlug(item) && toSlug(item) !== toSlug(main) && item.images?.[0]?.url)
+     .filter((item) => toSlug(item) && toSlug(item) !== toSlug(main) && item.images?.[0]?.url)
       .slice(0, 2);
-  }, [valid, main]);
+  }, [valid, main,toSlug]);
 
   if (loading) {
     return (

@@ -5,10 +5,11 @@ import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/portfolio/locales";
-import type { IPortfolio } from "@/modules/portfolio/types";
+import type { IPortfolio,IPortfolioImage } from "@/modules/portfolio/types";
 import { JSONEditor, ImageUploader } from "@/shared";
 import { SUPPORTED_LOCALES, type SupportedLocale } from "@/types/common";
 import { toast } from "react-toastify";
+
 
 /* ---------------- helpers (ActivityForm pattern) ---------------- */
 
@@ -76,7 +77,10 @@ export default function PortfolioForm({
   );
 
   // --- images (hook DEĞİL; koşullu çağrı şüphesi yok)
-  const originalExisting = Array.isArray(editingItem?.images) ? editingItem!.images : [];
+  const originalExisting = useMemo<IPortfolioImage[]>(
+    () => (Array.isArray(editingItem?.images) ? (editingItem!.images as IPortfolioImage[]) : []),
+  [editingItem]
+ );
 
   const [existingUploads, setExistingUploads] = useState<UploadImage[]>(() =>
     originalExisting.map((img) => ({
@@ -109,7 +113,7 @@ export default function PortfolioForm({
     setAuthor(editingItem?.author || (currentUser as any)?.name || "");
     setTags(Array.isArray(editingItem?.tags) ? editingItem!.tags.join(", ") : "");
     setCategory(typeof editingItem?.category === "string" ? editingItem.category : "");
-  }, [editingItem]); // ← eksik dependency uyarısı çözülür
+  }, [editingItem, currentUser, originalExisting]);
 
   // id eşlemesi (url/publicId -> _id)
   const idBySig = useMemo(() => {
