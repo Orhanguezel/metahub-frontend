@@ -9,8 +9,16 @@ import { Address } from "@/modules/users/types/address";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "../../locales";
 
-export default function ContactPage() {
-  const { t } = useI18nNamespace("contact", translations);
+export default function ContactMePage() {
+  const { i18n, t } = useI18nNamespace("contact", translations);
+
+  // i18n bundle'ı yükle (idempotent)
+  Object.entries(translations).forEach(([lng, resources]) => {
+    if (!i18n.hasResourceBundle(lng, "contact")) {
+      i18n.addResourceBundle(lng, "contact", resources, true, true);
+    }
+  });
+
   const company = useAppSelector((s) => s.company.company);
 
   // Adresin okunabilir versiyonu
@@ -30,8 +38,8 @@ export default function ContactPage() {
     }
   }
 
-  // Whatsapp için company.whatsapp alanını kullanabilirsin, yoksa phone'dan üret
-  const whatsappNum = company?.phone || company?.phone;
+  // Whatsapp: varsa company.whatsapp, yoksa phone
+  const whatsappNum = (company as any)?.whatsapp || company?.phone;
 
   return (
     <ContactWrapper>
@@ -46,8 +54,12 @@ export default function ContactPage() {
               {t("contactPage.title", "Bize projenizden bahsedin!")}
             </PageTitle>
             <PageDesc>
-              {t("contactPage.desc", "Hedeflerinizi tartışmak ve keşfetmek üzere bir toplantı planlamak için ekibimiz en kısa sürede sizinle iletişime geçecek.")}
+              {t(
+                "contactPage.desc",
+                "Hedeflerinizi tartışmak ve keşfetmek üzere bir toplantı planlamak için ekibimiz en kısa sürede sizinle iletişime geçecek."
+              )}
             </PageDesc>
+
             <InfoList>
               {company?.email && (
                 <InfoRow>
@@ -64,7 +76,11 @@ export default function ContactPage() {
               {whatsappNum && (
                 <InfoRow>
                   <MdWhatsapp />
-                  <a href={`https://wa.me/${whatsappNum.replace(/\D/g, "")}`} target="_blank" rel="noopener">
+                  <a
+                    href={`https://wa.me/${String(whatsappNum).replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noopener"
+                  >
                     Whatsapp: {whatsappNum}
                   </a>
                 </InfoRow>
@@ -78,6 +94,7 @@ export default function ContactPage() {
             </InfoList>
           </motion.div>
         </Left>
+
         <Right>
           <motion.div
             initial={{ opacity: 0, x: 30 }}
@@ -101,7 +118,7 @@ export default function ContactPage() {
   );
 }
 
-// --- Styles ---
+/* -------- Styles -------- */
 
 const ContactWrapper = styled.div`
   min-height: 82vh;
@@ -199,7 +216,6 @@ const Right = styled.div`
   border-radius: ${({ theme }) => theme.radii.xl};
   padding: 54px 40px;
   margin: 24px 28px 24px 0;
-
   @media (max-width: 900px) {
     border-radius: ${({ theme }) => theme.radii.lg};
     padding: 20px 6px;

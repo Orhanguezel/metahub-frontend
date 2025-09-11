@@ -11,6 +11,7 @@ import type { SupportedLocale } from "@/types/common";
 import Masonry from "react-masonry-css";
 import Modal from "@/modules/home/public/components/Modal";
 import type { IAbout } from "@/modules/about/types";
+import { resolveClientLocale } from "@/lib/locale";
 
 /* ✅ SEO: store’dan meta üretimi */
 import SeoFromStore from "@/modules/seo/SeoFromStore";
@@ -19,7 +20,8 @@ import SeoFromStore from "@/modules/seo/SeoFromStore";
 
 export default function AboutUsPage() {
   const { i18n, t } = useI18nNamespace("about", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const lang = resolveClientLocale(i18n);
+
   const { about, loading, error } = useAppSelector((s) => s.about ?? []);
 
   // SSR hydration için resources ekle

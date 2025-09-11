@@ -1,3 +1,5 @@
+"use client";
+
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
@@ -6,29 +8,29 @@ import { Skeleton, ErrorMessage } from "@/shared";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import type { SupportedLocale } from "@/types/common";
+import { resolveClientLocale } from "@/lib/locale";
+import { getMultiLang} from "@/types/common";
 import type { ILibrary } from "@/modules/library/types";
 
 export default function LibraryPage() {
   const { i18n, t } = useI18nNamespace("library", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-  const { library, loading, error } = useAppSelector((state) => state.library);
+  const lang = resolveClientLocale(i18n);
 
+  // i18n bundle'ı yükle (idempotent)
   Object.entries(translations).forEach(([lng, resources]) => {
     if (!i18n.hasResourceBundle(lng, "library")) {
       i18n.addResourceBundle(lng, "library", resources, true, true);
     }
   });
 
+  const { library, loading, error } = useAppSelector((state) => state.library);
+
+
   if (loading) {
     return (
       <PageWrapper>
         <PageTitle>{t("page.allLibrary", "Kütüphane")}</PageTitle>
-        <LibraryGrid>
-          {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} />
-          ))}
-        </LibraryGrid>
+        <LibraryGrid>{[...Array(3)].map((_, i) => <Skeleton key={i} />)}</LibraryGrid>
       </PageWrapper>
     );
   }
@@ -45,9 +47,7 @@ export default function LibraryPage() {
     return (
       <PageWrapper>
         <PageTitle>{t("page.allLibrary", "Kütüphane")}</PageTitle>
-        <EmptyMsg>
-          {t("page.noLibrary", "Herhangi bir içerik bulunamadı.")}
-        </EmptyMsg>
+        <EmptyMsg>{t("page.noLibrary", "Herhangi bir içerik bulunamadı.")}</EmptyMsg>
       </PageWrapper>
     );
   }
@@ -65,13 +65,16 @@ export default function LibraryPage() {
             transition={{ delay: index * 0.09, duration: 0.48 }}
             viewport={{ once: true }}
           >
-            {/* --- IMAGE KISMI --- */}
+            {/* Görsel */}
             <ImageWrapper>
-              {Array.isArray(item.images) && item.images.length > 0 && item.images[0].url ? (
-                <StyledLink href={`/library/${item.slug}`} aria-label={item.title?.[lang] || "Untitled"}>
+              {Array.isArray(item.images) && item.images.length > 0 && item.images[0]?.url ? (
+                <StyledLink
+                  href={`/library/${item.slug}`}
+                  aria-label={getMultiLang(item.title, lang)}
+                >
                   <StyledImage
                     src={item.images[0].url}
-                    alt={item.title?.[lang] || "Untitled"}
+                    alt={getMultiLang(item.title, lang)}
                     width={440}
                     height={210}
                     loading="lazy"
@@ -81,22 +84,15 @@ export default function LibraryPage() {
                 <ImgPlaceholder />
               )}
             </ImageWrapper>
+
+            {/* İçerik */}
             <CardContent>
-              {/* --- BAŞLIK KISMI --- */}
               <CardTitle as={Link} href={`/library/${item.slug}`}>
-                {item.title?.[lang] || "Untitled"}
+                {getMultiLang(item.title, lang)}
               </CardTitle>
-              <CardSummary>{item.summary?.[lang] || "No summary available."}</CardSummary>
-              {/* --- TAGS --- 
-              {Array.isArray(item.tags) && item.tags.length > 0 && (
-                <Tags>
-                  {item.tags.map((tag, i) => (
-                    <Tag key={i}>{tag}</Tag>
-                  ))}
-                </Tags>
-              )}
-              */}
-              {/* --- PDF dosyası varsa göster --- */}
+              <CardSummary>{getMultiLang(item.summary, lang)}</CardSummary>
+
+              {/* PDF dosyası varsa */}
               {item.files && item.files.length > 0 && (
                 <FileSection>
                   <a
@@ -104,13 +100,13 @@ export default function LibraryPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     download={item.files[0].name}
-                    onClick={e => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
                   >
                     📄 {item.files[0].name || t("library.pdf_file", "PDF Dosyası")}
                   </a>
                 </FileSection>
               )}
-              {/* --- DEVAMINI OKU --- */}
+
               <ReadMore href={`/library/${item.slug}`} tabIndex={0}>
                 {t("readMore", "Devamını Oku →")}
               </ReadMore>
@@ -122,7 +118,7 @@ export default function LibraryPage() {
   );
 }
 
-// ----- STYLES -----
+/* ----- STYLES ----- */
 const PageWrapper = styled.div`
   max-width: 1260px;
   margin: 0 auto;
@@ -147,10 +143,7 @@ const LibraryGrid = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
   align-items: stretch;
   margin: 0 auto;
-
-  @media (max-width: 800px) {
-    gap: 1.3rem;
-  }
+  @media (max-width: 800px) { gap: 1.3rem; }
 `;
 
 const LibraryCard = styled(motion.div)`
@@ -218,8 +211,7 @@ const CardTitle = styled.h2`
   a {
     color: inherit;
     text-decoration: none;
-    &:hover,
-    &:focus {
+    &:hover, &:focus {
       text-decoration: underline;
       color: ${({ theme }) => theme.colors.primary};
     }
@@ -232,26 +224,6 @@ const CardSummary = styled.p`
   margin-bottom: 0.45em;
   line-height: 1.6;
 `;
-/*
-const Tags = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 0.3em;
-`;
-
-const Tag = styled.span`
-  background: ${({ theme }) => theme.colors.accent}22;
-  color: ${({ theme }) => theme.colors.primary};
-  padding: 0.21em 1.07em;
-  font-size: 0.96em;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  display: inline-block;
-`;
-
-*/
 
 const FileSection = styled.div`
   margin: 0.8rem 0 0.2rem 0;
@@ -260,9 +232,7 @@ const FileSection = styled.div`
     text-decoration: underline;
     font-weight: 500;
     font-size: 1em;
-    &:hover {
-      opacity: 0.8;
-    }
+    &:hover { opacity: 0.8; }
   }
 `;
 

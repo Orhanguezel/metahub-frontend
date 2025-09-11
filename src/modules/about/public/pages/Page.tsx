@@ -3,135 +3,111 @@
 import styled from "styled-components";
 import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
-import translations from "@/modules/about/locales/index";
+import translations from "@/modules/about/locales";
 import { Skeleton, ErrorMessage } from "@/shared";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import type { SupportedLocale } from "@/types/common";
 import type { IAbout } from "@/modules/about/types";
-
-/* ✅ SEO: store’dan meta üretir */
-import SeoFromStore from "@/modules/seo/SeoFromStore";
+import { getMultiLang } from "@/types/common";
 
 export default function AboutPage() {
   const { i18n, t } = useI18nNamespace("about", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-  const { about, loading, error } = useAppSelector((s) => s.about ?? []);
 
+
+  // i18n bundle'ı yükle (idempotent)
   Object.entries(translations).forEach(([lng, resources]) => {
     if (!i18n.hasResourceBundle(lng, "about")) {
       i18n.addResourceBundle(lng, "about", resources, true, true);
     }
   });
 
-  // Çoklu dil fallback
-  const getMultiLang = (obj?: Record<string, string>) =>
-    obj?.[lang] || obj?.tr || obj?.en || Object.values(obj || {})[0] || "—";
+  const aboutState = useAppSelector((s) => s.about as any);
+  const about = (aboutState?.about || []) as IAbout[];
+  const loading = aboutState?.loading;
+  const error = aboutState?.error;
 
   if (loading) {
     return (
-      <>
-        {/* ✅ SEO (loading olsa da head’i doldurur) */}
-        <SeoFromStore page="about" locale={lang} />
-        <PageWrapper>
-          <PageTitle>{t("page.allAbout", "Hakkımızda")}</PageTitle>
-          <AboutGrid>
-            {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} />
-            ))}
-          </AboutGrid>
-        </PageWrapper>
-      </>
+      <PageWrapper>
+        <PageTitle>{t("page.allAbout", "Hakkımızda")}</PageTitle>
+        <AboutGrid>{[...Array(3)].map((_, i) => <Skeleton key={i} />)}</AboutGrid>
+      </PageWrapper>
     );
   }
 
   if (error) {
     return (
-      <>
-        {/* ✅ SEO */}
-        <SeoFromStore page="about" locale={lang} />
-        <PageWrapper>
-          <ErrorMessage message={error} />
-        </PageWrapper>
-      </>
+      <PageWrapper>
+        <ErrorMessage message={error} />
+      </PageWrapper>
     );
   }
 
   if (!about || about.length === 0) {
     return (
-      <>
-        {/* ✅ SEO */}
-        <SeoFromStore page="about" locale={lang} />
-        <PageWrapper>
-          <PageTitle>{t("page.allAbout", "Hakkımızda")}</PageTitle>
-          <EmptyMsg>
-            {t("page.noAbout", "Herhangi bir içerik bulunamadı.")}
-          </EmptyMsg>
-        </PageWrapper>
-      </>
+      <PageWrapper>
+        <PageTitle>{t("page.allAbout", "Hakkımızda")}</PageTitle>
+        <EmptyMsg>{t("page.noAbout", "Herhangi bir içerik bulunamadı.")}</EmptyMsg>
+      </PageWrapper>
     );
   }
 
   return (
-    <>
-      {/* ✅ SEO */}
-      <SeoFromStore page="about" locale={lang} />
-      <PageWrapper>
-        <PageTitle>{t("page.allAbout", "Hakkımızda")}</PageTitle>
-        <AboutGrid>
-          {about.map((item: IAbout, index: number) => {
-            const detailHref = `/about/${item.slug}`;
-            return (
-              <AboutCard
-                key={item._id}
-                as={motion.div}
-                initial={{ opacity: 0, y: 22 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.09, duration: 0.48 }}
-                viewport={{ once: true }}
-              >
-                <Link href={detailHref} tabIndex={-1} style={{ display: "block" }}>
-                  <ImageWrapper>
-                    {item.images?.[0]?.url ? (
-                      <StyledImage
-                        src={item.images[0].url}
-                        alt={getMultiLang(item.title)}
-                        width={440}
-                        height={210}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <ImgPlaceholder />
-                    )}
-                  </ImageWrapper>
-                </Link>
-                <CardContent>
-                  <CardTitle as={Link} href={detailHref}>
-                    {getMultiLang(item.title)}
-                  </CardTitle>
-                  <CardSummary>{getMultiLang(item.summary)}</CardSummary>
-                  {item.tags?.length > 0 && (
-                    <Tags>
-                      {item.tags.map((tag, i) => (
-                        <Tag key={i}>{tag}</Tag>
-                      ))}
-                    </Tags>
+    <PageWrapper>
+      <PageTitle>{t("page.allAbout", "Hakkımızda")}</PageTitle>
+      <AboutGrid>
+        {about.map((item: IAbout, index: number) => {
+          const detailHref = `/about/${item.slug}`;
+          return (
+            <AboutCard
+              key={item._id}
+              as={motion.div}
+              initial={{ opacity: 0, y: 22 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.09, duration: 0.48 }}
+              viewport={{ once: true }}
+            >
+              <Link href={detailHref} tabIndex={-1} style={{ display: "block" }}>
+                <ImageWrapper>
+                  {item.images?.[0]?.url ? (
+                    <StyledImage
+                      src={item.images[0].url}
+                      alt={getMultiLang(item.title)}
+                      width={440}
+                      height={210}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <ImgPlaceholder />
                   )}
-                  <ReadMore href={detailHref}>
-                    {t("page.readMore", "Detayları Gör →")}
-                  </ReadMore>
-                </CardContent>
-              </AboutCard>
-            );
-          })}
-        </AboutGrid>
-      </PageWrapper>
-    </>
+                </ImageWrapper>
+              </Link>
+              <CardContent>
+                <CardTitle as={Link} href={detailHref}>
+                  {getMultiLang(item.title)}
+                </CardTitle>
+                <CardSummary>{getMultiLang(item.summary)}</CardSummary>
+                {item.tags?.length > 0 && (
+                  <Tags>
+                    {item.tags.map((tag, i) => (
+                      <Tag key={i}>{tag}</Tag>
+                    ))}
+                  </Tags>
+                )}
+                <ReadMore href={detailHref}>
+                  {t("page.readMore", "Detayları Gör →")}
+                </ReadMore>
+              </CardContent>
+            </AboutCard>
+          );
+        })}
+      </AboutGrid>
+    </PageWrapper>
   );
 }
 
-// ----- STYLES -----
+/* ----------------- STYLES ----------------- */
 const PageWrapper = styled.div`
   max-width: 1260px;
   margin: 0 auto;
@@ -156,10 +132,7 @@ const AboutGrid = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
   align-items: stretch;
   margin: 0 auto;
-
-  @media (max-width: 800px) {
-    gap: 1.3rem;
-  }
+  @media (max-width: 800px) { gap: 1.3rem; }
 `;
 
 const AboutCard = styled(motion.div)`
@@ -221,11 +194,7 @@ const CardTitle = styled.h2`
   margin-bottom: 0.13em;
   cursor: pointer;
   transition: color 0.17s;
-  &:hover,
-  &:focus {
-    color: ${({ theme }) => theme.colors.primary};
-    text-decoration: underline;
-  }
+  &:hover, &:focus { color: ${({ theme }) => theme.colors.primary}; text-decoration: underline; }
 `;
 
 const CardSummary = styled.p`

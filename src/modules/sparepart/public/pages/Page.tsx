@@ -9,26 +9,29 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import AddToCartButton from "@/shared/AddToCartButton";
-import type { SupportedLocale } from "@/types/common";
 import type { ISparepart } from "@/modules/sparepart/types";
+import { getMultiLang } from "@/types/common";
+import { resolveClientLocale } from "@/lib/locale";
 
 export default function SparepartPage() {
   const { i18n, t } = useI18nNamespace("sparepart", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const lang = resolveClientLocale(i18n);
   const { sparepart, loading, error } = useAppSelector((state) => state.sparepart);
 
+  // i18n bundle'ı yükle (idempotent)
   Object.entries(translations).forEach(([lng, resources]) => {
     if (!i18n.hasResourceBundle(lng, "sparepart")) {
       i18n.addResourceBundle(lng, "sparepart", resources, true, true);
     }
   });
 
+  // Çoklu dil fallback helper
+  const L = (obj?: Record<string, string>) => getMultiLang(obj, lang);
+
   if (loading) {
     return (
       <PageWrapper>
-        {[...Array(3)].map((_, i) => (
-          <Skeleton key={i} />
-        ))}
+        {[...Array(3)].map((_, i) => <Skeleton key={i} />)}
       </PageWrapper>
     );
   }
@@ -66,12 +69,12 @@ export default function SparepartPage() {
             >
               <Link href={detailHref} tabIndex={-1} style={{ display: "block" }}>
                 <ImageGallery>
-                  {item.images && item.images.length > 0 ? (
+                  {item.images?.length ? (
                     item.images.slice(0, 2).map((img, i) => (
                       <StyledImage
                         key={i}
                         src={img.url}
-                        alt={item.name?.[lang] + `-img${i + 1}` || "Untitled"}
+                        alt={(L(item.name) || "Untitled") + `-img${i + 1}`}
                         width={380}
                         height={190}
                         loading="lazy"
@@ -83,39 +86,31 @@ export default function SparepartPage() {
                   )}
                 </ImageGallery>
               </Link>
+
               <CardContent>
                 <CardTitle as={Link} href={detailHref}>
-                  {item.name?.[lang] || "Untitled"}
+                  {L(item.name) || "Untitled"}
                 </CardTitle>
-                <CardDesc>
-                  {item.description?.[lang] || "No description available."}
-                </CardDesc>
+                <CardDesc>{L(item.description) || "No description available."}</CardDesc>
+
                 <Meta>
                   <span>
                     <b>{t("page.category", "Kategori")}:</b>{" "}
                     {typeof item.category === "object"
-                      ? item.category.name?.[lang] || "Untitled"
+                      ? L(item.category?.name) || "-"
                       : "-"}
                   </span>
-                  {/* <span>
-                    <b>{t("page.price", "Fiyat")}:</b> {item.price} €
-                  </span><span>
-                    <b>{t("page.price", "Fiyat")}:</b> {item.price} €
-                  </span> */}
                 </Meta>
-                {/* Etiketler 
-                {item.tags && item.tags.length > 0 && (
-                  <Tags>
-                    {item.tags.map((tag, i) => (
-                      <Tag key={i}>{tag}</Tag>
-                    ))}
-                  </Tags>
-                )}
-                */}
+
                 <ReadMore href={detailHref}>
                   {t("page.readMore", "Detayları Gör →")}
                 </ReadMore>
-                <AddToCartButton productId={item._id} productType="sparepart" disabled={item.stock < 1} />
+
+                <AddToCartButton
+                  productId={item._id}
+                  productType="sparepart"
+                  disabled={(item as any).stock < 1}
+                />
               </CardContent>
             </SparepartCard>
           );
@@ -125,7 +120,7 @@ export default function SparepartPage() {
   );
 }
 
-// --- Styled Components ---
+/* ----------------- STYLES ----------------- */
 const PageWrapper = styled.div`
   max-width: 1200px;
   margin: 0 auto;
@@ -198,9 +193,7 @@ const CardTitle = styled.h2`
   color: ${({ theme }) => theme.colors.text};
   cursor: pointer;
   transition: color 0.19s;
-
-  &:hover,
-  &:focus {
+  &:hover, &:focus {
     color: ${({ theme }) => theme.colors.primary};
     text-decoration: underline;
   }
@@ -220,24 +213,7 @@ const Meta = styled.div`
   gap: 4px;
   margin-bottom: ${({ theme }) => theme.spacings.sm};
 `;
-/*
-const Tags = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.37em;
-`;
 
-const Tag = styled.span`
-  background: ${({ theme }) => theme.colors.accent}22;
-  color: ${({ theme }) => theme.colors.primary};
-  padding: 0.13em 0.9em;
-  font-size: 0.98em;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  display: inline-block;
-`;
-*/
 const ReadMore = styled(Link)`
   margin-top: auto;
   font-size: ${({ theme }) => theme.fontSizes.sm};

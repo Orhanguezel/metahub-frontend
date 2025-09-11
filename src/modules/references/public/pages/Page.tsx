@@ -5,7 +5,7 @@ import { useAppSelector } from "@/store/hooks";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import { translations } from "@/modules/references";
 import { Skeleton, ErrorMessage } from "@/shared";
-import type { SupportedLocale } from "@/types/common";
+import { resolveClientLocale } from "@/lib/locale";
 import type { IReferences } from "@/modules/references/types";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import Image from "next/image";
@@ -15,10 +15,8 @@ import { slugify } from "@/lib/slug";
 
 /* --- props --- */
 type PageProps = {
-  /** /references/category/[slug] ise gelir; /references kökte undefined */
-  categorySlug?: string;
-  /** server'dan çözülen p/ps */
-  initialSearch?: { p?: string; ps?: string };
+  categorySlug?: string;                               // /references kökte undefined
+  initialSearch?: { p?: string; ps?: string };         // server’dan
 };
 
 /* --- types --- */
@@ -37,22 +35,21 @@ const PAGE_SIZE_OPTIONS = [8, 12, 16, 24, 36] as const;
 
 const getPageItems = (total: number, current: number) => {
   const items: (number | "...")[] = [];
-  const push = (v: number | "...") => items.push(v);
   const windowSize = 1;
   const start = Math.max(2, current - windowSize);
   const end = Math.min(total - 1, current + windowSize);
-  if (total <= 7) { for (let i = 1; i <= total; i++) push(i); return items; }
-  push(1);
-  if (start > 2) push("...");
-  for (let i = start; i <= end; i++) push(i);
-  if (end < total - 1) push("...");
-  push(total);
+  if (total <= 7) { for (let i = 1; i <= total; i++) items.push(i); return items; }
+  items.push(1);
+  if (start > 2) items.push("...");
+  for (let i = start; i <= end; i++) items.push(i);
+  if (end < total - 1) items.push("...");
+  items.push(total);
   return items;
 };
 
 export default function ReferencesPage({ categorySlug, initialSearch }: PageProps) {
   const { i18n, t } = useI18nNamespace("references", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
+  const lang = resolveClientLocale(i18n);
   const router = useRouter();
 
   const rawReferences = useAppSelector((s) => s.references.references);
@@ -60,7 +57,7 @@ export default function ReferencesPage({ categorySlug, initialSearch }: PageProp
   const loading = useAppSelector((s) => s.references.loading);
   const error = useAppSelector((s) => s.references.error);
 
-  /* i18n bundle */
+  /* i18n bundle (idempotent) */
   useEffect(() => {
     Object.entries(translations).forEach(([lng, resources]) => {
       if (!i18n.hasResourceBundle(lng, "references")) {
@@ -106,7 +103,7 @@ export default function ReferencesPage({ categorySlug, initialSearch }: PageProp
 
   const noCategory = grouped["none"] || [];
 
-  /* slug haritası */
+  /* slug haritası + tabs */
   const { tabs, slugToId } = useMemo(() => {
     const byId = categories.filter((cat) => grouped[cat._id]?.length);
     const taken = new Set<string>();
@@ -135,19 +132,18 @@ export default function ReferencesPage({ categorySlug, initialSearch }: PageProp
   }, [categories, grouped, lang, t, noCategory.length]);
 
   /* aktif slug */
-  const incomingSlug = categorySlug;            // sadece CATEGORY route’da dolu
-  const [activeSlug, setActiveSlug] = useState<string | undefined>(incomingSlug);
+  const [activeSlug, setActiveSlug] = useState<string | undefined>(categorySlug);
   useEffect(() => {
     const firstSlug = tabs[0]?.slug;
-    setActiveSlug(incomingSlug || firstSlug);   // /references kökte URL değiştirmeden ilk tab seçili
-  }, [incomingSlug, tabs]);
+    setActiveSlug(categorySlug || firstSlug); // kökte URL değiştirmeden ilk tab seçili
+  }, [categorySlug, tabs]);
 
   const activeCategoryId = activeSlug ? slugToId.get(activeSlug) : undefined;
 
   /* p/ps (server’dan) */
   const pageParam = Math.max(1, Number(initialSearch?.p || 1));
   const psParam = Math.max(1, Number(initialSearch?.ps || 12));
-  const initialPageSize = PAGE_SIZE_OPTIONS.includes(psParam as any) ? psParam : 12;
+  const initialPageSize = (PAGE_SIZE_OPTIONS as readonly number[]).includes(psParam) ? psParam : 12;
 
   const [page, setPage] = useState<number>(pageParam);
   const [pageSize, setPageSize] = useState<number>(initialPageSize);
@@ -170,7 +166,7 @@ export default function ReferencesPage({ categorySlug, initialSearch }: PageProp
     return filteredRefs.slice(start, end);
   }, [filteredRefs, page, pageSize]);
 
-  /* URL builder – KATEGORİ route’una gider */
+  /* URL builder – kategori route’una gider */
   const buildHref = useCallback(
     (slug: string, p = 1, ps = pageSize) => {
       const sp = new URLSearchParams();
@@ -183,9 +179,8 @@ export default function ReferencesPage({ categorySlug, initialSearch }: PageProp
   );
 
   const inCategory = !!categorySlug; // sadece kategori route’unda URL güncelle
-
-  const replaceUrl = (slug: string, p = page, ps = pageSize) => {
-    if (!inCategory) return; // kökte URL değiştirme
+  const routerReplace = (slug: string, p = page, ps = pageSize) => {
+    if (!inCategory) return;
     const href = buildHref(slug, p, ps);
     router.replace(`${href.pathname}${href.query}`);
   };
@@ -215,7 +210,7 @@ export default function ReferencesPage({ categorySlug, initialSearch }: PageProp
 
   return (
     <ModernSection id="refs-top">
-      {/* Tabs -> SEO slug’lı Link; kökte de çalışır */}
+      {/* Tabs */}
       <TabsWrapper>
         {tabs.map((tab) => {
           const hrefObj = buildHref(tab.slug, 1, pageSize);
@@ -223,7 +218,7 @@ export default function ReferencesPage({ categorySlug, initialSearch }: PageProp
           return (
             <Link
               key={tab.key}
-              href={href}   // ABSOLUTE path => /references/category/<slug>?...
+              href={href}
               onClick={() => {
                 setActiveSlug(tab.slug);
                 setPage(1);
@@ -254,7 +249,7 @@ export default function ReferencesPage({ categorySlug, initialSearch }: PageProp
               const ps = parseInt(e.target.value, 10) || 12;
               setPageSize(ps);
               setPage(1);
-              if (activeSlug) replaceUrl(activeSlug, 1, ps);
+              if (activeSlug) routerReplace(activeSlug, 1, ps);
             }}
           >
             {PAGE_SIZE_OPTIONS.map((opt) => (
@@ -296,7 +291,7 @@ export default function ReferencesPage({ categorySlug, initialSearch }: PageProp
             onClick={() => {
               const np = Math.max(1, page - 1);
               setPage(np);
-              replaceUrl(activeSlug, np, pageSize);
+              routerReplace(activeSlug, np, pageSize);
             }}
           >
             ‹ {t("page.prev", "Prev")}
@@ -313,7 +308,7 @@ export default function ReferencesPage({ categorySlug, initialSearch }: PageProp
                 onClick={() => {
                   const np = it as number;
                   setPage(np);
-                  replaceUrl(activeSlug, np, pageSize);
+                  routerReplace(activeSlug, np, pageSize);
                 }}
               >
                 {it}
@@ -327,7 +322,7 @@ export default function ReferencesPage({ categorySlug, initialSearch }: PageProp
             onClick={() => {
               const np = Math.min(totalPages, page + 1);
               setPage(np);
-              replaceUrl(activeSlug, np, pageSize);
+              routerReplace(activeSlug, np, pageSize);
             }}
           >
             {t("page.next", "Next")} ›

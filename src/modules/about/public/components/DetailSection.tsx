@@ -16,19 +16,23 @@ import {
   setSelectedAbout,
 } from "@/modules/about/slice/aboutSlice";
 import type { IAbout } from "@/modules/about";
-import { SupportedLocale, getMultiLang } from "@/types/common";
+import SeoFromStore from "@/modules/seo/SeoFromStore";
+import { resolveClientLocale } from "@/lib/locale";
+import { getTL } from "@/i18n/getUILang";
 
 export default function AboutDetailSection() {
   const { i18n, t } = useI18nNamespace("about", translations);
-  const lang = (i18n.language?.slice(0, 2)) as SupportedLocale;
-  const { slug } = useParams() as { slug: string };
-  const dispatch = useAppDispatch();
+  const lang = resolveClientLocale(i18n);
 
+  // i18n bundle’ları idempotent ekle
   Object.entries(translations).forEach(([locale, resources]) => {
     if (!i18n.hasResourceBundle(locale, "about")) {
       i18n.addResourceBundle(locale, "about", resources, true, true);
     }
   });
+
+  const { slug } = useParams() as { slug: string };
+  const dispatch = useAppDispatch();
 
   const {
     selected: about,
@@ -53,97 +57,117 @@ export default function AboutDetailSection() {
     };
   }, [dispatch, allAbout, slug]);
 
+  // --- Loading ---
   if (loading) {
     return (
-      <Container>
-        <Skeleton />
-      </Container>
+      <>
+        <SeoFromStore page="about-detail" locale={lang} content={{ slug }} />
+        <Container>
+          <Skeleton />
+        </Container>
+      </>
     );
   }
 
+  // --- Error / Not found ---
   if (error || !about) {
     return (
-      <Container>
-        <ErrorMessage />
-      </Container>
+      <>
+        <SeoFromStore page="about-detail" locale={lang} content={{ slug }} />
+        <Container>
+          <ErrorMessage />
+        </Container>
+      </>
     );
   }
 
-  const otherAbout = allAbout.filter((item: IAbout) => item.slug !== slug);
+  const otherAbout = (allAbout || []).filter((item: IAbout) => item.slug !== slug);
+
+  // ✅ SEO content: IAbout’ta GERÇEKTEN olan alanlardan üret
+  const seoContent = {
+    slug: about.slug,
+    title: about.title,               // localized obj
+    summary: about.summary,           // localized obj
+    description: about.content,       // localized obj (HTML olabilir)
+    images: about.images,             // OG görsel adayları
+    seoOgImage: about.images?.[0]?.url,
+    tags: about.tags,
+  };
 
   return (
-    <Container
-      initial={{ opacity: 0, y: 36 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.57 }}
-    >
-      {/* Başlık */}
-      <Title>{getMultiLang(about.title, lang)}</Title>
+    <>
+      <SeoFromStore page="about-detail" locale={lang} content={seoContent} />
+      <Container
+        initial={{ opacity: 0, y: 36 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.57 }}
+      >
+        {/* Başlık */}
+        <Title>{getTL(about.title, lang)}</Title>
 
-      {/* Büyük görsel */}
-      {about.images?.[0]?.url && (
-        <ImageWrapper>
-          <StyledImage
-            src={about.images[0].url}
-            alt={getMultiLang(about.title, lang)}
-            width={1080}
-            height={410}
-            priority
-          />
-        </ImageWrapper>
-      )}
+        {/* Büyük görsel */}
+        {about.images?.[0]?.url && (
+          <ImageWrapper>
+            <StyledImage
+              src={about.images[0].url}
+              alt={getTL(about.title, lang)}
+              width={1080}
+              height={410}
+              priority
+            />
+          </ImageWrapper>
+        )}
 
-      {/* Özet (Kısa Bilgi) */}
-      {about.summary && getMultiLang(about.summary, lang) && (
-        <SummaryBox>
-          <div>{getMultiLang(about.summary, lang)}</div>
-        </SummaryBox>
-      )}
+        {/* Özet */}
+        {about.summary && getTL(about.summary, lang) && (
+          <SummaryBox>
+            <div>{getTL(about.summary, lang)}</div>
+          </SummaryBox>
+        )}
 
-      {/* Ana içerik */}
-      {about.content && getMultiLang(about.content, lang) && (
-        <ContentBox>
-          <div
-            className="about-content"
-            dangerouslySetInnerHTML={{ __html: getMultiLang(about.content, lang) }}
-          />
-        </ContentBox>
-      )}
+        {/* İçerik */}
+        {about.content && getTL(about.content, lang) && (
+          <ContentBox>
+            <div
+              className="about-content"
+              dangerouslySetInnerHTML={{ __html: getTL(about.content, lang) }}
+            />
+          </ContentBox>
+        )}
 
-      {/* Diğer içerikler */}
-      {otherAbout?.length > 0 && (
-        <OtherSection>
-          <OtherTitle>{t("page.other", "Diğer Hakkımızda İçerikleri")}</OtherTitle>
-          <OtherGrid>
-            {otherAbout.map((item: IAbout) => (
-              <OtherCard key={item._id} as={motion.div} whileHover={{ y: -6, scale: 1.025 }}>
-                <OtherImgWrap>
-                  {item.images?.[0]?.url ? (
-                    <OtherImg
-                      src={item.images[0].url}
-                      alt={getMultiLang(item.title, lang)}
-                      width={60}
-                      height={40}
-                    />
-                  ) : (
-                    <OtherImgPlaceholder />
-                  )}
-                </OtherImgWrap>
-                <OtherTitleMini>
-                  <Link href={`/about/${item.slug}`}>
-                    {getMultiLang(item.title, lang)}
-                  </Link>
-                </OtherTitleMini>
-              </OtherCard>
-            ))}
-          </OtherGrid>
-        </OtherSection>
-      )}
-    </Container>
+        {/* Diğer içerikler */}
+        {otherAbout?.length > 0 && (
+          <OtherSection>
+            <OtherTitle>{t("page.other", "Diğer Hakkımızda İçerikleri")}</OtherTitle>
+            <OtherGrid>
+              {otherAbout.map((item: IAbout) => (
+                <OtherCard key={item._id} as={motion.div} whileHover={{ y: -6, scale: 1.025 }}>
+                  <OtherImgWrap>
+                    {item.images?.[0]?.url ? (
+                      <OtherImg
+                        src={item.images[0].url}
+                        alt={getTL(item.title, lang)}
+                        width={60}
+                        height={40}
+                      />
+                    ) : (
+                      <OtherImgPlaceholder />
+                    )}
+                  </OtherImgWrap>
+                  <OtherTitleMini>
+                    <Link href={`/about/${item.slug}`}>{getTL(item.title, lang)}</Link>
+                  </OtherTitleMini>
+                </OtherCard>
+              ))}
+            </OtherGrid>
+          </OtherSection>
+        )}
+      </Container>
+    </>
   );
 }
 
-// --------- STYLES -----------
+/* --------- STYLES ----------- */
 
 const Container = styled(motion.section)`
   max-width: 950px;

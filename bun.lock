@@ -17,9 +17,9 @@
         "date-fns": "^4.1.0",
         "dotenv": "^16.5.0",
         "formik": "^2.4.6",
-        "framer-motion": "^12.5.0",
+        "framer-motion": "^12.6.3",
         "glob": "^11.0.3",
-        "i18next": "^23.6.1",
+        "i18next": "^23.16.8",
         "i18next-browser-languagedetector": "^8.0.4",
         "js-cookie": "^3.0.5",
         "leaflet": "^1.9.4",
@@ -28,10 +28,10 @@
         "maplibre-gl": "^5.6.2",
         "next": "^15.3.0",
         "next-i18next": "^15.4.2",
-        "react": "^18.2.0",
+        "react": "^18.3.1",
         "react-datepicker": "^8.4.0",
-        "react-dom": "^18.2.0",
-        "react-hook-form": "^7.56.2",
+        "react-dom": "^18.3.1",
+        "react-hook-form": "^7.56.3",
         "react-i18next": "^13.5.0",
         "react-icons": "^5.5.0",
         "react-image-lightbox": "^5.1.4",
@@ -49,7 +49,7 @@
         "remark-gfm": "^4.0.1",
         "slugify": "^1.6.6",
         "socket.io-client": "^4.8.1",
-        "styled-components": "^6.1.16",
+        "styled-components": "^6.1.17",
         "swiper": "^11.2.6",
         "yup": "^1.0.2",
         "zod": "^3.24.3",
@@ -60,8 +60,8 @@
         "@types/dotenv": "^8.2.3",
         "@types/mapbox-gl": "^3.4.1",
         "@types/node": "20.17.30",
-        "@types/react": "^19.1.2",
-        "@types/react-dom": "^19",
+        "@types/react": "^18.3.0",
+        "@types/react-dom": "^18.3.0",
         "babel-plugin-styled-components": "^2.1.4",
         "eslint": "^9",
         "eslint-config-next": "15.2.3",
@@ -392,11 +392,13 @@
 
     "@types/node": ["@types/node@20.17.30", "", { "dependencies": { "undici-types": "~6.19.2" } }, "sha512-7zf4YyHA+jvBNfVrk2Gtvs6x7E8V+YDW05bNfG2XkWDJfYRXrTiP/DsB2zSYTaHX0bGIujTBQdMVAhb+j7mwpg=="],
 
-    "@types/react": ["@types/react@19.1.2", "", { "dependencies": { "csstype": "^3.0.2" } }, "sha512-oxLPMytKchWGbnQM9O7D67uPa9paTNxO7jVoNMXgkkErULBPhPARCfkKL9ytcIJJRGjbsVwW4ugJzyFFvm/Tiw=="],
+    "@types/prop-types": ["@types/prop-types@15.7.15", "", {}, "sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw=="],
+
+    "@types/react": ["@types/react@18.3.24", "", { "dependencies": { "@types/prop-types": "*", "csstype": "^3.0.2" } }, "sha512-0dLEBsA1kI3OezMBF8nSsb7Nk19ZnsyE1LLhB8r27KbgU5H4pvuqZLdtE+aUkJVoXgTVuA+iLIwmZ0TuK4tx6A=="],
 
     "@types/react-datepicker": ["@types/react-datepicker@7.0.0", "", { "dependencies": { "react-datepicker": "*" } }, "sha512-4tWwOUq589tozyQPBVEqGNng5DaZkomx5IVNuur868yYdgjH6RaL373/HKiVt1IDoNNXYiTGspm1F7kjrarM8Q=="],
 
-    "@types/react-dom": ["@types/react-dom@19.1.1", "", { "peerDependencies": { "@types/react": "^19.0.0" } }, "sha512-jFf/woGTVTjUJsl2O7hcopJ1r0upqoq/vIOoCj0yLh3RIXxWcljlpuZ+vEBRXsymD1jhfeJrlyTy/S1UW+4y1w=="],
+    "@types/react-dom": ["@types/react-dom@18.3.7", "", { "peerDependencies": { "@types/react": "^18.0.0" } }, "sha512-MEe3UeoENYVFXzoXEWsvcpg6ZvlrFNlOQ7EOsvhI3CfAXwzPfO8Qwuxd40nepsYKqyyVQnTdEfv68q91yLcKrQ=="],
 
     "@types/stylis": ["@types/stylis@4.2.5", "", {}, "sha512-1Xve+NMN7FWjY14vLoY5tL3BVEQ/n42YLwaqJIPYhotZ9uBHt87VceMwWQpzmdEt2TNXIorIFG+YeCUUW7RInw=="],
 

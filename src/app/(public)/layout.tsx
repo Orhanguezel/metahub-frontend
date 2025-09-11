@@ -1,3 +1,4 @@
+// /home/orhan/Dokumente/metahub-frontend/src/app/(public)/layout.tsx
 "use client";
 import { PublicLayout } from "@/modules/shared";
 

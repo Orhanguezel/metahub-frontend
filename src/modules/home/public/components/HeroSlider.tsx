@@ -258,9 +258,9 @@ const HeroSlider = () => {
             </ControlButton>
 
             {detailLink ? (
-              <Link href={detailLink} prefetch={false} legacyBehavior passHref>
-                <PrimaryCTAasA>{t("hero.products", "Ürünler")}</PrimaryCTAasA>
-              </Link>
+              <PrimaryCTALink href={detailLink} prefetch={false}>
+                {t("hero.products", "Ürünler")}
+              </PrimaryCTALink>
             ) : (
               <PrimaryCTA type="button" onClick={() => open(currentIndex)}>
                 {t("hero.products", "Ürünler")}
@@ -474,8 +474,8 @@ const ControlButton = styled.button`
   }
 `;
 
-/** Link ile aynı görsel stil — a etiketi */
-const PrimaryCTAasA = styled.a`
+/** Link varyantı: Next Link’i stillerle sar */
+const PrimaryCTALink = styled(Link)`
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.white};
   border: none;

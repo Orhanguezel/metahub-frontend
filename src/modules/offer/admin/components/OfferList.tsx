@@ -1,6 +1,6 @@
 "use client";
 import styled from "styled-components";
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useI18nNamespace } from "@/hooks/useI18nNamespace";
 import translations from "@/modules/offer/locales";
 import type { IOffer, OfferStatus } from "@/modules/offer/types";
@@ -83,18 +83,18 @@ export default function OfferList({
   const companies = toArray(rawCompanies);
   const customers = toArray(rawCustomers);
 
-  const ml = (v: any): string => {
+  const ml = useCallback((v: any): string => {
     if (v == null) return "—";
     if (typeof v === "string") return v;
     return getMultiLang(v as Record<string, string>, locale) || "—";
-  };
+  }, [locale]);
 
-  const getName = (v: any): string => {
+  const getName = useCallback((v: any): string => {
     if (!v) return "—";
     if (typeof v === "string") return v;
     const cand = (v as any).companyName ?? (v as any).contactName ?? (v as any).name;
     return ml(cand);
-  };
+  }, [ml]);
 
   const fmtMoney = (n: number, currency?: string) => {
     try {
@@ -116,9 +116,12 @@ export default function OfferList({
     if (ok) onDelete!(o);
   };
 
-  const sortByName = (a: any, b: any) => getName(a).localeCompare(getName(b));
-  const companyOptions = useMemo(() => companies.slice().sort(sortByName), [companies, locale]);
-  const customerOptions = useMemo(() => customers.slice().sort(sortByName), [customers, locale]);
+  const sortByName = useCallback((a: any, b: any) => {
+    return getName(a).localeCompare(getName(b));
+  }, [getName]);
+
+  const companyOptions = useMemo(() => companies.slice().sort(sortByName), [companies, sortByName]);
+  const customerOptions = useMemo(() => customers.slice().sort(sortByName), [customers, sortByName]);
 
   return (
     <Card>
